@@ -18,6 +18,7 @@ namespace Mirle.Agv.Model
         private PartialJob partialJob;
         private PlcRobot PlcRobot;
 
+
         public Vehicle()
         {
             battery = new Battery(50,100);   //50,100 can config

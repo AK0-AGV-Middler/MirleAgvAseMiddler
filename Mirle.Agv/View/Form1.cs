@@ -15,6 +15,7 @@ namespace Mirle.Agv
         public Form1()
         {
             InitializeComponent();
+
         }
     }
 }

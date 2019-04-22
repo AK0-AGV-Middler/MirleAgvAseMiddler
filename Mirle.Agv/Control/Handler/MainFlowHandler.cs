@@ -5,12 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using Mirle.Agv.Model;
+using Mirle.Agv.Control.Tools;
 using System.Collections.Concurrent;
+using Mirle.Agv.Control.Tools.Logger;
+using System.Windows.Forms;
 
 namespace Mirle.Agv.Control
 {
     public class MainFlowHandler
     {
+        public ConfigHandler configHandler;
+
+        public Logger debugLogger;
+        public Logger infoLogger;
+        public Logger errorLogger;
+        public Logger commLogger;
+        private Dictionary<string, Logger> dicLoggers;
+        
+
         private List<PartialJob> allPartialJobs;
 
         private ConcurrentQueue<PartialJob> quePartialJobs;
@@ -29,16 +41,63 @@ namespace Mirle.Agv.Control
 
         private CoupleHandler coupleHandler;
 
+        public Vehicle theVehicle;
 
 
         public MainFlowHandler()
         {
-            moveControlHandler = new MoveControlHandler();
-            middleHandler = new MiddleInterface();
+            configHandler = new ConfigHandler();
+            LoggersInitial();
+
+            moveControlHandler = new MoveControlHandler(this);
+            middleHandler = new MiddleInterface(this);
 
             allPartialJobs = new List<PartialJob>();
             quePartialJobs = new ConcurrentQueue<PartialJob>();
             queAskReserve = new ConcurrentQueue<string>();
+
+            VehicleInitial();
+        }
+
+        private void LoggersInitial()
+        {
+            dicLoggers = new Dictionary<string, Logger>();
+
+            string logIniPath = Application.StartupPath + @"\Log.ini";
+            List<CategoryTypeBean> listCategory = Logger.ReadLogIniFile(logIniPath);
+            foreach (CategoryTypeBean bean in listCategory)
+            {
+                Logger logger = new Logger(bean);
+                dicLoggers.Add(logger.LogFileName, logger);
+            }
+
+            if (dicLoggers.ContainsKey("Debug"))
+            {
+                debugLogger = dicLoggers["Debug"];
+            }
+
+            if (dicLoggers.ContainsKey("Info"))
+            {
+                infoLogger = dicLoggers["Info"];
+            }
+
+            if (dicLoggers.ContainsKey("Error"))
+            {
+                errorLogger = dicLoggers["Error"];
+            }
+
+            if (dicLoggers.ContainsKey("Comm"))
+            {
+                commLogger = dicLoggers["Comm"];
+            }
+
+
+        }
+
+        private void VehicleInitial()
+        {
+            theVehicle = Vehicle.GetInstance();
+            
         }
 
         private void MainFlowHandlerOn()

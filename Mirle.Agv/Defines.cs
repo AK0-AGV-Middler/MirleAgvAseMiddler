@@ -75,4 +75,12 @@ namespace Mirle.Agv
         Admin,
         OneAboveAll
     }
+
+    public enum EnumLogType
+    {
+        Debug,
+        Info,
+        Error,
+        Comm
+    }
 }

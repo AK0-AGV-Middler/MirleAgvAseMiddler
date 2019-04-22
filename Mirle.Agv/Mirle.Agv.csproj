@@ -56,7 +56,11 @@
     <Compile Include="Control\Tools\AgvcConnecter.cs" />
     <Compile Include="Control\Tools\ConfigHandler.cs" />
     <Compile Include="Control\Tools\CsvHandler.cs" />
-    <Compile Include="Control\Tools\Logger.cs" />
+    <Compile Include="Control\Tools\Logger\CategoryBean.cs" />
+    <Compile Include="Control\Tools\Logger\CategoryTypeBean.cs" />
+    <Compile Include="Control\Tools\Logger\Logger.cs" />
+    <Compile Include="Control\Tools\Logger\LoggerConstants.cs" />
+    <Compile Include="Control\Tools\Logger\LoggerSample.cs" />
     <Compile Include="Control\Tools\XmlHandler.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Defines.cs" />

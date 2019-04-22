@@ -11,13 +11,16 @@ namespace Mirle.Agv.Control
 {
     public class MoveControlHandler
     {
+        private MainFlowHandler mainFlowHandler;
+
         private ConcurrentQueue<MoveCmdInfo> queReadyCmds;
         private EnumMoveState moveState;
+        
+        private VehLocation vehLocation;
 
-        private VehLocation location;
-
-        public MoveControlHandler()
+        public MoveControlHandler(MainFlowHandler mainFlowHandler)
         {
+            this.mainFlowHandler = mainFlowHandler;
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
             moveState = EnumMoveState.Idle;
         }

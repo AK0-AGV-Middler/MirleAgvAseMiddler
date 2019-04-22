@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.Model;
+using Mirle.Agv.Control.Tools;
 
 namespace Mirle.Agv.Control
 {
@@ -11,9 +12,11 @@ namespace Mirle.Agv.Control
     {
         public List<PartialJob> partialJobs;
 
-        public MiddleInterface()
-        {
+        private MainFlowHandler mainFlowHandler;
 
+        public MiddleInterface(MainFlowHandler mainFlowHandler)
+        {
+            this.mainFlowHandler = mainFlowHandler;
         }
 
         public List<PartialJob> PartialJobParse(AgvcCmd aCmd)
