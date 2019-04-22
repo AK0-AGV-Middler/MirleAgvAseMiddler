@@ -9,7 +9,7 @@ namespace Mirle.Agv.Model
     public class Vehicle
     {
         private static Vehicle theVehicle;
-        private static object theLock;
+        private static object theLock = new object();
 
         private Battery battery;
         private VehLocation vehLoacation;

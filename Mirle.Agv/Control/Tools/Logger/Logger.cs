@@ -207,7 +207,7 @@ namespace Mirle.Agv.Control.Tools.Logger
         {
             try
             {
-                String str = String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), sCategory, "@", sLogLevel, "@", sClassFunctionName, "@", Device, "@", CarrierId, "@", sMessage);
+                String str = String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "@", sCategory, "@", sLogLevel, "@", sClassFunctionName, "@", Device, "@", CarrierId, "@", sMessage);
                 SaveLogFile(str);
             }
             catch (Exception ex)
@@ -467,7 +467,7 @@ namespace Mirle.Agv.Control.Tools.Logger
             configHandler = new ConfigHandler(sIniFilePath);
             categoryBean = new CategoryBean();
             categoryBean.Number = Convert.ToInt32(configHandler.GetString(LoggerConstants.INIFILE_CATEGORY, LoggerConstants.INIFILE_CATEGORY_NUMBER, categoryBean.Number.ToString()));
-            categoryBean.SectionBaseName = configHandler.GetString(LoggerConstants.INIFILE_CATEGORY,LoggerConstants.INIFILE_CATEGORY_SCETION_BASE_NAME, categoryBean.SectionBaseName);
+            categoryBean.SectionBaseName = configHandler.GetString(LoggerConstants.INIFILE_CATEGORY, LoggerConstants.INIFILE_CATEGORY_SCETION_BASE_NAME, categoryBean.SectionBaseName);
 
             if (categoryBean.Number == 0)
             {
@@ -483,9 +483,9 @@ namespace Mirle.Agv.Control.Tools.Logger
 
 
                 categoryTypeBean = new CategoryTypeBean();
-                categoryTypeBean.Name = configHandler.GetString(strSectionName,LoggerConstants.INIFILE_CATEGORYTYPE_NAME, "");
-                categoryTypeBean.LogFileName = configHandler.GetString(strSectionName,LoggerConstants.INIFILE_CATEGORYTYPE_LOG_FILE_NAME, "");
-                categoryTypeBean.DirName = configHandler.GetString(strSectionName,LoggerConstants.INIFILE_CATEGORYTYPE_DIR_NAME, "");
+                categoryTypeBean.Name = configHandler.GetString(strSectionName, LoggerConstants.INIFILE_CATEGORYTYPE_NAME, "");
+                categoryTypeBean.LogFileName = configHandler.GetString(strSectionName, LoggerConstants.INIFILE_CATEGORYTYPE_LOG_FILE_NAME, "");
+                categoryTypeBean.DirName = configHandler.GetString(strSectionName, LoggerConstants.INIFILE_CATEGORYTYPE_DIR_NAME, "");
                 categoryTypeBean.DelOverdueFile = Convert.ToBoolean(configHandler.GetString(strSectionName, LoggerConstants.INIFILE_CATEGORYTYPE_DEL_OVER_DUE_FILE, LoggerConstants.DEFAULT_BOOL_DEL_OVER_DUE_FILE.ToString()));
                 categoryTypeBean.FileKeepDay = Convert.ToInt32(configHandler.GetString(strSectionName, LoggerConstants.INIFILE_CATEGORYTYPE_FILE_KEEP_DAY, LoggerConstants.DEFAULT_INT_FILE_KEEP_DAY.ToString())); ;
                 categoryTypeBean.LogMaxSize = Convert.ToInt32(configHandler.GetString(strSectionName, LoggerConstants.INIFILE_CATEGORYTYPE_LOG_MAXSIZE, LoggerConstants.DEFAULT_INT_LOG_MAXSIZE.ToString()));

@@ -4,25 +4,37 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO;
 using Mirle.Agv.Model;
 using Mirle.Agv.Control.Tools;
 using System.Collections.Concurrent;
 using Mirle.Agv.Control.Tools.Logger;
+using Mirle.Agv.Model.Configs;
 using System.Windows.Forms;
 
 namespace Mirle.Agv.Control
 {
     public class MainFlowHandler
     {
-        public ConfigHandler configHandler;
+        #region Configs
 
-        public Logger debugLogger;
-        public Logger infoLogger;
-        public Logger errorLogger;
-        public Logger commLogger;
+        private string configPath;
+        private ConfigHandler configHandler;
+        private MainFlowConfigs mainFlowConfigs;
+        private MiddlerConfigs middlerConfigs;
+
+        #endregion
+
+        #region Loggers
+        //TODO : restruct by some design pattern
+        private Logger debugLogger;
+        private Logger infoLogger;
+        private Logger errorLogger;
+        private Logger commLogger;
         private Dictionary<string, Logger> dicLoggers;
-        
 
+        #endregion
+        
         private List<PartialJob> allPartialJobs;
 
         private ConcurrentQueue<PartialJob> quePartialJobs;
@@ -46,7 +58,7 @@ namespace Mirle.Agv.Control
 
         public MainFlowHandler()
         {
-            configHandler = new ConfigHandler();
+            ConfigsInitial();
             LoggersInitial();
 
             moveControlHandler = new MoveControlHandler(this);
@@ -59,12 +71,29 @@ namespace Mirle.Agv.Control
             VehicleInitial();
         }
 
+        private void ConfigsInitial()
+        {
+            configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
+            configHandler = new ConfigHandler(configPath);
+
+            mainFlowConfigs = new MainFlowConfigs();
+            mainFlowConfigs.LogConfigPath = Path.Combine(Environment.CurrentDirectory, configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini"));
+
+            middlerConfigs = new MiddlerConfigs();
+            middlerConfigs.Ip = configHandler.GetString("Middler", "Ip", "127.0.0.1");
+            int.TryParse(configHandler.GetString("Middler", "Port", "5001"), out int tempPort);
+            middlerConfigs.Port = tempPort;
+            int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
+            middlerConfigs.SleepTime = tempSleepTime;
+
+        }
+
         private void LoggersInitial()
         {
+            //TODO : make abstract class with an logger and its bean and a function do log, make 4 level subclass imp this abstract class
             dicLoggers = new Dictionary<string, Logger>();
 
-            string logIniPath = Application.StartupPath + @"\Log.ini";
-            List<CategoryTypeBean> listCategory = Logger.ReadLogIniFile(logIniPath);
+            List<CategoryTypeBean> listCategory = Logger.ReadLogIniFile(mainFlowConfigs.LogConfigPath);
             foreach (CategoryTypeBean bean in listCategory)
             {
                 Logger logger = new Logger(bean);
@@ -90,14 +119,12 @@ namespace Mirle.Agv.Control
             {
                 commLogger = dicLoggers["Comm"];
             }
-
-
         }
 
         private void VehicleInitial()
         {
             theVehicle = Vehicle.GetInstance();
-            
+
         }
 
         private void MainFlowHandlerOn()
@@ -121,7 +148,7 @@ namespace Mirle.Agv.Control
 
         private void GetAllPartialJobs()
         {
-            while (middleHandler.partialJobs.Count>0)
+            while (middleHandler.partialJobs.Count > 0)
             {
                 allPartialJobs = middleHandler.partialJobs.ToList();
                 middleHandler.partialJobs.Clear();
@@ -200,7 +227,7 @@ namespace Mirle.Agv.Control
 
         private void AskReserve()
         {
-            while (queAskReserve.Count>0)
+            while (queAskReserve.Count > 0)
             {
                 queAskReserve.TryPeek(out string sectionId);
                 if (middleHandler.GetReserveFromAgvc(sectionId))
@@ -219,12 +246,12 @@ namespace Mirle.Agv.Control
             //find the partialjob in allpartialjobs
             //send moveinfo to MoveControlHandler;
             foreach (PartialJob partialJob in allPartialJobs)
-            {               
-                if (partialJob.partialJobType== EnumPartialJobType.Move)
+            {
+                if (partialJob.partialJobType == EnumPartialJobType.Move)
                 {
                     MovePartialJob movePartialJob = (MovePartialJob)partialJob;
 
-                    if (movePartialJob.moveCmdInfo.GetSectionId()==sectionId)
+                    if (movePartialJob.moveCmdInfo.GetSectionId() == sectionId)
                     {
                         //Convert this MovePartialJob into aMoveCmdInfo.
                         //MoveControlHandler.queReadyCmds.enqueue(aMoveCmdInfo)
@@ -242,5 +269,41 @@ namespace Mirle.Agv.Control
         {
 
         }
+
+        #region LogFunctions
+
+        public void DebugLog(string msg)
+        {
+            if (debugLogger != null)
+            {
+                debugLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        public void InfoLog(string msg)
+        {
+            if (infoLogger != null)
+            {
+                infoLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        public void ErrorLog(string msg)
+        {
+            if (errorLogger != null)
+            {
+                errorLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        public void CommLog(string msg)
+        {
+            if (commLogger != null)
+            {
+                commLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        #endregion
     }
 }

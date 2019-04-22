@@ -26,7 +26,7 @@ namespace Mirle.Agv.Control.Tools
         {
             try
             {
-                FilePath = Application.StartupPath + @"\config.ini";
+                FilePath = Application.StartupPath + @"\Configs.ini";
                 CheckFilePathExist();
             }
             catch (Exception ex)
