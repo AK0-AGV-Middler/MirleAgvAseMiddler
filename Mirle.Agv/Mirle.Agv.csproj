@@ -54,12 +54,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Control\Handler\BatteryHandler.cs" />
+    <Compile Include="Control\Handler\ITransferHandler.cs" />
+    <Compile Include="Control\Handler\LoadControlHandler.cs" />
+    <Compile Include="Control\Handler\UnloadControlHandler.cs" />
+    <Compile Include="Control\IMapBarcodeSender.cs" />
     <Compile Include="Control\Interface\BmsInterface.cs" />
     <Compile Include="Control\Handler\CoupleHandler.cs" />
     <Compile Include="Control\Interface\ElmoInterface.cs" />
     <Compile Include="Control\Interface\MapBarcodeInterface.cs" />
     <Compile Include="Control\Handler\MoveControlHandler.cs" />
     <Compile Include="Control\Interface\PlcInterface.cs" />
+    <Compile Include="Control\IMapBarcodeTaker.cs" />
     <Compile Include="Control\Tools\AgvcConnecter.cs" />
     <Compile Include="Control\Tools\ConfigHandler.cs" />
     <Compile Include="Control\Tools\CsvHandler.cs" />
@@ -77,6 +82,10 @@
     <Compile Include="Model\PlcLoadingSensor.cs" />
     <Compile Include="Model\PlcRobot.cs" />
     <Compile Include="Model\PlcStage.cs" />
+    <Compile Include="Model\TransferCmds\LoadCmdInfo.cs" />
+    <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
+    <Compile Include="Model\TransferCmds\TransCmd.cs" />
+    <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
     <Compile Include="View\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,10 +99,9 @@
     <Compile Include="Model\VehLocation.cs" />
     <Compile Include="Model\Vehicle.cs" />
     <Compile Include="Control\Interface\MiddleInterface.cs" />
-    <Compile Include="Model\AgvcCmd.cs" />
+    <Compile Include="Model\TransferCmds\AgvcTransCmd.cs" />
     <Compile Include="Model\Report.cs" />
-    <Compile Include="Model\TransCmdInfo.cs" />
-    <Compile Include="Model\MapBarcodeReader.cs" />
+    <Compile Include="Model\MapBarcodeValues.cs" />
     <Compile Include="Model\ElmoCmd.cs" />
     <Compile Include="Model\PlcBeam.cs" />
     <Compile Include="Model\Coupler.cs" />

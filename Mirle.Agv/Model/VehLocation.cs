@@ -1,11 +1,20 @@
-﻿namespace Mirle.Agv.Model
+﻿using System.Collections.Generic;
+
+namespace Mirle.Agv.Model
 {
     public class VehLocation
     {
-        private MapBarcodeReader mapBarcodeValue;
-        private double encoderValue;
-        private double x;
-        private double y;
-        private int angle;
+        private MapBarcodeValues mapBarcodeValues;
+        private List<double> encoderValues;
+       
+        public void SetMapBarcodeValues(MapBarcodeValues mapBarcodeValues)
+        {
+            this.mapBarcodeValues = mapBarcodeValues;
+        }
+
+        public MapBarcodeValues GetBarcodeValues()
+        {
+            return mapBarcodeValues;
+        }
     }
 }

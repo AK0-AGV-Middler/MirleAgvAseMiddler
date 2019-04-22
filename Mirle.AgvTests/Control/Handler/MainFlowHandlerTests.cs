@@ -9,6 +9,8 @@ using Mirle.Agv.Control.Tools.Logger;
 using System.IO;
 using Mirle.Agv.Control.Tools;
 using Mirle.Agv.Model.Configs;
+using Mirle.Agv.Model.TransferCmds;
+using Mirle.Agv.Control.Handler;
 
 
 namespace Mirle.Agv.Control.Tests
@@ -26,6 +28,12 @@ namespace Mirle.Agv.Control.Tests
             Console.WriteLine();
 
             Assert.AreEqual(1, 1);
+        }
+
+        [Test()]
+        public void XXXTest()
+        {
+
         }
     }
 }

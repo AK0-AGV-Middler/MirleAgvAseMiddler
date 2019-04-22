@@ -15,13 +15,7 @@ namespace Mirle.Agv.Model
             //make a new PartialJob with same value for each member
             throw new NotImplementedException();
         }
-    }
-
-    public class MovePartialJob : PartialJob
-    {
-        public MoveCmdInfo moveCmdInfo;     
-
-    }
+    }    
 
 
 }

@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Model
+namespace Mirle.Agv.Model.TransferCmds
 {
-    public abstract class AgvcCmd
+    public abstract class AgvcTransCmd
     {
     }
 
-    public class FakeCmd31 : AgvcCmd
+    public class FakeCmd31 : AgvcTransCmd
     {
 
     }

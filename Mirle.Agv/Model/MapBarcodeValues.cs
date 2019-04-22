@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
-    public class MapBarcodeReader
+    public class MapBarcodeValues
     {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Theta { get; set; }
     }
 }

@@ -10,11 +10,12 @@ using Mirle.Agv.Control.Tools;
 using System.Collections.Concurrent;
 using Mirle.Agv.Control.Tools.Logger;
 using Mirle.Agv.Model.Configs;
+using Mirle.Agv.Control.Handler;
 using System.Windows.Forms;
 
 namespace Mirle.Agv.Control
 {
-    public class MainFlowHandler
+    public class MainFlowHandler : IMapBarcodeTaker
     {
         #region Configs
 
@@ -49,26 +50,77 @@ namespace Mirle.Agv.Control
 
         private MiddleInterface middleHandler;
 
+        private MapHandler mapHandler;
+
         private PlcInterface plcHandler;
 
         private CoupleHandler coupleHandler;
 
         public Vehicle theVehicle;
 
+        #region LogFunctions
+
+        public void DebugLog(string msg)
+        {
+            if (debugLogger != null)
+            {
+                debugLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        public void InfoLog(string msg)
+        {
+            if (infoLogger != null)
+            {
+                infoLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        public void ErrorLog(string msg)
+        {
+            if (errorLogger != null)
+            {
+                errorLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        public void CommLog(string msg)
+        {
+            if (commLogger != null)
+            {
+                commLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
+            }
+        }
+
+        #endregion
 
         public MainFlowHandler()
         {
             ConfigsInitial();
             LoggersInitial();
 
-            moveControlHandler = new MoveControlHandler(this);
-            middleHandler = new MiddleInterface(this);
+            ControllerInitial();
+            AddMapBarcodeTakerInList();
 
             allPartialJobs = new List<PartialJob>();
             quePartialJobs = new ConcurrentQueue<PartialJob>();
             queAskReserve = new ConcurrentQueue<string>();
 
             VehicleInitial();
+        }
+
+        private void AddMapBarcodeTakerInList()
+        {
+            moveControlHandler.AddMapBarcodeTakerInList(this);
+            moveControlHandler.AddMapBarcodeTakerInList(middleHandler);
+            moveControlHandler.AddMapBarcodeTakerInList(mapHandler);
+        }
+
+        private void ControllerInitial()
+        {
+            moveControlHandler = new MoveControlHandler();
+            middleHandler = new MiddleInterface();
+            mapHandler = new MapHandler();
         }
 
         private void ConfigsInitial()
@@ -213,8 +265,8 @@ namespace Mirle.Agv.Control
             switch (partialJob.partialJobType)
             {
                 case EnumPartialJobType.Move:
-                    MovePartialJob movePartialJob = (MovePartialJob)partialJob;
-                    queAskReserve.Enqueue(movePartialJob.moveCmdInfo.GetSectionId());
+                    //MovePartialJob movePartialJob = (MovePartialJob)partialJob;
+                    //queAskReserve.Enqueue(movePartialJob.moveCmdInfo.GetSectionId());
                     break;
                 case EnumPartialJobType.Load:
                     break;
@@ -270,40 +322,10 @@ namespace Mirle.Agv.Control
 
         }
 
-        #region LogFunctions
-
-        public void DebugLog(string msg)
+        public void UpdateMapBarcode(MapBarcodeValues mapBarcode)
         {
-            if (debugLogger != null)
-            {
-                debugLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
+            theVehicle.UpdateStatus(mapBarcode);
         }
 
-        public void InfoLog(string msg)
-        {
-            if (infoLogger != null)
-            {
-                infoLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
-        }
-
-        public void ErrorLog(string msg)
-        {
-            if (errorLogger != null)
-            {
-                errorLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
-        }
-
-        public void CommLog(string msg)
-        {
-            if (commLogger != null)
-            {
-                commLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
-        }
-
-        #endregion
     }
 }

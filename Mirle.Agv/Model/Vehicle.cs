@@ -21,7 +21,7 @@ namespace Mirle.Agv.Model
 
         public Vehicle()
         {
-            battery = new Battery(50,100);   //50,100 can config
+            battery = new Battery(50, 100);   //50,100 can config
             vehLoacation = new VehLocation();
             dicCarriersById = new Dictionary<string, Carrier>();
             dicCarriersByStageNum = new Dictionary<int, Carrier>();
@@ -54,6 +54,11 @@ namespace Mirle.Agv.Model
         public void UpdateStatus(VehLocation vehLoacation)
         {
             this.vehLoacation = vehLoacation;
+        }
+
+        public void UpdateStatus(MapBarcodeValues mapBarcode)
+        {
+            this.vehLoacation.SetMapBarcodeValues(mapBarcode);
         }
 
         public void UpdateStatus(PartialJob partialJob)

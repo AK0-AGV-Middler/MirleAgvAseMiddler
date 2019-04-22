@@ -6,23 +6,26 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using Mirle.Agv.Model;
+using Mirle.Agv.Model.Configs;
+using Mirle.Agv.Model.TransferCmds;
+using Mirle.Agv.Control;
 
-namespace Mirle.Agv.Control
+
+namespace Mirle.Agv.Control.Handler
 {
-    public class MoveControlHandler
+    public class MoveControlHandler : ITransferHandler, IMapBarcodeSender
     {
-        private MainFlowHandler mainFlowHandler;
-
         private ConcurrentQueue<MoveCmdInfo> queReadyCmds;
         private EnumMoveState moveState;
-        
         private VehLocation vehLocation;
+        private List<IMapBarcodeTaker> mapBarcodeTakers;
 
-        public MoveControlHandler(MainFlowHandler mainFlowHandler)
+        public MoveControlHandler()
         {
-            this.mainFlowHandler = mainFlowHandler;
+            mapBarcodeObservers = new List<IMapBarcodeTaker>();
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
             moveState = EnumMoveState.Idle;
+            RunThreads();
         }
 
         public void RunThreads()
@@ -42,11 +45,6 @@ namespace Mirle.Agv.Control
                 //log ex
                 throw;
             }
-        }
-
-        public void AddQueReadyCmds(MoveCmdInfo moveCmd)
-        {
-            queReadyCmds.Enqueue(moveCmd);
         }
 
         public int GetAmountOfQueReadyCmds()
@@ -85,6 +83,12 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
+        private void UpdateMapBarcodeValues(MapBarcodeValues mapBarcodeValues)
+        {
+            vehLocation.SetMapBarcodeValues(mapBarcodeValues);
+            SendBarcodeValues(mapBarcodeValues);
+        }
+
         private void MoveOn(MoveCmdInfo moveCmd)
         {
             //drive elmo to move the vehicle
@@ -95,15 +99,35 @@ namespace Mirle.Agv.Control
         {
             do
             {
-                UpdateLoacation();
-                SendLocationReportToMainFlow();
+                MapBarcodeValues mapBarcodeValues = new MapBarcodeValues();
+                //TODO : get new mapBarcodeValues from driver
+                UpdateMapBarcodeValues(mapBarcodeValues);
                 Thread.Sleep(100);
             } while (moveState == EnumMoveState.Moving);
         }
 
-        private void SendLocationReportToMainFlow()
+        public void DoTransfer(TransCmd transCmd)
         {
-            throw new NotImplementedException();
+            MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
+            queReadyCmds.Enqueue(moveCmd);
+        }
+
+        public void AddMapBarcodeTakerInList(IMapBarcodeTaker mapBarcodeTaker)
+        {
+            mapBarcodeTakers.Add(mapBarcodeTaker);
+        }
+
+        public void RemoveMapBarcodeTakerInList(IMapBarcodeTaker mapBarcodeTaker)
+        {
+            mapBarcodeTakers.Remove(mapBarcodeTaker);
+        }
+
+        public void SendBarcodeValues(MapBarcodeValues mapBarcodeValues)
+        {
+            foreach (var mapBarcodeTaker in mapBarcodeTakers)
+            {
+                mapBarcodeTaker.UpdateMapBarcode(mapBarcodeValues);
+            }
         }
     }
 }

@@ -5,47 +5,35 @@ using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.Model;
 using Mirle.Agv.Control.Tools;
+using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Control
 {
-    public class MiddleInterface
+    public class MiddleInterface : IMapBarcodeTaker
     {
-        public List<PartialJob> partialJobs;
+        private List<TransCmd> transCmds;
 
-        private MainFlowHandler mainFlowHandler;
-
-        public MiddleInterface(MainFlowHandler mainFlowHandler)
+        public MiddleInterface()
         {
-            this.mainFlowHandler = mainFlowHandler;
+            transCmds = new List<TransCmd>();
         }
 
-        public List<PartialJob> PartialJobParse(AgvcCmd aCmd)
+        public void WhenGetAgvcTransCmd(AgvcTransCmd agvcTransCmd)
         {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// transCmdInfo from AgvcCmd, MoveJob implement PartialJob
-        /// </summary>
-        /// <param name="transCmdInfo"></param>
-        /// <returns></returns>
-        private MoveCmdInfo MoveCmdParse(TransCmdInfo transCmdInfo)
-        {
-            throw new NotImplementedException();
-        }
-
-        private LoadCmdInfo LoadCmdParse(TransCmdInfo transCmdInfo)
-        {
-            throw new NotImplementedException();
-        }
-
-        private UnloadCmdInfo UnloadCmdParse(TransCmdInfo transCmdInfo)
-        {
+            //TODO : 
+            //1. Convert agvcTransCmd into a list of (SomeCmd imp TransCmd) and set to the transCmds
+            //2. Send transCmds to mainflow.
             throw new NotImplementedException();
         }
 
         public bool GetReserveFromAgvc(string sectionId)
         {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateMapBarcode(MapBarcodeValues mapBarcode)
+        {
+            //TODO: Make a Position change report from mapBarcode and send to AGVC
             throw new NotImplementedException();
         }
     }
