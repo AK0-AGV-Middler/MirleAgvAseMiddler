@@ -274,23 +274,6 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
-        private void DoPartialJobs(PartialJob partialJob)
-        {
-            switch (partialJob.partialJobType)
-            {
-                case EnumPartialJobType.Move:
-                    //MovePartialJob movePartialJob = (MovePartialJob)partialJob;
-                    //queAskReserve.Enqueue(movePartialJob.moveCmdInfo.GetSectionId());
-                    break;
-                case EnumPartialJobType.Load:
-                    break;
-                case EnumPartialJobType.Unload:
-                    break;
-                default:
-                    break;
-            }
-        }
-
         private void AskReserve()
         {
             while (true)
@@ -300,6 +283,7 @@ namespace Mirle.Agv.Control
                     queWaitForReserve.TryPeek(out MoveCmdInfo peek);    
                     if (middleHandler.GetReserveFromAgvc(peek.Section.sectionId))
                     {
+                        theVehicle.UpdateStatus(peek);
                         moveControlHandler.DoTransfer(peek);
                         queWaitForReserve.TryDequeue(out MoveCmdInfo aMoveCmd);
                     }

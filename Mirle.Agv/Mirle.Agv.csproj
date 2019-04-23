@@ -94,7 +94,6 @@
     </Compile>
     <Compile Include="Model\Bettery.cs" />
     <Compile Include="Control\Handler\MainFlowHandler.cs" />
-    <Compile Include="Model\PartialJob.cs" />
     <Compile Include="Model\Carrier.cs" />
     <Compile Include="Model\VehLocation.cs" />
     <Compile Include="Model\Vehicle.cs" />

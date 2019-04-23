@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Model
 {
@@ -15,8 +16,8 @@ namespace Mirle.Agv.Model
         private VehLocation vehLoacation;
         private Dictionary<string, Carrier> dicCarriersById;
         private Dictionary<int, Carrier> dicCarriersByStageNum;
-        private PartialJob partialJob;
         private PlcRobot PlcRobot;
+        private TransCmd transCmd;
 
 
         public Vehicle()
@@ -25,7 +26,6 @@ namespace Mirle.Agv.Model
             vehLoacation = new VehLocation();
             dicCarriersById = new Dictionary<string, Carrier>();
             dicCarriersByStageNum = new Dictionary<int, Carrier>();
-            partialJob = new PartialJob();
         }
 
         public static Vehicle GetInstance()
@@ -61,9 +61,9 @@ namespace Mirle.Agv.Model
             this.vehLoacation.SetMapBarcodeValues(mapBarcode);
         }
 
-        public void UpdateStatus(PartialJob partialJob)
+        public void UpdateStatus(TransCmd  transCmd)
         {
-            this.partialJob = partialJob;
+            this.transCmd = transCmd;
         }
 
         public void AddCarrier(Carrier aCarrier)
@@ -87,9 +87,9 @@ namespace Mirle.Agv.Model
             return this.vehLoacation;
         }
 
-        public PartialJob GetPartialJob()
+        public TransCmd GetTransCmd()
         {
-            return this.partialJob;
+            return transCmd;
         }
 
         public Carrier GetCarrierById(string id)

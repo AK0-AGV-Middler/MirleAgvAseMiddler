@@ -12,12 +12,10 @@ namespace Mirle.Agv.Control
     public class MiddleInterface : IMapBarcodeTaker
     {
         private List<TransCmd> transCmds;
-        public List<PartialJob> partialJobs;
 
         public MiddleInterface()
         {
             transCmds = new List<TransCmd>();
-            partialJobs = new List<PartialJob>();
         }
 
         public void WhenGetAgvcTransCmd(AgvcTransCmd agvcTransCmd)
