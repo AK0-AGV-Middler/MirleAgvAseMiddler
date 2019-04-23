@@ -18,6 +18,7 @@ namespace Mirle.Agv.Model.TransferCmds
             this.transferHandler = transferHandler;
         }
 
+
         public void DoTransfer()
         {
             transferHandler.DoTransfer(this);
@@ -34,15 +35,16 @@ namespace Mirle.Agv.Model.TransferCmds
             {
                 case EnumPartialJobType.Move:
                     MoveCmdInfo moveCmd = (MoveCmdInfo)this;
-                    return moveCmd;                    
+                    return moveCmd;
                 case EnumPartialJobType.Load:
-                    break;
+                    LoadCmdInfo loadCmdInfo = (LoadCmdInfo)this;
+                    return loadCmdInfo;
                 case EnumPartialJobType.Unload:
-                    break;
+                    UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)this;
+                    return unloadCmdInfo;
                 default:
-                    break;
-            }
-            return null;
+                    return new MoveCmdInfo(new MoveControlHandler());
+            }            
         }
     }
 }
