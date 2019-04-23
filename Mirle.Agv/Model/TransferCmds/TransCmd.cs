@@ -27,5 +27,22 @@ namespace Mirle.Agv.Model.TransferCmds
         {
             return type;
         }
+
+        public TransCmd Clone()
+        {
+            switch (type)
+            {
+                case EnumPartialJobType.Move:
+                    MoveCmdInfo moveCmd = (MoveCmdInfo)this;
+                    return moveCmd;                    
+                case EnumPartialJobType.Load:
+                    break;
+                case EnumPartialJobType.Unload:
+                    break;
+                default:
+                    break;
+            }
+            return null;
+        }
     }
 }

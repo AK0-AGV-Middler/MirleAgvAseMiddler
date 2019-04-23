@@ -13,7 +13,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public double TotalMoveLength { get; set; }
 
         public MapSection Section { get; set; }
-        public bool IsPrecisePositioning { get; set; }  //是否二次定位
+        public bool IsPrecisePositioning { get; set; }  //是否二次定位 // = IsMoveEndSection 本次連續移動最後一個Section
 
         public MoveCmdInfo(ITransferHandler transferHandler) : base(transferHandler)
         {

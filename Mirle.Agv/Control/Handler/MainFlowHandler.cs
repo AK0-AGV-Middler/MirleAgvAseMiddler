@@ -12,6 +12,7 @@ using Mirle.Agv.Control.Tools.Logger;
 using Mirle.Agv.Model.Configs;
 using Mirle.Agv.Control.Handler;
 using System.Windows.Forms;
+using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Control
 {
@@ -35,25 +36,15 @@ namespace Mirle.Agv.Control
         private Dictionary<string, Logger> dicLoggers;
 
         #endregion
-        
-        private List<PartialJob> allPartialJobs;
 
-        private ConcurrentQueue<PartialJob> quePartialJobs;
-
-        private ConcurrentQueue<string> queAskReserve;
-
-        //private ConcurrentQueue<PartialJob> readyToDoPartialJobs;
-
-        //private EnumMainFlowState state;
+        private List<TransCmd> transCmds;
+        private bool goNextTransCmd;
+        private ConcurrentQueue<MoveCmdInfo> queWaitForReserve;
 
         private MoveControlHandler moveControlHandler;
-
         private MiddleInterface middleHandler;
-
         private MapHandler mapHandler;
-
         private PlcInterface plcHandler;
-
         private CoupleHandler coupleHandler;
 
         public Vehicle theVehicle;
@@ -102,9 +93,8 @@ namespace Mirle.Agv.Control
             ControllerInitial();
             AddMapBarcodeTakerInList();
 
-            allPartialJobs = new List<PartialJob>();
-            quePartialJobs = new ConcurrentQueue<PartialJob>();
-            queAskReserve = new ConcurrentQueue<string>();
+            transCmds = new List<TransCmd>();
+            queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
 
             VehicleInitial();
         }
@@ -129,7 +119,16 @@ namespace Mirle.Agv.Control
             configHandler = new ConfigHandler(configPath);
 
             mainFlowConfigs = new MainFlowConfigs();
-            mainFlowConfigs.LogConfigPath = Path.Combine(Environment.CurrentDirectory, configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini"));
+            var tempLogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
+            mainFlowConfigs.LogConfigPath = Path.Combine(Environment.CurrentDirectory, tempLogConfigPath);
+            int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
+            mainFlowConfigs.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
+            int.TryParse(configHandler.GetString("MainFlow", "DoTransCmdsInterval", "15"), out int tempDoTransCmdsInterval);
+            mainFlowConfigs.DoTransCmdsInterval = tempDoTransCmdsInterval;
+            int.TryParse(configHandler.GetString("MainFlow", "ReserveLength", "3"), out int tempReserveLength);
+            mainFlowConfigs.ReserveLength = tempReserveLength;
+            int.TryParse(configHandler.GetString("MainFlow", "AskReserveInterval", "15"), out int tempAskReserveInterval);
+            mainFlowConfigs.AskReserveInterval = tempAskReserveInterval;
 
             middlerConfigs = new MiddlerConfigs();
             middlerConfigs.Ip = configHandler.GetString("Middler", "Ip", "127.0.0.1");
@@ -183,7 +182,7 @@ namespace Mirle.Agv.Control
         {
             try
             {
-                Thread thdGetAllPartialJobs = new Thread(new ThreadStart(GetAllPartialJobs));
+                Thread thdGetAllPartialJobs = new Thread(new ThreadStart(TransCmdsCheck));
                 thdGetAllPartialJobs.IsBackground = true;
                 thdGetAllPartialJobs.Start();
 
@@ -198,50 +197,65 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private void GetAllPartialJobs()
+        private void TransCmdsCheck()
         {
-            while (middleHandler.partialJobs.Count > 0)
+            while (middleHandler.IsTransCmds())
             {
-                allPartialJobs = middleHandler.partialJobs.ToList();
-                middleHandler.partialJobs.Clear();
-                DoAllPartialJobs();
-                Thread.Sleep(10);//can config
+                transCmds = middleHandler.GetTransCmds();
+                middleHandler.ClearTransCmds();
+                DoTransCmds();
+                Thread.Sleep(mainFlowConfigs.TransCmdsCheckInterval);//can config
             }
         }
 
-        private void DoAllPartialJobs()
+        private void DoTransCmds()
         {
-            for (int i = 0; i < allPartialJobs.Count; i++)
-            {
-                PartialJob partialJob = allPartialJobs[i].Clone();
-                quePartialJobs.Enqueue(partialJob);
-            }
+            int index = 0;
+            goNextTransCmd = true;
 
-            while (quePartialJobs.Count > 0)
+            while (index < transCmds.Count)
             {
-                if (!CanDoNextPartialJob())
+                if (goNextTransCmd)
                 {
-                    continue;
+                    TransCmd transCmd = transCmds[index];
+                    switch (transCmd.GetType())
+                    {
+                        case EnumPartialJobType.Move:
+                            MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
+                            queWaitForReserve.Enqueue(moveCmd);
+                            if (!moveCmd.IsPrecisePositioning)
+                            {
+                                goNextTransCmd = true;
+                            }
+                            //TODO
+                            //MoveComplete(MoveToEnd will set goNextTransCmd into true and go on
+                            break;
+                        case EnumPartialJobType.Load:
+                            LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transCmd;
+                            //TODO
+                            //command PLC to DoLoad
+                            //LoadComplete will set goNextTransCmd into true and go on
+                            break;
+                        case EnumPartialJobType.Unload:
+                            UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transCmd;
+                            //TODO
+                            //command PLC to DoLoad
+                            //LoadComplete will set goNextTransCmd into true and go on
+                            break;
+                        default:
+                            break;
+                    }
+
+                    goNextTransCmd = false;
+                    index++;
                 }
-                quePartialJobs.TryDequeue(out PartialJob partialJob);
-                DoPartialJobs(partialJob);
-                Thread.Sleep(10); //can config 10
+                Thread.Sleep(mainFlowConfigs.DoTransCmdsInterval);
             }
         }
 
-        private bool CanDoNextPartialJob()
+        private bool IsReadyToMoveCmdQueFull()
         {
-            switch (allPartialJobs[0].partialJobType)
-            {
-                case EnumPartialJobType.Move:
-                    return CanVehMove();
-                case EnumPartialJobType.Load:
-                    return CanVehLoad();
-                case EnumPartialJobType.Unload:
-                    return CanVehUnload();
-                default:
-                    return false;
-            }
+            return moveControlHandler.GetAmountOfQueReadyCmds() >= mainFlowConfigs.ReserveLength;
         }
 
         private bool CanVehUnload()
@@ -279,40 +293,37 @@ namespace Mirle.Agv.Control
 
         private void AskReserve()
         {
-            while (queAskReserve.Count > 0)
+            while (true)
             {
-                queAskReserve.TryPeek(out string sectionId);
-                if (middleHandler.GetReserveFromAgvc(sectionId))
+                if (CanAskReserve())
                 {
-                    //log sectionId get reserved.
-                    queAskReserve.TryDequeue(out string acceptSectionId);
-                    GoThisSection(sectionId);
+                    queWaitForReserve.TryPeek(out MoveCmdInfo peek);    
+                    if (middleHandler.GetReserveFromAgvc(peek.Section.sectionId))
+                    {
+                        moveControlHandler.DoTransfer(peek);
+                        queWaitForReserve.TryDequeue(out MoveCmdInfo aMoveCmd);
+                    }
                 }
-
-                Thread.Sleep(123); //can config 123
+                Thread.Sleep(mainFlowConfigs.AskReserveInterval);
             }
         }
 
-        private void GoThisSection(string sectionId)
+        private bool CanAskReserve()
         {
-            //find the partialjob in allpartialjobs
-            //send moveinfo to MoveControlHandler;
-            foreach (PartialJob partialJob in allPartialJobs)
-            {
-                if (partialJob.partialJobType == EnumPartialJobType.Move)
-                {
-                    MovePartialJob movePartialJob = (MovePartialJob)partialJob;
+            return CanVehMove() && !IsReadyToMoveCmdQueFull() && IsWaitForReserveQueNotEmpty();
+        }
 
-                    if (movePartialJob.moveCmdInfo.GetSectionId() == sectionId)
-                    {
-                        //Convert this MovePartialJob into aMoveCmdInfo.
-                        //MoveControlHandler.queReadyCmds.enqueue(aMoveCmdInfo)
-                    }
-                }
-            }
+        private bool IsWaitForReserveQueNotEmpty()
+        {
+            return !queWaitForReserve.IsEmpty;
         }
 
         public void Pause()
+        {
+
+        }
+
+        public void Resume()
         {
 
         }

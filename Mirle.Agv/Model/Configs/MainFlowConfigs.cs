@@ -8,6 +8,10 @@ namespace Mirle.Agv.Model.Configs
 {
     public class MainFlowConfigs
     {
-       public string LogConfigPath { get; set; }
+        public string LogConfigPath { get; set; }
+        public int TransCmdsCheckInterval { get; set; }
+        public int DoTransCmdsInterval { get; set; }
+        public int ReserveLength { get; set; }
+        public int AskReserveInterval { get; set; }
     }
 }

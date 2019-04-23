@@ -12,10 +12,12 @@ namespace Mirle.Agv.Control
     public class MiddleInterface : IMapBarcodeTaker
     {
         private List<TransCmd> transCmds;
+        public List<PartialJob> partialJobs;
 
         public MiddleInterface()
         {
             transCmds = new List<TransCmd>();
+            partialJobs = new List<PartialJob>();
         }
 
         public void WhenGetAgvcTransCmd(AgvcTransCmd agvcTransCmd)
@@ -35,6 +37,22 @@ namespace Mirle.Agv.Control
         {
             //TODO: Make a Position change report from mapBarcode and send to AGVC
             throw new NotImplementedException();
+        }
+
+        public void ClearTransCmds()
+        {
+            transCmds.Clear();
+        }
+
+        public bool IsTransCmds()
+        {
+            return transCmds.Count > 0;
+        }
+
+        public List<TransCmd> GetTransCmds()
+        {
+            List<TransCmd> tempTransCmds = transCmds.ToList();
+            return tempTransCmds;
         }
     }
 }

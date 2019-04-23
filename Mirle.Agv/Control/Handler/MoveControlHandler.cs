@@ -22,7 +22,7 @@ namespace Mirle.Agv.Control.Handler
 
         public MoveControlHandler()
         {
-            mapBarcodeObservers = new List<IMapBarcodeTaker>();
+            mapBarcodeTakers = new List<IMapBarcodeTaker>();
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
             moveState = EnumMoveState.Idle;
             RunThreads();
