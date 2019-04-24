@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Control.Tools
 {
-    class XmlHandler
+    public class XmlHandler
     {
     }
 }
