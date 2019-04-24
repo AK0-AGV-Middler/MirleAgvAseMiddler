@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Control.Handler;
+using Mirle.Agv.Control;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
     public abstract class TransCmd
     {
         protected ITransferHandler transferHandler;
-        protected EnumPartialJobType type;
+        protected EnumTransCmdType type;
         public string CmdId { get; set; }
 
         public TransCmd(ITransferHandler transferHandler)
@@ -24,7 +24,7 @@ namespace Mirle.Agv.Model.TransferCmds
             transferHandler.DoTransfer(this);
         }
 
-        public EnumPartialJobType GetType()
+        public EnumTransCmdType GetType()
         {
             return type;
         }
@@ -33,13 +33,13 @@ namespace Mirle.Agv.Model.TransferCmds
         {
             switch (type)
             {
-                case EnumPartialJobType.Move:
+                case EnumTransCmdType.Move:
                     MoveCmdInfo moveCmd = (MoveCmdInfo)this;
                     return moveCmd;
-                case EnumPartialJobType.Load:
+                case EnumTransCmdType.Load:
                     LoadCmdInfo loadCmdInfo = (LoadCmdInfo)this;
                     return loadCmdInfo;
-                case EnumPartialJobType.Unload:
+                case EnumTransCmdType.Unload:
                     UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)this;
                     return unloadCmdInfo;
                 default:

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Control.Handler;
+using Mirle.Agv.Control;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
@@ -15,7 +15,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
         public UnloadCmdInfo(ITransferHandler transferHandler) : base(transferHandler)
         {
-            type = EnumPartialJobType.Unload;
+            type = EnumTransCmdType.Unload;
         }
     }
 }

@@ -1,37 +1,152 @@
-﻿using System;
+﻿using Mirle.Agv.Model;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mirle.Agv.Model;
+using System.IO;
 
 
 namespace Mirle.Agv.Control
 {
-    public class MapHandler : IMapBarcodeTaker
-    {
-        public Dictionary<string, MapSection> dicSectionsByName;
-        public Dictionary<MapAddress, MapSection> dicSectionsByRelatedAddress;
-        public Dictionary<string, MapAddress> dicAddressesByName;
-        public Dictionary<string, MapPosition> dicPositon;
+    //public class MapHandler : IMapBarcodeTaker
+    //{
+    //    public Dictionary<string, MapSection> dicSectionsByName;
+    //    public Dictionary<MapAddress, MapSection> dicSectionsByRelatedAddress;
+    //    public Dictionary<string, MapAddress> dicAddressesByName;
+    //    public Dictionary<string, MapPosition> dicPositon;
 
-        public MapHandler()
+    //    public MapHandler()
+    //    {
+    //        dicSectionsByName = new Dictionary<string, MapSection>();
+    //        dicSectionsByRelatedAddress = new Dictionary<MapAddress, MapSection>();
+    //        dicAddressesByName = new Dictionary<string, MapAddress>();
+    //        FillDictionary();
+    //    }
+
+    //    public void UpdateMapBarcode(MapBarcodeValues mapBarcode)
+    //    {
+    //        //
+    //        throw new NotImplementedException();
+    //    }
+
+    //    private void FillDictionary()
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
+
+
+    public class MapHandler: IMapBarcodeTaker
+    {
+        private Dictionary<string, MapSection> SectionTable = new Dictionary<string, MapSection>();
+        private Dictionary<string, List<MapSection>> SectionTableByAddress = new Dictionary<string, List<MapSection>>();
+        private Dictionary<string, MapAddress> AddressTable = new Dictionary<string, MapAddress>();
+
+        private void GetSectionTable(string SectionFilePath)
         {
-            dicSectionsByName = new Dictionary<string, MapSection>();
-            dicSectionsByRelatedAddress = new Dictionary<MapAddress, MapSection>();
-            dicAddressesByName = new Dictionary<string, MapAddress>();
-            FillDictionary();
+            Dictionary<string, int> HeaderTable = new Dictionary<string, int>();
+            string[] Rows = File.ReadAllLines(SectionFilePath);
+            string[] Header = Rows[0].Split(',');
+            string[] Content = null;
+            SectionTable.Clear();
+            SectionTableByAddress.Clear();
+
+            for (int idx = 0; idx < Header.Length; idx++)
+            {
+                HeaderTable[Header[idx]] = idx;
+            }
+            for (int i = 1; i < Rows.Length; i++)
+            {
+                Content = Rows[i].Split(',');
+                SectionTable[Content[HeaderTable["Id"]]] = new MapSection(HeaderTable, Content);
+                if (SectionTableByAddress.ContainsKey(Content[HeaderTable["Origin"]]))
+                {
+                    SectionTableByAddress[Content[HeaderTable["Origin"]]].Add(SectionTable[Content[HeaderTable["Id"]]]);
+                }
+                else
+                {
+                    SectionTableByAddress[Content[HeaderTable["Origin"]]] = new List<MapSection>() { SectionTable[Content[HeaderTable["Id"]]] };
+                }
+
+                if (SectionTableByAddress.ContainsKey(Content[HeaderTable["Destination"]]))
+                {
+                    SectionTableByAddress[Content[HeaderTable["Destination"]]].Add(SectionTable[Content[HeaderTable["Id"]]]);
+                }
+                else
+                {
+                    SectionTableByAddress[Content[HeaderTable["Destination"]]] = new List<MapSection>() { SectionTable[Content[HeaderTable["Id"]]] };
+                }
+            }
+
+        }
+        private void GetAddressTable(string AddressFilePath)
+        {
+            Dictionary<string, int> HeaderTable = new Dictionary<string, int>();
+            string[] Rows = File.ReadAllLines(AddressFilePath);
+            string[] Header = Rows[0].Split(',');
+            string[] Content = null;
+            this.AddressTable.Clear();
+            for (int idx = 0; idx < Header.Length; idx++)
+            {
+                HeaderTable[Header[idx]] = idx;
+            }
+            for (int i = 1; i < Rows.Length; i++)
+            {
+                Content = Rows[i].Split(',');
+                this.AddressTable[Content[HeaderTable["Id"]]] = new MapAddress(HeaderTable, Content);
+            }
+        }
+
+        public MapHandler(string sectionFilePath, string addressFilePath)
+        {
+            GetMap(sectionFilePath, addressFilePath);
+        }
+
+        public void GetMap(string SectionFilePath, string AddressFilePath)
+        {
+            GetSectionTable(SectionFilePath);
+            GetAddressTable(AddressFilePath);
+        }
+
+        public MapSection GetMapSection(string idx)
+        {
+            try
+            {
+                return SectionTable[idx];
+            }
+            catch (Exception ex)
+            {
+                //log ex
+                return new MapSection();
+            }
+        }
+        public MapAddress GetMapAddress(string idx)
+        {
+            try
+            {
+                return AddressTable[idx];
+            }
+            catch (Exception ex)
+            {
+                //log ex
+                return new MapAddress();
+            }
+        }
+        public List<MapSection> GetSectionByAddress(string idx)
+        {
+            try
+            {
+                return SectionTableByAddress[idx];
+            }
+            catch (Exception ex)
+            {
+                //log ex
+                return new List<MapSection>();
+            }
         }
 
         public void UpdateMapBarcode(MapBarcodeValues mapBarcode)
         {
-            //
-            throw new NotImplementedException();
-        }
-
-        private void FillDictionary()
-        {
             throw new NotImplementedException();
         }
     }
+
 }

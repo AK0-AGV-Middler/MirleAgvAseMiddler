@@ -8,28 +8,43 @@ namespace Mirle.Agv
 {
     public enum EnumSectionType
     {
-        line,
-        smallTurnLeft,
-        smallTurnRight,
-        largeTurnLeft,
-        largeTurnRight,
-        backToLine
+        None,
+        Horizontal,
+        Vertical,
+        QuadrantI,
+        QuadrantII,
+        QuadrantIII,
+        QuadrantIV
     }
 
-    public enum EnumPartialJobType
+    public enum EnumSectionShape
+    {
+        None,
+        Straight,
+        Curve
+    }
+
+    public enum EnumAddressType
+    {
+        None,
+        Address,
+        Position
+    }
+
+    public enum EnumTransCmdType
     {
         Move,
         Load,
         Unload
     }
 
-    public enum EnumAddressType
-    {
-        EqPort,
-        EqPortWithCoupler,
-        Coupler,
-        Stocker
-    }
+    //public enum EnumAddressType
+    //{
+    //    EqPort,
+    //    EqPortWithCoupler,
+    //    Coupler,
+    //    Stocker
+    //}
 
     public enum EnumMoveState
     {
@@ -83,4 +98,6 @@ namespace Mirle.Agv
         Error,
         Comm
     }
+
+
 }

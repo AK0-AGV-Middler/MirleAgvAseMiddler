@@ -19,6 +19,7 @@ namespace Mirle.Agv.Control
         private ConfigHandler configHandler;
         private MainFlowConfigs mainFlowConfigs;
         private MiddlerConfigs middlerConfigs;
+        private MapConfigs mapConfigs;
 
         #endregion
 
@@ -105,7 +106,7 @@ namespace Mirle.Agv.Control
         {
             moveControlHandler = new MoveControlHandler();
             middleHandler = new MiddleInterface();
-            mapHandler = new MapHandler();
+            mapHandler = new MapHandler(mapConfigs.SectionFilePath,mapConfigs.AddressFilePath);
         }
 
         private void ConfigsInitial()
@@ -132,6 +133,9 @@ namespace Mirle.Agv.Control
             int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
             middlerConfigs.SleepTime = tempSleepTime;
 
+            mapConfigs = new MapConfigs();
+            mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "XXX.csv");
+            mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "YYY.csv");
         }
 
         private void LoggersInitial()
@@ -215,20 +219,20 @@ namespace Mirle.Agv.Control
                     TransCmd transCmd = transCmds[index];
                     switch (transCmd.GetType())
                     {
-                        case EnumPartialJobType.Move:
+                        case EnumTransCmdType.Move:
                             MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
                             queWaitForReserve.Enqueue(moveCmd);
                             goNextTransCmd = !moveCmd.IsPrecisePositioning;         
                             //TODO
                             //MoveComplete(MoveToEnd will set goNextTransCmd into true and go on
                             break;
-                        case EnumPartialJobType.Load:
+                        case EnumTransCmdType.Load:
                             LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transCmd;
                             //TODO
                             //command PLC to DoLoad
                             //LoadComplete will set goNextTransCmd into true and go on
                             break;
-                        case EnumPartialJobType.Unload:
+                        case EnumTransCmdType.Unload:
                             UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transCmd;
                             //TODO
                             //command PLC to DoLoad
@@ -273,7 +277,7 @@ namespace Mirle.Agv.Control
                 if (CanAskReserve())
                 {
                     queWaitForReserve.TryPeek(out MoveCmdInfo peek);    
-                    if (middleHandler.GetReserveFromAgvc(peek.Section.sectionId))
+                    if (middleHandler.GetReserveFromAgvc(peek.Section.Id))
                     {
                         theVehicle.UpdateStatus(peek);
                         moveControlHandler.DoTransfer(peek);
