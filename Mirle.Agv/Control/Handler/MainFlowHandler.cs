@@ -223,10 +223,7 @@ namespace Mirle.Agv.Control
                         case EnumPartialJobType.Move:
                             MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
                             queWaitForReserve.Enqueue(moveCmd);
-                            if (!moveCmd.IsPrecisePositioning)
-                            {
-                                goNextTransCmd = true;
-                            }
+                            goNextTransCmd = !moveCmd.IsPrecisePositioning;         
                             //TODO
                             //MoveComplete(MoveToEnd will set goNextTransCmd into true and go on
                             break;
