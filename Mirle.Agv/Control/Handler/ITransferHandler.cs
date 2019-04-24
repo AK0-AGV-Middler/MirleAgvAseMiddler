@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.Model.TransferCmds;
 
-namespace Mirle.Agv.Control.Handler
+namespace Mirle.Agv.Control
 {
     /// <summary>
     /// 搬送命令處理者(MoveController,LoadController,UnloadController...)

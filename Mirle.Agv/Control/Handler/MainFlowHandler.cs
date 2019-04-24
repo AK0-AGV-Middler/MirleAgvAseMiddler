@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using System.IO;
-using Mirle.Agv.Model;
-using Mirle.Agv.Control.Tools;
-using System.Collections.Concurrent;
+﻿using Mirle.Agv.Control.Tools;
 using Mirle.Agv.Control.Tools.Logger;
+using Mirle.Agv.Model;
 using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Control.Handler;
-using System.Windows.Forms;
 using Mirle.Agv.Model.TransferCmds;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 namespace Mirle.Agv.Control
 {

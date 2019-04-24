@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mirle.Agv.Model.TransferCmds;
+﻿using Mirle.Agv.Model.TransferCmds;
+using System;
 
-namespace Mirle.Agv.Control.Handler
+namespace Mirle.Agv.Control
 {
     public class UnloadControlHandler : ITransferHandler
     {

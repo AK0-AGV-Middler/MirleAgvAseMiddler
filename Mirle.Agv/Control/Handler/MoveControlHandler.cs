@@ -1,17 +1,12 @@
-﻿using System;
+﻿using Mirle.Agv.Model;
+using Mirle.Agv.Model.TransferCmds;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Model.TransferCmds;
-using Mirle.Agv.Control;
 
 
-namespace Mirle.Agv.Control.Handler
+namespace Mirle.Agv.Control
 {
     public class MoveControlHandler : ITransferHandler, IMapBarcodeSender
     {
