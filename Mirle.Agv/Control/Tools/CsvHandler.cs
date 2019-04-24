@@ -42,5 +42,10 @@ namespace Mirle.Agv.Control.Tools
                 return allRows[index].Split(',');
             }
         }
+
+        public void WriteAllRows(string[] allRows)
+        {
+            File.WriteAllLines(filePath, allRows);
+        }
     }
 }
