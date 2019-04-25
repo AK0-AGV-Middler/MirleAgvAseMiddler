@@ -8,16 +8,15 @@ using System.Threading;
 
 namespace Mirle.Agv.Control
 {
-    public class MoveControlHandler : ITransferHandler, IMapBarcodeSender
+    public class MoveControlHandler : ITransferHandler
     {
         private ConcurrentQueue<MoveCmdInfo> queReadyCmds;
         private EnumMoveState moveState;
         private VehLocation vehLocation;
-        private List<IMapBarcodeTaker> mapBarcodeTakers;
+        public MapBarcodeValuesWithEvent mapBarcode;
 
         public MoveControlHandler()
         {
-            mapBarcodeTakers = new List<IMapBarcodeTaker>();
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
             moveState = EnumMoveState.Idle;
             RunThreads();
@@ -80,8 +79,8 @@ namespace Mirle.Agv.Control
 
         private void UpdateMapBarcodeValues(MapBarcodeValues mapBarcodeValues)
         {
+            mapBarcode.MapBarcodeValues = mapBarcodeValues;
             vehLocation.SetMapBarcodeValues(mapBarcodeValues);
-            SendBarcodeValues(mapBarcodeValues);
         }
 
         private void MoveOn(MoveCmdInfo moveCmd)
@@ -107,22 +106,6 @@ namespace Mirle.Agv.Control
             queReadyCmds.Enqueue(moveCmd);
         }
 
-        public void AddMapBarcodeTakerInList(IMapBarcodeTaker mapBarcodeTaker)
-        {
-            mapBarcodeTakers.Add(mapBarcodeTaker);
-        }
 
-        public void RemoveMapBarcodeTakerInList(IMapBarcodeTaker mapBarcodeTaker)
-        {
-            mapBarcodeTakers.Remove(mapBarcodeTaker);
-        }
-
-        public void SendBarcodeValues(MapBarcodeValues mapBarcodeValues)
-        {
-            foreach (var mapBarcodeTaker in mapBarcodeTakers)
-            {
-                mapBarcodeTaker.UpdateMapBarcode(mapBarcodeValues);
-            }
-        }
     }
 }

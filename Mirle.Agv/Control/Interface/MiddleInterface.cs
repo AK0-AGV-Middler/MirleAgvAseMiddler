@@ -9,7 +9,7 @@ using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Control
 {
-    public class MiddleInterface : IMapBarcodeTaker
+    public class MiddleInterface : IMapBarcodeValuesEvent
     {
         private List<TransCmd> transCmds;
 
@@ -31,12 +31,6 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
-        public void UpdateMapBarcode(MapBarcodeValues mapBarcode)
-        {
-            //TODO: Make a Position change report from mapBarcode and send to AGVC
-            throw new NotImplementedException();
-        }
-
         public void ClearTransCmds()
         {
             transCmds.Clear();
@@ -51,6 +45,12 @@ namespace Mirle.Agv.Control
         {
             List<TransCmd> tempTransCmds = transCmds.ToList();
             return tempTransCmds;
+        }
+
+        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues)
+        {
+            //TODO: Make a Position change report from mapBarcode and send to AGVC
+            throw new NotImplementedException();
         }
     }
 }

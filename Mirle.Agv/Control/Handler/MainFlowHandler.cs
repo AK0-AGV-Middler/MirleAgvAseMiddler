@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Mirle.Agv.Control
 {
-    public class MainFlowHandler : IMapBarcodeTaker
+    public class MainFlowHandler : IMapBarcodeValuesEvent
     {
         #region Configs
 
@@ -87,19 +87,17 @@ namespace Mirle.Agv.Control
             LoggersInitial();
 
             ControllerInitial();
-            AddMapBarcodeTakerInList();
-
             transCmds = new List<TransCmd>();
             queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
 
             VehicleInitial();
+
+            EventInitial();
         }
 
-        private void AddMapBarcodeTakerInList()
+        private void EventInitial()
         {
-            moveControlHandler.AddMapBarcodeTakerInList(this);
-            moveControlHandler.AddMapBarcodeTakerInList(middleHandler);
-            moveControlHandler.AddMapBarcodeTakerInList(mapHandler);
+            moveControlHandler.mapBarcode.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
         }
 
         private void ControllerInitial()
@@ -318,5 +316,9 @@ namespace Mirle.Agv.Control
             theVehicle.UpdateStatus(mapBarcode);
         }
 
+        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues)
+        {
+            theVehicle.UpdateStatus(mapBarcodeValues);
+        }
     }
 }

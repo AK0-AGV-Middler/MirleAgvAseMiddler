@@ -34,7 +34,7 @@ namespace Mirle.Agv.Control
     //}
 
 
-    public class MapHandler: IMapBarcodeTaker
+    public class MapHandler: IMapBarcodeValuesEvent
     {
         private Dictionary<string, MapSection> SectionTable = new Dictionary<string, MapSection>();
         private Dictionary<string, List<MapSection>> SectionTableByAddress = new Dictionary<string, List<MapSection>>();
@@ -141,9 +141,9 @@ namespace Mirle.Agv.Control
                 //log ex
                 return new List<MapSection>();
             }
-        }
+        }       
 
-        public void UpdateMapBarcode(MapBarcodeValues mapBarcode)
+        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues)
         {
             throw new NotImplementedException();
         }

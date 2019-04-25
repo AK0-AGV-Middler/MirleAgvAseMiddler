@@ -7,8 +7,8 @@ using Mirle.Agv.Model;
 
 namespace Mirle.Agv.Control
 {
-    public interface IMapBarcodeTaker
+    public interface IMapBarcodeValuesEvent
     {
-        void UpdateMapBarcode(MapBarcodeValues mapBarcode);
+        void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues);
     }
 }
