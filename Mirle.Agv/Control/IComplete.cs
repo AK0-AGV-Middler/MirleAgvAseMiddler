@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Control
 {
-    class MapBarcodeInterface
+    public interface IComplete
     {
+        void OnTransCmdsCompleteEvent(object sender, EnumCompleteStatus status);
     }
 }

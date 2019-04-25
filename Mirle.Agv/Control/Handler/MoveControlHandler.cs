@@ -13,7 +13,33 @@ namespace Mirle.Agv.Control
         private ConcurrentQueue<MoveCmdInfo> queReadyCmds;
         private EnumMoveState moveState;
         private VehLocation vehLocation;
-        public MapBarcodeValuesWithEvent mapBarcode;
+        //public MapBarcodeValuesWithEvent mapBarcode;
+
+        //值傳遞的事件
+        public event EventHandler<MapBarcodeValues> OnMapBarcodeValuesChange;
+        private MapBarcodeValues mapBarcodeValues;
+        public MapBarcodeValues MapBarcodeValues
+        {
+            get { return mapBarcodeValues; }
+            set
+            {
+                var oldValues = mapBarcodeValues;
+                if (!oldValues.Equals(value))
+                {
+                    mapBarcodeValues = value;
+                    vehLocation.SetMapBarcodeValues(value);
+
+                    //通知其他實體MapBarcodeValues已變成新的value
+                    if (OnMapBarcodeValuesChange != null)
+                    {
+                        OnMapBarcodeValuesChange(this, value);
+                    }
+                }
+            }
+        }
+
+        
+        public event EventHandler<EnumCompleteStatus> OnMoveFinished;
 
         public MoveControlHandler()
         {
@@ -79,7 +105,7 @@ namespace Mirle.Agv.Control
 
         private void UpdateMapBarcodeValues(MapBarcodeValues mapBarcodeValues)
         {
-            mapBarcode.MapBarcodeValues = mapBarcodeValues;
+            MapBarcodeValues = mapBarcodeValues;
             vehLocation.SetMapBarcodeValues(mapBarcodeValues);
         }
 
@@ -93,8 +119,9 @@ namespace Mirle.Agv.Control
         {
             do
             {
-                MapBarcodeValues mapBarcodeValues = new MapBarcodeValues();
                 //TODO : get new mapBarcodeValues from driver
+                MapBarcodeValues mapBarcodeValues = new MapBarcodeValues();
+                //mapBarcodeValues = GetFromDriver();               
                 UpdateMapBarcodeValues(mapBarcodeValues);
                 Thread.Sleep(100);
             } while (moveState == EnumMoveState.Moving);
@@ -106,6 +133,16 @@ namespace Mirle.Agv.Control
             queReadyCmds.Enqueue(moveCmd);
         }
 
+        /// <summary>
+        ///  when move finished, call this function to notice other class instance that move is finished with status
+        /// </summary>
+        private void MoveFinished(EnumCompleteStatus status)
+        {
+            if (OnMoveFinished != null)
+            {
+                OnMoveFinished(this, status);
+            }
+        }
 
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Control
 {
-    class ElmoInterface
+    public class ElmoAgent
     {
     }
 }

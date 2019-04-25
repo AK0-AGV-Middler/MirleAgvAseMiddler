@@ -99,5 +99,24 @@ namespace Mirle.Agv
         Comm
     }
 
+    public enum EnumCompleteStatus
+    {
+        Move = 0,
+        Load = 1,
+        Unload = 2,
+        LoadUnload = 3,
+        Home = 4,
+        MtlHome = 7,
+        MoveToMtl = 10,
+        SystemOut = 11,
+       SystemIn = 12,
+       Cancel = 20,
+       Abort = 21,
+       VehicleAbort = 22,
+       IdMissmatch = 23,
+       IdReadFail = 24,
+       InterlockError = 64
+    }
+
 
 }

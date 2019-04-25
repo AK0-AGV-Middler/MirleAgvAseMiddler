@@ -34,28 +34,4 @@ namespace Mirle.Agv.Model
             return (mapBarcode.X == X) && (mapBarcode.Y == Y) && (mapBarcode.Theta == Theta);
         }
     }
-
-    public class MapBarcodeValuesWithEvent
-    {
-        public event EventHandler<MapBarcodeValues> OnMapBarcodeValuesChange;
-
-        private MapBarcodeValues mapBarcodeValues;
-
-        public MapBarcodeValues MapBarcodeValues
-        {
-            get { return mapBarcodeValues; }
-            set
-            {
-                var oldValues = mapBarcodeValues;
-                if (!oldValues.Equals(value))
-                {
-                    mapBarcodeValues = value;
-                    if (OnMapBarcodeValuesChange != null)
-                    {
-                        OnMapBarcodeValuesChange(this, value);
-                    }
-                }
-            }
-        }
-    }
 }

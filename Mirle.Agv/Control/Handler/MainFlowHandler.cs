@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Mirle.Agv.Control
 {
-    public class MainFlowHandler : IMapBarcodeValuesEvent
+    public class MainFlowHandler : IMapBarcodeValuesEvent, IComplete
     {
         #region Configs
 
@@ -37,11 +37,25 @@ namespace Mirle.Agv.Control
         private bool goNextTransCmd;
         private ConcurrentQueue<MoveCmdInfo> queWaitForReserve;
 
-        private MoveControlHandler moveControlHandler;
-        private MiddleInterface middleHandler;
-        private MapHandler mapHandler;
-        private PlcInterface plcHandler;
+        #region Agent
+
+        private BmsAgent bmsAgent;
+        private ElmoAgent elmoAgent;
+        private MiddleAgent middleAgent;
+        private PlcAgent plcAgent;
+
+        #endregion
+
+        #region Handler
+
+        private BatteryHandler batteryHandler;
         private CoupleHandler coupleHandler;
+        private LoadControlHandler loadControlHandler;
+        private MapHandler mapHandler;
+        private MoveControlHandler moveControlHandler;
+        private UnloadControlHandler unloadControlHandler;
+
+        #endregion
 
         public Vehicle theVehicle;
 
@@ -86,7 +100,9 @@ namespace Mirle.Agv.Control
             ConfigsInitial();
             LoggersInitial();
 
-            ControllerInitial();
+            AgentInitial();
+            HandlerInitial();           
+
             transCmds = new List<TransCmd>();
             queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
 
@@ -95,16 +111,46 @@ namespace Mirle.Agv.Control
             EventInitial();
         }
 
-        private void EventInitial()
+        private void AgentInitial()
         {
-            moveControlHandler.mapBarcode.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
+            bmsAgent = new BmsAgent();
+            elmoAgent = new ElmoAgent();
+            middleAgent = new MiddleAgent();
+            plcAgent = new PlcAgent();
         }
 
-        private void ControllerInitial()
+
+        private void HandlerInitial()
         {
+            batteryHandler = new BatteryHandler();
+            coupleHandler = new CoupleHandler();
+            loadControlHandler = new LoadControlHandler();
+            mapHandler = new MapHandler(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
             moveControlHandler = new MoveControlHandler();
-            middleHandler = new MiddleInterface();
-            mapHandler = new MapHandler(mapConfigs.SectionFilePath,mapConfigs.AddressFilePath);
+            unloadControlHandler = new UnloadControlHandler();
+        }
+
+        private void EventInitial()
+        {
+            //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
+            moveControlHandler.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
+            moveControlHandler.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
+            moveControlHandler.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
+
+            //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            moveControlHandler.OnMoveFinished += OnTransCmdsCompleteEvent;
+            moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsCompleteEvent;
+            moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsCompleteEvent;
+
+            //來自LoadControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            loadControlHandler.OnLoadFinished += OnTransCmdsCompleteEvent;
+            loadControlHandler.OnLoadFinished += middleAgent.OnTransCmdsCompleteEvent;
+            loadControlHandler.OnLoadFinished += mapHandler.OnTransCmdsCompleteEvent;
+
+            //來自UnloadControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            unloadControlHandler.OnUnloadFinished += OnTransCmdsCompleteEvent;
+            unloadControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsCompleteEvent;
+            unloadControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsCompleteEvent;
         }
 
         private void ConfigsInitial()
@@ -196,10 +242,10 @@ namespace Mirle.Agv.Control
 
         private void TransCmdsCheck()
         {
-            while (middleHandler.IsTransCmds())
+            while (middleAgent.IsTransCmds())
             {
-                transCmds = middleHandler.GetTransCmds();
-                middleHandler.ClearTransCmds();
+                transCmds = middleAgent.GetTransCmds();
+                middleAgent.ClearTransCmds();
                 DoTransCmds();
                 Thread.Sleep(mainFlowConfigs.TransCmdsCheckInterval);//can config
             }
@@ -220,7 +266,7 @@ namespace Mirle.Agv.Control
                         case EnumTransCmdType.Move:
                             MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
                             queWaitForReserve.Enqueue(moveCmd);
-                            goNextTransCmd = !moveCmd.IsPrecisePositioning;         
+                            goNextTransCmd = !moveCmd.IsPrecisePositioning;
                             //TODO
                             //MoveComplete(MoveToEnd will set goNextTransCmd into true and go on
                             break;
@@ -274,8 +320,8 @@ namespace Mirle.Agv.Control
             {
                 if (CanAskReserve())
                 {
-                    queWaitForReserve.TryPeek(out MoveCmdInfo peek);    
-                    if (middleHandler.GetReserveFromAgvc(peek.Section.Id))
+                    queWaitForReserve.TryPeek(out MoveCmdInfo peek);
+                    if (middleAgent.GetReserveFromAgvc(peek.Section.Id))
                     {
                         theVehicle.UpdateStatus(peek);
                         moveControlHandler.DoTransfer(peek);
@@ -319,6 +365,11 @@ namespace Mirle.Agv.Control
         public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues)
         {
             theVehicle.UpdateStatus(mapBarcodeValues);
+        }
+
+        public void OnTransCmdsCompleteEvent(object sender, EnumCompleteStatus status)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -147,6 +147,12 @@ namespace Mirle.Agv.Control
         {
             throw new NotImplementedException();
         }
+
+        public void OnTransCmdsCompleteEvent(object sender, EnumCompleteStatus status)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
 }

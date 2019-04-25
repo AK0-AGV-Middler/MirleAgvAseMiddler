@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Control
 {
-    public class PlcInterface
+    public class BmsAgent
     {
-
     }
 }
