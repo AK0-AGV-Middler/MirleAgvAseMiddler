@@ -9,18 +9,11 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public abstract class TransCmd
     {
-        protected ITransferHandler transferHandler;
         protected EnumTransCmdType type;
         public string CmdId { get; set; }
 
-        public TransCmd(ITransferHandler transferHandler)
+        public TransCmd()
         {
-            this.transferHandler = transferHandler;
-        }
-
-        public void DoTransfer()
-        {
-            transferHandler.DoTransfer(this);
         }
 
         public EnumTransCmdType GetType()

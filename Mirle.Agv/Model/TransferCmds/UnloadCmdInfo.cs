@@ -13,7 +13,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public string CassetteId { get; set; }
         public int StageNum { get; set; }
 
-        public UnloadCmdInfo(ITransferHandler transferHandler) : base(transferHandler)
+        public UnloadCmdInfo() : base()
         {
             type = EnumTransCmdType.Unload;
         }

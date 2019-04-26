@@ -9,7 +9,7 @@ using Mirle.Agv.Model.Configs;
 
 namespace Mirle.Agv.Control
 {
-    public class MoveControlHandler : ITransferHandler
+    public class MoveControlHandler 
     {
         private ConcurrentQueue<MoveCmdInfo> queReadyCmds;
         private EnumMoveState moveState;

@@ -221,12 +221,14 @@ namespace Mirle.Agv.Control
                             //TODO
                             //command PLC to DoLoad
                             //LoadComplete will set goNextTransCmd into true and go on
+                            robotControlHandler.DoLoad(loadCmdInfo);
                             break;
                         case EnumTransCmdType.Unload:
                             UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transCmd;
                             //TODO
                             //command PLC to DoLoad
                             //LoadComplete will set goNextTransCmd into true and go on
+                            robotControlHandler.DoUnload(unloadCmdInfo);
                             break;
                         default:
                             break;
