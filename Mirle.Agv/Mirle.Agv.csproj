@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Control\Agent\LoggerAgent.cs" />
     <Compile Include="Control\Agent\Sr2000Agent.cs" />
     <Compile Include="Control\Handler\BatteryHandler.cs" />
     <Compile Include="Control\Handler\ITransferHandler.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Model\Configs\MiddlerConfigs.cs" />
     <Compile Include="Model\Configs\MoveControlConfigs.cs" />
     <Compile Include="Model\Configs\Sr2000Configs.cs" />
+    <Compile Include="Model\LogFormat.cs" />
     <Compile Include="Model\MapPosition.cs" />
     <Compile Include="Model\PlcLoadingSensor.cs" />
     <Compile Include="Model\PlcRobot.cs" />

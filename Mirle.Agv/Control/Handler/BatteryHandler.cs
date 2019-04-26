@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Control
 {
-    class BatteryHandler
+    public class BatteryHandler
     {
+        private LoggerAgent loggerAgent;
+
+        public BatteryHandler()
+        {
+            loggerAgent = LoggerAgent.Instance;
+        }
     }
 }

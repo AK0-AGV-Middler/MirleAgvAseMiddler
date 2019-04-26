@@ -14,11 +14,13 @@ namespace Mirle.Agv.Control
         public event EventHandler<List<TransCmd>> OnAgvcTransCmdGotEvent;
         private List<TransCmd> transCmds;
         private VehLocation vehLocation;
+        private LoggerAgent loggerAgent;
 
         public MiddleAgent()
         {
             transCmds = new List<TransCmd>();
             vehLocation = new VehLocation();
+            loggerAgent = LoggerAgent.Instance;
         }
 
         public void WhenAgvcTransCmdGot(AgvcTransCmd agvcTransCmd)

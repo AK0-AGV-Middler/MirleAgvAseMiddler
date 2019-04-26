@@ -11,6 +11,12 @@ namespace Mirle.Agv.Control
     {
         public event EventHandler<EnumCompleteStatus> OnLoadFinished;
         public event EventHandler<EnumCompleteStatus> OnUnloadFinished;
+        private LoggerAgent loggerAgent;
+
+        public RobotControlHandler()
+        {
+            loggerAgent = LoggerAgent.Instance;
+        }
 
         /// <summary>
         /// when load finished, call this function to notice other class instance that load is finished with status
@@ -39,7 +45,6 @@ namespace Mirle.Agv.Control
         {
             throw new NotImplementedException();
         }
-
 
         public void DoUnload(UnloadCmdInfo unloadCmd)
         {

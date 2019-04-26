@@ -16,6 +16,7 @@ namespace Mirle.Agv.Control
         private VehLocation vehLocation;
         public Sr2000Agent sr2000Agent;
         private MoveControlConfigs moveControlConfigs;
+        private LoggerAgent loggerAgent;
 
         //值傳遞的事件
         public event EventHandler<MapBarcodeReader> OnMapBarcodeValuesChange;
@@ -44,6 +45,7 @@ namespace Mirle.Agv.Control
 
         public MoveControlHandler(MoveControlConfigs moveControlConfigs,Sr2000Configs sr2000Configs)
         {
+            loggerAgent = LoggerAgent.Instance;
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
             this.moveControlConfigs = moveControlConfigs;           
             sr2000Agent = new Sr2000Agent(sr2000Configs);

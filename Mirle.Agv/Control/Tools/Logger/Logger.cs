@@ -23,8 +23,6 @@ namespace Mirle.Agv.Control.Tools.Logger
         private String _LINE_SEPARATE_TOKEN = "$.$";
         private String _FILE_EXTENSION = ".txt";
 
-
-
         private String mbrStrPath = "";
         private String mbrStrFileName = "";
         private String mbrStrDirName = "";
@@ -38,11 +36,9 @@ namespace Mirle.Agv.Control.Tools.Logger
 
         private Thread tCheckOverdueFile;
 
-
         private FileStream mbrObjFileStream;
         private StreamWriter mbrObjFileWriteStream;
         private Encoding mbrObjStreamEncoding = Encoding.UTF8;  // 設定編碼格式字元編碼/解碼 類別
-
 
         private StringBuilder mbrObjStringBuilder = new StringBuilder();
 
@@ -69,8 +65,6 @@ namespace Mirle.Agv.Control.Tools.Logger
         private static StreamWriter aDebugFileWriteStream;
         private static Object aDebugLockObject = new Object();
 
-
-
         public String LINE_SEPARATE_TOKEN { get { return _LINE_SEPARATE_TOKEN; } }
         public String FILE_EXTENSION { get { return _FILE_EXTENSION; } }
 
@@ -84,7 +78,6 @@ namespace Mirle.Agv.Control.Tools.Logger
             get { return this.mbrIntLogLevel; }
             set { this.mbrIntLogLevel = value; }
         }
-
         public String LogFileName
         {
             get { return this.mbrStrFileName; }
@@ -105,15 +98,11 @@ namespace Mirle.Agv.Control.Tools.Logger
             set => this.mbrLngLogMaxSize = value * MB;
         }
 
-
-
-
         public void SetConfiguration(String dateFormat, String timeFormat)
         {
             this.aDateFormat = dateFormat;
             this.aTimeFormat = timeFormat;
         }
-
 
         private void AddDebugLog(String sFunctionName, String sMessage)
         {
@@ -411,7 +400,6 @@ namespace Mirle.Agv.Control.Tools.Logger
             }
         }
 
-
         private static bool IsFileLocked(Exception exception)
         {
             int errorCode = Marshal.GetHRForException(exception) & ((1 << 16) - 1);
@@ -445,7 +433,6 @@ namespace Mirle.Agv.Control.Tools.Logger
             return true;
         }
         #endregion
-
 
         public static List<CategoryTypeBean> ReadLogIniFile(String sIniFilePath)
         {
@@ -502,8 +489,6 @@ namespace Mirle.Agv.Control.Tools.Logger
             return listCategoryTypeBean;
 
         }
-
-
 
     }
 }

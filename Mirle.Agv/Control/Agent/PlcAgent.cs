@@ -8,6 +8,11 @@ namespace Mirle.Agv.Control
 {
     public class PlcAgent
     {
+        private LoggerAgent loggerAgent;
 
+        public PlcAgent()
+        {
+            loggerAgent = LoggerAgent.Instance;
+        }
     }
 }

@@ -37,8 +37,6 @@ namespace Mirle.Agv.Control.Tests
     }
 
 
-
-
     [TestFixture()]
     public class MainFlowHandlerTests
     {
@@ -47,9 +45,6 @@ namespace Mirle.Agv.Control.Tests
         {
             MainFlowHandler mainFlow = new MainFlowHandler();
 
-            mainFlow.DebugLog("ABCDE");
-
-            Console.WriteLine();
 
             Assert.AreEqual(1, 1);
         }

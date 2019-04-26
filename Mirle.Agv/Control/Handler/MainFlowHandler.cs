@@ -25,16 +25,6 @@ namespace Mirle.Agv.Control
 
         #endregion
 
-        #region Loggers
-        //TODO : restruct by some design pattern
-        private Logger debugLogger;
-        private Logger infoLogger;
-        private Logger errorLogger;
-        private Logger commLogger;
-        private Dictionary<string, Logger> dicLoggers;
-
-        #endregion
-
         private List<TransCmd> transCmds;
         private bool goNextTransCmd;
         private ConcurrentQueue<MoveCmdInfo> queWaitForReserve;
@@ -45,6 +35,7 @@ namespace Mirle.Agv.Control
         private ElmoAgent elmoAgent;
         private MiddleAgent middleAgent;
         private PlcAgent plcAgent;
+        private LoggerAgent loggerAgent;
 
         #endregion
 
@@ -59,42 +50,6 @@ namespace Mirle.Agv.Control
         #endregion
 
         public Vehicle theVehicle;
-
-        #region LogFunctions
-
-        public void DebugLog(string msg)
-        {
-            if (debugLogger != null)
-            {
-                debugLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
-        }
-
-        public void InfoLog(string msg)
-        {
-            if (infoLogger != null)
-            {
-                infoLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
-        }
-
-        public void ErrorLog(string msg)
-        {
-            if (errorLogger != null)
-            {
-                errorLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
-        }
-
-        public void CommLog(string msg)
-        {
-            if (commLogger != null)
-            {
-                commLogger.SaveLogFile("sCategory", "sLogLevel", "sClassFunctionName", "Device", "CarrierId", msg);
-            }
-        }
-
-        #endregion
 
         public MainFlowHandler()
         {
@@ -152,34 +107,7 @@ namespace Mirle.Agv.Control
         private void LoggersInitial()
         {
             //TODO : make abstract class with an logger and its bean and a function do log, make 4 level subclass imp this abstract class
-            dicLoggers = new Dictionary<string, Logger>();
-
-            List<CategoryTypeBean> listCategory = Logger.ReadLogIniFile(mainFlowConfigs.LogConfigPath);
-            foreach (CategoryTypeBean bean in listCategory)
-            {
-                Logger logger = new Logger(bean);
-                dicLoggers.Add(logger.LogFileName, logger);
-            }
-
-            if (dicLoggers.ContainsKey("Debug"))
-            {
-                debugLogger = dicLoggers["Debug"];
-            }
-
-            if (dicLoggers.ContainsKey("Info"))
-            {
-                infoLogger = dicLoggers["Info"];
-            }
-
-            if (dicLoggers.ContainsKey("Error"))
-            {
-                errorLogger = dicLoggers["Error"];
-            }
-
-            if (dicLoggers.ContainsKey("Comm"))
-            {
-                commLogger = dicLoggers["Comm"];
-            }
+            loggerAgent = LoggerAgent.Instance;
         }
 
         private void AgentInitial()
@@ -243,8 +171,11 @@ namespace Mirle.Agv.Control
             }
             catch (Exception ex)
             {
-                //log ex
-                throw;
+                string className = GetType().Name;
+                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                string classMethodName = className + ":" + methodName;
+                LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", ex.StackTrace);
+                loggerAgent.LogError(logFormat);
             }
         }
 
@@ -386,7 +317,6 @@ namespace Mirle.Agv.Control
         {
             throw new NotImplementedException();
         }
-
 
     }
 }

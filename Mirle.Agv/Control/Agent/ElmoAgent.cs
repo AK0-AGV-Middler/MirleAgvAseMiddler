@@ -8,5 +8,11 @@ namespace Mirle.Agv.Control
 {
     public class ElmoAgent
     {
+        private LoggerAgent loggerAgent;
+
+        public ElmoAgent()
+        {
+            loggerAgent = LoggerAgent.Instance;
+        }
     }
 }

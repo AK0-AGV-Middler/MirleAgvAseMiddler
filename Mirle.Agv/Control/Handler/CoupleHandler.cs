@@ -8,5 +8,11 @@ namespace Mirle.Agv.Control
 {
     public class CoupleHandler
     {
+        private LoggerAgent loggerAgent;
+
+        public CoupleHandler()
+        {
+            loggerAgent = LoggerAgent.Instance;
+        }
     }
 }

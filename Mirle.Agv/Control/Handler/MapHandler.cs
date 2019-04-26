@@ -11,6 +11,7 @@ namespace Mirle.Agv.Control
         private Dictionary<string, MapSection> SectionTable = new Dictionary<string, MapSection>();
         private Dictionary<string, List<MapSection>> SectionTableByAddress = new Dictionary<string, List<MapSection>>();
         private Dictionary<string, MapAddress> AddressTable = new Dictionary<string, MapAddress>();
+        private LoggerAgent loggerAgent;
 
         private void GetSectionTable(string SectionFilePath)
         {
@@ -70,6 +71,7 @@ namespace Mirle.Agv.Control
 
         public MapHandler(string sectionFilePath, string addressFilePath)
         {
+            loggerAgent = LoggerAgent.Instance;
             GetMap(sectionFilePath, addressFilePath);
         }
 

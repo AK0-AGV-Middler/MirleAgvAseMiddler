@@ -8,5 +8,11 @@ namespace Mirle.Agv.Control
 {
     public class BmsAgent
     {
+        private LoggerAgent loggerAgent;
+
+        public BmsAgent()
+        {
+            loggerAgent = LoggerAgent.Instance;
+        }
     }
 }
