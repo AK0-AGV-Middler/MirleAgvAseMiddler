@@ -8,6 +8,6 @@ namespace Mirle.Agv.Control
 {
     public interface IComplete
     {
-        void OnTransCmdsCompleteEvent(object sender, EnumCompleteStatus status);
+        void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status);
     }
 }

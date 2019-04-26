@@ -77,6 +77,7 @@ namespace Mirle.Agv.Control
             }
 
         }
+
         private void GetAddressTable(string AddressFilePath)
         {
             Dictionary<string, int> HeaderTable = new Dictionary<string, int>();
@@ -118,6 +119,7 @@ namespace Mirle.Agv.Control
                 return new MapSection();
             }
         }
+
         public MapAddress GetMapAddress(string idx)
         {
             try
@@ -130,6 +132,7 @@ namespace Mirle.Agv.Control
                 return new MapAddress();
             }
         }
+
         public List<MapSection> GetSectionByAddress(string idx)
         {
             try
@@ -148,7 +151,7 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
-        public void OnTransCmdsCompleteEvent(object sender, EnumCompleteStatus status)
+        public void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status)
         {
             throw new NotImplementedException();
         }

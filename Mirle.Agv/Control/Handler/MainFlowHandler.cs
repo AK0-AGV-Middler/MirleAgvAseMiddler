@@ -119,7 +119,6 @@ namespace Mirle.Agv.Control
             plcAgent = new PlcAgent();
         }
 
-
         private void HandlerInitial()
         {
             batteryHandler = new BatteryHandler();
@@ -138,19 +137,19 @@ namespace Mirle.Agv.Control
             moveControlHandler.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
 
             //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            moveControlHandler.OnMoveFinished += OnTransCmdsCompleteEvent;
-            moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsCompleteEvent;
-            moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsCompleteEvent;
+            moveControlHandler.OnMoveFinished += OnTransCmdsFinishedEvent;
+            moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsFinishedEvent;
+            moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
 
             //來自LoadControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            loadControlHandler.OnLoadFinished += OnTransCmdsCompleteEvent;
-            loadControlHandler.OnLoadFinished += middleAgent.OnTransCmdsCompleteEvent;
-            loadControlHandler.OnLoadFinished += mapHandler.OnTransCmdsCompleteEvent;
+            loadControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
+            loadControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
+            loadControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
             //來自UnloadControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            unloadControlHandler.OnUnloadFinished += OnTransCmdsCompleteEvent;
-            unloadControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsCompleteEvent;
-            unloadControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsCompleteEvent;
+            unloadControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
+            unloadControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
+            unloadControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
         }
 
         private void ConfigsInitial()
@@ -218,7 +217,6 @@ namespace Mirle.Agv.Control
         private void VehicleInitial()
         {
             theVehicle = Vehicle.GetInstance();
-
         }
 
         private void MainFlowHandlerOn()
@@ -238,6 +236,13 @@ namespace Mirle.Agv.Control
                 //log ex
                 throw;
             }
+        }
+
+        private void OnAgvcTransCmdGotEvent()
+        {
+            transCmds = middleAgent.GetTransCmds();
+            middleAgent.ClearTransCmds();
+            DoTransCmds();
         }
 
         private void TransCmdsCheck()
@@ -367,7 +372,7 @@ namespace Mirle.Agv.Control
             theVehicle.UpdateStatus(mapBarcodeValues);
         }
 
-        public void OnTransCmdsCompleteEvent(object sender, EnumCompleteStatus status)
+        public void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status)
         {
             throw new NotImplementedException();
         }
