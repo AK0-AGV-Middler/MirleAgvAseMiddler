@@ -55,8 +55,7 @@
   <ItemGroup>
     <Compile Include="Control\Handler\BatteryHandler.cs" />
     <Compile Include="Control\Handler\ITransferHandler.cs" />
-    <Compile Include="Control\Handler\LoadControlHandler.cs" />
-    <Compile Include="Control\Handler\UnloadControlHandler.cs" />
+    <Compile Include="Control\Handler\RobotControlHandler.cs" />
     <Compile Include="Control\IComplete.cs" />
     <Compile Include="Control\IMapBarcodeValuesEvent.cs" />
     <Compile Include="Control\Agent\BmsAgent.cs" />

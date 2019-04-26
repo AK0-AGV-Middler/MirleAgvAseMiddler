@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Control
 {
-    public interface IComplete
+    public interface ICmdFinished
     {
         void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status);
     }

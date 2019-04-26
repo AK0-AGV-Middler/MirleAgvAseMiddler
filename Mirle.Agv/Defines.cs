@@ -109,13 +109,13 @@ namespace Mirle.Agv
         MtlHome = 7,
         MoveToMtl = 10,
         SystemOut = 11,
-       SystemIn = 12,
-       Cancel = 20,
-       Abort = 21,
-       VehicleAbort = 22,
-       IdMissmatch = 23,
-       IdReadFail = 24,
-       InterlockError = 64
+        SystemIn = 12,
+        Cancel = 20,
+        Abort = 21,
+        VehicleAbort = 22,
+        IdMissmatch = 23,
+        IdReadFail = 24,
+        InterlockError = 64
     }
 
 

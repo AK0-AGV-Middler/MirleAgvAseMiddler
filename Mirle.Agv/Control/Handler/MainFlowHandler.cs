@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Mirle.Agv.Control
 {
-    public class MainFlowHandler : IMapBarcodeValuesEvent, IComplete
+    public class MainFlowHandler : IMapBarcodeValuesEvent, ICmdFinished
     {
         #region Configs
 
@@ -50,11 +50,9 @@ namespace Mirle.Agv.Control
 
         private BatteryHandler batteryHandler;
         private CoupleHandler coupleHandler;
-        private LoadControlHandler loadControlHandler;
         private MapHandler mapHandler;
         private MoveControlHandler moveControlHandler;
-        private UnloadControlHandler unloadControlHandler;
-
+        private RobotControlHandler robotControlHandler;
         #endregion
 
         public Vehicle theVehicle;
@@ -123,10 +121,9 @@ namespace Mirle.Agv.Control
         {
             batteryHandler = new BatteryHandler();
             coupleHandler = new CoupleHandler();
-            loadControlHandler = new LoadControlHandler();
             mapHandler = new MapHandler(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
             moveControlHandler = new MoveControlHandler();
-            unloadControlHandler = new UnloadControlHandler();
+            robotControlHandler = new RobotControlHandler();
         }
 
         private void EventInitial()
@@ -141,15 +138,15 @@ namespace Mirle.Agv.Control
             moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsFinishedEvent;
             moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
 
-            //來自LoadControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            loadControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
-            loadControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
-            loadControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
+            //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            robotControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
+            robotControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
+            robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
-            //來自UnloadControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            unloadControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
-            unloadControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
-            unloadControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+            //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
+            robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
+            robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
         }
 
         private void ConfigsInitial()
