@@ -5,52 +5,66 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Mirle.Agv.Model.Configs;
-
+using Mirle.Agv.Control.Tools;
+using System.IO;
 
 namespace Mirle.Agv.Control
 {
-    public class MoveControlHandler 
+    public class MoveControlHandler
     {
+        private LoggerAgent loggerAgent;
         private ConcurrentQueue<MoveCmdInfo> queReadyCmds;
         private EnumMoveState moveState;
         private VehLocation vehLocation;
         public Sr2000Agent sr2000Agent;
         private MoveControlConfigs moveControlConfigs;
-        private LoggerAgent loggerAgent;
-
-        //值傳遞的事件
-        public event EventHandler<MapBarcodeReader> OnMapBarcodeValuesChange;
-        private MapBarcodeReader mapBarcodeValues;
-        public MapBarcodeReader MapBarcodeValues
-        {
-            get { return mapBarcodeValues; }
-            set
-            {
-                var oldValues = mapBarcodeValues;
-                if (!oldValues.Equals(value))
-                {
-                    mapBarcodeValues = value;
-                    vehLocation.SetMapBarcodeValues(value);
-
-                    //通知其他實體MapBarcodeValues已變成新的value
-                    if (OnMapBarcodeValuesChange != null)
-                    {
-                        OnMapBarcodeValuesChange(this, value);
-                    }
-                }
-            }
-        }
+        private Dictionary<string, ElmoSingleAxisConfigs> dicElmoSingleAxisConfigs;
+        private ElmoAxisConfigs elmoAxisConfigs;
 
         public event EventHandler<EnumCompleteStatus> OnMoveFinished;
 
-        public MoveControlHandler(MoveControlConfigs moveControlConfigs,Sr2000Configs sr2000Configs)
+        public MoveControlHandler(MoveControlConfigs moveControlConfigs, Sr2000Configs sr2000Configs)
         {
             loggerAgent = LoggerAgent.Instance;
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
-            this.moveControlConfigs = moveControlConfigs;           
+            this.moveControlConfigs = moveControlConfigs;
             sr2000Agent = new Sr2000Agent(sr2000Configs);
+            AxisInitial();
+
             moveState = EnumMoveState.Idle;
             RunThreads();
+        }
+
+        private void AxisInitial()
+        {
+            var path = Path.Combine(Environment.CurrentDirectory, "AxisConfig.ini");
+            ConfigHandler configHandler = new ConfigHandler(path);
+
+            elmoAxisConfigs = new ElmoAxisConfigs();
+            int.TryParse(configHandler.GetString("ElmoAxis", "AxisNum", "18"), out int tempAxisNum);
+            elmoAxisConfigs.AxisNum = tempAxisNum;
+            elmoAxisConfigs.SectionName = configHandler.GetString("ElmoAxis", "SectionName", "Axis");
+
+            for (int i = 0; i < elmoAxisConfigs.AxisNum; i++)
+            {
+                int index = i + 1;
+                var sectionName = elmoAxisConfigs.SectionName + index.ToString();
+
+                ElmoSingleAxisConfigs elmoSingleAxisConfigs = new ElmoSingleAxisConfigs();
+                elmoSingleAxisConfigs.AxisAlias = configHandler.GetString(sectionName, "AxisAlias", "XXX");
+                elmoSingleAxisConfigs.AxisName = configHandler.GetString(sectionName, "AxisName", "XXX");
+                elmoSingleAxisConfigs.IsGroup = bool.Parse(configHandler.GetString(sectionName, "IsGroup", "False"));
+                elmoSingleAxisConfigs.AxisID = int.Parse(configHandler.GetString(sectionName, "AxisID", "100"));
+                elmoSingleAxisConfigs.MotorResolution = double.Parse(configHandler.GetString(sectionName, "MotorResolution", "2.3"));
+                elmoSingleAxisConfigs.PulseUnit = double.Parse(configHandler.GetString(sectionName, "PulseUnit", "4.5"));
+                elmoSingleAxisConfigs.Velocity = double.Parse(configHandler.GetString(sectionName, "Velocity", "6.7"));
+                elmoSingleAxisConfigs.Acceleration = double.Parse(configHandler.GetString(sectionName, "Acceleration", "8.9"));
+                elmoSingleAxisConfigs.Deceleration = double.Parse(configHandler.GetString(sectionName, "Deceleration", "0.1"));
+                elmoSingleAxisConfigs.Jerk = double.Parse(configHandler.GetString(sectionName, "Jerk", "2.3"));
+
+
+                dicElmoSingleAxisConfigs.Add(elmoSingleAxisConfigs.AxisName, elmoSingleAxisConfigs);
+            }
         }
 
         public void RunThreads()

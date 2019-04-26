@@ -75,6 +75,8 @@
     <Compile Include="Control\Tools\XmlHandler.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Defines.cs" />
+    <Compile Include="Model\Configs\ElmoAxisConfigs.cs" />
+    <Compile Include="Model\Configs\ElmoSingleAxisConfigs.cs" />
     <Compile Include="Model\Configs\MainFlowConfigs.cs" />
     <Compile Include="Model\Configs\MapConfigs.cs" />
     <Compile Include="Model\Configs\MiddlerConfigs.cs" />
