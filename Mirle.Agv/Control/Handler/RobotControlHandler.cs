@@ -12,7 +12,6 @@ namespace Mirle.Agv.Control
         public event EventHandler<EnumCompleteStatus> OnLoadFinished;
         public event EventHandler<EnumCompleteStatus> OnUnloadFinished;
 
-
         /// <summary>
         /// when load finished, call this function to notice other class instance that load is finished with status
         /// </summary>

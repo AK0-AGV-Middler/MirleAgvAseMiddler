@@ -18,7 +18,6 @@ namespace Mirle.Agv.Model.TransferCmds
             this.transferHandler = transferHandler;
         }
 
-
         public void DoTransfer()
         {
             transferHandler.DoTransfer(this);
@@ -43,7 +42,7 @@ namespace Mirle.Agv.Model.TransferCmds
                     UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)this;
                     return unloadCmdInfo;
                 default:
-                    return new MoveCmdInfo(new MoveControlHandler());
+                    return null;
             }            
         }
     }

@@ -66,7 +66,7 @@ namespace Mirle.Agv.Control
             return tempTransCmds;
         }
 
-        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues)
+        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
         {            
             vehLocation.SetMapBarcodeValues(mapBarcodeValues);
             //TODO: Make a Position change report from mapBarcode and send to AGVC

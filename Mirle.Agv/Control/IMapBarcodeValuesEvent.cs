@@ -9,6 +9,6 @@ namespace Mirle.Agv.Control
 {
     public interface IMapBarcodeValuesEvent
     {
-        void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues);
+        void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues);
     }
 }

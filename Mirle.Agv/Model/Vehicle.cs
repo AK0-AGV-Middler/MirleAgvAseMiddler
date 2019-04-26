@@ -56,7 +56,7 @@ namespace Mirle.Agv.Model
             this.vehLoacation = vehLoacation;
         }
 
-        public void UpdateStatus(MapBarcodeValues mapBarcode)
+        public void UpdateStatus(MapBarcodeReader mapBarcode)
         {
             this.vehLoacation.SetMapBarcodeValues(mapBarcode);
         }

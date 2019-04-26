@@ -4,15 +4,15 @@ namespace Mirle.Agv.Model
 {
     public class VehLocation
     {
-        private MapBarcodeValues mapBarcodeValues;
+        private MapBarcodeReader mapBarcodeValues;
         private List<double> encoderValues;
        
-        public void SetMapBarcodeValues(MapBarcodeValues mapBarcodeValues)
+        public void SetMapBarcodeValues(MapBarcodeReader mapBarcodeValues)
         {
             this.mapBarcodeValues = mapBarcodeValues;
         }
 
-        public MapBarcodeValues GetBarcodeValues()
+        public MapBarcodeReader GetBarcodeValues()
         {
             return mapBarcodeValues;
         }

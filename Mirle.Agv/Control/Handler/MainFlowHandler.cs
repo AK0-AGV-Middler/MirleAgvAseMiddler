@@ -17,9 +17,11 @@ namespace Mirle.Agv.Control
 
         private string configPath;
         private ConfigHandler configHandler;
-        private MainFlowConfigs mainFlowConfigs;
         private MiddlerConfigs middlerConfigs;
+        private Sr2000Configs sr2000Configs;
+        private MainFlowConfigs mainFlowConfigs;
         private MapConfigs mapConfigs;
+        private MoveControlConfigs moveControlConfigs;
 
         #endregion
 
@@ -53,6 +55,7 @@ namespace Mirle.Agv.Control
         private MapHandler mapHandler;
         private MoveControlHandler moveControlHandler;
         private RobotControlHandler robotControlHandler;
+
         #endregion
 
         public Vehicle theVehicle;
@@ -99,7 +102,7 @@ namespace Mirle.Agv.Control
             LoggersInitial();
 
             AgentInitial();
-            HandlerInitial();           
+            HandlerInitial();
 
             transCmds = new List<TransCmd>();
             queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
@@ -107,46 +110,8 @@ namespace Mirle.Agv.Control
             VehicleInitial();
 
             EventInitial();
-        }
 
-        private void AgentInitial()
-        {
-            bmsAgent = new BmsAgent();
-            elmoAgent = new ElmoAgent();
-            middleAgent = new MiddleAgent();
-            plcAgent = new PlcAgent();
-        }
-
-        private void HandlerInitial()
-        {
-            batteryHandler = new BatteryHandler();
-            coupleHandler = new CoupleHandler();
-            mapHandler = new MapHandler(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
-            moveControlHandler = new MoveControlHandler();
-            robotControlHandler = new RobotControlHandler();
-        }
-
-        private void EventInitial()
-        {
-            //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
-            moveControlHandler.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
-            moveControlHandler.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
-            moveControlHandler.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
-
-            //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            moveControlHandler.OnMoveFinished += OnTransCmdsFinishedEvent;
-            moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsFinishedEvent;
-            moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
-
-            //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            robotControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
-            robotControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
-            robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
-
-            //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
-            robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
-            robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+            RunThreads();
         }
 
         private void ConfigsInitial()
@@ -176,6 +141,12 @@ namespace Mirle.Agv.Control
             mapConfigs = new MapConfigs();
             mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "XXX.csv");
             mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "YYY.csv");
+
+            sr2000Configs = new Sr2000Configs();
+            int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
+            sr2000Configs.TrackingInterval = tempTrackingInterval;
+
+            moveControlConfigs = new MoveControlConfigs();
         }
 
         private void LoggersInitial()
@@ -211,12 +182,54 @@ namespace Mirle.Agv.Control
             }
         }
 
+        private void AgentInitial()
+        {
+            bmsAgent = new BmsAgent();
+            elmoAgent = new ElmoAgent();
+            middleAgent = new MiddleAgent();
+            plcAgent = new PlcAgent();
+        }
+
+        private void HandlerInitial()
+        {
+            batteryHandler = new BatteryHandler();
+            coupleHandler = new CoupleHandler();
+            mapHandler = new MapHandler(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
+            moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs);
+            robotControlHandler = new RobotControlHandler();
+        }
+
         private void VehicleInitial()
         {
             theVehicle = Vehicle.GetInstance();
         }
 
-        private void MainFlowHandlerOn()
+        private void EventInitial()
+        {
+            //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
+            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
+            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
+            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
+            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
+
+
+            //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            moveControlHandler.OnMoveFinished += OnTransCmdsFinishedEvent;
+            moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsFinishedEvent;
+            moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
+
+            //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            robotControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
+            robotControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
+            robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
+
+            //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+            robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
+            robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
+            robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+        }
+
+        private void RunThreads()
         {
             try
             {
@@ -359,12 +372,12 @@ namespace Mirle.Agv.Control
 
         }
 
-        public void UpdateMapBarcode(MapBarcodeValues mapBarcode)
+        public void UpdateMapBarcode(MapBarcodeReader mapBarcode)
         {
             theVehicle.UpdateStatus(mapBarcode);
         }
 
-        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeValues mapBarcodeValues)
+        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
         {
             theVehicle.UpdateStatus(mapBarcodeValues);
         }
@@ -373,5 +386,7 @@ namespace Mirle.Agv.Control
         {
             throw new NotImplementedException();
         }
+
+
     }
 }

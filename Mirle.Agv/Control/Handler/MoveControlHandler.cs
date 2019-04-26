@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Mirle.Agv.Model.Configs;
 
 
 namespace Mirle.Agv.Control
@@ -13,12 +14,13 @@ namespace Mirle.Agv.Control
         private ConcurrentQueue<MoveCmdInfo> queReadyCmds;
         private EnumMoveState moveState;
         private VehLocation vehLocation;
-        //public MapBarcodeValuesWithEvent mapBarcode;
+        public Sr2000Agent sr2000Agent;
+        private MoveControlConfigs moveControlConfigs;
 
         //值傳遞的事件
-        public event EventHandler<MapBarcodeValues> OnMapBarcodeValuesChange;
-        private MapBarcodeValues mapBarcodeValues;
-        public MapBarcodeValues MapBarcodeValues
+        public event EventHandler<MapBarcodeReader> OnMapBarcodeValuesChange;
+        private MapBarcodeReader mapBarcodeValues;
+        public MapBarcodeReader MapBarcodeValues
         {
             get { return mapBarcodeValues; }
             set
@@ -38,12 +40,13 @@ namespace Mirle.Agv.Control
             }
         }
 
-        
         public event EventHandler<EnumCompleteStatus> OnMoveFinished;
 
-        public MoveControlHandler()
+        public MoveControlHandler(MoveControlConfigs moveControlConfigs,Sr2000Configs sr2000Configs)
         {
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
+            this.moveControlConfigs = moveControlConfigs;           
+            sr2000Agent = new Sr2000Agent(sr2000Configs);
             moveState = EnumMoveState.Idle;
             RunThreads();
         }
@@ -52,10 +55,6 @@ namespace Mirle.Agv.Control
         {
             try
             {
-                Thread thdUpdateLocation = new Thread(new ThreadStart(Tracking2DcodeReader));
-                thdUpdateLocation.IsBackground = true;
-                thdUpdateLocation.Start();
-
                 Thread thdTryDeQueReadyCmds = new Thread(new ThreadStart(TryDeQueReadyCmds));
                 thdTryDeQueReadyCmds.IsBackground = true;
                 thdTryDeQueReadyCmds.Start();
@@ -103,9 +102,8 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
-        private void UpdateMapBarcodeValues(MapBarcodeValues mapBarcodeValues)
+        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
         {
-            MapBarcodeValues = mapBarcodeValues;
             vehLocation.SetMapBarcodeValues(mapBarcodeValues);
         }
 
@@ -113,18 +111,6 @@ namespace Mirle.Agv.Control
         {
             //drive elmo to move the vehicle
             throw new NotImplementedException();
-        }
-
-        private void Tracking2DcodeReader()
-        {
-            do
-            {
-                //TODO : get new mapBarcodeValues from driver
-                MapBarcodeValues mapBarcodeValues = new MapBarcodeValues();
-                //mapBarcodeValues = GetFromDriver();               
-                UpdateMapBarcodeValues(mapBarcodeValues);
-                Thread.Sleep(100);
-            } while (moveState == EnumMoveState.Moving);
         }
 
         public void DoTransfer(TransCmd transCmd)
@@ -143,6 +129,8 @@ namespace Mirle.Agv.Control
                 OnMoveFinished(this, status);
             }
         }
+
+
 
     }
 }

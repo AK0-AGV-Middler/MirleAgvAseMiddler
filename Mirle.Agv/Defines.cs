@@ -118,5 +118,12 @@ namespace Mirle.Agv
         InterlockError = 64
     }
 
+    public enum EnumMapBarcodeReaderSide
+    {
+        None,
+        Left,
+        Right
+    }
+
 
 }
