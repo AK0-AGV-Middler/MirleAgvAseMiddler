@@ -9,8 +9,8 @@ namespace Mirle.Agv.Model
 {
     public class Vehicle
     {
-        private static Vehicle theVehicle;
-        private static object theLock = new object();
+        private static readonly Vehicle theVehicle = new Vehicle();
+        public static Vehicle Instance { get { return theVehicle; } }
 
         private Battery battery;
         private VehLocation vehLoacation;
@@ -20,7 +20,7 @@ namespace Mirle.Agv.Model
         private TransCmd transCmd;
         private LoggerAgent loggerAgent;
 
-        public Vehicle()
+        private Vehicle()
         {
             battery = new Battery(50, 100);   //50,100 can config
             vehLoacation = new VehLocation();
@@ -29,21 +29,6 @@ namespace Mirle.Agv.Model
             loggerAgent = LoggerAgent.Instance;
         }
 
-        public static Vehicle GetInstance()
-        {
-            if (theVehicle == null)
-            {
-                lock (theLock)
-                {
-                    if (theVehicle == null)
-                    {
-                        theVehicle = new Vehicle();
-                    }
-                }
-            }
-
-            return theVehicle;
-        }
 
         #region Setter
 

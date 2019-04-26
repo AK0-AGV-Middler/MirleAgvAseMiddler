@@ -129,7 +129,7 @@ namespace Mirle.Agv.Control
 
         private void VehicleInitial()
         {
-            theVehicle = Vehicle.GetInstance();
+            theVehicle = Vehicle.Instance;
         }
 
         private void EventInitial()
