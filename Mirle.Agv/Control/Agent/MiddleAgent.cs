@@ -11,7 +11,8 @@ namespace Mirle.Agv.Control
 {
     public class MiddleAgent : IMapBarcodeValuesEvent
     {
-        public event EventHandler<List<TransCmd>> OnAgvcTransCmdGotEvent;
+        public event EventHandler<List<TransCmd>> OnMiddlerGetsNewTransCmdsEvent;
+        
         private List<TransCmd> transCmds;
         private VehLocation vehLocation;
         private LoggerAgent loggerAgent;
@@ -25,19 +26,18 @@ namespace Mirle.Agv.Control
 
         public void WhenAgvcTransCmdGot(AgvcTransCmd agvcTransCmd)
         {
-            if (AgvcTransCmdPreCheck())
+            if (CanVehDoTransfer())
             {
                 ConvertAgvcTransCmdIntoList(agvcTransCmd);
-                if (OnAgvcTransCmdGotEvent != null)
+                if (OnMiddlerGetsNewTransCmdsEvent != null)
                 {
-                    OnAgvcTransCmdGotEvent.Invoke(this, transCmds);
+                    OnMiddlerGetsNewTransCmdsEvent.Invoke(this, transCmds);
                 }
-            }            
+            }
         }
 
-        private bool AgvcTransCmdPreCheck()
+        private bool CanVehDoTransfer()
         {
-            //根據命令內容、當前車輛位置、當前車輛電量等資訊判斷這筆命令是否可行
             throw new NotImplementedException();
         }
 

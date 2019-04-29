@@ -35,7 +35,8 @@ namespace Mirle.Agv.Model.TransferCmds
                     UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)this;
                     return unloadCmdInfo;
                 default:
-                    return null;
+                    EmptyTransCmd emptyTransCmd = (EmptyTransCmd)this;
+                    return emptyTransCmd;
             }            
         }
     }

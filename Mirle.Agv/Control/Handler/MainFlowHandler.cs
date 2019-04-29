@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Mirle.Agv.Control.Handler.TransCmdsSteps;
 
 namespace Mirle.Agv.Control
 {
@@ -23,11 +24,28 @@ namespace Mirle.Agv.Control
         private MapConfigs mapConfigs;
         private MoveControlConfigs moveControlConfigs;
 
+
         #endregion
 
+        #region TransCmds
+
         private List<TransCmd> transCmds;
-        private bool goNextTransCmd;
         private ConcurrentQueue<MoveCmdInfo> queWaitForReserve;
+        private bool goNextTransCmd;
+        public bool GoNextTransCmd
+        {
+            get { return goNextTransCmd; }
+            set { goNextTransCmd = value; }
+        }
+        private int transCmdsIndex;
+        public int TransCmdsIndex
+        {
+            get { return transCmdsIndex; }
+            set { transCmdsIndex = value; }
+        }
+        private ITransCmdsStep step;
+
+        #endregion
 
         #region Agent
 
@@ -66,7 +84,7 @@ namespace Mirle.Agv.Control
 
             EventInitial();
 
-            RunThreads();
+            //RunThreads();
         }
 
         private void ConfigsInitial()
@@ -134,12 +152,15 @@ namespace Mirle.Agv.Control
 
         private void EventInitial()
         {
+            //
+
+            middleAgent.OnMiddlerGetsNewTransCmdsEvent += OnMiddlerGetsNewTransCmds;
+
             //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
             moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
             moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
             moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
             moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
-
 
             //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
             moveControlHandler.OnMoveFinished += OnTransCmdsFinishedEvent;
@@ -155,19 +176,21 @@ namespace Mirle.Agv.Control
             robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
             robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
             robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+
+
         }
 
         private void RunThreads()
         {
             try
             {
-                Thread thdGetAllPartialJobs = new Thread(new ThreadStart(TransCmdsCheck));
-                thdGetAllPartialJobs.IsBackground = true;
-                thdGetAllPartialJobs.Start();
+                //Thread thdGetAllPartialJobs = new Thread(new ThreadStart(TransCmdsCheck));
+                //thdGetAllPartialJobs.IsBackground = true;
+                //thdGetAllPartialJobs.Start();
 
-                Thread thdAskReserve = new Thread(new ThreadStart(AskReserve));
-                thdAskReserve.IsBackground = true;
-                thdAskReserve.Start();
+                //Thread thdAskReserve = new Thread(new ThreadStart(AskReserve));
+                //thdAskReserve.IsBackground = true;
+                //thdAskReserve.Start();
             }
             catch (Exception ex)
             {
@@ -179,66 +202,90 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private void OnAgvcTransCmdGotEvent()
+        private void OnMiddlerGetsNewTransCmds(object sender, List<TransCmd> transCmds)
         {
-            transCmds = middleAgent.GetTransCmds();
-            middleAgent.ClearTransCmds();
-            DoTransCmds();
-        }
-
-        private void TransCmdsCheck()
-        {
-            while (middleAgent.IsTransCmds())
+            if (CanGetNewTransCmds())
             {
-                transCmds = middleAgent.GetTransCmds();
+                this.transCmds = transCmds;
+                transCmds.Add(new EmptyTransCmd());
                 middleAgent.ClearTransCmds();
-                DoTransCmds();
-                Thread.Sleep(mainFlowConfigs.TransCmdsCheckInterval);//can config
+                Thread thdGetsNewTransCmds = new Thread(new ThreadStart(VisitTransCmds));
+                thdGetsNewTransCmds.IsBackground = true;
+                thdGetsNewTransCmds.Start();
+
+                Thread thdAskReserve = new Thread(new ThreadStart(AskReserve));
+                thdAskReserve.IsBackground = true;
+                thdAskReserve.Start();
+                //thdAskReserve等待thdGetsNewTransCmds一起完結
             }
         }
 
-        private void DoTransCmds()
+        private bool CanGetNewTransCmds()
         {
-            int index = 0;
+            // 判斷當前是否可接收新的搬貨命令 若否 則發送報告
+            throw new NotImplementedException();
+        }
+
+        //private void TransCmdsCheck()
+        //{
+        //    while (middleAgent.IsTransCmds())
+        //    {
+        //        transCmds = middleAgent.GetTransCmds();
+        //        middleAgent.ClearTransCmds();
+        //        VisitTransCmds();
+        //        Thread.Sleep(mainFlowConfigs.TransCmdsCheckInterval);//can config
+        //    }
+        //}
+
+        private void VisitTransCmds()
+        {
+            transCmdsIndex = 0;
             goNextTransCmd = true;
 
-            while (index < transCmds.Count)
+            while (transCmdsIndex < transCmds.Count)
             {
                 if (goNextTransCmd)
                 {
-                    TransCmd transCmd = transCmds[index];
-                    switch (transCmd.GetType())
-                    {
-                        case EnumTransCmdType.Move:
-                            MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
-                            queWaitForReserve.Enqueue(moveCmd);
-                            goNextTransCmd = !moveCmd.IsPrecisePositioning;
-                            //TODO
-                            //MoveComplete(MoveToEnd will set goNextTransCmd into true and go on
-                            break;
-                        case EnumTransCmdType.Load:
-                            LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transCmd;
-                            //TODO
-                            //command PLC to DoLoad
-                            //LoadComplete will set goNextTransCmd into true and go on
-                            robotControlHandler.DoLoad(loadCmdInfo);
-                            break;
-                        case EnumTransCmdType.Unload:
-                            UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transCmd;
-                            //TODO
-                            //command PLC to DoLoad
-                            //LoadComplete will set goNextTransCmd into true and go on
-                            robotControlHandler.DoUnload(unloadCmdInfo);
-                            break;
-                        default:
-                            break;
-                    }
-
                     goNextTransCmd = false;
-                    index++;
+                    DoTransfer();
+
+                    //TransCmd transCmd = transCmds[index];
+                    //switch (transCmd.GetType())
+                    //{
+                    //    case EnumTransCmdType.Move:
+                    //        MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
+                    //        queWaitForReserve.Enqueue(moveCmd);
+                    //        goNextTransCmd = !moveCmd.IsPrecisePositioning;
+                    //        //TODO
+                    //        //MoveComplete(MoveToEnd will set goNextTransCmd into true and go on
+                    //        break;
+                    //    case EnumTransCmdType.Load:
+                    //        LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transCmd;
+                    //        //TODO
+                    //        //command PLC to DoLoad
+                    //        //LoadComplete will set goNextTransCmd into true and go on
+                    //        robotControlHandler.DoLoad(loadCmdInfo);
+                    //        break;
+                    //    case EnumTransCmdType.Unload:
+                    //        UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transCmd;
+                    //        //TODO
+                    //        //command PLC to DoLoad
+                    //        //LoadComplete will set goNextTransCmd into true and go on
+                    //        robotControlHandler.DoUnload(unloadCmdInfo);
+                    //        break;
+                    //    default:
+                    //        break;
+                    //}
+
+                    //transCmdsIndex++;
                 }
                 Thread.Sleep(mainFlowConfigs.DoTransCmdsInterval);
             }
+
+            //OnTransCmdsFinishedEvent(this, EnumCompleteStatus.TransferComplete);
+            transCmds.Clear();
+            transCmdsIndex = 0;
+            goNextTransCmd = false;
         }
 
         private bool IsReadyToMoveCmdQueFull()
@@ -248,17 +295,26 @@ namespace Mirle.Agv.Control
 
         private bool CanVehUnload()
         {
+            // 判斷當前是否可載貨 若否 則發送報告
             throw new NotImplementedException();
         }
 
         private bool CanVehLoad()
         {
+            // 判斷當前是否可卸貨 若否 則發送報告
             throw new NotImplementedException();
         }
 
         private bool CanVehMove()
         {
             //battery/emo/beam/etc/reserve
+            // 判斷當前是否可移動 若否 則發送報告
+            throw new NotImplementedException();
+        }
+
+        private bool CanCarrierIdRead()
+        {
+            // 判斷當前貨物的ID是否可正確讀取 若否 則發送報告
             throw new NotImplementedException();
         }
 
@@ -317,7 +373,111 @@ namespace Mirle.Agv.Control
 
         public void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status)
         {
-            throw new NotImplementedException();
+            switch (status)
+            {
+                case EnumCompleteStatus.Move:
+                    VisitNextTransCmd();
+                    break;
+                case EnumCompleteStatus.Load:
+                    if (CanCarrierIdRead())
+                    {
+                        VisitNextTransCmd();
+                    }
+                    break;
+                case EnumCompleteStatus.Unload:
+                    VisitNextTransCmd();
+                    break;
+                case EnumCompleteStatus.LoadUnload:
+                    break;
+                case EnumCompleteStatus.Home:
+                    break;
+                case EnumCompleteStatus.MtlHome:
+                    break;
+                case EnumCompleteStatus.MoveToMtl:
+                    break;
+                case EnumCompleteStatus.SystemOut:
+                    break;
+                case EnumCompleteStatus.SystemIn:
+                    break;
+                case EnumCompleteStatus.Cancel:
+                    break;
+                case EnumCompleteStatus.Abort:
+                    break;
+                case EnumCompleteStatus.VehicleAbort:
+                    break;
+                case EnumCompleteStatus.IdMissmatch:
+                    break;
+                case EnumCompleteStatus.IdReadFail:
+                    break;
+                case EnumCompleteStatus.InterlockError:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void VisitNextTransCmd()
+        {
+            if (transCmdsIndex + 1 < transCmds.Count)
+            {
+                transCmdsIndex++;
+                goNextTransCmd = true;
+            }
+        }
+
+        public TransCmd GetCurTransCmd()
+        {
+            TransCmd transCmd = new EmptyTransCmd();
+            if (transCmdsIndex < transCmds.Count)
+            {
+                transCmd = transCmds[transCmdsIndex];
+            }
+            return transCmd;
+        }
+
+        public TransCmd GetNextTransCmd()
+        {
+            TransCmd transCmd = new EmptyTransCmd();
+            int nextIndex = transCmdsIndex + 1;
+            if (nextIndex < transCmds.Count)
+            {
+                transCmd = transCmds[nextIndex];
+            }
+            return transCmd;
+        }
+
+        public void SetTransCmdsStep(ITransCmdsStep step)
+        {
+            this.step = step;
+        }
+
+        public void DoTransfer()
+        {
+            step.DoTransfer(this);
+        }
+
+        public void EnqueWaitForReserve(MoveCmdInfo moveCmd)
+        {
+            if (CanVehMove())
+            {
+                queWaitForReserve.Enqueue(moveCmd);
+            }
+        }
+
+        public void Unload(UnloadCmdInfo unloadCmd)
+        {
+            if (CanVehUnload())
+            {
+                robotControlHandler.DoUnload(unloadCmd);
+            }
+        }
+
+        public void Load(LoadCmdInfo loadCmd)
+        {
+            if (CanVehLoad())
+            {
+                robotControlHandler.DoLoad(loadCmd);
+            }
         }
 
     }

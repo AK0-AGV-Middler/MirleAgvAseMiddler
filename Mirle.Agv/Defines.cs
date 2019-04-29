@@ -35,7 +35,8 @@ namespace Mirle.Agv
     {
         Move,
         Load,
-        Unload
+        Unload,
+        Empty
     }
 
     //public enum EnumAddressType
@@ -115,7 +116,8 @@ namespace Mirle.Agv
         VehicleAbort = 22,
         IdMissmatch = 23,
         IdReadFail = 24,
-        InterlockError = 64
+        InterlockError = 64,
+        TransferComplete = 123  //Yiming
     }
 
     public enum EnumMapBarcodeReaderSide

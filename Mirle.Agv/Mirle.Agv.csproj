@@ -56,7 +56,12 @@
     <Compile Include="Control\Agent\LoggerAgent.cs" />
     <Compile Include="Control\Agent\Sr2000Agent.cs" />
     <Compile Include="Control\Handler\BatteryHandler.cs" />
+    <Compile Include="Control\Handler\TransCmdsSteps\Idle.cs" />
+    <Compile Include="Control\Handler\TransCmdsSteps\ITransCmdsStep.cs" />
     <Compile Include="Control\Handler\RobotControlHandler.cs" />
+    <Compile Include="Control\Handler\TransCmdsSteps\Load.cs" />
+    <Compile Include="Control\Handler\TransCmdsSteps\Move.cs" />
+    <Compile Include="Control\Handler\TransCmdsSteps\Unload.cs" />
     <Compile Include="Control\IComplete.cs" />
     <Compile Include="Control\IMapBarcodeValuesEvent.cs" />
     <Compile Include="Control\Agent\BmsAgent.cs" />
@@ -87,6 +92,7 @@
     <Compile Include="Model\PlcLoadingSensor.cs" />
     <Compile Include="Model\PlcRobot.cs" />
     <Compile Include="Model\PlcStage.cs" />
+    <Compile Include="Model\TransferCmds\EmptyTransCmd.cs" />
     <Compile Include="Model\TransferCmds\LoadCmdInfo.cs" />
     <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\TransferCmds\TransCmd.cs" />
