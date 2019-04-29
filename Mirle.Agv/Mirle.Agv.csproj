@@ -116,6 +116,12 @@
     <Compile Include="Model\MapAddress.cs" />
     <Compile Include="Model\MapSection.cs" />
     <Compile Include="Control\Handler\MapHandler.cs" />
+    <Compile Include="View\InitialForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\InitialForm.Designer.cs">
+      <DependentUpon>InitialForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -130,7 +136,14 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="View\Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\InitialForm.resx">
+      <DependentUpon>InitialForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -146,6 +159,18 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <None Include="Resource\Close_32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Mirle_Home.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Mirle_LOGO.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Mirle_口號.JPG" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

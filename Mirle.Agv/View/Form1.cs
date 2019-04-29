@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Mirle.Agv.View;
 
 namespace Mirle.Agv
 {
@@ -16,6 +17,12 @@ namespace Mirle.Agv
         {
             InitializeComponent();
 
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            InitialForm initialForm = new InitialForm();
+            initialForm.Show();
         }
     }
 }
