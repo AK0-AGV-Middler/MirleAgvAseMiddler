@@ -19,7 +19,7 @@ namespace Mirle.Agv.Control
 
         private List<TransCmd> transCmds;
         //private VehLocation vehLocation;
-        //private LoggerAgent loggerAgent;
+        private LoggerAgent theLoggerAgent;
         private Vehicle theVehicle;
 
         private TcpIpAgent clientAgent;
@@ -28,6 +28,7 @@ namespace Mirle.Agv.Control
         {
             transCmds = new List<TransCmd>();
             //vehLocation = new VehLocation();
+            theLoggerAgent = LoggerAgent.Instance;
             theVehicle = Vehicle.Instance;
 
             EventInitial();
