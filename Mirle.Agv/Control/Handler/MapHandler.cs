@@ -1,4 +1,5 @@
 ﻿using Mirle.Agv.Model;
+using Mirle.Agv.Model.TransferCmds;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -130,6 +131,10 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
+        internal void OnMiddlerGetsNewTransCmds(object sender, List<TransCmd> e)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

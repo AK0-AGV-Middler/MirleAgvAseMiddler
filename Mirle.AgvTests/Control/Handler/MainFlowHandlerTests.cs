@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Concurrent;
-
+using System.Collections.Generic;
 
 namespace Mirle.Agv.Control.Tests
 {
@@ -53,33 +53,38 @@ namespace Mirle.Agv.Control.Tests
         public void XXXTest()
         {
             ConcreteIIA concreteIIA = new ConcreteIIA();
-            ClassB temp1 = new ClassB(concreteIIA);
-            ClassB temp2 = new ClassB(concreteIIA);
-            temp1.MemberB = 7;
+            ClassB ins1 = new ClassB(concreteIIA);
+            ins1.MemberB = 123;
+            ClassB ins2 = new ClassB(concreteIIA);
+            ins2.MemberB = 456;
+ 
+            List<ClassB> list001 = new List<ClassB>();
+            list001.Add(ins1);
+            list001.Add(ins2);
 
-            ConcurrentQueue<ClassA> classAs = new ConcurrentQueue<ClassA>();
-            //List<ClassA> classAs = new List<ClassA>();
-            //classAs.Add(temp1);
-            //classAs.Add(temp2);
-            classAs.Enqueue(temp1);
-            classAs.Enqueue(temp2);
-            classAs.TryPeek(out ClassA peek1);
+            Assert.AreEqual(2, list001.Count);
 
-            var checek1 = peek1;
-            ClassB peek2 = (ClassB)peek1;
-            var check2 = peek2.MemberB;
+            List<ClassB> list002 = list001;
 
-            classAs.TryDequeue(out ClassA take1);
-            var check3 = peek2.MemberB;
-            var check4 = peek1;
-            ClassB take2 = (ClassB)take1;
-            var check5 = take2.MemberB;
-            classAs.TryPeek(out ClassA peek3);
+            Assert.AreEqual(2, list002.Count);
+            Assert.AreEqual(123, list002[0].MemberB);
 
+            List<ClassB> list003 = new List<ClassB>();
+            for (int i = 0; i < list001.Count; i++)
+            {
+                list003.Add(list001[i]);
+            }
 
+            Assert.AreEqual(2, list003.Count);
+            Assert.AreEqual(456, list003[1].MemberB);
 
+            list001.Clear();
 
-            Assert.AreEqual(1, 1);
+            Assert.AreEqual(0, list001.Count);
+
+            Assert.AreEqual(0, list002.Count);
+
+            Assert.AreEqual(2, list003.Count);
         }
     }
 }

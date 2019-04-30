@@ -36,7 +36,7 @@ namespace Mirle.Agv.Control
 
         private void CreatTcpIpClientAgent()
         {
-            //use confighandler
+            //TODO : use confighandler
             int clientNum = 1;
             string clientName = "OHT01";
             string sRemoteIP = "192.168.9.203";

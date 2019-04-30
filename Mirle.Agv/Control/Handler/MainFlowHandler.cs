@@ -29,6 +29,7 @@ namespace Mirle.Agv.Control
         #region TransCmds
 
         private List<TransCmd> transCmds;
+        private List<TransCmd> lastTransCmds;
         private ConcurrentQueue<MoveCmdInfo> queWaitForReserve;
         private bool goNextTransCmd;
         public bool GoNextTransCmd
@@ -163,6 +164,7 @@ namespace Mirle.Agv.Control
             //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'
 
             middleAgent.OnMiddlerGetsNewTransCmdsEvent += OnMiddlerGetsNewTransCmds;
+            middleAgent.OnMiddlerGetsNewTransCmdsEvent += mapHandler.OnMiddlerGetsNewTransCmds;
 
             //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
             moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
@@ -236,8 +238,7 @@ namespace Mirle.Agv.Control
 
         private void VisitTransCmds()
         {
-            transCmdsIndex = 0;
-            goNextTransCmd = true;
+            PreVisitTransCmds();
 
             while (transCmdsIndex < transCmds.Count)
             {
@@ -292,10 +293,23 @@ namespace Mirle.Agv.Control
             }
 
             //OnTransCmdsFinishedEvent(this, EnumCompleteStatus.TransferComplete);
+            AfterVisitTransCmds();
+        }
+
+        private void AfterVisitTransCmds()
+        {
             transCmds.Clear();
             transCmdsIndex = 0;
             goNextTransCmd = false;
             SetTransCmdsStep(new Idle());
+        }
+
+        private void PreVisitTransCmds()
+        {
+            transCmdsIndex = 0;
+            goNextTransCmd = true;
+            PauseEvent.Set();
+            ShutdownEvent.Reset();
         }
 
         private bool IsReadyToMoveCmdQueFull()
@@ -330,8 +344,18 @@ namespace Mirle.Agv.Control
 
         private void AskReserve()
         {
-            while (true)
+            while (transCmdsIndex < transCmds.Count)
             {
+                #region Pause And Stop Check
+
+                PauseEvent.WaitOne(Timeout.Infinite);
+                if (ShutdownEvent.WaitOne(0))
+                {
+                    break;
+                }
+
+                #endregion
+
                 if (CanAskReserve())
                 {
                     queWaitForReserve.TryPeek(out MoveCmdInfo peek);
@@ -441,7 +465,19 @@ namespace Mirle.Agv.Control
             else
             {
                 Stop();
+                SetLasTransCmds();
+                //Send Transfer Complete to Middler
             }
+        }
+
+        private void SetLasTransCmds()
+        {
+            lastTransCmds.Clear();
+            for (int i = 0; i < transCmds.Count; i++)
+            {
+                lastTransCmds.Add(transCmds[i]);
+            }
+            transCmds.Clear();
         }
 
         public TransCmd GetCurTransCmd()
