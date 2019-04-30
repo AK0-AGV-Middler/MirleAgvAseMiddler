@@ -433,7 +433,7 @@ namespace Mirle.Agv.Control
 
         private void VisitNextTransCmd()
         {
-            if (transCmdsIndex + 1 < transCmds.Count)
+            if (transCmdsIndex  < transCmds.Count)
             {
                 transCmdsIndex++;
                 goNextTransCmd = true;
