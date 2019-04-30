@@ -438,6 +438,10 @@ namespace Mirle.Agv.Control
                 transCmdsIndex++;
                 goNextTransCmd = true;
             }
+            else
+            {
+                Stop();
+            }
         }
 
         public TransCmd GetCurTransCmd()
