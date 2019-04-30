@@ -24,7 +24,6 @@ namespace Mirle.Agv.Control
         private MapConfigs mapConfigs;
         private MoveControlConfigs moveControlConfigs;
 
-
         #endregion
 
         #region TransCmds
@@ -64,6 +63,15 @@ namespace Mirle.Agv.Control
         private MapHandler mapHandler;
         private MoveControlHandler moveControlHandler;
         private RobotControlHandler robotControlHandler;
+
+        #endregion
+
+        #region Threads
+
+        private Thread thdGetsNewTransCmds;
+        private Thread thdAskReserve;
+        private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
+        private ManualResetEvent PauseEvent = new ManualResetEvent(true);
 
         #endregion
 
@@ -152,7 +160,7 @@ namespace Mirle.Agv.Control
 
         private void EventInitial()
         {
-            //
+            //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'
 
             middleAgent.OnMiddlerGetsNewTransCmdsEvent += OnMiddlerGetsNewTransCmds;
 
@@ -176,21 +184,28 @@ namespace Mirle.Agv.Control
             robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
             robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
             robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
-
-
         }
 
-        private void RunThreads()
+        private void OnMiddlerGetsNewTransCmds(object sender, List<TransCmd> transCmds)
         {
             try
             {
-                //Thread thdGetAllPartialJobs = new Thread(new ThreadStart(TransCmdsCheck));
-                //thdGetAllPartialJobs.IsBackground = true;
-                //thdGetAllPartialJobs.Start();
+                if (CanGetNewTransCmds())
+                {
+                    this.transCmds = transCmds;
+                    transCmds.Add(new EmptyTransCmd());
+                    middleAgent.ClearTransCmds();
 
-                //Thread thdAskReserve = new Thread(new ThreadStart(AskReserve));
-                //thdAskReserve.IsBackground = true;
-                //thdAskReserve.Start();
+                    thdGetsNewTransCmds = new Thread(new ThreadStart(VisitTransCmds));
+                    thdGetsNewTransCmds.IsBackground = true;
+                    thdGetsNewTransCmds.Start();
+
+                    thdAskReserve = new Thread(new ThreadStart(AskReserve));
+                    thdAskReserve.IsBackground = true;
+                    thdAskReserve.Start();
+                    //thdAskReserve等待thdGetsNewTransCmds一起完結
+                }
+
             }
             catch (Exception ex)
             {
@@ -199,24 +214,6 @@ namespace Mirle.Agv.Control
                 string classMethodName = className + ":" + methodName;
                 LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", ex.StackTrace);
                 loggerAgent.LogError(logFormat);
-            }
-        }
-
-        private void OnMiddlerGetsNewTransCmds(object sender, List<TransCmd> transCmds)
-        {
-            if (CanGetNewTransCmds())
-            {
-                this.transCmds = transCmds;
-                transCmds.Add(new EmptyTransCmd());
-                middleAgent.ClearTransCmds();
-                Thread thdGetsNewTransCmds = new Thread(new ThreadStart(VisitTransCmds));
-                thdGetsNewTransCmds.IsBackground = true;
-                thdGetsNewTransCmds.Start();
-
-                Thread thdAskReserve = new Thread(new ThreadStart(AskReserve));
-                thdAskReserve.IsBackground = true;
-                thdAskReserve.Start();
-                //thdAskReserve等待thdGetsNewTransCmds一起完結
             }
         }
 
@@ -244,11 +241,22 @@ namespace Mirle.Agv.Control
 
             while (transCmdsIndex < transCmds.Count)
             {
+                #region Pause And Stop Check
+
+                PauseEvent.WaitOne(Timeout.Infinite);
+                if (ShutdownEvent.WaitOne(0))
+                {
+                    break;
+                }
+
+                #endregion
+
                 if (goNextTransCmd)
                 {
                     goNextTransCmd = false;
                     DoTransfer();
 
+                    #region Comment
                     //TransCmd transCmd = transCmds[index];
                     //switch (transCmd.GetType())
                     //{
@@ -278,6 +286,7 @@ namespace Mirle.Agv.Control
                     //}
 
                     //transCmdsIndex++;
+                    #endregion
                 }
                 Thread.Sleep(mainFlowConfigs.DoTransCmdsInterval);
             }
@@ -286,6 +295,7 @@ namespace Mirle.Agv.Control
             transCmds.Clear();
             transCmdsIndex = 0;
             goNextTransCmd = false;
+            SetTransCmdsStep(new Idle());
         }
 
         private bool IsReadyToMoveCmdQueFull()
@@ -348,17 +358,22 @@ namespace Mirle.Agv.Control
 
         public void Pause()
         {
-
+            PauseEvent.Reset();
+            SetTransCmdsStep(new Idle());
         }
 
         public void Resume()
         {
-
+            PauseEvent.Set();
         }
 
         public void Stop()
         {
-
+            ShutdownEvent.Set();
+            PauseEvent.Set();
+            thdGetsNewTransCmds.Join();
+            thdAskReserve.Join();
+            SetTransCmdsStep(new Idle());
         }
 
         public void UpdateMapBarcode(MapBarcodeReader mapBarcode)

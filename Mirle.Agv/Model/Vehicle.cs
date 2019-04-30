@@ -18,7 +18,7 @@ namespace Mirle.Agv.Model
         private Dictionary<int, Carrier> dicCarriersByStageNum;
         private PlcRobot PlcRobot;
         private TransCmd transCmd;
-        private LoggerAgent loggerAgent;
+        private LoggerAgent theLoggerAgent;
 
         private Vehicle()
         {
@@ -26,7 +26,7 @@ namespace Mirle.Agv.Model
             vehLoacation = new VehLocation();
             dicCarriersById = new Dictionary<string, Carrier>();
             dicCarriersByStageNum = new Dictionary<int, Carrier>();
-            loggerAgent = LoggerAgent.Instance;
+            theLoggerAgent = LoggerAgent.Instance;
         }
 
 
