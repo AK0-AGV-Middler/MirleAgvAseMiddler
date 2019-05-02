@@ -8,18 +8,65 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
+using Mirle.Agv.Control;
 
 namespace Mirle.Agv.View
 {
     public partial class InitialForm : Form
     {
+        private Thread thdInitial;
+        private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
+        private ManualResetEvent PauseEvent = new ManualResetEvent(true);
+
+        private MainFlowHandler mainFlowHandler;
+        private MainForm mainForm;
+
         public InitialForm()
         {
             InitializeComponent();
+            mainFlowHandler = new MainFlowHandler();
+            mainFlowHandler.OnXXXIntialDoneEvent += MainFlowHandler_OnXXXIntialDoneEvent;
+        }
+
+        private void MainFlowHandler_OnXXXIntialDoneEvent(object sender, InitialEventArgs e)
+        {
+            if (e.IsOk)
+            {
+                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss]");
+                var msg = timeStamp + e.ItemName + "初始化完成\n";                
+                ListBoxAppend(lst_StartUpMsg, msg);
+                if (e.ItemName=="全部")
+                {
+                    Thread.Sleep(3000);
+                    GoNextForm();
+                }
+            }
+            else
+            {
+                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss]");
+                var msg = timeStamp + e.ItemName + "初始化失敗\n";
+                ListBoxAppend(lst_StartUpMsg, msg);
+            }
+           
+        }
+
+        private void GoNextForm()
+        {
+            if (InvokeRequired)
+            {
+                Action del = new Action(GoNextForm);
+                Invoke(del);
+            }
+            else
+            {
+                this.Hide();
+                mainForm = new MainForm();
+                mainForm.Show();
+            }
         }
 
         public delegate void ListBoxAppendCallback(ListBox listBox, string msg);
-        private void ListBoxAppend(ListBox listBox,string msg)
+        private void ListBoxAppend(ListBox listBox, string msg)
         {
             if (listBox.InvokeRequired)
             {
@@ -34,17 +81,25 @@ namespace Mirle.Agv.View
 
         private void InitialForm_Shown(object sender, EventArgs e)
         {
-            Thread thdInitial = new Thread(new ThreadStart(ForInitial));
+            thdInitial = new Thread(new ThreadStart(ForInitial));
             thdInitial.IsBackground = true;
             thdInitial.Start();
-
         }
 
         private void ForInitial()
         {
-            ListBoxAppend(lst_StartUpMsg, "第一行");
-            ListBoxAppend(lst_StartUpMsg, "第二行");
-            ListBoxAppend(lst_StartUpMsg, "第三行");
+            Thread.Sleep(3000);
+            mainFlowHandler.InitialMainFlowHandler();
+        }
+
+        private void cmd_Close_Click(object sender, EventArgs e)
+        {
+            ShutdownEvent.Set();
+            PauseEvent.Set();
+            thdInitial.Join();
+
+            Application.Exit();
+            Environment.Exit(Environment.ExitCode);
         }
     }
 }

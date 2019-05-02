@@ -76,134 +76,311 @@ namespace Mirle.Agv.Control
 
         #endregion
 
+        #region Events
+
+        public event EventHandler<InitialEventArgs> OnXXXIntialDoneEvent;
+
+        #endregion
+
         public Vehicle theVehicle;
+        private bool isIniOk;
+
 
         public MainFlowHandler()
+        {
+            isIniOk = true;
+            //InitialMainFlowHandler();
+
+            //RunThreads();
+
+            transCmds = new List<TransCmd>();
+            queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
+        }
+
+        public void InitialMainFlowHandler()
         {
             ConfigsInitial();
             LoggersInitial();
 
-            AgentInitial();
-            HandlerInitial();
+            //AgentInitial();
+            //HandlerInitial();
 
-            transCmds = new List<TransCmd>();
-            queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
+            //VehicleInitial();
 
-            VehicleInitial();
+            //EventInitial();
 
-            EventInitial();
-
-            //RunThreads();
+            if (isIniOk)
+            {
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "全部"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
+            }
         }
 
         private void ConfigsInitial()
         {
-            configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
-            configHandler = new ConfigHandler(configPath);
+            try
+            {
+                configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
+                configHandler = new ConfigHandler(configPath);
 
-            mainFlowConfigs = new MainFlowConfigs();
-            var tempLogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
-            mainFlowConfigs.LogConfigPath = Path.Combine(Environment.CurrentDirectory, tempLogConfigPath);
-            int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
-            mainFlowConfigs.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
-            int.TryParse(configHandler.GetString("MainFlow", "DoTransCmdsInterval", "15"), out int tempDoTransCmdsInterval);
-            mainFlowConfigs.DoTransCmdsInterval = tempDoTransCmdsInterval;
-            int.TryParse(configHandler.GetString("MainFlow", "ReserveLength", "3"), out int tempReserveLength);
-            mainFlowConfigs.ReserveLength = tempReserveLength;
-            int.TryParse(configHandler.GetString("MainFlow", "AskReserveInterval", "15"), out int tempAskReserveInterval);
-            mainFlowConfigs.AskReserveInterval = tempAskReserveInterval;
+                mainFlowConfigs = new MainFlowConfigs();
+                var tempLogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
+                mainFlowConfigs.LogConfigPath = Path.Combine(Environment.CurrentDirectory, tempLogConfigPath);
+                LoggerAgent.LogConfigPath = mainFlowConfigs.LogConfigPath;
+                int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
+                mainFlowConfigs.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
+                int.TryParse(configHandler.GetString("MainFlow", "DoTransCmdsInterval", "15"), out int tempDoTransCmdsInterval);
+                mainFlowConfigs.DoTransCmdsInterval = tempDoTransCmdsInterval;
+                int.TryParse(configHandler.GetString("MainFlow", "ReserveLength", "3"), out int tempReserveLength);
+                mainFlowConfigs.ReserveLength = tempReserveLength;
+                int.TryParse(configHandler.GetString("MainFlow", "AskReserveInterval", "15"), out int tempAskReserveInterval);
+                mainFlowConfigs.AskReserveInterval = tempAskReserveInterval;
 
-            middlerConfigs = new MiddlerConfigs();
-            int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
-            middlerConfigs.ClientNum = tempClientNum;
-            middlerConfigs.ClientName = configHandler.GetString("Middler", "ClientName", "AGV01");
-            middlerConfigs.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
-            int.TryParse(configHandler.GetString("Middler", "RemotePort", "10001"), out int tempRemotePort);
-            middlerConfigs.RemotePort = tempRemotePort;
-            middlerConfigs.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.136");
-            int.TryParse(configHandler.GetString("Middler", "LocalPort", "5002"), out int tempPort);
-            middlerConfigs.LocalPort = tempPort;
-            int.TryParse(configHandler.GetString("Middler", "RecvTimeoutMs", "10000"), out int tempRecvTimeoutMs);
-            middlerConfigs.RecvTimeoutMs = tempRecvTimeoutMs;
-            int.TryParse(configHandler.GetString("Middler", "SendTimeoutMs", "0"), out int tempSendTimeoutMs);
-            middlerConfigs.SendTimeoutMs = tempSendTimeoutMs;
-            int.TryParse(configHandler.GetString("Middler", "MaxReadSize", "0"), out int tempMaxReadSize);
-            middlerConfigs.MaxReadSize = tempMaxReadSize;
-            int.TryParse(configHandler.GetString("Middler", "ReconnectionIntervalMs", "10000"), out int tempReconnectionIntervalMs);
-            middlerConfigs.ReconnectionIntervalMs = tempReconnectionIntervalMs;
-            int.TryParse(configHandler.GetString("Middler", "MaxReconnectionCount", "10"), out int tempMaxReconnectionCount);
-            middlerConfigs.MaxReconnectionCount = tempMaxReconnectionCount;
-            int.TryParse(configHandler.GetString("Middler", "RetryCount", "2"), out int tempRetryCount);
-            middlerConfigs.RetryCount = tempRetryCount;
-            int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
-            middlerConfigs.SleepTime = tempSleepTime;
+                middlerConfigs = new MiddlerConfigs();
+                int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
+                middlerConfigs.ClientNum = tempClientNum;
+                middlerConfigs.ClientName = configHandler.GetString("Middler", "ClientName", "AGV01");
+                middlerConfigs.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
+                int.TryParse(configHandler.GetString("Middler", "RemotePort", "10001"), out int tempRemotePort);
+                middlerConfigs.RemotePort = tempRemotePort;
+                middlerConfigs.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.136");
+                int.TryParse(configHandler.GetString("Middler", "LocalPort", "5002"), out int tempPort);
+                middlerConfigs.LocalPort = tempPort;
+                int.TryParse(configHandler.GetString("Middler", "RecvTimeoutMs", "10000"), out int tempRecvTimeoutMs);
+                middlerConfigs.RecvTimeoutMs = tempRecvTimeoutMs;
+                int.TryParse(configHandler.GetString("Middler", "SendTimeoutMs", "0"), out int tempSendTimeoutMs);
+                middlerConfigs.SendTimeoutMs = tempSendTimeoutMs;
+                int.TryParse(configHandler.GetString("Middler", "MaxReadSize", "0"), out int tempMaxReadSize);
+                middlerConfigs.MaxReadSize = tempMaxReadSize;
+                int.TryParse(configHandler.GetString("Middler", "ReconnectionIntervalMs", "10000"), out int tempReconnectionIntervalMs);
+                middlerConfigs.ReconnectionIntervalMs = tempReconnectionIntervalMs;
+                int.TryParse(configHandler.GetString("Middler", "MaxReconnectionCount", "10"), out int tempMaxReconnectionCount);
+                middlerConfigs.MaxReconnectionCount = tempMaxReconnectionCount;
+                int.TryParse(configHandler.GetString("Middler", "RetryCount", "2"), out int tempRetryCount);
+                middlerConfigs.RetryCount = tempRetryCount;
+                int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
+                middlerConfigs.SleepTime = tempSleepTime;
 
-            mapConfigs = new MapConfigs();
-            mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "XXX.csv");
-            mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "YYY.csv");
+                mapConfigs = new MapConfigs();
+                mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "XXX.csv");
+                mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "YYY.csv");
 
-            sr2000Configs = new Sr2000Configs();
-            int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
-            sr2000Configs.TrackingInterval = tempTrackingInterval;
+                sr2000Configs = new Sr2000Configs();
+                int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
+                sr2000Configs.TrackingInterval = tempTrackingInterval;
 
-            moveControlConfigs = new MoveControlConfigs();
+                moveControlConfigs = new MoveControlConfigs();
+
+                if (OnXXXIntialDoneEvent!=null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "讀寫設定檔"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
+            }
+            catch (Exception)
+            {
+                isIniOk = false;
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = false,
+                        ItemName = "讀寫設定檔"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }               
+            }
         }
 
         private void LoggersInitial()
         {
-            //TODO : make abstract class with an logger and its bean and a function do log, make 4 level subclass imp this abstract class
-            loggerAgent = LoggerAgent.Instance;
+            try
+            {
+                //TODO : make abstract class with an logger and its bean and a function do log, make 4 level subclass imp this abstract class
+                loggerAgent = LoggerAgent.Instance;
+
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "Logger"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
+
+            }
+            catch (Exception)
+            {
+                isIniOk = false;
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = false,
+                        ItemName = "Logger"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
+
+            }
         }
 
         private void AgentInitial()
         {
-            bmsAgent = new BmsAgent();
-            elmoAgent = new ElmoAgent();
-            middleAgent = new MiddleAgent(middlerConfigs);
-            plcAgent = new PlcAgent();
+            try
+            {
+                bmsAgent = new BmsAgent();
+                elmoAgent = new ElmoAgent();
+                middleAgent = new MiddleAgent(middlerConfigs);
+                plcAgent = new PlcAgent();
+
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "Agent"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
+
+            }
+            catch (Exception)
+            {
+                isIniOk = false;
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = false,
+                        ItemName = "Agent"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
+            }
         }
 
         private void HandlerInitial()
         {
-            batteryHandler = new BatteryHandler();
-            coupleHandler = new CoupleHandler();
-            mapHandler = new MapHandler(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
-            moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs);
-            robotControlHandler = new RobotControlHandler();
+            try
+            {
+                batteryHandler = new BatteryHandler();
+                coupleHandler = new CoupleHandler();
+                mapHandler = new MapHandler(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
+                moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs);
+                robotControlHandler = new RobotControlHandler();
+
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "Handler"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
+
+            }
+            catch (Exception)
+            {
+                isIniOk = false;
+                var args = new InitialEventArgs
+                {
+                    IsOk = false,
+                    ItemName = "Handler"
+                };
+                OnXXXIntialDoneEvent(this, args);
+
+            }
         }
 
         private void VehicleInitial()
         {
-            theVehicle = Vehicle.Instance;
+            try
+            {
+                theVehicle = Vehicle.Instance;
+
+                var args = new InitialEventArgs
+                {
+                    IsOk = true,
+                    ItemName = "Vehicle"
+                };
+                OnXXXIntialDoneEvent(this, args);
+            }
+            catch (Exception)
+            {
+                isIniOk = false;
+                var args = new InitialEventArgs
+                {
+                    IsOk = false,
+                    ItemName = "Handler"
+                };
+                OnXXXIntialDoneEvent(this, args);
+            }
+            
         }
 
         private void EventInitial()
         {
-            //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'
+            try
+            {
+                //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'
 
-            middleAgent.OnMiddlerGetsNewTransCmdsEvent += OnMiddlerGetsNewTransCmds;
-            middleAgent.OnMiddlerGetsNewTransCmdsEvent += mapHandler.OnMiddlerGetsNewTransCmds;
+                middleAgent.OnMiddlerGetsNewTransCmdsEvent += OnMiddlerGetsNewTransCmds;
+                middleAgent.OnMiddlerGetsNewTransCmdsEvent += mapHandler.OnMiddlerGetsNewTransCmds;
 
-            //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
-            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
-            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
-            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
-            moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
+                //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
+                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
+                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
+                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
+                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
 
-            //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            moveControlHandler.OnMoveFinished += OnTransCmdsFinishedEvent;
-            moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsFinishedEvent;
-            moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                moveControlHandler.OnMoveFinished += OnTransCmdsFinishedEvent;
+                moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsFinishedEvent;
+                moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
 
-            //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            robotControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
-            robotControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
-            robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                robotControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
+                robotControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
+                robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
-            //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-            robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
-            robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
-            robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
+                robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
+                robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+
+                var args = new InitialEventArgs
+                {
+                    IsOk = true,
+                    ItemName = "事件"
+                };
+                OnXXXIntialDoneEvent(this, args);
+
+            }
+            catch (Exception)
+            {
+                isIniOk = false;
+                var args = new InitialEventArgs
+                {
+                    IsOk = false,
+                    ItemName = "事件"
+                };
+                OnXXXIntialDoneEvent(this, args);
+
+            }
         }
 
         private void OnMiddlerGetsNewTransCmds(object sender, List<TransCmd> transCmds)
