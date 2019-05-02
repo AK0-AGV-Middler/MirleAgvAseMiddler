@@ -14,7 +14,7 @@ using Mirle.Agv.Model.Configs;
 
 namespace Mirle.Agv.Control
 {
-    public class MiddleAgent : IMapBarcodeValuesEvent
+    public class MiddleAgent
     {
         public event EventHandler<List<TransCmd>> OnMiddlerGetsNewTransCmdsEvent;
 

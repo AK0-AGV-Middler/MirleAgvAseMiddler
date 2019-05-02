@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Mirle.Agv.Control
 {
-    public class MapHandler: IMapBarcodeValuesEvent
+    public class MapHandler
     {
         private Dictionary<string, MapSection> SectionTable = new Dictionary<string, MapSection>();
         private Dictionary<string, List<MapSection>> SectionTableByAddress = new Dictionary<string, List<MapSection>>();
@@ -119,7 +119,7 @@ namespace Mirle.Agv.Control
                 //log ex
                 return new List<MapSection>();
             }
-        }       
+        }
 
         public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
         {

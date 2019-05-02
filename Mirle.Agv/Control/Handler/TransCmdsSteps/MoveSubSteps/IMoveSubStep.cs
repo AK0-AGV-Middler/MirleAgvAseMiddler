@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Model;
 
 namespace Mirle.Agv.Control
 {
-    public interface IMapBarcodeValuesEvent
+    interface IMoveSubStep
     {
-        void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues);
+        void DoTransfer(MainFlowHandler mainFlowHandler);
     }
 }

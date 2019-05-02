@@ -12,7 +12,7 @@ using Mirle.Agv.Control.Handler.TransCmdsSteps;
 
 namespace Mirle.Agv.Control
 {
-    public class MainFlowHandler : IMapBarcodeValuesEvent, ICmdFinished
+    public class MainFlowHandler : ICmdFinished
     {
         #region Configs
 

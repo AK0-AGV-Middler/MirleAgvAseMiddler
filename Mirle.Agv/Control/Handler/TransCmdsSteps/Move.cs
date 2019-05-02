@@ -12,11 +12,11 @@ namespace Mirle.Agv.Control.Handler.TransCmdsSteps
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
             TransCmd curTransCmd = mainFlowHandler.GetCurTransCmd();
-            var type = curTransCmd.GetType();            
+            var type = curTransCmd.GetType();
 
             switch (type)
             {
-                case EnumTransCmdType.Move:
+                case EnumTransCmdType.Move:                                     
                     EnqueMoveCmd(mainFlowHandler, curTransCmd);
                     break;
                 case EnumTransCmdType.Load:
