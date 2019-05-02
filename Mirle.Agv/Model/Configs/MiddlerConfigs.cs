@@ -8,10 +8,18 @@ namespace Mirle.Agv.Model.Configs
 {
     public class MiddlerConfigs
     {
-        public string Ip { get; set; }
-        public int Port { get; set; }       
+        public int ClientNum { get; set; }
+        public string ClientName { get; set; }
+        public string RemoteIp { get; set; }
+        public int RemotePort { get; set; }
+        public string LocalIp { get; set; }
+        public int LocalPort { get; set; }
+        public int RecvTimeoutMs { get; set; }
+        public int SendTimeoutMs { get; set; }
+        public int MaxReadSize { get; set; }
+        public int ReconnectionIntervalMs { get; set; }
+        public int MaxReconnectionCount { get; set; }
+        public int RetryCount { get; set; }
         public int SleepTime { get; set; }
-
-       
     }
 }

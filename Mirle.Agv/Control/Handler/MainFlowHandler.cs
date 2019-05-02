@@ -114,9 +114,27 @@ namespace Mirle.Agv.Control
             mainFlowConfigs.AskReserveInterval = tempAskReserveInterval;
 
             middlerConfigs = new MiddlerConfigs();
-            middlerConfigs.Ip = configHandler.GetString("Middler", "Ip", "127.0.0.1");
-            int.TryParse(configHandler.GetString("Middler", "Port", "5001"), out int tempPort);
-            middlerConfigs.Port = tempPort;
+            int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
+            middlerConfigs.ClientNum = tempClientNum;
+            middlerConfigs.ClientName = configHandler.GetString("Middler", "ClientName", "AGV01");
+            middlerConfigs.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
+            int.TryParse(configHandler.GetString("Middler", "RemotePort", "10001"), out int tempRemotePort);
+            middlerConfigs.RemotePort = tempRemotePort;
+            middlerConfigs.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.136");
+            int.TryParse(configHandler.GetString("Middler", "LocalPort", "5002"), out int tempPort);
+            middlerConfigs.LocalPort = tempPort;
+            int.TryParse(configHandler.GetString("Middler", "RecvTimeoutMs", "10000"), out int tempRecvTimeoutMs);
+            middlerConfigs.RecvTimeoutMs = tempRecvTimeoutMs;
+            int.TryParse(configHandler.GetString("Middler", "SendTimeoutMs", "0"), out int tempSendTimeoutMs);
+            middlerConfigs.SendTimeoutMs = tempSendTimeoutMs;
+            int.TryParse(configHandler.GetString("Middler", "MaxReadSize", "0"), out int tempMaxReadSize);
+            middlerConfigs.MaxReadSize = tempMaxReadSize;
+            int.TryParse(configHandler.GetString("Middler", "ReconnectionIntervalMs", "10000"), out int tempReconnectionIntervalMs);
+            middlerConfigs.ReconnectionIntervalMs = tempReconnectionIntervalMs;
+            int.TryParse(configHandler.GetString("Middler", "MaxReconnectionCount", "10"), out int tempMaxReconnectionCount);
+            middlerConfigs.MaxReconnectionCount = tempMaxReconnectionCount;
+            int.TryParse(configHandler.GetString("Middler", "RetryCount", "2"), out int tempRetryCount);
+            middlerConfigs.RetryCount = tempRetryCount;
             int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
             middlerConfigs.SleepTime = tempSleepTime;
 
@@ -141,7 +159,7 @@ namespace Mirle.Agv.Control
         {
             bmsAgent = new BmsAgent();
             elmoAgent = new ElmoAgent();
-            middleAgent = new MiddleAgent();
+            middleAgent = new MiddleAgent(middlerConfigs);
             plcAgent = new PlcAgent();
         }
 

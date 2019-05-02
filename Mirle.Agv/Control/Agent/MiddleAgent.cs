@@ -9,6 +9,7 @@ using Mirle.Agv.Model.TransferCmds;
 using com.mirle.iibg3k0.ttc.Common;
 using com.mirle.iibg3k0.ttc.Common.TCPIP;
 using TcpIpClientSample;
+using Mirle.Agv.Model.Configs;
 
 
 namespace Mirle.Agv.Control
@@ -21,11 +22,13 @@ namespace Mirle.Agv.Control
         //private VehLocation vehLocation;
         private LoggerAgent theLoggerAgent;
         private Vehicle theVehicle;
+        private MiddlerConfigs middlerConfigs;
 
         private TcpIpAgent clientAgent;
 
-        public MiddleAgent()
+        public MiddleAgent(MiddlerConfigs middlerConfigs)
         {
+            this.middlerConfigs = middlerConfigs;
             transCmds = new List<TransCmd>();
             //vehLocation = new VehLocation();
             theLoggerAgent = LoggerAgent.Instance;
@@ -36,22 +39,19 @@ namespace Mirle.Agv.Control
 
         private void CreatTcpIpClientAgent()
         {
-            //TODO : use confighandler
-            int clientNum = 1;
-            string clientName = "OHT01";
-            string sRemoteIP = "192.168.9.203";
-            string sRemotePort = "10001";
-            string sLocalIP = "192.168.9.136";//"192.168.31.148";//  //"192.168.31.108";//"192.168.7.171";//"192.168.7.166";//
-            string sLocalPort = "5002";
-            int iRemotePort = int.Parse(sRemotePort);
-            int iLocalPort = int.Parse(sLocalPort);
+            int clientNum = middlerConfigs.ClientNum;
+            string clientName = middlerConfigs.ClientName;
+            string sRemoteIP = middlerConfigs.RemoteIp;
+            int iRemotePort = middlerConfigs.RemotePort;
+            string sLocalIP = middlerConfigs.LocalIp;
+            int iLocalPort = middlerConfigs.LocalPort;
 
-            int recv_timeout_ms = 100;// (int)timeOut;           //等待sendRecv Reply的Time out時間(milliseconds)
-            int send_timeout_ms = 0;               //暫時無用
-            int max_readSize = 0;                  //暫時無用
-            int reconnection_interval_ms = 10000;  //斷線多久之後再進行一次嘗試恢復連線的動作
-            int max_reconnection_count = 10;       //斷線後最多嘗試幾次重新恢復連線 (若設定為0則不進行自動重新連線)
-            int retry_count = 2;                   //SendRecv Time out後要再重複發送的次數
+            int recv_timeout_ms = middlerConfigs.RecvTimeoutMs;                         //等待sendRecv Reply的Time out時間(milliseconds)
+            int send_timeout_ms = middlerConfigs.SendTimeoutMs;                         //暫時無用
+            int max_readSize = middlerConfigs.MaxReadSize;                              //暫時無用
+            int reconnection_interval_ms = middlerConfigs.ReconnectionIntervalMs;       //斷線多久之後再進行一次嘗試恢復連線的動作
+            int max_reconnection_count = middlerConfigs.MaxReconnectionCount;           //斷線後最多嘗試幾次重新恢復連線 (若設定為0則不進行自動重新連線)
+            int retry_count = middlerConfigs.RetryCount;                                //SendRecv Time out後要再重複發送的次數
 
             clientAgent = new TcpIpAgent(clientNum, clientName,
                 sLocalIP, iLocalPort, sRemoteIP, iRemotePort,
