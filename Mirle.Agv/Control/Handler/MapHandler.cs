@@ -3,6 +3,7 @@ using Mirle.Agv.Model.TransferCmds;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Mirle.Agv.Model.Configs;
 
 
 namespace Mirle.Agv.Control
@@ -13,6 +14,7 @@ namespace Mirle.Agv.Control
         private Dictionary<string, List<MapSection>> SectionTableByAddress = new Dictionary<string, List<MapSection>>();
         private Dictionary<string, MapAddress> AddressTable = new Dictionary<string, MapAddress>();
         private LoggerAgent loggerAgent;
+        private MapConfigs mapConfigs;
 
         private void GetSectionTable(string SectionFilePath)
         {
@@ -70,10 +72,11 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public MapHandler(string sectionFilePath, string addressFilePath)
+        public MapHandler(MapConfigs mapConfigs)
         {
+            this.mapConfigs = mapConfigs;
             loggerAgent = LoggerAgent.Instance;
-            GetMap(sectionFilePath, addressFilePath);
+            GetMap(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
         }
 
         public void GetMap(string SectionFilePath, string AddressFilePath)
