@@ -152,6 +152,7 @@
             this.Controls.Add(this.PictureBox1);
             this.Name = "InitialForm";
             this.Text = "InitialForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InitialForm_FormClosing);
             this.Shown += new System.EventHandler(this.InitialForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox2)).EndInit();

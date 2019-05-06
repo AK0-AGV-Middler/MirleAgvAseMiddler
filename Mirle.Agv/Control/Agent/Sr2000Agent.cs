@@ -39,7 +39,7 @@ namespace Mirle.Agv.Control
                 MapBarcodeReader mapBarcodeValues = new MapBarcodeReader();
                 //mapBarcodeValues = GetFromDriver();               
                 UpdateMapBarcode(EnumMapBarcodeReaderSide.None, mapBarcodeValues);
-                Thread.Sleep(sr2000Configs.TrackingInterval);
+                SpinWait.SpinUntil(() => false, sr2000Configs.TrackingInterval);
             }
         }
 

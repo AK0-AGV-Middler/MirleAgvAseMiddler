@@ -144,7 +144,7 @@ namespace Mirle.Agv.Control.Tools.Logger
                     if (mbrLngFileSize > mbrLngLogMaxSize)
                     {
                         // 超過限制的大小，換檔再刪除
-                        Thread.Sleep(1000); // 避免產生同時間的檔案
+                        SpinWait.SpinUntil(() => false, 1000); // 避免產生同時間的檔案
                         mbrStrDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
                         mbrStrCopyName = String.Concat(mbrStrPath, mbrStrFileName, "_", mbrStrDateTime, FILE_EXTENSION);
                         File.Copy(mbrStrSaveFilePath, mbrStrCopyName);
@@ -224,7 +224,8 @@ namespace Mirle.Agv.Control.Tools.Logger
                         }
 
                     }
-                    Thread.Sleep(10);
+
+                    SpinWait.SpinUntil(() => false, 10);
                 }
                 catch (Exception ex)
                 {

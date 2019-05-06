@@ -93,6 +93,7 @@ namespace Mirle.Agv.Control
             //RunThreads();
 
             transCmds = new List<TransCmd>();
+            lastTransCmds = new List<TransCmd>();
             queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
         }
 
@@ -108,6 +109,8 @@ namespace Mirle.Agv.Control
 
             EventInitial();
 
+            ThreadInitial();
+
             if (isIniOk)
             {
                 if (OnXXXIntialDoneEvent != null)
@@ -120,6 +123,15 @@ namespace Mirle.Agv.Control
                     OnXXXIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        private void ThreadInitial()
+        {
+            thdGetsNewTransCmds = new Thread(new ThreadStart(VisitTransCmds));
+            thdGetsNewTransCmds.IsBackground = true;
+
+            thdAskReserve = new Thread(new ThreadStart(AskReserve));
+            thdAskReserve.IsBackground = true;
         }
 
         private void ConfigsInitial()
@@ -177,7 +189,7 @@ namespace Mirle.Agv.Control
 
                 moveControlConfigs = new MoveControlConfigs();
 
-                if (OnXXXIntialDoneEvent!=null)
+                if (OnXXXIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
@@ -198,7 +210,7 @@ namespace Mirle.Agv.Control
                         ItemName = "讀寫設定檔"
                     };
                     OnXXXIntialDoneEvent(this, args);
-                }               
+                }
             }
         }
 
@@ -328,7 +340,7 @@ namespace Mirle.Agv.Control
                 };
                 OnXXXIntialDoneEvent(this, args);
             }
-            
+
         }
 
         private void EventInitial()
@@ -392,12 +404,8 @@ namespace Mirle.Agv.Control
                     transCmds.Add(new EmptyTransCmd());
                     middleAgent.ClearTransCmds();
 
-                    thdGetsNewTransCmds = new Thread(new ThreadStart(VisitTransCmds));
-                    thdGetsNewTransCmds.IsBackground = true;
                     thdGetsNewTransCmds.Start();
 
-                    thdAskReserve = new Thread(new ThreadStart(AskReserve));
-                    thdAskReserve.IsBackground = true;
                     thdAskReserve.Start();
                     //thdAskReserve等待thdGetsNewTransCmds一起完結
                 }
@@ -418,17 +426,6 @@ namespace Mirle.Agv.Control
             // 判斷當前是否可接收新的搬貨命令 若否 則發送報告
             throw new NotImplementedException();
         }
-
-        //private void TransCmdsCheck()
-        //{
-        //    while (middleAgent.IsTransCmds())
-        //    {
-        //        transCmds = middleAgent.GetTransCmds();
-        //        middleAgent.ClearTransCmds();
-        //        VisitTransCmds();
-        //        Thread.Sleep(mainFlowConfigs.TransCmdsCheckInterval);//can config
-        //    }
-        //}
 
         private void VisitTransCmds()
         {
@@ -483,7 +480,8 @@ namespace Mirle.Agv.Control
                     //transCmdsIndex++;
                     #endregion
                 }
-                Thread.Sleep(mainFlowConfigs.DoTransCmdsInterval);
+
+                SpinWait.SpinUntil(() => false, mainFlowConfigs.DoTransCmdsInterval);
             }
 
             //OnTransCmdsFinishedEvent(this, EnumCompleteStatus.TransferComplete);
@@ -560,7 +558,8 @@ namespace Mirle.Agv.Control
                         queWaitForReserve.TryDequeue(out MoveCmdInfo aMoveCmd);
                     }
                 }
-                Thread.Sleep(mainFlowConfigs.AskReserveInterval);
+
+                SpinWait.SpinUntil(() => false, mainFlowConfigs.AskReserveInterval);
             }
         }
 
@@ -588,9 +587,15 @@ namespace Mirle.Agv.Control
         public void Stop()
         {
             ShutdownEvent.Set();
-            PauseEvent.Set();
-            thdGetsNewTransCmds.Join();
-            thdAskReserve.Join();
+            PauseEvent.Set();            
+            if (thdGetsNewTransCmds.IsAlive)
+            {
+                thdGetsNewTransCmds.Join();
+            }
+            if (thdAskReserve.IsAlive)
+            {
+                thdAskReserve.Join();
+            }
             SetTransCmdsStep(new Idle());
         }
 

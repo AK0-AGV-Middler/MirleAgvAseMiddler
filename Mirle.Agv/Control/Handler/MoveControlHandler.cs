@@ -106,7 +106,7 @@ namespace Mirle.Agv.Control
                     SendMoveCompleteReportToMainFlow();
                 }
 
-                Thread.Sleep(10);
+                SpinWait.SpinUntil(() => false, 10);
             } while (moveState == EnumMoveState.Moving);
         }
 

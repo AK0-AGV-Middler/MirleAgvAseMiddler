@@ -37,7 +37,7 @@ namespace Mirle.Agv.View
                 ListBoxAppend(lst_StartUpMsg, msg);
                 if (e.ItemName=="全部")
                 {
-                    Thread.Sleep(2000);
+                    SpinWait.SpinUntil(() => false, 2000);
                     GoNextForm();
                 }
             }
@@ -60,7 +60,7 @@ namespace Mirle.Agv.View
             else
             {
                 this.Hide();
-                mainForm = new MainForm();
+                mainForm = new MainForm(mainFlowHandler);
                 mainForm.Show();
             }
         }
@@ -88,7 +88,7 @@ namespace Mirle.Agv.View
 
         private void ForInitial()
         {
-            Thread.Sleep(10);
+            SpinWait.SpinUntil(() => false, 10);
             mainFlowHandler.InitialMainFlowHandler();
         }
 
@@ -96,7 +96,15 @@ namespace Mirle.Agv.View
         {
             ShutdownEvent.Set();
             PauseEvent.Set();
-            thdInitial.Join();
+
+            Application.Exit();
+            Environment.Exit(Environment.ExitCode);
+        }
+
+        private void InitialForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            ShutdownEvent.Set();
+            PauseEvent.Set();
 
             Application.Exit();
             Environment.Exit(Environment.ExitCode);
