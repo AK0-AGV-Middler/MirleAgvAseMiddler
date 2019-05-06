@@ -278,7 +278,7 @@ namespace Mirle.Agv.Control
             {
                 batteryHandler = new BatteryHandler();
                 coupleHandler = new CoupleHandler();
-                mapHandler = new MapHandler(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
+                mapHandler = new MapHandler(mapConfigs);
                 moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs);
                 robotControlHandler = new RobotControlHandler();
 
