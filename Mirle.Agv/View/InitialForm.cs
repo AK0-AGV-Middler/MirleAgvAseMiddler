@@ -37,7 +37,7 @@ namespace Mirle.Agv.View
                 ListBoxAppend(lst_StartUpMsg, msg);
                 if (e.ItemName=="全部")
                 {
-                    Thread.Sleep(3000);
+                    Thread.Sleep(2000);
                     GoNextForm();
                 }
             }
@@ -88,7 +88,7 @@ namespace Mirle.Agv.View
 
         private void ForInitial()
         {
-            Thread.Sleep(3000);
+            Thread.Sleep(10);
             mainFlowHandler.InitialMainFlowHandler();
         }
 

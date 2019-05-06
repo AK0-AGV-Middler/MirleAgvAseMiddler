@@ -85,7 +85,6 @@ namespace Mirle.Agv.Control
         public Vehicle theVehicle;
         private bool isIniOk;
 
-
         public MainFlowHandler()
         {
             isIniOk = true;
@@ -102,12 +101,12 @@ namespace Mirle.Agv.Control
             ConfigsInitial();
             LoggersInitial();
 
-            //AgentInitial();
-            //HandlerInitial();
+            AgentInitial();
+            HandlerInitial();
 
-            //VehicleInitial();
+            VehicleInitial();
 
-            //EventInitial();
+            EventInitial();
 
             if (isIniOk)
             {
@@ -150,7 +149,7 @@ namespace Mirle.Agv.Control
                 middlerConfigs.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
                 int.TryParse(configHandler.GetString("Middler", "RemotePort", "10001"), out int tempRemotePort);
                 middlerConfigs.RemotePort = tempRemotePort;
-                middlerConfigs.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.136");
+                middlerConfigs.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.131");
                 int.TryParse(configHandler.GetString("Middler", "LocalPort", "5002"), out int tempPort);
                 middlerConfigs.LocalPort = tempPort;
                 int.TryParse(configHandler.GetString("Middler", "RecvTimeoutMs", "10000"), out int tempRecvTimeoutMs);
@@ -169,8 +168,8 @@ namespace Mirle.Agv.Control
                 middlerConfigs.SleepTime = tempSleepTime;
 
                 mapConfigs = new MapConfigs();
-                mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "XXX.csv");
-                mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "YYY.csv");
+                mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "ASECTION.csv");
+                mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "AADDRESS.csv");
 
                 sr2000Configs = new Sr2000Configs();
                 int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
@@ -257,8 +256,9 @@ namespace Mirle.Agv.Control
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                var temp = ex.StackTrace;
                 isIniOk = false;
                 if (OnXXXIntialDoneEvent != null)
                 {
@@ -302,7 +302,6 @@ namespace Mirle.Agv.Control
                     ItemName = "Handler"
                 };
                 OnXXXIntialDoneEvent(this, args);
-
             }
         }
 

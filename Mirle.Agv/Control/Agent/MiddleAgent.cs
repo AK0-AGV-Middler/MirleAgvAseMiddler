@@ -19,21 +19,21 @@ namespace Mirle.Agv.Control
         public event EventHandler<List<TransCmd>> OnMiddlerGetsNewTransCmdsEvent;
 
         private List<TransCmd> transCmds;
-        //private VehLocation vehLocation;
         private LoggerAgent theLoggerAgent;
         private Vehicle theVehicle;
         private MiddlerConfigs middlerConfigs;
 
-        private TcpIpAgent clientAgent;
+        public TcpIpAgent clientAgent { get; private set; }
 
         public MiddleAgent(MiddlerConfigs middlerConfigs)
         {
             this.middlerConfigs = middlerConfigs;
             transCmds = new List<TransCmd>();
-            //vehLocation = new VehLocation();
+
             theLoggerAgent = LoggerAgent.Instance;
             theVehicle = Vehicle.Instance;
 
+            CreatTcpIpClientAgent();
             EventInitial();
         }
 
@@ -53,11 +53,15 @@ namespace Mirle.Agv.Control
             int max_reconnection_count = middlerConfigs.MaxReconnectionCount;           //斷線後最多嘗試幾次重新恢復連線 (若設定為0則不進行自動重新連線)
             int retry_count = middlerConfigs.RetryCount;                                //SendRecv Time out後要再重複發送的次數
 
-            clientAgent = new TcpIpAgent(clientNum, clientName,
-                sLocalIP, iLocalPort, sRemoteIP, iRemotePort,
-                TcpIpAgent.TCPIP_AGENT_COMM_MODE.CLINET_MODE
-                  , recv_timeout_ms, send_timeout_ms, max_readSize, reconnection_interval_ms,
-                  max_reconnection_count, retry_count, AppConstants.FrameBuilderType.PC_TYPE_MIRLE);
+            try
+            {
+                clientAgent = new TcpIpAgent(clientNum, clientName, sLocalIP, iLocalPort, sRemoteIP, iRemotePort, TcpIpAgent.TCPIP_AGENT_COMM_MODE.CLINET_MODE, recv_timeout_ms, send_timeout_ms, max_readSize, reconnection_interval_ms, max_reconnection_count, retry_count, AppConstants.FrameBuilderType.PC_TYPE_MIRLE);
+            }
+            catch (Exception ex)
+            {
+
+                var temp = ex.StackTrace;
+            }
         }
 
         /// <summary>

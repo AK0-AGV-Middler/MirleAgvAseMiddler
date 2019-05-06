@@ -37,6 +37,8 @@ namespace Mirle.Agv.Control
 
         private void AxisInitial()
         {
+            dicElmoSingleAxisConfigs = new Dictionary<string, ElmoSingleAxisConfigs>();
+
             var path = Path.Combine(Environment.CurrentDirectory, "AxisConfig.ini");
             ConfigHandler configHandler = new ConfigHandler(path);
 
