@@ -132,25 +132,26 @@
             // jogToolStripMenuItem
             // 
             this.jogToolStripMenuItem.Name = "jogToolStripMenuItem";
-            this.jogToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.jogToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.jogToolStripMenuItem.Text = "Jog";
             // 
             // mapToolStripMenuItem
             // 
             this.mapToolStripMenuItem.Name = "mapToolStripMenuItem";
-            this.mapToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.mapToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.mapToolStripMenuItem.Text = "地圖";
             // 
             // 通訊ToolStripMenuItem
             // 
             this.通訊ToolStripMenuItem.Name = "通訊ToolStripMenuItem";
-            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.通訊ToolStripMenuItem.Text = "通訊";
+            this.通訊ToolStripMenuItem.Click += new System.EventHandler(this.通訊ToolStripMenuItem_Click);
             // 
             // 車輛狀態ToolStripMenuItem
             // 
             this.車輛狀態ToolStripMenuItem.Name = "車輛狀態ToolStripMenuItem";
-            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
             // 
             // 工程師ToolStripMenuItem

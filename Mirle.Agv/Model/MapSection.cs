@@ -23,6 +23,9 @@ namespace Mirle.Agv.Model
         {
             sectionType = EnumSectionType.None;
             sectionShape = EnumSectionShape.None;
+            sectionId = "Empty";
+            strOrigin = "Empty";
+            strDestination = "Empty";
         }
         public MapSection(Dictionary<string, int> HeaderTable, string[] Content)
         {

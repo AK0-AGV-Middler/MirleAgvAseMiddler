@@ -8,13 +8,15 @@ namespace Mirle.Agv.Model
 {
     public class Battery
     {
-        private int percentage;
-        private double voltage;
+        public int Percentage { get; set; }
+        public double Voltage { get; set; }
+        public int Temperature { get; set; }
 
         public Battery(int per, double vol)
         {
-            this.percentage = per;
-            this.voltage = vol;
+            Percentage = per;
+            Voltage = vol;
+            Temperature = 40;
         }
     }
 }

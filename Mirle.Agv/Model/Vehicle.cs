@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.Model.TransferCmds;
+using TcpIpClientSample;
 
 namespace Mirle.Agv.Model
 {
@@ -19,6 +20,31 @@ namespace Mirle.Agv.Model
         private PlcRobot PlcRobot;
         private TransCmd transCmd;
         private LoggerAgent theLoggerAgent;
+        private bool hasCarrier;
+
+
+        #region Comm Property
+
+        public VHActionStatus ActionStatus { get; set; }
+        public VhStopSingle BlockingStatus { get; set; }
+        public VhChargeStatus ChargeStatus { get; set; }
+        public DriveDirction DrivingDirection { get; set; }
+        public VHModeStatus ModeStatus { get; set; }
+        public VhStopSingle ObstacleStatus { get; set; }
+        public string CarrierID { get; set; }
+        public int ObstDistance { get; set; }
+        public string ObstVehicleID { get; set; }
+        public VhStopSingle PauseStatus { get; set; }
+        public VhPowerStatus PowerStatus { get; set; }
+        public VhStopSingle ReserveStatus { get; set; }
+        public string StoppedBlockID { get; set; }
+        public VhStopSingle ErrorStatus { get; set; }
+        public ActiveType ActType { get;  set; }
+        public CompleteStatus CompleteStatus { get; set; }
+        public uint CmdPowerConsume { get; internal set; }
+        public int CmdDistance { get; internal set; }
+
+        #endregion
 
         private Vehicle()
         {
@@ -26,9 +52,14 @@ namespace Mirle.Agv.Model
             vehLoacation = new VehLocation();
             dicCarriersById = new Dictionary<string, Carrier>();
             dicCarriersByStageNum = new Dictionary<int, Carrier>();
+            transCmd = new EmptyTransCmd();
+            CarrierID = "Empty";
+            ObstVehicleID = "Empty";
+            StoppedBlockID = "Empty";
+            PlcRobot = new PlcRobot();
+            hasCarrier = false;
             theLoggerAgent = LoggerAgent.Instance;
         }
-
 
         #region Setter
 
@@ -47,7 +78,7 @@ namespace Mirle.Agv.Model
             this.vehLoacation.SetMapBarcodeValues(mapBarcode);
         }
 
-        public void UpdateStatus(TransCmd  transCmd)
+        public void UpdateStatus(TransCmd transCmd)
         {
             this.transCmd = transCmd;
         }
@@ -109,6 +140,18 @@ namespace Mirle.Agv.Model
             {
                 //log ex
                 return new Carrier();
+            }
+        }
+
+        public VhLoadCSTStatus HasCarrier()
+        {
+            if (hasCarrier)
+            {
+                return VhLoadCSTStatus.Exist;
+            }
+            else
+            {
+                return VhLoadCSTStatus.NotExist;
             }
         }
 

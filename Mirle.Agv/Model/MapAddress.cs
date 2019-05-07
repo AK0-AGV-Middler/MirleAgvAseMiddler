@@ -19,6 +19,9 @@ namespace Mirle.Agv.Model
         public MapAddress()
         {
             addressType = EnumAddressType.None;
+            strId = "Empty";
+            strBarcode = "0";
+
         }
         public MapAddress(Dictionary<string, int> HeaderTable, string[] Content)
         {

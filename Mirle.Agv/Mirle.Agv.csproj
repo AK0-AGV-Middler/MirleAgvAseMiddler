@@ -111,6 +111,12 @@
     <Compile Include="Model\TransferCmds\TransCmd.cs" />
     <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
     <Compile Include="Control\Handler\TransCmdsSteps\MoveSubSteps\MoveAskReserve.cs" />
+    <Compile Include="View\CommToAgvcForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\CommToAgvcForm.Designer.cs">
+      <DependentUpon>CommToAgvcForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -164,6 +170,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="View\CommToAgvcForm.resx">
+      <DependentUpon>CommToAgvcForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

@@ -17,10 +17,12 @@ namespace Mirle.Agv.View
         private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
+        private CommToAgvcForm commToAgvcForm;
 
         public MainForm(MainFlowHandler mainFlowHandler)
         {
             this.mainFlowHandler = mainFlowHandler;
+            commToAgvcForm = new CommToAgvcForm(mainFlowHandler);
             InitializeComponent();
         }
 
@@ -33,6 +35,18 @@ namespace Mirle.Agv.View
             Application.Exit();
             Environment.Exit(Environment.ExitCode);
 
+        }
+
+        private void 通訊ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (commToAgvcForm.IsDisposed)
+            {
+                commToAgvcForm = new CommToAgvcForm(mainFlowHandler);
+            }
+            commToAgvcForm.TopMost = true;
+            commToAgvcForm.WindowState = FormWindowState.Normal;
+            commToAgvcForm.Show();
+            
         }
     }
 }

@@ -734,5 +734,35 @@ namespace Mirle.Agv.Control
             }
         }
 
+        public void OnMsgFromAgvcAddHandler(EventHandler<string> eventHandler)
+        {
+            middleAgent.OnMsgFromAgvcEvent += eventHandler;
+        }
+        public void OnMsgToAgvcAddHandler(EventHandler<string> eventHandler)
+        {
+            middleAgent.OnMsgToAgvcEvent += eventHandler;
+        }
+        public void OnMsgFromVehicleAddHandler(EventHandler<string> eventHandler)
+        {
+            middleAgent.OnMsgFromVehicleEvent += eventHandler;
+        }
+        public void OnMsgToVehicleAddHandler(EventHandler<string> eventHandler)
+        {
+            middleAgent.OnMsgToVehicleEvent += eventHandler;
+        }
+
+        public void ReconnectToAgvc()
+        {
+            middleAgent.ReconnectToAgvc();
+        }
+
+        public void MiddlerTestMsg()
+        {
+           // middleAgent.TestMsg();
+            middleAgent.Send_Cmd131(20, 1, "SomeReason");
+        }
+
+        
+
     }
 }
