@@ -39,10 +39,13 @@ namespace Mirle.Agv.Model
         public VhStopSingle ReserveStatus { get; set; }
         public string StoppedBlockID { get; set; }
         public VhStopSingle ErrorStatus { get; set; }
-        public ActiveType ActType { get;  set; }
+        public ActiveType Cmd131ActType { get; set; }
         public CompleteStatus CompleteStatus { get; set; }
-        public uint CmdPowerConsume { get; internal set; }
-        public int CmdDistance { get; internal set; }
+        public uint CmdPowerConsume { get; set; }
+        public int CmdDistance { get; set; }
+        public EventType EventType { get; set; }
+        public string CmdID { get; set; }
+        public CMDCancelType Cmd137ActType { get;  set; }
 
         #endregion
 

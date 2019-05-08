@@ -10,7 +10,7 @@ using com.mirle.iibg3k0.ttc.Common;
 using com.mirle.iibg3k0.ttc.Common.TCPIP;
 using TcpIpClientSample;
 using Mirle.Agv.Model.Configs;
-
+using Google.Protobuf.Collections;
 
 namespace Mirle.Agv.Control
 {
@@ -98,9 +98,9 @@ namespace Mirle.Agv.Control
             clientAgent.addTcpIpReceivedHandler(WrapperMessage.TransReqFieldNumber, Receive_Cmd31);
             clientAgent.addTcpIpReceivedHandler(WrapperMessage.TranCmpRespFieldNumber, Receive_Cmd32);
             clientAgent.addTcpIpReceivedHandler(WrapperMessage.ControlZoneReqFieldNumber, Receive_Cmd33);
-            //clientAgent.addTcpIpReceivedHandler(WrapperMessage.CSTIDRenameReqFieldNumber, str35_Receive);
-            //clientAgent.addTcpIpReceivedHandler(WrapperMessage.ImpTransEventRespFieldNumber, str36_Receive);
-            //clientAgent.addTcpIpReceivedHandler(WrapperMessage.TransCancelReqFieldNumber, str37_Receive);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.CSTIDRenameReqFieldNumber, Receive_Cmd35);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.ImpTransEventRespFieldNumber, Receive_Cmd36);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.TransCancelReqFieldNumber, Receive_Cmd37);
             //clientAgent.addTcpIpReceivedHandler(WrapperMessage.PauseReqFieldNumber, str39_Receive);
             //clientAgent.addTcpIpReceivedHandler(WrapperMessage.ModeChangeReqFieldNumber, str41_Recieve);
             clientAgent.addTcpIpReceivedHandler(WrapperMessage.StatusReqFieldNumber, Receive_Cmd43);
@@ -193,6 +193,180 @@ namespace Mirle.Agv.Control
 
         }
 
+        public void Receive_Cmd37(object sender, TcpIpEventArgs e)
+        {
+
+            ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
+            //TODO: Cancel/Abort
+
+            if (OnMsgFromAgvcEvent != null)
+            {
+                OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
+            }
+
+            int replyCode = 1;
+            Send_Cmd137(e.iSeqNum, replyCode);
+        }
+        public void Send_Cmd137(ushort seqNum, int replyCode)
+        {
+            try
+            {
+                ID_137_TRANS_CANCEL_RESPONSE iD_137_TRANS_CANCEL_RESPONSE = new ID_137_TRANS_CANCEL_RESPONSE();
+                iD_137_TRANS_CANCEL_RESPONSE.CmdID = theVehicle.CmdID;
+                iD_137_TRANS_CANCEL_RESPONSE.ActType = theVehicle.Cmd137ActType;
+                iD_137_TRANS_CANCEL_RESPONSE.ReplyCode = replyCode;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.TransCancelRespFieldNumber;
+                wrappers.SeqNum = seqNum;
+                wrappers.TransCancelResp = iD_137_TRANS_CANCEL_RESPONSE;
+
+                var resp = clientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+
+                if (OnMsgToAgvcEvent != null)
+                {
+                    OnMsgToAgvcEvent(this, iD_137_TRANS_CANCEL_RESPONSE.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+
+        public void Receive_Cmd36(object sender, TcpIpEventArgs e)
+        {
+            ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
+            //Get reserve, block, 
+
+            if (OnMsgFromAgvcEvent != null)
+            {
+                OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
+            }
+
+
+        }
+        public void Send_Cmd136(EventType eventType,string[] reserveSections,DriveDirction[] reserveDirections,string requestBlockID,string releaseBlockAdrID)
+        {
+            TransCmd transCmd = theVehicle.GetTransCmd();
+            VehLocation vehLocation = theVehicle.GetVehLoacation();                      
+
+            try
+            {
+                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
+                iD_136_TRANS_EVENT_REP.EventType = eventType;
+                GetReserveInfo(reserveSections,reserveDirections, iD_136_TRANS_EVENT_REP.ReserveInfos);
+                iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+                
+                var result = clientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE receive, out string rtnMsg);
+
+                if (OnMsgToAgvcEvent != null)
+                {
+                    OnMsgToAgvcEvent(this, iD_136_TRANS_EVENT_REP.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+        private void GetReserveInfo(string[] reserveSections, DriveDirction[] reserveDirections, RepeatedField<ReserveInfo> reserveInfos)
+        {
+            if (reserveSections.Length > 0)
+            {
+                for (int i = 0; i < reserveSections.Length; i++)
+                {
+                    ReserveInfo reserveInfo = new ReserveInfo();
+                    reserveInfo.ReserveSectionID = reserveSections[i];
+                    reserveInfo.DriveDirction = reserveDirections[i];
+
+                    reserveInfos.Add(reserveInfo);
+                }
+            }
+        }
+
+        public void Receive_Cmd35(object sender, TcpIpEventArgs e)
+        {
+            ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
+            //TODO: CarrierID rename
+
+            if (OnMsgFromAgvcEvent != null)
+            {
+                OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
+            }
+
+
+            int replyCode = 0;
+            Send_Cmd135(e.iSeqNum, replyCode);
+        }
+        public void Send_Cmd135(ushort seqNum, int replyCode)
+        {
+            TransCmd transCmd = theVehicle.GetTransCmd();
+            VehLocation vehLocation = theVehicle.GetVehLoacation();
+
+            try
+            {
+                ID_135_CST_ID_RENAME_RESPONSE iD_135_CST_ID_RENAME_RESPONSE = new ID_135_CST_ID_RENAME_RESPONSE();
+                iD_135_CST_ID_RENAME_RESPONSE.ReplyCode = replyCode;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.CSTIDRenameRespFieldNumber;
+                wrappers.SeqNum = seqNum;
+                wrappers.CSTIDRenameResp = iD_135_CST_ID_RENAME_RESPONSE;
+
+                var resp = clientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+
+                if (OnMsgToAgvcEvent != null)
+                {
+                    OnMsgToAgvcEvent(this, iD_135_CST_ID_RENAME_RESPONSE.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+
+        public void Send_Cmd134()
+        {
+            TransCmd transCmd = theVehicle.GetTransCmd();
+            VehLocation vehLocation = theVehicle.GetVehLoacation();
+
+            try
+            {
+                ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
+                iD_134_TRANS_EVENT_REP.EventType = theVehicle.EventType;
+                iD_134_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
+                iD_134_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
+                iD_134_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_134_TRANS_EVENT_REP.DrivingDirection = theVehicle.DrivingDirection;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
+                wrappers.TransEventRep = iD_134_TRANS_EVENT_REP;
+
+                var resp = clientAgent.TrxTcpIp.SendGoogleMsg(wrappers, false);
+
+                if (OnMsgToAgvcEvent != null)
+                {
+                    OnMsgToAgvcEvent(this, iD_134_TRANS_EVENT_REP.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+
         public void Receive_Cmd33(object sender, TcpIpEventArgs e)
         {
 
@@ -215,15 +389,17 @@ namespace Mirle.Agv.Control
                     break;
             }
 
-            Send_Cmd133(e.iSeqNum, receive.ControlType,receive.CancelSecID);
+            int replyCode = 1;
+            Send_Cmd133(e.iSeqNum, receive.ControlType, receive.CancelSecID, replyCode);
         }
-        public void Send_Cmd133(ushort seqNum, ControlType controlType, string cancelSecID)
+        public void Send_Cmd133(ushort seqNum, ControlType controlType, string cancelSecID, int replyCode)
         {
             try
             {
                 ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE = new ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE();
                 iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE.ControlType = controlType;
                 iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE.CancelSecID = cancelSecID;
+                iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE.ReplyCode = replyCode;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ControlZoneRespFieldNumber;
@@ -270,7 +446,7 @@ namespace Mirle.Agv.Control
                 iD_132_TRANS_COMPLETE_REPORT.CmdDistance = theVehicle.CmdDistance;
 
                 WrapperMessage wrappers = new WrapperMessage();
-                wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;                
+                wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;
                 wrappers.TranCmpRep = iD_132_TRANS_COMPLETE_REPORT;
 
                 var resp = clientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
@@ -317,7 +493,7 @@ namespace Mirle.Agv.Control
             {
                 ID_131_TRANS_RESPONSE iD_131_TRANS_RESPONSE = new ID_131_TRANS_RESPONSE();
                 iD_131_TRANS_RESPONSE.CmdID = transCmd.CmdId;
-                iD_131_TRANS_RESPONSE.ActType = theVehicle.ActType;
+                iD_131_TRANS_RESPONSE.ActType = theVehicle.Cmd131ActType;
                 iD_131_TRANS_RESPONSE.ReplyCode = replyCode;
                 iD_131_TRANS_RESPONSE.NgReason = reason;
 

@@ -8,26 +8,14 @@ namespace Mirle.Agv.Control.Tests
     [TestFixture()]
     public class MainFlowHandlerTests
     {
-        class AA
+        private List<string> Works { get; } = new List<string>();
+
+        private void Foo(List<string> array)
         {
-            private BB bb;
-            public string a = "AAaa";
-        }
-
-        class BB
-        {
-            private AA aa;
-            public string b = "BBbb";
-
-            public BB(AA aa)
-            {
-                this.aa = aa;
-            }
-
-            public int HashAA()
-            {
-                return aa.GetHashCode();
-            }
+            List<string> somethings = new List<string>();
+            somethings.Add("pqr");
+            somethings.Add("xyz");
+            array.AddRange(somethings);
         }
 
         [Test()]
@@ -42,16 +30,10 @@ namespace Mirle.Agv.Control.Tests
         [Test()]
         public void XXXTest()
         {
-            AA obA = new AA();
+            Foo(Works);
 
-            BB obB = new BB(obA);
-
-            var temp1 = obA.GetHashCode();
-
-            var temp2 = obB.HashAA();
-
-            Console.Read();
-            
+            Assert.AreEqual(Works.Count, 2);
+            Assert.AreEqual(Works[0], "pqr");
         }
     }
 }
