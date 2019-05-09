@@ -134,7 +134,7 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
-        internal void OnMiddlerGetsNewTransCmds(object sender, List<TransCmd> e)
+        public void OnMiddlerGetsNewTransCmds(object sender, AgvcTransCmd e)
         {
             throw new NotImplementedException();
         }

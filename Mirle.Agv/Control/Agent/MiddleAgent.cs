@@ -18,7 +18,7 @@ namespace Mirle.Agv.Control
     {
         #region Events
 
-        public event EventHandler<List<TransCmd>> OnMiddlerGetsNewTransCmdsEvent;
+        public event EventHandler<AgvcTransCmd> OnMiddlerGetsNewTransCmdsEvent;
         public event EventHandler<string> OnMsgFromAgvcEvent;
         public event EventHandler<string> OnMsgToAgvcEvent;
         public event EventHandler<string> OnMsgFromVehicleEvent;
@@ -216,7 +216,7 @@ namespace Mirle.Agv.Control
             }
 
         }
-        public void Send_Cmd174(string addressId,int position)
+        public void Send_Cmd174(string addressId, int position)
         {
             try
             {
@@ -324,7 +324,7 @@ namespace Mirle.Agv.Control
 
         public void Receive_Cmd52(object sender, TcpIpEventArgs e)
         {
-            ID_52_AVOID_COMPLETE_RESPONSE receive = (ID_52_AVOID_COMPLETE_RESPONSE)e.objPacket;            
+            ID_52_AVOID_COMPLETE_RESPONSE receive = (ID_52_AVOID_COMPLETE_RESPONSE)e.objPacket;
 
             if (OnMsgFromAgvcEvent != null)
             {
@@ -902,20 +902,19 @@ namespace Mirle.Agv.Control
             //TODO : check if this cmd can work
             //TODO : change into list<TransCmd>
             //TODO : Notify everyone that new cmd31 receive
+            theVehicle.Cmd131ActType = transRequest.ActType;
 
             if (OnMsgFromAgvcEvent != null)
             {
                 OnMsgFromAgvcEvent.Invoke(this, transRequest.ToString());
             }
 
-
-
-            if (CanVehDoTransfer())
+            if (CanVehDoTransfer(transRequest, e.iSeqNum))
             {
-                ConvertAgvcTransCmdIntoList(transRequest);
+                AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest);
                 if (OnMiddlerGetsNewTransCmdsEvent != null)
                 {
-                    OnMiddlerGetsNewTransCmdsEvent.Invoke(this, transCmds);
+                    OnMiddlerGetsNewTransCmdsEvent.Invoke(this, agvcTransCmd);
                 }
             }
         }
@@ -950,36 +949,330 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private bool CanVehDoTransfer()
+        private bool CanVehDoTransfer(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
+        {
+            if (theVehicle.GetBattery().IsBatteryLowPower())
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle is in low power can not do transfer command.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (theVehicle.GetBattery().IsBatteryHighTemperature())
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle is in battery temperature too hight can not do transfer command.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+
+            var type = transRequest.ActType;
+            switch (type)
+            {
+                case ActiveType.Move:
+                    return CanVehMove(transRequest, seqNum);
+                case ActiveType.Load:
+                    return CanVehLoad(transRequest, seqNum);
+                case ActiveType.Unload:
+                    return CanVehUnload(transRequest, seqNum);
+                case ActiveType.Loadunload:
+                    return CanVehLoadunload(transRequest, seqNum);
+                case ActiveType.Home:
+                    return CanVehHome(transRequest, seqNum);
+                case ActiveType.Override:
+                    return CanVehOverride(transRequest, seqNum);
+                case ActiveType.Mtlhome:
+                case ActiveType.Movetomtl:
+                case ActiveType.Systemout:
+                case ActiveType.Systemin:
+                case ActiveType.Techingmove:
+                case ActiveType.Round:
+                default:
+                    int replyCode = 0; // OK
+                    string reason = "Empty";
+                    Send_Cmd131(seqNum, replyCode, reason);
+                    return true;
+            }
+        }
+
+        private bool CanVehOverride(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
+        {
+            if (VehInOverrideSection(transRequest))
+            {
+                int replyCode = 0; // OK
+                string reason = "Empty";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return true;
+            }
+            else
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle current section not in override guideSections.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+        }
+
+        private bool VehInOverrideSection(ID_31_TRANS_REQUEST transRequest)
+        {
+            var location = theVehicle.GetVehLoacation();
+            var curSectionId = location.Section.Id;
+
+            var isInToLoadSections = false;
+            if (transRequest.GuideAddressesStartToLoad != null)
+            {
+                var toLoadSections = transRequest.GuideSectionsStartToLoad.ToList();
+                isInToLoadSections = toLoadSections.Contains(curSectionId);
+            }
+
+            var isInToUnloadSections = false;
+            if (transRequest.GuideSectionsToDestination != null)
+            {
+                var toUnloadSections = transRequest.GuideSectionsToDestination.ToList();
+                isInToUnloadSections = toUnloadSections.Contains(curSectionId);
+            }
+
+            return isInToLoadSections || isInToUnloadSections;
+        }
+
+        private bool CanVehHome(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
+        {
+            int replyCode = 0; // OK
+            string reason = "Empty";
+            Send_Cmd131(seqNum, replyCode, reason);
+            return true;
+        }
+
+        private bool CanVehLoadunload(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
+        {
+            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle is not idle can not do loadunload.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (theVehicle.HasCst == VhLoadCSTStatus.Exist)
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle has a carrier can not do loadunload.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (string.IsNullOrEmpty(transRequest.LoadAdr))
+            {
+                int replyCode = 1; // NG
+                string reason = "Transfer command has no load address can not do load.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
+            {
+                int replyCode = 1; // NG
+                string reason = "Transfer command has no unload address can not do unload.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else
+            {
+                int replyCode = 0; // OK
+                string reason = "Empty";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return true;
+            }
+        }
+
+        private bool CanVehUnload(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
+        {
+            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle is not idle can not do unload.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (theVehicle.HasCst == VhLoadCSTStatus.NotExist)
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle has no carrier can not do unload.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
+            {
+                int replyCode = 1; // NG
+                string reason = "Transfer command has no unload address can not do unload.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+
+            else
+            {
+                int replyCode = 0; // OK
+                string reason = "Empty";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return true;
+            }
+        }
+
+        private bool CanVehLoad(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
+        {
+            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle is not idle can not do load.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (theVehicle.HasCst == VhLoadCSTStatus.Exist)
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle has a carrier can not do load.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (string.IsNullOrEmpty(transRequest.LoadAdr))
+            {
+                int replyCode = 1; // NG
+                string reason = "Transfer command has no load address can not do load.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else
+            {
+                int replyCode = 0; // OK
+                string reason = "Empty";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return true;
+            }
+        }
+
+        private bool CanVehMove(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
+        {
+            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
+            {
+                int replyCode = 1; // NG
+                string reason = "Vehicle is not idle can not do move.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
+            {
+                int replyCode = 1; // NG
+                string reason = "Transfer command has no move-end address can not do move.";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return false;
+            }
+            else
+            {
+                int replyCode = 0; // OK
+                string reason = "Empty";
+                Send_Cmd131(seqNum, replyCode, reason);
+                return true;
+            }
+        }
+
+        private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest)
+        {
+            //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd 
+            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
+            agvcTransCmd.CmdId = transRequest.CmdID;
+            if (transRequest.CSTID != null)
+            {
+                agvcTransCmd.CarrierId = transRequest.CSTID;
+            }
+            switch (transRequest.ActType)
+            {
+                case ActiveType.Move:
+                    ConvertAgvcMoveCmdIntoPackage(transRequest, agvcTransCmd);
+                    break;
+                case ActiveType.Load:
+                    ConvertAgvcLoadCmdIntoPackage(transRequest, agvcTransCmd);
+                    break;
+                case ActiveType.Unload:
+                    ConvertAgvcUnloadCmdIntoPackage(transRequest, agvcTransCmd);
+                    break;
+                case ActiveType.Loadunload:
+                    ConvertAgvcLoadunloadCmdIntoPackage(transRequest, agvcTransCmd);
+                    break;
+                case ActiveType.Home:
+                    ConvertAgvcHomeCmdIntoPackage(transRequest, agvcTransCmd);
+                    break;
+                case ActiveType.Override:
+                    ConvertAgvcOverrideCmdIntoPackage(transRequest, agvcTransCmd);
+                    break;
+                case ActiveType.Mtlhome:
+                case ActiveType.Movetomtl:
+                case ActiveType.Systemout:
+                case ActiveType.Systemin:
+                case ActiveType.Techingmove:
+                case ActiveType.Round:
+                default:
+                    agvcTransCmd.CmdType = EnumAgvcTransCmdType.Else;
+                    break;
+            }
+
+            return agvcTransCmd;
+        }
+
+        private void ConvertAgvcOverrideCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
         {
             throw new NotImplementedException();
         }
 
-        private void ConvertAgvcTransCmdIntoList(ID_31_TRANS_REQUEST transRequest)
+        private void ConvertAgvcHomeCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
         {
-            //解析收到的AgvcTransCmd並且填入TransCmds(list)
             throw new NotImplementedException();
+        }
+
+        private static void ConvertAgvcLoadunloadCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
+        {
+            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Load;
+            if (transRequest.GuideSectionsStartToLoad != null)
+            {
+                agvcTransCmd.ToLoadSections = transRequest.GuideSectionsStartToLoad.ToArray();
+            }
+            agvcTransCmd.LoadAddress = transRequest.LoadAdr;
+            if (transRequest.GuideAddressesToDestination != null)
+            {
+                agvcTransCmd.ToUnloadSections = transRequest.GuideAddressesToDestination.ToArray();
+            }
+            agvcTransCmd.UnloadAddtess = transRequest.DestinationAdr;
+        }
+
+        private static void ConvertAgvcUnloadCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
+        {
+            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Unload;
+            if (transRequest.GuideAddressesToDestination != null)
+            {
+                agvcTransCmd.ToUnloadSections = transRequest.GuideAddressesToDestination.ToArray();
+            }
+            agvcTransCmd.UnloadAddtess = transRequest.DestinationAdr;
+        }
+
+        private static void ConvertAgvcLoadCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
+        {
+            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Load;
+            if (transRequest.GuideSectionsStartToLoad != null)
+            {
+                agvcTransCmd.ToLoadSections = transRequest.GuideSectionsStartToLoad.ToArray();
+            }
+            agvcTransCmd.LoadAddress = transRequest.LoadAdr;
+        }
+
+        private static void ConvertAgvcMoveCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
+        {
+            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Move;
+            if (transRequest.GuideSectionsStartToLoad != null)
+            {
+                agvcTransCmd.ToLoadSections = transRequest.GuideSectionsStartToLoad.ToArray();
+            }
+            agvcTransCmd.UnloadAddtess = transRequest.DestinationAdr;
         }
 
         public bool GetReserveFromAgvc(string sectionId)
         {
             throw new NotImplementedException();
-        }
-
-        public void ClearTransCmds()
-        {
-            transCmds.Clear();
-        }
-
-        public bool IsTransCmds()
-        {
-            return transCmds.Count > 0;
-        }
-
-        public List<TransCmd> GetTransCmds()
-        {
-            List<TransCmd> tempTransCmds = transCmds.ToList();
-            return tempTransCmds;
         }
 
         public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)

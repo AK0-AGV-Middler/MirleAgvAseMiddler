@@ -93,6 +93,7 @@
     <Compile Include="Model\AgvcCmds\Agvmessage.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Defines.cs" />
+    <Compile Include="Model\Configs\BatteryConfigs.cs" />
     <Compile Include="Model\Configs\ElmoAxisConfigs.cs" />
     <Compile Include="Model\Configs\ElmoSingleAxisConfigs.cs" />
     <Compile Include="Model\Configs\MainFlowConfigs.cs" />

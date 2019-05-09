@@ -30,10 +30,10 @@ namespace Mirle.Agv.Control.Tests
         [Test()]
         public void XXXTest()
         {
-            Foo(Works);
+            string[] words = { "abc", "def" };
 
-            Assert.AreEqual(Works.Count, 2);
-            Assert.AreEqual(Works[0], "pqr");
+            Assert.AreEqual(words.Length, 2);
+            
         }
     }
 }

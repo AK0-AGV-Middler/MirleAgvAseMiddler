@@ -39,6 +39,17 @@ namespace Mirle.Agv
         Empty
     }
 
+    public enum EnumAgvcTransCmdType
+    {
+        Move,
+        Load,
+        Unload,
+        LoadUnload,
+        Home,
+        Override,
+        Else
+    }
+
     //public enum EnumAddressType
     //{
     //    EqPort,

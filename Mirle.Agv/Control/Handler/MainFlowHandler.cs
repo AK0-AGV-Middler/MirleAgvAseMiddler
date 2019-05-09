@@ -23,6 +23,7 @@ namespace Mirle.Agv.Control
         private MainFlowConfigs mainFlowConfigs;
         private MapConfigs mapConfigs;
         private MoveControlConfigs moveControlConfigs;
+        private BatteryConfigs batteryConfigs;
 
         #endregion
 
@@ -189,6 +190,18 @@ namespace Mirle.Agv.Control
 
                 moveControlConfigs = new MoveControlConfigs();
 
+                batteryConfigs = new BatteryConfigs();
+                int.TryParse(configHandler.GetString("Battery", "Percentage", "80"), out int tempPercentage);
+                batteryConfigs.Percentage = tempPercentage;
+                double.TryParse(configHandler.GetString("Battery", "Voltage", "40"), out double tempVoltage);
+                batteryConfigs.Voltage = tempVoltage;
+                int.TryParse(configHandler.GetString("Battery", "Temperature", "30"), out int tempTemperature);
+                batteryConfigs.Temperature = tempTemperature;
+                int.TryParse(configHandler.GetString("Battery", "LowPowerThreshold", "25"), out int tempLowPowerThreshold);
+                batteryConfigs.LowPowerThreshold = tempLowPowerThreshold;
+                int.TryParse(configHandler.GetString("Battery", "HighTemperatureThreshold", "45"), out int tempHighTemperatureThreshold);
+                batteryConfigs.HighTemperatureThreshold = tempHighTemperatureThreshold;
+
                 if (OnXXXIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
@@ -322,6 +335,7 @@ namespace Mirle.Agv.Control
             try
             {
                 theVehicle = Vehicle.Instance;
+                theVehicle.SetupBattery(batteryConfigs);
 
                 var args = new InitialEventArgs
                 {
@@ -394,21 +408,17 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private void OnMiddlerGetsNewTransCmds(object sender, List<TransCmd> transCmds)
+        private void OnMiddlerGetsNewTransCmds(object sender, AgvcTransCmd agvcTransCmd)
         {
             try
             {
-                if (CanGetNewTransCmds())
-                {
-                    this.transCmds = transCmds;
-                    transCmds.Add(new EmptyTransCmd());
-                    middleAgent.ClearTransCmds();
+                ConvertAgvcTransCmdIntoList(agvcTransCmd);
+                transCmds.Add(new EmptyTransCmd());
 
-                    thdGetsNewTransCmds.Start();
+                thdGetsNewTransCmds.Start();
 
-                    thdAskReserve.Start();
-                    //thdAskReserve等待thdGetsNewTransCmds一起完結
-                }
+                thdAskReserve.Start();
+                //thdAskReserve等待thdGetsNewTransCmds一起完結
 
             }
             catch (Exception ex)
@@ -421,9 +431,8 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private bool CanGetNewTransCmds()
+        private void ConvertAgvcTransCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            // 判斷當前是否可接收新的搬貨命令 若否 則發送報告
             throw new NotImplementedException();
         }
 
@@ -587,7 +596,7 @@ namespace Mirle.Agv.Control
         public void Stop()
         {
             ShutdownEvent.Set();
-            PauseEvent.Set();            
+            PauseEvent.Set();
             if (thdGetsNewTransCmds.IsAlive)
             {
                 thdGetsNewTransCmds.Join();
@@ -758,11 +767,11 @@ namespace Mirle.Agv.Control
 
         public void MiddlerTestMsg()
         {
-           // middleAgent.TestMsg();
+            // middleAgent.TestMsg();
             middleAgent.Send_Cmd131(20, 1, "SomeReason");
         }
 
-        
+
 
     }
 }

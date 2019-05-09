@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.Model.TransferCmds;
 using TcpIpClientSample;
+using Mirle.Agv.Model.Configs;
 
 namespace Mirle.Agv.Model
 {
@@ -53,7 +54,7 @@ namespace Mirle.Agv.Model
 
         private Vehicle()
         {
-            battery = new Battery(50, 100);   //50,100 can config
+            battery = new Battery();
             vehLoacation = new VehLocation();
             dicCarriersById = new Dictionary<string, Carrier>();
             dicCarriersByStageNum = new Dictionary<int, Carrier>();
@@ -92,6 +93,11 @@ namespace Mirle.Agv.Model
             Carrier tempCarrier = aCarrier.Clone();
             dicCarriersById.Add(tempCarrier.GetId(), tempCarrier);
             dicCarriersByStageNum.Add(tempCarrier.GetStageNum(), tempCarrier);
+        }
+
+        public void SetupBattery(BatteryConfigs batteryConfigs)
+        {
+            battery.SetupBattery(batteryConfigs);
         }
 
         #endregion
