@@ -20,8 +20,6 @@ namespace Mirle.Agv.Model
         private PlcRobot PlcRobot;
         private TransCmd transCmd;
         private LoggerAgent theLoggerAgent;
-        private bool hasCarrier;
-
 
         #region Comm Property
 
@@ -43,9 +41,13 @@ namespace Mirle.Agv.Model
         public CompleteStatus CompleteStatus { get; set; }
         public uint CmdPowerConsume { get; set; }
         public int CmdDistance { get; set; }
-        public EventType EventType { get; set; }
+        public EventType Cmd134EventType { get; set; }
         public string CmdID { get; set; }
-        public CMDCancelType Cmd137ActType { get;  set; }
+        public CMDCancelType Cmd137ActType { get; set; }
+        public PauseEvent Cmd139EventType { get; set; }
+        public VhLoadCSTStatus HasCst { get; set; }
+        public string TeachingFromAddress { get; internal set; }
+        public string TeachingToAddress { get; internal set; }
 
         #endregion
 
@@ -60,7 +62,6 @@ namespace Mirle.Agv.Model
             ObstVehicleID = "Empty";
             StoppedBlockID = "Empty";
             PlcRobot = new PlcRobot();
-            hasCarrier = false;
             theLoggerAgent = LoggerAgent.Instance;
         }
 
@@ -143,18 +144,6 @@ namespace Mirle.Agv.Model
             {
                 //log ex
                 return new Carrier();
-            }
-        }
-
-        public VhLoadCSTStatus HasCarrier()
-        {
-            if (hasCarrier)
-            {
-                return VhLoadCSTStatus.Exist;
-            }
-            else
-            {
-                return VhLoadCSTStatus.NotExist;
             }
         }
 
