@@ -10,7 +10,7 @@ namespace Mirle.Agv.Model.TransferCmds
    public class LoadCmdInfo : TransCmd
     {        
         public string LoadAddress { get; set; }
-        public string CassetteId { get; set; }
+        public string CarrierId { get; set; }
         public int StageNum { get; set; }
 
         public LoadCmdInfo() : base()

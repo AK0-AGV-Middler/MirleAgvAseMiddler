@@ -17,6 +17,7 @@ namespace Mirle.Agv.Model
         private float fltPadding;
         private string strOriginBC;
         private string strDestinationBC;
+        private double sectionLength;
 
 
         public MapSection()
@@ -101,6 +102,11 @@ namespace Mirle.Agv.Model
         {
             get { return this.strDestinationBC; }
             set { this.strDestinationBC = value; }
+        }
+
+        public double GetSectionLength()
+        {
+            return sectionLength;
         }
     }
 

@@ -18,6 +18,18 @@ namespace Mirle.Agv.Control.Tests
             array.AddRange(somethings);
         }
 
+        private string Foo2(string str)
+        {
+            if (str == null)
+            {
+                return "It is null";
+            }
+            else
+            {
+                return str + " is not null";
+            }
+        }
+
         [Test()]
         public void MainFlowHandlerTest()
         {
@@ -30,9 +42,14 @@ namespace Mirle.Agv.Control.Tests
         [Test()]
         public void XXXTest()
         {
-            string[] words = { "abc", "def" };
+            string a = "xx";
+            string b = null;
 
-            Assert.AreEqual(words.Length, 2);
+            var result1 = Foo2(a);
+            var result2 = Foo2(b);
+
+            Assert.AreEqual(result1, a + " is not null");
+
             
         }
     }

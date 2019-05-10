@@ -883,7 +883,7 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;
                 wrappers.TranCmpRep = iD_132_TRANS_COMPLETE_REPORT;
 
-                var resp = clientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                var result = clientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_32_TRANS_COMPLETE_RESPONSE receive, out string rtnMsg);
 
                 if (OnMsgToAgvcEvent != null)
                 {
@@ -899,9 +899,6 @@ namespace Mirle.Agv.Control
         public void Receive_Cmd31(object sender, TcpIpEventArgs e)
         {
             ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;
-            //TODO : check if this cmd can work
-            //TODO : change into list<TransCmd>
-            //TODO : Notify everyone that new cmd31 receive
             theVehicle.Cmd131ActType = transRequest.ActType;
 
             if (OnMsgFromAgvcEvent != null)
@@ -934,7 +931,6 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.TransRespFieldNumber;
                 wrappers.SeqNum = seqNum;
                 wrappers.TransResp = iD_131_TRANS_RESPONSE;
-
 
                 var resp = clientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
 
@@ -1175,32 +1171,20 @@ namespace Mirle.Agv.Control
         private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest)
         {
             //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd 
-            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
-            agvcTransCmd.CmdId = transRequest.CmdID;
-            if (transRequest.CSTID != null)
-            {
-                agvcTransCmd.CarrierId = transRequest.CSTID;
-            }
             switch (transRequest.ActType)
             {
                 case ActiveType.Move:
-                    ConvertAgvcMoveCmdIntoPackage(transRequest, agvcTransCmd);
-                    break;
+                    return new AgvcMoveCmd(transRequest);
                 case ActiveType.Load:
-                    ConvertAgvcLoadCmdIntoPackage(transRequest, agvcTransCmd);
-                    break;
+                    return new AgvcLoadCmd(transRequest);
                 case ActiveType.Unload:
-                    ConvertAgvcUnloadCmdIntoPackage(transRequest, agvcTransCmd);
-                    break;
+                    return new AgvcUnloadCmd(transRequest);
                 case ActiveType.Loadunload:
-                    ConvertAgvcLoadunloadCmdIntoPackage(transRequest, agvcTransCmd);
-                    break;
+                    return new AgvcLoadunloadCmd(transRequest);
                 case ActiveType.Home:
-                    ConvertAgvcHomeCmdIntoPackage(transRequest, agvcTransCmd);
-                    break;
+                    return new AgvcHomeCmd(transRequest);
                 case ActiveType.Override:
-                    ConvertAgvcOverrideCmdIntoPackage(transRequest, agvcTransCmd);
-                    break;
+                    return new AgvcOverrideCmd(transRequest);
                 case ActiveType.Mtlhome:
                 case ActiveType.Movetomtl:
                 case ActiveType.Systemout:
@@ -1208,66 +1192,8 @@ namespace Mirle.Agv.Control
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    agvcTransCmd.CmdType = EnumAgvcTransCmdType.Else;
-                    break;
+                    return new AgvcTransCmd(transRequest);
             }
-
-            return agvcTransCmd;
-        }
-
-        private void ConvertAgvcOverrideCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void ConvertAgvcHomeCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void ConvertAgvcLoadunloadCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
-        {
-            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Load;
-            if (transRequest.GuideSectionsStartToLoad != null)
-            {
-                agvcTransCmd.ToLoadSections = transRequest.GuideSectionsStartToLoad.ToArray();
-            }
-            agvcTransCmd.LoadAddress = transRequest.LoadAdr;
-            if (transRequest.GuideAddressesToDestination != null)
-            {
-                agvcTransCmd.ToUnloadSections = transRequest.GuideAddressesToDestination.ToArray();
-            }
-            agvcTransCmd.UnloadAddtess = transRequest.DestinationAdr;
-        }
-
-        private static void ConvertAgvcUnloadCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
-        {
-            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Unload;
-            if (transRequest.GuideAddressesToDestination != null)
-            {
-                agvcTransCmd.ToUnloadSections = transRequest.GuideAddressesToDestination.ToArray();
-            }
-            agvcTransCmd.UnloadAddtess = transRequest.DestinationAdr;
-        }
-
-        private static void ConvertAgvcLoadCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
-        {
-            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Load;
-            if (transRequest.GuideSectionsStartToLoad != null)
-            {
-                agvcTransCmd.ToLoadSections = transRequest.GuideSectionsStartToLoad.ToArray();
-            }
-            agvcTransCmd.LoadAddress = transRequest.LoadAdr;
-        }
-
-        private static void ConvertAgvcMoveCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, AgvcTransCmd agvcTransCmd)
-        {
-            agvcTransCmd.CmdType = EnumAgvcTransCmdType.Move;
-            if (transRequest.GuideSectionsStartToLoad != null)
-            {
-                agvcTransCmd.ToLoadSections = transRequest.GuideSectionsStartToLoad.ToArray();
-            }
-            agvcTransCmd.UnloadAddtess = transRequest.DestinationAdr;
         }
 
         public bool GetReserveFromAgvc(string sectionId)
@@ -1284,7 +1210,7 @@ namespace Mirle.Agv.Control
         public void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status)
         {
             //Send Transfer Command Complete Report to Agvc
-            throw new NotImplementedException();
+            Send_Cmd132();
         }
 
         public void TestMsg()
@@ -1297,4 +1223,5 @@ namespace Mirle.Agv.Control
             }
         }
     }
+
 }

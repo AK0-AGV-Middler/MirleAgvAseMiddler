@@ -412,13 +412,21 @@ namespace Mirle.Agv.Control
         {
             try
             {
-                ConvertAgvcTransCmdIntoList(agvcTransCmd);
-                transCmds.Add(new EmptyTransCmd());
+                if (GenralTransCmds(agvcTransCmd))
+                {
+                    ConvertAgvcTransCmdIntoList(agvcTransCmd);
+                    transCmds.Add(new EmptyTransCmd());
 
-                thdGetsNewTransCmds.Start();
+                    thdGetsNewTransCmds.Start();
 
-                thdAskReserve.Start();
-                //thdAskReserve等待thdGetsNewTransCmds一起完結
+                    thdAskReserve.Start();
+                    //thdAskReserve等待thdGetsNewTransCmds一起完結
+
+                }
+                else
+                {
+
+                }
 
             }
             catch (Exception ex)
@@ -431,9 +439,151 @@ namespace Mirle.Agv.Control
             }
         }
 
+        private bool GenralTransCmds(AgvcTransCmd agvcTransCmd)
+        {
+            var type = agvcTransCmd.CmdType;
+            return (type == EnumAgvcTransCmdType.Move) || type == EnumAgvcTransCmdType.Load || (type == EnumAgvcTransCmdType.Unload) || (type == EnumAgvcTransCmdType.LoadUnload);
+        }
+
         private void ConvertAgvcTransCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
+            transCmds.Clear();
+
+            switch (agvcTransCmd.CmdType)
+            {
+                case EnumAgvcTransCmdType.Move:
+                    ConvertAgvcMoveCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCmdType.Load:
+                    ConvertAgvcLoadCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCmdType.Unload:
+                    ConvertAgvcUnloadCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCmdType.LoadUnload:
+                    ConvertAgvcLoadUnloadCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCmdType.Home:
+                    ConvertAgvcHomeCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCmdType.Override:
+                    ConvertAgvcOverrideCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCmdType.Else:
+                default:
+                    ConvertAgvcElseCmdIntoList(agvcTransCmd);
+                    break;
+            }
+        }
+
+        private void ConvertAgvcElseCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
             throw new NotImplementedException();
+        }
+
+        private void ConvertAgvcOverrideCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            //TODO: clone old transCmds
+            //TODO: separate transCmds into MLMU
+            //TODO: override move part.
+
+            var tempTransCmds = new List<TransCmd>();
+            for (int i = 0; i < transCmds.Count; i++)
+            {
+
+            }
+
+            var curSection = theVehicle.GetVehLoacation().Section.Id;
+            if (agvcTransCmd.ToLoadSections.Length > 0) //curSection at to load sections
+            {
+                for (int i = 0; i < agvcTransCmd.ToLoadSections.Length; i++)
+                {
+
+                }
+            }
+            else
+            {
+
+            }
+        }
+
+        private void ConvertAgvcHomeCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ConvertAgvcLoadUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            ConvertAgvcLoadCmdIntoList(agvcTransCmd);
+            ConvertAgvcUnloadCmdIntoList(agvcTransCmd);
+        }
+
+        private void ConvertAgvcUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            if (agvcTransCmd.ToUnloadSections.Length > 0)
+            {
+                for (int i = 0; i < agvcTransCmd.ToUnloadSections.Length; i++)
+                {
+                    MoveCmdInfo moveCmd = new MoveCmdInfo();
+                    moveCmd.CmdId = agvcTransCmd.CmdId;
+                    moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
+                    var section = mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
+                    moveCmd.Section = section;
+                    moveCmd.TotalMoveLength += section.GetSectionLength();
+                    moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
+                    transCmds.Add(moveCmd);
+                }
+            }
+
+            UnloadCmdInfo unloadCmd = new UnloadCmdInfo();
+            unloadCmd.CarrierId = agvcTransCmd.CarrierId;
+            unloadCmd.CmdId = agvcTransCmd.CmdId;
+            unloadCmd.UnloadAddress = agvcTransCmd.UnloadAddtess;
+
+            transCmds.Add(unloadCmd);
+        }
+
+        private void ConvertAgvcLoadCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            if (agvcTransCmd.ToLoadSections.Length > 0)
+            {
+                for (int i = 0; i < agvcTransCmd.ToLoadSections.Length; i++)
+                {
+                    MoveCmdInfo moveCmd = new MoveCmdInfo();
+                    moveCmd.CmdId = agvcTransCmd.CmdId;
+                    moveCmd.MoveEndAddress = agvcTransCmd.LoadAddress;
+                    var section = mapHandler.GetMapSection(agvcTransCmd.ToLoadSections[i]);
+                    moveCmd.Section = section;
+                    moveCmd.TotalMoveLength += section.GetSectionLength();
+                    moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToLoadSections.Length - 1);
+                    transCmds.Add(moveCmd);
+                }
+            }
+
+            LoadCmdInfo loadCmd = new LoadCmdInfo();
+            loadCmd.CarrierId = agvcTransCmd.CarrierId;
+            loadCmd.CmdId = agvcTransCmd.CmdId;
+            loadCmd.LoadAddress = agvcTransCmd.LoadAddress;
+
+            transCmds.Add(loadCmd);
+        }
+
+        private void ConvertAgvcMoveCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            if (agvcTransCmd.ToUnloadSections.Length > 0)
+            {
+                for (int i = 0; i < agvcTransCmd.ToUnloadSections.Length; i++)
+                {
+                    MoveCmdInfo moveCmd = new MoveCmdInfo();
+                    moveCmd.CmdId = agvcTransCmd.CmdId;
+                    moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
+                    var section = mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
+                    moveCmd.Section = section;
+                    moveCmd.TotalMoveLength += section.GetSectionLength();
+                    moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
+                    transCmds.Add(moveCmd);
+                }
+            }
         }
 
         private void VisitTransCmds()
