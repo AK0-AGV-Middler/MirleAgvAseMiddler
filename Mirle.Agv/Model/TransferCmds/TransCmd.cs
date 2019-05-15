@@ -23,21 +23,23 @@ namespace Mirle.Agv.Model.TransferCmds
 
         public TransCmd Clone()
         {
-            switch (type)
-            {
-                case EnumTransCmdType.Move:
-                    MoveCmdInfo moveCmd = (MoveCmdInfo)this;
-                    return moveCmd;
-                case EnumTransCmdType.Load:
-                    LoadCmdInfo loadCmdInfo = (LoadCmdInfo)this;
-                    return loadCmdInfo;
-                case EnumTransCmdType.Unload:
-                    UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)this;
-                    return unloadCmdInfo;
-                default:
-                    EmptyTransCmd emptyTransCmd = (EmptyTransCmd)this;
-                    return emptyTransCmd;
-            }            
+            return ExtensionMethods.DeepClone(this);
+
+            //switch (type)
+            //{
+            //    case EnumTransCmdType.Move:
+            //        MoveCmdInfo moveCmd = (MoveCmdInfo)this;
+            //        return moveCmd;
+            //    case EnumTransCmdType.Load:
+            //        LoadCmdInfo loadCmdInfo = (LoadCmdInfo)this;
+            //        return loadCmdInfo;
+            //    case EnumTransCmdType.Unload:
+            //        UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)this;
+            //        return unloadCmdInfo;
+            //    default:
+            //        EmptyTransCmd emptyTransCmd = (EmptyTransCmd)this;
+            //        return emptyTransCmd;
+            //}            
         }
     }
 }

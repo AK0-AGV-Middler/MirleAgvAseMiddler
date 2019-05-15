@@ -11,6 +11,7 @@ namespace Mirle.Agv.Control
     {
         public event EventHandler<EnumCompleteStatus> OnLoadFinished;
         public event EventHandler<EnumCompleteStatus> OnUnloadFinished;
+
         private LoggerAgent loggerAgent;
 
         public RobotControlHandler()

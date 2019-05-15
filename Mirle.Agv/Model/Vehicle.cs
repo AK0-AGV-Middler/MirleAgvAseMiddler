@@ -30,7 +30,21 @@ namespace Mirle.Agv.Model
         public DriveDirction DrivingDirection { get; set; }
         public VHModeStatus ModeStatus { get; set; }
         public VhStopSingle ObstacleStatus { get; set; }
-        public string CarrierID { get; set; }
+        public string CarrierID
+        {
+            get
+            {
+                if (dicCarriersByStageNum != null)
+                {
+                    return dicCarriersByStageNum[0].Id;
+                }
+                return "Empty";
+            }
+            set
+            {
+                dicCarriersByStageNum[0].Id = value;
+            }
+        }
         public int ObstDistance { get; set; }
         public string ObstVehicleID { get; set; }
         public VhStopSingle PauseStatus { get; set; }
@@ -91,13 +105,18 @@ namespace Mirle.Agv.Model
         public void AddCarrier(Carrier aCarrier)
         {
             Carrier tempCarrier = aCarrier.Clone();
-            dicCarriersById.Add(tempCarrier.GetId(), tempCarrier);
-            dicCarriersByStageNum.Add(tempCarrier.GetStageNum(), tempCarrier);
+            dicCarriersById.Add(tempCarrier.Id, tempCarrier);
+            dicCarriersByStageNum.Add(tempCarrier.StageNum, tempCarrier);
         }
 
         public void SetupBattery(BatteryConfigs batteryConfigs)
         {
             battery.SetupBattery(batteryConfigs);
+        }
+
+        public void SetVehicleStop()
+        {
+
         }
 
         #endregion

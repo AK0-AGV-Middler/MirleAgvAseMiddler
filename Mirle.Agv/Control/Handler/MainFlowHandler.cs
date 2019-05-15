@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Mirle.Agv.Control.Handler.TransCmdsSteps;
+using TcpIpClientSample;
 
 namespace Mirle.Agv.Control
 {
@@ -16,6 +17,7 @@ namespace Mirle.Agv.Control
     {
         #region Configs
 
+        private string rootDir;
         private string configPath;
         private ConfigHandler configHandler;
         private MiddlerConfigs middlerConfigs;
@@ -85,10 +87,25 @@ namespace Mirle.Agv.Control
 
         public Vehicle theVehicle;
         private bool isIniOk;
+        private AgvcTransCmd agvcTransCmd;
 
         public MainFlowHandler()
         {
             isIniOk = true;
+            rootDir = Environment.CurrentDirectory;
+            //InitialMainFlowHandler();
+
+            //RunThreads();
+
+            transCmds = new List<TransCmd>();
+            lastTransCmds = new List<TransCmd>();
+            queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
+        }
+
+        public MainFlowHandler(string rootDir)
+        {
+            isIniOk = true;
+            this.rootDir = rootDir;
             //InitialMainFlowHandler();
 
             //RunThreads();
@@ -139,12 +156,12 @@ namespace Mirle.Agv.Control
         {
             try
             {
-                configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
+                configPath = Path.Combine(rootDir, "Configs.ini");
                 configHandler = new ConfigHandler(configPath);
 
                 mainFlowConfigs = new MainFlowConfigs();
-                var tempLogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
-                mainFlowConfigs.LogConfigPath = Path.Combine(Environment.CurrentDirectory, tempLogConfigPath);
+                LoggerAgent.RootDir = rootDir;
+                mainFlowConfigs.LogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
                 LoggerAgent.LogConfigPath = mainFlowConfigs.LogConfigPath;
                 int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
                 mainFlowConfigs.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
@@ -181,6 +198,7 @@ namespace Mirle.Agv.Control
                 middlerConfigs.SleepTime = tempSleepTime;
 
                 mapConfigs = new MapConfigs();
+                mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", @"D:\CsProject\Mirle.Agv\Mirle.Agv\bin\Debug");
                 mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "ASECTION.csv");
                 mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "AADDRESS.csv");
 
@@ -321,12 +339,16 @@ namespace Mirle.Agv.Control
             catch (Exception)
             {
                 isIniOk = false;
-                var args = new InitialEventArgs
+
+                if (OnXXXIntialDoneEvent != null)
                 {
-                    IsOk = false,
-                    ItemName = "Handler"
-                };
-                OnXXXIntialDoneEvent(this, args);
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = false,
+                        ItemName = "Handler"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
             }
         }
 
@@ -337,22 +359,28 @@ namespace Mirle.Agv.Control
                 theVehicle = Vehicle.Instance;
                 theVehicle.SetupBattery(batteryConfigs);
 
-                var args = new InitialEventArgs
+                if (OnXXXIntialDoneEvent != null)
                 {
-                    IsOk = true,
-                    ItemName = "Vehicle"
-                };
-                OnXXXIntialDoneEvent(this, args);
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "Vehicle"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
             }
             catch (Exception)
             {
                 isIniOk = false;
-                var args = new InitialEventArgs
+                if (OnXXXIntialDoneEvent != null)
                 {
-                    IsOk = false,
-                    ItemName = "Handler"
-                };
-                OnXXXIntialDoneEvent(this, args);
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = false,
+                        ItemName = "Vehicle"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
             }
 
         }
@@ -361,10 +389,15 @@ namespace Mirle.Agv.Control
         {
             try
             {
-                //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'
-
+                //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnMiddlerGetsNewTransCmdsEvent += OnMiddlerGetsNewTransCmds;
                 middleAgent.OnMiddlerGetsNewTransCmdsEvent += mapHandler.OnMiddlerGetsNewTransCmds;
+
+                //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
+                middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;
+                middleAgent.OnTransferCancelEvent += mapHandler.OnMiddlerGetsCancelEvent;
+
+                middleAgent.OnTransferAbortEvent += OnMiddlerGetsAbortEvent;
 
                 //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
@@ -374,54 +407,71 @@ namespace Mirle.Agv.Control
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += OnTransCmdsFinishedEvent;
-                moveControlHandler.OnMoveFinished += middleAgent.OnTransCmdsFinishedEvent;
                 moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
 
                 //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 robotControlHandler.OnLoadFinished += OnTransCmdsFinishedEvent;
-                robotControlHandler.OnLoadFinished += middleAgent.OnTransCmdsFinishedEvent;
                 robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
                 //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 robotControlHandler.OnUnloadFinished += OnTransCmdsFinishedEvent;
-                robotControlHandler.OnUnloadFinished += middleAgent.OnTransCmdsFinishedEvent;
                 robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
-                var args = new InitialEventArgs
+
+
+                if (OnXXXIntialDoneEvent != null)
                 {
-                    IsOk = true,
-                    ItemName = "事件"
-                };
-                OnXXXIntialDoneEvent(this, args);
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "事件"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
 
             }
             catch (Exception)
             {
                 isIniOk = false;
-                var args = new InitialEventArgs
-                {
-                    IsOk = false,
-                    ItemName = "事件"
-                };
-                OnXXXIntialDoneEvent(this, args);
 
+                if (OnXXXIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = false,
+                        ItemName = "事件"
+                    };
+                    OnXXXIntialDoneEvent(this, args);
+                }
             }
+        }
+
+        private void OnMiddlerGetsAbortEvent(object sender, string e)
+        {
+            theVehicle.CmdID = e;
+            OnAbortEvent();
+        }
+
+        private void OnMiddlerGetsCancelEvent(object sender, string e)
+        {
+            theVehicle.CmdID = e;
+            OnCancelEvent();
         }
 
         private void OnMiddlerGetsNewTransCmds(object sender, AgvcTransCmd agvcTransCmd)
         {
             try
             {
-                if (GenralTransCmds(agvcTransCmd))
+                this.agvcTransCmd = agvcTransCmd;
+                if (GenralTransCmds()) // Move/Load/Unload/LoadUnload
                 {
-                    ConvertAgvcTransCmdIntoList(agvcTransCmd);
+                    ConvertAgvcTransCmdIntoList();
                     transCmds.Add(new EmptyTransCmd());
 
                     thdGetsNewTransCmds.Start();
 
                     thdAskReserve.Start();
                     //thdAskReserve等待thdGetsNewTransCmds一起完結
-
                 }
                 else
                 {
@@ -439,13 +489,13 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private bool GenralTransCmds(AgvcTransCmd agvcTransCmd)
+        private bool GenralTransCmds()
         {
             var type = agvcTransCmd.CmdType;
             return (type == EnumAgvcTransCmdType.Move) || type == EnumAgvcTransCmdType.Load || (type == EnumAgvcTransCmdType.Unload) || (type == EnumAgvcTransCmdType.LoadUnload);
         }
 
-        private void ConvertAgvcTransCmdIntoList(AgvcTransCmd agvcTransCmd)
+        private void ConvertAgvcTransCmdIntoList()
         {
             transCmds.Clear();
 
@@ -606,38 +656,6 @@ namespace Mirle.Agv.Control
                 {
                     goNextTransCmd = false;
                     DoTransfer();
-
-                    #region Comment
-                    //TransCmd transCmd = transCmds[index];
-                    //switch (transCmd.GetType())
-                    //{
-                    //    case EnumTransCmdType.Move:
-                    //        MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
-                    //        queWaitForReserve.Enqueue(moveCmd);
-                    //        goNextTransCmd = !moveCmd.IsPrecisePositioning;
-                    //        //TODO
-                    //        //MoveComplete(MoveToEnd will set goNextTransCmd into true and go on
-                    //        break;
-                    //    case EnumTransCmdType.Load:
-                    //        LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transCmd;
-                    //        //TODO
-                    //        //command PLC to DoLoad
-                    //        //LoadComplete will set goNextTransCmd into true and go on
-                    //        robotControlHandler.DoLoad(loadCmdInfo);
-                    //        break;
-                    //    case EnumTransCmdType.Unload:
-                    //        UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transCmd;
-                    //        //TODO
-                    //        //command PLC to DoLoad
-                    //        //LoadComplete will set goNextTransCmd into true and go on
-                    //        robotControlHandler.DoUnload(unloadCmdInfo);
-                    //        break;
-                    //    default:
-                    //        break;
-                    //}
-
-                    //transCmdsIndex++;
-                    #endregion
                 }
 
                 SpinWait.SpinUntil(() => false, mainFlowConfigs.DoTransCmdsInterval);
@@ -747,6 +765,7 @@ namespace Mirle.Agv.Control
         {
             ShutdownEvent.Set();
             PauseEvent.Set();
+            theVehicle.SetVehicleStop();
             if (thdGetsNewTransCmds.IsAlive)
             {
                 thdGetsNewTransCmds.Join();
@@ -773,18 +792,16 @@ namespace Mirle.Agv.Control
             switch (status)
             {
                 case EnumCompleteStatus.Move:
-                    VisitNextTransCmd();
+                    OnMoveFinishedEvent();
                     break;
                 case EnumCompleteStatus.Load:
-                    if (CanCarrierIdRead())
-                    {
-                        VisitNextTransCmd();
-                    }
+                    OnLoadFinishedEvent();
                     break;
                 case EnumCompleteStatus.Unload:
-                    VisitNextTransCmd();
+                    OnUnloadFinishedEvent();
                     break;
                 case EnumCompleteStatus.LoadUnload:
+                    OnLoadunloadFinishedEvent();
                     break;
                 case EnumCompleteStatus.Home:
                     break;
@@ -797,8 +814,10 @@ namespace Mirle.Agv.Control
                 case EnumCompleteStatus.SystemIn:
                     break;
                 case EnumCompleteStatus.Cancel:
+                    OnCancelEvent();
                     break;
                 case EnumCompleteStatus.Abort:
+                    OnAbortEvent();
                     break;
                 case EnumCompleteStatus.VehicleAbort:
                     break;
@@ -811,6 +830,96 @@ namespace Mirle.Agv.Control
                 default:
                     break;
             }
+        }
+
+        private void OnAbortEvent()
+        {
+            Stop();
+            middleAgent.MainFlowGetAbort();
+        }
+
+        private void OnCancelEvent()
+        {
+            Stop();
+            middleAgent.MainFlowGetCancel();
+        }
+
+        private void OnMoveFinishedEvent()
+        {
+            if (NextTransCmdIsLoad())
+            {
+                middleAgent.LoadArrivals();
+                VisitNextTransCmd();
+            }
+            else if (NextTransCmdIsUnload())
+            {
+                middleAgent.UnloadArrivals();
+                VisitNextTransCmd();
+            }
+            else
+            {
+                middleAgent.MoveComplete();
+            }
+        }
+
+        private bool NextTransCmdIsUnload()
+        {
+            return transCmds[transCmdsIndex + 1].GetType() == EnumTransCmdType.Unload;
+        }
+
+        private bool NextTransCmdIsLoad()
+        {
+            return transCmds[transCmdsIndex + 1].GetType() == EnumTransCmdType.Load;
+        }
+
+        private void OnLoadFinishedEvent()
+        {
+            if (CanCarrierIdRead())
+            {
+                //update carrierId
+            }
+            else
+            {
+                //carrierId = unknow
+            }
+
+            if (NextTransCmdIsMove())
+            {
+                middleAgent.LoadCompleteInLoadunload();
+                VisitNextTransCmd();
+            }
+            else
+            {
+                middleAgent.LoadComplete();
+            }
+        }
+
+        private bool NextTransCmdIsMove()
+        {
+            return transCmds[transCmdsIndex + 1].GetType() == EnumTransCmdType.Move;
+        }
+
+        private void OnUnloadFinishedEvent()
+        {
+            if (IsLoadUnloadComplete())
+            {
+                middleAgent.LoadUnloadComplete();
+            }
+            else
+            {
+                middleAgent.UnloadComplete();
+            }
+
+        }
+
+        private bool IsLoadUnloadComplete()
+        {
+            return agvcTransCmd.CmdType == EnumAgvcTransCmdType.LoadUnload;
+        }
+
+        private void OnLoadunloadFinishedEvent()
+        {
+            middleAgent.LoadUnloadComplete();
         }
 
         private void VisitNextTransCmd()
@@ -921,7 +1030,10 @@ namespace Mirle.Agv.Control
             middleAgent.Send_Cmd131(20, 1, "SomeReason");
         }
 
-
+        public MiddleAgent GetMiddleAgent()
+        {
+            return middleAgent;
+        }
 
     }
 }

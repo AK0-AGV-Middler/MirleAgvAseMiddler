@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -138,5 +140,23 @@ namespace Mirle.Agv
         Right
     }
 
+    public static class ExtensionMethods
+    {
+        public static T DeepClone<T>(this T item)
+        {
+            if (item != null)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    var formatter = new BinaryFormatter();
+                    formatter.Serialize(stream, item);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    var result = (T)formatter.Deserialize(stream);
+                    return result;
+                }
+            }
 
+            return default(T);
+        }
+    }
 }

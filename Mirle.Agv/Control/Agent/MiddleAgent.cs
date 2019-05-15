@@ -23,6 +23,8 @@ namespace Mirle.Agv.Control
         public event EventHandler<string> OnMsgToAgvcEvent;
         public event EventHandler<string> OnMsgFromVehicleEvent;
         public event EventHandler<string> OnMsgToVehicleEvent;
+        public event EventHandler<string> OnTransferCancelEvent;
+        public event EventHandler<string> OnTransferAbortEvent;
 
         #endregion
 
@@ -119,6 +121,17 @@ namespace Mirle.Agv.Control
 
             clientAgent.addTcpIpConnectedHandler(DoConnection);       //連線時的通知
             clientAgent.addTcpIpDisconnectedHandler(DoDisconnection); //斷線時的通知
+
+            OnMsgFromAgvcEvent += MiddleAgent_OnMsgFromAgvcEvent;
+        }
+
+        private void MiddleAgent_OnMsgFromAgvcEvent(object sender, string e)
+        {
+            string className = GetType().Name;
+            string methodName = sender.ToString(); //System.Reflection.MethodBase.GetCurrentMethod().Name;
+            string classMethodName = className + ":" + methodName;
+            LogFormat logFormat = new LogFormat("Debug", "3", classMethodName, "Device", "CarrierID", e);
+            theLoggerAgent.LogDebug(logFormat);
         }
 
         protected void DoConnection(object sender, TcpIpEventArgs e)
@@ -130,6 +143,59 @@ namespace Mirle.Agv.Control
         {
             TcpIpAgent agent = sender as TcpIpAgent;
             Console.WriteLine("Vh ID:{0}, disconnection.", agent.Name);
+        }
+
+        public void LoadArrivals()
+        {
+            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
+            Send_Cmd134();
+            Send_Cmd136(EventType.LoadArrivals);
+        }
+        public void UnloadArrivals()
+        {
+            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
+            Send_Cmd134();
+            Send_Cmd136(EventType.UnloadArrivals);
+        }
+        public void MoveComplete()
+        {
+            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
+            Send_Cmd134();
+            Send_Cmd136(EventType.AdrOrMoveArrivals);
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusMove;
+            Send_Cmd132();
+        }
+        public void LoadComplete()
+        {
+            Send_Cmd136(EventType.LoadComplete);
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
+            Send_Cmd132();
+        }
+        public void LoadCompleteInLoadunload()
+        {
+            Send_Cmd136(EventType.LoadComplete);
+        }
+        public void UnloadComplete()
+        {
+            Send_Cmd136(EventType.UnloadComplete);
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
+            Send_Cmd132();
+        }
+        public void LoadUnloadComplete()
+        {
+            Send_Cmd136(EventType.UnloadComplete);
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
+            Send_Cmd132();
+        }
+        public void MainFlowGetCancel()
+        {
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusCancel;
+            Send_Cmd132();
+        }
+        public void MainFlowGetAbort()
+        {
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
+            Send_Cmd132();
         }
 
         public void Receive_Cmd94(object sender, TcpIpEventArgs e)
@@ -636,14 +702,39 @@ namespace Mirle.Agv.Control
         {
 
             ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
-            //TODO: Cancel/Abort
+            bool result = false;
+            switch (receive.ActType)
+            {
+                case CMDCancelType.CmdCancel:
+                    if (CanVehCancel())
+                    {
+                        result = true;
+                        if (OnTransferCancelEvent != null)
+                        {
+                            OnTransferCancelEvent(this, receive.CmdID);
+                        }
+                    }
+                    break;
+                case CMDCancelType.CmdAbout:
+                    if (CanVehAbort())
+                    {
+                        result = true;
+                        if (OnTransferAbortEvent != null)
+                        {
+                            OnTransferAbortEvent(this, receive.CmdID);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
 
             if (OnMsgFromAgvcEvent != null)
             {
                 OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
             }
 
-            int replyCode = 1;
+            int replyCode = result ? 0 : 1;
             Send_Cmd137(e.iSeqNum, replyCode);
         }
         public void Send_Cmd137(ushort seqNum, int replyCode)
@@ -672,6 +763,14 @@ namespace Mirle.Agv.Control
                 var msg = ex.StackTrace;
             }
         }
+        private bool CanVehAbort()
+        {
+            throw new NotImplementedException();
+        }
+        private bool CanVehCancel()
+        {
+            throw new NotImplementedException();
+        }
 
         public void Receive_Cmd36(object sender, TcpIpEventArgs e)
         {
@@ -683,6 +782,35 @@ namespace Mirle.Agv.Control
                 OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
             }
 
+
+        }
+        public void Send_Cmd136(EventType eventType)
+        {
+            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            try
+            {
+                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
+                iD_136_TRANS_EVENT_REP.EventType = eventType;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+
+                var result = clientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE receive, out string rtnMsg);
+
+                if (OnMsgToAgvcEvent != null)
+                {
+                    OnMsgToAgvcEvent(this, iD_136_TRANS_EVENT_REP.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
 
         }
         public void Send_Cmd136(EventType eventType, string[] reserveSections, DriveDirction[] reserveDirections, string requestBlockID, string releaseBlockAdrID)
@@ -735,15 +863,18 @@ namespace Mirle.Agv.Control
         public void Receive_Cmd35(object sender, TcpIpEventArgs e)
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
-            //TODO: CarrierID rename
+            bool result = theVehicle.CarrierID == receive.OLDCSTID;
+            if (result)
+            {
+                theVehicle.CarrierID = receive.NEWCSTID;
+            }
 
             if (OnMsgFromAgvcEvent != null)
             {
                 OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
             }
 
-
-            int replyCode = 0;
+            int replyCode = result ? 0 : 1;
             Send_Cmd135(e.iSeqNum, replyCode);
         }
         public void Send_Cmd135(ushort seqNum, int replyCode)
@@ -1210,6 +1341,7 @@ namespace Mirle.Agv.Control
         public void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status)
         {
             //Send Transfer Command Complete Report to Agvc
+            theVehicle.CompleteStatus = (CompleteStatus)(int)status;
             Send_Cmd132();
         }
 

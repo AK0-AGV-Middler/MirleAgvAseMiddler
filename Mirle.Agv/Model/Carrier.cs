@@ -1,41 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class Carrier
     {
-        private string Id;
-        private string Type;
-        private int Size;
-        private bool EmptyFlag;
-        private int numPieces;
-        private int stageNum;
-
-        public string GetId()
-        {
-            return Id;            
-        }
-
-        public int GetStageNum()
-        {
-            return stageNum;
-        }
+        public string Id { get; set; }
+        public string Type { get; set; }
+        public int Size{get;set;}       
+        public int NumPieces { get; set; }
+        public int StageNum { get; set; }
 
         public Carrier Clone()
         {
-            Carrier aCarrier = new Carrier();
-            aCarrier.Id = this.Id;
-            aCarrier.Type = this.Type;
-            aCarrier.Size = this.Size;
-            aCarrier.EmptyFlag = this.EmptyFlag;
-            aCarrier.numPieces = this.numPieces;
-            aCarrier.stageNum = this.stageNum;
+            //using (var memory = new MemoryStream())
+            //{
+            //    IFormatter formatter = new BinaryFormatter();
+            //    formatter.Serialize(memory, this);
+            //    memory.Seek(0, SeekOrigin.Begin);
+            //    return (Carrier)formatter.Deserialize(memory);
+            //}
 
-            return aCarrier;            
+            return ExtensionMethods.DeepClone(this);
         }
     }
 }

@@ -36,7 +36,8 @@ namespace Mirle.Agv.Model
 
         public MapBarcodeReader Clone(MapBarcodeReader mapBarcode)
         {
-            return new MapBarcodeReader(mapBarcode.X, mapBarcode.Y, mapBarcode.Theta);
+            //return new MapBarcodeReader(mapBarcode.X, mapBarcode.Y, mapBarcode.Theta);
+            return ExtensionMethods.DeepClone(mapBarcode);
         }
 
         public bool Equals(MapBarcodeReader mapBarcode)

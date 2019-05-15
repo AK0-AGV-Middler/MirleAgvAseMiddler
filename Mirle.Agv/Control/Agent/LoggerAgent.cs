@@ -5,11 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.Control.Tools.Logger;
 using Mirle.Agv.Model;
+using System.IO;
 
 namespace Mirle.Agv
 {
     public class LoggerAgent
     {
+        public static string RootDir { get; set; }
+
         private Dictionary<string, Logger> dicLoggers;
 
         public static string LogConfigPath { get; set; }
@@ -19,8 +22,8 @@ namespace Mirle.Agv
         private LoggerAgent()
         {
             dicLoggers = new Dictionary<string, Logger>();
-
-            List<CategoryTypeBean> listCategory = Logger.ReadLogIniFile(LogConfigPath);
+            string fullConfigPath = Path.Combine(RootDir, LogConfigPath);
+            List<CategoryTypeBean> listCategory = Logger.ReadLogIniFile(fullConfigPath);
             foreach (CategoryTypeBean bean in listCategory)
             {
                 Logger logger = new Logger(bean);

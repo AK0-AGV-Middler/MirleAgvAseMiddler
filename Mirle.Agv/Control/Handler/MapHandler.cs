@@ -10,6 +10,7 @@ namespace Mirle.Agv.Control
 {
     public class MapHandler
     {
+        private string rootDir;
         private Dictionary<string, MapSection> SectionTable = new Dictionary<string, MapSection>();
         private Dictionary<string, List<MapSection>> SectionTableByAddress = new Dictionary<string, List<MapSection>>();
         private Dictionary<string, MapAddress> AddressTable = new Dictionary<string, MapAddress>();
@@ -76,7 +77,10 @@ namespace Mirle.Agv.Control
         {
             this.mapConfigs = mapConfigs;
             loggerAgent = LoggerAgent.Instance;
-            GetMap(mapConfigs.SectionFilePath, mapConfigs.AddressFilePath);
+            rootDir = mapConfigs.RootDir;            
+            string SectionPath = Path.Combine(rootDir,mapConfigs.SectionFilePath);
+            string AddressPath = Path.Combine(rootDir, mapConfigs.AddressFilePath);
+            GetMap(SectionPath, AddressPath);
         }
 
         public void GetMap(string SectionFilePath, string AddressFilePath)
@@ -135,6 +139,11 @@ namespace Mirle.Agv.Control
         }
 
         public void OnMiddlerGetsNewTransCmds(object sender, AgvcTransCmd e)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void OnMiddlerGetsCancelEvent(object sender, string e)
         {
             throw new NotImplementedException();
         }

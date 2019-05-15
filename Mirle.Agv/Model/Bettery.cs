@@ -7,6 +7,7 @@ using Mirle.Agv.Model.Configs;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class Battery
     {
         public int Percentage { get; set; }

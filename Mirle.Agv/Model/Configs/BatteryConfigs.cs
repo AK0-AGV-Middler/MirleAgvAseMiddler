@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
+    [Serializable]
     public class BatteryConfigs
     {
         public int Percentage { get; set; }

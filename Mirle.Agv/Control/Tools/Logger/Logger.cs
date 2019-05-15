@@ -370,7 +370,15 @@ namespace Mirle.Agv.Control.Tools.Logger
             {
                 mbrStrFileName = sLogName;
                 mbrStrDirName = sDirName;
-                mbrStrPath = string.Concat(Directory.GetCurrentDirectory(), @"\Log\", sDirName, @"\");
+                var path = @"D:\CsProject\Mirle.Agv\Mirle.Agv\bin\Debug\";
+                if (Directory.Exists(path))
+                {
+                    mbrStrPath = string.Concat(path, @"\Log\", sDirName, @"\");
+                }
+                else
+                {
+                    mbrStrPath = string.Concat(Directory.GetCurrentDirectory(), @"\Log\", sDirName, @"\");
+                }
 
                 mbrStrSaveFileName = string.Concat(sLogName, FILE_EXTENSION);              // 存檔名稱
                 mbrStrSaveFilePath = string.Concat(mbrStrPath, mbrStrSaveFileName);        // 要被開啟處理的檔案
