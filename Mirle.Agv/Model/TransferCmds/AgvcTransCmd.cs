@@ -14,6 +14,8 @@ namespace Mirle.Agv.Model.TransferCmds
         public EnumAgvcTransCmdType CmdType { get; set; }
         public string[] ToLoadSections { get; set; }
         public string[] ToUnloadSections { get; set; }
+        public string[] ToLoadAddress { get; set; }
+        public string[] ToUnloadAddress { get; set; }
         public string LoadAddress { get; set; }
         public string UnloadAddtess { get; set; }
         public string CarrierId { get; set; }

@@ -32,7 +32,7 @@ namespace Mirle.Agv.Control.Tests
             
             TcpIpEventArgs e = new TcpIpEventArgs("packId",12,request);
 
-            middleAgent.Receive_Cmd31(sender, e);
+            middleAgent.Receive_Cmd31_TransferRequest(sender, e);
 
 
             Assert.True(true);

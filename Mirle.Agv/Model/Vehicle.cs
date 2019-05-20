@@ -30,21 +30,7 @@ namespace Mirle.Agv.Model
         public DriveDirction DrivingDirection { get; set; }
         public VHModeStatus ModeStatus { get; set; }
         public VhStopSingle ObstacleStatus { get; set; }
-        public string CarrierID
-        {
-            get
-            {
-                if (dicCarriersByStageNum != null)
-                {
-                    return dicCarriersByStageNum[0].Id;
-                }
-                return "Empty";
-            }
-            set
-            {
-                dicCarriersByStageNum[0].Id = value;
-            }
-        }
+        public string CarrierID { get; set; }
         public int ObstDistance { get; set; }
         public string ObstVehicleID { get; set; }
         public VhStopSingle PauseStatus { get; set; }

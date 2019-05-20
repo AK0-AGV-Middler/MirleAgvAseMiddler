@@ -33,5 +33,10 @@ namespace Mirle.Agv.Model.Tests
             Battery battery1 = new Battery();
             var b2 = battery1.DeepClone();
         }
+
+        [Test()]
+        public void YYYTest()
+        {
+        }
     }
 }

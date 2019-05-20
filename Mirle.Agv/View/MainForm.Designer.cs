@@ -43,10 +43,16 @@
             this.通訊ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.車輛狀態ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.panel3 = new System.Windows.Forms.Panel();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.btnRefreshMap = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -58,7 +64,7 @@
             this.工程師ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1285, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -132,26 +138,26 @@
             // jogToolStripMenuItem
             // 
             this.jogToolStripMenuItem.Name = "jogToolStripMenuItem";
-            this.jogToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.jogToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
             this.jogToolStripMenuItem.Text = "Jog";
             // 
             // mapToolStripMenuItem
             // 
             this.mapToolStripMenuItem.Name = "mapToolStripMenuItem";
-            this.mapToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mapToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
             this.mapToolStripMenuItem.Text = "地圖";
             // 
             // 通訊ToolStripMenuItem
             // 
             this.通訊ToolStripMenuItem.Name = "通訊ToolStripMenuItem";
-            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
             this.通訊ToolStripMenuItem.Text = "通訊";
             this.通訊ToolStripMenuItem.Click += new System.EventHandler(this.通訊ToolStripMenuItem_Click);
             // 
             // 車輛狀態ToolStripMenuItem
             // 
             this.車輛狀態ToolStripMenuItem.Name = "車輛狀態ToolStripMenuItem";
-            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
             this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
             // 
             // 工程師ToolStripMenuItem
@@ -160,35 +166,49 @@
             this.工程師ToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
             this.工程師ToolStripMenuItem.Text = "工程師";
             // 
-            // panel1
+            // splitContainer1
             // 
-            this.panel1.Location = new System.Drawing.Point(6, 27);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(467, 416);
-            this.panel1.TabIndex = 1;
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
+            this.splitContainer1.Name = "splitContainer1";
             // 
-            // panel2
+            // splitContainer1.Panel2
             // 
-            this.panel2.Location = new System.Drawing.Point(473, 28);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(326, 195);
-            this.panel2.TabIndex = 2;
+            this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
+            this.splitContainer1.Size = new System.Drawing.Size(1285, 616);
+            this.splitContainer1.SplitterDistance = 857;
+            this.splitContainer1.TabIndex = 1;
             // 
-            // panel3
+            // splitContainer2
             // 
-            this.panel3.Location = new System.Drawing.Point(473, 229);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(325, 213);
-            this.panel3.TabIndex = 3;
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer2.Name = "splitContainer2";
+            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.btnRefreshMap);
+            this.splitContainer2.Size = new System.Drawing.Size(424, 616);
+            this.splitContainer2.SplitterDistance = 411;
+            this.splitContainer2.TabIndex = 0;
+            // 
+            // btnRefreshMap
+            // 
+            this.btnRefreshMap.Location = new System.Drawing.Point(3, 3);
+            this.btnRefreshMap.Name = "btnRefreshMap";
+            this.btnRefreshMap.Size = new System.Drawing.Size(75, 23);
+            this.btnRefreshMap.TabIndex = 0;
+            this.btnRefreshMap.Text = "更新地圖";
+            this.btnRefreshMap.UseVisualStyleBackColor = true;
+            this.btnRefreshMap.Click += new System.EventHandler(this.btnRefreshMap_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.panel3);
-            this.Controls.Add(this.panel2);
-            this.Controls.Add(this.panel1);
+            this.ClientSize = new System.Drawing.Size(1285, 640);
+            this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
@@ -196,8 +216,16 @@
             this.Text = "MainForm";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -206,13 +234,10 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ToolStripMenuItem 系統ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 語言ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 模式ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 工程師ToolStripMenuItem;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.ToolStripMenuItem 啟動ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 登入ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 登出ToolStripMenuItem;
@@ -223,5 +248,8 @@
         private System.Windows.Forms.ToolStripMenuItem mapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 通訊ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 車輛狀態ToolStripMenuItem;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.Button btnRefreshMap;
     }
 }

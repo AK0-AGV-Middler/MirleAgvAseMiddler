@@ -6,108 +6,97 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
+    //ID, FromAdr, ToAdr, Distance, Shape, Type, Padding, FromX, FromY, ToX, ToY
     public class MapSection
     {
-        private string sectionId;
-        private string strOrigin;
-        private string strDestination;
-        private float fltDistance;
-        private EnumSectionType sectionType;
-        private EnumSectionShape sectionShape;
-        private float fltPadding;
-        private string strOriginBC;
-        private string strDestinationBC;
-        private double sectionLength;
-
+        public string Id { get; set; }
+        //public string Origin { get; set; }
+        //public string Destination { get; set; }
+        public string FromAddress { get; set; }
+        public string ToAddress { get; set; }
+        public float Distance { get; set; }
+        public EnumSectionShape Shape { get; set; }
+        public EnumSectionType Type { get; set; }
+        public float Padding { get; set; }
+        public float FromAddressX { get; set; }
+        public float FromAddressY { get; set; }
+        public float ToAddressX { get; set; }
+        public float ToAddressY { get; set; }
+        //public string OriginBC { get; set; }
+        //public string DestinationBC { get; set; }
 
         public MapSection()
         {
-            sectionType = EnumSectionType.None;
-            sectionShape = EnumSectionShape.None;
-            sectionId = "Empty";
-            strOrigin = "Empty";
-            strDestination = "Empty";
+            Type = EnumSectionType.None;
+            Shape = EnumSectionShape.None;
+            Id = "Empty";
+            FromAddress = "Empty";
+            ToAddress = "Empty";
         }
         public MapSection(Dictionary<string, int> HeaderTable, string[] Content)
         {
             try
             {
-                sectionId = Content[HeaderTable["Id"]];
-                strOrigin = Content[HeaderTable["Origin"]];
-                strDestination = Content[HeaderTable["Destination"]];
-                fltDistance = float.Parse(Content[HeaderTable["Distance"]]);
-                sectionType = (EnumSectionType)Enum.Parse(typeof(EnumSectionType), Content[HeaderTable["Type"]]);
-                sectionShape = (EnumSectionShape)Enum.Parse(typeof(EnumSectionShape), Content[HeaderTable["Shape"]]);
-                fltPadding = float.Parse(Content[HeaderTable["Padding"]]);
-                strOriginBC = Content[HeaderTable["OriginBC"]];
-                strDestinationBC = Content[HeaderTable["DestinationBC"]];
+                Id = Content[HeaderTable["Id"]];
+                FromAddress = Content[HeaderTable["FromAddress"]];
+                ToAddress = Content[HeaderTable["ToAddress"]];
+                Distance = float.Parse(Content[HeaderTable["Distance"]]);
+                //Type = (EnumSectionType)Enum.Parse(typeof(EnumSectionType), Content[HeaderTable["Type"]]);
+                //Shape = (EnumSectionShape)Enum.Parse(typeof(EnumSectionShape), Content[HeaderTable["Shape"]]);                
+                Type = SectionTypeConvert(Content[HeaderTable["Type"]]);       
+                Shape = SectionShapeConvert(Content[HeaderTable["Shape"]]);
+
+                Padding = float.Parse(Content[HeaderTable["Padding"]]);
+                FromAddressX = float.Parse(Content[HeaderTable["FromAddressX"]]);
+                FromAddressY = float.Parse(Content[HeaderTable["FromAddressY"]]);
+                ToAddressX = float.Parse(Content[HeaderTable["ToAddressX"]]);
+                ToAddressY = float.Parse(Content[HeaderTable["ToAddressY"]]);
+                //OriginBC = Content[HeaderTable["OriginBC"]];
+                //DestinationBC = Content[HeaderTable["DestinationBC"]];
             }
             catch (Exception ex)
             {
                 string Message = "Section ID : " + Content[HeaderTable["Id"]] + "\n" + ex.ToString();
                 throw new System.ArgumentException(Message);
             }
-
         }
 
-        public string Id
+        private EnumSectionShape SectionShapeConvert(string v)
         {
-            get { return this.sectionId; }
-            set { this.sectionId = value; }
+            switch (v)
+            {
+                case "Curve":
+                    return EnumSectionShape.Curve;
+                case "Straight":
+                    return EnumSectionShape.Straight;
+                case "None":
+                default:
+                    return EnumSectionShape.None;
+            }
         }
 
-        public string Origin
+        private EnumSectionType SectionTypeConvert(string v)
         {
-            get { return this.strOrigin; }
-            set { this.strOrigin = value; }
+            switch (v)
+            {
+                case "Horizontal":
+                    return EnumSectionType.Horizontal;
+                case "Vertical":
+                    return EnumSectionType.Vertical;
+                case "QuadrantI":
+                    return EnumSectionType.QuadrantI;
+                case "QuadrantII":
+                    return EnumSectionType.QuadrantII;
+                case "QuadrantIII":
+                    return EnumSectionType.QuadrantIII;
+                case "QuadrantIV":
+                    return EnumSectionType.QuadrantIV;
+                case "None":
+                default:
+                    return EnumSectionType.None;
+            }
         }
 
-        public string Destination
-        {
-            get { return this.strDestination; }
-            set { this.strDestination = value; }
-        }
-
-        public float Distance
-        {
-            get { return this.fltDistance; }
-            set { this.fltDistance = value; }
-        }
-
-        public EnumSectionType Type
-        {
-            get { return this.sectionType; }
-            set { this.sectionType = value; }
-        }
-
-        public EnumSectionShape Shape
-        {
-            get { return this.sectionShape; }
-            set { this.sectionShape = value; }
-        }
-
-        public float Padding
-        {
-            get { return this.fltPadding; }
-            set { this.fltPadding = value; }
-        }
-
-        public string OriginBC
-        {
-            get { return this.strOriginBC; }
-            set { this.strOriginBC = value; }
-        }
-
-        public string DestinationBC
-        {
-            get { return this.strDestinationBC; }
-            set { this.strDestinationBC = value; }
-        }
-
-        public double GetSectionLength()
-        {
-            return sectionLength;
-        }
     }
 
 }

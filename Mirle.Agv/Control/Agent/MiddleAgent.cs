@@ -97,24 +97,24 @@ namespace Mirle.Agv.Control
         void EventInitial()
         {
             // Add Event Handlers for all the recieved messages
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.TransReqFieldNumber, Receive_Cmd31);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.TranCmpRespFieldNumber, Receive_Cmd32);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.ControlZoneReqFieldNumber, Receive_Cmd33);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.CSTIDRenameReqFieldNumber, Receive_Cmd35);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.ImpTransEventRespFieldNumber, Receive_Cmd36);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.TransCancelReqFieldNumber, Receive_Cmd37);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.PauseReqFieldNumber, Receive_Cmd39);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.ModeChangeReqFieldNumber, Receive_Cmd41);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.StatusReqFieldNumber, Receive_Cmd43);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.StatusChangeRespFieldNumber, Receive_Cmd44);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.PowerOpeReqFieldNumber, Receive_Cmd45);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AvoidReqFieldNumber, Receive_Cmd51);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AvoidCompleteRespFieldNumber, Receive_Cmd52);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.RangeTeachingReqFieldNumber, Receive_Cmd71);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.RangeTeachingCmpRespFieldNumber, Receive_Cmd72);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AddressTeachRespFieldNumber, Receive_Cmd74);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmResetReqFieldNumber, Receive_Cmd91);
-            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, Receive_Cmd94);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.TransReqFieldNumber, Receive_Cmd31_TransferRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.TranCmpRespFieldNumber, Receive_Cmd32_TransferCompleteResponse);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.ControlZoneReqFieldNumber, Receive_Cmd33_ControlZoneCancelRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.CSTIDRenameReqFieldNumber, Receive_Cmd35_CarrierIdRenameRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.ImpTransEventRespFieldNumber, Receive_Cmd36_TransferEventResponse);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.TransCancelReqFieldNumber, Receive_Cmd37_TransferCancelRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.PauseReqFieldNumber, Receive_Cmd39_PauseRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.ModeChangeReqFieldNumber, Receive_Cmd41_ModeChange);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.StatusReqFieldNumber, Receive_Cmd43_StatusRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.StatusChangeRespFieldNumber, Receive_Cmd44_StatusRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.PowerOpeReqFieldNumber, Receive_Cmd45_PowerOnoffRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AvoidReqFieldNumber, Receive_Cmd51_AvoidRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AvoidCompleteRespFieldNumber, Receive_Cmd52_AvoidCompleteResponse);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.RangeTeachingReqFieldNumber, Receive_Cmd71_RangeTeachRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.RangeTeachingCmpRespFieldNumber, Receive_Cmd72_RangeTeachCompleteResponse);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AddressTeachRespFieldNumber, Receive_Cmd74_AddressTeachResponse);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmResetReqFieldNumber, Receive_Cmd91_AlarmResetRequest);
+            clientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, Receive_Cmd94_AlarmResponse);
             //
             //Here need to be careful for the TCPIP
             //
@@ -145,60 +145,60 @@ namespace Mirle.Agv.Control
             Console.WriteLine("Vh ID:{0}, disconnection.", agent.Name);
         }
 
-        public void LoadArrivals()
+        public void ReportLoadArrivals()
         {
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
-            Send_Cmd134();
-            Send_Cmd136(EventType.LoadArrivals);
+            Send_Cmd134_TransferEventReport();
+            Send_Cmd136_TransferEventReport(EventType.LoadArrivals);
         }
         public void UnloadArrivals()
         {
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
-            Send_Cmd134();
-            Send_Cmd136(EventType.UnloadArrivals);
+            Send_Cmd134_TransferEventReport();
+            Send_Cmd136_TransferEventReport(EventType.UnloadArrivals);
         }
         public void MoveComplete()
         {
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
-            Send_Cmd134();
-            Send_Cmd136(EventType.AdrOrMoveArrivals);
+            Send_Cmd134_TransferEventReport();
+            Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusMove;
-            Send_Cmd132();
+            Send_Cmd132_TransferCompleteReport();
         }
         public void LoadComplete()
         {
-            Send_Cmd136(EventType.LoadComplete);
+            Send_Cmd136_TransferEventReport(EventType.LoadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
-            Send_Cmd132();
+            Send_Cmd132_TransferCompleteReport();
         }
         public void LoadCompleteInLoadunload()
         {
-            Send_Cmd136(EventType.LoadComplete);
+            Send_Cmd136_TransferEventReport(EventType.LoadComplete);
         }
         public void UnloadComplete()
         {
-            Send_Cmd136(EventType.UnloadComplete);
+            Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
-            Send_Cmd132();
+            Send_Cmd132_TransferCompleteReport();
         }
         public void LoadUnloadComplete()
         {
-            Send_Cmd136(EventType.UnloadComplete);
+            Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
-            Send_Cmd132();
+            Send_Cmd132_TransferCompleteReport();
         }
         public void MainFlowGetCancel()
         {
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusCancel;
-            Send_Cmd132();
+            Send_Cmd132_TransferCompleteReport();
         }
         public void MainFlowGetAbort()
         {
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
-            Send_Cmd132();
+            Send_Cmd132_TransferCompleteReport();
         }
 
-        public void Receive_Cmd94(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd94_AlarmResponse(object sender, TcpIpEventArgs e)
         {
             ID_94_ALARM_RESPONSE receive = (ID_94_ALARM_RESPONSE)e.objPacket;
 
@@ -208,7 +208,7 @@ namespace Mirle.Agv.Control
             }
 
         }
-        public void Send_Cmd194(string alarmCode, ErrorStatus status)
+        public void Send_Cmd194_AlarmReport(string alarmCode, ErrorStatus status)
         {
             try
             {
@@ -234,7 +234,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd91(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd91_AlarmResetRequest(object sender, TcpIpEventArgs e)
         {
             ID_91_ALARM_RESET_REQUEST receive = (ID_91_ALARM_RESET_REQUEST)e.objPacket;
             //TODO: Reset alarm
@@ -245,9 +245,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = 0;
-            Send_Cmd191(e.iSeqNum, replyCode);
+            Send_Cmd191_AlarmResetResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd191(ushort seqNum, int replyCode)
+        public void Send_Cmd191_AlarmResetResponse(ushort seqNum, int replyCode)
         {
             try
             {
@@ -272,7 +272,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd74(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd74_AddressTeachResponse(object sender, TcpIpEventArgs e)
         {
             ID_74_ADDRESS_TEACH_RESPONSE receive = (ID_74_ADDRESS_TEACH_RESPONSE)e.objPacket;
 
@@ -282,7 +282,7 @@ namespace Mirle.Agv.Control
             }
 
         }
-        public void Send_Cmd174(string addressId, int position)
+        public void Send_Cmd174_AddressTeachReport(string addressId, int position)
         {
             try
             {
@@ -309,7 +309,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd72(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd72_RangeTeachCompleteResponse(object sender, TcpIpEventArgs e)
         {
             ID_72_RANGE_TEACHING_COMPLETE_RESPONSE receive = (ID_72_RANGE_TEACHING_COMPLETE_RESPONSE)e.objPacket;
 
@@ -319,7 +319,7 @@ namespace Mirle.Agv.Control
             }
 
         }
-        public void Send_Cmd172(int completeCode)
+        public void Send_Cmd172_RangeTeachCompleteReport(int completeCode)
         {
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
@@ -350,7 +350,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd71(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd71_RangeTeachRequest(object sender, TcpIpEventArgs e)
         {
             ID_71_RANGE_TEACHING_REQUEST receive = (ID_71_RANGE_TEACHING_REQUEST)e.objPacket;
             //TODO: Teaching Section Address Head/End
@@ -361,9 +361,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = 0;
-            Send_Cmd171(e.iSeqNum, replyCode);
+            Send_Cmd171_RangeTeachResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd171(ushort seqNum, int replyCode)
+        public void Send_Cmd171_RangeTeachResponse(ushort seqNum, int replyCode)
         {
             try
             {
@@ -388,7 +388,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd52(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd52_AvoidCompleteResponse(object sender, TcpIpEventArgs e)
         {
             ID_52_AVOID_COMPLETE_RESPONSE receive = (ID_52_AVOID_COMPLETE_RESPONSE)e.objPacket;
 
@@ -399,7 +399,7 @@ namespace Mirle.Agv.Control
 
             int completeStatus = 0;
         }
-        public void Send_Cmd152(int completeStatus)
+        public void Send_Cmd152_AvoidCompleteReport(int completeStatus)
         {
             try
             {
@@ -425,7 +425,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd51(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd51_AvoidRequest(object sender, TcpIpEventArgs e)
         {
             ID_51_AVOID_REQUEST receive = (ID_51_AVOID_REQUEST)e.objPacket;
             //TODO: Avoid
@@ -437,9 +437,9 @@ namespace Mirle.Agv.Control
 
             int replyCode = 0;
             string reason = "Empty";
-            Send_Cmd151(e.iSeqNum, replyCode, reason);
+            Send_Cmd151_AvoidResponse(e.iSeqNum, replyCode, reason);
         }
-        public void Send_Cmd151(ushort seqNum, int replyCode, string reason)
+        public void Send_Cmd151_AvoidResponse(ushort seqNum, int replyCode, string reason)
         {
             try
             {
@@ -465,7 +465,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd45(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd45_PowerOnoffRequest(object sender, TcpIpEventArgs e)
         {
             ID_45_POWER_OPE_REQ receive = (ID_45_POWER_OPE_REQ)e.objPacket;
             //TODO: PowerOn/PowerOff
@@ -476,9 +476,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = 0;
-            Send_Cmd145(e.iSeqNum, replyCode);
+            Send_Cmd145_PowerOnoffResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd145(ushort seqNum, int replyCode)
+        public void Send_Cmd145_PowerOnoffResponse(ushort seqNum, int replyCode)
         {
             try
             {
@@ -503,7 +503,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private void Receive_Cmd44(object sender, TcpIpEventArgs e)
+        private void Receive_Cmd44_StatusRequest(object sender, TcpIpEventArgs e)
         {
             ID_43_STATUS_REQUEST receive = (ID_43_STATUS_REQUEST)e.objPacket; // Cmd43's object is empty
 
@@ -512,9 +512,9 @@ namespace Mirle.Agv.Control
                 OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
             }
 
-            Send_Cmd144();
+            Send_Cmd144_StatusChangeReport();
         }
-        public void Send_Cmd144()
+        public void Send_Cmd144_StatusChangeReport()
         {
             Battery battery = theVehicle.GetBattery();
             VehLocation vehLocation = theVehicle.GetVehLoacation();
@@ -560,7 +560,7 @@ namespace Mirle.Agv.Control
 
         }
 
-        private void Receive_Cmd43(object sender, TcpIpEventArgs e)
+        private void Receive_Cmd43_StatusRequest(object sender, TcpIpEventArgs e)
         {
             ID_43_STATUS_REQUEST receive = (ID_43_STATUS_REQUEST)e.objPacket; // Cmd43's object is empty
 
@@ -569,9 +569,9 @@ namespace Mirle.Agv.Control
                 OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
             }
 
-            Send_Cmd143(e.iSeqNum);
+            Send_Cmd143_StatusResponse(e.iSeqNum);
         }
-        public void Send_Cmd143(ushort seqNum)
+        public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
             Battery battery = theVehicle.GetBattery();
             TransCmd transCmd = theVehicle.GetTransCmd();
@@ -621,7 +621,7 @@ namespace Mirle.Agv.Control
 
         }
 
-        public void Receive_Cmd41(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd41_ModeChange(object sender, TcpIpEventArgs e)
         {
             ID_41_MODE_CHANGE_REQ receive = (ID_41_MODE_CHANGE_REQ)e.objPacket;
             //TODO: Auto/Manual
@@ -632,9 +632,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = 0;
-            Send_Cmd141(e.iSeqNum, replyCode);
+            Send_Cmd141_ModeChangeResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd141(ushort seqNum, int replyCode)
+        public void Send_Cmd141_ModeChangeResponse(ushort seqNum, int replyCode)
         {
             try
             {
@@ -659,9 +659,9 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd39(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
-            ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
+            ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
             //TODO: Pause/Continue+/Reserve
 
             if (OnMsgFromAgvcEvent != null)
@@ -670,9 +670,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = 0;
-            Send_Cmd139(e.iSeqNum, replyCode);
+            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd139(ushort seqNum, int replyCode)
+        public void Send_Cmd139_PauseResponse(ushort seqNum, int replyCode)
         {
             try
             {
@@ -698,7 +698,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd37(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd37_TransferCancelRequest(object sender, TcpIpEventArgs e)
         {
 
             ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
@@ -735,9 +735,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = result ? 0 : 1;
-            Send_Cmd137(e.iSeqNum, replyCode);
+            Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd137(ushort seqNum, int replyCode)
+        public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode)
         {
             try
             {
@@ -772,7 +772,7 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
-        public void Receive_Cmd36(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd36_TransferEventResponse(object sender, TcpIpEventArgs e)
         {
             ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
             //Get reserve, block, 
@@ -784,7 +784,7 @@ namespace Mirle.Agv.Control
 
 
         }
-        public void Send_Cmd136(EventType eventType)
+        public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
             VehLocation vehLocation = theVehicle.GetVehLoacation();
             try
@@ -813,7 +813,7 @@ namespace Mirle.Agv.Control
             }
 
         }
-        public void Send_Cmd136(EventType eventType, string[] reserveSections, DriveDirction[] reserveDirections, string requestBlockID, string releaseBlockAdrID)
+        public void Send_Cmd136_TransferEventReport(EventType eventType, string[] reserveSections, DriveDirction[] reserveDirections, string requestBlockID, string releaseBlockAdrID)
         {
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
@@ -860,7 +860,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd35(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd35_CarrierIdRenameRequest(object sender, TcpIpEventArgs e)
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
             bool result = theVehicle.CarrierID == receive.OLDCSTID;
@@ -875,9 +875,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = result ? 0 : 1;
-            Send_Cmd135(e.iSeqNum, replyCode);
+            Send_Cmd135_CarrierIdRenameResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd135(ushort seqNum, int replyCode)
+        public void Send_Cmd135_CarrierIdRenameResponse(ushort seqNum, int replyCode)
         {
             try
             {
@@ -902,7 +902,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Send_Cmd134()
+        public void Send_Cmd134_TransferEventReport()
         {
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
@@ -932,7 +932,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd33(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd33_ControlZoneCancelRequest(object sender, TcpIpEventArgs e)
         {
 
             ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST receive = (ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST)e.objPacket;
@@ -955,9 +955,9 @@ namespace Mirle.Agv.Control
             }
 
             int replyCode = 1;
-            Send_Cmd133(e.iSeqNum, receive.ControlType, receive.CancelSecID, replyCode);
+            Send_Cmd133_ControlZoneCancelResponse(e.iSeqNum, receive.ControlType, receive.CancelSecID, replyCode);
         }
-        public void Send_Cmd133(ushort seqNum, ControlType controlType, string cancelSecID, int replyCode)
+        public void Send_Cmd133_ControlZoneCancelResponse(ushort seqNum, ControlType controlType, string cancelSecID, int replyCode)
         {
             try
             {
@@ -984,7 +984,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd32(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd32_TransferCompleteResponse(object sender, TcpIpEventArgs e)
         {
             ID_32_TRANS_COMPLETE_RESPONSE receive = (ID_32_TRANS_COMPLETE_RESPONSE)e.objPacket;
 
@@ -993,7 +993,7 @@ namespace Mirle.Agv.Control
                 OnMsgFromAgvcEvent.Invoke(this, receive.ToString());
             }
         }
-        public void Send_Cmd132()
+        public void Send_Cmd132_TransferCompleteReport()
         {
             TransCmd transCmd = theVehicle.GetTransCmd();
             VehLocation vehLocation = theVehicle.GetVehLoacation();
@@ -1027,7 +1027,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void Receive_Cmd31(object sender, TcpIpEventArgs e)
+        public void Receive_Cmd31_TransferRequest(object sender, TcpIpEventArgs e)
         {
             ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;
             theVehicle.Cmd131ActType = transRequest.ActType;
@@ -1037,16 +1037,17 @@ namespace Mirle.Agv.Control
                 OnMsgFromAgvcEvent.Invoke(this, transRequest.ToString());
             }
 
-            if (CanVehDoTransfer(transRequest, e.iSeqNum))
+            //if (CanVehDoTransfer(transRequest, e.iSeqNum))
+            //{
+            //}
+
+            AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest);
+            if (OnMiddlerGetsNewTransCmdsEvent != null)
             {
-                AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest);
-                if (OnMiddlerGetsNewTransCmdsEvent != null)
-                {
-                    OnMiddlerGetsNewTransCmdsEvent.Invoke(this, agvcTransCmd);
-                }
+                OnMiddlerGetsNewTransCmdsEvent.Invoke(this, agvcTransCmd);
             }
         }
-        public void Send_Cmd131(ushort seqNum, int replyCode, string reason)
+        public void Send_Cmd131_TransferResponse(ushort seqNum, int replyCode, string reason)
         {
             TransCmd transCmd = theVehicle.GetTransCmd();
 
@@ -1082,14 +1083,14 @@ namespace Mirle.Agv.Control
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle is in low power can not do transfer command.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (theVehicle.GetBattery().IsBatteryHighTemperature())
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle is in battery temperature too hight can not do transfer command.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
 
@@ -1117,7 +1118,7 @@ namespace Mirle.Agv.Control
                 default:
                     int replyCode = 0; // OK
                     string reason = "Empty";
-                    Send_Cmd131(seqNum, replyCode, reason);
+                    Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                     return true;
             }
         }
@@ -1128,14 +1129,14 @@ namespace Mirle.Agv.Control
             {
                 int replyCode = 0; // OK
                 string reason = "Empty";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return true;
             }
             else
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle current section not in override guideSections.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
         }
@@ -1166,7 +1167,7 @@ namespace Mirle.Agv.Control
         {
             int replyCode = 0; // OK
             string reason = "Empty";
-            Send_Cmd131(seqNum, replyCode, reason);
+            Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
             return true;
         }
 
@@ -1176,35 +1177,35 @@ namespace Mirle.Agv.Control
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle is not idle can not do loadunload.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (theVehicle.HasCst == VhLoadCSTStatus.Exist)
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle has a carrier can not do loadunload.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (string.IsNullOrEmpty(transRequest.LoadAdr))
             {
                 int replyCode = 1; // NG
                 string reason = "Transfer command has no load address can not do load.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
             {
                 int replyCode = 1; // NG
                 string reason = "Transfer command has no unload address can not do unload.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else
             {
                 int replyCode = 0; // OK
                 string reason = "Empty";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return true;
             }
         }
@@ -1215,21 +1216,21 @@ namespace Mirle.Agv.Control
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle is not idle can not do unload.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (theVehicle.HasCst == VhLoadCSTStatus.NotExist)
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle has no carrier can not do unload.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
             {
                 int replyCode = 1; // NG
                 string reason = "Transfer command has no unload address can not do unload.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
 
@@ -1237,7 +1238,7 @@ namespace Mirle.Agv.Control
             {
                 int replyCode = 0; // OK
                 string reason = "Empty";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return true;
             }
         }
@@ -1248,28 +1249,28 @@ namespace Mirle.Agv.Control
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle is not idle can not do load.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (theVehicle.HasCst == VhLoadCSTStatus.Exist)
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle has a carrier can not do load.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (string.IsNullOrEmpty(transRequest.LoadAdr))
             {
                 int replyCode = 1; // NG
                 string reason = "Transfer command has no load address can not do load.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else
             {
                 int replyCode = 0; // OK
                 string reason = "Empty";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return true;
             }
         }
@@ -1280,21 +1281,21 @@ namespace Mirle.Agv.Control
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle is not idle can not do move.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
             {
                 int replyCode = 1; // NG
                 string reason = "Transfer command has no move-end address can not do move.";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else
             {
                 int replyCode = 0; // OK
                 string reason = "Empty";
-                Send_Cmd131(seqNum, replyCode, reason);
+                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return true;
             }
         }
@@ -1342,7 +1343,7 @@ namespace Mirle.Agv.Control
         {
             //Send Transfer Command Complete Report to Agvc
             theVehicle.CompleteStatus = (CompleteStatus)(int)status;
-            Send_Cmd132();
+            Send_Cmd132_TransferCompleteReport();
         }
 
         public void TestMsg()

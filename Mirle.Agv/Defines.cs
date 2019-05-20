@@ -140,6 +140,15 @@ namespace Mirle.Agv
         Right
     }
 
+    public enum EnumDisplayLevel
+    {
+        Lowest,
+        Low,
+        Normal,
+        High,
+        Highest
+    }
+
     public static class ExtensionMethods
     {
         public static T DeepClone<T>(this T item)

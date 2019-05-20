@@ -579,7 +579,7 @@ namespace Mirle.Agv.Control
                     moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
                     var section = mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
                     moveCmd.Section = section;
-                    moveCmd.TotalMoveLength += section.GetSectionLength();
+                    moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
                     transCmds.Add(moveCmd);
                 }
@@ -604,7 +604,7 @@ namespace Mirle.Agv.Control
                     moveCmd.MoveEndAddress = agvcTransCmd.LoadAddress;
                     var section = mapHandler.GetMapSection(agvcTransCmd.ToLoadSections[i]);
                     moveCmd.Section = section;
-                    moveCmd.TotalMoveLength += section.GetSectionLength();
+                    moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToLoadSections.Length - 1);
                     transCmds.Add(moveCmd);
                 }
@@ -629,7 +629,7 @@ namespace Mirle.Agv.Control
                     moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
                     var section = mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
                     moveCmd.Section = section;
-                    moveCmd.TotalMoveLength += section.GetSectionLength();
+                    moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
                     transCmds.Add(moveCmd);
                 }
@@ -848,7 +848,7 @@ namespace Mirle.Agv.Control
         {
             if (NextTransCmdIsLoad())
             {
-                middleAgent.LoadArrivals();
+                middleAgent.ReportLoadArrivals();
                 VisitNextTransCmd();
             }
             else if (NextTransCmdIsUnload())
@@ -1027,7 +1027,7 @@ namespace Mirle.Agv.Control
         public void MiddlerTestMsg()
         {
             // middleAgent.TestMsg();
-            middleAgent.Send_Cmd131(20, 1, "SomeReason");
+            middleAgent.Send_Cmd131_TransferResponse(20, 1, "SomeReason");
         }
 
         public MiddleAgent GetMiddleAgent()

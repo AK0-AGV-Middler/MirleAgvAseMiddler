@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Mirle.Agv.Model.Configs;
-
+using System.Linq;
 
 namespace Mirle.Agv.Control
 {
@@ -16,6 +16,11 @@ namespace Mirle.Agv.Control
         private Dictionary<string, MapAddress> AddressTable = new Dictionary<string, MapAddress>();
         private LoggerAgent loggerAgent;
         private MapConfigs mapConfigs;
+        public string SectionPath { get; set; }
+        public string AddressPath { get; set; }
+        public List<MapSection> mapSections;
+        public List<MapAddress> mapAddresses;
+        public Dictionary<string, MapAddress> dicMapAddresses;
 
         private void GetSectionTable(string SectionFilePath)
         {
@@ -77,10 +82,13 @@ namespace Mirle.Agv.Control
         {
             this.mapConfigs = mapConfigs;
             loggerAgent = LoggerAgent.Instance;
-            rootDir = mapConfigs.RootDir;            
-            string SectionPath = Path.Combine(rootDir,mapConfigs.SectionFilePath);
-            string AddressPath = Path.Combine(rootDir, mapConfigs.AddressFilePath);
-            GetMap(SectionPath, AddressPath);
+            rootDir = mapConfigs.RootDir;
+            SectionPath = Path.Combine(rootDir, mapConfigs.SectionFilePath);
+            AddressPath = Path.Combine(rootDir, mapConfigs.AddressFilePath);
+            //GetMap(SectionPath, AddressPath);
+            LoadSectionCsv();
+            LoadAddressCsv();
+            SectionAdvance();
         }
 
         public void GetMap(string SectionFilePath, string AddressFilePath)
@@ -147,6 +155,315 @@ namespace Mirle.Agv.Control
         {
             throw new NotImplementedException();
         }
+
+        public void LoadSectionCsv()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(SectionPath))
+                {
+                    return;
+                }
+
+                mapSections.Clear();
+
+                string[] allRows = File.ReadAllLines(SectionPath);
+                if (allRows == null || allRows.Length < 2)
+                {
+                    return;
+                }
+
+                string[] titleRow = allRows[0].Split(',');
+                allRows = allRows.Skip(1).ToArray();
+
+                int nRows = allRows.Length;
+                int nColumns = titleRow.Length;
+
+                //ID, FromAdr, ToAdr, Distance, Shape, Type, Padding, FromX, FromY, ToX, ToY
+                //Id,Origin,Destination,Distance,Shape,Type,Padding,OriginBC,DestinationBC
+                //SEC_ID,FROM_ADR_ID,TO_ADR_ID,SEC_DIS,PADDING
+                int idIndex = -1;
+                int fromAddressIndex = -1;
+                int toAddressIndex = -1;
+                int distanceIndex = -1;
+                int paddingIndex = -1;
+                int shapeIndex = -1;
+                int typeIndex = -1;
+                int fromXIndex = -1;
+                int fromYIndex = -1;
+                int toXIndex = -1;
+                int toYIndex = -1;
+                for (int i = 0; i < nColumns; i++)
+                {
+                    var keyword = titleRow[i].Trim().ToUpper();
+                    switch (keyword)
+                    {
+                        case "SEC_ID":
+                        case "ID":
+                            idIndex = i;
+                            break;
+                        case "FROM_ADR_ID":
+                        case "ORIGION":
+                        case "FROMADR":
+                            fromAddressIndex = i;
+                            break;
+                        case "TO_ADR_ID":
+                        case "DESTINATION":
+                        case "TOADR":
+                            toAddressIndex = i;
+                            break;
+                        case "SEC_DIS":
+                        case "DISTANCE":
+                            distanceIndex = i;
+                            break;
+                        case "PADDING":
+                            paddingIndex = i;
+                            break;
+                        case "SHAPE":
+                            shapeIndex = i;
+                            break;
+                        case "TYPE":
+                            typeIndex = i;
+                            break;
+                        case "FROMX":
+                            fromXIndex = i;
+                            break;
+                        case "FROMY":
+                            fromYIndex = i;
+                            break;
+                        case "TOX":
+                            toXIndex = i;
+                            break;
+                        case "TOY":
+                            toYIndex = i;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                for (int i = 0; i < nRows; i++)
+                {
+                    string[] getThisRow = allRows[i].Split(',');
+                    MapSection mapSection = new MapSection();
+                    mapSection.Id = idIndex > -1 ? getThisRow[idIndex] : "Empty";
+                    mapSection.FromAddress = fromAddressIndex > -1 ? getThisRow[fromAddressIndex] : "Empty";
+                    mapSection.ToAddress = toAddressIndex > -1 ? getThisRow[toAddressIndex] : "Empty";
+                    mapSection.Distance = distanceIndex > -1 ? float.Parse(getThisRow[distanceIndex]) : 0;
+                    mapSection.Padding = paddingIndex > -1 ? float.Parse(getThisRow[paddingIndex]) : 0;
+                    mapSection.Shape = shapeIndex > -1 ? SectionShapeConvert(getThisRow[shapeIndex]) : EnumSectionShape.None;
+                    mapSection.Type = typeIndex > -1 ? SectionTypeConvert(getThisRow[typeIndex]) : EnumSectionType.None;
+                    mapSection.FromAddressX = fromXIndex > -1 ? float.Parse(getThisRow[fromXIndex]) : 0;
+                    mapSection.FromAddressY = fromYIndex > -1 ? float.Parse(getThisRow[fromYIndex]) : 0;
+                    mapSection.ToAddressX = toXIndex > -1 ? float.Parse(getThisRow[toXIndex]) : 0;
+                    mapSection.ToAddressY = toYIndex > -1 ? float.Parse(getThisRow[toYIndex]) : 0;
+
+                    mapSections.Add(mapSection);
+                    SectionTable.Add(mapSection.Id, mapSection);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private EnumSectionType SectionTypeConvert(string v)
+        {
+            var keyword = v.Trim();
+            switch (keyword)
+            {
+                case "Horizontal":
+                    return EnumSectionType.Horizontal;
+                case "Vertical":
+                    return EnumSectionType.Vertical;
+                case "QuadrantI":
+                    return EnumSectionType.QuadrantI;
+                case "QuadrantII":
+                    return EnumSectionType.QuadrantII;
+                case "QuadrantIII":
+                    return EnumSectionType.QuadrantIII;
+                case "QuadrantIV":
+                    return EnumSectionType.QuadrantIV;
+                case "None":
+                default:
+                    return EnumSectionType.None;
+            }
+        }
+
+        private EnumSectionShape SectionShapeConvert(string v)
+        {
+            var keyword = v.Trim();
+            switch (keyword)
+            {
+                case "Curve":
+                    return EnumSectionShape.Curve;
+                case "Straight":
+                    return EnumSectionShape.Straight;
+                case "None":
+                default:
+                    return EnumSectionShape.None;
+            }
+        }
+
+        public void LoadAddressCsv()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(AddressPath))
+                {
+                    return;
+                }
+
+                mapAddresses.Clear();
+
+                string[] allRows = File.ReadAllLines(AddressPath);
+                if (allRows == null || allRows.Length < 2)
+                {
+                    return;
+                }
+
+                string[] titleRow = allRows[0].Split(',');
+                allRows = allRows.Skip(1).ToArray();
+
+                int nRows = allRows.Length;
+                int nColumns = titleRow.Length;
+
+                //Id, Barcode, PositionX, PositionY, Type, DisplayLevel                
+
+                int idIndex = -1;
+                int barcodeIndex = -1;
+                int positionXIndex = -1;
+                int positionYIndex = -1;
+                int typeIndex = -1;
+                int displayLevelIndex = -1;
+
+                for (int i = 0; i < nColumns; i++)
+                {
+                    var keyword = titleRow[i].Trim().ToUpper();
+                    switch (keyword)
+                    {
+                        case "ADR_ID":
+                        case "ID":
+                            idIndex = i;
+                            break;
+                        case "BAR_CODE":
+                        case "BARCODE":
+                            barcodeIndex = i;
+                            break;
+                        case "POSE_X":
+                        case "POSITIONX":
+                            positionXIndex = i;
+                            break;
+                        case "POSE_Y":
+                        case "POSITIONY":
+                            positionYIndex = i;
+                            break;
+                        case "ADRTYPE":
+                        case "TYPE":
+                            typeIndex = i;
+                            break;
+                        case "IS_DISPLAY":
+                        case "DISPLAYLEVEL":
+                            displayLevelIndex = i;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                for (int i = 0; i < nRows; i++)
+                {
+                    string[] getThisRow = allRows[i].Split(',');
+                    MapAddress mapAddress = new MapAddress();
+                    mapAddress.Id = idIndex > -1 ? getThisRow[idIndex] : "Empty";
+                    mapAddress.Barcode = barcodeIndex > -1 ? getThisRow[barcodeIndex] : "Empty";
+                    mapAddress.PositionX = positionXIndex > -1 ? float.Parse(getThisRow[positionXIndex]) : 0;
+                    mapAddress.PositionY = positionYIndex > -1 ? float.Parse(getThisRow[positionYIndex]) : 0;
+                    mapAddress.Type = typeIndex > -1 ? AddressTypeConvert(getThisRow[typeIndex]) : EnumAddressType.None;
+                    mapAddress.DisplayLevel = displayLevelIndex > -1 ? AddressDisplayLevelConvert(getThisRow[displayLevelIndex]) : EnumDisplayLevel.Lowest;
+
+                    mapAddresses.Add(mapAddress);
+                    dicMapAddresses.Add(mapAddress.Id, mapAddress);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private EnumDisplayLevel AddressDisplayLevelConvert(string v)
+        {
+            v = v.Trim();
+            return (EnumDisplayLevel)(int.Parse(v));
+        }
+
+        private EnumAddressType AddressTypeConvert(string v)
+        {
+            v = v.Trim();
+
+            switch (v)
+            {
+                case "Address":
+                    return EnumAddressType.Address;
+                case "None":
+                    return EnumAddressType.None;
+                case "Position":
+                case "1":
+                case "2":
+                case "3":
+                    return EnumAddressType.Position;
+                default:
+                    return EnumAddressType.Address;
+            }
+        }
+
+        public void SectionAdvance()
+        {
+            try
+            {
+                if (dicMapAddresses.Count == 0)
+                {
+                    return;
+                }
+                if (mapSections.Count == 0)
+                {
+                    return;
+                }
+                if (mapAddresses.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (var sectionInfo in mapSections)
+                {
+                    var fromAdr = sectionInfo.FromAddress;
+                    if (dicMapAddresses.ContainsKey(fromAdr))
+                    {
+                        sectionInfo.FromAddressX = dicMapAddresses[fromAdr].PositionX;
+                        sectionInfo.FromAddressY = dicMapAddresses[fromAdr].PositionY;
+                    }
+
+                    var toAdr = sectionInfo.ToAddress;
+                    if (dicMapAddresses.ContainsKey(toAdr))
+                    {
+                        sectionInfo.ToAddressX = dicMapAddresses[toAdr].PositionX;
+                        sectionInfo.ToAddressY = dicMapAddresses[toAdr].PositionY;
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
     }
 
 }

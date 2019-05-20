@@ -8,73 +8,45 @@ namespace Mirle.Agv.Model
 {
     public class MapAddress
     {
-       private string strId;
-        private string strBarcode;
-        private float fltPositionX;
-        private float fltPositionY;
-        private EnumAddressType addressType;
-        private string strDisplayLevel;
-
+        public string Id { get; set; }
+        public string Barcode { get; set; }
+        public float PositionX { get; set; }
+        public float PositionY { get; set; }
+        public EnumAddressType Type { get; set; }
+        public EnumDisplayLevel DisplayLevel { get; set; }
+        //public string DisplayLevel { get; set; }
 
         public MapAddress()
         {
-            addressType = EnumAddressType.None;
-            strId = "Empty";
-            strBarcode = "0";
+            Type = EnumAddressType.None;
+            Id = "Empty";
+            Barcode = "0";
 
         }
+
         public MapAddress(Dictionary<string, int> HeaderTable, string[] Content)
         {
             try
             {
-                strId = Content[HeaderTable["Id"]];
-                strBarcode = Content[HeaderTable["Barcode"]];
-                fltPositionX = float.Parse(Content[HeaderTable["PositionX"]]);
-                fltPositionY = float.Parse(Content[HeaderTable["PositionY"]]);
-                addressType = (EnumAddressType)Enum.Parse(typeof(EnumAddressType), Content[HeaderTable["Type"]]);
-                strDisplayLevel = Content[HeaderTable["DisplayLevel"]];
+                Id = Content[HeaderTable["Id"]];
+                Barcode = Content[HeaderTable["Barcode"]];
+                PositionX = float.Parse(Content[HeaderTable["PositionX"]]);
+                PositionY = float.Parse(Content[HeaderTable["PositionY"]]);
+                Type = (EnumAddressType)Enum.Parse(typeof(EnumAddressType), Content[HeaderTable["Type"]]);
+                //DisplayLevel = Content[HeaderTable["DisplayLevel"]];
+                DisplayLevel = AddressDisplayLevelConvet( Content[HeaderTable["DisplayLevel"]]);
             }
             catch (Exception ex)
             {
                 string Message = "Address ID : " + Content[HeaderTable["Id"]] + "\n" + ex.ToString();
-                throw new System.ArgumentException(Message);               
+                throw new System.ArgumentException(Message);
             }
         }
 
-        public string Id
+        private EnumDisplayLevel AddressDisplayLevelConvet(string v)
         {
-            get { return this.strId; }
-            set { this.strId = value; }
-        }
-
-        public string Barcode
-        {
-            get { return this.strBarcode; }
-            set { this.strBarcode = value; }
-        }
-
-        public float PositionX
-        {
-            get { return this.fltPositionX; }
-            set { this.fltPositionX = value; }
-        }
-
-        public float PositionY
-        {
-            get { return this.fltPositionY; }
-            set { this.fltPositionY = value; }
-        }
-
-        public EnumAddressType Type
-        {
-            get { return this.addressType; }
-            set { this.addressType = value; }
-        }
-
-        public string DisplayLevel
-        {
-            get { return this.strDisplayLevel; }
-            set { this.strDisplayLevel = value; }
+            v = v.Trim();
+            return (EnumDisplayLevel)(int.Parse(v));
         }
     }
 
