@@ -21,6 +21,7 @@ namespace Mirle.Agv.Control
         public List<MapSection> mapSections;
         public List<MapAddress> mapAddresses;
         public Dictionary<string, MapAddress> dicMapAddresses;
+        private MapInfo mapInfo;
 
         private void GetSectionTable(string SectionFilePath)
         {
@@ -85,6 +86,10 @@ namespace Mirle.Agv.Control
             rootDir = mapConfigs.RootDir;
             SectionPath = Path.Combine(rootDir, mapConfigs.SectionFilePath);
             AddressPath = Path.Combine(rootDir, mapConfigs.AddressFilePath);
+            mapInfo = MapInfo.Instance;
+            mapSections = mapInfo.mapSections;
+            mapAddresses = mapInfo.mapAddresses;
+            dicMapAddresses = mapInfo.dicMapAddresses;
             //GetMap(SectionPath, AddressPath);
             LoadSectionCsv();
             LoadAddressCsv();
@@ -180,61 +185,53 @@ namespace Mirle.Agv.Control
                 int nColumns = titleRow.Length;
 
                 //ID, FromAdr, ToAdr, Distance, Shape, Type, Padding, FromX, FromY, ToX, ToY
-                //Id,Origin,Destination,Distance,Shape,Type,Padding,OriginBC,DestinationBC
-                //SEC_ID,FROM_ADR_ID,TO_ADR_ID,SEC_DIS,PADDING
                 int idIndex = -1;
                 int fromAddressIndex = -1;
                 int toAddressIndex = -1;
                 int distanceIndex = -1;
-                int paddingIndex = -1;
                 int shapeIndex = -1;
                 int typeIndex = -1;
+                int paddingIndex = -1;
                 int fromXIndex = -1;
                 int fromYIndex = -1;
                 int toXIndex = -1;
                 int toYIndex = -1;
                 for (int i = 0; i < nColumns; i++)
                 {
-                    var keyword = titleRow[i].Trim().ToUpper();
+                    var keyword = titleRow[i].Trim();
                     switch (keyword)
                     {
-                        case "SEC_ID":
                         case "ID":
                             idIndex = i;
                             break;
-                        case "FROM_ADR_ID":
-                        case "ORIGION":
-                        case "FROMADR":
+                        case "FromAdr":
                             fromAddressIndex = i;
                             break;
-                        case "TO_ADR_ID":
-                        case "DESTINATION":
-                        case "TOADR":
+                        case "ToAdr":
                             toAddressIndex = i;
                             break;
-                        case "SEC_DIS":
-                        case "DISTANCE":
+                        case "Distance":
                             distanceIndex = i;
                             break;
-                        case "PADDING":
+                        case "Padding":
                             paddingIndex = i;
                             break;
-                        case "SHAPE":
+                        case "Shape":
                             shapeIndex = i;
                             break;
-                        case "TYPE":
+                        case "Type":
                             typeIndex = i;
                             break;
-                        case "FROMX":
+                        case "FromX":
                             fromXIndex = i;
                             break;
-                        case "FROMY":
+                        case "FromY":
                             fromYIndex = i;
                             break;
-                        case "TOX":
+                        case "ToX":
                             toXIndex = i;
                             break;
-                        case "TOY":
+                        case "ToY":
                             toYIndex = i;
                             break;
                         default:
@@ -341,31 +338,25 @@ namespace Mirle.Agv.Control
 
                 for (int i = 0; i < nColumns; i++)
                 {
-                    var keyword = titleRow[i].Trim().ToUpper();
+                    var keyword = titleRow[i].Trim();
                     switch (keyword)
                     {
-                        case "ADR_ID":
-                        case "ID":
+                        case "Id":
                             idIndex = i;
                             break;
-                        case "BAR_CODE":
-                        case "BARCODE":
+                        case "Barcode":
                             barcodeIndex = i;
                             break;
-                        case "POSE_X":
-                        case "POSITIONX":
+                        case "PositionX":
                             positionXIndex = i;
                             break;
-                        case "POSE_Y":
-                        case "POSITIONY":
+                        case "PositionY":
                             positionYIndex = i;
                             break;
-                        case "ADRTYPE":
-                        case "TYPE":
+                        case "Type":
                             typeIndex = i;
                             break;
-                        case "IS_DISPLAY":
-                        case "DISPLAYLEVEL":
+                        case "Display":
                             displayLevelIndex = i;
                             break;
                         default:

@@ -102,6 +102,7 @@
     <Compile Include="Model\Configs\MoveControlConfigs.cs" />
     <Compile Include="Model\Configs\Sr2000Configs.cs" />
     <Compile Include="Model\LogFormat.cs" />
+    <Compile Include="Model\MapInfo.cs" />
     <Compile Include="Model\MapPosition.cs" />
     <Compile Include="Model\PlcLoadingSensor.cs" />
     <Compile Include="Model\PlcRobot.cs" />
@@ -206,7 +207,14 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resource\Auto_16x16.png" />
+    <Content Include="Resource\Bulb_Blue_32x32.png" />
+    <Content Include="Resource\Bulb_Green_32x32.png" />
+    <Content Include="Resource\Bulb_Red_32x32.png" />
+    <Content Include="Resource\CrossHair_16x16.png" />
+    <Content Include="Resource\Idle_16x16.png" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Close_32x32.png" />
   </ItemGroup>

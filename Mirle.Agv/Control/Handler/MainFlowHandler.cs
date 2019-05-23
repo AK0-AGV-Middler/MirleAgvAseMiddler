@@ -1035,5 +1035,9 @@ namespace Mirle.Agv.Control
             return middleAgent;
         }
 
+        public MapHandler GetMapHandler()
+        {
+            return mapHandler;
+        }
     }
 }

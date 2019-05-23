@@ -35,10 +35,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(1504, 772);
+            this.ClientSize = new System.Drawing.Size(1291, 657);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "MapForm";
             this.Text = "MapForm";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.MapForm_Paint);
             this.ResumeLayout(false);
 
         }
