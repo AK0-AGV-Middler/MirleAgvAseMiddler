@@ -11,5 +11,6 @@ namespace Mirle.Agv.Model.Configs
         public string RootDir { get; set; }
         public string SectionFilePath { get; set; }
         public string AddressFilePath { get; set; }
+        public string BarcodeFilePath { get; set; }
     }
 }

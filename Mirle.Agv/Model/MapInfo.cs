@@ -11,6 +11,7 @@ namespace Mirle.Agv.Model
         public List<MapSection> mapSections;
         public List<MapAddress> mapAddresses;
         public Dictionary<string, MapAddress> dicMapAddresses;
+        public List<MapRowBarcode> mapRowBarcodes;
 
         private static readonly MapInfo theMapInfo = new MapInfo();
         public static MapInfo Instance { get { return theMapInfo; } }
@@ -20,6 +21,7 @@ namespace Mirle.Agv.Model
             mapSections = new List<MapSection>();
             mapAddresses = new List<MapAddress>();
             dicMapAddresses = new Dictionary<string, MapAddress>();
+            mapRowBarcodes = new List<MapRowBarcode>();
         }
     }
 }

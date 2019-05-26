@@ -27,10 +27,20 @@ namespace Mirle.Agv
     }
 
     public enum EnumAddressType
+    {        
+        None,
+        BarcodeEnd,
+        BarcodeCross,
+        Port,
+        Charger,
+        TR
+    }
+
+    public enum EnumRowBarcodeType
     {
         None,
-        Address,
-        Position
+        Horizontal,
+        Vertical
     }
 
     public enum EnumTransCmdType
@@ -50,15 +60,7 @@ namespace Mirle.Agv
         Home,
         Override,
         Else
-    }
-
-    //public enum EnumAddressType
-    //{
-    //    EqPort,
-    //    EqPortWithCoupler,
-    //    Coupler,
-    //    Stocker
-    //}
+    }   
 
     public enum EnumMoveState
     {

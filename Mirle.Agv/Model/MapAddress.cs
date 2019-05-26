@@ -8,20 +8,20 @@ namespace Mirle.Agv.Model
 {
     public class MapAddress
     {
+        //Id, BarcodeH, BarcodeV, PositionX, PositionY, Type, DisplayLevel
         public string Id { get; set; }
-        public string Barcode { get; set; }
+        public float BarcodeH { get; set; }
+        public float BarcodeV { get; set; }
         public float PositionX { get; set; }
         public float PositionY { get; set; }
         public EnumAddressType Type { get; set; }
         public EnumDisplayLevel DisplayLevel { get; set; }
-        //public string DisplayLevel { get; set; }
 
         public MapAddress()
         {
+            DisplayLevel = EnumDisplayLevel.Normal;
             Type = EnumAddressType.None;
-            Id = "Empty";
-            Barcode = "0";
-
+            Id = "Empty";   
         }
 
         public MapAddress(Dictionary<string, int> HeaderTable, string[] Content)
@@ -29,7 +29,7 @@ namespace Mirle.Agv.Model
             try
             {
                 Id = Content[HeaderTable["Id"]];
-                Barcode = Content[HeaderTable["Barcode"]];
+                //Barcode = Content[HeaderTable["Barcode"]];
                 PositionX = float.Parse(Content[HeaderTable["PositionX"]]);
                 PositionY = float.Parse(Content[HeaderTable["PositionY"]]);
                 Type = (EnumAddressType)Enum.Parse(typeof(EnumAddressType), Content[HeaderTable["Type"]]);

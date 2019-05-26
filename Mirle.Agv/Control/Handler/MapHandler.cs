@@ -18,9 +18,11 @@ namespace Mirle.Agv.Control
         private MapConfigs mapConfigs;
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
+        public string BarcodePath { get; set; }
         public List<MapSection> mapSections;
         public List<MapAddress> mapAddresses;
         public Dictionary<string, MapAddress> dicMapAddresses;
+        public List<MapRowBarcode> mapRowBarcodes;
         private MapInfo mapInfo;
 
         private void GetSectionTable(string SectionFilePath)
@@ -86,14 +88,17 @@ namespace Mirle.Agv.Control
             rootDir = mapConfigs.RootDir;
             SectionPath = Path.Combine(rootDir, mapConfigs.SectionFilePath);
             AddressPath = Path.Combine(rootDir, mapConfigs.AddressFilePath);
+            BarcodePath = Path.Combine(rootDir, mapConfigs.BarcodeFilePath);
             mapInfo = MapInfo.Instance;
             mapSections = mapInfo.mapSections;
             mapAddresses = mapInfo.mapAddresses;
             dicMapAddresses = mapInfo.dicMapAddresses;
+            mapRowBarcodes = mapInfo.mapRowBarcodes;
             //GetMap(SectionPath, AddressPath);
             LoadSectionCsv();
             LoadAddressCsv();
-            SectionAdvance();
+            LoadRowBarcodeCsv();
+            //AddressFitSectionAndRowBarcode();
         }
 
         public void GetMap(string SectionFilePath, string AddressFilePath)
@@ -201,7 +206,7 @@ namespace Mirle.Agv.Control
                     var keyword = titleRow[i].Trim();
                     switch (keyword)
                     {
-                        case "ID":
+                        case "Id":
                             idIndex = i;
                             break;
                         case "FromAdr":
@@ -256,7 +261,7 @@ namespace Mirle.Agv.Control
                     mapSection.ToAddressY = toYIndex > -1 ? float.Parse(getThisRow[toYIndex]) : 0;
 
                     mapSections.Add(mapSection);
-                    SectionTable.Add(mapSection.Id, mapSection);
+                    //SectionTable.Add(mapSection.Id, mapSection);
                 }
             }
             catch (Exception)
@@ -327,10 +332,11 @@ namespace Mirle.Agv.Control
                 int nRows = allRows.Length;
                 int nColumns = titleRow.Length;
 
-                //Id, Barcode, PositionX, PositionY, Type, DisplayLevel                
+                //Id, BarcodeH, BarcodeV, PositionX, PositionY, Type, DisplayLevel       
 
                 int idIndex = -1;
-                int barcodeIndex = -1;
+                int barcodeHIndex = -1;
+                int barcodeVIndex = -1;
                 int positionXIndex = -1;
                 int positionYIndex = -1;
                 int typeIndex = -1;
@@ -344,8 +350,11 @@ namespace Mirle.Agv.Control
                         case "Id":
                             idIndex = i;
                             break;
-                        case "Barcode":
-                            barcodeIndex = i;
+                        case "BarcodeH":
+                            barcodeHIndex = i;
+                            break;
+                        case "BarcodeV":
+                            barcodeVIndex = i;
                             break;
                         case "PositionX":
                             positionXIndex = i;
@@ -369,7 +378,8 @@ namespace Mirle.Agv.Control
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress mapAddress = new MapAddress();
                     mapAddress.Id = idIndex > -1 ? getThisRow[idIndex] : "Empty";
-                    mapAddress.Barcode = barcodeIndex > -1 ? getThisRow[barcodeIndex] : "Empty";
+                    mapAddress.BarcodeH = barcodeHIndex > -1 ? float.Parse(getThisRow[barcodeHIndex]) : 0;
+                    mapAddress.BarcodeV = barcodeVIndex > -1 ? float.Parse(getThisRow[barcodeVIndex]) : 0;
                     mapAddress.PositionX = positionXIndex > -1 ? float.Parse(getThisRow[positionXIndex]) : 0;
                     mapAddress.PositionY = positionYIndex > -1 ? float.Parse(getThisRow[positionYIndex]) : 0;
                     mapAddress.Type = typeIndex > -1 ? AddressTypeConvert(getThisRow[typeIndex]) : EnumAddressType.None;
@@ -389,7 +399,20 @@ namespace Mirle.Agv.Control
         private EnumDisplayLevel AddressDisplayLevelConvert(string v)
         {
             v = v.Trim();
-            return (EnumDisplayLevel)(int.Parse(v));
+            switch (v)
+            {
+                case "High":
+                    return EnumDisplayLevel.High;
+                case "Highest":
+                    return EnumDisplayLevel.Highest;
+                case "Low":
+                    return EnumDisplayLevel.Low;
+                case "Lowest":
+                    return EnumDisplayLevel.Lowest;             
+                case "Normal":
+                default:
+                    return EnumDisplayLevel.Normal;
+            }
         }
 
         private EnumAddressType AddressTypeConvert(string v)
@@ -398,21 +421,23 @@ namespace Mirle.Agv.Control
 
             switch (v)
             {
-                case "Address":
-                    return EnumAddressType.Address;
-                case "None":
-                    return EnumAddressType.None;
-                case "Position":
-                case "1":
-                case "2":
-                case "3":
-                    return EnumAddressType.Position;
+                case "BarcodeCross":
+                    return EnumAddressType.BarcodeCross;
+                case "BarcodeEnd":
+                    return EnumAddressType.BarcodeEnd;
+                case "Charger":
+                    return EnumAddressType.Charger;
+                case "Port":
+                    return EnumAddressType.Port;
+                case "TR":
+                    return EnumAddressType.TR;
+                case "None":                            
                 default:
-                    return EnumAddressType.Address;
+                    return EnumAddressType.None;
             }
         }
 
-        public void SectionAdvance()
+        public void AddressFitSectionAndRowBarcode()
         {
             try
             {
@@ -425,6 +450,10 @@ namespace Mirle.Agv.Control
                     return;
                 }
                 if (mapAddresses.Count == 0)
+                {
+                    return;
+                }
+                if (mapRowBarcodes.Count == 0)
                 {
                     return;
                 }
@@ -444,6 +473,46 @@ namespace Mirle.Agv.Control
                         sectionInfo.ToAddressX = dicMapAddresses[toAdr].PositionX;
                         sectionInfo.ToAddressY = dicMapAddresses[toAdr].PositionY;
                     }
+
+                    if (sectionInfo.ToAddressX == sectionInfo.FromAddressX)
+                    {
+                        sectionInfo.Type = EnumSectionType.Vertical;
+                    }
+                    else if (sectionInfo.ToAddressY == sectionInfo.FromAddressY)
+                    {
+                        sectionInfo.Type = EnumSectionType.Horizontal;
+                    }
+                    else if (sectionInfo.ToAddressX > sectionInfo.FromAddressX && sectionInfo.ToAddressY > sectionInfo.FromAddressY)
+                    {
+                        sectionInfo.Type = EnumSectionType.QuadrantI;
+                    }
+                    else if (sectionInfo.ToAddressX < sectionInfo.FromAddressX && sectionInfo.ToAddressY < sectionInfo.FromAddressY)
+                    {
+                        sectionInfo.Type = EnumSectionType.QuadrantII;
+                    }
+                    else if (sectionInfo.ToAddressX > sectionInfo.FromAddressX && sectionInfo.ToAddressY < sectionInfo.FromAddressY)
+                    {
+                        //Turn left 
+                        //    t
+                        //    |
+                        // f---
+                        sectionInfo.Type = EnumSectionType.QuadrantIII;
+                    }
+                    else if (sectionInfo.ToAddressX < sectionInfo.FromAddressX && sectionInfo.ToAddressY > sectionInfo.FromAddressY)
+                    {
+                        //Turn right 
+                        //    f
+                        //    |
+                        // t---
+                        sectionInfo.Type = EnumSectionType.QuadrantIV;
+                    }
+                    else
+                    {
+                        sectionInfo.Type = EnumSectionType.None;
+                    }
+                    var disX = Math.Abs(sectionInfo.FromAddressX - sectionInfo.ToAddressX);
+                    var disY = Math.Abs(sectionInfo.FromAddressY - sectionInfo.ToAddressY);
+                    sectionInfo.Distance = disX + disY;
                 }
 
             }
@@ -454,7 +523,112 @@ namespace Mirle.Agv.Control
             }
         }
 
+        public void LoadRowBarcodeCsv()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(BarcodePath))
+                {
+                    return;
+                }
 
+                mapRowBarcodes.Clear();
+
+                string[] allRows = File.ReadAllLines(BarcodePath);
+                if (allRows == null || allRows.Length < 2)
+                {
+                    return;
+                }
+
+                string[] titleRow = allRows[0].Split(',');
+                allRows = allRows.Skip(1).ToArray();
+
+                int nRows = allRows.Length;
+                int nColumns = titleRow.Length;
+
+                //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, Type
+
+                int idIndex = -1;
+                int barcodeHeadNumIndex = -1;
+                int headXIndex = -1;
+                int headYIndex = -1;
+                int barcodeTailNumIndex = -1;
+                int tailXIndex = -1;
+                int tailYIndex = -1;
+                int typeIndex = -1;                
+
+                for (int i = 0; i < nColumns; i++)
+                {
+                    var keyword = titleRow[i].Trim();
+                    switch (keyword)
+                    {
+                        case "Id":
+                            idIndex = i;
+                            break;
+                        case "BarcodeHeadNum":
+                            barcodeHeadNumIndex = i;
+                            break;
+                        case "HeadX":
+                            headXIndex = i;
+                            break;
+                        case "HeadY":
+                            headYIndex = i;
+                            break;
+                        case "BarcodeTailNum":
+                            barcodeTailNumIndex = i;
+                            break;
+                        case "TailX":
+                            tailXIndex = i;
+                            break;
+                        case "TailY":
+                            tailYIndex = i;
+                            break;
+                        case "Type":
+                            typeIndex = i;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                for (int i = 0; i < nRows; i++)
+                {
+                    string[] getThisRow = allRows[i].Split(',');
+                    MapRowBarcode mapRowBarcode = new MapRowBarcode();
+                    mapRowBarcode.Id = idIndex > -1 ? getThisRow[idIndex] : "Empty";
+                    mapRowBarcode.BarcodeHeadNum = barcodeHeadNumIndex > -1 ? float.Parse(getThisRow[barcodeHeadNumIndex]) : 0;
+                    mapRowBarcode.HeadX = headXIndex > -1 ? float.Parse(getThisRow[headXIndex]) : 0;
+                    mapRowBarcode.HeadY = headYIndex > -1 ? float.Parse(getThisRow[headYIndex]) : 0;
+                    mapRowBarcode.BarcodeTailNum = barcodeTailNumIndex > -1 ? float.Parse(getThisRow[barcodeTailNumIndex]) : 0;
+                    mapRowBarcode.TailX = tailXIndex > -1 ? float.Parse(getThisRow[tailXIndex]) : 0;
+                    mapRowBarcode.TailY = tailYIndex > -1 ? float.Parse(getThisRow[tailYIndex]) : 0;
+                    mapRowBarcode.Type = typeIndex > -1 ? RowBarcodeTypeConvert(getThisRow[typeIndex]) : EnumRowBarcodeType.None;
+
+                    mapRowBarcodes.Add(mapRowBarcode);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private EnumRowBarcodeType RowBarcodeTypeConvert(string v)
+        {
+            v = v.Trim();
+
+            switch (v)
+            {
+                case "Horizontal":
+                    return EnumRowBarcodeType.Horizontal;
+                case "Vertical":
+                    return EnumRowBarcodeType.Vertical;
+                case "None":
+                default:
+                    return EnumRowBarcodeType.None;
+            }
+        }
     }
 
 }

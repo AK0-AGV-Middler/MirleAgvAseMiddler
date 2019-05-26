@@ -104,6 +104,7 @@
     <Compile Include="Model\LogFormat.cs" />
     <Compile Include="Model\MapInfo.cs" />
     <Compile Include="Model\MapPosition.cs" />
+    <Compile Include="Model\MapRowBarcode.cs" />
     <Compile Include="Model\PlcLoadingSensor.cs" />
     <Compile Include="Model\PlcRobot.cs" />
     <Compile Include="Model\PlcStage.cs" />

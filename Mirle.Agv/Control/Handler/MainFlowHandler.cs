@@ -201,6 +201,7 @@ namespace Mirle.Agv.Control
                 mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", @"D:\CsProject\Mirle.Agv\Mirle.Agv\bin\Debug");
                 mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "ASECTION.csv");
                 mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "AADDRESS.csv");
+                mapConfigs.BarcodeFilePath = configHandler.GetString("Map", "BarcodeFilePath", "ABARCODE.csv");
 
                 sr2000Configs = new Sr2000Configs();
                 int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
