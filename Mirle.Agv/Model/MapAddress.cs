@@ -8,45 +8,36 @@ namespace Mirle.Agv.Model
 {
     public class MapAddress
     {
-        //Id, BarcodeH, BarcodeV, PositionX, PositionY, Type, DisplayLevel
-        public string Id { get; set; }
+        //Id, BarcodeH, BarcodeV, PositionX, PositionY, IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin
+        public string Id { get; set; } = "Empty";
         public float BarcodeH { get; set; }
         public float BarcodeV { get; set; }
         public float PositionX { get; set; }
         public float PositionY { get; set; }
-        public EnumAddressType Type { get; set; }
-        public EnumDisplayLevel DisplayLevel { get; set; }
+        public bool IsWorkStation { get; set; }
+        public bool CanLeftLoad { get; set; }
+        public bool CanLeftUnload { get; set; }
+        public bool CanRightLoad { get; set; }
+        public bool CanRightUnload { get; set; }
+        public bool IsCharger { get; set; }
+        public string CouplerId { get; set; }
+        public EnumChargeDirection ChargeDirection { get; set; } = EnumChargeDirection.None;
+        public bool IsSegmentPoint { get; set; }
+        public bool CanSpin { get; set; }        
 
-        public MapAddress()
-        {
-            DisplayLevel = EnumDisplayLevel.Normal;
-            Type = EnumAddressType.None;
-            Id = "Empty";   
-        }
-
-        public MapAddress(Dictionary<string, int> HeaderTable, string[] Content)
-        {
-            try
-            {
-                Id = Content[HeaderTable["Id"]];
-                //Barcode = Content[HeaderTable["Barcode"]];
-                PositionX = float.Parse(Content[HeaderTable["PositionX"]]);
-                PositionY = float.Parse(Content[HeaderTable["PositionY"]]);
-                Type = (EnumAddressType)Enum.Parse(typeof(EnumAddressType), Content[HeaderTable["Type"]]);
-                //DisplayLevel = Content[HeaderTable["DisplayLevel"]];
-                DisplayLevel = AddressDisplayLevelConvet( Content[HeaderTable["DisplayLevel"]]);
-            }
-            catch (Exception ex)
-            {
-                string Message = "Address ID : " + Content[HeaderTable["Id"]] + "\n" + ex.ToString();
-                throw new System.ArgumentException(Message);
-            }
-        }
-
-        private EnumDisplayLevel AddressDisplayLevelConvet(string v)
+        public EnumChargeDirection ChargeDirectionConvert(string v)
         {
             v = v.Trim();
-            return (EnumDisplayLevel)(int.Parse(v));
+            switch (v)
+            {
+                case "Left":
+                    return EnumChargeDirection.Left;
+                case "Right":
+                    return EnumChargeDirection.Right;
+                case "None":
+                default:
+                    return EnumChargeDirection.None;
+            }
         }
     }
 

@@ -18,7 +18,7 @@ namespace Mirle.Agv.Control
     {
         #region Events
 
-        public event EventHandler<AgvcTransCmd> OnMiddlerGetsNewTransCmdsEvent;
+        public event EventHandler<AgvcTransCmd> OnInstallTransferCommandEvent;
         public event EventHandler<string> OnMsgFromAgvcEvent;
         public event EventHandler<string> OnMsgToAgvcEvent;
         public event EventHandler<string> OnMsgFromVehicleEvent;
@@ -1042,9 +1042,9 @@ namespace Mirle.Agv.Control
             //}
 
             AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest);
-            if (OnMiddlerGetsNewTransCmdsEvent != null)
+            if (OnInstallTransferCommandEvent != null)
             {
-                OnMiddlerGetsNewTransCmdsEvent.Invoke(this, agvcTransCmd);
+                OnInstallTransferCommandEvent.Invoke(this, agvcTransCmd);
             }
         }
         public void Send_Cmd131_TransferResponse(ushort seqNum, int replyCode, string reason)

@@ -19,22 +19,36 @@ namespace Mirle.Agv
         QuadrantIV
     }
 
-    public enum EnumSectionShape
+    public enum EnumChargeDirection
     {
         None,
-        Straight,
-        Curve
+        Left,
+        Right
     }
 
-    public enum EnumAddressType
-    {        
+    public enum EnumPermitDirection
+    {
         None,
-        BarcodeEnd,
-        BarcodeCross,
-        Port,
-        Charger,
-        TR
-    }
+        Forward,
+        Backward
+    }   
+
+    //public enum EnumSectionShape
+    //{
+    //    None,
+    //    Straight,
+    //    Curve
+    //}
+
+    //public enum EnumAddressType
+    //{        
+    //    None,
+    //    BarcodeEnd,
+    //    BarcodeCross,
+    //    Port,
+    //    Charger,
+    //    TR
+    //}
 
     public enum EnumRowBarcodeType
     {
@@ -142,14 +156,14 @@ namespace Mirle.Agv
         Right
     }
 
-    public enum EnumDisplayLevel
-    {
-        Lowest,
-        Low,
-        Normal,
-        High,
-        Highest
-    }
+    //public enum EnumDisplayLevel
+    //{
+    //    Lowest,
+    //    Low,
+    //    Normal,
+    //    High,
+    //    Highest
+    //}
 
     public static class ExtensionMethods
     {

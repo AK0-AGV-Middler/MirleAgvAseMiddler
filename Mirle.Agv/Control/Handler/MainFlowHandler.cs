@@ -198,10 +198,10 @@ namespace Mirle.Agv.Control
                 middlerConfigs.SleepTime = tempSleepTime;
 
                 mapConfigs = new MapConfigs();
-                mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", @"D:\CsProject\Mirle.Agv\Mirle.Agv\bin\Debug");
-                mapConfigs.SectionFilePath = configHandler.GetString("Map", "SectionFilePath", "ASECTION.csv");
-                mapConfigs.AddressFilePath = configHandler.GetString("Map", "AddressFilePath", "AADDRESS.csv");
-                mapConfigs.BarcodeFilePath = configHandler.GetString("Map", "BarcodeFilePath", "ABARCODE.csv");
+                mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", Environment.CurrentDirectory);
+                mapConfigs.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
+                mapConfigs.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
+                mapConfigs.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "ABARCODE.csv");
 
                 sr2000Configs = new Sr2000Configs();
                 int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
@@ -322,7 +322,7 @@ namespace Mirle.Agv.Control
             {
                 batteryHandler = new BatteryHandler();
                 coupleHandler = new CoupleHandler();
-                mapHandler = new MapHandler(mapConfigs);
+                //mapHandler = new MapHandler(mapConfigs);
                 moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs);
                 robotControlHandler = new RobotControlHandler();
 
@@ -384,15 +384,15 @@ namespace Mirle.Agv.Control
                 }
             }
 
-        }
+        } 
 
         private void EventInitial()
         {
             try
             {
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
-                middleAgent.OnMiddlerGetsNewTransCmdsEvent += OnMiddlerGetsNewTransCmds;
-                middleAgent.OnMiddlerGetsNewTransCmdsEvent += mapHandler.OnMiddlerGetsNewTransCmds;
+                middleAgent.OnInstallTransferCommandEvent += OnInstallTransferCommand;
+                middleAgent.OnInstallTransferCommandEvent += mapHandler.OnInstallTransferCommand;
 
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;
@@ -459,7 +459,7 @@ namespace Mirle.Agv.Control
             OnCancelEvent();
         }
 
-        private void OnMiddlerGetsNewTransCmds(object sender, AgvcTransCmd agvcTransCmd)
+        private void OnInstallTransferCommand(object sender, AgvcTransCmd agvcTransCmd)
         {
             try
             {

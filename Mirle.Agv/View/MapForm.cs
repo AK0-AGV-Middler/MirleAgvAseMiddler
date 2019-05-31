@@ -33,7 +33,7 @@ namespace Mirle.Agv.View
             float deltaOrigion = 50;
 
             //Draw Barcode
-            foreach (var rowBarcode in mapInfo.mapRowBarcodes)
+            foreach (var rowBarcode in mapInfo.mapBarcodes)
             {
                 float fromX = rowBarcode.HeadX * coefficient + deltaOrigion;
                 float fromY = rowBarcode.HeadY * coefficient + deltaOrigion;

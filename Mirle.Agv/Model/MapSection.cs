@@ -6,78 +6,38 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
-    //ID, FromAdr, ToAdr, Distance, Shape, Type, Padding, FromX, FromY, ToX, ToY
     public class MapSection
     {
-        public string Id { get; set; }
-        //public string Origin { get; set; }
-        //public string Destination { get; set; }
-        public string FromAddress { get; set; }
-        public string ToAddress { get; set; }
+        //Id, FromAddress, ToAddress, Distance, Speed, Type, PermitDirection, FowardBeamSensorEnable, BackwardBeamSensorEnable
+        public string Id { get; set; } = "Empty";
+        public string FromAddress { get; set; } = "Empty";
+        public string ToAddress { get; set; } = "Empty";
         public float Distance { get; set; }
-        public EnumSectionShape Shape { get; set; }
-        public EnumSectionType Type { get; set; }
-        public float Padding { get; set; }
-        public float FromAddressX { get; set; }
-        public float FromAddressY { get; set; }
-        public float ToAddressX { get; set; }
-        public float ToAddressY { get; set; }
-        //public string OriginBC { get; set; }
-        //public string DestinationBC { get; set; }
+        public float Speed { get; set; }
+        public EnumSectionType Type { get; set; } = EnumSectionType.None;
+        public EnumPermitDirection PermitDirection { get; set; } = EnumPermitDirection.None;
+        public bool FowardBeamSensorEnable { get; set; }
+        public bool BackwardBeamSensorEnable { get; set; }
 
-        public MapSection()
+        public EnumPermitDirection PermitDirectionConvert(string v)
         {
-            Type = EnumSectionType.None;
-            Shape = EnumSectionShape.None;
-            Id = "Empty";
-            FromAddress = "Empty";
-            ToAddress = "Empty";
-        }
-        public MapSection(Dictionary<string, int> HeaderTable, string[] Content)
-        {
-            try
+            var keyword = v.Trim();
+            switch (keyword)
             {
-                Id = Content[HeaderTable["Id"]];
-                FromAddress = Content[HeaderTable["FromAddress"]];
-                ToAddress = Content[HeaderTable["ToAddress"]];
-                Distance = float.Parse(Content[HeaderTable["Distance"]]);
-                //Type = (EnumSectionType)Enum.Parse(typeof(EnumSectionType), Content[HeaderTable["Type"]]);
-                //Shape = (EnumSectionShape)Enum.Parse(typeof(EnumSectionShape), Content[HeaderTable["Shape"]]);                
-                Type = SectionTypeConvert(Content[HeaderTable["Type"]]);       
-                Shape = SectionShapeConvert(Content[HeaderTable["Shape"]]);
-
-                Padding = float.Parse(Content[HeaderTable["Padding"]]);
-                FromAddressX = float.Parse(Content[HeaderTable["FromAddressX"]]);
-                FromAddressY = float.Parse(Content[HeaderTable["FromAddressY"]]);
-                ToAddressX = float.Parse(Content[HeaderTable["ToAddressX"]]);
-                ToAddressY = float.Parse(Content[HeaderTable["ToAddressY"]]);
-                //OriginBC = Content[HeaderTable["OriginBC"]];
-                //DestinationBC = Content[HeaderTable["DestinationBC"]];
-            }
-            catch (Exception ex)
-            {
-                string Message = "Section ID : " + Content[HeaderTable["Id"]] + "\n" + ex.ToString();
-                throw new System.ArgumentException(Message);
-            }
-        }
-
-        private EnumSectionShape SectionShapeConvert(string v)
-        {
-            switch (v)
-            {
-                case "Curve":
-                    return EnumSectionShape.Curve;
-                case "Straight":
-                    return EnumSectionShape.Straight;
+                case "Forward":
+                    return EnumPermitDirection.Forward;
+                case "Backward":
+                    return EnumPermitDirection.Backward;
                 case "None":
                 default:
-                    return EnumSectionShape.None;
+                    return EnumPermitDirection.None;
             }
         }
 
-        private EnumSectionType SectionTypeConvert(string v)
+        public EnumSectionType SectionTypeConvert(string v)
         {
-            switch (v)
+            var keyword = v.Trim();
+            switch (keyword)
             {
                 case "Horizontal":
                     return EnumSectionType.Horizontal;
@@ -96,7 +56,6 @@ namespace Mirle.Agv.Model
                     return EnumSectionType.None;
             }
         }
-
     }
 
 }
