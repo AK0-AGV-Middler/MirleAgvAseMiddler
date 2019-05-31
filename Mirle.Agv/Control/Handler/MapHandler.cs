@@ -94,7 +94,7 @@ namespace Mirle.Agv.Control
                     string[] getThisRow = allRows[i].Split(',');
                     MapSection oneRow = new MapSection();
                     oneRow.Id = getThisRow[dicSectionIndexes["Id"]];
-                    oneRow.FromAddress = getThisRow[dicSectionIndexes["FromAdr"]];
+                    oneRow.FromAddress = getThisRow[dicSectionIndexes["FromAddress"]];
                     oneRow.ToAddress = getThisRow[dicSectionIndexes["ToAddress"]];
                     oneRow.Distance = float.Parse(getThisRow[dicSectionIndexes["Distance"]]);
                     oneRow.Speed = float.Parse(getThisRow[dicSectionIndexes["Speed"]]);
