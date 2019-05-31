@@ -70,42 +70,42 @@ namespace Mirle.Agv.View
             float coefficient = 0.20f;
             float deltaOrigion = 20;
             // Draw Sections
-            foreach (var section in mapInfo.mapSections)
-            {
-                float fromX = section.FromAddressX * coefficient + deltaOrigion;
-                float fromY = section.FromAddressY * coefficient + deltaOrigion;
-                float toX = section.ToAddressX * coefficient + deltaOrigion;
-                float toY = section.ToAddressY * coefficient + deltaOrigion;
+            //foreach (var section in mapInfo.mapSections)
+            //{
+            //    float fromX = section.FromAddressX * coefficient + deltaOrigion;
+            //    float fromY = section.FromAddressY * coefficient + deltaOrigion;
+            //    float toX = section.ToAddressX * coefficient + deltaOrigion;
+            //    float toY = section.ToAddressY * coefficient + deltaOrigion;
 
 
-                if (section.Type == EnumSectionType.Horizontal || section.Type == EnumSectionType.Vertical)
-                {
-                    gra.DrawLine(bluePen, fromX, fromY, toX, toY);
-                }
-                else if (section.Type == EnumSectionType.QuadrantIII)
-                {
-                    //Turn left 
-                    //    t
-                    //    |
-                    // f---
+            //    if (section.Type == EnumSectionType.Horizontal || section.Type == EnumSectionType.Vertical)
+            //    {
+            //        gra.DrawLine(bluePen, fromX, fromY, toX, toY);
+            //    }
+            //    else if (section.Type == EnumSectionType.QuadrantIII)
+            //    {
+            //        //Turn left 
+            //        //    t
+            //        //    |
+            //        // f---
 
-                    gra.DrawLine(bluePen, fromX, fromY, toX, fromY);
-                    gra.DrawLine(bluePen, toX, fromY, toX, toY);
-                }
-                else if (section.Type == EnumSectionType.QuadrantIV)
-                {
-                    //Turn right 
-                    //    f
-                    //    |
-                    // t---
-                    gra.DrawLine(bluePen, fromX, fromY, fromX, toY);
-                    gra.DrawLine(bluePen, fromX, toY, toX, toY);
-                }
-                else
-                {
+            //        gra.DrawLine(bluePen, fromX, fromY, toX, fromY);
+            //        gra.DrawLine(bluePen, toX, fromY, toX, toY);
+            //    }
+            //    else if (section.Type == EnumSectionType.QuadrantIV)
+            //    {
+            //        //Turn right 
+            //        //    f
+            //        //    |
+            //        // t---
+            //        gra.DrawLine(bluePen, fromX, fromY, fromX, toY);
+            //        gra.DrawLine(bluePen, fromX, toY, toX, toY);
+            //    }
+            //    else
+            //    {
 
-                }
-            }
+            //    }
+            //}
 
             Bitmap bitmap = new Bitmap(@"D:\CsProject\Mirle.Agv\Mirle.Agv\Resource\Auto_16x16.png");
             //Draw Addresses

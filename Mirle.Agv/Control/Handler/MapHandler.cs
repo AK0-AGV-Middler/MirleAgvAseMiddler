@@ -18,62 +18,6 @@ namespace Mirle.Agv.Control
         public string BarcodePath { get; set; }
         private MapInfo mapInfo;
 
-        //private void GetSectionTable(string SectionFilePath)
-        //{
-        //    Dictionary<string, int> HeaderTable = new Dictionary<string, int>();
-        //    string[] Rows = File.ReadAllLines(SectionFilePath);
-        //    string[] Header = Rows[0].Split(',');
-        //    string[] Content = null;
-        //    SectionTable.Clear();
-        //    SectionTableByAddress.Clear();
-
-        //    for (int idx = 0; idx < Header.Length; idx++)
-        //    {
-        //        HeaderTable[Header[idx]] = idx;
-        //    }
-        //    for (int i = 1; i < Rows.Length; i++)
-        //    {
-        //        Content = Rows[i].Split(',');
-        //        SectionTable[Content[HeaderTable["Id"]]] = new MapSection(HeaderTable, Content);
-        //        if (SectionTableByAddress.ContainsKey(Content[HeaderTable["Origin"]]))
-        //        {
-        //            SectionTableByAddress[Content[HeaderTable["Origin"]]].Add(SectionTable[Content[HeaderTable["Id"]]]);
-        //        }
-        //        else
-        //        {
-        //            SectionTableByAddress[Content[HeaderTable["Origin"]]] = new List<MapSection>() { SectionTable[Content[HeaderTable["Id"]]] };
-        //        }
-
-        //        if (SectionTableByAddress.ContainsKey(Content[HeaderTable["Destination"]]))
-        //        {
-        //            SectionTableByAddress[Content[HeaderTable["Destination"]]].Add(SectionTable[Content[HeaderTable["Id"]]]);
-        //        }
-        //        else
-        //        {
-        //            SectionTableByAddress[Content[HeaderTable["Destination"]]] = new List<MapSection>() { SectionTable[Content[HeaderTable["Id"]]] };
-        //        }
-        //    }
-
-        //}
-
-        //private void GetAddressTable(string AddressFilePath)
-        //{
-        //    Dictionary<string, int> HeaderTable = new Dictionary<string, int>();
-        //    string[] Rows = File.ReadAllLines(AddressFilePath);
-        //    string[] Header = Rows[0].Split(',');
-        //    string[] Content = null;
-        //    this.AddressTable.Clear();
-        //    for (int idx = 0; idx < Header.Length; idx++)
-        //    {
-        //        HeaderTable[Header[idx]] = idx;
-        //    }
-        //    for (int i = 1; i < Rows.Length; i++)
-        //    {
-        //        Content = Rows[i].Split(',');
-        //        this.AddressTable[Content[HeaderTable["Id"]]] = new MapAddress(HeaderTable, Content);
-        //    }
-        //}
-
         public MapHandler(MapConfigs mapConfigs)
         {
             this.mapConfigs = mapConfigs;
@@ -260,71 +204,35 @@ namespace Mirle.Agv.Control
                 int nRows = allRows.Length;
                 int nColumns = titleRow.Length;
 
-                //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, Type
-
-                int idIndex = -1;
-                int barcodeHeadNumIndex = -1;
-                int headXIndex = -1;
-                int headYIndex = -1;
-                int barcodeTailNumIndex = -1;
-                int tailXIndex = -1;
-                int tailYIndex = -1;
-                int typeIndex = -1;
-
+                //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, Direction
                 for (int i = 0; i < nColumns; i++)
                 {
                     var keyword = titleRow[i].Trim();
-                    switch (keyword)
+                    if (!string.IsNullOrWhiteSpace(keyword))
                     {
-                        case "Id":
-                            idIndex = i;
-                            break;
-                        case "BarcodeHeadNum":
-                            barcodeHeadNumIndex = i;
-                            break;
-                        case "HeadX":
-                            headXIndex = i;
-                            break;
-                        case "HeadY":
-                            headYIndex = i;
-                            break;
-                        case "BarcodeTailNum":
-                            barcodeTailNumIndex = i;
-                            break;
-                        case "TailX":
-                            tailXIndex = i;
-                            break;
-                        case "TailY":
-                            tailYIndex = i;
-                            break;
-                        case "Type":
-                            typeIndex = i;
-                            break;
-                        default:
-                            break;
+                        dicBarcodeIndexes.Add(keyword, i);
                     }
                 }
 
                 for (int i = 0; i < nRows; i++)
                 {
                     string[] getThisRow = allRows[i].Split(',');
-                    MapBarcode mapRowBarcode = new MapBarcode();
-                    mapRowBarcode.Id = idIndex > -1 ? getThisRow[idIndex] : "Empty";
-                    mapRowBarcode.BarcodeHeadNum = barcodeHeadNumIndex > -1 ? float.Parse(getThisRow[barcodeHeadNumIndex]) : 0;
-                    mapRowBarcode.HeadX = headXIndex > -1 ? float.Parse(getThisRow[headXIndex]) : 0;
-                    mapRowBarcode.HeadY = headYIndex > -1 ? float.Parse(getThisRow[headYIndex]) : 0;
-                    mapRowBarcode.BarcodeTailNum = barcodeTailNumIndex > -1 ? float.Parse(getThisRow[barcodeTailNumIndex]) : 0;
-                    mapRowBarcode.TailX = tailXIndex > -1 ? float.Parse(getThisRow[tailXIndex]) : 0;
-                    mapRowBarcode.TailY = tailYIndex > -1 ? float.Parse(getThisRow[tailYIndex]) : 0;
-                    mapRowBarcode.Type = typeIndex > -1 ? RowBarcodeTypeConvert(getThisRow[typeIndex]) : EnumRowBarcodeType.None;
+                    MapBarcode oneRow = new MapBarcode();
+                    oneRow.Id = getThisRow[dicBarcodeIndexes["Id"]];
+                    oneRow.BarcodeHeadNum = float.Parse(getThisRow[dicBarcodeIndexes["BarcodeHeadNum"]]);
+                    oneRow.HeadX = float.Parse(getThisRow[dicBarcodeIndexes["HeadX"]]);
+                    oneRow.HeadY = float.Parse(getThisRow[dicBarcodeIndexes["HeadY"]]);
+                    oneRow.BarcodeTailNum = float.Parse(getThisRow[dicBarcodeIndexes["BarcodeTailNum"]]);
+                    oneRow.TailX = float.Parse(getThisRow[dicBarcodeIndexes["TailX"]]);
+                    oneRow.TailY = float.Parse(getThisRow[dicBarcodeIndexes["TailY"]]);
+                    oneRow.Direction = oneRow.BarcodeDirectionConvert(getThisRow[dicBarcodeIndexes["Direction"]]);
 
-                    mapRowBarcodes.Add(mapRowBarcode);
+                    mapBarcodes.Add(oneRow);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                var msg = ex.StackTrace;
             }
         }
 

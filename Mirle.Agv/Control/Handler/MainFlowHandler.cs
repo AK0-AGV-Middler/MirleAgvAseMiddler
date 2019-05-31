@@ -88,6 +88,7 @@ namespace Mirle.Agv.Control
         public Vehicle theVehicle;
         private bool isIniOk;
         private AgvcTransCmd agvcTransCmd;
+        public MapInfo theMapInfo;
 
         public MainFlowHandler()
         {
@@ -124,6 +125,7 @@ namespace Mirle.Agv.Control
             HandlerInitial();
 
             VehicleInitial();
+            GetMapInfo();
 
             EventInitial();
 
@@ -141,6 +143,11 @@ namespace Mirle.Agv.Control
                     OnXXXIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        private void GetMapInfo()
+        {
+            theMapInfo = MapInfo.Instance;
         }
 
         private void ThreadInitial()
@@ -322,7 +329,7 @@ namespace Mirle.Agv.Control
             {
                 batteryHandler = new BatteryHandler();
                 coupleHandler = new CoupleHandler();
-                //mapHandler = new MapHandler(mapConfigs);
+                mapHandler = new MapHandler(mapConfigs);
                 moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs);
                 robotControlHandler = new RobotControlHandler();
 
@@ -578,7 +585,7 @@ namespace Mirle.Agv.Control
                     MoveCmdInfo moveCmd = new MoveCmdInfo();
                     moveCmd.CmdId = agvcTransCmd.CmdId;
                     moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
-                    var section = mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
+                    var section =  mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
                     moveCmd.Section = section;
                     moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);

@@ -17,5 +17,25 @@ namespace Mirle.Agv.Model
         public float TailX { get; set; }
         public float TailY { get; set; }
         public int Direction { get; set; }
+
+        public int BarcodeDirectionConvert(string v)
+        {
+            v = v.Trim();
+
+            switch (v)
+            {
+                case "0":
+                    return 0;
+                case "90":
+                    return 90;
+                case "180":
+                    return 180;
+                case "-90":
+                    return -90;
+                default:
+                    return 0;
+            }
+        }
+
     }
 }
