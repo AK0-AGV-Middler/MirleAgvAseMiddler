@@ -12,6 +12,7 @@ namespace Mirle.Agv.Model
         public List<MapAddress> mapAddresses = new List<MapAddress>();        
         public List<MapBarcode> mapBarcodes = new List<MapBarcode>();
         public Dictionary<string, MapAddress> dicMapAddresses = new Dictionary<string, MapAddress>();
+        public Dictionary<string, MapSection> dicMapSections = new Dictionary<string, MapSection>();
         public Dictionary<string, int> dicSectionIndexes = new Dictionary<string, int>();
         public Dictionary<string, int> dicAddressIndexes = new Dictionary<string, int>();
         public Dictionary<string, int> dicBarcodeIndexes = new Dictionary<string, int>();

@@ -585,7 +585,7 @@ namespace Mirle.Agv.Control
                     MoveCmdInfo moveCmd = new MoveCmdInfo();
                     moveCmd.CmdId = agvcTransCmd.CmdId;
                     moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
-                    var section =  mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
+                    var section = theMapInfo.dicMapSections[agvcTransCmd.ToUnloadSections[i]];
                     moveCmd.Section = section;
                     moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
@@ -610,7 +610,7 @@ namespace Mirle.Agv.Control
                     MoveCmdInfo moveCmd = new MoveCmdInfo();
                     moveCmd.CmdId = agvcTransCmd.CmdId;
                     moveCmd.MoveEndAddress = agvcTransCmd.LoadAddress;
-                    var section = mapHandler.GetMapSection(agvcTransCmd.ToLoadSections[i]);
+                    var section = theMapInfo.dicMapSections[agvcTransCmd.ToLoadSections[i]]; 
                     moveCmd.Section = section;
                     moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToLoadSections.Length - 1);
@@ -635,7 +635,7 @@ namespace Mirle.Agv.Control
                     MoveCmdInfo moveCmd = new MoveCmdInfo();
                     moveCmd.CmdId = agvcTransCmd.CmdId;
                     moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
-                    var section = mapHandler.GetMapSection(agvcTransCmd.ToUnloadSections[i]);
+                    var section = theMapInfo.dicMapSections[agvcTransCmd.ToUnloadSections[i]];
                     moveCmd.Section = section;
                     moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);

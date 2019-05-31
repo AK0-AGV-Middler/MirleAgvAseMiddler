@@ -61,9 +61,11 @@ namespace Mirle.Agv.Control
                     return;
                 }
                 var mapSections = mapInfo.mapSections;
+                var dicMapSections = mapInfo.dicMapSections;
                 var dicSectionIndexes = mapInfo.dicSectionIndexes;
                 mapSections.Clear();
-                dicSectionIndexes.Clear();
+                dicMapSections.Clear();
+                dicSectionIndexes.Clear();                
 
                 string[] allRows = File.ReadAllLines(SectionPath);
                 if (allRows == null || allRows.Length < 2)
@@ -102,6 +104,7 @@ namespace Mirle.Agv.Control
                     oneRow.BackwardBeamSensorEnable = BooleanConvert(getThisRow[dicSectionIndexes["BackwardBeamSensorEnable"]]);
 
                     mapSections.Add(oneRow);
+                    dicMapSections.Add(oneRow.Id, oneRow);
                 }
             }
             catch (Exception ex)
