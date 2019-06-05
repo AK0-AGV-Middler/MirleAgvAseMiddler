@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Model
+namespace Mirle.Agv.Control.Tools
 {
     public class LogFormat
     {
@@ -25,6 +25,7 @@ namespace Mirle.Agv.Model
             this.Message = Message;
         }
 
-        public LogFormat(string Message):this("Category", "LogLevel", "ClassFunctionName", "Device", "CarrierId", Message) { }
+        public LogFormat(string Message) : this("Category", "LogLevel", "ClassFunctionName", "Device", "CarrierId", Message) { }
     }
+
 }

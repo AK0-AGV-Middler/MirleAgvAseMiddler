@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Mirle.Agv.Model.TransferCmds;
 using TcpIpClientSample;
 using Mirle.Agv.Model.Configs;
+using Mirle.Agv.Control;
 
 namespace Mirle.Agv.Model
 {

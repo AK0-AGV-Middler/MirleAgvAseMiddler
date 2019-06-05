@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace Mirle.Agv.Model.Tests
 {
@@ -37,6 +38,48 @@ namespace Mirle.Agv.Model.Tests
         [Test()]
         public void YYYTest()
         {
+            Queue tempQ = Queue.Synchronized(new Queue());
+            Queue q1 = Queue.Synchronized(new Queue());
+            Queue q2 = Queue.Synchronized(new Queue());
+            tempQ = q1;
+            Assert.AreEqual(0, tempQ.Count);
+
+            q1.Enqueue("msg1");
+            Assert.AreEqual(1, tempQ.Count);
+            q1.Enqueue("msg2");
+            Assert.AreEqual(2, tempQ.Count);
+
+            tempQ = q2;
+            Assert.AreEqual(0, tempQ.Count);
+
+            q1.Dequeue();
+            Assert.AreEqual(0, tempQ.Count);
+            Assert.AreEqual(1, q1.Count);
+            q2.Enqueue("xxx1");
+            Assert.AreEqual(1, tempQ.Count);
+            q2.Enqueue("xxx2");
+            Assert.AreEqual(2, tempQ.Count);
+            q1.Dequeue();
+            Assert.AreEqual(2, tempQ.Count);
+            Assert.AreEqual(0, q1.Count);
+
+            tempQ = q1;
+            q2.Dequeue();
+            Assert.AreEqual(0, tempQ.Count);
+            Assert.AreEqual(1, q2.Count);
+
+
+            //q2 = q1;
+            //Assert.AreEqual(2, q2.Count);
+            //q1.Enqueue("msg3");
+            //Assert.AreEqual(3, q1.Count);
+            //Assert.AreEqual(3, q2.Count);
+            //q1=new Queue();
+            //Assert.AreEqual(0, q1.Count);
+            //Assert.AreEqual(3, q2.Count);
+            //q1.Clear();
+            //Assert.AreEqual(3, q2.Count);
+
         }
     }
 }

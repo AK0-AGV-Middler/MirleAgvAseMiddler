@@ -1,5 +1,4 @@
 ﻿using Mirle.Agv.Control.Tools;
-using Mirle.Agv.Control.Tools.Logger;
 using Mirle.Agv.Model;
 using Mirle.Agv.Model.Configs;
 using Mirle.Agv.Model.TransferCmds;
@@ -391,7 +390,7 @@ namespace Mirle.Agv.Control
                 }
             }
 
-        } 
+        }
 
         private void EventInitial()
         {
@@ -493,7 +492,7 @@ namespace Mirle.Agv.Control
                 string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
                 string classMethodName = className + ":" + methodName;
                 LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", ex.StackTrace);
-                loggerAgent.LogError(logFormat);
+                loggerAgent.LogMsg("Error", logFormat);
             }
         }
 
@@ -610,7 +609,7 @@ namespace Mirle.Agv.Control
                     MoveCmdInfo moveCmd = new MoveCmdInfo();
                     moveCmd.CmdId = agvcTransCmd.CmdId;
                     moveCmd.MoveEndAddress = agvcTransCmd.LoadAddress;
-                    var section = theMapInfo.dicMapSections[agvcTransCmd.ToLoadSections[i]]; 
+                    var section = theMapInfo.dicMapSections[agvcTransCmd.ToLoadSections[i]];
                     moveCmd.Section = section;
                     moveCmd.TotalMoveLength += section.Distance;
                     moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToLoadSections.Length - 1);

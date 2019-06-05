@@ -84,11 +84,10 @@
     <Compile Include="Control\Tools\AgvcConnecter.cs" />
     <Compile Include="Control\Tools\ConfigHandler.cs" />
     <Compile Include="Control\Tools\CsvHandler.cs" />
-    <Compile Include="Control\Tools\Logger\CategoryBean.cs" />
-    <Compile Include="Control\Tools\Logger\CategoryTypeBean.cs" />
+    <Compile Include="Control\Tools\Logger\LogBasicConfigs.cs" />
+    <Compile Include="Control\Tools\Logger\LogFormat.cs" />
     <Compile Include="Control\Tools\Logger\Logger.cs" />
-    <Compile Include="Control\Tools\Logger\LoggerConstants.cs" />
-    <Compile Include="Control\Tools\Logger\LoggerSample.cs" />
+    <Compile Include="Control\Tools\Logger\LogType.cs" />
     <Compile Include="Control\Tools\XmlHandler.cs" />
     <Compile Include="Model\AgvcCmds\Agvmessage.cs" />
     <Compile Include="Model\Alarm.cs" />
@@ -101,7 +100,6 @@
     <Compile Include="Model\Configs\MiddlerConfigs.cs" />
     <Compile Include="Model\Configs\MoveControlConfigs.cs" />
     <Compile Include="Model\Configs\Sr2000Configs.cs" />
-    <Compile Include="Model\LogFormat.cs" />
     <Compile Include="Model\MapInfo.cs" />
     <Compile Include="Model\MapPosition.cs" />
     <Compile Include="Model\MapBarcode.cs" />

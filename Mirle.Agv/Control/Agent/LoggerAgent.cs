@@ -3,70 +3,79 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Control.Tools.Logger;
-using Mirle.Agv.Model;
 using System.IO;
+using Mirle.Agv.Control.Tools;
 
-namespace Mirle.Agv
+
+namespace Mirle.Agv.Control
 {
     public class LoggerAgent
     {
-        public static string RootDir { get; set; }
-
         private Dictionary<string, Logger> dicLoggers;
-
+        public static string RootDir { get; set; }
         public static string LogConfigPath { get; set; }
-
+        private ConfigHandler configHandler;
         private static readonly Lazy<LoggerAgent> lazyInstance = new Lazy<LoggerAgent>(() => new LoggerAgent());
+        public static LoggerAgent Instance { get { return lazyInstance.Value; } }
 
         private LoggerAgent()
         {
             dicLoggers = new Dictionary<string, Logger>();
+
+            LogConfigInitial();
+        }
+
+        private void LogConfigInitial()
+        {
             string fullConfigPath = Path.Combine(RootDir, LogConfigPath);
-            List<CategoryTypeBean> listCategory = Logger.ReadLogIniFile(fullConfigPath);
-            foreach (CategoryTypeBean bean in listCategory)
+            configHandler = new ConfigHandler(fullConfigPath);
+
+            // 確認 File 是否存在
+            if (!File.Exists(fullConfigPath))
             {
-                Logger logger = new Logger(bean);
-                string logFileName = logger.LogFileName;
-                dicLoggers.Add(logFileName, logger);
+                throw new Exception(string.Concat("File ", fullConfigPath, " is not existed."));
             }
-        }
 
-        public static LoggerAgent Instance { get { return lazyInstance.Value; } }
+            // 讀取 section = category的資料
+            LogBasicConfigs logBasicConfigs = new LogBasicConfigs();
+            var sectionName = "Basic";
+            logBasicConfigs.Number = Convert.ToInt32(configHandler.GetString(sectionName, "Number", "0"));
+            logBasicConfigs.SectionBaseName = configHandler.GetString(sectionName, "SectionBaseName", "LogType");
 
-        public void LogDebug(LogFormat logFormat)
-        {
-            if (dicLoggers.ContainsKey("Debug"))
+            if (logBasicConfigs.Number <= 0)
             {
-                Logger logger = dicLoggers["Debug"];
-                logger.SaveLogFile("Debug", logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
+                throw new Exception(string.Concat("Please add Category in iniFile."));
             }
-        }
 
-        public void LogInfo(LogFormat logFormat)
-        {
-            if (dicLoggers.ContainsKey("Info"))
+            // 讀取各個 Category 的資料
+            for (int i = 1; i < logBasicConfigs.Number + 1; i++)
             {
-                Logger logger = dicLoggers["Info"];
-                logger.SaveLogFile("Info", logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
+                string strSectionName = string.Concat(logBasicConfigs.SectionBaseName, i.ToString());
+
+                LogType aLogType = new LogType();
+                aLogType.Name = configHandler.GetString(strSectionName, "Name", "Empty");
+                aLogType.LogFileName = configHandler.GetString(strSectionName, "LogFileName", "Empty");
+                aLogType.DirName = configHandler.GetString(strSectionName, "DirName", "Empty");
+                aLogType.DelOverdueFile = configHandler.GetBool(strSectionName, "DelOverdueFile", "True");
+                aLogType.FileKeepDay = Convert.ToInt32(configHandler.GetString(strSectionName, "FileKeepDay", "30"));
+                aLogType.LogMaxSize = Convert.ToInt32(configHandler.GetString(strSectionName, "LogMaxSize", "2"));
+                aLogType.LogEnable = configHandler.GetBool(strSectionName, "LogEnable","True");
+                aLogType.LineSeparateToken = configHandler.GetString(strSectionName, "LineSeparateToken", "$.$");
+                aLogType.FileExtension = configHandler.GetString(strSectionName, "FileExtension", ".txt");
+                aLogType.DequeueInterval = int.Parse(configHandler.GetString("Basic", "DequeueInterval", "1000"));
+
+                Logger logger = new Logger(aLogType);
+
+                dicLoggers.Add(aLogType.Name, logger);
             }
-        }
+        }       
 
-        public void LogError(LogFormat logFormat)
+        public void LogMsg(string type,LogFormat logFormat)
         {
-            if (dicLoggers.ContainsKey("Error"))
+            if (dicLoggers.ContainsKey(type))
             {
-                Logger logger = dicLoggers["Error"];
-                logger.SaveLogFile("Error", logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
-            }
-        }
-
-        public void LogComm(LogFormat logFormat)
-        {
-            if (dicLoggers.ContainsKey("Comm"))
-            {
-                Logger logger = dicLoggers["Comm"];
-                logger.SaveLogFile("Comm", logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
+                Logger logger = dicLoggers[type];
+                logger.SaveLogFile(type, logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
             }
         }
     }

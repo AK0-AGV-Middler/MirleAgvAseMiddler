@@ -130,8 +130,8 @@ namespace Mirle.Agv.Control
             string className = GetType().Name;
             string methodName = sender.ToString(); //System.Reflection.MethodBase.GetCurrentMethod().Name;
             string classMethodName = className + ":" + methodName;
-            LogFormat logFormat = new LogFormat("Debug", "3", classMethodName, "Device", "CarrierID", e);
-            theLoggerAgent.LogDebug(logFormat);
+            LogFormat logFormat = new LogFormat("Debug", "3", classMethodName, "Device", "CarrierID", e);           
+            theLoggerAgent.LogMsg("Debug", logFormat);
         }
 
         protected void DoConnection(object sender, TcpIpEventArgs e)
