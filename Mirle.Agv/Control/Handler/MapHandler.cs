@@ -29,7 +29,7 @@ namespace Mirle.Agv.Control
             mapInfo = MapInfo.Instance;
             LoadSectionCsv();
             LoadAddressCsv();
-            LoadRowBarcodeCsv();
+            LoadRowBarcodeCsv();            
         }
 
         public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)

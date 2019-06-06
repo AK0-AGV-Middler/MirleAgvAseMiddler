@@ -470,6 +470,11 @@ namespace Mirle.Agv.Control
             try
             {
                 this.agvcTransCmd = agvcTransCmd;
+                if (!CheckTransCmdSectionsAndAddressesMatch(agvcTransCmd))
+                {
+                    return;
+                }
+
                 if (GenralTransCmds()) // Move/Load/Unload/LoadUnload
                 {
                     ConvertAgvcTransCmdIntoList();
@@ -495,6 +500,93 @@ namespace Mirle.Agv.Control
                 loggerAgent.LogMsg("Error", logFormat);
             }
         }
+
+        private bool CheckTransCmdSectionsAndAddressesMatch(AgvcTransCmd agvcTransCmd)
+        {
+            switch (agvcTransCmd.CmdType)
+            {
+                case EnumAgvcTransCmdType.Move:
+                    return IsSectionsAndAddressesMatch(agvcTransCmd.ToUnloadSections, agvcTransCmd.ToUnloadAddresses, agvcTransCmd.SeqNum);
+                case EnumAgvcTransCmdType.Load:
+                    return IsSectionsAndAddressesMatch(agvcTransCmd.ToLoadSections, agvcTransCmd.ToLoadAddresses, agvcTransCmd.SeqNum);
+                case EnumAgvcTransCmdType.Unload:
+                    return IsSectionsAndAddressesMatch(agvcTransCmd.ToUnloadSections, agvcTransCmd.ToUnloadAddresses, agvcTransCmd.SeqNum);
+                case EnumAgvcTransCmdType.LoadUnload:
+                    return IsSectionsAndAddressesMatch(agvcTransCmd.ToLoadSections, agvcTransCmd.ToLoadAddresses, agvcTransCmd.SeqNum) || IsSectionsAndAddressesMatch(agvcTransCmd.ToUnloadSections, agvcTransCmd.ToUnloadAddresses, agvcTransCmd.SeqNum);
+                default:
+                    return true;
+            }
+        }
+
+        private bool IsSectionsAndAddressesMatch(string[] sections, string[] addresses, ushort aSeqNum)
+        {
+            if (sections.Length + 1 != addresses.Length)
+            {
+                int replyCode = 1; // NG
+                string reason = $"guildSections and guildAddresses is not match";
+                middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
+                return false;
+            }
+
+            for (int i = 0; i < sections.Length; i++)
+            {
+                if (!theMapInfo.dicMapSections.ContainsKey(sections[i]))
+                {
+                    int replyCode = 1; // NG
+                    string reason = $"{sections[i]} is not in the map.";
+                    middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
+                    return false;
+                }
+
+                var tempSection = theMapInfo.dicMapSections[sections[i]];
+
+                if (!theMapInfo.dicMapAddresses.ContainsKey(addresses[i]))
+                {
+                    int replyCode = 1; // NG
+                    string reason = $"{addresses[i]} is not in the map.";
+                    middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
+                    return false;
+                }
+
+                if (!theMapInfo.dicMapAddresses.ContainsKey(addresses[i + 1]))
+                {
+                    int replyCode = 1; // NG
+                    string reason = $"{addresses[i+1]} is not in the map.";
+                    middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
+                    return false;
+                }
+
+                if (tempSection.FromAddress == addresses[i])
+                {
+                    if (tempSection.ToAddress != addresses[i + 1])
+                    {
+                        int replyCode = 1; // NG
+                        string reason = $"guildSections and guildAddresses is not match";
+                        middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
+                        return false;
+                    }
+                }
+                else if (tempSection.ToAddress == addresses[i])
+                {
+                    if (tempSection.FromAddress != addresses[i + 1])
+                    {
+                        int replyCode = 1; // NG
+                        string reason = $"guildSections and guildAddresses is not match";
+                        middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
+                        return false;
+                    }
+                }
+                else
+                {
+                    int replyCode = 1; // NG
+                    string reason = $"guildSections and guildAddresses is not match";
+                    middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
+                    return false;
+                }
+            }
+            return true;
+        }
+
 
         private bool GenralTransCmds()
         {

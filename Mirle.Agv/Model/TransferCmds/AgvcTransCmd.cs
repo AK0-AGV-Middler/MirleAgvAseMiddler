@@ -7,6 +7,7 @@ using Mirle.Agv.Control;
 using TcpIpClientSample;
 using Google.Protobuf.Collections;
 
+
 namespace Mirle.Agv.Model.TransferCmds
 {
     public class AgvcTransCmd
@@ -14,12 +15,15 @@ namespace Mirle.Agv.Model.TransferCmds
         public EnumAgvcTransCmdType CmdType { get; set; }
         public string[] ToLoadSections { get; set; }
         public string[] ToUnloadSections { get; set; }
-        public string[] ToLoadAddress { get; set; }
-        public string[] ToUnloadAddress { get; set; }
+        public string[] ToLoadAddresses { get; set; }
+        public string[] ToUnloadAddresses { get; set; }
         public string LoadAddress { get; set; }
         public string UnloadAddtess { get; set; }
         public string CarrierId { get; set; }
         public string CmdId { get; set; }
+        public ushort SeqNum { get; set; }
+
+        private MapInfo mapInfo = MapInfo.Instance;
 
         public AgvcTransCmd()
         {
@@ -27,7 +31,7 @@ namespace Mirle.Agv.Model.TransferCmds
             CarrierId = "Empty";
         }
 
-        public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest)
+        public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum)
         {
             CmdId = transRequest.CmdID;
             if (!string.IsNullOrEmpty(transRequest.CSTID))
@@ -35,6 +39,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 CarrierId = transRequest.CSTID;
             }
             SetCmdType(transRequest.ActType);
+            SeqNum = aSeqNum;
         }
 
         protected void SetCmdType(ActiveType activeType)
@@ -79,23 +84,87 @@ namespace Mirle.Agv.Model.TransferCmds
             }
         }
 
-        protected void SecToUnloadSections(RepeatedField<string> GuideAddressesToDestination)
+        protected void SecToUnloadSections(RepeatedField<string> guideSectionsToDestination)
         {
-            if (GuideAddressesToDestination != null)
+            if (guideSectionsToDestination != null)
             {
-                ToUnloadSections = GuideAddressesToDestination.ToArray();
+                ToUnloadSections = guideSectionsToDestination.ToArray();
             }
 
+        }
+
+        protected void SetToLoadAddresses(RepeatedField<string> guideAddressesStartToLoad)
+        {
+            if (guideAddressesStartToLoad != null)
+            {
+                ToLoadAddresses = guideAddressesStartToLoad.ToArray();
+                IsSectionsAndAddressesMatch(ToLoadSections, ToLoadAddresses);
+            }
+        }
+
+        private void IsSectionsAndAddressesMatch(string[] sections, string[] addresses)
+        {
+            if (sections.Length + 1 != addresses.Length)
+            {
+                //Send "Sections.Length and Addresses.Length unmatch error"-event to middler
+                return;
+            }
+
+            for (int i = 0; i < sections.Length; i++)
+            {
+                if (!mapInfo.dicMapSections.ContainsKey(sections[i]))
+                {
+                    //Send "No such section error"-event to middler
+                    return;
+                }
+
+                var tempSection = mapInfo.dicMapSections[sections[i]];
+
+                if (!mapInfo.dicMapAddresses.ContainsKey(addresses[i]))
+                {
+                    //Send "No such address error"-event to middler
+                    return;
+                }
+
+                if (!mapInfo.dicMapAddresses.ContainsKey(addresses[i + 1]))
+                {
+                    //Send "No such address error"-event to middler
+                    return;
+                }
+
+                if (tempSection.FromAddress == addresses[i])
+                {
+                    if (tempSection.ToAddress != addresses[i + 1])
+                    {
+                        //Send "SectionList and  AddressList unmatch error"-event to middler
+                        return;
+                    }
+                }
+                else if (tempSection.ToAddress == addresses[i])
+                {
+                    if (tempSection.FromAddress != addresses[i + 1])
+                    {
+                        //Send "SectionList and  AddressList unmatch error"-event to middler
+                        return;
+                    }
+                }
+                else
+                {
+                    //Send "SectionList and  AddressList unmatch error"-event to middler
+                    return;
+                }                
+            }
         }
     }
 
     public class AgvcMoveCmd : AgvcTransCmd
     {
-        public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest) : base(transRequest)
+        public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum) : base(transRequest,aSeqNum)
         {
             try
             {
                 SecToUnloadSections(transRequest.GuideSectionsToDestination);
+
                 UnloadAddtess = transRequest.DestinationAdr;
             }
             catch (Exception ex)
@@ -107,7 +176,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcLoadCmd : AgvcTransCmd
     {
-        public AgvcLoadCmd(ID_31_TRANS_REQUEST transRequest) : base(transRequest)
+        public AgvcLoadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             try
             {
@@ -123,7 +192,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcUnloadCmd : AgvcTransCmd
     {
-        public AgvcUnloadCmd(ID_31_TRANS_REQUEST transRequest) : base(transRequest)
+        public AgvcUnloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             try
             {
@@ -139,7 +208,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcLoadunloadCmd : AgvcTransCmd
     {
-        public AgvcLoadunloadCmd(ID_31_TRANS_REQUEST transRequest) : base(transRequest)
+        public AgvcLoadunloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             try
             {
@@ -157,14 +226,14 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcHomeCmd : AgvcTransCmd
     {
-        public AgvcHomeCmd(ID_31_TRANS_REQUEST transRequest) : base(transRequest)
+        public AgvcHomeCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
         }
     }
 
     public class AgvcOverrideCmd : AgvcTransCmd
     {
-        public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest) : base(transRequest)
+        public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             SetToLoadSections(transRequest.GuideSectionsStartToLoad);
             SecToUnloadSections(transRequest.GuideSectionsToDestination);

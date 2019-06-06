@@ -63,6 +63,7 @@ namespace Mirle.Agv.View
         private void btnRefreshMap_Click(object sender, EventArgs e)
         {
             //DrawSomething();
+           // mapForm.DrawTheMap();
         }
 
         private void DrawSomething()

@@ -1037,11 +1037,7 @@ namespace Mirle.Agv.Control
                 OnMsgFromAgvcEvent.Invoke(this, transRequest.ToString());
             }
 
-            //if (CanVehDoTransfer(transRequest, e.iSeqNum))
-            //{
-            //}
-
-            AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest);
+            AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest,e.iSeqNum);
             if (OnInstallTransferCommandEvent != null)
             {
                 OnInstallTransferCommandEvent.Invoke(this, agvcTransCmd);
@@ -1300,23 +1296,23 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest)
+        private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
         {
             //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd 
             switch (transRequest.ActType)
             {
                 case ActiveType.Move:
-                    return new AgvcMoveCmd(transRequest);
+                    return new AgvcMoveCmd(transRequest, iSeqNum);
                 case ActiveType.Load:
-                    return new AgvcLoadCmd(transRequest);
+                    return new AgvcLoadCmd(transRequest, iSeqNum);
                 case ActiveType.Unload:
-                    return new AgvcUnloadCmd(transRequest);
+                    return new AgvcUnloadCmd(transRequest, iSeqNum);
                 case ActiveType.Loadunload:
-                    return new AgvcLoadunloadCmd(transRequest);
+                    return new AgvcLoadunloadCmd(transRequest, iSeqNum);
                 case ActiveType.Home:
-                    return new AgvcHomeCmd(transRequest);
+                    return new AgvcHomeCmd(transRequest, iSeqNum);
                 case ActiveType.Override:
-                    return new AgvcOverrideCmd(transRequest);
+                    return new AgvcOverrideCmd(transRequest, iSeqNum);
                 case ActiveType.Mtlhome:
                 case ActiveType.Movetomtl:
                 case ActiveType.Systemout:
@@ -1324,7 +1320,7 @@ namespace Mirle.Agv.Control
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    return new AgvcTransCmd(transRequest);
+                    return new AgvcTransCmd(transRequest, iSeqNum);
             }
         }
 

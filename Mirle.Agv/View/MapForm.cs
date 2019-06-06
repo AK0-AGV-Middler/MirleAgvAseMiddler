@@ -17,6 +17,7 @@ namespace Mirle.Agv.View
     {
         private Pen bluePen = new Pen(Color.Blue, 1);
         private Pen blackPen = new Pen(Color.Black, 1);
+        private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private Graphics gra;
         private MapInfo mapInfo;
 
@@ -27,10 +28,17 @@ namespace Mirle.Agv.View
             mapInfo = MapInfo.Instance;
         }
 
-        public void DrawSomething()
+        private void MapForm_Paint(object sender, PaintEventArgs e)
+        {
+            gra = e.Graphics;
+            DrawTheMap();
+        }
+
+        public void DrawTheMap()
         {
             float coefficient = 0.50f;
             float deltaOrigion = 50;
+            float addressRadius = 3;
 
             //Draw Barcode
             foreach (var rowBarcode in mapInfo.mapBarcodes)
@@ -81,20 +89,23 @@ namespace Mirle.Agv.View
             //    }
             //}
 
-            Bitmap bitmap = new Bitmap(@"D:\CsProject\Mirle.Agv\Mirle.Agv\Resource\Auto_16x16.png");
+            //Bitmap bitmap = new Bitmap(@"D:\CsProject\Mirle.Agv\Mirle.Agv\Resource\Auto_16x16.png");
             //Draw Addresses
             foreach (var address in mapInfo.mapAddresses)
             {
-                PointF pointf = new PointF(address.PositionX * coefficient + deltaOrigion-8, address.PositionY * coefficient + deltaOrigion-8);
-                gra.DrawImage(bitmap, pointf);
+                if (ShouldPaintedAddress(address))
+                {
+                    PointF pointf = new PointF(address.PositionX * coefficient + deltaOrigion - addressRadius, address.PositionY * coefficient + deltaOrigion - addressRadius);
+                    //gra.DrawImage(bitmap, pointf);
+                    RectangleF rectangleF = new RectangleF(pointf.X, pointf.Y, 2 * addressRadius, 2 * addressRadius);
+                    gra.FillEllipse(blackBrush, rectangleF);
+                }               
             }
         }
 
-
-        private void MapForm_Paint(object sender, PaintEventArgs e)
+        private bool ShouldPaintedAddress(MapAddress address)
         {
-            gra = e.Graphics;
-            DrawSomething();
+            return address.IsWorkStation || address.IsCharger || address.IsSegmentPoint;
         }
     }
 }
