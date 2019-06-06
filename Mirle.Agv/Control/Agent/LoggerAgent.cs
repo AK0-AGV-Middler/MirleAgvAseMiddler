@@ -12,7 +12,6 @@ namespace Mirle.Agv.Control
     public class LoggerAgent
     {
         private Dictionary<string, Logger> dicLoggers;
-        public static string RootDir { get; set; }
         public static string LogConfigPath { get; set; }
         private ConfigHandler configHandler;
         private static readonly Lazy<LoggerAgent> lazyInstance = new Lazy<LoggerAgent>(() => new LoggerAgent());
@@ -27,7 +26,7 @@ namespace Mirle.Agv.Control
 
         private void LogConfigInitial()
         {
-            string fullConfigPath = Path.Combine(RootDir, LogConfigPath);
+            string fullConfigPath = Path.Combine(Environment.CurrentDirectory, LogConfigPath);
             configHandler = new ConfigHandler(fullConfigPath);
 
             // 確認 File 是否存在

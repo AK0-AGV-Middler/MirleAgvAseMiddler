@@ -166,7 +166,6 @@ namespace Mirle.Agv.Control
                 configHandler = new ConfigHandler(configPath);
 
                 mainFlowConfigs = new MainFlowConfigs();
-                LoggerAgent.RootDir = rootDir;
                 mainFlowConfigs.LogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
                 LoggerAgent.LogConfigPath = mainFlowConfigs.LogConfigPath;
                 int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
@@ -256,7 +255,6 @@ namespace Mirle.Agv.Control
         {
             try
             {
-                //TODO : make abstract class with an logger and its bean and a function do log, make 4 level subclass imp this abstract class
                 loggerAgent = LoggerAgent.Instance;
 
                 if (OnXXXIntialDoneEvent != null)
