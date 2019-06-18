@@ -18,7 +18,7 @@ namespace Mirle.Agv.Control
         private VehLocation vehLocation;
         public Sr2000Agent sr2000Agent;
         private MoveControlConfigs moveControlConfigs;
-        private Dictionary<string, ElmoSingleAxisConfigs> dicElmoSingleAxisConfigs;
+        private Dictionary<string, ElmoSingleAxisConfig> dicElmoSingleAxisConfigs;
         private ElmoAxisConfigs elmoAxisConfigs;
 
         public event EventHandler<EnumCompleteStatus> OnMoveFinished;
@@ -37,7 +37,7 @@ namespace Mirle.Agv.Control
 
         private void AxisInitial()
         {
-            dicElmoSingleAxisConfigs = new Dictionary<string, ElmoSingleAxisConfigs>();
+            dicElmoSingleAxisConfigs = new Dictionary<string, ElmoSingleAxisConfig>();
 
             var path = Path.Combine(Environment.CurrentDirectory, "AxisConfig.ini");
             ConfigHandler configHandler = new ConfigHandler(path);
@@ -52,7 +52,7 @@ namespace Mirle.Agv.Control
                 int index = i + 1;
                 var sectionName = elmoAxisConfigs.SectionName + index.ToString();
 
-                ElmoSingleAxisConfigs elmoSingleAxisConfigs = new ElmoSingleAxisConfigs();
+                ElmoSingleAxisConfig elmoSingleAxisConfigs = new ElmoSingleAxisConfig();
                 elmoSingleAxisConfigs.AxisAlias = configHandler.GetString(sectionName, "AxisAlias", "XXX");
                 elmoSingleAxisConfigs.AxisName = configHandler.GetString(sectionName, "AxisName", "XXX");
                 elmoSingleAxisConfigs.IsGroup = bool.Parse(configHandler.GetString(sectionName, "IsGroup", "False"));

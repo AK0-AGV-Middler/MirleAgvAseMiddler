@@ -94,7 +94,7 @@
     <Compile Include="Defines.cs" />
     <Compile Include="Model\Configs\BatteryConfigs.cs" />
     <Compile Include="Model\Configs\ElmoAxisConfigs.cs" />
-    <Compile Include="Model\Configs\ElmoSingleAxisConfigs.cs" />
+    <Compile Include="Model\Configs\ElmoSingleAxisConfig.cs" />
     <Compile Include="Model\Configs\MainFlowConfigs.cs" />
     <Compile Include="Model\Configs\MapConfigs.cs" />
     <Compile Include="Model\Configs\MiddlerConfigs.cs" />
@@ -112,11 +112,11 @@
     <Compile Include="Model\TransferCmds\TransCmd.cs" />
     <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
     <Compile Include="Control\Handler\TransCmdsSteps\MoveSubSteps\MoveAskReserve.cs" />
-    <Compile Include="View\CommToAgvcForm.cs">
+    <Compile Include="View\MiddlerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="View\CommToAgvcForm.Designer.cs">
-      <DependentUpon>CommToAgvcForm.cs</DependentUpon>
+    <Compile Include="View\MiddlerForm.Designer.cs">
+      <DependentUpon>MiddlerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="View\Form1.cs">
       <SubType>Form</SubType>
@@ -177,8 +177,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="View\CommToAgvcForm.resx">
-      <DependentUpon>CommToAgvcForm.cs</DependentUpon>
+    <EmbeddedResource Include="View\MiddlerForm.resx">
+      <DependentUpon>MiddlerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
@@ -192,6 +192,7 @@
     <EmbeddedResource Include="View\MapForm.resx">
       <DependentUpon>MapForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="OutsideDll\TCPIPTrxControl.dll.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -207,6 +208,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="OutsideDll\Google.Protobuf.dll" />
+    <Content Include="OutsideDll\Google.Protobuf.xml" />
+    <Content Include="OutsideDll\Logrila.Logging.dll" />
+    <Content Include="OutsideDll\NLog.dll" />
+    <Content Include="OutsideDll\NLog.xml" />
+    <Content Include="OutsideDll\Stateless.dll" />
+    <Content Include="OutsideDll\Stateless.xml" />
+    <Content Include="OutsideDll\TCPIPTrxControl.dll" />
+    <Content Include="OutsideDll\TCPIPTrxControl.pdb" />
     <Content Include="Resource\Auto_16x16.png" />
     <Content Include="Resource\Bulb_Blue_32x32.png" />
     <Content Include="Resource\Bulb_Green_32x32.png" />

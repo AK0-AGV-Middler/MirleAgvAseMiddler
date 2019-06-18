@@ -81,5 +81,37 @@ namespace Mirle.Agv.Model.Tests
             //Assert.AreEqual(3, q2.Count);
 
         }
+
+        public class SomeClass
+        {
+            public string AWord { get; set; }
+        }
+
+        [Test()]
+        public void ZZZTest()
+        {
+            object tempObj;
+            tempObj = new SomeClass();
+            var getType = tempObj.GetType().ToString();
+            var infos = tempObj.GetType().GetProperties();
+
+
+            var timeStamp = DateTime.Now.ToString();
+        }
+
+        [Test()]
+        public void Test001()
+        {
+            string temp = "Movi";
+            string temp2 = null;
+            //return (ErrorStatus)Enum.Parse(typeof(ErrorStatus), v);
+
+            var result1 = typeof(EnumMoveState);
+            var result2 = Enum.Parse(typeof(EnumMoveState), temp);
+            var result3 = (EnumMoveState)Enum.Parse(typeof(EnumMoveState), temp);
+
+
+            var timeStamp = DateTime.Now.ToString();
+        }
     }
 }

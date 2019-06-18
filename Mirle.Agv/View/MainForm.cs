@@ -18,7 +18,7 @@ namespace Mirle.Agv.View
         private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
-        private CommToAgvcForm commToAgvcForm;
+        private MiddlerForm commToAgvcForm;
         private MapForm mapForm;
         private Pen bluePen = new Pen(Color.Blue, 1);
         private Pen blackPen = new Pen(Color.Black, 1);
@@ -30,7 +30,7 @@ namespace Mirle.Agv.View
         {
             this.mainFlowHandler = mainFlowHandler;
             mapInfo = MapInfo.Instance;
-            commToAgvcForm = new CommToAgvcForm(mainFlowHandler);
+            commToAgvcForm = new MiddlerForm(mainFlowHandler);
             mapForm = new MapForm();
             gra = mapForm.CreateGraphics();
 
@@ -52,7 +52,7 @@ namespace Mirle.Agv.View
         {
             if (commToAgvcForm.IsDisposed)
             {
-                commToAgvcForm = new CommToAgvcForm(mainFlowHandler);
+                commToAgvcForm = new MiddlerForm(mainFlowHandler);
             }
             commToAgvcForm.TopMost = true;
             commToAgvcForm.WindowState = FormWindowState.Normal;

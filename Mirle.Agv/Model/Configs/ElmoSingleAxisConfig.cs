@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
-    public class ElmoSingleAxisConfigs
+    public class ElmoSingleAxisConfig
     {
         public string AxisAlias { get; set; }
         public string AxisName { get; set; }

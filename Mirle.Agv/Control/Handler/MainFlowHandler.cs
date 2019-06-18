@@ -31,7 +31,9 @@ namespace Mirle.Agv.Control
         #region TransCmds
 
         private List<TransCmd> transCmds;
-        private List<TransCmd> lastTransCmds;
+
+        private List<TransCmd> lastTransCmds;       
+
         private ConcurrentQueue<MoveCmdInfo> queWaitForReserve;
         private bool goNextTransCmd;
         public bool GoNextTransCmd
@@ -201,6 +203,8 @@ namespace Mirle.Agv.Control
                 middlerConfigs.RetryCount = tempRetryCount;
                 int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
                 middlerConfigs.SleepTime = tempSleepTime;
+                int.TryParse(configHandler.GetString("Middler", "RichTextBoxMaxLines ", "10"), out int tempRichTextBoxMaxLines);
+                middlerConfigs.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
 
                 mapConfigs = new MapConfigs();
                 mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", Environment.CurrentDirectory);
@@ -395,8 +399,8 @@ namespace Mirle.Agv.Control
             try
             {
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
-                middleAgent.OnInstallTransferCommandEvent += OnInstallTransferCommand;
-                middleAgent.OnInstallTransferCommandEvent += mapHandler.OnInstallTransferCommand;
+                //middleAgent.OnInstallTransferCommandEvent += OnInstallTransferCommand;
+                //middleAgent.OnInstallTransferCommandEvent += mapHandler.OnInstallTransferCommand;
 
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;
@@ -584,7 +588,6 @@ namespace Mirle.Agv.Control
             }
             return true;
         }
-
 
         private bool GenralTransCmds()
         {
@@ -1097,28 +1100,11 @@ namespace Mirle.Agv.Control
             {
                 robotControlHandler.DoLoad(loadCmd);
             }
-        }
-
-        public void OnMsgFromAgvcAddHandler(EventHandler<string> eventHandler)
-        {
-            middleAgent.OnMsgFromAgvcEvent += eventHandler;
-        }
-        public void OnMsgToAgvcAddHandler(EventHandler<string> eventHandler)
-        {
-            middleAgent.OnMsgToAgvcEvent += eventHandler;
-        }
-        public void OnMsgFromVehicleAddHandler(EventHandler<string> eventHandler)
-        {
-            middleAgent.OnMsgFromVehicleEvent += eventHandler;
-        }
-        public void OnMsgToVehicleAddHandler(EventHandler<string> eventHandler)
-        {
-            middleAgent.OnMsgToVehicleEvent += eventHandler;
-        }
+        }        
 
         public void ReconnectToAgvc()
         {
-            middleAgent.ReconnectToAgvc();
+            middleAgent.ReConnect();
         }
 
         public void MiddlerTestMsg()
@@ -1136,5 +1122,11 @@ namespace Mirle.Agv.Control
         {
             return mapHandler;
         }
+
+        public MiddlerConfigs GetMiddlerConfigs()
+        {
+            return middlerConfigs;
+        }        
+
     }
 }

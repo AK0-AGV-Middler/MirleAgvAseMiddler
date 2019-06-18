@@ -40,6 +40,49 @@ namespace Mirle.Agv.Control.Tools
         private static StreamWriter debugFileWriteStream;
         private static object theDebugLocker = new object();
 
+        public Logger(LogType aLogType)
+        {
+            logType = aLogType;
+
+            queInputLogData = Queue.Synchronized(new Queue());
+            queOutputLogData = Queue.Synchronized(new Queue());
+
+            thdDataSave = new Thread(ThreadBufferDataSave);
+            thdDataSave.IsBackground = true;
+            thdDataSave.Name = "ThreadDataSave";
+            thdDataSave.Start();
+
+            lngLogMaxSize = logType.LogMaxSize * MB;
+
+            // 應該檢查不合法字元
+            PathCheck();
+        }
+
+        private void PathCheck()
+        {
+            CheckPathValid(logType.LogFileName);
+            CheckPathValid(logType.DirName);
+            strDirectoryFullPath = Path.Combine(Environment.CurrentDirectory, "Log", logType.DirName);
+            var saveFullName = logType.LogFileName + logType.FileExtension; // 存檔名稱
+            strFileFullPath = Path.Combine(strDirectoryFullPath, saveFullName);        // 要被開啟處理的檔案
+
+            if (!Directory.Exists(strDirectoryFullPath))
+            {
+                Directory.CreateDirectory(strDirectoryFullPath);
+            }
+
+            if (File.Exists(strFileFullPath))
+            {
+                fileStream = new FileStream(strFileFullPath, FileMode.Append, FileAccess.Write, FileShare.Read);
+            }
+            else
+            {
+                fileStream = new FileStream(strFileFullPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);   // 建立檔案
+            }
+
+            fileWriteStream = new StreamWriter(fileStream, encodingType);
+        }
+
         private void AddDebugLog(string sFunctionName, string sMessage)
         {
             lock (theDebugLocker)
@@ -239,48 +282,6 @@ namespace Mirle.Agv.Control.Tools
             return Convert.ToInt32(TS.TotalDays);
         }
 
-        public Logger(LogType aLogType)
-        {
-            logType = aLogType;
-
-            queInputLogData = Queue.Synchronized(new Queue());
-            queOutputLogData = Queue.Synchronized(new Queue());
-
-            thdDataSave = new Thread(ThreadBufferDataSave);
-            thdDataSave.IsBackground = true;
-            thdDataSave.Name = "ThreadDataSave";
-            thdDataSave.Start();
-
-            lngLogMaxSize = logType.LogMaxSize * MB;
-
-            // 應該檢查不合法字元
-            PathCheck();
-        }
-
-        private void PathCheck()
-        {
-            CheckPathValid(logType.LogFileName);
-            CheckPathValid(logType.DirName);
-            strDirectoryFullPath = Path.Combine(Environment.CurrentDirectory, "Log", logType.DirName);
-            var saveFullName = logType.LogFileName + logType.FileExtension; // 存檔名稱
-            strFileFullPath = Path.Combine(strDirectoryFullPath, saveFullName);        // 要被開啟處理的檔案
-
-            if (!Directory.Exists(strDirectoryFullPath))
-            {
-                Directory.CreateDirectory(strDirectoryFullPath);
-            }
-
-            if (File.Exists(strFileFullPath))
-            {
-                fileStream = new FileStream(strFileFullPath, FileMode.Append, FileAccess.Write, FileShare.Read);
-            }
-            else
-            {
-                fileStream = new FileStream(strFileFullPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);   // 建立檔案
-            }
-
-            fileWriteStream = new StreamWriter(fileStream, encodingType);
-        }
 
         #region CheckPathValid() 判斷路徑或檔名是是否有不合法的字元
 
