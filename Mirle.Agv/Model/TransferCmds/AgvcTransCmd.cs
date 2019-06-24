@@ -98,61 +98,6 @@ namespace Mirle.Agv.Model.TransferCmds
             if (guideAddressesStartToLoad != null)
             {
                 ToLoadAddresses = guideAddressesStartToLoad.ToArray();
-                IsSectionsAndAddressesMatch(ToLoadSections, ToLoadAddresses);
-            }
-        }
-
-        private void IsSectionsAndAddressesMatch(string[] sections, string[] addresses)
-        {
-            if (sections.Length + 1 != addresses.Length)
-            {
-                //Send "Sections.Length and Addresses.Length unmatch error"-event to middler
-                return;
-            }
-
-            for (int i = 0; i < sections.Length; i++)
-            {
-                if (!mapInfo.dicMapSections.ContainsKey(sections[i]))
-                {
-                    //Send "No such section error"-event to middler
-                    return;
-                }
-
-                var tempSection = mapInfo.dicMapSections[sections[i]];
-
-                if (!mapInfo.dicMapAddresses.ContainsKey(addresses[i]))
-                {
-                    //Send "No such address error"-event to middler
-                    return;
-                }
-
-                if (!mapInfo.dicMapAddresses.ContainsKey(addresses[i + 1]))
-                {
-                    //Send "No such address error"-event to middler
-                    return;
-                }
-
-                if (tempSection.FromAddress == addresses[i])
-                {
-                    if (tempSection.ToAddress != addresses[i + 1])
-                    {
-                        //Send "SectionList and  AddressList unmatch error"-event to middler
-                        return;
-                    }
-                }
-                else if (tempSection.ToAddress == addresses[i])
-                {
-                    if (tempSection.FromAddress != addresses[i + 1])
-                    {
-                        //Send "SectionList and  AddressList unmatch error"-event to middler
-                        return;
-                    }
-                }
-                else
-                {
-                    //Send "SectionList and  AddressList unmatch error"-event to middler
-                    return;
-                }                
             }
         }
     }

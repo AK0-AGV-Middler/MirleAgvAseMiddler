@@ -142,24 +142,6 @@ namespace Mirle.Agv.Control
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmResetReqFieldNumber, Receive_Cmd91_AlarmResetRequest);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, Receive_Cmd94_AlarmResponse);
             //
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.TransReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.TranCmpRespFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.ControlZoneReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.CSTIDRenameReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.ImpTransEventRespFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.TransCancelReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.PauseReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.ModeChangeReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.StatusReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.StatusChangeRespFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.PowerOpeReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AvoidReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AvoidCompleteRespFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.RangeTeachingReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.RangeTeachingCmpRespFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AddressTeachRespFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmResetReqFieldNumber, RecieveCmdShowOnCommunicationForm);
-            //ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, RecieveCmdShowOnCommunicationForm);
             for (int i = 0; i < 200; i++)
             {
                 ClientAgent.addTcpIpReceivedHandler(i, RecieveCmdShowOnCommunicationForm);
@@ -2198,10 +2180,8 @@ namespace Mirle.Agv.Control
             theVehicle.Cmd131ActType = transRequest.ActType;
 
             AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest, e.iSeqNum);
-            if (OnInstallTransferCommandEvent != null)
-            {
-                OnInstallTransferCommandEvent.Invoke(this, agvcTransCmd);
-            }
+            
+            OnInstallTransferCommandEvent?.Invoke(this, agvcTransCmd);
         }
         public void Send_Cmd131_TransferResponse(ushort seqNum, int replyCode, string reason)
         {

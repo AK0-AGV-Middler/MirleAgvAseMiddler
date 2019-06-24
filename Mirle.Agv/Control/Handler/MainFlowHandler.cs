@@ -399,8 +399,9 @@ namespace Mirle.Agv.Control
             try
             {
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
-                //middleAgent.OnInstallTransferCommandEvent += OnInstallTransferCommand;
+                 middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
                 //middleAgent.OnInstallTransferCommandEvent += mapHandler.OnInstallTransferCommand;
+               
 
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;
@@ -467,7 +468,7 @@ namespace Mirle.Agv.Control
             OnCancelEvent();
         }
 
-        private void OnInstallTransferCommand(object sender, AgvcTransCmd agvcTransCmd)
+        private void MiddleAgent_OnInstallTransferCommandEvent(object sender, AgvcTransCmd agvcTransCmd)
         {
             try
             {
