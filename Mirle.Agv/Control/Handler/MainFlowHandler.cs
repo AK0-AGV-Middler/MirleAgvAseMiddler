@@ -210,7 +210,7 @@ namespace Mirle.Agv.Control
                 mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", Environment.CurrentDirectory);
                 mapConfigs.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
                 mapConfigs.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
-                mapConfigs.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "ABARCODE.csv");
+                mapConfigs.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
 
                 sr2000Configs = new Sr2000Configs();
                 int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);

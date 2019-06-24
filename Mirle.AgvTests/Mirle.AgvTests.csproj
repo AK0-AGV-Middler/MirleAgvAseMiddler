@@ -66,12 +66,12 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Control\Agent\MiddleAgentTests.cs" />
     <Compile Include="Control\Handler\MainFlowHandlerTests.cs" />
     <Compile Include="Model\CarrierTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DLLs\TCPIPTrxControl.dll.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +79,20 @@
       <Project>{F88F96FD-CDDF-467E-9B1F-ABD97BD7F7C5}</Project>
       <Name>Mirle.Agv</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Control\Agent\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DLLs\Google.Protobuf.dll" />
+    <Content Include="DLLs\Google.Protobuf.xml" />
+    <Content Include="DLLs\Logrila.Logging.dll" />
+    <Content Include="DLLs\NLog.dll" />
+    <Content Include="DLLs\NLog.xml" />
+    <Content Include="DLLs\Stateless.dll" />
+    <Content Include="DLLs\Stateless.xml" />
+    <Content Include="DLLs\TCPIPTrxControl.dll" />
+    <Content Include="DLLs\TCPIPTrxControl.pdb" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

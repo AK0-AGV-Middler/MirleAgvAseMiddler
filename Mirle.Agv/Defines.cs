@@ -13,10 +13,7 @@ namespace Mirle.Agv
         None,
         Horizontal,
         Vertical,
-        QuadrantI,
-        QuadrantII,
-        QuadrantIII,
-        QuadrantIV
+        R2000
     }
 
     public enum EnumChargeDirection

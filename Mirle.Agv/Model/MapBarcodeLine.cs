@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
-    public class MapBarcode
+    public class MapBarcodeLine
     {
-        public int BarcodeNum { get; set; }
-        public float PositionX { get; set; }
-        public float PositionY { get; set; }
+        //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, Direction
+        public string Id { get; set; } = "Empty";
+        public int BarcodeHeadNum { get; set; }
+        public float HeadX { get; set; }
+        public float HeadY { get; set; }
+        public int BarcodeTailNum { get; set; }
+        public float TailX { get; set; }
+        public float TailY { get; set; }
         public int Direction { get; set; }
 
         public int BarcodeDirectionConvert(string v)
@@ -31,5 +36,6 @@ namespace Mirle.Agv.Model
                     return 0;
             }
         }
+
     }
 }

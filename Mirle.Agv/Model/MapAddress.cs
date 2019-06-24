@@ -8,10 +8,9 @@ namespace Mirle.Agv.Model
 {
     public class MapAddress
     {
-        //Id, BarcodeH, BarcodeV, PositionX, PositionY, IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin
+        //Id, Barcode, PositionX, PositionY, IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin
         public string Id { get; set; } = "Empty";
-        public float BarcodeH { get; set; }
-        public float BarcodeV { get; set; }
+        public float Barcode { get; set; }
         public float PositionX { get; set; }
         public float PositionY { get; set; }
         public bool IsWorkStation { get; set; }
@@ -28,16 +27,7 @@ namespace Mirle.Agv.Model
         public EnumChargeDirection ChargeDirectionConvert(string v)
         {
             v = v.Trim();
-            switch (v)
-            {
-                case "Left":
-                    return EnumChargeDirection.Left;
-                case "Right":
-                    return EnumChargeDirection.Right;
-                case "None":
-                default:
-                    return EnumChargeDirection.None;
-            }
+            return (EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), v);
         }
     }
 

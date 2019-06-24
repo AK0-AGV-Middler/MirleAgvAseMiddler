@@ -100,9 +100,10 @@
     <Compile Include="Model\Configs\MiddlerConfigs.cs" />
     <Compile Include="Model\Configs\MoveControlConfigs.cs" />
     <Compile Include="Model\Configs\Sr2000Configs.cs" />
+    <Compile Include="Model\MapBarcode.cs" />
     <Compile Include="Model\MapInfo.cs" />
     <Compile Include="Model\MapPosition.cs" />
-    <Compile Include="Model\MapBarcode.cs" />
+    <Compile Include="Model\MapBarcodeLine.cs" />
     <Compile Include="Model\PlcLoadingSensor.cs" />
     <Compile Include="Model\PlcRobot.cs" />
     <Compile Include="Model\PlcStage.cs" />

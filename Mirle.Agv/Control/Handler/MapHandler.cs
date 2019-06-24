@@ -29,7 +29,7 @@ namespace Mirle.Agv.Control
             mapInfo = MapInfo.Instance;
             LoadSectionCsv();
             LoadAddressCsv();
-            LoadRowBarcodeCsv();            
+            LoadBarcodeLineCsv();
         }
 
         public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
@@ -65,7 +65,7 @@ namespace Mirle.Agv.Control
                 var dicSectionIndexes = mapInfo.dicSectionIndexes;
                 mapSections.Clear();
                 dicMapSections.Clear();
-                dicSectionIndexes.Clear();                
+                dicSectionIndexes.Clear();
 
                 string[] allRows = File.ReadAllLines(SectionPath);
                 if (allRows == null || allRows.Length < 2)
@@ -100,8 +100,8 @@ namespace Mirle.Agv.Control
                     oneRow.Speed = float.Parse(getThisRow[dicSectionIndexes["Speed"]]);
                     oneRow.Type = oneRow.SectionTypeConvert(getThisRow[dicSectionIndexes["Type"]]);
                     oneRow.PermitDirection = oneRow.PermitDirectionConvert(getThisRow[dicSectionIndexes["PermitDirection"]]);
-                    oneRow.FowardBeamSensorEnable = BooleanConvert(getThisRow[dicSectionIndexes["FowardBeamSensorEnable"]]);
-                    oneRow.BackwardBeamSensorEnable = BooleanConvert(getThisRow[dicSectionIndexes["BackwardBeamSensorEnable"]]);
+                    oneRow.FowardBeamSensorEnable = bool.Parse(getThisRow[dicSectionIndexes["FowardBeamSensorEnable"]]);
+                    oneRow.BackwardBeamSensorEnable = bool.Parse(getThisRow[dicSectionIndexes["BackwardBeamSensorEnable"]]);
 
                     mapSections.Add(oneRow);
                     dicMapSections.Add(oneRow.Id, oneRow);
@@ -140,7 +140,7 @@ namespace Mirle.Agv.Control
                 int nRows = allRows.Length;
                 int nColumns = titleRow.Length;
 
-                //Id, BarcodeH, BarcodeV, PositionX, PositionY, 
+                //Id, Barcode, PositionX, PositionY, 
                 //IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,
                 //IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin
                 for (int i = 0; i < nColumns; i++)
@@ -157,20 +157,19 @@ namespace Mirle.Agv.Control
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
                     oneRow.Id = getThisRow[dicAddressIndexes["Id"]];
-                    oneRow.BarcodeH = float.Parse(getThisRow[dicAddressIndexes["BarcodeH"]]);
-                    oneRow.BarcodeV = float.Parse(getThisRow[dicAddressIndexes["BarcodeV"]]);
+                    oneRow.Barcode = float.Parse(getThisRow[dicAddressIndexes["Barcode"]]);                    
                     oneRow.PositionX = float.Parse(getThisRow[dicAddressIndexes["PositionX"]]);
                     oneRow.PositionY = float.Parse(getThisRow[dicAddressIndexes["PositionY"]]);
-                    oneRow.IsWorkStation = BooleanConvert(getThisRow[dicAddressIndexes["IsWorkStation"]]);
-                    oneRow.CanLeftLoad = BooleanConvert(getThisRow[dicAddressIndexes["CanLeftLoad"]]);
-                    oneRow.CanLeftUnload = BooleanConvert(getThisRow[dicAddressIndexes["CanLeftUnload"]]);
-                    oneRow.CanRightLoad = BooleanConvert(getThisRow[dicAddressIndexes["CanRightLoad"]]);
-                    oneRow.CanRightUnload = BooleanConvert(getThisRow[dicAddressIndexes["CanRightUnload"]]);
-                    oneRow.IsCharger = BooleanConvert(getThisRow[dicAddressIndexes["IsCharger"]]);
+                    oneRow.IsWorkStation = bool.Parse(getThisRow[dicAddressIndexes["IsWorkStation"]]);
+                    oneRow.CanLeftLoad = bool.Parse(getThisRow[dicAddressIndexes["CanLeftLoad"]]);
+                    oneRow.CanLeftUnload = bool.Parse(getThisRow[dicAddressIndexes["CanLeftUnload"]]);
+                    oneRow.CanRightLoad = bool.Parse(getThisRow[dicAddressIndexes["CanRightLoad"]]);
+                    oneRow.CanRightUnload = bool.Parse(getThisRow[dicAddressIndexes["CanRightUnload"]]);
+                    oneRow.IsCharger = bool.Parse(getThisRow[dicAddressIndexes["IsCharger"]]);
                     oneRow.CouplerId = getThisRow[dicAddressIndexes["CouplerId"]];
                     oneRow.ChargeDirection = oneRow.ChargeDirectionConvert(getThisRow[dicAddressIndexes["ChargeDirection"]]);
-                    oneRow.IsSegmentPoint = BooleanConvert(getThisRow[dicAddressIndexes["IsSegmentPoint"]]);
-                    oneRow.CanSpin = BooleanConvert(getThisRow[dicAddressIndexes["CanSpin"]]);
+                    oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicAddressIndexes["IsSegmentPoint"]]);
+                    oneRow.CanSpin = bool.Parse(getThisRow[dicAddressIndexes["CanSpin"]]);
 
                     mapAddresses.Add(oneRow);
                     dicMapAddresses.Add(oneRow.Id, oneRow);
@@ -182,7 +181,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        public void LoadRowBarcodeCsv()
+        public void LoadBarcodeLineCsv()
         {
             try
             {
@@ -190,10 +189,12 @@ namespace Mirle.Agv.Control
                 {
                     return;
                 }
-                var mapBarcodes = mapInfo.mapBarcodes;
+                var mapBarcodeLines = mapInfo.mapBarcodeLines;
                 var dicBarcodeIndexes = mapInfo.dicBarcodeIndexes;
-                mapBarcodes.Clear();
+                var dicBarcodes = mapInfo.dicBarcodes;
+                mapBarcodeLines.Clear();
                 dicBarcodeIndexes.Clear();
+                dicBarcodes.Clear();
 
                 string[] allRows = File.ReadAllLines(BarcodePath);
                 if (allRows == null || allRows.Length < 2)
@@ -220,17 +221,53 @@ namespace Mirle.Agv.Control
                 for (int i = 0; i < nRows; i++)
                 {
                     string[] getThisRow = allRows[i].Split(',');
-                    MapBarcode oneRow = new MapBarcode();
+                    MapBarcodeLine oneRow = new MapBarcodeLine();
                     oneRow.Id = getThisRow[dicBarcodeIndexes["Id"]];
-                    oneRow.BarcodeHeadNum = float.Parse(getThisRow[dicBarcodeIndexes["BarcodeHeadNum"]]);
-                    oneRow.HeadX = float.Parse(getThisRow[dicBarcodeIndexes["HeadX"]]);
-                    oneRow.HeadY = float.Parse(getThisRow[dicBarcodeIndexes["HeadY"]]);
-                    oneRow.BarcodeTailNum = float.Parse(getThisRow[dicBarcodeIndexes["BarcodeTailNum"]]);
-                    oneRow.TailX = float.Parse(getThisRow[dicBarcodeIndexes["TailX"]]);
-                    oneRow.TailY = float.Parse(getThisRow[dicBarcodeIndexes["TailY"]]);
-                    oneRow.Direction = oneRow.BarcodeDirectionConvert(getThisRow[dicBarcodeIndexes["Direction"]]);
+                    int HeadNum = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeHeadNum"]]);
+                    int TailNum = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeTailNum"]]);
+                    float HeadX = float.Parse(getThisRow[dicBarcodeIndexes["HeadX"]]);
+                    float HeadY = float.Parse(getThisRow[dicBarcodeIndexes["HeadY"]]);
+                    float TailX = float.Parse(getThisRow[dicBarcodeIndexes["TailX"]]);
+                    float TailY = float.Parse(getThisRow[dicBarcodeIndexes["TailY"]]);
+                    int Direction = oneRow.BarcodeDirectionConvert(getThisRow[dicBarcodeIndexes["Direction"]]);
+                    oneRow.BarcodeHeadNum = HeadNum;
+                    oneRow.HeadX = HeadX;
+                    oneRow.HeadY = HeadY;
+                    oneRow.BarcodeTailNum = TailNum;
+                    oneRow.TailX = TailX;
+                    oneRow.TailY = TailY;
+                    oneRow.Direction = Direction;
 
-                    mapBarcodes.Add(oneRow);
+                    int count = TailNum - HeadNum;
+                    if (count < 0)
+                    {
+                        count = -count;
+                        for (int j = 0; j <= count; j++)
+                        {
+                            MapBarcode mapBarcode = new MapBarcode();
+                            mapBarcode.BarcodeNum = TailNum + j;
+                            mapBarcode.PositionX = (j * HeadX + (count - j) * TailX) / count;
+                            mapBarcode.PositionY = (j * HeadY + (count - j) * TailY) / count;
+                            mapBarcode.Direction = Direction;
+
+                            dicBarcodes.Add(mapBarcode.BarcodeNum, mapBarcode);
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j <= count; j++)
+                        {
+                            MapBarcode mapBarcode = new MapBarcode();
+                            mapBarcode.BarcodeNum = HeadNum + j;
+                            mapBarcode.PositionX = (j * TailX + (count - j) * HeadX) / count;
+                            mapBarcode.PositionY = (j * TailY + (count - j) * HeadY) / count;
+                            mapBarcode.Direction = Direction;
+
+                            dicBarcodes.Add(mapBarcode.BarcodeNum, mapBarcode);
+                        }
+                    }                    
+
+                    mapBarcodeLines.Add(oneRow);
                 }
             }
             catch (Exception ex)

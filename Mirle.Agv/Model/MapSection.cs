@@ -21,40 +21,14 @@ namespace Mirle.Agv.Model
 
         public EnumPermitDirection PermitDirectionConvert(string v)
         {
-            var keyword = v.Trim();
-            switch (keyword)
-            {
-                case "Forward":
-                    return EnumPermitDirection.Forward;
-                case "Backward":
-                    return EnumPermitDirection.Backward;
-                case "None":
-                default:
-                    return EnumPermitDirection.None;
-            }
+            v = v.Trim();
+            return (EnumPermitDirection)Enum.Parse(typeof(EnumPermitDirection), v);
         }
 
         public EnumSectionType SectionTypeConvert(string v)
         {
-            var keyword = v.Trim();
-            switch (keyword)
-            {
-                case "Horizontal":
-                    return EnumSectionType.Horizontal;
-                case "Vertical":
-                    return EnumSectionType.Vertical;
-                case "QuadrantI":
-                    return EnumSectionType.QuadrantI;
-                case "QuadrantII":
-                    return EnumSectionType.QuadrantII;
-                case "QuadrantIII":
-                    return EnumSectionType.QuadrantIII;
-                case "QuadrantIV":
-                    return EnumSectionType.QuadrantIV;
-                case "None":
-                default:
-                    return EnumSectionType.None;
-            }
+            v = v.Trim();
+            return (EnumSectionType)Enum.Parse(typeof(EnumSectionType), v);
         }
     }
 

@@ -46,6 +46,7 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.btnRefreshMap = new System.Windows.Forms.Button();
+            this.btnShowBarcodeOnOff = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -192,6 +193,7 @@
             // 
             // splitContainer2.Panel1
             // 
+            this.splitContainer2.Panel1.Controls.Add(this.btnShowBarcodeOnOff);
             this.splitContainer2.Panel1.Controls.Add(this.btnRefreshMap);
             this.splitContainer2.Size = new System.Drawing.Size(424, 616);
             this.splitContainer2.SplitterDistance = 411;
@@ -206,6 +208,15 @@
             this.btnRefreshMap.Text = "更新地圖";
             this.btnRefreshMap.UseVisualStyleBackColor = true;
             this.btnRefreshMap.Click += new System.EventHandler(this.btnRefreshMap_Click);
+            // 
+            // btnShowBarcodeOnOff
+            // 
+            this.btnShowBarcodeOnOff.Location = new System.Drawing.Point(3, 32);
+            this.btnShowBarcodeOnOff.Name = "btnShowBarcodeOnOff";
+            this.btnShowBarcodeOnOff.Size = new System.Drawing.Size(75, 23);
+            this.btnShowBarcodeOnOff.TabIndex = 1;
+            this.btnShowBarcodeOnOff.Text = "顯示BCR";
+            this.btnShowBarcodeOnOff.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -254,5 +265,6 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Button btnRefreshMap;
+        private System.Windows.Forms.Button btnShowBarcodeOnOff;
     }
 }
