@@ -29,6 +29,14 @@ namespace Mirle.Agv.Model
             v = v.Trim();
             return (EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), v);
         }
+
+        public MapPosition GetPosition()
+        {
+            MapPosition mapPosition = new MapPosition();
+            mapPosition.PositionX = this.PositionX;
+            mapPosition.PositionY = this.PositionY;
+            return mapPosition;
+        }
     }
 
 }

@@ -9,37 +9,18 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public abstract class TransCmd
     {
+        protected MapInfo mapInfo = MapInfo.Instance;
         protected EnumTransCmdType type;
         public string CmdId { get; set; }
 
-        public TransCmd()
-        {
-        }
-
-        public EnumTransCmdType GetType()
+        public EnumTransCmdType GetCommandType()
         {
             return type;
         }
 
         public TransCmd Clone()
         {
-            return ExtensionMethods.DeepClone(this);
-
-            //switch (type)
-            //{
-            //    case EnumTransCmdType.Move:
-            //        MoveCmdInfo moveCmd = (MoveCmdInfo)this;
-            //        return moveCmd;
-            //    case EnumTransCmdType.Load:
-            //        LoadCmdInfo loadCmdInfo = (LoadCmdInfo)this;
-            //        return loadCmdInfo;
-            //    case EnumTransCmdType.Unload:
-            //        UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)this;
-            //        return unloadCmdInfo;
-            //    default:
-            //        EmptyTransCmd emptyTransCmd = (EmptyTransCmd)this;
-            //        return emptyTransCmd;
-            //}            
+            return ExtensionMethods.DeepClone(this);           
         }
     }
 }

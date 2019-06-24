@@ -32,7 +32,7 @@ namespace Mirle.Agv.Control
 
         private List<TransCmd> transCmds;
 
-        private List<TransCmd> lastTransCmds;       
+        private List<TransCmd> lastTransCmds;
 
         private ConcurrentQueue<MoveCmdInfo> queWaitForReserve;
         private bool goNextTransCmd;
@@ -399,9 +399,9 @@ namespace Mirle.Agv.Control
             try
             {
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
-                 middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
+                middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
                 //middleAgent.OnInstallTransferCommandEvent += mapHandler.OnInstallTransferCommand;
-               
+
 
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;
@@ -554,7 +554,7 @@ namespace Mirle.Agv.Control
                 if (!theMapInfo.dicMapAddresses.ContainsKey(addresses[i + 1]))
                 {
                     int replyCode = 1; // NG
-                    string reason = $"{addresses[i+1]} is not in the map.";
+                    string reason = $"{addresses[i + 1]} is not in the map.";
                     middleAgent.Send_Cmd131_TransferResponse(aSeqNum, replyCode, reason);
                     return false;
                 }
@@ -721,20 +721,31 @@ namespace Mirle.Agv.Control
 
         private void ConvertAgvcMoveCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            if (agvcTransCmd.ToUnloadSections.Length > 0)
+            if (agvcTransCmd.ToUnloadAddresses.Length > 0)
             {
-                for (int i = 0; i < agvcTransCmd.ToUnloadSections.Length; i++)
-                {
-                    MoveCmdInfo moveCmd = new MoveCmdInfo();
-                    moveCmd.CmdId = agvcTransCmd.CmdId;
-                    moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
-                    var section = theMapInfo.dicMapSections[agvcTransCmd.ToUnloadSections[i]];
-                    moveCmd.Section = section;
-                    moveCmd.TotalMoveLength += section.Distance;
-                    moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
-                    transCmds.Add(moveCmd);
-                }
+                MoveCmdInfo moveCmd = new MoveCmdInfo();
+                moveCmd.CmdId = agvcTransCmd.CmdId;
+                moveCmd.AddressPositions = moveCmd.SetAddressPositions(agvcTransCmd.ToUnloadAddresses);
+                moveCmd.AddressMotions = moveCmd.SetAddressMotions(agvcTransCmd.ToUnloadSections);
+                moveCmd.SectionSpeedLimits = moveCmd.SetSectionSpeedLimits(agvcTransCmd.ToUnloadSections);
+                transCmds.Add(moveCmd);
             }
+
+
+            //if (agvcTransCmd.ToUnloadSections.Length > 0)
+            //{
+            //    for (int i = 0; i < agvcTransCmd.ToUnloadSections.Length; i++)
+            //    {
+            //        MoveCmdInfo moveCmd = new MoveCmdInfo();
+            //        moveCmd.CmdId = agvcTransCmd.CmdId;
+            //        moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
+            //        var section = theMapInfo.dicMapSections[agvcTransCmd.ToUnloadSections[i]];
+            //        moveCmd.Section = section;
+            //        moveCmd.TotalMoveLength += section.Distance;
+            //        moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
+            //        transCmds.Add(moveCmd);
+            //    }
+            //}
         }
 
         private void VisitTransCmds()
@@ -965,12 +976,12 @@ namespace Mirle.Agv.Control
 
         private bool NextTransCmdIsUnload()
         {
-            return transCmds[transCmdsIndex + 1].GetType() == EnumTransCmdType.Unload;
+            return transCmds[transCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Unload;
         }
 
         private bool NextTransCmdIsLoad()
         {
-            return transCmds[transCmdsIndex + 1].GetType() == EnumTransCmdType.Load;
+            return transCmds[transCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Load;
         }
 
         private void OnLoadFinishedEvent()
@@ -997,7 +1008,7 @@ namespace Mirle.Agv.Control
 
         private bool NextTransCmdIsMove()
         {
-            return transCmds[transCmdsIndex + 1].GetType() == EnumTransCmdType.Move;
+            return transCmds[transCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Move;
         }
 
         private void OnUnloadFinishedEvent()
@@ -1101,7 +1112,7 @@ namespace Mirle.Agv.Control
             {
                 robotControlHandler.DoLoad(loadCmd);
             }
-        }        
+        }
 
         public void ReconnectToAgvc()
         {
@@ -1127,7 +1138,7 @@ namespace Mirle.Agv.Control
         public MiddlerConfigs GetMiddlerConfigs()
         {
             return middlerConfigs;
-        }        
+        }
 
     }
 }

@@ -162,7 +162,7 @@ namespace Mirle.Agv
     //    Highest
     //}
 
-    public enum EnumCmds
+    public enum EnumCmdNums
     {
         Cmd000_EmptyCommand = 0,
         Cmd31_TransferRequest = 31,
@@ -204,6 +204,14 @@ namespace Mirle.Agv
         Cmd194_AlarmReport = 194,
     }
 
+    public enum EnumAddressMotion
+    {
+        ST,
+        TR,
+        BTR,
+        R2000,
+        End
+    }
 
     public static class ExtensionMethods
     {

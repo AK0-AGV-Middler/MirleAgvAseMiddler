@@ -12,7 +12,7 @@ namespace Mirle.Agv.Control.Handler.TransCmdsSteps
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
             TransCmd curTransCmd = mainFlowHandler.GetCurTransCmd();
-            var type = curTransCmd.GetType();
+            var type = curTransCmd.GetCommandType();
 
             switch (type)
             {

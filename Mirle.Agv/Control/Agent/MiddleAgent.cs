@@ -159,10 +159,10 @@ namespace Mirle.Agv.Control
         {
             try
             {
-                var cmdType = (EnumCmds)cmdNum;
+                var cmdType = (EnumCmdNums)cmdNum;
                 switch (cmdType)
                 {
-                    case EnumCmds.Cmd31_TransferRequest:
+                    case EnumCmdNums.Cmd31_TransferRequest:
                         {
                             ID_31_TRANS_REQUEST aCmd = new ID_31_TRANS_REQUEST();
                             aCmd.CmdID = pairs["CmdID"];
@@ -174,14 +174,14 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd32_TransferCompleteResponse:
+                    case EnumCmdNums.Cmd32_TransferCompleteResponse:
                         {
                             ID_32_TRANS_COMPLETE_RESPONSE aCmd = new ID_32_TRANS_COMPLETE_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd33_ControlZoneCancelRequest:
+                    case EnumCmdNums.Cmd33_ControlZoneCancelRequest:
                         {
                             ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST aCmd = new ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST();
                             aCmd.CancelSecID = pairs["CancelSecID"];
@@ -189,7 +189,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd35_CarrierIdRenameRequest:
+                    case EnumCmdNums.Cmd35_CarrierIdRenameRequest:
                         {
                             ID_35_CST_ID_RENAME_REQUEST aCmd = new ID_35_CST_ID_RENAME_REQUEST();
                             aCmd.NEWCSTID = pairs["NEWCSTID"];
@@ -197,7 +197,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd36_TransferEventResponse:
+                    case EnumCmdNums.Cmd36_TransferEventResponse:
                         {
                             ID_36_TRANS_EVENT_RESPONSE aCmd = new ID_36_TRANS_EVENT_RESPONSE();
                             aCmd.IsBlockPass = PassTypeConverter(pairs["IsBlockPass"]);
@@ -206,7 +206,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd37_TransferCancelRequest:
+                    case EnumCmdNums.Cmd37_TransferCancelRequest:
                         {
                             ID_37_TRANS_CANCEL_REQUEST aCmd = new ID_37_TRANS_CANCEL_REQUEST();
                             aCmd.CmdID = pairs["CmdID"];
@@ -214,7 +214,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd39_PauseRequest:
+                    case EnumCmdNums.Cmd39_PauseRequest:
                         {
                             ID_39_PAUSE_REQUEST aCmd = new ID_39_PAUSE_REQUEST();
                             aCmd.EventType = PauseEventConverter(pairs["EventType"]);
@@ -222,47 +222,47 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd41_ModeChange:
+                    case EnumCmdNums.Cmd41_ModeChange:
                         {
                             ID_41_MODE_CHANGE_REQ aCmd = new ID_41_MODE_CHANGE_REQ();
                             aCmd.OperatingVHMode = OperatingVHModeConverter(pairs["EventType"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd43_StatusRequest:
+                    case EnumCmdNums.Cmd43_StatusRequest:
                         {
                             ID_43_STATUS_REQUEST aCmd = new ID_43_STATUS_REQUEST();
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd44_StatusRequest:
+                    case EnumCmdNums.Cmd44_StatusRequest:
                         {
                             ID_44_STATUS_CHANGE_RESPONSE aCmd = new ID_44_STATUS_CHANGE_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd45_PowerOnoffRequest:
+                    case EnumCmdNums.Cmd45_PowerOnoffRequest:
                         {
                             ID_45_POWER_OPE_REQ aCmd = new ID_45_POWER_OPE_REQ();
                             aCmd.OperatingPowerMode = OperatingPowerModeConverter(pairs["OperatingPowerMode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd51_AvoidRequest:
+                    case EnumCmdNums.Cmd51_AvoidRequest:
                         {
                             ID_51_AVOID_REQUEST aCmd = new ID_51_AVOID_REQUEST();
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd52_AvoidCompleteResponse:
+                    case EnumCmdNums.Cmd52_AvoidCompleteResponse:
                         {
                             ID_52_AVOID_COMPLETE_RESPONSE aCmd = new ID_52_AVOID_COMPLETE_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd71_RangeTeachRequest:
+                    case EnumCmdNums.Cmd71_RangeTeachRequest:
                         {
                             ID_71_RANGE_TEACHING_REQUEST aCmd = new ID_71_RANGE_TEACHING_REQUEST();
                             aCmd.FromAdr = pairs["FromAdr"];
@@ -270,34 +270,34 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd72_RangeTeachCompleteResponse:
+                    case EnumCmdNums.Cmd72_RangeTeachCompleteResponse:
                         {
                             ID_72_RANGE_TEACHING_COMPLETE_RESPONSE aCmd = new ID_72_RANGE_TEACHING_COMPLETE_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd74_AddressTeachResponse:
+                    case EnumCmdNums.Cmd74_AddressTeachResponse:
                         {
                             ID_74_ADDRESS_TEACH_RESPONSE aCmd = new ID_74_ADDRESS_TEACH_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd91_AlarmResetRequest:
+                    case EnumCmdNums.Cmd91_AlarmResetRequest:
                         {
                             ID_91_ALARM_RESET_REQUEST aCmd = new ID_91_ALARM_RESET_REQUEST();
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd94_AlarmResponse:
+                    case EnumCmdNums.Cmd94_AlarmResponse:
                         {
                             ID_94_ALARM_RESPONSE aCmd = new ID_94_ALARM_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd131_TransferResponse:
+                    case EnumCmdNums.Cmd131_TransferResponse:
                         {
                             ID_131_TRANS_RESPONSE aCmd = new ID_131_TRANS_RESPONSE();
                             aCmd.CmdID = pairs["CmdID"];
@@ -307,7 +307,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd132_TransferCompleteReport:
+                    case EnumCmdNums.Cmd132_TransferCompleteReport:
                         {
                             ID_132_TRANS_COMPLETE_REPORT aCmd = new ID_132_TRANS_COMPLETE_REPORT();
                             aCmd.CmdID = pairs["CmdID"];
@@ -320,7 +320,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd133_ControlZoneCancelResponse:
+                    case EnumCmdNums.Cmd133_ControlZoneCancelResponse:
                         {
                             ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE aCmd = new ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE();
                             aCmd.CancelSecID = pairs["CancelSecID"];
@@ -329,7 +329,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd134_TransferEventReport:
+                    case EnumCmdNums.Cmd134_TransferEventReport:
                         {
                             ID_134_TRANS_EVENT_REP aCmd = new ID_134_TRANS_EVENT_REP();
                             aCmd.CurrentAdrID = pairs["CurrentAdrID"];
@@ -339,14 +339,14 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd135_CarrierIdRenameResponse:
+                    case EnumCmdNums.Cmd135_CarrierIdRenameResponse:
                         {
                             ID_135_CST_ID_RENAME_RESPONSE aCmd = new ID_135_CST_ID_RENAME_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd136_TransferEventReport:
+                    case EnumCmdNums.Cmd136_TransferEventReport:
                         {
                             ID_136_TRANS_EVENT_REP aCmd = new ID_136_TRANS_EVENT_REP();
                             aCmd.CSTID = pairs["CSTID"];
@@ -356,7 +356,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd137_TransferCancelResponse:
+                    case EnumCmdNums.Cmd137_TransferCancelResponse:
                         {
                             ID_137_TRANS_CANCEL_RESPONSE aCmd = new ID_137_TRANS_CANCEL_RESPONSE();
                             aCmd.CmdID = pairs["CmdID"];
@@ -365,7 +365,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd139_PauseResponse:
+                    case EnumCmdNums.Cmd139_PauseResponse:
                         {
                             ID_139_PAUSE_RESPONSE aCmd = new ID_139_PAUSE_RESPONSE();
                             aCmd.EventType = PauseEventConverter(pairs["EventType"]);
@@ -373,14 +373,14 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd141_ModeChangeResponse:
+                    case EnumCmdNums.Cmd141_ModeChangeResponse:
                         {
                             ID_141_MODE_CHANGE_RESPONSE aCmd = new ID_141_MODE_CHANGE_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd143_StatusResponse:
+                    case EnumCmdNums.Cmd143_StatusResponse:
                         {
                             //TODO: 補完屬性
                             ID_143_STATUS_RESPONSE aCmd = new ID_143_STATUS_RESPONSE();
@@ -395,7 +395,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd144_StatusReport:
+                    case EnumCmdNums.Cmd144_StatusReport:
                         {
                             //TODO: 補完屬性
                             ID_144_STATUS_CHANGE_REP aCmd = new ID_144_STATUS_CHANGE_REP();
@@ -410,14 +410,14 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd145_PowerOnoffResponse:
+                    case EnumCmdNums.Cmd145_PowerOnoffResponse:
                         {
                             ID_145_POWER_OPE_RESPONSE aCmd = new ID_145_POWER_OPE_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd151_AvoidResponse:
+                    case EnumCmdNums.Cmd151_AvoidResponse:
                         {
                             ID_151_AVOID_RESPONSE aCmd = new ID_151_AVOID_RESPONSE();
                             aCmd.NgReason = pairs["NgReason"];
@@ -425,21 +425,21 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd152_AvoidCompleteReport:
+                    case EnumCmdNums.Cmd152_AvoidCompleteReport:
                         {
                             ID_152_AVOID_COMPLETE_REPORT aCmd = new ID_152_AVOID_COMPLETE_REPORT();
                             aCmd.CmpStatus = int.Parse(pairs["CmpStatus"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd171_RangeTeachResponse:
+                    case EnumCmdNums.Cmd171_RangeTeachResponse:
                         {
                             ID_171_RANGE_TEACHING_RESPONSE aCmd = new ID_171_RANGE_TEACHING_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd172_RangeTeachCompleteReport:
+                    case EnumCmdNums.Cmd172_RangeTeachCompleteReport:
                         {
                             ID_172_RANGE_TEACHING_COMPLETE_REPORT aCmd = new ID_172_RANGE_TEACHING_COMPLETE_REPORT();
                             aCmd.CompleteCode = int.Parse(pairs["CompleteCode"]);
@@ -449,7 +449,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd174_AddressTeachReport:
+                    case EnumCmdNums.Cmd174_AddressTeachReport:
                         {
                             ID_174_ADDRESS_TEACH_REPORT aCmd = new ID_174_ADDRESS_TEACH_REPORT();
                             aCmd.Addr = pairs["Addr"];
@@ -457,14 +457,14 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd191_AlarmResetResponse:
+                    case EnumCmdNums.Cmd191_AlarmResetResponse:
                         {
                             ID_191_ALARM_RESET_RESPONSE aCmd = new ID_191_ALARM_RESET_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd194_AlarmReport:
+                    case EnumCmdNums.Cmd194_AlarmReport:
                         {
                             ID_194_ALARM_REPORT aCmd = new ID_194_ALARM_REPORT();
                             aCmd.ErrCode = pairs["ErrCode"];
@@ -473,7 +473,7 @@ namespace Mirle.Agv.Control
                             SendCommand(cmdType, aCmd);
                             break;
                         }
-                    case EnumCmds.Cmd000_EmptyCommand:
+                    case EnumCmdNums.Cmd000_EmptyCommand:
                     default:
                         {
                             ID_11_BASIC_INFO_REP aCmd = new ID_11_BASIC_INFO_REP();
@@ -489,7 +489,7 @@ namespace Mirle.Agv.Control
 
         }
 
-        private void SendCommand(EnumCmds cmds, object objPackage)
+        private void SendCommand(EnumCmdNums cmds, object objPackage)
         {
             try
             {
@@ -498,7 +498,7 @@ namespace Mirle.Agv.Control
 
                 switch (cmds)
                 {
-                    case EnumCmds.Cmd31_TransferRequest:
+                    case EnumCmdNums.Cmd31_TransferRequest:
                         {
                             var pack = (ID_31_TRANS_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.TransReqFieldNumber;
@@ -506,259 +506,259 @@ namespace Mirle.Agv.Control
                             break;
                         }
 
-                    case EnumCmds.Cmd32_TransferCompleteResponse:
+                    case EnumCmdNums.Cmd32_TransferCompleteResponse:
                         {
                             var pack = (ID_32_TRANS_COMPLETE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.TranCmpRespFieldNumber;
                             wrappers.TranCmpResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd33_ControlZoneCancelRequest:
+                    case EnumCmdNums.Cmd33_ControlZoneCancelRequest:
                         {
                             var pack = (ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.ControlZoneReqFieldNumber;
                             wrappers.ControlZoneReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd35_CarrierIdRenameRequest:
+                    case EnumCmdNums.Cmd35_CarrierIdRenameRequest:
                         {
                             var pack = (ID_35_CST_ID_RENAME_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.CSTIDRenameReqFieldNumber;
                             wrappers.CSTIDRenameReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd36_TransferEventResponse:
+                    case EnumCmdNums.Cmd36_TransferEventResponse:
                         {
                             var pack = (ID_36_TRANS_EVENT_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.ImpTransEventRespFieldNumber;
                             wrappers.ImpTransEventResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd37_TransferCancelRequest:
+                    case EnumCmdNums.Cmd37_TransferCancelRequest:
                         {
                             var pack = (ID_37_TRANS_CANCEL_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.TransCancelReqFieldNumber;
                             wrappers.TransCancelReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd39_PauseRequest:
+                    case EnumCmdNums.Cmd39_PauseRequest:
                         {
                             var pack = (ID_39_PAUSE_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.PauseReqFieldNumber;
                             wrappers.PauseReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd41_ModeChange:
+                    case EnumCmdNums.Cmd41_ModeChange:
                         {
                             var pack = (ID_41_MODE_CHANGE_REQ)objPackage;
                             wrappers.ID = WrapperMessage.ModeChangeReqFieldNumber;
                             wrappers.ModeChangeReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd43_StatusRequest:
+                    case EnumCmdNums.Cmd43_StatusRequest:
                         {
                             var pack = (ID_43_STATUS_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.StatusReqFieldNumber;
                             wrappers.StatusReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd44_StatusRequest:
+                    case EnumCmdNums.Cmd44_StatusRequest:
                         {
                             var pack = (ID_44_STATUS_CHANGE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.StatusChangeRespFieldNumber;
                             wrappers.StatusChangeResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd45_PowerOnoffRequest:
+                    case EnumCmdNums.Cmd45_PowerOnoffRequest:
                         {
                             var pack = (ID_45_POWER_OPE_REQ)objPackage;
                             wrappers.ID = WrapperMessage.PowerOpeReqFieldNumber;
                             wrappers.PowerOpeReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd51_AvoidRequest:
+                    case EnumCmdNums.Cmd51_AvoidRequest:
                         {
                             var pack = (ID_51_AVOID_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.AvoidReqFieldNumber;
                             wrappers.AvoidReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd52_AvoidCompleteResponse:
+                    case EnumCmdNums.Cmd52_AvoidCompleteResponse:
                         {
                             var pack = (ID_52_AVOID_COMPLETE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AvoidCompleteRespFieldNumber;
                             wrappers.AvoidCompleteResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd71_RangeTeachRequest:
+                    case EnumCmdNums.Cmd71_RangeTeachRequest:
                         {
                             var pack = (ID_71_RANGE_TEACHING_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingReqFieldNumber;
                             wrappers.RangeTeachingReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd72_RangeTeachCompleteResponse:
+                    case EnumCmdNums.Cmd72_RangeTeachCompleteResponse:
                         {
                             var pack = (ID_72_RANGE_TEACHING_COMPLETE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingCmpRespFieldNumber;
                             wrappers.RangeTeachingCmpResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd74_AddressTeachResponse:
+                    case EnumCmdNums.Cmd74_AddressTeachResponse:
                         {
                             var pack = (ID_74_ADDRESS_TEACH_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AddressTeachRespFieldNumber;
                             wrappers.AddressTeachResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd91_AlarmResetRequest:
+                    case EnumCmdNums.Cmd91_AlarmResetRequest:
                         {
                             var pack = (ID_91_ALARM_RESET_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.AlarmResetReqFieldNumber;
                             wrappers.AlarmResetReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd94_AlarmResponse:
+                    case EnumCmdNums.Cmd94_AlarmResponse:
                         {
                             var pack = (ID_94_ALARM_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AlarmRespFieldNumber;
                             wrappers.AlarmResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd131_TransferResponse:
+                    case EnumCmdNums.Cmd131_TransferResponse:
                         {
                             var pack = (ID_131_TRANS_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.TransRespFieldNumber;
                             wrappers.TransResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd132_TransferCompleteReport:
+                    case EnumCmdNums.Cmd132_TransferCompleteReport:
                         {
                             var pack = (ID_132_TRANS_COMPLETE_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;
                             wrappers.TranCmpRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd133_ControlZoneCancelResponse:
+                    case EnumCmdNums.Cmd133_ControlZoneCancelResponse:
                         {
                             var pack = (ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.ControlZoneRespFieldNumber;
                             wrappers.ControlZoneResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd134_TransferEventReport:
+                    case EnumCmdNums.Cmd134_TransferEventReport:
                         {
                             var pack = (ID_134_TRANS_EVENT_REP)objPackage;
                             wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                             wrappers.TransEventRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd135_CarrierIdRenameResponse:
+                    case EnumCmdNums.Cmd135_CarrierIdRenameResponse:
                         {
                             var pack = (ID_135_CST_ID_RENAME_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.CSTIDRenameRespFieldNumber;
                             wrappers.CSTIDRenameResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd136_TransferEventReport:
+                    case EnumCmdNums.Cmd136_TransferEventReport:
                         {
                             var pack = (ID_136_TRANS_EVENT_REP)objPackage;
                             wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                             wrappers.ImpTransEventRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd137_TransferCancelResponse:
+                    case EnumCmdNums.Cmd137_TransferCancelResponse:
                         {
                             var pack = (ID_137_TRANS_CANCEL_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.TransCancelRespFieldNumber;
                             wrappers.TransCancelResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd139_PauseResponse:
+                    case EnumCmdNums.Cmd139_PauseResponse:
                         {
                             var pack = (ID_139_PAUSE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.PauseRespFieldNumber;
                             wrappers.PauseResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd141_ModeChangeResponse:
+                    case EnumCmdNums.Cmd141_ModeChangeResponse:
                         {
                             var pack = (ID_141_MODE_CHANGE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.ModeChangeRespFieldNumber;
                             wrappers.ModeChangeResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd143_StatusResponse:
+                    case EnumCmdNums.Cmd143_StatusResponse:
                         {
                             var pack = (ID_143_STATUS_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.StatusReqRespFieldNumber;
                             wrappers.StatusReqResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd144_StatusReport:
+                    case EnumCmdNums.Cmd144_StatusReport:
                         {
                             var pack = (ID_144_STATUS_CHANGE_REP)objPackage;
                             wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                             wrappers.StatueChangeRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd145_PowerOnoffResponse:
+                    case EnumCmdNums.Cmd145_PowerOnoffResponse:
                         {
                             var pack = (ID_145_POWER_OPE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.PowerOpeRespFieldNumber;
                             wrappers.PowerOpeResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd151_AvoidResponse:
+                    case EnumCmdNums.Cmd151_AvoidResponse:
                         {
                             var pack = (ID_151_AVOID_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AvoidRespFieldNumber;
                             wrappers.AvoidResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd152_AvoidCompleteReport:
+                    case EnumCmdNums.Cmd152_AvoidCompleteReport:
                         {
                             var pack = (ID_152_AVOID_COMPLETE_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.AvoidCompleteRepFieldNumber;
                             wrappers.AvoidCompleteRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd171_RangeTeachResponse:
+                    case EnumCmdNums.Cmd171_RangeTeachResponse:
                         {
                             var pack = (ID_171_RANGE_TEACHING_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingRespFieldNumber;
                             wrappers.RangeTeachingResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd172_RangeTeachCompleteReport:
+                    case EnumCmdNums.Cmd172_RangeTeachCompleteReport:
                         {
                             var pack = (ID_172_RANGE_TEACHING_COMPLETE_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingCmpRepFieldNumber;
                             wrappers.RangeTeachingCmpRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd174_AddressTeachReport:
+                    case EnumCmdNums.Cmd174_AddressTeachReport:
                         {
                             var pack = (ID_174_ADDRESS_TEACH_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.AddressTeachRepFieldNumber;
                             wrappers.AddressTeachRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd191_AlarmResetResponse:
+                    case EnumCmdNums.Cmd191_AlarmResetResponse:
                         {
                             var pack = (ID_191_ALARM_RESET_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AlarmResetRespFieldNumber;
                             wrappers.AlarmResetResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd194_AlarmReport:
+                    case EnumCmdNums.Cmd194_AlarmReport:
                         {
                             var pack = (ID_194_ALARM_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
                             wrappers.AlarmRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd000_EmptyCommand:
+                    case EnumCmdNums.Cmd000_EmptyCommand:
                     default:
                         {
                             var pack = (ID_1_HOST_BASIC_INFO_VERSION_REP)objPackage;
@@ -780,7 +780,7 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private void SendCommand(ushort seqNum, EnumCmds cmds, object objPackage)
+        private void SendCommand(ushort seqNum, EnumCmdNums cmds, object objPackage)
         {
             try
             {
@@ -790,7 +790,7 @@ namespace Mirle.Agv.Control
 
                 switch (cmds)
                 {
-                    case EnumCmds.Cmd31_TransferRequest:
+                    case EnumCmdNums.Cmd31_TransferRequest:
                         {
                             var pack = (ID_31_TRANS_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.TransReqFieldNumber;
@@ -798,259 +798,259 @@ namespace Mirle.Agv.Control
                             break;
                         }
 
-                    case EnumCmds.Cmd32_TransferCompleteResponse:
+                    case EnumCmdNums.Cmd32_TransferCompleteResponse:
                         {
                             var pack = (ID_32_TRANS_COMPLETE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.TranCmpRespFieldNumber;
                             wrappers.TranCmpResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd33_ControlZoneCancelRequest:
+                    case EnumCmdNums.Cmd33_ControlZoneCancelRequest:
                         {
                             var pack = (ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.ControlZoneReqFieldNumber;
                             wrappers.ControlZoneReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd35_CarrierIdRenameRequest:
+                    case EnumCmdNums.Cmd35_CarrierIdRenameRequest:
                         {
                             var pack = (ID_35_CST_ID_RENAME_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.CSTIDRenameReqFieldNumber;
                             wrappers.CSTIDRenameReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd36_TransferEventResponse:
+                    case EnumCmdNums.Cmd36_TransferEventResponse:
                         {
                             var pack = (ID_36_TRANS_EVENT_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.ImpTransEventRespFieldNumber;
                             wrappers.ImpTransEventResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd37_TransferCancelRequest:
+                    case EnumCmdNums.Cmd37_TransferCancelRequest:
                         {
                             var pack = (ID_37_TRANS_CANCEL_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.TransCancelReqFieldNumber;
                             wrappers.TransCancelReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd39_PauseRequest:
+                    case EnumCmdNums.Cmd39_PauseRequest:
                         {
                             var pack = (ID_39_PAUSE_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.PauseReqFieldNumber;
                             wrappers.PauseReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd41_ModeChange:
+                    case EnumCmdNums.Cmd41_ModeChange:
                         {
                             var pack = (ID_41_MODE_CHANGE_REQ)objPackage;
                             wrappers.ID = WrapperMessage.ModeChangeReqFieldNumber;
                             wrappers.ModeChangeReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd43_StatusRequest:
+                    case EnumCmdNums.Cmd43_StatusRequest:
                         {
                             var pack = (ID_43_STATUS_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.StatusReqFieldNumber;
                             wrappers.StatusReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd44_StatusRequest:
+                    case EnumCmdNums.Cmd44_StatusRequest:
                         {
                             var pack = (ID_44_STATUS_CHANGE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.StatusChangeRespFieldNumber;
                             wrappers.StatusChangeResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd45_PowerOnoffRequest:
+                    case EnumCmdNums.Cmd45_PowerOnoffRequest:
                         {
                             var pack = (ID_45_POWER_OPE_REQ)objPackage;
                             wrappers.ID = WrapperMessage.PowerOpeReqFieldNumber;
                             wrappers.PowerOpeReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd51_AvoidRequest:
+                    case EnumCmdNums.Cmd51_AvoidRequest:
                         {
                             var pack = (ID_51_AVOID_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.AvoidReqFieldNumber;
                             wrappers.AvoidReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd52_AvoidCompleteResponse:
+                    case EnumCmdNums.Cmd52_AvoidCompleteResponse:
                         {
                             var pack = (ID_52_AVOID_COMPLETE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AvoidCompleteRespFieldNumber;
                             wrappers.AvoidCompleteResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd71_RangeTeachRequest:
+                    case EnumCmdNums.Cmd71_RangeTeachRequest:
                         {
                             var pack = (ID_71_RANGE_TEACHING_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingReqFieldNumber;
                             wrappers.RangeTeachingReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd72_RangeTeachCompleteResponse:
+                    case EnumCmdNums.Cmd72_RangeTeachCompleteResponse:
                         {
                             var pack = (ID_72_RANGE_TEACHING_COMPLETE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingCmpRespFieldNumber;
                             wrappers.RangeTeachingCmpResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd74_AddressTeachResponse:
+                    case EnumCmdNums.Cmd74_AddressTeachResponse:
                         {
                             var pack = (ID_74_ADDRESS_TEACH_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AddressTeachRespFieldNumber;
                             wrappers.AddressTeachResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd91_AlarmResetRequest:
+                    case EnumCmdNums.Cmd91_AlarmResetRequest:
                         {
                             var pack = (ID_91_ALARM_RESET_REQUEST)objPackage;
                             wrappers.ID = WrapperMessage.AlarmResetReqFieldNumber;
                             wrappers.AlarmResetReq = pack;
                             break;
                         }
-                    case EnumCmds.Cmd94_AlarmResponse:
+                    case EnumCmdNums.Cmd94_AlarmResponse:
                         {
                             var pack = (ID_94_ALARM_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AlarmRespFieldNumber;
                             wrappers.AlarmResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd131_TransferResponse:
+                    case EnumCmdNums.Cmd131_TransferResponse:
                         {
                             var pack = (ID_131_TRANS_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.TransRespFieldNumber;
                             wrappers.TransResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd132_TransferCompleteReport:
+                    case EnumCmdNums.Cmd132_TransferCompleteReport:
                         {
                             var pack = (ID_132_TRANS_COMPLETE_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;
                             wrappers.TranCmpRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd133_ControlZoneCancelResponse:
+                    case EnumCmdNums.Cmd133_ControlZoneCancelResponse:
                         {
                             var pack = (ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.ControlZoneRespFieldNumber;
                             wrappers.ControlZoneResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd134_TransferEventReport:
+                    case EnumCmdNums.Cmd134_TransferEventReport:
                         {
                             var pack = (ID_134_TRANS_EVENT_REP)objPackage;
                             wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                             wrappers.TransEventRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd135_CarrierIdRenameResponse:
+                    case EnumCmdNums.Cmd135_CarrierIdRenameResponse:
                         {
                             var pack = (ID_135_CST_ID_RENAME_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.CSTIDRenameRespFieldNumber;
                             wrappers.CSTIDRenameResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd136_TransferEventReport:
+                    case EnumCmdNums.Cmd136_TransferEventReport:
                         {
                             var pack = (ID_136_TRANS_EVENT_REP)objPackage;
                             wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                             wrappers.ImpTransEventRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd137_TransferCancelResponse:
+                    case EnumCmdNums.Cmd137_TransferCancelResponse:
                         {
                             var pack = (ID_137_TRANS_CANCEL_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.TransCancelRespFieldNumber;
                             wrappers.TransCancelResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd139_PauseResponse:
+                    case EnumCmdNums.Cmd139_PauseResponse:
                         {
                             var pack = (ID_139_PAUSE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.PauseRespFieldNumber;
                             wrappers.PauseResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd141_ModeChangeResponse:
+                    case EnumCmdNums.Cmd141_ModeChangeResponse:
                         {
                             var pack = (ID_141_MODE_CHANGE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.ModeChangeRespFieldNumber;
                             wrappers.ModeChangeResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd143_StatusResponse:
+                    case EnumCmdNums.Cmd143_StatusResponse:
                         {
                             var pack = (ID_143_STATUS_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.StatusReqRespFieldNumber;
                             wrappers.StatusReqResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd144_StatusReport:
+                    case EnumCmdNums.Cmd144_StatusReport:
                         {
                             var pack = (ID_144_STATUS_CHANGE_REP)objPackage;
                             wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                             wrappers.StatueChangeRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd145_PowerOnoffResponse:
+                    case EnumCmdNums.Cmd145_PowerOnoffResponse:
                         {
                             var pack = (ID_145_POWER_OPE_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.PowerOpeRespFieldNumber;
                             wrappers.PowerOpeResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd151_AvoidResponse:
+                    case EnumCmdNums.Cmd151_AvoidResponse:
                         {
                             var pack = (ID_151_AVOID_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AvoidRespFieldNumber;
                             wrappers.AvoidResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd152_AvoidCompleteReport:
+                    case EnumCmdNums.Cmd152_AvoidCompleteReport:
                         {
                             var pack = (ID_152_AVOID_COMPLETE_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.AvoidCompleteRepFieldNumber;
                             wrappers.AvoidCompleteRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd171_RangeTeachResponse:
+                    case EnumCmdNums.Cmd171_RangeTeachResponse:
                         {
                             var pack = (ID_171_RANGE_TEACHING_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingRespFieldNumber;
                             wrappers.RangeTeachingResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd172_RangeTeachCompleteReport:
+                    case EnumCmdNums.Cmd172_RangeTeachCompleteReport:
                         {
                             var pack = (ID_172_RANGE_TEACHING_COMPLETE_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.RangeTeachingCmpRepFieldNumber;
                             wrappers.RangeTeachingCmpRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd174_AddressTeachReport:
+                    case EnumCmdNums.Cmd174_AddressTeachReport:
                         {
                             var pack = (ID_174_ADDRESS_TEACH_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.AddressTeachRepFieldNumber;
                             wrappers.AddressTeachRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd191_AlarmResetResponse:
+                    case EnumCmdNums.Cmd191_AlarmResetResponse:
                         {
                             var pack = (ID_191_ALARM_RESET_RESPONSE)objPackage;
                             wrappers.ID = WrapperMessage.AlarmResetRespFieldNumber;
                             wrappers.AlarmResetResp = pack;
                             break;
                         }
-                    case EnumCmds.Cmd194_AlarmReport:
+                    case EnumCmdNums.Cmd194_AlarmReport:
                         {
                             var pack = (ID_194_ALARM_REPORT)objPackage;
                             wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
                             wrappers.AlarmRep = pack;
                             break;
                         }
-                    case EnumCmds.Cmd000_EmptyCommand:
+                    case EnumCmdNums.Cmd000_EmptyCommand:
                     default:
                         {
                             var pack = (ID_1_HOST_BASIC_INFO_VERSION_REP)objPackage;
@@ -1316,7 +1316,7 @@ namespace Mirle.Agv.Control
 
         private void RecieveCmdShowOnCommunicationForm(object sender, TcpIpEventArgs e)
         {
-            var cmdName = (EnumCmds)int.Parse(e.iPacketID);
+            var cmdName = (EnumCmdNums)int.Parse(e.iPacketID);
             string msg = $"[{cmdName}][e.iSeqNum = {e.iSeqNum}][e.objPacket = {e.objPacket}]";
             OnCmdReceive?.Invoke(this, msg);
         }

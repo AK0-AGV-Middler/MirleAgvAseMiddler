@@ -8,8 +8,7 @@ namespace Mirle.Agv.Model
 {
     public class MapPosition
     {
-        private string barcode;
-        private double x;
-        private double y;
+        public double PositionX { get; set; }
+        public double PositionY { get; set; }
     }
 }
