@@ -71,7 +71,6 @@
     <Compile Include="Control\Handler\RobotControlHandler.cs" />
     <Compile Include="Control\Handler\TransCmdsSteps\Load.cs" />
     <Compile Include="Control\Handler\TransCmdsSteps\Move.cs" />
-    <Compile Include="Control\Handler\TransCmdsSteps\MoveSubSteps\MoveGetReserve.cs" />
     <Compile Include="Control\Handler\TransCmdsSteps\Unload.cs" />
     <Compile Include="Control\IComplete.cs" />
     <Compile Include="Control\Agent\BmsAgent.cs" />
@@ -79,7 +78,6 @@
     <Compile Include="Control\Agent\ElmoAgent.cs" />
     <Compile Include="Control\Handler\MoveControlHandler.cs" />
     <Compile Include="Control\Agent\PlcAgent.cs" />
-    <Compile Include="Control\Handler\TransCmdsSteps\MoveSubSteps\IMoveSubStep.cs" />
     <Compile Include="Control\InitialEventArgs.cs" />
     <Compile Include="Control\Tools\AgvcConnecter.cs" />
     <Compile Include="Control\Tools\ConfigHandler.cs" />
@@ -112,7 +110,6 @@
     <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\TransferCmds\TransCmd.cs" />
     <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
-    <Compile Include="Control\Handler\TransCmdsSteps\MoveSubSteps\MoveAskReserve.cs" />
     <Compile Include="View\MiddlerForm.cs">
       <SubType>Form</SubType>
     </Compile>

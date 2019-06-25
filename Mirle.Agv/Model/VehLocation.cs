@@ -9,6 +9,7 @@ namespace Mirle.Agv.Model
 
         public MapSection Section { get; set; }
         public MapAddress Address { get; set; }
+        public MapPosition Position { get; set; }
 
         public VehLocation()
         {

@@ -142,13 +142,12 @@ namespace Mirle.Agv.Control
         /// </summary>
         private void MoveFinished(EnumCompleteStatus status)
         {
-            if (OnMoveFinished != null)
-            {
-                OnMoveFinished(this, status);
-            }
+            OnMoveFinished?.Invoke(this, status);
         }
 
-
-
+        public void MainFlow_OnTransferMoveEven(object sender, MoveCmdInfo moveCmd)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

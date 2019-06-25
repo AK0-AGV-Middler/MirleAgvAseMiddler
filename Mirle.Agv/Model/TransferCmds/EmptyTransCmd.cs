@@ -11,7 +11,6 @@ namespace Mirle.Agv.Model.TransferCmds
         public EmptyTransCmd() : base()
         {
             type = EnumTransCmdType.Empty;
-            CmdId = "Empty";
         }
     }
 }

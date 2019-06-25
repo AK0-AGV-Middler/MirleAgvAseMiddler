@@ -170,6 +170,7 @@ namespace Mirle.Agv.Control
                     oneRow.ChargeDirection = oneRow.ChargeDirectionConvert(getThisRow[dicAddressIndexes["ChargeDirection"]]);
                     oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicAddressIndexes["IsSegmentPoint"]]);
                     oneRow.CanSpin = bool.Parse(getThisRow[dicAddressIndexes["CanSpin"]]);
+                    oneRow.PioDirection = oneRow.PioDirectionConvert(getThisRow[dicAddressIndexes["PioDirection"]]);
 
                     mapAddresses.Add(oneRow);
                     dicMapAddresses.Add(oneRow.Id, oneRow);

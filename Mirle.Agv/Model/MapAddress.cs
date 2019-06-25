@@ -19,10 +19,11 @@ namespace Mirle.Agv.Model
         public bool CanRightLoad { get; set; }
         public bool CanRightUnload { get; set; }
         public bool IsCharger { get; set; }
-        public string CouplerId { get; set; }
+        public string CouplerId { get; set; } = "None";
         public EnumChargeDirection ChargeDirection { get; set; } = EnumChargeDirection.None;
         public bool IsSegmentPoint { get; set; }
-        public bool CanSpin { get; set; }        
+        public bool CanSpin { get; set; }
+        public EnumPioDirection PioDirection { get; set; } = EnumPioDirection.None;
 
         public EnumChargeDirection ChargeDirectionConvert(string v)
         {
@@ -36,6 +37,12 @@ namespace Mirle.Agv.Model
             mapPosition.PositionX = this.PositionX;
             mapPosition.PositionY = this.PositionY;
             return mapPosition;
+        }
+
+        internal EnumPioDirection PioDirectionConvert(string v)
+        {
+            v = v.Trim();
+            return (EnumPioDirection)Enum.Parse(typeof(EnumPioDirection), v);
         }
     }
 

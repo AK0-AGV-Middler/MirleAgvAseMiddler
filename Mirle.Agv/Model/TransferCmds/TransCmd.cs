@@ -11,7 +11,8 @@ namespace Mirle.Agv.Model.TransferCmds
     {
         protected MapInfo mapInfo = MapInfo.Instance;
         protected EnumTransCmdType type;
-        public string CmdId { get; set; }
+        public string CmdId { get; set; } = "Empty";
+        public string CstId { get; set; } = "Empty";
 
         public EnumTransCmdType GetCommandType()
         {

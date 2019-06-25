@@ -17,10 +17,10 @@ namespace Mirle.Agv.Model.TransferCmds
         public string[] ToUnloadSections { get; set; }
         public string[] ToLoadAddresses { get; set; }
         public string[] ToUnloadAddresses { get; set; }
-        public string LoadAddress { get; set; }
-        public string UnloadAddtess { get; set; }
-        public string CarrierId { get; set; }
-        public string CmdId { get; set; }
+        public string LoadAddress { get; set; } = "Empty";
+        public string UnloadAddtess { get; set; } = "Empty";
+        public string CarrierId { get; set; } = "Empty";
+        public string CmdId { get; set; } = "Empty";
         public ushort SeqNum { get; set; }
 
         private MapInfo mapInfo = MapInfo.Instance;

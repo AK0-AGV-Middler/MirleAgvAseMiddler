@@ -23,6 +23,13 @@ namespace Mirle.Agv
         Right
     }
 
+    public enum EnumPioDirection
+    {
+        None,
+        Left,
+        Right
+    }
+
     public enum EnumPermitDirection
     {
         None,

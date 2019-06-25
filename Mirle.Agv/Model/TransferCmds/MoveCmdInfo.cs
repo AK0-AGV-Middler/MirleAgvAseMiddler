@@ -9,18 +9,15 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public class MoveCmdInfo : TransCmd
     {
-        public string MoveEndAddress { get; set; } // LoadAddress or UnloadAddress
-        public double TotalMoveLength { get; set; }
 
-        public MapSection Section { get; set; }
-        public bool IsPrecisePositioning { get; set; }  //是否二次定位 // = IsMoveEndSection 本次連續移動最後一個Section
+        //public MapSection Section { get; set; }
+        //public bool IsPrecisePositioning { get; set; }  //是否二次定位 // = IsMoveEndSection 本次連續移動最後一個Section
 
 
         public List<MapPosition> AddressPositions { get; set; } = new List<MapPosition>();
         public List<EnumAddressMotion> AddressMotions { get; set; } = new List<EnumAddressMotion>();
         public List<float> SectionSpeedLimits { get; set; } = new List<float>();
         public int PredictVehicleAngle { get; set; } = 0;
-
 
         public MoveCmdInfo() : base()
         {

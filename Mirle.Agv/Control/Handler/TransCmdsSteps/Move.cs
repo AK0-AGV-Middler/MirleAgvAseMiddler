@@ -12,12 +12,19 @@ namespace Mirle.Agv.Control.Handler.TransCmdsSteps
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
             TransCmd curTransCmd = mainFlowHandler.GetCurTransCmd();
-            var type = curTransCmd.GetCommandType();
+            EnumTransCmdType type = curTransCmd.GetCommandType();
 
             switch (type)
             {
-                case EnumTransCmdType.Move:                                     
-                    EnqueMoveCmd(mainFlowHandler, curTransCmd);
+                case EnumTransCmdType.Move:
+                    // EnqueMoveCmd(mainFlowHandler, curTransCmd);
+                    //TODO:
+                    //Starting Ask Reserve
+                    //Pass success reserve to move controller
+                    //Report Position through middler to agvc
+                    //Check if move complete
+                    MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
+                    mainFlowHandler.PublishTransferMoveEvent(moveCmd);
                     break;
                 case EnumTransCmdType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());
@@ -37,13 +44,13 @@ namespace Mirle.Agv.Control.Handler.TransCmdsSteps
 
         private static void EnqueMoveCmd(MainFlowHandler mainFlowHandler, TransCmd curTransCmd)
         {
-            MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
-            mainFlowHandler.EnqueWaitForReserve(moveCmd);
-            if (!moveCmd.IsPrecisePositioning)
-            {
-                mainFlowHandler.TransCmdsIndex++;
-                mainFlowHandler.GoNextTransCmd = true;
-            }
+            //MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
+            //mainFlowHandler.EnqueWaitForReserve(moveCmd);
+            //if (!moveCmd.IsPrecisePositioning)
+            //{
+            //    mainFlowHandler.TransCmdsIndex++;
+            //    mainFlowHandler.GoNextTransCmd = true;
+            //}
         }
     }
 }

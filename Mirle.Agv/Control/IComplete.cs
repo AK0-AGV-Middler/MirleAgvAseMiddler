@@ -8,6 +8,6 @@ namespace Mirle.Agv.Control
 {
     public interface ICmdFinished
     {
-        void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status);
+        void MoveControlHandler_OnMoveFinished(object sender, EnumCompleteStatus status);
     }
 }
