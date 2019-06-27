@@ -36,26 +36,16 @@ namespace Mirle.Agv.Control
 
         private ConcurrentQueue<MoveCmdInfo> queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
 
-        private bool goNextTransferStep;
-        public bool GoNextTransCmd
-        {
-            get { return goNextTransferStep; }
-            set { goNextTransferStep = value; }
-        }
-        private int transCmdsIndex;
-        public int TransCmdsIndex
-        {
-            get { return transCmdsIndex; }
-            set { transCmdsIndex = value; }
-        }
+        public bool GoNextTransferStep { get; set; }
+        public int TransCmdsIndex { get; set; }
 
         public bool IsReportingPosition { get; set; }
 
         private ITransCmdsStep transferCommandStep;
 
-        private List<MapSection> movingSections = new List<MapSection>();
+        //private List<MapSection> movingSections = new List<MapSection>();
         private AgvcTransCmd agvcTransCmd;
-        public int MovingSectionsIndex { get; set; } = 0;
+        //public int MovingSectionsIndex { get; set; } = 0;
 
         #endregion
 
@@ -97,7 +87,7 @@ namespace Mirle.Agv.Control
 
         public Vehicle theVehicle;
         private bool isIniOk;
-        public MapInfo mapInfo;
+        public MapInfo theMapInfo;
 
         public MainFlowHandler()
         {
@@ -148,7 +138,7 @@ namespace Mirle.Agv.Control
 
         private void GetMapInfo()
         {
-            mapInfo = MapInfo.Instance;
+            theMapInfo = MapInfo.Instance;
         }
 
         private void ThreadInitial()
@@ -211,6 +201,7 @@ namespace Mirle.Agv.Control
                 mapConfigs.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
                 mapConfigs.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
                 mapConfigs.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
+                mapConfigs.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
 
                 sr2000Configs = new Sr2000Configs();
                 int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
@@ -410,10 +401,10 @@ namespace Mirle.Agv.Control
                 middleAgent.OnTransferAbortEvent += OnMiddlerGetsAbortEvent;
 
                 //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
-                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
-                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
-                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
-                moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
+                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
+                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
+                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
+                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
@@ -481,7 +472,6 @@ namespace Mirle.Agv.Control
 
                 if (GenralTransCmds()) // Move/Load/Unload/LoadUnload
                 {
-                    AgvcTransferCommandIntoMovingSections();
                     AgvcTransferCommandIntoTransferSteps();
                     transCmds.Add(new EmptyTransCmd());
 
@@ -506,18 +496,6 @@ namespace Mirle.Agv.Control
             }
         }
 
-        private void AgvcTransferCommandIntoMovingSections()
-        {
-            if (agvcTransCmd.ToLoadSections != null)
-            {
-                movingSections = GetMovingSections(agvcTransCmd.ToLoadSections);
-            }
-            else if (agvcTransCmd.ToUnloadSections != null)
-            {
-                movingSections = GetMovingSections(agvcTransCmd.ToUnloadSections);
-            }
-        }
-
         private List<MapSection> GetMovingSections(string[] agvcTransferCommandSections)
         {
             List<MapSection> result = new List<MapSection>();
@@ -526,7 +504,7 @@ namespace Mirle.Agv.Control
                 MapSection mapSection = new MapSection();
                 try
                 {
-                    mapSection = mapInfo.dicMapSections[agvcTransferCommandSections[i]];
+                    mapSection = theMapInfo.dicMapSections[agvcTransferCommandSections[i]];
                 }
                 catch (Exception ex)
                 {
@@ -566,7 +544,7 @@ namespace Mirle.Agv.Control
 
             for (int i = 0; i < sections.Length; i++)
             {
-                if (!mapInfo.dicMapSections.ContainsKey(sections[i]))
+                if (!theMapInfo.dicMapSections.ContainsKey(sections[i]))
                 {
                     int replyCode = 1; // NG
                     string reason = $"{sections[i]} is not in the map.";
@@ -574,9 +552,9 @@ namespace Mirle.Agv.Control
                     return false;
                 }
 
-                var tempSection = mapInfo.dicMapSections[sections[i]];
+                var tempSection = theMapInfo.dicMapSections[sections[i]];
 
-                if (!mapInfo.dicMapAddresses.ContainsKey(addresses[i]))
+                if (!theMapInfo.dicMapAddresses.ContainsKey(addresses[i]))
                 {
                     int replyCode = 1; // NG
                     string reason = $"{addresses[i]} is not in the map.";
@@ -584,7 +562,7 @@ namespace Mirle.Agv.Control
                     return false;
                 }
 
-                if (!mapInfo.dicMapAddresses.ContainsKey(addresses[i + 1]))
+                if (!theMapInfo.dicMapAddresses.ContainsKey(addresses[i + 1]))
                 {
                     int replyCode = 1; // NG
                     string reason = $"{addresses[i + 1]} is not in the map.";
@@ -715,31 +693,11 @@ namespace Mirle.Agv.Control
 
         private void ConvertAgvcUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            if (agvcTransCmd.ToUnloadAddresses.Length > 0)
+            if (agvcTransCmd.ToUnloadSections.Length > 0)
             {
-                MoveCmdInfo moveCmd = new MoveCmdInfo();
-                moveCmd.CmdId = agvcTransCmd.CmdId;
-                moveCmd.CstId = agvcTransCmd.CarrierId;
-                moveCmd.AddressPositions = moveCmd.SetAddressPositions(agvcTransCmd.ToUnloadAddresses);
-                moveCmd.AddressMotions = moveCmd.SetAddressMotions(agvcTransCmd.ToUnloadSections);
-                moveCmd.SectionSpeedLimits = moveCmd.SetSectionSpeedLimits(agvcTransCmd.ToUnloadSections);
+                MoveCmdInfo moveCmd = SetMoveToUnloadCmdInfo(agvcTransCmd);
                 transCmds.Add(moveCmd);
             }
-
-            //if (agvcTransCmd.ToUnloadSections.Length > 0)
-            //{
-            //    for (int i = 0; i < agvcTransCmd.ToUnloadSections.Length; i++)
-            //    {
-            //        MoveCmdInfo moveCmd = new MoveCmdInfo();
-            //        moveCmd.CmdId = agvcTransCmd.CmdId;
-            //        moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
-            //        var section = theMapInfo.dicMapSections[agvcTransCmd.ToUnloadSections[i]];
-            //        moveCmd.Section = section;
-            //        moveCmd.TotalMoveLength += section.Distance;
-            //        moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
-            //        transCmds.Add(moveCmd);
-            //    }
-            //}
 
             UnloadCmdInfo unloadCmd = new UnloadCmdInfo();
             unloadCmd.CstId = agvcTransCmd.CarrierId;
@@ -749,33 +707,26 @@ namespace Mirle.Agv.Control
             transCmds.Add(unloadCmd);
         }
 
+        private MoveCmdInfo SetMoveToUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
+        {
+            MoveCmdInfo moveCmd = new MoveCmdInfo();
+            moveCmd.CmdId = agvcTransCmd.CmdId;
+            moveCmd.CstId = agvcTransCmd.CarrierId;
+            moveCmd.AddressPositions = moveCmd.SetAddressPositions(agvcTransCmd.ToUnloadAddresses);
+            moveCmd.AddressActions = moveCmd.SetAddressActions(agvcTransCmd.ToUnloadSections);
+            moveCmd.SectionSpeedLimits = moveCmd.SetSectionSpeedLimits(agvcTransCmd.ToUnloadSections);
+            moveCmd.movingSections = GetMovingSections(agvcTransCmd.ToUnloadSections);
+            moveCmd.MovingSectionsIndex = 0;
+            return moveCmd;
+        }
+
         private void ConvertAgvcLoadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            if (agvcTransCmd.ToUnloadAddresses.Length > 0)
+            if (agvcTransCmd.ToLoadSections.Length > 0)
             {
-                MoveCmdInfo moveCmd = new MoveCmdInfo();
-                moveCmd.CmdId = agvcTransCmd.CmdId;
-                moveCmd.CstId = agvcTransCmd.CarrierId;
-                moveCmd.AddressPositions = moveCmd.SetAddressPositions(agvcTransCmd.ToLoadAddresses);
-                moveCmd.AddressMotions = moveCmd.SetAddressMotions(agvcTransCmd.ToLoadSections);
-                moveCmd.SectionSpeedLimits = moveCmd.SetSectionSpeedLimits(agvcTransCmd.ToLoadSections);
+                MoveCmdInfo moveCmd = SetMoveToLoadCmdInfo(agvcTransCmd);
                 transCmds.Add(moveCmd);
             }
-
-            //if (agvcTransCmd.ToLoadSections.Length > 0)
-            //{
-            //    for (int i = 0; i < agvcTransCmd.ToLoadSections.Length; i++)
-            //    {
-            //        MoveCmdInfo moveCmd = new MoveCmdInfo();
-            //        moveCmd.CmdId = agvcTransCmd.CmdId;
-            //        moveCmd.MoveEndAddress = agvcTransCmd.LoadAddress;
-            //        var section = theMapInfo.dicMapSections[agvcTransCmd.ToLoadSections[i]];
-            //        moveCmd.Section = section;
-            //        moveCmd.TotalMoveLength += section.Distance;
-            //        moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToLoadSections.Length - 1);
-            //        transCmds.Add(moveCmd);
-            //    }
-            //}
 
             LoadCmdInfo loadCmd = new LoadCmdInfo();
             loadCmd.CstId = agvcTransCmd.CarrierId;
@@ -785,41 +736,33 @@ namespace Mirle.Agv.Control
             transCmds.Add(loadCmd);
         }
 
+        private MoveCmdInfo SetMoveToLoadCmdInfo(AgvcTransCmd agvcTransCmd)
+        {
+            MoveCmdInfo moveCmd = new MoveCmdInfo();
+            moveCmd.CmdId = agvcTransCmd.CmdId;
+            moveCmd.CstId = agvcTransCmd.CarrierId;
+            moveCmd.AddressPositions = moveCmd.SetAddressPositions(agvcTransCmd.ToLoadAddresses);
+            moveCmd.AddressActions = moveCmd.SetAddressActions(agvcTransCmd.ToLoadSections);
+            moveCmd.SectionSpeedLimits = moveCmd.SetSectionSpeedLimits(agvcTransCmd.ToLoadSections);
+            moveCmd.movingSections = GetMovingSections(agvcTransCmd.ToLoadSections);
+            moveCmd.MovingSectionsIndex = 0;
+            return moveCmd;
+        }
+
         private void ConvertAgvcMoveCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            if (agvcTransCmd.ToUnloadAddresses.Length > 0)
+            if (agvcTransCmd.ToUnloadSections.Length > 0)
             {
-                MoveCmdInfo moveCmd = new MoveCmdInfo();
-                moveCmd.CmdId = agvcTransCmd.CmdId;
-                moveCmd.CstId = agvcTransCmd.CarrierId;
-                moveCmd.AddressPositions = moveCmd.SetAddressPositions(agvcTransCmd.ToUnloadAddresses);
-                moveCmd.AddressMotions = moveCmd.SetAddressMotions(agvcTransCmd.ToUnloadSections);
-                moveCmd.SectionSpeedLimits = moveCmd.SetSectionSpeedLimits(agvcTransCmd.ToUnloadSections);
+                MoveCmdInfo moveCmd = SetMoveToUnloadCmdInfo(agvcTransCmd);
                 transCmds.Add(moveCmd);
             }
-
-
-            //if (agvcTransCmd.ToUnloadSections.Length > 0)
-            //{
-            //    for (int i = 0; i < agvcTransCmd.ToUnloadSections.Length; i++)
-            //    {
-            //        MoveCmdInfo moveCmd = new MoveCmdInfo();
-            //        moveCmd.CmdId = agvcTransCmd.CmdId;
-            //        moveCmd.MoveEndAddress = agvcTransCmd.UnloadAddtess;
-            //        var section = theMapInfo.dicMapSections[agvcTransCmd.ToUnloadSections[i]];
-            //        moveCmd.Section = section;
-            //        moveCmd.TotalMoveLength += section.Distance;
-            //        moveCmd.IsPrecisePositioning = (i == agvcTransCmd.ToUnloadSections.Length - 1);
-            //        transCmds.Add(moveCmd);
-            //    }
-            //}
         }
 
         private void VisitTransCmds()
         {
             PreVisitTransCmds();
 
-            while (transCmdsIndex < transCmds.Count)
+            while (TransCmdsIndex < transCmds.Count)
             {
                 #region Pause And Stop Check
 
@@ -831,9 +774,9 @@ namespace Mirle.Agv.Control
 
                 #endregion
 
-                if (goNextTransferStep)
+                if (GoNextTransferStep)
                 {
-                    goNextTransferStep = false;
+                    GoNextTransferStep = false;
                     DoTransfer();
                 }
 
@@ -847,15 +790,15 @@ namespace Mirle.Agv.Control
         private void AfterVisitTransCmds()
         {
             transCmds.Clear();
-            transCmdsIndex = 0;
-            goNextTransferStep = false;
+            TransCmdsIndex = 0;
+            GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
         }
 
         private void PreVisitTransCmds()
         {
-            transCmdsIndex = 0;
-            goNextTransferStep = true;
+            TransCmdsIndex = 0;
+            GoNextTransferStep = true;
             PauseEvent.Set();
             ShutdownEvent.Reset();
         }
@@ -892,7 +835,7 @@ namespace Mirle.Agv.Control
 
         private void AskReserve()
         {
-            while (transCmdsIndex < transCmds.Count)
+            while (TransCmdsIndex < transCmds.Count)
             {
                 #region Pause And Stop Check
 
@@ -954,16 +897,6 @@ namespace Mirle.Agv.Control
                 thdAskReserve.Join();
             }
             SetTransCmdsStep(new Idle());
-        }
-
-        public void UpdateMapBarcode(MapBarcodeReader mapBarcode)
-        {
-            theVehicle.UpdateStatus(mapBarcode);
-        }
-
-        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
-        {
-            theVehicle.UpdateStatus(mapBarcodeValues);
         }
 
         public void MoveControlHandler_OnMoveFinished(object sender, EnumCompleteStatus status)
@@ -1034,17 +967,17 @@ namespace Mirle.Agv.Control
 
         private bool NextTransCmdIsUnload()
         {
-            return transCmds[transCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Unload;
+            return transCmds[TransCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Unload;
         }
 
         private bool NextTransCmdIsLoad()
         {
-            return transCmds[transCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Load;
+            return transCmds[TransCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Load;
         }
 
         private bool NextTransCmdIsMove()
         {
-            return transCmds[transCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Move;
+            return transCmds[TransCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Move;
         }
 
         private bool IsLoadUnloadComplete()
@@ -1059,10 +992,10 @@ namespace Mirle.Agv.Control
 
         private void VisitNextTransCmd()
         {
-            if (transCmdsIndex < transCmds.Count)
+            if (TransCmdsIndex < transCmds.Count)
             {
-                transCmdsIndex++;
-                goNextTransferStep = true;
+                TransCmdsIndex++;
+                GoNextTransferStep = true;
             }
             else
             {
@@ -1085,9 +1018,9 @@ namespace Mirle.Agv.Control
         public TransCmd GetCurTransCmd()
         {
             TransCmd transCmd = new EmptyTransCmd();
-            if (transCmdsIndex < transCmds.Count)
+            if (TransCmdsIndex < transCmds.Count)
             {
-                transCmd = transCmds[transCmdsIndex];
+                transCmd = transCmds[TransCmdsIndex];
             }
             return transCmd;
         }
@@ -1095,7 +1028,7 @@ namespace Mirle.Agv.Control
         public TransCmd GetNextTransCmd()
         {
             TransCmd transCmd = new EmptyTransCmd();
-            int nextIndex = transCmdsIndex + 1;
+            int nextIndex = TransCmdsIndex + 1;
             if (nextIndex < transCmds.Count)
             {
                 transCmd = transCmds[nextIndex];
@@ -1168,56 +1101,81 @@ namespace Mirle.Agv.Control
             OnTransferMoveEvent?.Invoke(this, moveCmd);
         }
 
-        public void ReportVehiclePosition(MapPosition position)
+        public void ReportVehiclePosition(MapPosition gxPosition)
         {
-            TransCmd curTransCmd = GetCurTransCmd();
-            //EnumTransCmdType type = curTransCmd.GetCommandType();
-
-            if (MovingSectionsIndex >= movingSections.Count)
-            {
-                return;
-            }
-
             VehLocation theVehicleLocation = theVehicle.GetVehLoacation();
-            CalculateDirection(theVehicleLocation);
-            theVehicle.UpdateStatus(theVehicleLocation);
+            theVehicleLocation.EncoderGxPosition = gxPosition;
 
-            if (IsReportingPosition)
+            TransCmd curTransCmd = GetCurTransCmd();
+            if (curTransCmd.GetCommandType() == EnumTransCmdType.Move)
             {
-                middleAgent.Send_Cmd134_TransferEventReport();
+                MoveCmdInfoUpdatePosition((MoveCmdInfo)curTransCmd, gxPosition);
             }
+            middleAgent.Send_Cmd134_TransferEventReport();
+
+
         }
 
-        private void CalculateDirection(VehLocation theVehicleLocation)
+        private void MoveCmdInfoUpdatePosition(MoveCmdInfo curTransCmd, MapPosition gxPosition)
         {
-            MapSection currentSection = movingSections[MovingSectionsIndex];
-            float distance = 0;
-            bool isNextSection = false;
-
-            switch (currentSection.Type)
+            List<MapSection> movingSections = curTransCmd.movingSections;
+            int movingSectionIndex = curTransCmd.MovingSectionsIndex;
+            if (movingSectionIndex + 1 == movingSections.Count)
             {
-                case EnumSectionType.Horizontal:
-                    {
-                        MapAddress fromAdr = mapInfo.dicMapAddresses[currentSection.FromAddress];
-                        distance = theVehicleLocation.Position.PositionX - fromAdr.PositionX;
-                        if (distance > currentSection.Distance * 0.9) //TODO: set 0.9 into config
+                //vehicle is in the last section of this moveCmdInfo.
+                MapSection currentSection = movingSections[movingSectionIndex];
+                MapAddress fromAdr = theMapInfo.dicMapAddresses[currentSection.FromAddress];
+                switch (currentSection.Type)
+                {
+                    case EnumSectionType.Horizontal:
                         {
-                            isNextSection = true;
+                            if (IsOutsideSection(gxPosition.PositionY, fromAdr.PositionY))
+                            {
+                                //TODO:
+                                //Stop the vehicle.
+                                //Send alarm to agvc.
+                                return;
+                            }
+                            var location = theVehicle.GetVehLoacation();
+                            location.Section.Distance = gxPosition.PositionX - fromAdr.PositionX;
+
                         }
                         break;
-                    }
-
-                case EnumSectionType.Vertical:
-                    break;
-                case EnumSectionType.R2000:
-                    break;
-                case EnumSectionType.None:
-                default:
-                    return;
+                    case EnumSectionType.Vertical:
+                        break;
+                    case EnumSectionType.R2000:
+                        break;
+                    case EnumSectionType.None:
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                MapSection currentSection = movingSections[movingSectionIndex];
+                MapSection nextSection = movingSections[movingSectionIndex + 1];
             }
 
-            theVehicleLocation.Section = currentSection;
+        }
 
+        private bool IsOutsideSection(float num1, float num2)
+        {
+            return Math.Abs(num1 - num2) > mapConfigs.OutSectionThreshold;
+        }
+
+        public MapBarcode GetMapBarcode(int baracodeNum)
+        {
+            var dicBarcodes = theMapInfo.dicBarcodes;
+            if (dicBarcodes.ContainsKey(baracodeNum))
+            {
+                //先 Clone 一份避免被改掉內容
+                MapBarcode barcode = dicBarcodes[baracodeNum].DeepClone();
+                return barcode;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

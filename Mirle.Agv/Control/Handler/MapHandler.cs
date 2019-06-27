@@ -16,7 +16,7 @@ namespace Mirle.Agv.Control
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
-        private MapInfo mapInfo;
+        private MapInfo theMapInfo;
 
         public MapHandler(MapConfigs mapConfigs)
         {
@@ -26,7 +26,7 @@ namespace Mirle.Agv.Control
             SectionPath = Path.Combine(rootDir, mapConfigs.SectionFileName);
             AddressPath = Path.Combine(rootDir, mapConfigs.AddressFileName);
             BarcodePath = Path.Combine(rootDir, mapConfigs.BarcodeFileName);
-            mapInfo = MapInfo.Instance;
+            theMapInfo = MapInfo.Instance;
             LoadSectionCsv();
             LoadAddressCsv();
             LoadBarcodeLineCsv();
@@ -60,9 +60,9 @@ namespace Mirle.Agv.Control
                 {
                     return;
                 }
-                var mapSections = mapInfo.mapSections;
-                var dicMapSections = mapInfo.dicMapSections;
-                var dicSectionIndexes = mapInfo.dicSectionIndexes;
+                var mapSections = theMapInfo.mapSections;
+                var dicMapSections = theMapInfo.dicMapSections;
+                var dicSectionIndexes = theMapInfo.dicSectionIndexes;
                 mapSections.Clear();
                 dicMapSections.Clear();
                 dicSectionIndexes.Clear();
@@ -121,9 +121,9 @@ namespace Mirle.Agv.Control
                 {
                     return;
                 }
-                var mapAddresses = mapInfo.mapAddresses;
-                var dicMapAddresses = mapInfo.dicMapAddresses;
-                var dicAddressIndexes = mapInfo.dicAddressIndexes;
+                var mapAddresses = theMapInfo.mapAddresses;
+                var dicMapAddresses = theMapInfo.dicMapAddresses;
+                var dicAddressIndexes = theMapInfo.dicAddressIndexes;
                 mapAddresses.Clear();
                 dicMapAddresses.Clear();
                 dicAddressIndexes.Clear();
@@ -190,9 +190,9 @@ namespace Mirle.Agv.Control
                 {
                     return;
                 }
-                var mapBarcodeLines = mapInfo.mapBarcodeLines;
-                var dicBarcodeIndexes = mapInfo.dicBarcodeIndexes;
-                var dicBarcodes = mapInfo.dicBarcodes;
+                var mapBarcodeLines = theMapInfo.mapBarcodeLines;
+                var dicBarcodeIndexes = theMapInfo.dicBarcodeIndexes;
+                var dicBarcodes = theMapInfo.dicBarcodes;
                 mapBarcodeLines.Clear();
                 dicBarcodeIndexes.Clear();
                 dicBarcodes.Clear();

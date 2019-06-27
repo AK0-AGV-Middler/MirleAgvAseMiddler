@@ -120,11 +120,6 @@ namespace Mirle.Agv.Control
             throw new NotImplementedException();
         }
 
-        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
-        {
-            vehLocation.SetMapBarcodeValues(mapBarcodeValues);
-        }
-
         private void MoveOn(MoveCmdInfo moveCmd)
         {
             //drive elmo to move the vehicle

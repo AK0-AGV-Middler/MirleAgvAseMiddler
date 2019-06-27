@@ -23,7 +23,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public string CmdId { get; set; } = "Empty";
         public ushort SeqNum { get; set; }
 
-        private MapInfo mapInfo = MapInfo.Instance;
+        private MapInfo theMapInfo = MapInfo.Instance;
 
         public AgvcTransCmd()
         {
@@ -184,6 +184,4 @@ namespace Mirle.Agv.Model.TransferCmds
             SecToUnloadSections(transRequest.GuideSectionsToDestination);
         }
     }
-
-
 }

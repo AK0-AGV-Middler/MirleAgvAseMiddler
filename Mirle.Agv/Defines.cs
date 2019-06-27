@@ -37,23 +37,6 @@ namespace Mirle.Agv
         Backward
     }   
 
-    //public enum EnumSectionShape
-    //{
-    //    None,
-    //    Straight,
-    //    Curve
-    //}
-
-    //public enum EnumAddressType
-    //{        
-    //    None,
-    //    BarcodeEnd,
-    //    BarcodeCross,
-    //    Port,
-    //    Charger,
-    //    TR
-    //}
-
     public enum EnumRowBarcodeType
     {
         None,
@@ -160,15 +143,6 @@ namespace Mirle.Agv
         Right
     }
 
-    //public enum EnumDisplayLevel
-    //{
-    //    Lowest,
-    //    Low,
-    //    Normal,
-    //    High,
-    //    Highest
-    //}
-
     public enum EnumCmdNums
     {
         Cmd000_EmptyCommand = 0,
@@ -211,7 +185,7 @@ namespace Mirle.Agv
         Cmd194_AlarmReport = 194,
     }
 
-    public enum EnumAddressMotion
+    public enum EnumAddressAction
     {
         ST,
         TR,

@@ -79,11 +79,6 @@ namespace Mirle.Agv.Model
             this.vehLoacation = vehLoacation;
         }
 
-        public void UpdateStatus(MapBarcodeReader mapBarcode)
-        {
-            this.vehLoacation.SetMapBarcodeValues(mapBarcode);
-        }
-
         public void UpdateStatus(TransCmd transCmd)
         {
             this.transCmd = transCmd;
@@ -105,6 +100,8 @@ namespace Mirle.Agv.Model
         {
 
         }
+
+
 
         #endregion
 

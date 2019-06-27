@@ -18,20 +18,22 @@ namespace Mirle.Agv.View
         private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
-        private MiddlerForm commToAgvcForm;
+        private ManualMoveCmdForm manualMoveCmdForm;
+        private MiddlerForm middlerForm;
         private MapForm mapForm;
         private Pen bluePen = new Pen(Color.Blue, 1);
         private Pen blackPen = new Pen(Color.Black, 1);
         private Graphics gra;
         private Panel panelleft;
-        private MapInfo mapInfo;
+        private MapInfo theMapInfo;
        
 
         public MainForm(MainFlowHandler mainFlowHandler)
         {
             this.mainFlowHandler = mainFlowHandler;
-            mapInfo = MapInfo.Instance;
-            commToAgvcForm = new MiddlerForm(mainFlowHandler);
+            theMapInfo = MapInfo.Instance;
+            manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler);
+            middlerForm = new MiddlerForm(mainFlowHandler);
             mapForm = new MapForm();
             gra = mapForm.CreateGraphics();
 
@@ -51,13 +53,13 @@ namespace Mirle.Agv.View
 
         private void 通訊ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (commToAgvcForm.IsDisposed)
+            if (middlerForm.IsDisposed)
             {
-                commToAgvcForm = new MiddlerForm(mainFlowHandler);
+                middlerForm = new MiddlerForm(mainFlowHandler);
             }
-            commToAgvcForm.TopMost = true;
-            commToAgvcForm.WindowState = FormWindowState.Normal;
-            commToAgvcForm.Show();
+            middlerForm.TopMost = true;
+            middlerForm.WindowState = FormWindowState.Normal;
+            middlerForm.Show();
 
         }
 
@@ -73,6 +75,17 @@ namespace Mirle.Agv.View
             mapForm.TopLevel = false;
             panelleft.Controls.Add(mapForm);
             mapForm.Show();
+        }
+
+        private void 手動測試動令ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (manualMoveCmdForm.IsDisposed)
+            {
+                manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler);
+            }
+            manualMoveCmdForm.TopMost = true;
+            manualMoveCmdForm.WindowState = FormWindowState.Normal;
+            manualMoveCmdForm.Show();
         }
     }
 }

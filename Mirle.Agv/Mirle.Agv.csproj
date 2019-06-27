@@ -110,17 +110,17 @@
     <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\TransferCmds\TransCmd.cs" />
     <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
+    <Compile Include="View\ManualMoveCmdForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\ManualMoveCmdForm.Designer.cs">
+      <DependentUpon>ManualMoveCmdForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\MiddlerForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="View\MiddlerForm.Designer.cs">
       <DependentUpon>MiddlerForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\Bettery.cs" />
     <Compile Include="Control\Handler\MainFlowHandler.cs" />
@@ -165,6 +165,12 @@
     <Compile Include="View\MapForm.Designer.cs">
       <DependentUpon>MapForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="View\WarningForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\WarningForm.Designer.cs">
+      <DependentUpon>WarningForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -175,11 +181,11 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="View\ManualMoveCmdForm.resx">
+      <DependentUpon>ManualMoveCmdForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\MiddlerForm.resx">
       <DependentUpon>MiddlerForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\InitialForm.resx">
       <DependentUpon>InitialForm.cs</DependentUpon>
@@ -189,6 +195,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\MapForm.resx">
       <DependentUpon>MapForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\WarningForm.resx">
+      <DependentUpon>WarningForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="OutsideDll\TCPIPTrxControl.dll.config" />
     <None Include="packages.config" />

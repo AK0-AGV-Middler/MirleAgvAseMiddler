@@ -12,7 +12,7 @@ namespace Mirle.Agv.Control
     public class LoggerAgent
     {
         private Dictionary<string, Logger> dicLoggers;
-        public static string LogConfigPath { get; set; }
+        public static string LogConfigPath { get; set; } = "Log.ini";
         private ConfigHandler configHandler;
         private static readonly Lazy<LoggerAgent> lazyInstance = new Lazy<LoggerAgent>(() => new LoggerAgent());
         public static LoggerAgent Instance { get { return lazyInstance.Value; } }

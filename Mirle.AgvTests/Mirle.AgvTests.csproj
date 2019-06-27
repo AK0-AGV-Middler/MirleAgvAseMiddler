@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="Control\Handler\MainFlowHandlerTests.cs" />
     <Compile Include="Model\CarrierTests.cs" />
+    <Compile Include="Model\VehicleTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

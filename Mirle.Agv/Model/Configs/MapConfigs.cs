@@ -12,5 +12,6 @@ namespace Mirle.Agv.Model.Configs
         public string SectionFileName { get; set; }
         public string AddressFileName { get; set; }
         public string BarcodeFileName { get; set; }
+        public float OutSectionThreshold { get; set; }
     }
 }

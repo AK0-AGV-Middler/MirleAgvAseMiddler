@@ -4,27 +4,18 @@ namespace Mirle.Agv.Model
 {
     public class VehLocation
     {
-        private MapBarcodeReader mapBarcodeValues;
-        private List<double> encoderValues;
+        public MapSection Section { get; set; } = new MapSection();
+        public MapAddress Address { get; set; } = new MapAddress();
 
-        public MapSection Section { get; set; }
-        public MapAddress Address { get; set; }
-        public MapPosition Position { get; set; }
+        public MapPosition EncoderGxPosition { get; set; } = new MapPosition();
+        public MapPosition BarcodePosition { get; set; } = new MapPosition();
+        public MapPosition Delta { get; set; } = new MapPosition();
+        public MapPosition RealPosition { get; set; } = new MapPosition();
 
-        public VehLocation()
+        public void SetBarcodePosition(int barcodeNum)
         {
-            Section = new MapSection();
-            Address = new MapAddress();
-        }
-
-        public void SetMapBarcodeValues(MapBarcodeReader mapBarcodeValues)
-        {
-            this.mapBarcodeValues = mapBarcodeValues;
-        }
-
-        public MapBarcodeReader GetBarcodeValues()
-        {
-            return mapBarcodeValues;
+            MapBarcode mapBarcode = MapInfo.Instance.dicBarcodes[barcodeNum];
+            BarcodePosition = new MapPosition(mapBarcode.PositionX, mapBarcode.PositionY);           
         }
     }
 }

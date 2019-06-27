@@ -45,8 +45,9 @@
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.btnRefreshMap = new System.Windows.Forms.Button();
             this.btnShowBarcodeOnOff = new System.Windows.Forms.Button();
+            this.btnRefreshMap = new System.Windows.Forms.Button();
+            this.手動測試動令ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -131,6 +132,7 @@
             this.jogToolStripMenuItem,
             this.mapToolStripMenuItem,
             this.通訊ToolStripMenuItem,
+            this.手動測試動令ToolStripMenuItem,
             this.車輛狀態ToolStripMenuItem});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
@@ -139,26 +141,26 @@
             // jogToolStripMenuItem
             // 
             this.jogToolStripMenuItem.Name = "jogToolStripMenuItem";
-            this.jogToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.jogToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.jogToolStripMenuItem.Text = "Jog";
             // 
             // mapToolStripMenuItem
             // 
             this.mapToolStripMenuItem.Name = "mapToolStripMenuItem";
-            this.mapToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.mapToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.mapToolStripMenuItem.Text = "地圖";
             // 
             // 通訊ToolStripMenuItem
             // 
             this.通訊ToolStripMenuItem.Name = "通訊ToolStripMenuItem";
-            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.通訊ToolStripMenuItem.Text = "通訊";
             this.通訊ToolStripMenuItem.Click += new System.EventHandler(this.通訊ToolStripMenuItem_Click);
             // 
             // 車輛狀態ToolStripMenuItem
             // 
             this.車輛狀態ToolStripMenuItem.Name = "車輛狀態ToolStripMenuItem";
-            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
             // 
             // 工程師ToolStripMenuItem
@@ -199,6 +201,15 @@
             this.splitContainer2.SplitterDistance = 411;
             this.splitContainer2.TabIndex = 0;
             // 
+            // btnShowBarcodeOnOff
+            // 
+            this.btnShowBarcodeOnOff.Location = new System.Drawing.Point(3, 32);
+            this.btnShowBarcodeOnOff.Name = "btnShowBarcodeOnOff";
+            this.btnShowBarcodeOnOff.Size = new System.Drawing.Size(75, 23);
+            this.btnShowBarcodeOnOff.TabIndex = 1;
+            this.btnShowBarcodeOnOff.Text = "顯示BCR";
+            this.btnShowBarcodeOnOff.UseVisualStyleBackColor = true;
+            // 
             // btnRefreshMap
             // 
             this.btnRefreshMap.Location = new System.Drawing.Point(3, 3);
@@ -209,14 +220,12 @@
             this.btnRefreshMap.UseVisualStyleBackColor = true;
             this.btnRefreshMap.Click += new System.EventHandler(this.btnRefreshMap_Click);
             // 
-            // btnShowBarcodeOnOff
+            // 手動測試動令ToolStripMenuItem
             // 
-            this.btnShowBarcodeOnOff.Location = new System.Drawing.Point(3, 32);
-            this.btnShowBarcodeOnOff.Name = "btnShowBarcodeOnOff";
-            this.btnShowBarcodeOnOff.Size = new System.Drawing.Size(75, 23);
-            this.btnShowBarcodeOnOff.TabIndex = 1;
-            this.btnShowBarcodeOnOff.Text = "顯示BCR";
-            this.btnShowBarcodeOnOff.UseVisualStyleBackColor = true;
+            this.手動測試動令ToolStripMenuItem.Name = "手動測試動令ToolStripMenuItem";
+            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.手動測試動令ToolStripMenuItem.Text = "手動測試動令";
+            this.手動測試動令ToolStripMenuItem.Click += new System.EventHandler(this.手動測試動令ToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -266,5 +275,6 @@
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Button btnRefreshMap;
         private System.Windows.Forms.Button btnShowBarcodeOnOff;
+        private System.Windows.Forms.ToolStripMenuItem 手動測試動令ToolStripMenuItem;
     }
 }
