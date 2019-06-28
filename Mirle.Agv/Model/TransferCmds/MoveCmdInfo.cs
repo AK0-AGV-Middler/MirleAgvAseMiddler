@@ -9,16 +9,14 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public class MoveCmdInfo : TransCmd
     {
-
-        //public MapSection Section { get; set; }
-        //public bool IsPrecisePositioning { get; set; }  //是否二次定位 // = IsMoveEndSection 本次連續移動最後一個Section
-
         public List<MapPosition> AddressPositions { get; set; } = new List<MapPosition>();
         public List<EnumAddressAction> AddressActions { get; set; } = new List<EnumAddressAction>();
         public List<float> SectionSpeedLimits { get; set; } = new List<float>();
         public int PredictVehicleAngle { get; set; } = 0;
+        public List<string> SectionIds { get; set; } = new List<string>();
+        public List<string> AddressIds { get; set; } = new List<string>();
 
-        public List<MapSection> movingSections = new List<MapSection>();
+        public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
 
         public MoveCmdInfo() : base()
@@ -26,74 +24,90 @@ namespace Mirle.Agv.Model.TransferCmds
             type = EnumTransCmdType.Move;
         }
 
-        public List<MapPosition> SetAddressPositions(string[] addresses)
+        public void SetAddressPositions()
         {
-            List<MapPosition> result = new List<MapPosition>();
+            AddressPositions = new List<MapPosition>();
             try
             {
-                for (int i = 0; i < addresses.Length; i++)
+                for (int i = 0; i < AddressIds.Count; i++)
                 {
-                    MapAddress mapAddress = theMapInfo.dicMapAddresses[addresses[i]];
+                    MapAddress mapAddress = theMapInfo.dicMapAddresses[AddressIds[i]];
                     MapPosition position = mapAddress.GetPosition();
-                    result.Add(position);
+                    AddressPositions.Add(position);
                 }
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
             }
-            return result;
         }
 
-        public List<float> SetSectionSpeedLimits(string[] sections)
+        public void SetSectionSpeedLimits()
         {
-            List<float> result = new List<float>();
+            SectionSpeedLimits = new List<float>();
             try
             {
-                for (int i = 0; i < sections.Length; i++)
+                for (int i = 0; i < SectionIds.Count; i++)
                 {
-                    MapSection mapSection = theMapInfo.dicMapSections[sections[i]];
+                    MapSection mapSection = theMapInfo.dicMapSections[SectionIds[i]];
                     float SpeedLimit = mapSection.Speed;
-                    result.Add(SpeedLimit);
+                    SectionSpeedLimits.Add(SpeedLimit);
                 }
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
             }
-            return result;
         }
 
-        public List<EnumAddressAction> SetAddressActions(string[] sections)
+        public void SetAddressActions()
         {
             PredictVehicleAngle = 0;
-            List<EnumAddressAction> result = new List<EnumAddressAction>();
+            AddressActions = new List<EnumAddressAction>();
             try
             {
-                MapSection firstSection = theMapInfo.dicMapSections[sections[0]];
+                MapSection firstSection = theMapInfo.dicMapSections[SectionIds[0]];
                 if (firstSection.Type == EnumSectionType.R2000)
                 {
-                    result.Add(EnumAddressAction.R2000);
+                    AddressActions.Add(EnumAddressAction.R2000);
                 }
                 else
                 {
-                    result.Add(EnumAddressAction.ST);
+                    AddressActions.Add(EnumAddressAction.ST);
                 }
 
-                for (int i = 0; i < sections.Length - 1; i++)
+                for (int i = 0; i < SectionIds.Count - 1; i++)
                 {
-                    MapSection currentSection = theMapInfo.dicMapSections[sections[i]];
-                    MapSection nextSection = theMapInfo.dicMapSections[sections[i + 1]];
+                    MapSection currentSection = theMapInfo.dicMapSections[SectionIds[i]];
+                    MapSection nextSection = theMapInfo.dicMapSections[SectionIds[i + 1]];
                     EnumAddressAction addressMotion = SetAddressMotion(currentSection, nextSection);
-                    result.Add(addressMotion);
+                    AddressActions.Add(addressMotion);
                 }
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
             }
-            result.Add(EnumAddressAction.End);
-            return result;
+            AddressActions.Add(EnumAddressAction.End);
+        }
+
+        public void SetMovingSections()
+        {
+            MovingSections = new List<MapSection>();
+            for (int i = 0; i < SectionIds.Count; i++)
+            {
+                MapSection mapSection = new MapSection();
+                try
+                {
+                    mapSection = theMapInfo.dicMapSections[SectionIds[i]].DeepClone();
+                    mapSection.CmdDirection = (mapSection.FromAddress == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
+                }
+                catch (Exception ex)
+                {
+                    var msg = ex.StackTrace;
+                }
+                MovingSections.Add(mapSection);
+            }
         }
 
         private EnumAddressAction SetAddressMotion(MapSection currentSection, MapSection nextSection)
@@ -215,6 +229,11 @@ namespace Mirle.Agv.Model.TransferCmds
                     }
                 }
             }
+        }
+
+        public List<string> SetListIds(string[] addresses)
+        {
+            return addresses.ToList();
         }
     }
 }

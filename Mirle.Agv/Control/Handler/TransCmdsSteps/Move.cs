@@ -20,11 +20,10 @@ namespace Mirle.Agv.Control.Handler.TransCmdsSteps
                     // EnqueMoveCmd(mainFlowHandler, curTransCmd);
                     //TODO:
                     //Starting Ask Reserve
-                    //Pass success reserve to move controller
-                    //Report Position through middler to agvc
                     //Check if move complete
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
                     mainFlowHandler.PublishTransferMoveEvent(moveCmd);
+                    mainFlowHandler.StartAskingReserve(moveCmd);
                     break;
                 case EnumTransCmdType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());
