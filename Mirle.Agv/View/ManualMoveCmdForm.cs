@@ -197,42 +197,99 @@ namespace Mirle.Agv.View
             warningForm.TopLevel = true;
 
             if (moveCmdInfo == null)
-            {               
+            {
                 warningForm.WarningMsg = "Move Command is null";
                 warningForm.Show();
                 return;
             }
             var positions = moveCmdInfo.AddressPositions;
-            if (positions.Count < 1)
+            if (positions.Count < 2)
             {
-                warningForm.WarningMsg = "AddressPositionList is empty";
+                warningForm.WarningMsg = "AddressPositionList.Count Error";
                 warningForm.Show();
                 return;
             }
             var actions = moveCmdInfo.AddressActions;
-            if (actions.Count < 1)
+            if (actions.Count < 2)
             {
-                warningForm.WarningMsg = "AddressActionList is empty";
+                warningForm.WarningMsg = "AddressActionList.Count Error";
                 warningForm.Show();
                 return;
             }
-            if (actions.Count!=positions.Count)
+
+            //Cancel Repeat
+            for (int i = 0; i < positions.Count - 1; i++)
+            {
+                if (RepeatNext(positions[i], positions[i + 1]))
+                {
+                    positions.RemoveAt(i);
+                    actions.RemoveAt(i);
+                    UpdateTxtAddressPositions();
+                    UpdateTxtAddressActions();
+                    btnCheckMoveCmdInfo_Click(sender, e);
+                }
+            }
+
+            if (actions.Count != positions.Count)
             {
                 warningForm.WarningMsg = "AddressPositionList and AddressActionList are not match";
                 warningForm.Show();
                 return;
             }
-            if (actions[actions.Count-1]!= EnumAddressAction.End)
+            if (actions[actions.Count - 1] != EnumAddressAction.End)
             {
                 warningForm.WarningMsg = "AddressActionList is not end with EnumAddressAction.End";
                 warningForm.Show();
                 return;
             }
+            var limits = moveCmdInfo.SectionSpeedLimits;
+            if (limits.Count + 1 != positions.Count)
+            {
+                warningForm.WarningMsg = "SpeedLimitList.Count Error";
+                warningForm.Show();
+                return;
+            }
+
+            warningForm.WarningMsg = "MoveCommand legal.";
+            warningForm.Show();
+        }
+
+        private bool RepeatNext(MapPosition pos1, MapPosition pos2)
+        {
+            if (pos1.PositionX == pos2.PositionX)
+            {
+                if (pos1.PositionY == pos2.PositionY)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void btnSendMoveCmdInfo_Click(object sender, EventArgs e)
         {
             mainFlowHandler.PublishTransferMoveEvent(moveCmdInfo);
+        }
+
+        private void btnSetIds_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtCmdId.Text))
+            {
+                moveCmdInfo.CmdId = txtCmdId.Text;
+            }
+
+            if (!string.IsNullOrEmpty(txtCstId.Text))
+            {
+                moveCmdInfo.CstId = txtCstId.Text;
+            }
+        }
+
+        private void btnClearIds_Click(object sender, EventArgs e)
+        {
+            moveCmdInfo.CmdId = "Empty";
+            moveCmdInfo.CstId = "Empty";
+            txtCmdId.Clear();
+            txtCstId.Clear();
         }
     }
 }

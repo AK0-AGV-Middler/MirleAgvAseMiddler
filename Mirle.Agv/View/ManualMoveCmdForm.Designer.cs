@@ -51,6 +51,12 @@
             this.btnClearMoveCmdInfo = new System.Windows.Forms.Button();
             this.btnCheckMoveCmdInfo = new System.Windows.Forms.Button();
             this.btnSendMoveCmdInfo = new System.Windows.Forms.Button();
+            this.btnClearIds = new System.Windows.Forms.Button();
+            this.btnSetIds = new System.Windows.Forms.Button();
+            this.txtCstId = new System.Windows.Forms.TextBox();
+            this.txtCmdId = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -258,7 +264,7 @@
             // btnClearMoveCmdInfo
             // 
             this.btnClearMoveCmdInfo.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnClearMoveCmdInfo.Location = new System.Drawing.Point(190, 345);
+            this.btnClearMoveCmdInfo.Location = new System.Drawing.Point(710, 415);
             this.btnClearMoveCmdInfo.Name = "btnClearMoveCmdInfo";
             this.btnClearMoveCmdInfo.Size = new System.Drawing.Size(75, 23);
             this.btnClearMoveCmdInfo.TabIndex = 22;
@@ -269,7 +275,7 @@
             // btnCheckMoveCmdInfo
             // 
             this.btnCheckMoveCmdInfo.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnCheckMoveCmdInfo.Location = new System.Drawing.Point(109, 345);
+            this.btnCheckMoveCmdInfo.Location = new System.Drawing.Point(629, 415);
             this.btnCheckMoveCmdInfo.Name = "btnCheckMoveCmdInfo";
             this.btnCheckMoveCmdInfo.Size = new System.Drawing.Size(75, 23);
             this.btnCheckMoveCmdInfo.TabIndex = 21;
@@ -280,7 +286,7 @@
             // btnSendMoveCmdInfo
             // 
             this.btnSendMoveCmdInfo.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnSendMoveCmdInfo.Location = new System.Drawing.Point(28, 345);
+            this.btnSendMoveCmdInfo.Location = new System.Drawing.Point(548, 415);
             this.btnSendMoveCmdInfo.Name = "btnSendMoveCmdInfo";
             this.btnSendMoveCmdInfo.Size = new System.Drawing.Size(75, 23);
             this.btnSendMoveCmdInfo.TabIndex = 20;
@@ -288,11 +294,75 @@
             this.btnSendMoveCmdInfo.UseVisualStyleBackColor = true;
             this.btnSendMoveCmdInfo.Click += new System.EventHandler(this.btnSendMoveCmdInfo_Click);
             // 
+            // btnClearIds
+            // 
+            this.btnClearIds.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnClearIds.Location = new System.Drawing.Point(548, 334);
+            this.btnClearIds.Name = "btnClearIds";
+            this.btnClearIds.Size = new System.Drawing.Size(75, 23);
+            this.btnClearIds.TabIndex = 29;
+            this.btnClearIds.Text = "Clear";
+            this.btnClearIds.UseVisualStyleBackColor = true;
+            this.btnClearIds.Click += new System.EventHandler(this.btnClearIds_Click);
+            // 
+            // btnSetIds
+            // 
+            this.btnSetIds.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSetIds.Location = new System.Drawing.Point(386, 334);
+            this.btnSetIds.Name = "btnSetIds";
+            this.btnSetIds.Size = new System.Drawing.Size(75, 23);
+            this.btnSetIds.TabIndex = 27;
+            this.btnSetIds.Text = "Set";
+            this.btnSetIds.UseVisualStyleBackColor = true;
+            this.btnSetIds.Click += new System.EventHandler(this.btnSetIds_Click);
+            // 
+            // txtCstId
+            // 
+            this.txtCstId.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtCstId.Location = new System.Drawing.Point(234, 334);
+            this.txtCstId.Name = "txtCstId";
+            this.txtCstId.Size = new System.Drawing.Size(100, 27);
+            this.txtCstId.TabIndex = 26;
+            // 
+            // txtCmdId
+            // 
+            this.txtCmdId.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtCmdId.Location = new System.Drawing.Point(81, 334);
+            this.txtCmdId.Name = "txtCmdId";
+            this.txtCmdId.Size = new System.Drawing.Size(100, 27);
+            this.txtCmdId.TabIndex = 25;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label5.Location = new System.Drawing.Point(187, 337);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(41, 16);
+            this.label5.TabIndex = 24;
+            this.label5.Text = "CstId";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label6.Location = new System.Drawing.Point(24, 337);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(51, 16);
+            this.label6.TabIndex = 23;
+            this.label6.Text = "CmdId";
+            // 
             // ManualMoveCmdForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnClearIds);
+            this.Controls.Add(this.btnSetIds);
+            this.Controls.Add(this.txtCstId);
+            this.Controls.Add(this.txtCmdId);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.btnClearMoveCmdInfo);
             this.Controls.Add(this.btnCheckMoveCmdInfo);
             this.Controls.Add(this.btnSendMoveCmdInfo);
@@ -348,5 +418,11 @@
         private System.Windows.Forms.Button btnClearMoveCmdInfo;
         private System.Windows.Forms.Button btnCheckMoveCmdInfo;
         private System.Windows.Forms.Button btnSendMoveCmdInfo;
+        private System.Windows.Forms.Button btnClearIds;
+        private System.Windows.Forms.Button btnSetIds;
+        private System.Windows.Forms.TextBox txtCstId;
+        private System.Windows.Forms.TextBox txtCmdId;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
     }
 }
