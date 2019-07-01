@@ -34,8 +34,6 @@ namespace Mirle.Agv.Control
 
         private List<TransCmd> lastTransCmds = new List<TransCmd>();
 
-        private ConcurrentQueue<MoveCmdInfo> queWaitForReserve = new ConcurrentQueue<MoveCmdInfo>();
-
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
 
@@ -410,6 +408,9 @@ namespace Mirle.Agv.Control
                 //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
                 //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
 
+                middleAgent.OnGetReserveOkEvent += MiddleAgent_OnGetReserveOkEvent;
+                middleAgent.OnGetBlockPassEvent += MiddleAgent_OnGetBlockPassEvent;
+
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
                 moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
@@ -451,6 +452,11 @@ namespace Mirle.Agv.Control
             }
         }
 
+        private void MiddleAgent_OnGetBlockPassEvent(object sender, bool e)
+        {
+            throw new NotImplementedException();
+        }
+
         private void OnMiddlerGetsAbortEvent(object sender, string e)
         {
             theVehicle.CmdID = e;
@@ -472,19 +478,6 @@ namespace Mirle.Agv.Control
                 {
                     return;
                 }
-
-                //if (GenralTransCmds()) // Move/Load/Unload/LoadUnload
-                //{
-                //    AgvcTransferCommandIntoTransferSteps();
-                //    transCmds.Add(new EmptyTransCmd());
-
-                //    //開始尋訪 transCmds as List<TransCmd> 裡的每一步MoveCmdInfo/LoadCmdInfo
-                //    thdGetNewAgvcTransferCommand.Start();
-                //}
-                //else
-                //{
-
-                //}
 
                 AgvcTransferCommandIntoTransferSteps();
                 transCmds.Add(new EmptyTransCmd());
@@ -841,20 +834,24 @@ namespace Mirle.Agv.Control
                 #endregion
 
                 if (CanAskReserve())
-                {
-                    queNeedReserveSections.TryPeek(out MapSection mapSection);
-
-                    if (middleAgent.GetReserveFromAgvc(mapSection.Id))
-                    {
-                        queNeedReserveSections.TryDequeue(out MapSection reserveOkSection);
-                        queGotReserveOkSections.Enqueue(reserveOkSection);
-                        PublishReserveOkEvent();
-                    }
+                {                    
+                    middleAgent.AskAgvcReserveSections(queNeedReserveSections);
                 }
 
                 SpinWait.SpinUntil(() => false, mainFlowConfigs.AskReserveInterval);
             }
         }
+
+        private void MiddleAgent_OnGetReserveOkEvent(object sender, bool e)
+        {
+            if (e)
+            {
+                queNeedReserveSections.TryDequeue(out MapSection reserveOkSection);
+                queGotReserveOkSections.Enqueue(reserveOkSection);
+                PublishReserveOkEvent();
+            }
+        }
+
 
         private void PublishReserveOkEvent()
         {
@@ -865,16 +862,16 @@ namespace Mirle.Agv.Control
             List<MapPosition> reserveOkPositions = new List<MapPosition>();
             MapSection[] reserveOkSections = queGotReserveOkSections.ToArray();
             for (int i = 0; i < reserveOkSections.Length; i++)
-            {              
+            {
                 MapSection mapSection = reserveOkSections[i];
                 MapAddress mapAddress = new MapAddress();
-                if (mapSection.CmdDirection== EnumPermitDirection.Backward)
+                if (mapSection.CmdDirection == EnumPermitDirection.Backward)
                 {
                     mapAddress = theMapInfo.dicMapAddresses[mapSection.ToAddress].DeepClone();
                 }
                 else
                 {
-                   mapAddress = theMapInfo.dicMapAddresses[mapSection.FromAddress].DeepClone();
+                    mapAddress = theMapInfo.dicMapAddresses[mapSection.FromAddress].DeepClone();
                 }
                 MapPosition mapPosition = new MapPosition(mapAddress.PositionX, mapAddress.PositionY);
                 reserveOkPositions.Add(mapPosition);
@@ -1065,14 +1062,6 @@ namespace Mirle.Agv.Control
         public void DoTransfer()
         {
             transferCommandStep.DoTransfer(this);
-        }
-
-        public void EnqueWaitForReserve(MoveCmdInfo moveCmd)
-        {
-            if (CanVehMove())
-            {
-                queWaitForReserve.Enqueue(moveCmd);
-            }
         }
 
         public void Unload(UnloadCmdInfo unloadCmd)

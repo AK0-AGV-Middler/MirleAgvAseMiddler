@@ -12,6 +12,7 @@ using com.mirle.iibg3k0.ttc.Common.TCPIP;
 using TcpIpClientSample;
 using Google.Protobuf.Collections;
 using com.mirle.iibg3k0.ttc.Common.TCPIP.DecodRawData;
+using System.Collections.Concurrent;
 
 namespace Mirle.Agv.Control
 {
@@ -26,6 +27,8 @@ namespace Mirle.Agv.Control
         public event EventHandler<string> OnCmdSend;
         public event EventHandler<string> OnTransferCancelEvent;
         public event EventHandler<string> OnTransferAbortEvent;
+        public event EventHandler<bool> OnGetReserveOkEvent;
+        public event EventHandler<bool> OnGetBlockPassEvent;
 
         #endregion
 
@@ -780,6 +783,12 @@ namespace Mirle.Agv.Control
             }
         }
 
+        public void AskAgvcReserveSections(ConcurrentQueue<MapSection> queNeedReserveSections)
+        {
+            queNeedReserveSections.TryPeek(out MapSection needReserveSection);
+            Send_Cmd136_AskReserve(needReserveSection);
+        }
+
         private void SendCommand(ushort seqNum, EnumCmdNums cmds, object objPackage)
         {
             try
@@ -1347,6 +1356,11 @@ namespace Mirle.Agv.Control
             OnDisConnected?.Invoke(this, "Dis-Connect");
         }
 
+        private void SendCommand(WrapperMessage wrapper)
+        {
+            Task.Run(() => ClientAgent.TrxTcpIp.SendGoogleMsg(wrapper));
+        }
+
         public void ReportLoadArrivals()
         {
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
@@ -1402,7 +1416,7 @@ namespace Mirle.Agv.Control
 
         public void Receive_Cmd94_AlarmResponse(object sender, TcpIpEventArgs e)
         {
-            ID_94_ALARM_RESPONSE receive = (ID_94_ALARM_RESPONSE)e.objPacket;           
+            ID_94_ALARM_RESPONSE receive = (ID_94_ALARM_RESPONSE)e.objPacket;
 
         }
         public void Send_Cmd194_AlarmReport(string alarmCode, ErrorStatus status)
@@ -1418,12 +1432,9 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
                 wrappers.AlarmRep = iD_194_ALARM_REPORT;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_94_ALARM_RESPONSE receive, out string rtnMsg);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_194_ALARM_REPORT.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_194_ALARM_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -1436,7 +1447,7 @@ namespace Mirle.Agv.Control
             ID_91_ALARM_RESET_REQUEST receive = (ID_91_ALARM_RESET_REQUEST)e.objPacket;
             //TODO: Reset alarm
 
-            
+
 
             int replyCode = 0;
             Send_Cmd191_AlarmResetResponse(e.iSeqNum, replyCode);
@@ -1453,12 +1464,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.AlarmResetResp = iD_191_ALARM_RESET_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_191_ALARM_RESET_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_191_ALARM_RESET_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1470,7 +1478,7 @@ namespace Mirle.Agv.Control
         {
             ID_74_ADDRESS_TEACH_RESPONSE receive = (ID_74_ADDRESS_TEACH_RESPONSE)e.objPacket;
 
-           
+
 
         }
         public void Send_Cmd174_AddressTeachReport(string addressId, int position)
@@ -1487,12 +1495,9 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.AddressTeachRepFieldNumber;
                 wrappers.AddressTeachRep = iD_174_ADDRESS_TEACH_REPORT;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_74_ADDRESS_TEACH_RESPONSE receive, out string rtnMsg);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_174_ADDRESS_TEACH_REPORT.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_174_ADDRESS_TEACH_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -1504,7 +1509,7 @@ namespace Mirle.Agv.Control
         {
             ID_72_RANGE_TEACHING_COMPLETE_RESPONSE receive = (ID_72_RANGE_TEACHING_COMPLETE_RESPONSE)e.objPacket;
 
-           
+
 
         }
         public void Send_Cmd172_RangeTeachCompleteReport(int completeCode)
@@ -1525,12 +1530,9 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.RangeTeachingCmpRepFieldNumber;
                 wrappers.RangeTeachingCmpRep = iD_172_RANGE_TEACHING_COMPLETE_REPORT;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_72_RANGE_TEACHING_COMPLETE_RESPONSE receive, out string rtnMsg);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_172_RANGE_TEACHING_COMPLETE_REPORT.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_172_RANGE_TEACHING_COMPLETE_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -1543,7 +1545,7 @@ namespace Mirle.Agv.Control
             ID_71_RANGE_TEACHING_REQUEST receive = (ID_71_RANGE_TEACHING_REQUEST)e.objPacket;
             //TODO: Teaching Section Address Head/End
 
-            
+
 
             int replyCode = 0;
             Send_Cmd171_RangeTeachResponse(e.iSeqNum, replyCode);
@@ -1560,12 +1562,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.RangeTeachingResp = iD_171_RANGE_TEACHING_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_171_RANGE_TEACHING_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_171_RANGE_TEACHING_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1577,7 +1576,7 @@ namespace Mirle.Agv.Control
         {
             ID_52_AVOID_COMPLETE_RESPONSE receive = (ID_52_AVOID_COMPLETE_RESPONSE)e.objPacket;
 
-            
+
 
             int completeStatus = 0;
         }
@@ -1594,12 +1593,9 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.AvoidCompleteRepFieldNumber;
                 wrappers.AvoidCompleteRep = iD_152_AVOID_COMPLETE_REPORT;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_52_AVOID_COMPLETE_RESPONSE receive, out string rtnMsg);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_152_AVOID_COMPLETE_REPORT.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_152_AVOID_COMPLETE_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -1612,7 +1608,7 @@ namespace Mirle.Agv.Control
             ID_51_AVOID_REQUEST receive = (ID_51_AVOID_REQUEST)e.objPacket;
             //TODO: Avoid
 
-           
+
 
             int replyCode = 0;
             string reason = "Empty";
@@ -1631,12 +1627,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.AvoidResp = iD_151_AVOID_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_151_AVOID_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_151_AVOID_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1649,7 +1642,7 @@ namespace Mirle.Agv.Control
             ID_45_POWER_OPE_REQ receive = (ID_45_POWER_OPE_REQ)e.objPacket;
             //TODO: PowerOn/PowerOff
 
-            
+
 
             int replyCode = 0;
             Send_Cmd145_PowerOnoffResponse(e.iSeqNum, replyCode);
@@ -1666,12 +1659,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.PowerOpeResp = iD_145_POWER_OPE_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_145_POWER_OPE_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_145_POWER_OPE_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1683,7 +1673,7 @@ namespace Mirle.Agv.Control
         {
             ID_43_STATUS_REQUEST receive = (ID_43_STATUS_REQUEST)e.objPacket; // Cmd43's object is empty
 
-           
+
 
             Send_Cmd144_StatusChangeReport();
         }
@@ -1721,10 +1711,7 @@ namespace Mirle.Agv.Control
 
                 var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_44_STATUS_CHANGE_RESPONSE receive, out string rtnMsg);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_144_STATUS_CHANGE_REP.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_144_STATUS_CHANGE_REP.ToString());
             }
             catch (Exception ex)
             {
@@ -1737,7 +1724,7 @@ namespace Mirle.Agv.Control
         {
             ID_43_STATUS_REQUEST receive = (ID_43_STATUS_REQUEST)e.objPacket; // Cmd43's object is empty
 
-           
+
 
             Send_Cmd143_StatusResponse(e.iSeqNum);
         }
@@ -1777,12 +1764,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.StatusReqResp = iD_143_STATUS_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_143_STATUS_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_143_STATUS_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1796,7 +1780,7 @@ namespace Mirle.Agv.Control
             ID_41_MODE_CHANGE_REQ receive = (ID_41_MODE_CHANGE_REQ)e.objPacket;
             //TODO: Auto/Manual
 
-           
+
 
             int replyCode = 0;
             Send_Cmd141_ModeChangeResponse(e.iSeqNum, replyCode);
@@ -1813,12 +1797,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.ModeChangeResp = iD_141_MODE_CHANGE_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_141_MODE_CHANGE_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_141_MODE_CHANGE_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1831,7 +1812,7 @@ namespace Mirle.Agv.Control
             ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
             //TODO: Pause/Continue+/Reserve
 
-            
+
 
             int replyCode = 0;
             Send_Cmd139_PauseResponse(e.iSeqNum, replyCode);
@@ -1849,12 +1830,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.PauseResp = iD_139_PAUSE_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_139_PAUSE_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_139_PAUSE_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1911,12 +1889,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.TransCancelResp = iD_137_TRANS_CANCEL_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_137_TRANS_CANCEL_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_137_TRANS_CANCEL_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1937,9 +1912,15 @@ namespace Mirle.Agv.Control
             ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
             //Get reserve, block, 
 
-           
+            if (receive.IsReserveSuccess == ReserveResult.Success)
+            {
+                OnGetReserveOkEvent?.Invoke(this, true);
+            }
 
-
+            if (receive.IsBlockPass== PassType.Pass)
+            {
+                OnGetBlockPassEvent?.Invoke(this, true);
+            }
         }
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
@@ -1957,12 +1938,9 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE receive, out string rtnMsg);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_136_TRANS_EVENT_REP.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_136_TRANS_EVENT_REP.ToString());
             }
             catch (Exception ex)
             {
@@ -1970,16 +1948,41 @@ namespace Mirle.Agv.Control
             }
 
         }
-        public void Send_Cmd136_TransferEventReport(EventType eventType, string[] reserveSections, DriveDirction[] reserveDirections, string requestBlockID, string releaseBlockAdrID)
+        public void Send_Cmd136_RequestBlock(string requestBlockID)
         {
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType = eventType;
-                GetReserveInfo(reserveSections, reserveDirections, iD_136_TRANS_EVENT_REP.ReserveInfos);
+                iD_136_TRANS_EVENT_REP.EventType =  EventType.BlockReq;
                 iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+
+                SendCommand(wrappers);
+
+                OnCmdSend?.Invoke(this, iD_136_TRANS_EVENT_REP.ToString());
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+        public void Send_Cmd136_ReleaseBlock(string releaseBlockAdrID)
+        {
+            VehLocation vehLocation = theVehicle.GetVehLoacation();
+
+            try
+            {
+                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
+                iD_136_TRANS_EVENT_REP.EventType =  EventType.BlockRelease;
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
                 iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
@@ -1990,31 +1993,63 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE receive, out string rtnMsg);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_136_TRANS_EVENT_REP.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_136_TRANS_EVENT_REP.ToString());
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
             }
         }
-        private void GetReserveInfo(string[] reserveSections, DriveDirction[] reserveDirections, RepeatedField<ReserveInfo> reserveInfos)
+        public void Send_Cmd136_AskReserve(MapSection needReserveSection)
         {
-            if (reserveSections.Length > 0)
-            {
-                for (int i = 0; i < reserveSections.Length; i++)
-                {
-                    ReserveInfo reserveInfo = new ReserveInfo();
-                    reserveInfo.ReserveSectionID = reserveSections[i];
-                    reserveInfo.DriveDirction = reserveDirections[i];
+            VehLocation vehLocation = theVehicle.GetVehLoacation();
 
-                    reserveInfos.Add(reserveInfo);
-                }
+            try
+            {
+                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
+                iD_136_TRANS_EVENT_REP.EventType = EventType.ReserveReq;
+                FitReserveInfos(needReserveSection, iD_136_TRANS_EVENT_REP.ReserveInfos);
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+
+                SendCommand(wrappers);
+
+                OnCmdSend?.Invoke(this, iD_136_TRANS_EVENT_REP.ToString());
             }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+        private void FitReserveInfos(MapSection needReserveSection, RepeatedField<ReserveInfo> reserveInfos)
+        {
+            reserveInfos.Clear();
+
+            ReserveInfo reserveInfo = new ReserveInfo();
+
+            reserveInfo.ReserveSectionID = needReserveSection.Id;
+            if (needReserveSection.CmdDirection == EnumPermitDirection.Backward)
+            {
+                reserveInfo.DriveDirction = DriveDirction.DriveDirReverse;
+            }
+            else if (needReserveSection.CmdDirection == EnumPermitDirection.None)
+            {
+                reserveInfo.DriveDirction = DriveDirction.DriveDirNone;
+            }
+            else
+            {
+                reserveInfo.DriveDirction = DriveDirction.DriveDirForward;
+            }
+
+            reserveInfos.Add(reserveInfo);
         }
 
         public void Receive_Cmd35_CarrierIdRenameRequest(object sender, TcpIpEventArgs e)
@@ -2026,7 +2061,7 @@ namespace Mirle.Agv.Control
                 theVehicle.CarrierID = receive.NEWCSTID;
             }
 
-           
+
 
             int replyCode = result ? 0 : 1;
             Send_Cmd135_CarrierIdRenameResponse(e.iSeqNum, replyCode);
@@ -2043,12 +2078,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.CSTIDRenameResp = iD_135_CST_ID_RENAME_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_135_CST_ID_RENAME_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_135_CST_ID_RENAME_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -2121,12 +2153,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.ControlZoneResp = iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -2138,7 +2167,7 @@ namespace Mirle.Agv.Control
         {
             ID_32_TRANS_COMPLETE_RESPONSE receive = (ID_32_TRANS_COMPLETE_RESPONSE)e.objPacket;
 
-            
+
         }
         public void Send_Cmd132_TransferCompleteReport()
         {
@@ -2161,12 +2190,9 @@ namespace Mirle.Agv.Control
                 wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;
                 wrappers.TranCmpRep = iD_132_TRANS_COMPLETE_REPORT;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_32_TRANS_COMPLETE_RESPONSE receive, out string rtnMsg);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_132_TRANS_COMPLETE_REPORT.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_132_TRANS_COMPLETE_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -2180,7 +2206,7 @@ namespace Mirle.Agv.Control
             theVehicle.Cmd131ActType = transRequest.ActType;
 
             AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest, e.iSeqNum);
-            
+
             OnInstallTransferCommandEvent?.Invoke(this, agvcTransCmd);
         }
         public void Send_Cmd131_TransferResponse(ushort seqNum, int replyCode, string reason)
@@ -2200,12 +2226,9 @@ namespace Mirle.Agv.Control
                 wrappers.SeqNum = seqNum;
                 wrappers.TransResp = iD_131_TRANS_RESPONSE;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, true);
+                SendCommand(wrappers);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_131_TRANS_RESPONSE.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_131_TRANS_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -2462,11 +2485,6 @@ namespace Mirle.Agv.Control
                 default:
                     return new AgvcTransCmd(transRequest, iSeqNum);
             }
-        }
-
-        public bool GetReserveFromAgvc(string sectionId)
-        {
-            throw new NotImplementedException();
         }
 
         public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
