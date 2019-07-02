@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using Mirle.Agv.Control.Handler.TransCmdsSteps;
 using TcpIpClientSample;
+using System.Reflection;
 
 namespace Mirle.Agv.Control
 {
@@ -84,6 +85,7 @@ namespace Mirle.Agv.Control
         public event EventHandler<InitialEventArgs> OnXXXIntialDoneEvent;
         public event EventHandler<MoveCmdInfo> OnTransferMoveEvent;
         public event EventHandler<List<MapPosition>> OnReserveOkEvent;
+        public event EventHandler<string> OnAgvcTransferCommandCheckedEvent;
 
         #endregion
 
@@ -246,6 +248,22 @@ namespace Mirle.Agv.Control
                     OnXXXIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        public void FakeCmdTest()
+        {
+            AgvcTransCmd fakeCmd = new AgvcTransCmd();
+            fakeCmd.CmdId = "Cmd101";
+            fakeCmd.CarrierId = "Cst101";
+            fakeCmd.CmdType = EnumAgvcTransCmdType.Move;
+            fakeCmd.LoadAddress = "Adr103";
+            fakeCmd.ToLoadSections = new string[] { "Sec101", "Sec102" };
+            fakeCmd.ToLoadAddresses = new string[] { "Adr101", "Adr102", "Adr103" };
+            fakeCmd.UnloadAddtess = "Adr203";
+            fakeCmd.ToUnloadSections = new string[] { "Sec201", "Sec202" };
+            fakeCmd.ToUnloadAddresses = new string[] { "Adr201", "Adr202", "Adr203" };
+
+            SendAgvcTransferCommandChecked(fakeCmd, true);
         }
 
         private void LoggersInitial()
@@ -476,9 +494,11 @@ namespace Mirle.Agv.Control
                 this.agvcTransCmd = agvcTransCmd;
                 if (!CheckTransCmdSectionsAndAddressesMatch(agvcTransCmd))
                 {
+                    SendAgvcTransferCommandChecked(agvcTransCmd, false);
                     return;
                 }
 
+                SendAgvcTransferCommandChecked(agvcTransCmd, true);
                 AgvcTransferCommandIntoTransferSteps();
                 transCmds.Add(new EmptyTransCmd());
 
@@ -495,6 +515,40 @@ namespace Mirle.Agv.Control
                 LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", ex.StackTrace);
                 loggerAgent.LogMsg("Error", logFormat);
             }
+        }
+
+        private void SendAgvcTransferCommandChecked(AgvcTransCmd agvcTransCmd, bool isOk)
+        {
+            string fullMsg = Environment.NewLine;
+            PropertyInfo[] infos = agvcTransCmd.GetType().GetProperties();
+            foreach (var info in infos)
+            {
+                if (info.CanWrite)
+                {
+                    if (info.PropertyType == typeof(string[]))
+                    {
+                        var name = info.Name;
+                        string arrayMsg = "";
+                        string[] array1 = (string[])info.GetValue(agvcTransCmd);
+                        for (int i = 0; i < array1.Length; i++)
+                        {
+                            arrayMsg += array1[i]+" ";
+                        }
+
+                        fullMsg += $"[{name}={arrayMsg}]" + Environment.NewLine;
+
+                    }
+                    else
+                    {
+                        var name = info.Name;
+                        var value = info.GetValue(agvcTransCmd);
+                        fullMsg += $"[{name}={value}]" + Environment.NewLine;
+
+                    }
+                }
+            }
+
+            OnAgvcTransferCommandCheckedEvent?.Invoke(this, fullMsg);
         }
 
         private bool CheckTransCmdSectionsAndAddressesMatch(AgvcTransCmd agvcTransCmd)
@@ -834,7 +888,7 @@ namespace Mirle.Agv.Control
                 #endregion
 
                 if (CanAskReserve())
-                {                    
+                {
                     middleAgent.AskAgvcReserveSections(queNeedReserveSections);
                 }
 
@@ -1151,6 +1205,7 @@ namespace Mirle.Agv.Control
                 //vehicle is in the last section of this moveCmdInfo.
                 MapSection currentSection = movingSections[movingSectionIndex];
                 MapAddress fromAdr = theMapInfo.dicMapAddresses[currentSection.FromAddress];
+                MapAddress toAdr = theMapInfo.dicMapAddresses[currentSection.ToAddress];
                 switch (currentSection.Type)
                 {
                     case EnumSectionType.Horizontal:
@@ -1162,8 +1217,46 @@ namespace Mirle.Agv.Control
                                 //Send alarm to agvc.
                                 return;
                             }
+
+                            float distance = 0;
+                            if (currentSection.CmdDirection == EnumPermitDirection.Backward)
+                            {
+                                distance = toAdr.PositionX - gxPosition.PositionX;
+                            }
+                            else
+                            {
+                                distance = gxPosition.PositionX - fromAdr.PositionX;
+                            }
+
                             var location = theVehicle.GetVehLoacation();
-                            location.Section.Distance = gxPosition.PositionX - fromAdr.PositionX;
+
+                            if (distance > 0.95 * currentSection.Distance) //0.95 can config
+                            {
+                                //算是進入終點區間
+                                //TODO: 
+                                //二次定位
+                                EnumTransCmdType type = transCmds[TransCmdsIndex + 1].GetCommandType();
+                                if (type == EnumTransCmdType.Load)
+                                {
+                                    middleAgent.Send_Cmd136_TransferEventReport(EventType.LoadArrivals);
+                                }
+                                else if (type == EnumTransCmdType.Unload)
+                                {
+                                    middleAgent.Send_Cmd136_TransferEventReport(EventType.UnloadArrivals);
+                                }
+                                else
+                                {
+                                    middleAgent.Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
+                                }
+
+
+                            }
+                            else
+                            {
+                                //還未到終點
+                                location.Section.Distance = distance;
+                                middleAgent.Send_Cmd134_TransferEventReport();
+                            }
 
                         }
                         break;
@@ -1175,6 +1268,8 @@ namespace Mirle.Agv.Control
                     default:
                         break;
                 }
+
+
             }
             else
             {

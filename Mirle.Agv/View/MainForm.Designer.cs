@@ -41,19 +41,16 @@
             this.jogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.通訊ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.手動測試動令ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.車輛狀態ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.btnShowBarcodeOnOff = new System.Windows.Forms.Button();
-            this.btnRefreshMap = new System.Windows.Forms.Button();
-            this.手動測試動令ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
-            this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -66,7 +63,7 @@
             this.工程師ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1285, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1182, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -141,26 +138,33 @@
             // jogToolStripMenuItem
             // 
             this.jogToolStripMenuItem.Name = "jogToolStripMenuItem";
-            this.jogToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.jogToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.jogToolStripMenuItem.Text = "Jog";
             // 
             // mapToolStripMenuItem
             // 
             this.mapToolStripMenuItem.Name = "mapToolStripMenuItem";
-            this.mapToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.mapToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.mapToolStripMenuItem.Text = "地圖";
             // 
             // 通訊ToolStripMenuItem
             // 
             this.通訊ToolStripMenuItem.Name = "通訊ToolStripMenuItem";
-            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.通訊ToolStripMenuItem.Text = "通訊";
             this.通訊ToolStripMenuItem.Click += new System.EventHandler(this.通訊ToolStripMenuItem_Click);
+            // 
+            // 手動測試動令ToolStripMenuItem
+            // 
+            this.手動測試動令ToolStripMenuItem.Name = "手動測試動令ToolStripMenuItem";
+            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.手動測試動令ToolStripMenuItem.Text = "手動測試動令";
+            this.手動測試動令ToolStripMenuItem.Click += new System.EventHandler(this.手動測試動令ToolStripMenuItem_Click);
             // 
             // 車輛狀態ToolStripMenuItem
             // 
             this.車輛狀態ToolStripMenuItem.Name = "車輛狀態ToolStripMenuItem";
-            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
             // 
             // 工程師ToolStripMenuItem
@@ -182,8 +186,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(1285, 616);
-            this.splitContainer1.SplitterDistance = 857;
+            this.splitContainer1.Size = new System.Drawing.Size(1182, 616);
+            this.splitContainer1.SplitterDistance = 788;
             this.splitContainer1.TabIndex = 1;
             // 
             // splitContainer2
@@ -192,46 +196,15 @@
             this.splitContainer2.Location = new System.Drawing.Point(0, 0);
             this.splitContainer2.Name = "splitContainer2";
             this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer2.Panel1
-            // 
-            this.splitContainer2.Panel1.Controls.Add(this.btnShowBarcodeOnOff);
-            this.splitContainer2.Panel1.Controls.Add(this.btnRefreshMap);
-            this.splitContainer2.Size = new System.Drawing.Size(424, 616);
+            this.splitContainer2.Size = new System.Drawing.Size(390, 616);
             this.splitContainer2.SplitterDistance = 411;
             this.splitContainer2.TabIndex = 0;
-            // 
-            // btnShowBarcodeOnOff
-            // 
-            this.btnShowBarcodeOnOff.Location = new System.Drawing.Point(3, 32);
-            this.btnShowBarcodeOnOff.Name = "btnShowBarcodeOnOff";
-            this.btnShowBarcodeOnOff.Size = new System.Drawing.Size(75, 23);
-            this.btnShowBarcodeOnOff.TabIndex = 1;
-            this.btnShowBarcodeOnOff.Text = "顯示BCR";
-            this.btnShowBarcodeOnOff.UseVisualStyleBackColor = true;
-            // 
-            // btnRefreshMap
-            // 
-            this.btnRefreshMap.Location = new System.Drawing.Point(3, 3);
-            this.btnRefreshMap.Name = "btnRefreshMap";
-            this.btnRefreshMap.Size = new System.Drawing.Size(75, 23);
-            this.btnRefreshMap.TabIndex = 0;
-            this.btnRefreshMap.Text = "更新地圖";
-            this.btnRefreshMap.UseVisualStyleBackColor = true;
-            this.btnRefreshMap.Click += new System.EventHandler(this.btnRefreshMap_Click);
-            // 
-            // 手動測試動令ToolStripMenuItem
-            // 
-            this.手動測試動令ToolStripMenuItem.Name = "手動測試動令ToolStripMenuItem";
-            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.手動測試動令ToolStripMenuItem.Text = "手動測試動令";
-            this.手動測試動令ToolStripMenuItem.Click += new System.EventHandler(this.手動測試動令ToolStripMenuItem_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1285, 640);
+            this.ClientSize = new System.Drawing.Size(1182, 640);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -246,7 +219,6 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.splitContainer2.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -273,8 +245,6 @@
         private System.Windows.Forms.ToolStripMenuItem 車輛狀態ToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.Button btnRefreshMap;
-        private System.Windows.Forms.Button btnShowBarcodeOnOff;
         private System.Windows.Forms.ToolStripMenuItem 手動測試動令ToolStripMenuItem;
     }
 }

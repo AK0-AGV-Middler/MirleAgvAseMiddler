@@ -18,8 +18,7 @@ namespace Mirle.Agv.Control.Handler.TransCmdsSteps
             {
                 case EnumTransCmdType.Move:
                     // EnqueMoveCmd(mainFlowHandler, curTransCmd);
-                    //TODO:
-                    //Starting Ask Reserve
+                    //TODO:                   
                     //Check if move complete
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
                     mainFlowHandler.PublishTransferMoveEvent(moveCmd);
