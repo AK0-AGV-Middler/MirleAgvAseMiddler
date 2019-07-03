@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Control;
-using Mirle.Agv.Control.Tools;
+using Mirle.Agv.Controller;
+using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model.Configs;
 using System.Threading;
 using System.IO;
@@ -117,7 +117,7 @@ namespace Mirle.Agv.View
             }
             //RichTextBoxAppendHead(richTextBox1, msg);
 
-            middleAgent.SendCommand(cmdNum, pairs);
+            middleAgent.SendMiddlerFormConfigCommand(cmdNum, pairs);
         }
 
         private void cbSend_SelectedValueChanged(object sender, EventArgs e)

@@ -1,4 +1,4 @@
-﻿using Mirle.Agv.Control;
+﻿using Mirle.Agv.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

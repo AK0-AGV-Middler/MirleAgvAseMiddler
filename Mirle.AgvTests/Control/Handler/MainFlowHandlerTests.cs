@@ -3,7 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Mirle.Agv.Control.Tests
+namespace Mirle.Agv.Controller.Tests
 {
     [TestFixture()]
     public class MainFlowHandlerTests

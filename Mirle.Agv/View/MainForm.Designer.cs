@@ -45,11 +45,32 @@
             this.車輛狀態ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.txtCropX = new System.Windows.Forms.TextBox();
+            this.txtCropY = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.btnSaveImage = new System.Windows.Forms.Button();
+            this.txtResizePercent = new System.Windows.Forms.TextBox();
+            this.txtRotateAngle = new System.Windows.Forms.TextBox();
+            this.btnRotate = new System.Windows.Forms.Button();
+            this.btnResizePercent = new System.Windows.Forms.Button();
+            this.btnYflip = new System.Windows.Forms.Button();
+            this.btnXflip = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
+            this.splitContainer3.Panel1.SuspendLayout();
+            this.splitContainer3.Panel2.SuspendLayout();
+            this.splitContainer3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.SuspendLayout();
             this.SuspendLayout();
@@ -63,7 +84,7 @@
             this.工程師ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1182, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1218, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -182,13 +203,103 @@
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.AutoScroll = true;
+            this.splitContainer1.Panel1.Controls.Add(this.splitContainer3);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(1182, 616);
-            this.splitContainer1.SplitterDistance = 788;
+            this.splitContainer1.Size = new System.Drawing.Size(1218, 700);
+            this.splitContainer1.SplitterDistance = 812;
             this.splitContainer1.TabIndex = 1;
+            // 
+            // splitContainer3
+            // 
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer3.Name = "splitContainer3";
+            this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.AutoScroll = true;
+            this.splitContainer3.Panel1.Controls.Add(this.pictureBox1);
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.btnYflip);
+            this.splitContainer3.Panel2.Controls.Add(this.btnXflip);
+            this.splitContainer3.Panel2.Controls.Add(this.txtResizePercent);
+            this.splitContainer3.Panel2.Controls.Add(this.txtRotateAngle);
+            this.splitContainer3.Panel2.Controls.Add(this.btnRotate);
+            this.splitContainer3.Panel2.Controls.Add(this.btnResizePercent);
+            this.splitContainer3.Panel2.Controls.Add(this.btnReset);
+            this.splitContainer3.Panel2.Controls.Add(this.btnSaveImage);
+            this.splitContainer3.Panel2.Controls.Add(this.btnSwitchBarcodeLine);
+            this.splitContainer3.Panel2.Controls.Add(this.label4);
+            this.splitContainer3.Panel2.Controls.Add(this.txtCropX);
+            this.splitContainer3.Panel2.Controls.Add(this.txtCropY);
+            this.splitContainer3.Panel2.Controls.Add(this.label3);
+            this.splitContainer3.Size = new System.Drawing.Size(812, 700);
+            this.splitContainer3.SplitterDistance = 467;
+            this.splitContainer3.SplitterIncrement = 10;
+            this.splitContainer3.TabIndex = 0;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(1920, 1080);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // btnSwitchBarcodeLine
+            // 
+            this.btnSwitchBarcodeLine.Location = new System.Drawing.Point(3, 3);
+            this.btnSwitchBarcodeLine.Name = "btnSwitchBarcodeLine";
+            this.btnSwitchBarcodeLine.Size = new System.Drawing.Size(133, 23);
+            this.btnSwitchBarcodeLine.TabIndex = 24;
+            this.btnSwitchBarcodeLine.Text = "切換BarcodeLine";
+            this.btnSwitchBarcodeLine.UseVisualStyleBackColor = true;
+            this.btnSwitchBarcodeLine.Click += new System.EventHandler(this.btnSwitchBarcodeLine_Click);
+            // 
+            // label4
+            // 
+            this.label4.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label4.Location = new System.Drawing.Point(136, 198);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(22, 22);
+            this.label4.TabIndex = 23;
+            this.label4.Text = "Y";
+            // 
+            // txtCropX
+            // 
+            this.txtCropX.Location = new System.Drawing.Point(40, 198);
+            this.txtCropX.Name = "txtCropX";
+            this.txtCropX.ShortcutsEnabled = false;
+            this.txtCropX.Size = new System.Drawing.Size(64, 22);
+            this.txtCropX.TabIndex = 20;
+            this.txtCropX.Text = "0";
+            this.txtCropX.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txtCropY
+            // 
+            this.txtCropY.Location = new System.Drawing.Point(164, 198);
+            this.txtCropY.Name = "txtCropY";
+            this.txtCropY.ShortcutsEnabled = false;
+            this.txtCropY.Size = new System.Drawing.Size(64, 22);
+            this.txtCropY.TabIndex = 22;
+            this.txtCropY.Text = "0";
+            this.txtCropY.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label3
+            // 
+            this.label3.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label3.Location = new System.Drawing.Point(12, 198);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(22, 22);
+            this.label3.TabIndex = 21;
+            this.label3.Text = "X";
             // 
             // splitContainer2
             // 
@@ -196,15 +307,95 @@
             this.splitContainer2.Location = new System.Drawing.Point(0, 0);
             this.splitContainer2.Name = "splitContainer2";
             this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.splitContainer2.Size = new System.Drawing.Size(390, 616);
-            this.splitContainer2.SplitterDistance = 411;
+            this.splitContainer2.Size = new System.Drawing.Size(402, 700);
+            this.splitContainer2.SplitterDistance = 467;
             this.splitContainer2.TabIndex = 0;
+            // 
+            // btnReset
+            // 
+            this.btnReset.Location = new System.Drawing.Point(3, 32);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(133, 23);
+            this.btnReset.TabIndex = 26;
+            this.btnReset.Text = "Reset";
+            this.btnReset.UseVisualStyleBackColor = true;
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            // 
+            // btnSaveImage
+            // 
+            this.btnSaveImage.Location = new System.Drawing.Point(3, 61);
+            this.btnSaveImage.Name = "btnSaveImage";
+            this.btnSaveImage.Size = new System.Drawing.Size(133, 23);
+            this.btnSaveImage.TabIndex = 25;
+            this.btnSaveImage.Text = "Save Image";
+            this.btnSaveImage.UseVisualStyleBackColor = true;
+            // 
+            // txtResizePercent
+            // 
+            this.txtResizePercent.Location = new System.Drawing.Point(264, 4);
+            this.txtResizePercent.Name = "txtResizePercent";
+            this.txtResizePercent.ShortcutsEnabled = false;
+            this.txtResizePercent.Size = new System.Drawing.Size(112, 22);
+            this.txtResizePercent.TabIndex = 30;
+            this.txtResizePercent.Text = "150";
+            this.txtResizePercent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txtRotateAngle
+            // 
+            this.txtRotateAngle.Location = new System.Drawing.Point(264, 34);
+            this.txtRotateAngle.Name = "txtRotateAngle";
+            this.txtRotateAngle.ShortcutsEnabled = false;
+            this.txtRotateAngle.Size = new System.Drawing.Size(112, 22);
+            this.txtRotateAngle.TabIndex = 31;
+            this.txtRotateAngle.Text = "1";
+            this.txtRotateAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // btnRotate
+            // 
+            this.btnRotate.Location = new System.Drawing.Point(142, 32);
+            this.btnRotate.Name = "btnRotate";
+            this.btnRotate.Size = new System.Drawing.Size(114, 23);
+            this.btnRotate.TabIndex = 29;
+            this.btnRotate.Text = "旋轉";
+            this.btnRotate.UseVisualStyleBackColor = true;
+            this.btnRotate.Click += new System.EventHandler(this.btnRotate_Click);
+            // 
+            // btnResizePercent
+            // 
+            this.btnResizePercent.Location = new System.Drawing.Point(142, 3);
+            this.btnResizePercent.Name = "btnResizePercent";
+            this.btnResizePercent.Size = new System.Drawing.Size(114, 23);
+            this.btnResizePercent.TabIndex = 27;
+            this.btnResizePercent.Text = "比例縮放";
+            this.btnResizePercent.UseVisualStyleBackColor = true;
+            this.btnResizePercent.Click += new System.EventHandler(this.btnResizePercent_Click);
+            // 
+            // btnYflip
+            // 
+            this.btnYflip.Location = new System.Drawing.Point(262, 62);
+            this.btnYflip.Name = "btnYflip";
+            this.btnYflip.Size = new System.Drawing.Size(114, 23);
+            this.btnYflip.TabIndex = 33;
+            this.btnYflip.Text = "垂直翻轉";
+            this.btnYflip.UseVisualStyleBackColor = true;
+            this.btnYflip.Click += new System.EventHandler(this.btnYflip_Click);
+            // 
+            // btnXflip
+            // 
+            this.btnXflip.Location = new System.Drawing.Point(142, 62);
+            this.btnXflip.Name = "btnXflip";
+            this.btnXflip.Size = new System.Drawing.Size(114, 23);
+            this.btnXflip.TabIndex = 32;
+            this.btnXflip.Text = "水平翻轉";
+            this.btnXflip.UseVisualStyleBackColor = true;
+            this.btnXflip.Click += new System.EventHandler(this.btnXflip_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1182, 640);
+            this.AutoScroll = true;
+            this.ClientSize = new System.Drawing.Size(1218, 724);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -216,9 +407,16 @@
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.splitContainer3.Panel1.ResumeLayout(false);
+            this.splitContainer3.Panel2.ResumeLayout(false);
+            this.splitContainer3.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
+            this.splitContainer3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -246,5 +444,20 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.ToolStripMenuItem 手動測試動令ToolStripMenuItem;
+        private System.Windows.Forms.SplitContainer splitContainer3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox txtCropX;
+        private System.Windows.Forms.TextBox txtCropY;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button btnSwitchBarcodeLine;
+        private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Button btnSaveImage;
+        private System.Windows.Forms.TextBox txtResizePercent;
+        private System.Windows.Forms.TextBox txtRotateAngle;
+        private System.Windows.Forms.Button btnRotate;
+        private System.Windows.Forms.Button btnResizePercent;
+        private System.Windows.Forms.Button btnYflip;
+        private System.Windows.Forms.Button btnXflip;
     }
 }
