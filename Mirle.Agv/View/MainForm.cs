@@ -53,7 +53,7 @@ namespace Mirle.Agv.View
         private SolidBrush redBrush = new SolidBrush(Color.Red);
 
         public bool IsBarcodeLineShow { get; set; } = true;
-        private Dictionary<MapSection, Panel> mapSectionsAsPanels = new Dictionary<MapSection, Panel>();
+        private Dictionary<MapSection, Image> mapSectionsAsImages = new Dictionary<MapSection, Image>();
         private float coefficient = 0.50f;
         private float deltaOrigion = 50;
         private float addressRadius = 3;
@@ -73,8 +73,36 @@ namespace Mirle.Agv.View
             InitialPaintingItems();
             InitialPanels();
             InitialEvents();
-            ImageSaveToTmpPng();
-            PbLoadTmpPng();
+            ResetImageAndPb();
+
+            MakeATestPanel();
+        }
+
+        private void MakeATestPanel()
+        {
+            Panel aPanel = new Panel();
+            aPanel.BackColor = Color.Red;
+            aPanel.Location = new Point(650, 420);
+            aPanel.Name = "testpanel";
+            aPanel.Size = new Size(257, 5);
+            aPanel.Visible = true;
+           // splitContainer3.Panel1.Controls.Add(aPanel);
+
+            pictureBox1.Controls.Add(aPanel);
+            
+
+            //splitContainer1.Panel1.SendToBack();
+            pictureBox1.SendToBack();
+            aPanel.BringToFront();
+
+            aPanel.MouseDown += APanel_MouseDown;
+        }
+
+        private void APanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            Panel thePanel = (Panel)sender;
+            
+            RenewUI(txtCropY, thePanel.Name);
         }
 
         private void InitialForms()
@@ -95,7 +123,6 @@ namespace Mirle.Agv.View
 
             blackDashPen.DashStyle = DashStyle.DashDot;
         }
-
 
         private void InitialPanels()
         {
@@ -151,6 +178,7 @@ namespace Mirle.Agv.View
                 float toY = toAddress.PositionY * coefficient + deltaOrigion;
 
                 gra.DrawLine(bluePen, fromX, fromY, toX, toY);
+               
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
@@ -232,7 +260,6 @@ namespace Mirle.Agv.View
             mainFlowHandler.FakeCmdTest();
         }
 
-
         private void btnSwitchBarcodeLine_Click(object sender, EventArgs e)
         {
             IsBarcodeLineShow = !IsBarcodeLineShow;
@@ -276,7 +303,7 @@ namespace Mirle.Agv.View
                 File.Delete("tmp.png");
             }
 
-            image.Save("tmp.png", ImageFormat.Png);           
+            image.Save("tmp.png", ImageFormat.Png);
         }
 
         private void PbLoadTmpPng()
@@ -291,7 +318,7 @@ namespace Mirle.Agv.View
             ImageSaveToTmpPng();
             TmpPngToImage();
             PbLoadImage();
-            //saveNameWithTail = wrapper.SaveNameWithShift;
+            //saveNameWithTail = wrapper.SaveNameWithShift;           
         }
 
         private void btnReset_Click(object sender, EventArgs e)
@@ -342,7 +369,7 @@ namespace Mirle.Agv.View
 
             string finalPicName = AddTail(tail); //saveName add new tail.
 
-            RenewUI(this, finalPicName+" is updated.");
+            RenewUI(this, finalPicName + " is updated.");
         }
 
         private void ProcessGo(string args, string picName)
@@ -356,15 +383,12 @@ namespace Mirle.Agv.View
             pro.WaitForExit();
         }
 
-
         private void btnResizePercent_Click(object sender, EventArgs e)
         {
             string resizePercentArgs = "-out png -resize " + txtResizePercent.Text + "% " + txtResizePercent.Text + "% ";
             string resizePercentTail = "Resize" + txtResizePercent.Text;
             NconvertCmd(resizePercentArgs, resizePercentTail);
         }
-
-        #endregion
 
         private void btnRotate_Click(object sender, EventArgs e)
         {
@@ -387,5 +411,8 @@ namespace Mirle.Agv.View
             string yflipTail = "Yflip";
             NconvertCmd(yflipArgs, yflipTail);
         }
+
+        #endregion
+
     }
 }

@@ -397,7 +397,7 @@ namespace Mirle.Agv.Controller
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
                 //middleAgent.OnInstallTransferCommandEvent += mapHandler.OnInstallTransferCommand;
-                OnTransferMoveEvent += moveControlHandler.MainFlow_OnTransferMoveEven;
+                //OnTransferMoveEvent += moveControlHandler.MainFlow_OnTransferMoveEven;
 
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;

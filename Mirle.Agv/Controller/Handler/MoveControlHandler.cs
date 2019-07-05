@@ -23,6 +23,11 @@ namespace Mirle.Agv.Controller
 
         public event EventHandler<EnumCompleteStatus> OnMoveFinished;
 
+        public MapPosition EncoderPosition { get; set; }
+        public MapPosition BarcodePosition { get; set; }
+        public MapPosition DeltaPosition { get; set; }
+        public MapPosition RealPosition { get; set; }
+
         public MoveControlHandler(MoveControlConfigs moveControlConfigs, Sr2000Configs sr2000Configs)
         {
             loggerAgent = LoggerAgent.Instance;
@@ -32,7 +37,6 @@ namespace Mirle.Agv.Controller
             AxisInitial();
 
             moveState = EnumMoveState.Idle;
-            RunThreads();
         }
 
         private void AxisInitial()
@@ -69,67 +73,9 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void RunThreads()
-        {
-            try
-            {
-                Thread thdTryDeQueReadyCmds = new Thread(new ThreadStart(TryDeQueReadyCmds));
-                thdTryDeQueReadyCmds.IsBackground = true;
-                thdTryDeQueReadyCmds.Start();
-            }
-            catch (Exception ex)
-            {
-                //log ex
-                throw;
-            }
-        }
-
         public int GetAmountOfQueReadyCmds()
         {
             return queReadyCmds.Count;
-        }
-
-        private void TryDeQueReadyCmds()
-        {
-            do
-            {
-                if (queReadyCmds.Count > 0)
-                {
-                    MoveCmdInfo moveCmd;
-                    queReadyCmds.TryDequeue(out moveCmd);
-                    MoveOn(moveCmd);
-                }
-
-                if (moveState == EnumMoveState.MoveComplete)
-                {
-                    UpdateLoacation();
-                    SendMoveCompleteReportToMainFlow();
-                }
-
-                SpinWait.SpinUntil(() => false, 10);
-            } while (moveState == EnumMoveState.Moving);
-        }
-
-        private void SendMoveCompleteReportToMainFlow()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void UpdateLoacation()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void MoveOn(MoveCmdInfo moveCmd)
-        {
-            //drive elmo to move the vehicle
-            throw new NotImplementedException();
-        }
-
-        public void DoTransfer(TransCmd transCmd)
-        {
-            MoveCmdInfo moveCmd = (MoveCmdInfo)transCmd;
-            queReadyCmds.Enqueue(moveCmd);
         }
 
         /// <summary>
@@ -140,9 +86,14 @@ namespace Mirle.Agv.Controller
             OnMoveFinished?.Invoke(this, status);
         }
 
-        public void MainFlow_OnTransferMoveEven(object sender, MoveCmdInfo moveCmd)
+        public bool TransferMove(MoveCmdInfo moveCmd)
         {
-            throw new NotImplementedException();
+            return true;
+        }
+
+        public bool AddReservedOkMapPosition(MapPosition mapPosition)
+        {
+            return true;
         }
     }
 }

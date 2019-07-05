@@ -17,178 +17,254 @@ namespace Mirle.Agv.View
     {
         private MainFlowHandler mainFlowHandler;
         private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
+        private MapInfo theMapInfo = MapInfo.Instance;
 
         public ManualMoveCmdForm(MainFlowHandler mainFlowHandler)
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
-            AddCbAction();
+            AddListMapAddressPositions();
+            AddListMapAddressActions();
+            AddListMapSpeedLimits();
         }
 
-        private void AddCbAction()
+        private void AddListMapAddressPositions()
         {
-            cbAction.Items.Clear();
+            listMapAddressPositions.Items.Clear();
+            foreach (var valuePair in theMapInfo.dicMapAddresses)
+            {
+                MapAddress mapAddress = valuePair.Value;
+                MapPosition mapPosition = mapAddress.GetPosition();
+                string txtPosition = $"{mapPosition.PositionX},{mapPosition.PositionY}";
+                listMapAddressPositions.Items.Add(txtPosition);
+            }
+        }
+
+        private void AddListMapAddressActions()
+        {
+            listMapAddressActions.Items.Clear();
             foreach (string item in Enum.GetNames(typeof(EnumAddressAction)))
             {
-                cbAction.Items.Add(item);
+                listMapAddressActions.Items.Add(item);
+            }
+        }
+
+        private void AddListMapSpeedLimits()
+        {
+            listMapSpeedLimits.Items.Clear();
+            Dictionary<float, short> dicSpeedLimits = new Dictionary<float, short>();
+            foreach (var valuePair in theMapInfo.dicMapSections)
+            {
+                MapSection mapSection = valuePair.Value;
+                float speedLimit = mapSection.Speed;
+                if (!dicSpeedLimits.ContainsKey(speedLimit))
+                {
+                    dicSpeedLimits.Add(speedLimit, 1);
+                    listMapSpeedLimits.Items.Add(speedLimit);
+                }
             }
         }
 
         private void btnAddAddressPosition_Click(object sender, EventArgs e)
         {
-            float.TryParse(txtPositionX.Text, out float positionX);
-            float.TryParse(txtPositionY.Text, out float positionY);
-
-            moveCmdInfo.AddressPositions.Add(new MapPosition(positionX, positionY));
-            UpdateTxtAddressPositions();
-        }
-
-        private void UpdateTxtAddressPositions()
-        {
-            List<MapPosition> addressPositions = moveCmdInfo.AddressPositions;
-            if (addressPositions.Count == 0)
+            if (listMapAddressPositions.Items.Count < 1)
             {
-                txtAddressPositions.Clear();
+                return;
             }
-            else
+            if (listMapAddressPositions.SelectedIndex < 0)
             {
-                txtAddressPositions.Clear();
-                for (int i = 0; i < addressPositions.Count; i++)
-                {
-                    MapPosition addressPosition = addressPositions[i];
-                    string positionPair = $"({addressPosition.PositionX},{addressPosition.PositionY})";
-                    if (i == 0)
-                    {
-                        txtAddressPositions.Text += positionPair;
-                    }
-                    else
-                    {
-                        txtAddressPositions.Text += " - " + positionPair;
-                    }
-                }
+                listMapAddressPositions.SelectedIndex = 0;
             }
+
+            listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
         }
 
         private void btnRemoveLastAddressPosition_Click(object sender, EventArgs e)
         {
-            List<MapPosition> addressPositions = moveCmdInfo.AddressPositions;
-            if (addressPositions.Count > 0)
+            if (listCmdAddressPositions.Items.Count < 1)
             {
-                addressPositions.RemoveAt(addressPositions.Count - 1);
+                return;
             }
-            UpdateTxtAddressPositions();
+            if (listCmdAddressPositions.SelectedIndex < 0)
+            {
+                listCmdAddressPositions.SelectedIndex = listCmdAddressPositions.Items.Count - 1;
+            }
+
+            listCmdAddressPositions.Items.RemoveAt(listCmdAddressPositions.SelectedIndex);
         }
 
         private void btnAddressPositionsClear_Click(object sender, EventArgs e)
         {
-            moveCmdInfo.AddressPositions.Clear();
-            txtAddressPositions.Clear();
+            listCmdAddressPositions.Items.Clear();
         }
 
         private void btnAddAddressAction_Click(object sender, EventArgs e)
         {
-            EnumAddressAction action = (EnumAddressAction)Enum.Parse(typeof(EnumAddressAction), cbAction.Text);
-            moveCmdInfo.AddressActions.Add(action);
-            UpdateTxtAddressActions();
-        }
+            if (listMapAddressActions.Items.Count < 1)
+            {
+                return;
+            }
+            if (listMapAddressActions.SelectedIndex < 0)
+            {
+                listMapAddressActions.SelectedIndex = 0;
+            }
 
-        private void UpdateTxtAddressActions()
-        {
-            List<EnumAddressAction> addressActions = moveCmdInfo.AddressActions;
-            if (addressActions.Count == 0)
-            {
-                txtAddressActions.Clear();
-            }
-            else
-            {
-                txtAddressActions.Clear();
-                for (int i = 0; i < addressActions.Count; i++)
-                {
-                    EnumAddressAction addressAction = addressActions[i];
-                    string actionMsg = $"({addressAction})";
-                    if (i == 0)
-                    {
-                        txtAddressActions.Text += actionMsg;
-                    }
-                    else
-                    {
-                        txtAddressActions.Text += " - " + actionMsg;
-                    }
-                }
-            }
+            listCmdAddressActions.Items.Add(listMapAddressActions.SelectedItem);
         }
 
         private void btnRemoveLastAddressAction_Click(object sender, EventArgs e)
         {
-            List<EnumAddressAction> actions = moveCmdInfo.AddressActions;
-            if (actions.Count > 0)
+            if (listCmdAddressActions.Items.Count < 1)
             {
-                actions.RemoveAt(actions.Count - 1);
+                return;
             }
-            UpdateTxtAddressActions();
+            if (listCmdAddressActions.SelectedIndex < 0)
+            {
+                listCmdAddressActions.SelectedIndex = listCmdAddressActions.Items.Count - 1;
+            }
+
+            listCmdAddressActions.Items.RemoveAt(listCmdAddressActions.SelectedIndex);
         }
 
-        private void btnAddressActionsClear_Click(object sender, EventArgs e)
+        private void btnClearAddressActions_Click(object sender, EventArgs e)
         {
-            moveCmdInfo.AddressActions.Clear();
-            txtAddressActions.Clear();
+            listCmdAddressActions.Items.Clear();
         }
 
         private void btnAddSpeedLimit_Click(object sender, EventArgs e)
         {
-            float speedLimit = float.Parse(txtSpeedLimit.Text);
-            moveCmdInfo.SectionSpeedLimits.Add(speedLimit);
-            UpdateTxtSectionSpeedLimits();
+            if (listMapSpeedLimits.Items.Count < 1)
+            {
+                return;
+            }
+            if (listMapSpeedLimits.SelectedIndex < 0)
+            {
+                listMapSpeedLimits.SelectedIndex = 0;
+            }
+
+            listCmdSpeedLimits.Items.Add(listMapSpeedLimits.SelectedItem);
         }
 
-        private void UpdateTxtSectionSpeedLimits()
+        private void btnRemoveSpeedLimit_Click(object sender, EventArgs e)
         {
-            var speedLimits = moveCmdInfo.SectionSpeedLimits;
-            if (speedLimits.Count == 0)
+            if (listCmdSpeedLimits.Items.Count < 1)
             {
-                txtSectionSpeedLimits.Clear();
+                return;
             }
-            else
+            if (listCmdSpeedLimits.SelectedIndex < 0)
             {
-                txtSectionSpeedLimits.Clear();
-                for (int i = 0; i < speedLimits.Count; i++)
-                {
-                    float speedLimit = speedLimits[i];
-                    string msg = $"({speedLimit})";
-                    if (i == 0)
-                    {
-                        txtSectionSpeedLimits.Text += msg;
-                    }
-                    else
-                    {
-                        txtSectionSpeedLimits.Text += " - " + msg;
-                    }
-                }
+                listCmdSpeedLimits.SelectedIndex = listCmdSpeedLimits.Items.Count - 1;
             }
+
+            listCmdSpeedLimits.Items.RemoveAt(listCmdSpeedLimits.SelectedIndex);
+
         }
 
-        private void btnRemoveLastSpeedLimits_Click(object sender, EventArgs e)
+        private void btnClearSpeedLimit_Click(object sender, EventArgs e)
         {
-            var speedLimits = moveCmdInfo.SectionSpeedLimits;
-            if (speedLimits.Count > 0)
-            {
-                speedLimits.RemoveAt(speedLimits.Count - 1);
-            }
-            UpdateTxtSectionSpeedLimits();
+            listCmdSpeedLimits.Items.Clear();
         }
 
-        private void btnClearSpeedLimits_Click(object sender, EventArgs e)
-        {
-            moveCmdInfo.SectionSpeedLimits.Clear();
-            txtSectionSpeedLimits.Clear();
-        }
+        //private void UpdateTxtAddressPositions()
+        //{
+        //    //List<MapPosition> addressPositions = moveCmdInfo.AddressPositions;
+        //    //if (addressPositions.Count == 0)
+        //    //{
+        //    //    txtAddressPositions.Clear();
+        //    //}
+        //    //else
+        //    //{
+        //    //    txtAddressPositions.Clear();
+        //    //    for (int i = 0; i < addressPositions.Count; i++)
+        //    //    {
+        //    //        MapPosition addressPosition = addressPositions[i];
+        //    //        string positionPair = $"({addressPosition.PositionX},{addressPosition.PositionY})";
+        //    //        if (i == 0)
+        //    //        {
+        //    //            txtAddressPositions.Text += positionPair;
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            txtAddressPositions.Text += " - " + positionPair;
+        //    //        }
+        //    //    }
+        //    //}
+        //}
+
+        //private void UpdateTxtAddressActions()
+        //{
+        //    //List<EnumAddressAction> addressActions = moveCmdInfo.AddressActions;
+        //    //if (addressActions.Count == 0)
+        //    //{
+        //    //    txtAddressActions.Clear();
+        //    //}
+        //    //else
+        //    //{
+        //    //    txtAddressActions.Clear();
+        //    //    for (int i = 0; i < addressActions.Count; i++)
+        //    //    {
+        //    //        EnumAddressAction addressAction = addressActions[i];
+        //    //        string actionMsg = $"({addressAction})";
+        //    //        if (i == 0)
+        //    //        {
+        //    //            txtAddressActions.Text += actionMsg;
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            txtAddressActions.Text += " - " + actionMsg;
+        //    //        }
+        //    //    }
+        //    //}
+        //}
+
+        //private void UpdateTxtSectionSpeedLimits()
+        //{
+        //    //var speedLimits = moveCmdInfo.SectionSpeedLimits;
+        //    //if (speedLimits.Count == 0)
+        //    //{
+        //    //    txtSectionSpeedLimits.Clear();
+        //    //}
+        //    //else
+        //    //{
+        //    //    txtSectionSpeedLimits.Clear();
+        //    //    for (int i = 0; i < speedLimits.Count; i++)
+        //    //    {
+        //    //        float speedLimit = speedLimits[i];
+        //    //        string msg = $"({speedLimit})";
+        //    //        if (i == 0)
+        //    //        {
+        //    //            txtSectionSpeedLimits.Text += msg;
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            txtSectionSpeedLimits.Text += " - " + msg;
+        //    //        }
+        //    //    }
+        //    //}
+        //}
+
+        //private void btnRemoveLastSpeedLimits_Click(object sender, EventArgs e)
+        //{
+        //    var speedLimits = moveCmdInfo.SectionSpeedLimits;
+        //    if (speedLimits.Count > 0)
+        //    {
+        //        speedLimits.RemoveAt(speedLimits.Count - 1);
+        //    }
+        //    //UpdateTxtSectionSpeedLimits();
+        //}
+
+        //private void btnClearSpeedLimits_Click(object sender, EventArgs e)
+        //{
+        //    moveCmdInfo.SectionSpeedLimits.Clear();
+        //    //txtSectionSpeedLimits.Clear();
+        //}
 
         private void btnClearMoveCmdInfo_Click(object sender, EventArgs e)
         {
             moveCmdInfo = new MoveCmdInfo();
-            UpdateTxtAddressPositions();
-            UpdateTxtAddressActions();
-            UpdateTxtSectionSpeedLimits();
+            //UpdateTxtAddressPositions();
+            //UpdateTxtAddressActions();
+            //UpdateTxtSectionSpeedLimits();
         }
 
         private void btnCheckMoveCmdInfo_Click(object sender, EventArgs e)
@@ -224,8 +300,8 @@ namespace Mirle.Agv.View
                 {
                     positions.RemoveAt(i);
                     actions.RemoveAt(i);
-                    UpdateTxtAddressPositions();
-                    UpdateTxtAddressActions();
+                    //UpdateTxtAddressPositions();
+                    //UpdateTxtAddressActions();
                     btnCheckMoveCmdInfo_Click(sender, e);
                 }
             }
@@ -268,7 +344,51 @@ namespace Mirle.Agv.View
 
         private void btnSendMoveCmdInfo_Click(object sender, EventArgs e)
         {
+            SetMoveCmdInfo();
             mainFlowHandler.PublishTransferMoveEvent(moveCmdInfo);
+        }
+
+        private void SetMoveCmdInfo()
+        {
+            SetPositions();
+            SetActions();
+            SetSpeedLimits();
+
+
+        }
+
+        private void SetSpeedLimits()
+        {
+            moveCmdInfo.SectionSpeedLimits.Clear();
+            for (int i = 0; i < listCmdSpeedLimits.Items.Count; i++)
+            {
+                float limit = (float)listCmdSpeedLimits.Items[i];
+                moveCmdInfo.SectionSpeedLimits.Add(limit);
+            }
+        }
+
+        private void SetActions()
+        {
+            moveCmdInfo.AddressActions.Clear();
+            for (int i = 0; i < listCmdAddressActions.Items.Count; i++)
+            {
+                string strAction = (string)listCmdAddressActions.Items[i];
+                EnumAddressAction action = (EnumAddressAction)Enum.Parse(typeof(EnumAddressAction), strAction);
+                moveCmdInfo.AddressActions.Add(action);
+            }
+        }
+
+        private void SetPositions()
+        {
+            moveCmdInfo.AddressPositions.Clear();
+            for (int i = 0; i < listCmdAddressPositions.Items.Count; i++)
+            {
+                string positionPair = (string)listCmdAddressPositions.Items[i];
+                string[] posXY = positionPair.Split(',');
+                var posX = float.Parse(posXY[0]);
+                var posY = float.Parse(posXY[1]);
+                moveCmdInfo.AddressPositions.Add(new MapPosition(posX, posY));
+            }
         }
 
         private void btnSetIds_Click(object sender, EventArgs e)
@@ -286,10 +406,13 @@ namespace Mirle.Agv.View
 
         private void btnClearIds_Click(object sender, EventArgs e)
         {
-            moveCmdInfo.CmdId = "Empty";
-            moveCmdInfo.CstId = "Empty";
-            txtCmdId.Clear();
-            txtCstId.Clear();
+            string cmdId = "Cmd001";
+            string cstId = "Cst001";
+            moveCmdInfo.CmdId = cmdId;
+            moveCmdInfo.CstId = cstId;
+            txtCmdId.Text = cmdId;
+            txtCstId.Text = cstId;
         }
+
     }
 }

@@ -17,6 +17,8 @@ namespace Mirle.Agv.Model
         public float TailX { get; set; }
         public float TailY { get; set; }
         public int Direction { get; set; }
+        public float OffsetX { get; set; }
+        public float OffsetY { get; set; }
 
         public int BarcodeDirectionConvert(string v)
         {

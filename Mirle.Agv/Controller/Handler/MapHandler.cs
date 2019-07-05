@@ -157,7 +157,7 @@ namespace Mirle.Agv.Controller
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
                     oneRow.Id = getThisRow[dicAddressIndexes["Id"]];
-                    oneRow.Barcode = float.Parse(getThisRow[dicAddressIndexes["Barcode"]]);                    
+                    oneRow.Barcode = float.Parse(getThisRow[dicAddressIndexes["Barcode"]]);
                     oneRow.PositionX = float.Parse(getThisRow[dicAddressIndexes["PositionX"]]);
                     oneRow.PositionY = float.Parse(getThisRow[dicAddressIndexes["PositionY"]]);
                     oneRow.IsWorkStation = bool.Parse(getThisRow[dicAddressIndexes["IsWorkStation"]]);
@@ -231,6 +231,9 @@ namespace Mirle.Agv.Controller
                     float TailX = float.Parse(getThisRow[dicBarcodeIndexes["TailX"]]);
                     float TailY = float.Parse(getThisRow[dicBarcodeIndexes["TailY"]]);
                     int Direction = oneRow.BarcodeDirectionConvert(getThisRow[dicBarcodeIndexes["Direction"]]);
+                    float OffsetX = float.Parse(getThisRow[dicBarcodeIndexes["OffsetX"]]);
+                    float OffsetY = float.Parse(getThisRow[dicBarcodeIndexes["OffsetY"]]);
+
                     oneRow.BarcodeHeadNum = HeadNum;
                     oneRow.HeadX = HeadX;
                     oneRow.HeadY = HeadY;
@@ -238,35 +241,47 @@ namespace Mirle.Agv.Controller
                     oneRow.TailX = TailX;
                     oneRow.TailY = TailY;
                     oneRow.Direction = Direction;
+                    oneRow.OffsetX = OffsetX;
+                    oneRow.OffsetY = OffsetY;
 
                     int count = TailNum - HeadNum;
+                    int absCount = Math.Abs(count);
+                    if (absCount % 3 != 0)
+                    {
+                        //TODO: Log BarcodeLineNum mod 3 is not zero
+                        break;
+                    }
                     if (count < 0)
                     {
                         count = -count;
-                        for (int j = 0; j <= count; j++)
+                        for (int j = 0; j <= count; j+=3)
                         {
                             MapBarcode mapBarcode = new MapBarcode();
                             mapBarcode.BarcodeNum = TailNum + j;
                             mapBarcode.PositionX = (j * HeadX + (count - j) * TailX) / count;
                             mapBarcode.PositionY = (j * HeadY + (count - j) * TailY) / count;
                             mapBarcode.Direction = Direction;
+                            mapBarcode.OffsetX = OffsetX;
+                            mapBarcode.OffsetY = OffsetY;
 
                             dicBarcodes.Add(mapBarcode.BarcodeNum, mapBarcode);
                         }
                     }
                     else
                     {
-                        for (int j = 0; j <= count; j++)
+                        for (int j = 0; j <= count; j+=3)
                         {
                             MapBarcode mapBarcode = new MapBarcode();
                             mapBarcode.BarcodeNum = HeadNum + j;
                             mapBarcode.PositionX = (j * TailX + (count - j) * HeadX) / count;
                             mapBarcode.PositionY = (j * TailY + (count - j) * HeadY) / count;
                             mapBarcode.Direction = Direction;
+                            mapBarcode.OffsetX = OffsetX;
+                            mapBarcode.OffsetY = OffsetY;
 
                             dicBarcodes.Add(mapBarcode.BarcodeNum, mapBarcode);
                         }
-                    }                    
+                    }
 
                     mapBarcodeLines.Add(oneRow);
                 }

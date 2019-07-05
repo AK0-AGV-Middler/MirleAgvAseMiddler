@@ -47,20 +47,20 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnYflip = new System.Windows.Forms.Button();
+            this.btnXflip = new System.Windows.Forms.Button();
+            this.txtResizePercent = new System.Windows.Forms.TextBox();
+            this.txtRotateAngle = new System.Windows.Forms.TextBox();
+            this.btnRotate = new System.Windows.Forms.Button();
+            this.btnResizePercent = new System.Windows.Forms.Button();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.txtCropX = new System.Windows.Forms.TextBox();
             this.txtCropY = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.btnReset = new System.Windows.Forms.Button();
-            this.btnSaveImage = new System.Windows.Forms.Button();
-            this.txtResizePercent = new System.Windows.Forms.TextBox();
-            this.txtRotateAngle = new System.Windows.Forms.TextBox();
-            this.btnRotate = new System.Windows.Forms.Button();
-            this.btnResizePercent = new System.Windows.Forms.Button();
-            this.btnYflip = new System.Windows.Forms.Button();
-            this.btnXflip = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -253,6 +253,85 @@
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             // 
+            // btnYflip
+            // 
+            this.btnYflip.Location = new System.Drawing.Point(262, 62);
+            this.btnYflip.Name = "btnYflip";
+            this.btnYflip.Size = new System.Drawing.Size(114, 23);
+            this.btnYflip.TabIndex = 33;
+            this.btnYflip.Text = "垂直翻轉";
+            this.btnYflip.UseVisualStyleBackColor = true;
+            this.btnYflip.Click += new System.EventHandler(this.btnYflip_Click);
+            // 
+            // btnXflip
+            // 
+            this.btnXflip.Location = new System.Drawing.Point(142, 62);
+            this.btnXflip.Name = "btnXflip";
+            this.btnXflip.Size = new System.Drawing.Size(114, 23);
+            this.btnXflip.TabIndex = 32;
+            this.btnXflip.Text = "水平翻轉";
+            this.btnXflip.UseVisualStyleBackColor = true;
+            this.btnXflip.Click += new System.EventHandler(this.btnXflip_Click);
+            // 
+            // txtResizePercent
+            // 
+            this.txtResizePercent.Location = new System.Drawing.Point(264, 4);
+            this.txtResizePercent.Name = "txtResizePercent";
+            this.txtResizePercent.ShortcutsEnabled = false;
+            this.txtResizePercent.Size = new System.Drawing.Size(112, 22);
+            this.txtResizePercent.TabIndex = 30;
+            this.txtResizePercent.Text = "150";
+            this.txtResizePercent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // txtRotateAngle
+            // 
+            this.txtRotateAngle.Location = new System.Drawing.Point(264, 34);
+            this.txtRotateAngle.Name = "txtRotateAngle";
+            this.txtRotateAngle.ShortcutsEnabled = false;
+            this.txtRotateAngle.Size = new System.Drawing.Size(112, 22);
+            this.txtRotateAngle.TabIndex = 31;
+            this.txtRotateAngle.Text = "1";
+            this.txtRotateAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // btnRotate
+            // 
+            this.btnRotate.Location = new System.Drawing.Point(142, 32);
+            this.btnRotate.Name = "btnRotate";
+            this.btnRotate.Size = new System.Drawing.Size(114, 23);
+            this.btnRotate.TabIndex = 29;
+            this.btnRotate.Text = "旋轉";
+            this.btnRotate.UseVisualStyleBackColor = true;
+            this.btnRotate.Click += new System.EventHandler(this.btnRotate_Click);
+            // 
+            // btnResizePercent
+            // 
+            this.btnResizePercent.Location = new System.Drawing.Point(142, 3);
+            this.btnResizePercent.Name = "btnResizePercent";
+            this.btnResizePercent.Size = new System.Drawing.Size(114, 23);
+            this.btnResizePercent.TabIndex = 27;
+            this.btnResizePercent.Text = "比例縮放";
+            this.btnResizePercent.UseVisualStyleBackColor = true;
+            this.btnResizePercent.Click += new System.EventHandler(this.btnResizePercent_Click);
+            // 
+            // btnReset
+            // 
+            this.btnReset.Location = new System.Drawing.Point(3, 32);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(133, 23);
+            this.btnReset.TabIndex = 26;
+            this.btnReset.Text = "Reset";
+            this.btnReset.UseVisualStyleBackColor = true;
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            // 
+            // btnSaveImage
+            // 
+            this.btnSaveImage.Location = new System.Drawing.Point(3, 61);
+            this.btnSaveImage.Name = "btnSaveImage";
+            this.btnSaveImage.Size = new System.Drawing.Size(133, 23);
+            this.btnSaveImage.TabIndex = 25;
+            this.btnSaveImage.Text = "Save Image";
+            this.btnSaveImage.UseVisualStyleBackColor = true;
+            // 
             // btnSwitchBarcodeLine
             // 
             this.btnSwitchBarcodeLine.Location = new System.Drawing.Point(3, 3);
@@ -310,85 +389,6 @@
             this.splitContainer2.Size = new System.Drawing.Size(402, 700);
             this.splitContainer2.SplitterDistance = 467;
             this.splitContainer2.TabIndex = 0;
-            // 
-            // btnReset
-            // 
-            this.btnReset.Location = new System.Drawing.Point(3, 32);
-            this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(133, 23);
-            this.btnReset.TabIndex = 26;
-            this.btnReset.Text = "Reset";
-            this.btnReset.UseVisualStyleBackColor = true;
-            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
-            // 
-            // btnSaveImage
-            // 
-            this.btnSaveImage.Location = new System.Drawing.Point(3, 61);
-            this.btnSaveImage.Name = "btnSaveImage";
-            this.btnSaveImage.Size = new System.Drawing.Size(133, 23);
-            this.btnSaveImage.TabIndex = 25;
-            this.btnSaveImage.Text = "Save Image";
-            this.btnSaveImage.UseVisualStyleBackColor = true;
-            // 
-            // txtResizePercent
-            // 
-            this.txtResizePercent.Location = new System.Drawing.Point(264, 4);
-            this.txtResizePercent.Name = "txtResizePercent";
-            this.txtResizePercent.ShortcutsEnabled = false;
-            this.txtResizePercent.Size = new System.Drawing.Size(112, 22);
-            this.txtResizePercent.TabIndex = 30;
-            this.txtResizePercent.Text = "150";
-            this.txtResizePercent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // txtRotateAngle
-            // 
-            this.txtRotateAngle.Location = new System.Drawing.Point(264, 34);
-            this.txtRotateAngle.Name = "txtRotateAngle";
-            this.txtRotateAngle.ShortcutsEnabled = false;
-            this.txtRotateAngle.Size = new System.Drawing.Size(112, 22);
-            this.txtRotateAngle.TabIndex = 31;
-            this.txtRotateAngle.Text = "1";
-            this.txtRotateAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // btnRotate
-            // 
-            this.btnRotate.Location = new System.Drawing.Point(142, 32);
-            this.btnRotate.Name = "btnRotate";
-            this.btnRotate.Size = new System.Drawing.Size(114, 23);
-            this.btnRotate.TabIndex = 29;
-            this.btnRotate.Text = "旋轉";
-            this.btnRotate.UseVisualStyleBackColor = true;
-            this.btnRotate.Click += new System.EventHandler(this.btnRotate_Click);
-            // 
-            // btnResizePercent
-            // 
-            this.btnResizePercent.Location = new System.Drawing.Point(142, 3);
-            this.btnResizePercent.Name = "btnResizePercent";
-            this.btnResizePercent.Size = new System.Drawing.Size(114, 23);
-            this.btnResizePercent.TabIndex = 27;
-            this.btnResizePercent.Text = "比例縮放";
-            this.btnResizePercent.UseVisualStyleBackColor = true;
-            this.btnResizePercent.Click += new System.EventHandler(this.btnResizePercent_Click);
-            // 
-            // btnYflip
-            // 
-            this.btnYflip.Location = new System.Drawing.Point(262, 62);
-            this.btnYflip.Name = "btnYflip";
-            this.btnYflip.Size = new System.Drawing.Size(114, 23);
-            this.btnYflip.TabIndex = 33;
-            this.btnYflip.Text = "垂直翻轉";
-            this.btnYflip.UseVisualStyleBackColor = true;
-            this.btnYflip.Click += new System.EventHandler(this.btnYflip_Click);
-            // 
-            // btnXflip
-            // 
-            this.btnXflip.Location = new System.Drawing.Point(142, 62);
-            this.btnXflip.Name = "btnXflip";
-            this.btnXflip.Size = new System.Drawing.Size(114, 23);
-            this.btnXflip.TabIndex = 32;
-            this.btnXflip.Text = "水平翻轉";
-            this.btnXflip.UseVisualStyleBackColor = true;
-            this.btnXflip.Click += new System.EventHandler(this.btnXflip_Click);
             // 
             // MainForm
             // 
