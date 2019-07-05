@@ -354,7 +354,7 @@ namespace Mirle.Agv.View
             SetActions();
             SetSpeedLimits();
 
-
+            mainFlowHandler.PublishTransferMoveEvent(moveCmdInfo);
         }
 
         private void SetSpeedLimits()

@@ -12,7 +12,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public string LoadAddress { get; set; } = "Empty";
         public int StageNum { get; set; }
 
-        public LoadCmdInfo() : base()
+        public LoadCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
             type = EnumTransCmdType.Load;
         }

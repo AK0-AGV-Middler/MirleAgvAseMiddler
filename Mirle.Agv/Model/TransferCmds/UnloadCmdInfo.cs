@@ -12,7 +12,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public string UnloadAddress { get; set; } = "Empty";
         public int StageNum { get; set; }
 
-        public UnloadCmdInfo() : base()
+        public UnloadCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
             type = EnumTransCmdType.Unload;
         }

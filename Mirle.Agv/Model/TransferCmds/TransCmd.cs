@@ -9,7 +9,7 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public abstract class TransCmd
     {
-        protected MapInfo theMapInfo = MapInfo.Instance;
+        protected MapInfo theMapInfo ;
         protected EnumTransCmdType type;
         public string CmdId { get; set; } = "Empty";
         public string CstId { get; set; } = "Empty";
@@ -22,6 +22,11 @@ namespace Mirle.Agv.Model.TransferCmds
         public TransCmd Clone()
         {
             return ExtensionMethods.DeepClone(this);           
+        }
+
+        public TransCmd(MapInfo theMapInfo)
+        {
+            this.theMapInfo = theMapInfo;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
 
-        public MoveCmdInfo() : base()
+        public MoveCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
             type = EnumTransCmdType.Move;
         }

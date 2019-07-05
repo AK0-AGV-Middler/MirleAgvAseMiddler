@@ -74,9 +74,11 @@ namespace Mirle.Agv.View
             InitialPanels();
             InitialEvents();
             ResetImageAndPb();
+            InitialVehicleLocationInfo();
 
-            MakeATestPanel();
+            //MakeATestPanel();
         }
+
 
         private void MakeATestPanel()
         {
@@ -86,10 +88,10 @@ namespace Mirle.Agv.View
             aPanel.Name = "testpanel";
             aPanel.Size = new Size(257, 5);
             aPanel.Visible = true;
-           // splitContainer3.Panel1.Controls.Add(aPanel);
+            // splitContainer3.Panel1.Controls.Add(aPanel);
 
             pictureBox1.Controls.Add(aPanel);
-            
+
 
             //splitContainer1.Panel1.SendToBack();
             pictureBox1.SendToBack();
@@ -101,8 +103,48 @@ namespace Mirle.Agv.View
         private void APanel_MouseDown(object sender, MouseEventArgs e)
         {
             Panel thePanel = (Panel)sender;
-            
+
             RenewUI(txtCropY, thePanel.Name);
+        }
+
+        private void InitialVehicleLocationInfo()
+        {
+            MapSection mapSection = theMapInfo.dicMapSections["sec001"];
+            MapAddress mapAddress = theMapInfo.dicMapAddresses[mapSection.FromAddress];
+            MapPosition mapPosition = mapAddress.GetPosition();
+            string txtPosition = $"({mapPosition.PositionX},{mapPosition.PositionY})";
+
+            ucEncoderPosition.UcLabel = "EncoderPosition";
+            ucEncoderPosition.UcTextBox = txtPosition;
+
+            uctBarcodePosition.UcLabel = "BarcodePosition";
+            uctBarcodePosition.UcTextBox = txtPosition;
+
+            ucDeltaPosition.UcLabel = "DeltaPosition";
+            ucDeltaPosition.UcTextBox = txtPosition;
+
+            ucRealPosition.UcLabel = "RealPosition";
+            ucRealPosition.UcTextBox = txtPosition;
+
+            ucMapSection.UcLabel = "LastSection";
+            ucMapSection.UcTextBox = mapSection.Id;
+
+            ucMapAddress.UcLabel = "LastAddress";
+            ucMapAddress.UcTextBox = mapAddress.Id;
+
+            RenewVehicleLocation();
+        }
+
+        private void RenewVehicleLocation()
+        {
+            foreach (Control item in gbVehicleLocation.Controls)
+            {
+                if (item is UcTextWithLabel)
+                {
+                    UcTextWithLabel uc = (UcTextWithLabel)item;
+                    uc.RenewUI();
+                }
+            }
         }
 
         private void InitialForms()
@@ -178,7 +220,7 @@ namespace Mirle.Agv.View
                 float toY = toAddress.PositionY * coefficient + deltaOrigion;
 
                 gra.DrawLine(bluePen, fromX, fromY, toX, toY);
-               
+
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
@@ -413,6 +455,5 @@ namespace Mirle.Agv.View
         }
 
         #endregion
-
     }
 }

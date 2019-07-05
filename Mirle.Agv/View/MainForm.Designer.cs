@@ -46,7 +46,6 @@
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnYflip = new System.Windows.Forms.Button();
             this.btnXflip = new System.Windows.Forms.Button();
             this.txtResizePercent = new System.Windows.Forms.TextBox();
@@ -61,6 +60,20 @@
             this.txtCropY = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.gbConnection = new System.Windows.Forms.GroupBox();
+            this.radOffline = new System.Windows.Forms.RadioButton();
+            this.radOnline = new System.Windows.Forms.RadioButton();
+            this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
+            this.gbBasicMapProcess = new System.Windows.Forms.GroupBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.ucMapAddress = new Mirle.Agv.View.UcTextWithLabel();
+            this.ucMapSection = new Mirle.Agv.View.UcTextWithLabel();
+            this.ucRealPosition = new Mirle.Agv.View.UcTextWithLabel();
+            this.ucDeltaPosition = new Mirle.Agv.View.UcTextWithLabel();
+            this.ucEncoderPosition = new Mirle.Agv.View.UcTextWithLabel();
+            this.uctBarcodePosition = new Mirle.Agv.View.UcTextWithLabel();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -70,9 +83,14 @@
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            this.gbConnection.SuspendLayout();
+            this.gbVehicleLocation.SuspendLayout();
+            this.gbBasicMapProcess.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -226,15 +244,7 @@
             // 
             // splitContainer3.Panel2
             // 
-            this.splitContainer3.Panel2.Controls.Add(this.btnYflip);
-            this.splitContainer3.Panel2.Controls.Add(this.btnXflip);
-            this.splitContainer3.Panel2.Controls.Add(this.txtResizePercent);
-            this.splitContainer3.Panel2.Controls.Add(this.txtRotateAngle);
-            this.splitContainer3.Panel2.Controls.Add(this.btnRotate);
-            this.splitContainer3.Panel2.Controls.Add(this.btnResizePercent);
-            this.splitContainer3.Panel2.Controls.Add(this.btnReset);
-            this.splitContainer3.Panel2.Controls.Add(this.btnSaveImage);
-            this.splitContainer3.Panel2.Controls.Add(this.btnSwitchBarcodeLine);
+            this.splitContainer3.Panel2.Controls.Add(this.gbBasicMapProcess);
             this.splitContainer3.Panel2.Controls.Add(this.label4);
             this.splitContainer3.Panel2.Controls.Add(this.txtCropX);
             this.splitContainer3.Panel2.Controls.Add(this.txtCropY);
@@ -244,18 +254,9 @@
             this.splitContainer3.SplitterIncrement = 10;
             this.splitContainer3.TabIndex = 0;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1920, 1080);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
-            // 
             // btnYflip
             // 
-            this.btnYflip.Location = new System.Drawing.Point(262, 62);
+            this.btnYflip.Location = new System.Drawing.Point(265, 80);
             this.btnYflip.Name = "btnYflip";
             this.btnYflip.Size = new System.Drawing.Size(114, 23);
             this.btnYflip.TabIndex = 33;
@@ -265,7 +266,7 @@
             // 
             // btnXflip
             // 
-            this.btnXflip.Location = new System.Drawing.Point(142, 62);
+            this.btnXflip.Location = new System.Drawing.Point(145, 80);
             this.btnXflip.Name = "btnXflip";
             this.btnXflip.Size = new System.Drawing.Size(114, 23);
             this.btnXflip.TabIndex = 32;
@@ -275,7 +276,7 @@
             // 
             // txtResizePercent
             // 
-            this.txtResizePercent.Location = new System.Drawing.Point(264, 4);
+            this.txtResizePercent.Location = new System.Drawing.Point(267, 22);
             this.txtResizePercent.Name = "txtResizePercent";
             this.txtResizePercent.ShortcutsEnabled = false;
             this.txtResizePercent.Size = new System.Drawing.Size(112, 22);
@@ -285,7 +286,7 @@
             // 
             // txtRotateAngle
             // 
-            this.txtRotateAngle.Location = new System.Drawing.Point(264, 34);
+            this.txtRotateAngle.Location = new System.Drawing.Point(267, 52);
             this.txtRotateAngle.Name = "txtRotateAngle";
             this.txtRotateAngle.ShortcutsEnabled = false;
             this.txtRotateAngle.Size = new System.Drawing.Size(112, 22);
@@ -295,7 +296,7 @@
             // 
             // btnRotate
             // 
-            this.btnRotate.Location = new System.Drawing.Point(142, 32);
+            this.btnRotate.Location = new System.Drawing.Point(145, 50);
             this.btnRotate.Name = "btnRotate";
             this.btnRotate.Size = new System.Drawing.Size(114, 23);
             this.btnRotate.TabIndex = 29;
@@ -305,7 +306,7 @@
             // 
             // btnResizePercent
             // 
-            this.btnResizePercent.Location = new System.Drawing.Point(142, 3);
+            this.btnResizePercent.Location = new System.Drawing.Point(145, 21);
             this.btnResizePercent.Name = "btnResizePercent";
             this.btnResizePercent.Size = new System.Drawing.Size(114, 23);
             this.btnResizePercent.TabIndex = 27;
@@ -315,7 +316,7 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(3, 32);
+            this.btnReset.Location = new System.Drawing.Point(6, 50);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(133, 23);
             this.btnReset.TabIndex = 26;
@@ -325,7 +326,7 @@
             // 
             // btnSaveImage
             // 
-            this.btnSaveImage.Location = new System.Drawing.Point(3, 61);
+            this.btnSaveImage.Location = new System.Drawing.Point(6, 79);
             this.btnSaveImage.Name = "btnSaveImage";
             this.btnSaveImage.Size = new System.Drawing.Size(133, 23);
             this.btnSaveImage.TabIndex = 25;
@@ -334,7 +335,7 @@
             // 
             // btnSwitchBarcodeLine
             // 
-            this.btnSwitchBarcodeLine.Location = new System.Drawing.Point(3, 3);
+            this.btnSwitchBarcodeLine.Location = new System.Drawing.Point(6, 21);
             this.btnSwitchBarcodeLine.Name = "btnSwitchBarcodeLine";
             this.btnSwitchBarcodeLine.Size = new System.Drawing.Size(133, 23);
             this.btnSwitchBarcodeLine.TabIndex = 24;
@@ -386,9 +387,166 @@
             this.splitContainer2.Location = new System.Drawing.Point(0, 0);
             this.splitContainer2.Name = "splitContainer2";
             this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.gbVehicleLocation);
+            this.splitContainer2.Panel1.Controls.Add(this.gbConnection);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.button2);
+            this.splitContainer2.Panel2.Controls.Add(this.button1);
             this.splitContainer2.Size = new System.Drawing.Size(402, 700);
             this.splitContainer2.SplitterDistance = 467;
             this.splitContainer2.TabIndex = 0;
+            // 
+            // gbConnection
+            // 
+            this.gbConnection.Controls.Add(this.radOnline);
+            this.gbConnection.Controls.Add(this.radOffline);
+            this.gbConnection.Location = new System.Drawing.Point(3, 3);
+            this.gbConnection.Name = "gbConnection";
+            this.gbConnection.Size = new System.Drawing.Size(138, 54);
+            this.gbConnection.TabIndex = 0;
+            this.gbConnection.TabStop = false;
+            this.gbConnection.Text = "Connection";
+            // 
+            // radOffline
+            // 
+            this.radOffline.AutoSize = true;
+            this.radOffline.Location = new System.Drawing.Point(6, 21);
+            this.radOffline.Name = "radOffline";
+            this.radOffline.Size = new System.Drawing.Size(56, 16);
+            this.radOffline.TabIndex = 0;
+            this.radOffline.TabStop = true;
+            this.radOffline.Text = "Offline";
+            this.radOffline.UseVisualStyleBackColor = true;
+            // 
+            // radOnline
+            // 
+            this.radOnline.AutoSize = true;
+            this.radOnline.Location = new System.Drawing.Point(68, 21);
+            this.radOnline.Name = "radOnline";
+            this.radOnline.Size = new System.Drawing.Size(54, 16);
+            this.radOnline.TabIndex = 1;
+            this.radOnline.TabStop = true;
+            this.radOnline.Text = "Online";
+            this.radOnline.UseVisualStyleBackColor = true;
+            // 
+            // gbVehicleLocation
+            // 
+            this.gbVehicleLocation.Controls.Add(this.ucMapAddress);
+            this.gbVehicleLocation.Controls.Add(this.ucMapSection);
+            this.gbVehicleLocation.Controls.Add(this.ucRealPosition);
+            this.gbVehicleLocation.Controls.Add(this.ucDeltaPosition);
+            this.gbVehicleLocation.Controls.Add(this.ucEncoderPosition);
+            this.gbVehicleLocation.Controls.Add(this.uctBarcodePosition);
+            this.gbVehicleLocation.Location = new System.Drawing.Point(3, 63);
+            this.gbVehicleLocation.Name = "gbVehicleLocation";
+            this.gbVehicleLocation.Size = new System.Drawing.Size(246, 209);
+            this.gbVehicleLocation.TabIndex = 1;
+            this.gbVehicleLocation.TabStop = false;
+            this.gbVehicleLocation.Text = "VehicleLocation";
+            // 
+            // gbBasicMapProcess
+            // 
+            this.gbBasicMapProcess.Controls.Add(this.btnSwitchBarcodeLine);
+            this.gbBasicMapProcess.Controls.Add(this.btnYflip);
+            this.gbBasicMapProcess.Controls.Add(this.btnSaveImage);
+            this.gbBasicMapProcess.Controls.Add(this.btnXflip);
+            this.gbBasicMapProcess.Controls.Add(this.btnReset);
+            this.gbBasicMapProcess.Controls.Add(this.txtResizePercent);
+            this.gbBasicMapProcess.Controls.Add(this.btnResizePercent);
+            this.gbBasicMapProcess.Controls.Add(this.txtRotateAngle);
+            this.gbBasicMapProcess.Controls.Add(this.btnRotate);
+            this.gbBasicMapProcess.Location = new System.Drawing.Point(3, 3);
+            this.gbBasicMapProcess.Name = "gbBasicMapProcess";
+            this.gbBasicMapProcess.Size = new System.Drawing.Size(400, 117);
+            this.gbBasicMapProcess.TabIndex = 34;
+            this.gbBasicMapProcess.TabStop = false;
+            this.gbBasicMapProcess.Text = "BasicMapProcess";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(1920, 1080);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // ucMapAddress
+            // 
+            this.ucMapAddress.Location = new System.Drawing.Point(6, 171);
+            this.ucMapAddress.Name = "ucMapAddress";
+            this.ucMapAddress.Size = new System.Drawing.Size(224, 24);
+            this.ucMapAddress.TabIndex = 5;
+            this.ucMapAddress.UcLabel = "MyLabel";
+            this.ucMapAddress.UcTextBox = "MyTextBox";
+            // 
+            // ucMapSection
+            // 
+            this.ucMapSection.Location = new System.Drawing.Point(6, 141);
+            this.ucMapSection.Name = "ucMapSection";
+            this.ucMapSection.Size = new System.Drawing.Size(224, 24);
+            this.ucMapSection.TabIndex = 4;
+            this.ucMapSection.UcLabel = "MyLabel";
+            this.ucMapSection.UcTextBox = "MyTextBox";
+            // 
+            // ucRealPosition
+            // 
+            this.ucRealPosition.Location = new System.Drawing.Point(6, 111);
+            this.ucRealPosition.Name = "ucRealPosition";
+            this.ucRealPosition.Size = new System.Drawing.Size(224, 24);
+            this.ucRealPosition.TabIndex = 3;
+            this.ucRealPosition.UcLabel = "MyLabel";
+            this.ucRealPosition.UcTextBox = "MyTextBox";
+            // 
+            // ucDeltaPosition
+            // 
+            this.ucDeltaPosition.Location = new System.Drawing.Point(6, 81);
+            this.ucDeltaPosition.Name = "ucDeltaPosition";
+            this.ucDeltaPosition.Size = new System.Drawing.Size(224, 24);
+            this.ucDeltaPosition.TabIndex = 2;
+            this.ucDeltaPosition.UcLabel = "MyLabel";
+            this.ucDeltaPosition.UcTextBox = "MyTextBox";
+            // 
+            // ucEncoderPosition
+            // 
+            this.ucEncoderPosition.Location = new System.Drawing.Point(6, 21);
+            this.ucEncoderPosition.Name = "ucEncoderPosition";
+            this.ucEncoderPosition.Size = new System.Drawing.Size(224, 24);
+            this.ucEncoderPosition.TabIndex = 1;
+            this.ucEncoderPosition.UcLabel = "MyLabel";
+            this.ucEncoderPosition.UcTextBox = "MyTextBox";
+            // 
+            // uctBarcodePosition
+            // 
+            this.uctBarcodePosition.Location = new System.Drawing.Point(6, 51);
+            this.uctBarcodePosition.Name = "uctBarcodePosition";
+            this.uctBarcodePosition.Size = new System.Drawing.Size(224, 24);
+            this.uctBarcodePosition.TabIndex = 0;
+            this.uctBarcodePosition.UcLabel = "MyLabel";
+            this.uctBarcodePosition.UcTextBox = "MyTextBox";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(9, 12);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(90, 12);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 1;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -416,9 +574,16 @@
             this.splitContainer3.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            this.gbConnection.ResumeLayout(false);
+            this.gbConnection.PerformLayout();
+            this.gbVehicleLocation.ResumeLayout(false);
+            this.gbBasicMapProcess.ResumeLayout(false);
+            this.gbBasicMapProcess.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -459,5 +624,18 @@
         private System.Windows.Forms.Button btnResizePercent;
         private System.Windows.Forms.Button btnYflip;
         private System.Windows.Forms.Button btnXflip;
+        private System.Windows.Forms.GroupBox gbBasicMapProcess;
+        private System.Windows.Forms.GroupBox gbVehicleLocation;
+        private System.Windows.Forms.GroupBox gbConnection;
+        private System.Windows.Forms.RadioButton radOnline;
+        private System.Windows.Forms.RadioButton radOffline;
+        private UcTextWithLabel uctBarcodePosition;
+        private UcTextWithLabel ucEncoderPosition;
+        private UcTextWithLabel ucRealPosition;
+        private UcTextWithLabel ucDeltaPosition;
+        private UcTextWithLabel ucMapAddress;
+        private UcTextWithLabel ucMapSection;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button1;
     }
 }

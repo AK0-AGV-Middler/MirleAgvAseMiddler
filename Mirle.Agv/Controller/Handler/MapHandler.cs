@@ -18,8 +18,9 @@ namespace Mirle.Agv.Controller
         public string BarcodePath { get; set; }
         private MapInfo theMapInfo;
 
-        public MapHandler(MapConfigs mapConfigs)
+        public MapHandler(MapConfigs mapConfigs, MapInfo theMapInfo)
         {
+            this.theMapInfo = theMapInfo;
             this.mapConfigs = mapConfigs;
             loggerAgent = LoggerAgent.Instance;
             rootDir = mapConfigs.RootDir;
@@ -254,7 +255,7 @@ namespace Mirle.Agv.Controller
                     if (count < 0)
                     {
                         count = -count;
-                        for (int j = 0; j <= count; j+=3)
+                        for (int j = 0; j <= count; j += 3)
                         {
                             MapBarcode mapBarcode = new MapBarcode();
                             mapBarcode.BarcodeNum = TailNum + j;
@@ -269,7 +270,7 @@ namespace Mirle.Agv.Controller
                     }
                     else
                     {
-                        for (int j = 0; j <= count; j+=3)
+                        for (int j = 0; j <= count; j += 3)
                         {
                             MapBarcode mapBarcode = new MapBarcode();
                             mapBarcode.BarcodeNum = HeadNum + j;

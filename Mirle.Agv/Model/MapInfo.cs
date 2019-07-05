@@ -24,7 +24,7 @@ namespace Mirle.Agv.Model
         private static readonly MapInfo theMapInfo = new MapInfo();
         public static MapInfo Instance { get { return theMapInfo; } }
 
-        private MapInfo()
+        public MapInfo()
         {
         }
     }
