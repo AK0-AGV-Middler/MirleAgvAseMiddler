@@ -517,7 +517,7 @@ namespace Mirle.Agv.Controller
                         string[] array1 = (string[])info.GetValue(agvcTransCmd);
                         for (int i = 0; i < array1.Length; i++)
                         {
-                            arrayMsg += array1[i]+" ";
+                            arrayMsg += array1[i] + " ";
                         }
 
                         fullMsg += $"[{name}={arrayMsg}]" + Environment.NewLine;
@@ -860,7 +860,7 @@ namespace Mirle.Agv.Controller
 
         private void AskReserve()
         {
-            while (TransCmdsIndex < transCmds.Count)
+            while (GetCurTransCmd().GetCommandType() == EnumTransCmdType.Move)
             {
                 #region Pause And Stop Check
 

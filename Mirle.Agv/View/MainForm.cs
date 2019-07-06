@@ -73,10 +73,12 @@ namespace Mirle.Agv.View
             InitialPaintingItems();
             InitialPanels();
             InitialEvents();
+            InitialVehicleLocation();
             ResetImageAndPb();
 
-            MakeATestPanel();
+           // MakeATestPanel();
         }
+
 
         private void MakeATestPanel()
         {
@@ -139,6 +141,28 @@ namespace Mirle.Agv.View
         {
             mainFlowHandler.OnAgvcTransferCommandCheckedEvent += MainFlowHandler_OnAgvcTransferCommandCheckedEvent;
         }
+
+        private void InitialVehicleLocation()
+        {
+            MapSection curSection = theMapInfo.dicMapSections["sec001"];
+            MapAddress curAddress = theMapInfo.dicMapAddresses[curSection.FromAddress];
+            MapPosition curPosition = curAddress.GetPosition();
+
+            ucMapSection.UcName = "Last Section";
+            ucMapSection.UcValue = curSection.Id;
+            ucMapAddress.UcName = "Last Address";
+            ucMapAddress.UcValue = curAddress.Id;
+
+            ucEncoderPosition.UcName = "EncoderPosition";
+            ucEncoderPosition.UcValue = $"({curPosition.PositionX},{curPosition.PositionY})";
+            ucBarcodePosition.UcName = "BarcodePosition";
+            ucBarcodePosition.UcValue = $"({curPosition.PositionX},{curPosition.PositionY})";
+            ucDeltaPosition.UcName = "DeltaPosition";
+            ucDeltaPosition.UcValue = $"(0,0)";
+            ucRealPosition.UcName = "RealPosition";
+            ucRealPosition.UcValue = $"({curPosition.PositionX},{curPosition.PositionY})";
+        }
+
 
         private void MainFlowHandler_OnAgvcTransferCommandCheckedEvent(object sender, string msg)
         {
