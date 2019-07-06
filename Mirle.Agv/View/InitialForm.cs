@@ -25,7 +25,7 @@ namespace Mirle.Agv.View
         {
             InitializeComponent();
             mainFlowHandler = new MainFlowHandler();
-            mainFlowHandler.OnComponentIntialCompleteEvent += MainFlowHandler_OnXXXIntialDoneEvent;
+            mainFlowHandler.OnXXXIntialDoneEvent += MainFlowHandler_OnXXXIntialDoneEvent;
         }
 
         private void MainFlowHandler_OnXXXIntialDoneEvent(object sender, InitialEventArgs e)

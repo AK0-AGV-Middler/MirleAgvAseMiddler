@@ -23,14 +23,15 @@ namespace Mirle.Agv.Model.TransferCmds
         public string CmdId { get; set; } = "Empty";
         public ushort SeqNum { get; set; }
 
-        private MapInfo theMapInfo;
+        private MapInfo theMapInfo = MapInfo.Instance;
 
-        public AgvcTransCmd(MapInfo theMapInfo)
+        public AgvcTransCmd()
         {
-            this.theMapInfo = theMapInfo;
+            CmdId = "Empty";
+            CarrierId = "Empty";
         }
 
-        public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum, MapInfo theMapInfo) : this(theMapInfo)
+        public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum)
         {
             CmdId = transRequest.CmdID;
             if (!string.IsNullOrEmpty(transRequest.CSTID))
@@ -103,7 +104,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcMoveCmd : AgvcTransCmd
     {
-        public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum, MapInfo theMapInfo) : base(transRequest, aSeqNum, theMapInfo)
+        public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum) : base(transRequest,aSeqNum)
         {
             try
             {
@@ -120,7 +121,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcLoadCmd : AgvcTransCmd
     {
-        public AgvcLoadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum, MapInfo theMapInfo) : base(transRequest, aSeqNum, theMapInfo)
+        public AgvcLoadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             try
             {
@@ -136,7 +137,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcUnloadCmd : AgvcTransCmd
     {
-        public AgvcUnloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum, MapInfo theMapInfo) : base(transRequest, aSeqNum,  theMapInfo)
+        public AgvcUnloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             try
             {
@@ -152,7 +153,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcLoadunloadCmd : AgvcTransCmd
     {
-        public AgvcLoadunloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum, MapInfo theMapInfo) : base(transRequest, aSeqNum, theMapInfo)
+        public AgvcLoadunloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             try
             {
@@ -170,14 +171,14 @@ namespace Mirle.Agv.Model.TransferCmds
 
     public class AgvcHomeCmd : AgvcTransCmd
     {
-        public AgvcHomeCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum, MapInfo theMapInfo) : base(transRequest, aSeqNum, theMapInfo)
+        public AgvcHomeCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
         }
     }
 
     public class AgvcOverrideCmd : AgvcTransCmd
     {
-        public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum, MapInfo theMapInfo) : base(transRequest, aSeqNum,  theMapInfo)
+        public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             SetToLoadSections(transRequest.GuideSectionsStartToLoad);
             SecToUnloadSections(transRequest.GuideSectionsToDestination);

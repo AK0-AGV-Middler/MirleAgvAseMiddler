@@ -8,7 +8,7 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public class EmptyTransCmd : TransCmd
     {
-        public EmptyTransCmd(MapInfo theMapInfo) : base(theMapInfo)
+        public EmptyTransCmd() : base()
         {
             type = EnumTransCmdType.Empty;
         }

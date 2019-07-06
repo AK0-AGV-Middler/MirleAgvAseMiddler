@@ -36,13 +36,11 @@ namespace Mirle.Agv.Controller
         private LoggerAgent theLoggerAgent;
         private Vehicle theVehicle;
         private MiddlerConfigs middlerConfigs;
-        private MapInfo theMapInfo;
 
         public TcpIpAgent ClientAgent { get; private set; }
 
-        public MiddleAgent(MiddlerConfigs middlerConfigs, MapInfo theMapInfo)
+        public MiddleAgent(MiddlerConfigs middlerConfigs)
         {
-            this.theMapInfo = theMapInfo;
             this.middlerConfigs = middlerConfigs;
             transCmds = new List<TransCmd>();
 
@@ -165,7 +163,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 WrapperMessage wrappers = new WrapperMessage();
-                string msgShow = "";
+                string msgShow = "";                
 
                 var cmdType = (EnumCmdNums)cmdNum;
                 switch (cmdType)
@@ -265,7 +263,7 @@ namespace Mirle.Agv.Controller
 
                             wrappers.ID = WrapperMessage.ModeChangeReqFieldNumber;
                             wrappers.ModeChangeReq = aCmd;
-
+                            
                             msgShow = $"[{cmdType}] [{aCmd}]";
                             break;
                         }
@@ -275,7 +273,7 @@ namespace Mirle.Agv.Controller
 
                             wrappers.ID = WrapperMessage.StatusReqFieldNumber;
                             wrappers.StatusReq = aCmd;
-
+                            
                             msgShow = $"[{cmdType}] [{aCmd}]";
                             break;
                         }
@@ -660,7 +658,7 @@ namespace Mirle.Agv.Controller
             queNeedReserveSections.TryPeek(out MapSection needReserveSection);
             Send_Cmd136_AskReserve(needReserveSection);
         }
-
+        
         #region EnumConverter
         private VhChargeStatus VhChargeStatusConverter(string v)
         {
@@ -1493,7 +1491,7 @@ namespace Mirle.Agv.Controller
                 OnGetReserveOkEvent?.Invoke(this, true);
             }
 
-            if (receive.IsBlockPass == PassType.Pass)
+            if (receive.IsBlockPass== PassType.Pass)
             {
                 OnGetBlockPassEvent?.Invoke(this, true);
             }
@@ -1531,7 +1529,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType = EventType.BlockReq;
+                iD_136_TRANS_EVENT_REP.EventType =  EventType.BlockReq;
                 iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
@@ -1558,7 +1556,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType = EventType.BlockRelease;
+                iD_136_TRANS_EVENT_REP.EventType =  EventType.BlockRelease;
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
                 iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
@@ -2041,17 +2039,17 @@ namespace Mirle.Agv.Controller
             switch (transRequest.ActType)
             {
                 case ActiveType.Move:
-                    return new AgvcMoveCmd(transRequest, iSeqNum, theMapInfo);
+                    return new AgvcMoveCmd(transRequest, iSeqNum);
                 case ActiveType.Load:
-                    return new AgvcLoadCmd(transRequest, iSeqNum, theMapInfo);
+                    return new AgvcLoadCmd(transRequest, iSeqNum);
                 case ActiveType.Unload:
-                    return new AgvcUnloadCmd(transRequest, iSeqNum, theMapInfo);
+                    return new AgvcUnloadCmd(transRequest, iSeqNum);
                 case ActiveType.Loadunload:
-                    return new AgvcLoadunloadCmd(transRequest, iSeqNum, theMapInfo);
+                    return new AgvcLoadunloadCmd(transRequest, iSeqNum);
                 case ActiveType.Home:
-                    return new AgvcHomeCmd(transRequest, iSeqNum, theMapInfo);
+                    return new AgvcHomeCmd(transRequest, iSeqNum);
                 case ActiveType.Override:
-                    return new AgvcOverrideCmd(transRequest, iSeqNum, theMapInfo);
+                    return new AgvcOverrideCmd(transRequest, iSeqNum);
                 case ActiveType.Mtlhome:
                 case ActiveType.Movetomtl:
                 case ActiveType.Systemout:
@@ -2059,7 +2057,7 @@ namespace Mirle.Agv.Controller
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    return new AgvcTransCmd(transRequest, iSeqNum, theMapInfo);
+                    return new AgvcTransCmd(transRequest, iSeqNum);
             }
         }
 
