@@ -14,7 +14,7 @@ namespace Mirle.Agv.Model
 
         public void SetBarcodePosition(int barcodeNum)
         {
-            MapBarcode mapBarcode = MapInfo.Instance.dicBarcodes[barcodeNum];
+            MapBarcode mapBarcode = MapInfo.Instance.allBarcodes[barcodeNum];
             BarcodePosition = new MapPosition(mapBarcode.PositionX, mapBarcode.PositionY);           
         }
     }

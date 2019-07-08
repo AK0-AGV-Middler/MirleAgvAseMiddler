@@ -31,7 +31,7 @@ namespace Mirle.Agv.Model.TransferCmds
             {
                 for (int i = 0; i < AddressIds.Count; i++)
                 {
-                    MapAddress mapAddress = theMapInfo.dicMapAddresses[AddressIds[i]];
+                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]];
                     MapPosition position = mapAddress.GetPosition();
                     AddressPositions.Add(position);
                 }
@@ -49,7 +49,7 @@ namespace Mirle.Agv.Model.TransferCmds
             {
                 for (int i = 0; i < SectionIds.Count; i++)
                 {
-                    MapSection mapSection = theMapInfo.dicMapSections[SectionIds[i]];
+                    MapSection mapSection = theMapInfo.allMapSections[SectionIds[i]];
                     float SpeedLimit = mapSection.Speed;
                     SectionSpeedLimits.Add(SpeedLimit);
                 }
@@ -66,7 +66,7 @@ namespace Mirle.Agv.Model.TransferCmds
             AddressActions = new List<EnumAddressAction>();
             try
             {
-                MapSection firstSection = theMapInfo.dicMapSections[SectionIds[0]];
+                MapSection firstSection = theMapInfo.allMapSections[SectionIds[0]];
                 if (firstSection.Type == EnumSectionType.R2000)
                 {
                     AddressActions.Add(EnumAddressAction.R2000);
@@ -78,8 +78,8 @@ namespace Mirle.Agv.Model.TransferCmds
 
                 for (int i = 0; i < SectionIds.Count - 1; i++)
                 {
-                    MapSection currentSection = theMapInfo.dicMapSections[SectionIds[i]];
-                    MapSection nextSection = theMapInfo.dicMapSections[SectionIds[i + 1]];
+                    MapSection currentSection = theMapInfo.allMapSections[SectionIds[i]];
+                    MapSection nextSection = theMapInfo.allMapSections[SectionIds[i + 1]];
                     EnumAddressAction addressMotion = SetAddressMotion(currentSection, nextSection);
                     AddressActions.Add(addressMotion);
                 }
@@ -99,7 +99,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 MapSection mapSection = new MapSection();
                 try
                 {
-                    mapSection = theMapInfo.dicMapSections[SectionIds[i]].DeepClone();
+                    mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();
                     mapSection.CmdDirection = (mapSection.FromAddress == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
                 }
                 catch (Exception ex)
@@ -157,9 +157,9 @@ namespace Mirle.Agv.Model.TransferCmds
 
         private bool IsTurnRight(MapSection currentSection, MapSection nextSection)
         {
-            MapAddress mapAddressA = theMapInfo.dicMapAddresses[currentSection.FromAddress];
-            MapAddress mapAddressB = theMapInfo.dicMapAddresses[currentSection.ToAddress];
-            MapAddress mapAddressC = theMapInfo.dicMapAddresses[nextSection.ToAddress];
+            MapAddress mapAddressA = theMapInfo.allMapAddresses[currentSection.FromAddress];
+            MapAddress mapAddressB = theMapInfo.allMapAddresses[currentSection.ToAddress];
+            MapAddress mapAddressC = theMapInfo.allMapAddresses[nextSection.ToAddress];
 
             MapPosition positionA = mapAddressA.GetPosition();
             MapPosition positionB = mapAddressB.GetPosition();

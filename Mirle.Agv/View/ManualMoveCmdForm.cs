@@ -31,7 +31,7 @@ namespace Mirle.Agv.View
         private void AddListMapAddressPositions()
         {
             listMapAddressPositions.Items.Clear();
-            foreach (var valuePair in theMapInfo.dicMapAddresses)
+            foreach (var valuePair in theMapInfo.allMapAddresses)
             {
                 MapAddress mapAddress = valuePair.Value;
                 MapPosition mapPosition = mapAddress.GetPosition();
@@ -53,7 +53,7 @@ namespace Mirle.Agv.View
         {
             listMapSpeedLimits.Items.Clear();
             Dictionary<float, short> dicSpeedLimits = new Dictionary<float, short>();
-            foreach (var valuePair in theMapInfo.dicMapSections)
+            foreach (var valuePair in theMapInfo.allMapSections)
             {
                 MapSection mapSection = valuePair.Value;
                 float speedLimit = mapSection.Speed;

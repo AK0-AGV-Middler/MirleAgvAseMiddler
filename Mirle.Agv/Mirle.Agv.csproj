@@ -110,10 +110,10 @@
     <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\TransferCmds\TransCmd.cs" />
     <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
-    <Compile Include="ucLabelTextBox.cs">
+    <Compile Include="View\UserControls\ucLabelTextBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ucLabelTextBox.Designer.cs">
+    <Compile Include="View\UserControls\ucLabelTextBox.Designer.cs">
       <DependentUpon>ucLabelTextBox.cs</DependentUpon>
     </Compile>
     <Compile Include="View\ManualMoveCmdForm.cs">
@@ -181,7 +181,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="ucLabelTextBox.resx">
+    <EmbeddedResource Include="View\UserControls\ucLabelTextBox.resx">
       <DependentUpon>ucLabelTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\ManualMoveCmdForm.resx">

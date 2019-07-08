@@ -46,6 +46,7 @@
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnYflip = new System.Windows.Forms.Button();
             this.btnXflip = new System.Windows.Forms.Button();
             this.txtResizePercent = new System.Windows.Forms.TextBox();
@@ -60,19 +61,18 @@
             this.txtCropY = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.gbConnection = new System.Windows.Forms.GroupBox();
-            this.radOffline = new System.Windows.Forms.RadioButton();
-            this.radOnline = new System.Windows.Forms.RadioButton();
+            this.btnBuzzOff = new System.Windows.Forms.Button();
+            this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.ucRealPosition = new Mirle.Agv.ucLabelTextBox();
             this.ucDeltaPosition = new Mirle.Agv.ucLabelTextBox();
             this.ucBarcodePosition = new Mirle.Agv.ucLabelTextBox();
             this.ucEncoderPosition = new Mirle.Agv.ucLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.ucLabelTextBox();
             this.ucMapSection = new Mirle.Agv.ucLabelTextBox();
-            this.btnAlarmReset = new System.Windows.Forms.Button();
-            this.btnBuzzOff = new System.Windows.Forms.Button();
+            this.gbConnection = new System.Windows.Forms.GroupBox();
+            this.radOnline = new System.Windows.Forms.RadioButton();
+            this.radOffline = new System.Windows.Forms.RadioButton();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -82,12 +82,12 @@
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.gbConnection.SuspendLayout();
             this.gbVehicleLocation.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.gbConnection.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -259,6 +259,15 @@
             this.splitContainer3.SplitterIncrement = 10;
             this.splitContainer3.TabIndex = 0;
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(1920, 1080);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
             // btnYflip
             // 
             this.btnYflip.Location = new System.Drawing.Point(262, 62);
@@ -403,38 +412,23 @@
             this.splitContainer2.SplitterDistance = 467;
             this.splitContainer2.TabIndex = 0;
             // 
-            // gbConnection
+            // btnBuzzOff
             // 
-            this.gbConnection.Controls.Add(this.radOnline);
-            this.gbConnection.Controls.Add(this.radOffline);
-            this.gbConnection.Location = new System.Drawing.Point(12, 14);
-            this.gbConnection.Name = "gbConnection";
-            this.gbConnection.Size = new System.Drawing.Size(200, 48);
-            this.gbConnection.TabIndex = 0;
-            this.gbConnection.TabStop = false;
-            this.gbConnection.Text = "Connection";
+            this.btnBuzzOff.Location = new System.Drawing.Point(315, 43);
+            this.btnBuzzOff.Name = "btnBuzzOff";
+            this.btnBuzzOff.Size = new System.Drawing.Size(75, 23);
+            this.btnBuzzOff.TabIndex = 3;
+            this.btnBuzzOff.Text = "BuzzOff";
+            this.btnBuzzOff.UseVisualStyleBackColor = true;
             // 
-            // radOffline
+            // btnAlarmReset
             // 
-            this.radOffline.AutoSize = true;
-            this.radOffline.Location = new System.Drawing.Point(6, 21);
-            this.radOffline.Name = "radOffline";
-            this.radOffline.Size = new System.Drawing.Size(56, 16);
-            this.radOffline.TabIndex = 0;
-            this.radOffline.TabStop = true;
-            this.radOffline.Text = "Offline";
-            this.radOffline.UseVisualStyleBackColor = true;
-            // 
-            // radOnline
-            // 
-            this.radOnline.AutoSize = true;
-            this.radOnline.Location = new System.Drawing.Point(68, 21);
-            this.radOnline.Name = "radOnline";
-            this.radOnline.Size = new System.Drawing.Size(54, 16);
-            this.radOnline.TabIndex = 1;
-            this.radOnline.TabStop = true;
-            this.radOnline.Text = "Online";
-            this.radOnline.UseVisualStyleBackColor = true;
+            this.btnAlarmReset.Location = new System.Drawing.Point(315, 14);
+            this.btnAlarmReset.Name = "btnAlarmReset";
+            this.btnAlarmReset.Size = new System.Drawing.Size(75, 23);
+            this.btnAlarmReset.TabIndex = 2;
+            this.btnAlarmReset.Text = "AlarmReset";
+            this.btnAlarmReset.UseVisualStyleBackColor = true;
             // 
             // gbVehicleLocation
             // 
@@ -450,15 +444,6 @@
             this.gbVehicleLocation.TabIndex = 1;
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "VehicleLocation";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1920, 1080);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             // 
             // ucRealPosition
             // 
@@ -514,23 +499,38 @@
             this.ucMapSection.UcName = "label1";
             this.ucMapSection.UcValue = "";
             // 
-            // btnAlarmReset
+            // gbConnection
             // 
-            this.btnAlarmReset.Location = new System.Drawing.Point(315, 14);
-            this.btnAlarmReset.Name = "btnAlarmReset";
-            this.btnAlarmReset.Size = new System.Drawing.Size(75, 23);
-            this.btnAlarmReset.TabIndex = 2;
-            this.btnAlarmReset.Text = "AlarmReset";
-            this.btnAlarmReset.UseVisualStyleBackColor = true;
+            this.gbConnection.Controls.Add(this.radOnline);
+            this.gbConnection.Controls.Add(this.radOffline);
+            this.gbConnection.Location = new System.Drawing.Point(12, 14);
+            this.gbConnection.Name = "gbConnection";
+            this.gbConnection.Size = new System.Drawing.Size(200, 48);
+            this.gbConnection.TabIndex = 0;
+            this.gbConnection.TabStop = false;
+            this.gbConnection.Text = "Connection";
             // 
-            // btnBuzzOff
+            // radOnline
             // 
-            this.btnBuzzOff.Location = new System.Drawing.Point(315, 43);
-            this.btnBuzzOff.Name = "btnBuzzOff";
-            this.btnBuzzOff.Size = new System.Drawing.Size(75, 23);
-            this.btnBuzzOff.TabIndex = 3;
-            this.btnBuzzOff.Text = "BuzzOff";
-            this.btnBuzzOff.UseVisualStyleBackColor = true;
+            this.radOnline.AutoSize = true;
+            this.radOnline.Location = new System.Drawing.Point(68, 21);
+            this.radOnline.Name = "radOnline";
+            this.radOnline.Size = new System.Drawing.Size(54, 16);
+            this.radOnline.TabIndex = 1;
+            this.radOnline.TabStop = true;
+            this.radOnline.Text = "Online";
+            this.radOnline.UseVisualStyleBackColor = true;
+            // 
+            // radOffline
+            // 
+            this.radOffline.AutoSize = true;
+            this.radOffline.Location = new System.Drawing.Point(6, 21);
+            this.radOffline.Name = "radOffline";
+            this.radOffline.Size = new System.Drawing.Size(56, 16);
+            this.radOffline.TabIndex = 0;
+            this.radOffline.TabStop = true;
+            this.radOffline.Text = "Offline";
+            this.radOffline.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -558,13 +558,13 @@
             this.splitContainer3.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            this.gbVehicleLocation.ResumeLayout(false);
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
-            this.gbVehicleLocation.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

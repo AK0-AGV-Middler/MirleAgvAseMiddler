@@ -89,6 +89,14 @@ namespace Mirle.Agv.Controller
 
         #endregion
 
+        #region Alarms
+
+        public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
+        public List<Alarm> happeningAlarms = new List<Alarm>();
+        public List<Alarm> historyAlarms = new List<Alarm>();
+
+        #endregion
+
         public Vehicle theVehicle;
         private bool isIniOk;
         public MapInfo theMapInfo;
@@ -121,6 +129,7 @@ namespace Mirle.Agv.Controller
 
             VehicleInitial();
             GetMapInfo();
+            LoadAllAlarms();
 
             EventInitial();
 
@@ -138,6 +147,12 @@ namespace Mirle.Agv.Controller
                     OnXXXIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        private void LoadAllAlarms()
+        {
+            //TODO: load all alarms
+            //throw new NotImplementedException();
         }
 
         private void GetMapInfo()
@@ -401,7 +416,7 @@ namespace Mirle.Agv.Controller
 
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;
-                middleAgent.OnTransferCancelEvent += mapHandler.OnMiddlerGetsCancelEvent;
+                //middleAgent.OnTransferCancelEvent += mapHandler.OnMiddlerGetsCancelEvent;
 
                 middleAgent.OnTransferAbortEvent += OnMiddlerGetsAbortEvent;
 
@@ -416,15 +431,15 @@ namespace Mirle.Agv.Controller
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
-                moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
 
                 //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 robotControlHandler.OnLoadFinished += RobotControlHandler_OnLoadFinished;
-                robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
                 //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 robotControlHandler.OnUnloadFinished += RobotControlHandler_OnUnloadFinished;
-                robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
 
 
@@ -565,7 +580,7 @@ namespace Mirle.Agv.Controller
 
             for (int i = 0; i < sections.Length; i++)
             {
-                if (!theMapInfo.dicMapSections.ContainsKey(sections[i]))
+                if (!theMapInfo.allMapSections.ContainsKey(sections[i]))
                 {
                     int replyCode = 1; // NG
                     string reason = $"{sections[i]} is not in the map.";
@@ -573,9 +588,9 @@ namespace Mirle.Agv.Controller
                     return false;
                 }
 
-                var tempSection = theMapInfo.dicMapSections[sections[i]];
+                var tempSection = theMapInfo.allMapSections[sections[i]];
 
-                if (!theMapInfo.dicMapAddresses.ContainsKey(addresses[i]))
+                if (!theMapInfo.allMapAddresses.ContainsKey(addresses[i]))
                 {
                     int replyCode = 1; // NG
                     string reason = $"{addresses[i]} is not in the map.";
@@ -583,7 +598,7 @@ namespace Mirle.Agv.Controller
                     return false;
                 }
 
-                if (!theMapInfo.dicMapAddresses.ContainsKey(addresses[i + 1]))
+                if (!theMapInfo.allMapAddresses.ContainsKey(addresses[i + 1]))
                 {
                     int replyCode = 1; // NG
                     string reason = $"{addresses[i + 1]} is not in the map.";
@@ -906,11 +921,11 @@ namespace Mirle.Agv.Controller
                 MapAddress mapAddress = new MapAddress();
                 if (mapSection.CmdDirection == EnumPermitDirection.Backward)
                 {
-                    mapAddress = theMapInfo.dicMapAddresses[mapSection.ToAddress].DeepClone();
+                    mapAddress = theMapInfo.allMapAddresses[mapSection.ToAddress].DeepClone();
                 }
                 else
                 {
-                    mapAddress = theMapInfo.dicMapAddresses[mapSection.FromAddress].DeepClone();
+                    mapAddress = theMapInfo.allMapAddresses[mapSection.FromAddress].DeepClone();
                 }
                 MapPosition mapPosition = new MapPosition(mapAddress.PositionX, mapAddress.PositionY);
                 reserveOkPositions.Add(mapPosition);
@@ -1189,8 +1204,8 @@ namespace Mirle.Agv.Controller
             {
                 //vehicle is in the last section of this moveCmdInfo.
                 MapSection currentSection = movingSections[movingSectionIndex];
-                MapAddress fromAdr = theMapInfo.dicMapAddresses[currentSection.FromAddress];
-                MapAddress toAdr = theMapInfo.dicMapAddresses[currentSection.ToAddress];
+                MapAddress fromAdr = theMapInfo.allMapAddresses[currentSection.FromAddress];
+                MapAddress toAdr = theMapInfo.allMapAddresses[currentSection.ToAddress];
                 switch (currentSection.Type)
                 {
                     case EnumSectionType.Horizontal:
@@ -1271,7 +1286,7 @@ namespace Mirle.Agv.Controller
 
         public MapBarcode GetMapBarcode(int baracodeNum)
         {
-            var dicBarcodes = theMapInfo.dicBarcodes;
+            var dicBarcodes = theMapInfo.allBarcodes;
             if (dicBarcodes.ContainsKey(baracodeNum))
             {
                 //先 Clone 一份避免被改掉內容
@@ -1300,5 +1315,49 @@ namespace Mirle.Agv.Controller
             SendAgvcTransferCommandChecked(fakeCmd, true);
         }
 
+        public void LogAlarm(Alarm alarm)
+        {
+            if (loggerAgent == null)
+            {
+                return;
+            }
+
+            loggerAgent.LogAlarm(alarm);
+        }
+
+        public void AlarmSet(int aAlarmId)
+        {
+            if (allAlarms.Count < 1)
+            {
+                string className = GetType().Name;
+                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name; //sender.ToString();
+                string classMethodName = className + ":" + methodName;
+                LogFormat logFormat = new LogFormat("Error", "3", classMethodName, "Device", "CarrierID", $"Allalarms is empty");
+                loggerAgent.LogMsg("Error", logFormat);
+
+                return;
+            }
+
+            if (!allAlarms.ContainsKey(aAlarmId))
+            {
+                string className = GetType().Name;
+                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name; //sender.ToString();
+                string classMethodName = className + ":" + methodName;
+                LogFormat logFormat = new LogFormat("Error", "3", classMethodName, "Device", "CarrierID", $"No such alarmId({aAlarmId})");
+                loggerAgent.LogMsg("Error", logFormat);
+
+                return;
+            }
+
+            DateTime alarmSetTime = DateTime.Now;
+            Alarm alarm = allAlarms[aAlarmId].DeepClone();
+            alarm.SetTime = alarmSetTime;
+            //通知AGVC
+
+            //通知PLC
+
+            //紀錄
+            loggerAgent.LogAlarm(alarm);
+        }
     }
 }

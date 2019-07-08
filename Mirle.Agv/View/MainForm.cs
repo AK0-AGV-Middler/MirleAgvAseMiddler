@@ -53,7 +53,7 @@ namespace Mirle.Agv.View
         private SolidBrush redBrush = new SolidBrush(Color.Red);
 
         public bool IsBarcodeLineShow { get; set; } = true;
-        private Dictionary<MapSection, Image> mapSectionsAsImages = new Dictionary<MapSection, Image>();
+        //private Dictionary<MapSection, ucSectionImage> allUcSectionImages = new Dictionary<MapSection, ucSectionImage>();
         private float coefficient = 0.50f;
         private float deltaOrigion = 50;
         private float addressRadius = 3;
@@ -76,9 +76,8 @@ namespace Mirle.Agv.View
             InitialVehicleLocation();
             ResetImageAndPb();
 
-           // MakeATestPanel();
+            // MakeATestPanel();
         }
-
 
         private void MakeATestPanel()
         {
@@ -88,10 +87,10 @@ namespace Mirle.Agv.View
             aPanel.Name = "testpanel";
             aPanel.Size = new Size(257, 5);
             aPanel.Visible = true;
-           // splitContainer3.Panel1.Controls.Add(aPanel);
+            // splitContainer3.Panel1.Controls.Add(aPanel);
 
             pictureBox1.Controls.Add(aPanel);
-            
+
 
             //splitContainer1.Panel1.SendToBack();
             pictureBox1.SendToBack();
@@ -103,7 +102,7 @@ namespace Mirle.Agv.View
         private void APanel_MouseDown(object sender, MouseEventArgs e)
         {
             Panel thePanel = (Panel)sender;
-            
+
             RenewUI(txtCropY, thePanel.Name);
         }
 
@@ -144,8 +143,8 @@ namespace Mirle.Agv.View
 
         private void InitialVehicleLocation()
         {
-            MapSection curSection = theMapInfo.dicMapSections["sec001"];
-            MapAddress curAddress = theMapInfo.dicMapAddresses[curSection.FromAddress];
+            MapSection curSection = theMapInfo.allMapSections["sec001"];
+            MapAddress curAddress = theMapInfo.allMapAddresses[curSection.FromAddress];
             MapPosition curPosition = curAddress.GetPosition();
 
             ucMapSection.UcName = "Last Section";
@@ -163,7 +162,6 @@ namespace Mirle.Agv.View
             ucRealPosition.UcValue = $"({curPosition.PositionX},{curPosition.PositionY})";
         }
 
-
         private void MainFlowHandler_OnAgvcTransferCommandCheckedEvent(object sender, string msg)
         {
             //RichTextBoxAppendHead(richTextBox1, msg);
@@ -171,7 +169,7 @@ namespace Mirle.Agv.View
 
         public void DrawBasicMap()
         {
-            image = new Bitmap(Convert.ToInt32(1920), Convert.ToInt32(1080), PixelFormat.Format32bppArgb);
+            image = new Bitmap(1920, 1080, PixelFormat.Format32bppArgb);
             gra = Graphics.FromImage(image);
 
             //gra.Clear(SystemColors.Control);
@@ -190,11 +188,13 @@ namespace Mirle.Agv.View
                 }
             }
 
+            //allUcSectionImages.Clear();
+
             // Draw Sections in blueLine
             foreach (var section in theMapInfo.mapSections)
             {
-                MapAddress fromAddress = theMapInfo.dicMapAddresses[section.FromAddress];
-                MapAddress toAddress = theMapInfo.dicMapAddresses[section.ToAddress];
+                MapAddress fromAddress = theMapInfo.allMapAddresses[section.FromAddress];
+                MapAddress toAddress = theMapInfo.allMapAddresses[section.ToAddress];
 
                 float fromX = fromAddress.PositionX * coefficient + deltaOrigion;
                 float fromY = fromAddress.PositionY * coefficient + deltaOrigion;
@@ -202,7 +202,9 @@ namespace Mirle.Agv.View
                 float toY = toAddress.PositionY * coefficient + deltaOrigion;
 
                 gra.DrawLine(bluePen, fromX, fromY, toX, toY);
-               
+
+                //ucSectionImage ucSection = new ucSectionImage(section);
+                //allUcSectionImages.Add(section, ucSection);
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)

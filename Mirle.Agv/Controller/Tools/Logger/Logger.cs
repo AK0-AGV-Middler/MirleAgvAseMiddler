@@ -83,7 +83,7 @@ namespace Mirle.Agv.Controller.Tools
             fileWriteStream = new StreamWriter(fileStream, encodingType);
         }
 
-        private void AddDebugLog(string sFunctionName, string sMessage)
+        private void AddDebugLog(string aFunctionName, string aMessage)
         {
             lock (theDebugLocker)
             {
@@ -100,23 +100,23 @@ namespace Mirle.Agv.Controller.Tools
                 }
                 debugFileWriteStream = new StreamWriter(debugFileStream, encodingType);
 
-                sMessage = sMessage + " by " + logType.DirName + @"\" + logType.LogFileName;
-                string log = string.Concat(DateTime.Now.ToString("yyyy-MM-dd@HH-mm-ss.fff@"), LOG_DEBUG, "@", sFunctionName,
-                    "@", Thread.CurrentThread.Name + "_" + Thread.CurrentThread.GetHashCode().ToString(), "@@@", sMessage, Environment.NewLine);
+                aMessage = aMessage + " by " + logType.DirName + @"\" + logType.LogFileName;
+                string log = string.Concat(DateTime.Now.ToString("yyyy-MM-dd@HH-mm-ss.fff@"), LOG_DEBUG, "@", aFunctionName,
+                    "@", Thread.CurrentThread.Name + "_" + Thread.CurrentThread.GetHashCode().ToString(), "@@@", aMessage, Environment.NewLine);
                 debugFileWriteStream.Write(log); // 寫入檔案
                 debugFileWriteStream.Flush();
                 debugFileStream.Close();
             }
         }
 
-        private void WriteLog(string sMessage)
+        private void WriteLog(string aMessage)
         {
             lock (theWriteLocker)
             {
                 int iStep = 0;
                 try
                 {
-                    fileWriteStream.Write(sMessage);   //  寫入檔案
+                    fileWriteStream.Write(aMessage);   //  寫入檔案
                     fileWriteStream.Flush();
                     iStep = iStep + 1;
 
@@ -151,37 +151,37 @@ namespace Mirle.Agv.Controller.Tools
                 }
                 catch (Exception ex)
                 {
-                    AddDebugLog("SaveLogFile", sMessage + ex.StackTrace + ", iStep =" + iStep);
+                    AddDebugLog("SaveLogFile", aMessage + ex.StackTrace + ", iStep =" + iStep);
                 }
             }
         }
 
-        private void SaveLogFile(string sMessage)
+        private void SaveLogFile(string aMessage)
         {
             try
             {
                 if (logType.LogEnable)
                 {
-                    sMessage.Replace(Environment.NewLine, logType.LineSeparateToken);
-                    queInputLogData.Enqueue(sMessage);
+                    aMessage.Replace(Environment.NewLine, logType.LineSeparateToken);
+                    queInputLogData.Enqueue(aMessage);
                 }
             }
             catch (Exception ex)
             {
-                AddDebugLog("SaveLogFile", sMessage + ex.StackTrace);
+                AddDebugLog("SaveLogFile", aMessage + ex.StackTrace);
             }
         }
 
-        public void SaveLogFile(string sCategory, string sLogLevel, string sClassFunctionName, string Device, string CarrierId, string sMessage)
+        public void SaveLogFile(string aCategory, string aLogLevel, string aClassFunctionName, string aDeviceId, string aCarrierId, string aMessage)
         {
             try
             {
-                string str = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "@", sCategory, "@", sLogLevel, "@", sClassFunctionName, "@", Device, "@", CarrierId, "@", sMessage);
+                string str = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "@", aCategory, "@", aLogLevel, "@", aClassFunctionName, "@", aDeviceId, "@", aCarrierId, "@", aMessage);
                 SaveLogFile(str);
             }
             catch (Exception ex)
             {
-                AddDebugLog("SaveLogFile", sMessage + ex.StackTrace);
+                AddDebugLog("SaveLogFile", aMessage + ex.StackTrace);
             }
         }
 
@@ -282,6 +282,18 @@ namespace Mirle.Agv.Controller.Tools
             return Convert.ToInt32(TS.TotalDays);
         }
 
+        public void SavePureLog(string aMessage)
+        {
+            try
+            {
+                SaveLogFile(aMessage);
+            }
+            catch (Exception ex)
+            {
+                AddDebugLog("SaveLogFile", aMessage + ex.StackTrace);
+            }
+
+        }
 
         #region CheckPathValid() 判斷路徑或檔名是是否有不合法的字元
 

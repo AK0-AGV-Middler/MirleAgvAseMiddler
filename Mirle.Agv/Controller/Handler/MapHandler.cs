@@ -32,26 +32,6 @@ namespace Mirle.Agv.Controller
             LoadBarcodeLineCsv();
         }
 
-        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnInstallTransferCommand(object sender, AgvcTransCmd e)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void OnMiddlerGetsCancelEvent(object sender, string e)
-        {
-            throw new NotImplementedException();
-        }
-
         public void LoadSectionCsv()
         {
             try
@@ -61,11 +41,10 @@ namespace Mirle.Agv.Controller
                     return;
                 }
                 var mapSections = theMapInfo.mapSections;
-                var dicMapSections = theMapInfo.dicMapSections;
-                var dicSectionIndexes = theMapInfo.dicSectionIndexes;
+                var dicMapSections = theMapInfo.allMapSections;
+                Dictionary<string, int> dicSectionIndexes = new Dictionary<string, int>(); //theMapInfo.dicSectionIndexes;
                 mapSections.Clear();
                 dicMapSections.Clear();
-                dicSectionIndexes.Clear();
 
                 string[] allRows = File.ReadAllLines(SectionPath);
                 if (allRows == null || allRows.Length < 2)
@@ -122,11 +101,10 @@ namespace Mirle.Agv.Controller
                     return;
                 }
                 var mapAddresses = theMapInfo.mapAddresses;
-                var dicMapAddresses = theMapInfo.dicMapAddresses;
-                var dicAddressIndexes = theMapInfo.dicAddressIndexes;
+                var dicMapAddresses = theMapInfo.allMapAddresses;
+                Dictionary<string, int> dicAddressIndexes = new Dictionary<string, int>(); // theMapInfo.dicAddressIndexes;
                 mapAddresses.Clear();
                 dicMapAddresses.Clear();
-                dicAddressIndexes.Clear();
 
                 string[] allRows = File.ReadAllLines(AddressPath);
                 if (allRows == null || allRows.Length < 2)
@@ -191,10 +169,9 @@ namespace Mirle.Agv.Controller
                     return;
                 }
                 var mapBarcodeLines = theMapInfo.mapBarcodeLines;
-                var dicBarcodeIndexes = theMapInfo.dicBarcodeIndexes;
-                var dicBarcodes = theMapInfo.dicBarcodes;
+                Dictionary<string, int> dicBarcodeIndexes = new Dictionary<string, int>(); // theMapInfo.dicBarcodeIndexes;
+                var dicBarcodes = theMapInfo.allBarcodes;
                 mapBarcodeLines.Clear();
-                dicBarcodeIndexes.Clear();
                 dicBarcodes.Clear();
 
                 string[] allRows = File.ReadAllLines(BarcodePath);

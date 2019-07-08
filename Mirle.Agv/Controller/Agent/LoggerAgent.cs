@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Mirle.Agv.Controller.Tools;
+using Mirle.Agv.Model;
 
 
 namespace Mirle.Agv.Controller
@@ -75,6 +76,16 @@ namespace Mirle.Agv.Controller
             {
                 Logger logger = dicLoggers[type];
                 logger.SaveLogFile(type, logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
+            }
+        }
+
+        public void LogAlarm(Alarm alarm)
+        {
+            if (dicLoggers.ContainsKey("Error"))
+            {
+                Logger logger = dicLoggers["Error"];
+                string msg = $"{alarm.ID},{alarm.ShortName},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
+                logger.SavePureLog(msg);
             }
         }
     }
