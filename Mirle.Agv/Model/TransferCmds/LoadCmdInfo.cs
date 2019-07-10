@@ -7,12 +7,13 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
-   public class LoadCmdInfo : TransCmd
+    public class LoadCmdInfo : TransCmd
     {
         public string LoadAddress { get; set; } = "Empty";
         public int StageNum { get; set; }
 
-        public LoadCmdInfo() : base()
+        public LoadCmdInfo():this(new MapInfo()) { }
+        public LoadCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
             type = EnumTransCmdType.Load;
         }

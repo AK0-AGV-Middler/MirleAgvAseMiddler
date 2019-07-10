@@ -20,6 +20,7 @@ namespace Mirle.Agv.Controller
         private MoveControlConfigs moveControlConfigs;
         private Dictionary<string, ElmoSingleAxisConfig> dicElmoSingleAxisConfigs;
         private ElmoAxisConfigs elmoAxisConfigs;
+        private MapInfo theMapInfo = new MapInfo();
 
         public event EventHandler<EnumCompleteStatus> OnMoveFinished;
 
@@ -28,8 +29,9 @@ namespace Mirle.Agv.Controller
         public MapPosition DeltaPosition { get; set; }
         public MapPosition RealPosition { get; set; }
 
-        public MoveControlHandler(MoveControlConfigs moveControlConfigs, Sr2000Configs sr2000Configs)
+        public MoveControlHandler(MoveControlConfigs moveControlConfigs, Sr2000Configs sr2000Configs, MapInfo theMapInfo)
         {
+            this.theMapInfo = theMapInfo;
             loggerAgent = LoggerAgent.Instance;
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
             this.moveControlConfigs = moveControlConfigs;

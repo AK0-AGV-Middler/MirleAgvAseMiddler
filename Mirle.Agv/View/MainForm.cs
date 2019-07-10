@@ -30,7 +30,7 @@ namespace Mirle.Agv.View
         private Panel panelLeftDown;
         private Panel panelRightUp;
         private Panel panelRightDown;
-        private MapInfo theMapInfo = MapInfo.Instance;
+        private MapInfo theMapInfo = new MapInfo();
 
         #region MouseDownCalculus
 
@@ -62,8 +62,9 @@ namespace Mirle.Agv.View
 
         public MainForm(MainFlowHandler mainFlowHandler)
         {
-            this.mainFlowHandler = mainFlowHandler;
             InitializeComponent();
+            this.mainFlowHandler = mainFlowHandler;
+            this.theMapInfo = mainFlowHandler.GetMapInfo();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -81,28 +82,15 @@ namespace Mirle.Agv.View
         private void MakeTestUcSectionImage()
         {
             MapSection section = theMapInfo.allMapSections["sec020"];
-            MapAddress fromAddress = theMapInfo.allMapAddresses[section.FromAddress];
-            MapAddress toAddress = theMapInfo.allMapAddresses[section.ToAddress];
+            MapAddress fromAddress = section.HeadAddress;
+            MapAddress toAddress = section.TailAddress;
 
-            float fromX = fromAddress.PositionX * coefficient + deltaOrigion;
-            float fromY = fromAddress.PositionY * coefficient + deltaOrigion;
-            float toX = toAddress.PositionX * coefficient + deltaOrigion;
-            float toY = toAddress.PositionY * coefficient + deltaOrigion;
-
-
-            UcSectionImage ucSectionImage = new UcSectionImage(section);
-            //if (!allUcSectionImages.ContainsKey(section))
-            //{
-            //    allUcSectionImages.Add(section, ucSectionImage);
-            //}
+            UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
 
             pictureBox1.Controls.Add(ucSectionImage);
-            //allUcSectionImages.Add(section, ucSectionImage);
             ucSectionImage.Location = new Point(650, 420);
             pictureBox1.SendToBack();
             ucSectionImage.BringToFront();
-
-
         }
 
         private void APanel_MouseDown(object sender, MouseEventArgs e)
@@ -114,14 +102,11 @@ namespace Mirle.Agv.View
 
         private void InitialForms()
         {
-            manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler);
-            manualMoveCmdForm.TopMost = true;
+            manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler, theMapInfo);
             manualMoveCmdForm.WindowState = FormWindowState.Normal;
 
             middlerForm = new MiddlerForm(mainFlowHandler);
-            middlerForm.TopMost = true;
             middlerForm.WindowState = FormWindowState.Normal;
-
         }
 
         private void InitialPaintingItems()
@@ -148,8 +133,8 @@ namespace Mirle.Agv.View
         private void InitialVehicleLocation()
         {
             MapSection curSection = theMapInfo.allMapSections["sec001"];
-            MapAddress curAddress = theMapInfo.allMapAddresses[curSection.FromAddress];
-            MapPosition curPosition = curAddress.GetPosition();
+            MapAddress curAddress = curSection.HeadAddress;
+            MapPosition curPosition = curAddress.Position.DeepClone();
 
             ucMapSection.UcName = "Last Section";
             ucMapSection.UcValue = curSection.Id;
@@ -157,13 +142,13 @@ namespace Mirle.Agv.View
             ucMapAddress.UcValue = curAddress.Id;
 
             ucEncoderPosition.UcName = "EncoderPosition";
-            ucEncoderPosition.UcValue = $"({curPosition.PositionX},{curPosition.PositionY})";
+            ucEncoderPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
             ucBarcodePosition.UcName = "BarcodePosition";
-            ucBarcodePosition.UcValue = $"({curPosition.PositionX},{curPosition.PositionY})";
+            ucBarcodePosition.UcValue = $"({curPosition.X},{curPosition.Y})";
             ucDeltaPosition.UcName = "DeltaPosition";
             ucDeltaPosition.UcValue = $"(0,0)";
             ucRealPosition.UcName = "RealPosition";
-            ucRealPosition.UcValue = $"({curPosition.PositionX},{curPosition.PositionY})";
+            ucRealPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
         }
 
         private void MainFlowHandler_OnAgvcTransferCommandCheckedEvent(object sender, string msg)
@@ -183,10 +168,10 @@ namespace Mirle.Agv.View
                 //Draw Barcode in blackDash
                 foreach (var rowBarcode in theMapInfo.mapBarcodeLines)
                 {
-                    float fromX = rowBarcode.HeadX * coefficient + deltaOrigion;
-                    float fromY = rowBarcode.HeadY * coefficient + deltaOrigion;
-                    float toX = rowBarcode.TailX * coefficient + deltaOrigion;
-                    float toY = rowBarcode.TailY * coefficient + deltaOrigion;
+                    float fromX = rowBarcode.HeadBarcode.Position.X * coefficient + deltaOrigion;
+                    float fromY = rowBarcode.HeadBarcode.Position.Y * coefficient + deltaOrigion;
+                    float toX = rowBarcode.TailBarcode.Position.X * coefficient + deltaOrigion;
+                    float toY = rowBarcode.TailBarcode.Position.Y * coefficient + deltaOrigion;
 
                     gra.DrawLine(blackDashPen, fromX, fromY, toX, toY);
                 }
@@ -197,17 +182,17 @@ namespace Mirle.Agv.View
             // Draw Sections in blueLine
             foreach (var section in theMapInfo.mapSections)
             {
-                MapAddress fromAddress = theMapInfo.allMapAddresses[section.FromAddress];
-                MapAddress toAddress = theMapInfo.allMapAddresses[section.ToAddress];
+                MapAddress fromAddress = section.HeadAddress;
+                MapAddress toAddress = section.TailAddress;
 
-                float fromX = fromAddress.PositionX * coefficient + deltaOrigion;
-                float fromY = fromAddress.PositionY * coefficient + deltaOrigion;
-                float toX = toAddress.PositionX * coefficient + deltaOrigion;
-                float toY = toAddress.PositionY * coefficient + deltaOrigion;
+                float fromX = fromAddress.Position.X * coefficient + deltaOrigion;
+                float fromY = fromAddress.Position.Y * coefficient + deltaOrigion;
+                float toX = toAddress.Position.X * coefficient + deltaOrigion;
+                float toY = toAddress.Position.Y * coefficient + deltaOrigion;
 
                 //gra.DrawLine(bluePen, fromX, fromY, toX, toY);
 
-                UcSectionImage ucSectionImage = new UcSectionImage(section);
+                UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
                 if (!allUcSectionImages.ContainsKey(section))
                 {
                     allUcSectionImages.Add(section, ucSectionImage);
@@ -243,13 +228,13 @@ namespace Mirle.Agv.View
                 if (address.IsWorkStation)
                 {
                     var bigRadius = 2 * addressRadius;
-                    PointF pointf = new PointF(address.PositionX * coefficient + deltaOrigion - bigRadius, address.PositionY * coefficient + deltaOrigion - bigRadius);
+                    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion - bigRadius, address.Position.Y * coefficient + deltaOrigion - bigRadius);
                     RectangleF rectangleF = new RectangleF(pointf.X, pointf.Y, 2 * bigRadius, 2 * bigRadius);
                     gra.DrawEllipse(redPen, rectangleF);
                 }
                 else if (address.IsSegmentPoint)
                 {
-                    PointF pointf = new PointF(address.PositionX * coefficient + deltaOrigion - addressRadius, address.PositionY * coefficient + deltaOrigion - addressRadius);
+                    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion - addressRadius, address.Position.Y * coefficient + deltaOrigion - addressRadius);
                     RectangleF rectangleF = new RectangleF(pointf.X, pointf.Y, 2 * addressRadius, 2 * addressRadius);
                     gra.FillRectangle(blackBrush, rectangleF);
                 }
@@ -257,7 +242,7 @@ namespace Mirle.Agv.View
                 if (address.IsCharger)
                 {
                     var bigRadius = 2 * addressRadius;
-                    PointF pointf = new PointF(address.PositionX * coefficient + deltaOrigion, address.PositionY * coefficient + deltaOrigion);
+                    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion, address.Position.Y * coefficient + deltaOrigion);
                     PointF p1 = new PointF(pointf.X + bigRadius, pointf.Y + bigRadius * triangleCoefficient);
                     PointF p2 = new PointF(pointf.X - bigRadius, pointf.Y + bigRadius * triangleCoefficient);
                     PointF p3 = new PointF(pointf.X, pointf.Y - bigRadius * triangleCoefficient * 2);
@@ -306,6 +291,7 @@ namespace Mirle.Agv.View
             {
                 middlerForm = new MiddlerForm(mainFlowHandler);
             }
+            middlerForm.BringToFront();
             middlerForm.Show();
 
         }
@@ -314,8 +300,9 @@ namespace Mirle.Agv.View
         {
             if (manualMoveCmdForm.IsDisposed)
             {
-                manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler);
+                manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler, theMapInfo);
             }
+            manualMoveCmdForm.BringToFront();
             manualMoveCmdForm.Show();
         }
 

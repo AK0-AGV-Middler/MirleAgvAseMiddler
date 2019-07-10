@@ -10,9 +10,8 @@ namespace Mirle.Agv.Model
     {
         //Id, Barcode, PositionX, PositionY, IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin
         public string Id { get; set; } = "Empty";
+        public MapPosition Position { get; set; } = new MapPosition();
         public float Barcode { get; set; }
-        public float PositionX { get; set; }
-        public float PositionY { get; set; }
         public bool IsWorkStation { get; set; }
         public bool CanLeftLoad { get; set; }
         public bool CanLeftUnload { get; set; }
@@ -31,15 +30,7 @@ namespace Mirle.Agv.Model
             return (EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), v);
         }
 
-        public MapPosition GetPosition()
-        {
-            MapPosition mapPosition = new MapPosition();
-            mapPosition.PositionX = this.PositionX;
-            mapPosition.PositionY = this.PositionY;
-            return mapPosition;
-        }
-
-        internal EnumPioDirection PioDirectionConvert(string v)
+        public EnumPioDirection PioDirectionConvert(string v)
         {
             v = v.Trim();
             return (EnumPioDirection)Enum.Parse(typeof(EnumPioDirection), v);

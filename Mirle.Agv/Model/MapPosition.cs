@@ -8,13 +8,13 @@ namespace Mirle.Agv.Model
 {
     public class MapPosition
     {
-        public float PositionX { get; set; }
-        public float PositionY { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
 
         public MapPosition(float x,float y)
         {
-            PositionX = x;
-            PositionY = y;
+            X = x;
+            Y = y;
         }
 
         public MapPosition() : this(0, 0)

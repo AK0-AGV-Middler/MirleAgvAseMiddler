@@ -14,6 +14,7 @@ using System.Threading;
 using System.IO;
 using System.Reflection;
 using TcpIpClientSample;
+using Mirle.Agv.Model;
 
 namespace Mirle.Agv.View
 {

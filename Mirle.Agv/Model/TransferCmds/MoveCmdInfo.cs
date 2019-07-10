@@ -19,7 +19,8 @@ namespace Mirle.Agv.Model.TransferCmds
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
 
-        public MoveCmdInfo() : base()
+        public MoveCmdInfo() : this(new MapInfo()) { }
+        public MoveCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
             type = EnumTransCmdType.Move;
         }
@@ -32,7 +33,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 for (int i = 0; i < AddressIds.Count; i++)
                 {
                     MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]];
-                    MapPosition position = mapAddress.GetPosition();
+                    MapPosition position = mapAddress.Position.DeepClone();
                     AddressPositions.Add(position);
                 }
             }
@@ -100,7 +101,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 try
                 {
                     mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();
-                    mapSection.CmdDirection = (mapSection.FromAddress == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
+                    mapSection.CmdDirection = (mapSection.HeadAddress.Id == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
                 }
                 catch (Exception ex)
                 {
@@ -157,21 +158,21 @@ namespace Mirle.Agv.Model.TransferCmds
 
         private bool IsTurnRight(MapSection currentSection, MapSection nextSection)
         {
-            MapAddress mapAddressA = theMapInfo.allMapAddresses[currentSection.FromAddress];
-            MapAddress mapAddressB = theMapInfo.allMapAddresses[currentSection.ToAddress];
-            MapAddress mapAddressC = theMapInfo.allMapAddresses[nextSection.ToAddress];
+            MapAddress mapAddressA = currentSection.HeadAddress;
+            MapAddress mapAddressB = currentSection.TailAddress;
+            MapAddress mapAddressC = nextSection.TailAddress;
 
-            MapPosition positionA = mapAddressA.GetPosition();
-            MapPosition positionB = mapAddressB.GetPosition();
-            MapPosition positionC = mapAddressC.GetPosition();
+            MapPosition positionA = mapAddressA.Position.DeepClone();
+            MapPosition positionB = mapAddressB.Position.DeepClone();
+            MapPosition positionC = mapAddressC.Position.DeepClone();
 
-            if (positionA.PositionX == positionB.PositionX)
+            if (positionA.X == positionB.X)
             {
                 //垂直接水平
-                if (positionA.PositionY < positionB.PositionY)
+                if (positionA.Y < positionB.Y)
                 {
                     //北往南
-                    if (positionB.PositionX < positionC.PositionX)
+                    if (positionB.X < positionC.X)
                     {
                         //北往南 接著 西往東 = 左轉
                         return false;
@@ -185,7 +186,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 else
                 {
                     //南往北
-                    if (positionB.PositionX < positionC.PositionX)
+                    if (positionB.X < positionC.X)
                     {
                         //南往北 接著 西往東 = 右轉
                         return true;
@@ -200,10 +201,10 @@ namespace Mirle.Agv.Model.TransferCmds
             else
             {
                 //水平接垂直
-                if (positionA.PositionX < positionB.PositionX)
+                if (positionA.X < positionB.X)
                 {
                     //西往東
-                    if (positionB.PositionY < positionC.PositionY)
+                    if (positionB.Y < positionC.Y)
                     {
                         //西往東 接 北往南 = 右轉
                         return true;
@@ -217,7 +218,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 else
                 {
                     //東往西
-                    if (positionB.PositionY < positionC.PositionY)
+                    if (positionB.Y < positionC.Y)
                     {
                         //東往西 接 北往南 = 左轉
                         return false;

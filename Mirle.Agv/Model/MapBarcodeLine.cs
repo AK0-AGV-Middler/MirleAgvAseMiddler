@@ -10,15 +10,10 @@ namespace Mirle.Agv.Model
     {
         //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, Direction
         public string Id { get; set; } = "Empty";
-        public int BarcodeHeadNum { get; set; }
-        public float HeadX { get; set; }
-        public float HeadY { get; set; }
-        public int BarcodeTailNum { get; set; }
-        public float TailX { get; set; }
-        public float TailY { get; set; }
+        public MapBarcode HeadBarcode { get; set; } = new MapBarcode();
+        public MapBarcode TailBarcode { get; set; } = new MapBarcode();
         public int Direction { get; set; }
-        public float OffsetX { get; set; }
-        public float OffsetY { get; set; }
+        public MapPosition Offset { get; set; } = new MapPosition();
 
         public int BarcodeDirectionConvert(string v)
         {

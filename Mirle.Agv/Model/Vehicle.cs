@@ -22,6 +22,7 @@ namespace Mirle.Agv.Model
         private PlcRobot PlcRobot;
         private TransCmd transCmd;
         private LoggerAgent theLoggerAgent;
+        private MapInfo theMapInfo = new MapInfo();
 
         #region Comm Property
 
@@ -56,7 +57,7 @@ namespace Mirle.Agv.Model
         private Vehicle()
         {
             battery = new Battery();
-            vehLoacation = new VehLocation();
+            vehLoacation = new VehLocation(theMapInfo);
             dicCarriersById = new Dictionary<string, Carrier>();
             dicCarriersByStageNum = new Dictionary<int, Carrier>();
             transCmd = new EmptyTransCmd();
@@ -154,6 +155,11 @@ namespace Mirle.Agv.Model
                 //log ex
                 return new Carrier();
             }
+        }
+
+        public void SetMapInfo(MapInfo theMapInfo)
+        {
+            this.theMapInfo = theMapInfo;
         }
 
         #endregion

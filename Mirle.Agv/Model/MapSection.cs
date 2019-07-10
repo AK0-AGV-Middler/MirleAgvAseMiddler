@@ -10,8 +10,8 @@ namespace Mirle.Agv.Model
     {
         //Id, FromAddress, ToAddress, Distance, Speed, Type, PermitDirection, FowardBeamSensorEnable, BackwardBeamSensorEnable
         public string Id { get; set; } = "Empty";
-        public string FromAddress { get; set; } = "Empty";
-        public string ToAddress { get; set; } = "Empty";
+        public MapAddress HeadAddress { get; set; } = new MapAddress();
+        public MapAddress TailAddress { get; set; } = new MapAddress();
         public float Distance { get; set; }
         public float Speed { get; set; }
         public EnumSectionType Type { get; set; } = EnumSectionType.None;

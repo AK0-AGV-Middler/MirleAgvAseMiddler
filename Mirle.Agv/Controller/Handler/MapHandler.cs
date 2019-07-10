@@ -16,7 +16,9 @@ namespace Mirle.Agv.Controller
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
-        private MapInfo theMapInfo;
+        private MapInfo theMapInfo = new MapInfo();
+        private float SectionWidth { get; set; } = 5;
+        private float AddressArea { get; set; } = 5;
 
         public MapHandler(MapConfigs mapConfigs)
         {
@@ -26,10 +28,10 @@ namespace Mirle.Agv.Controller
             SectionPath = Path.Combine(rootDir, mapConfigs.SectionFileName);
             AddressPath = Path.Combine(rootDir, mapConfigs.AddressFileName);
             BarcodePath = Path.Combine(rootDir, mapConfigs.BarcodeFileName);
-            theMapInfo = MapInfo.Instance;
-            LoadSectionCsv();
-            LoadAddressCsv();
+
             LoadBarcodeLineCsv();
+            LoadAddressCsv();
+            LoadSectionCsv();
         }
 
         public void LoadSectionCsv()
@@ -41,10 +43,10 @@ namespace Mirle.Agv.Controller
                     return;
                 }
                 var mapSections = theMapInfo.mapSections;
-                var dicMapSections = theMapInfo.allMapSections;
+                var allMapSections = theMapInfo.allMapSections;
                 Dictionary<string, int> dicSectionIndexes = new Dictionary<string, int>(); //theMapInfo.dicSectionIndexes;
                 mapSections.Clear();
-                dicMapSections.Clear();
+                allMapSections.Clear();
 
                 string[] allRows = File.ReadAllLines(SectionPath);
                 if (allRows == null || allRows.Length < 2)
@@ -73,8 +75,8 @@ namespace Mirle.Agv.Controller
                     string[] getThisRow = allRows[i].Split(',');
                     MapSection oneRow = new MapSection();
                     oneRow.Id = getThisRow[dicSectionIndexes["Id"]];
-                    oneRow.FromAddress = getThisRow[dicSectionIndexes["FromAddress"]];
-                    oneRow.ToAddress = getThisRow[dicSectionIndexes["ToAddress"]];
+                    oneRow.HeadAddress = theMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["FromAddress"]]];
+                    oneRow.TailAddress = theMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["ToAddress"]]];
                     oneRow.Distance = float.Parse(getThisRow[dicSectionIndexes["Distance"]]);
                     oneRow.Speed = float.Parse(getThisRow[dicSectionIndexes["Speed"]]);
                     oneRow.Type = oneRow.SectionTypeConvert(getThisRow[dicSectionIndexes["Type"]]);
@@ -83,7 +85,7 @@ namespace Mirle.Agv.Controller
                     oneRow.BackwardBeamSensorEnable = bool.Parse(getThisRow[dicSectionIndexes["BackwardBeamSensorEnable"]]);
 
                     mapSections.Add(oneRow);
-                    dicMapSections.Add(oneRow.Id, oneRow);
+                    allMapSections.Add(oneRow.Id, oneRow);
                 }
             }
             catch (Exception ex)
@@ -101,10 +103,10 @@ namespace Mirle.Agv.Controller
                     return;
                 }
                 var mapAddresses = theMapInfo.mapAddresses;
-                var dicMapAddresses = theMapInfo.allMapAddresses;
+                var allMapAddresses = theMapInfo.allMapAddresses;
                 Dictionary<string, int> dicAddressIndexes = new Dictionary<string, int>(); // theMapInfo.dicAddressIndexes;
                 mapAddresses.Clear();
-                dicMapAddresses.Clear();
+                allMapAddresses.Clear();
 
                 string[] allRows = File.ReadAllLines(AddressPath);
                 if (allRows == null || allRows.Length < 2)
@@ -136,8 +138,8 @@ namespace Mirle.Agv.Controller
                     MapAddress oneRow = new MapAddress();
                     oneRow.Id = getThisRow[dicAddressIndexes["Id"]];
                     oneRow.Barcode = float.Parse(getThisRow[dicAddressIndexes["Barcode"]]);
-                    oneRow.PositionX = float.Parse(getThisRow[dicAddressIndexes["PositionX"]]);
-                    oneRow.PositionY = float.Parse(getThisRow[dicAddressIndexes["PositionY"]]);
+                    oneRow.Position.X = float.Parse(getThisRow[dicAddressIndexes["PositionX"]]);
+                    oneRow.Position.Y = float.Parse(getThisRow[dicAddressIndexes["PositionY"]]);
                     oneRow.IsWorkStation = bool.Parse(getThisRow[dicAddressIndexes["IsWorkStation"]]);
                     oneRow.CanLeftLoad = bool.Parse(getThisRow[dicAddressIndexes["CanLeftLoad"]]);
                     oneRow.CanLeftUnload = bool.Parse(getThisRow[dicAddressIndexes["CanLeftUnload"]]);
@@ -151,7 +153,7 @@ namespace Mirle.Agv.Controller
                     oneRow.PioDirection = oneRow.PioDirectionConvert(getThisRow[dicAddressIndexes["PioDirection"]]);
 
                     mapAddresses.Add(oneRow);
-                    dicMapAddresses.Add(oneRow.Id, oneRow);
+                    allMapAddresses.Add(oneRow.Id, oneRow);
                 }
             }
             catch (Exception ex)
@@ -170,9 +172,9 @@ namespace Mirle.Agv.Controller
                 }
                 var mapBarcodeLines = theMapInfo.mapBarcodeLines;
                 Dictionary<string, int> dicBarcodeIndexes = new Dictionary<string, int>(); // theMapInfo.dicBarcodeIndexes;
-                var dicBarcodes = theMapInfo.allBarcodes;
+                var allBarcodes = theMapInfo.allBarcodes;
                 mapBarcodeLines.Clear();
-                dicBarcodes.Clear();
+                allBarcodes.Clear();
 
                 string[] allRows = File.ReadAllLines(BarcodePath);
                 if (allRows == null || allRows.Length < 2)
@@ -211,15 +213,15 @@ namespace Mirle.Agv.Controller
                     float OffsetX = float.Parse(getThisRow[dicBarcodeIndexes["OffsetX"]]);
                     float OffsetY = float.Parse(getThisRow[dicBarcodeIndexes["OffsetY"]]);
 
-                    oneRow.BarcodeHeadNum = HeadNum;
-                    oneRow.HeadX = HeadX;
-                    oneRow.HeadY = HeadY;
-                    oneRow.BarcodeTailNum = TailNum;
-                    oneRow.TailX = TailX;
-                    oneRow.TailY = TailY;
+                    oneRow.HeadBarcode.Number = HeadNum;
+                    oneRow.HeadBarcode.Position.X = HeadX;
+                    oneRow.HeadBarcode.Position.Y = HeadY;
+                    oneRow.TailBarcode.Number = TailNum;
+                    oneRow.TailBarcode.Position.X = TailX;
+                    oneRow.TailBarcode.Position.Y = TailY;
                     oneRow.Direction = Direction;
-                    oneRow.OffsetX = OffsetX;
-                    oneRow.OffsetY = OffsetY;
+                    oneRow.Offset.X = OffsetX;
+                    oneRow.Offset.Y = OffsetY;
 
                     int count = TailNum - HeadNum;
                     int absCount = Math.Abs(count);
@@ -231,32 +233,32 @@ namespace Mirle.Agv.Controller
                     if (count < 0)
                     {
                         count = -count;
-                        for (int j = 0; j <= count; j+=3)
+                        for (int j = 0; j <= count; j += 3)
                         {
                             MapBarcode mapBarcode = new MapBarcode();
-                            mapBarcode.BarcodeNum = TailNum + j;
-                            mapBarcode.PositionX = (j * HeadX + (count - j) * TailX) / count;
-                            mapBarcode.PositionY = (j * HeadY + (count - j) * TailY) / count;
+                            mapBarcode.Number = TailNum + j;
+                            mapBarcode.Position.X = (j * HeadX + (count - j) * TailX) / count;
+                            mapBarcode.Position.Y = (j * HeadY + (count - j) * TailY) / count;
+                            mapBarcode.Offset.X = OffsetX;
+                            mapBarcode.Offset.Y = OffsetY;
                             mapBarcode.Direction = Direction;
-                            mapBarcode.OffsetX = OffsetX;
-                            mapBarcode.OffsetY = OffsetY;
 
-                            dicBarcodes.Add(mapBarcode.BarcodeNum, mapBarcode);
+                            allBarcodes.Add(mapBarcode.Number, mapBarcode);
                         }
                     }
                     else
                     {
-                        for (int j = 0; j <= count; j+=3)
+                        for (int j = 0; j <= count; j += 3)
                         {
                             MapBarcode mapBarcode = new MapBarcode();
-                            mapBarcode.BarcodeNum = HeadNum + j;
-                            mapBarcode.PositionX = (j * TailX + (count - j) * HeadX) / count;
-                            mapBarcode.PositionY = (j * TailY + (count - j) * HeadY) / count;
+                            mapBarcode.Number = HeadNum + j;
+                            mapBarcode.Position.X = (j * TailX + (count - j) * HeadX) / count;
+                            mapBarcode.Position.Y = (j * TailY + (count - j) * HeadY) / count;
+                            mapBarcode.Offset.X = OffsetX;
+                            mapBarcode.Offset.Y = OffsetY;
                             mapBarcode.Direction = Direction;
-                            mapBarcode.OffsetX = OffsetX;
-                            mapBarcode.OffsetY = OffsetY;
 
-                            dicBarcodes.Add(mapBarcode.BarcodeNum, mapBarcode);
+                            allBarcodes.Add(mapBarcode.Number, mapBarcode);
                         }
                     }
 
@@ -269,18 +271,79 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool BooleanConvert(string v)
+        public MapInfo GetMapInfo()
         {
-            v = v.Trim().ToUpper();
-            switch (v)
-            {
-                case "TRUE":
-                    return true;
-                case "FALSE":
-                default:
-                    return false;
-            }
+            return theMapInfo;
         }
+
+        public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection)
+        {
+            MapAddress headAdr = aSection.HeadAddress;
+            MapAddress tailAdr = aSection.TailAddress;
+
+            if (IsPositionInThisAddress(aPosition, headAdr))
+            {
+                return true;
+            }
+
+            if (IsPositionInThisAddress(aPosition, tailAdr))
+            {
+                return true;
+            }
+
+            switch (aSection.Type)
+            {
+                case EnumSectionType.Horizontal:
+                    {
+                        float diffY = Math.Abs(aPosition.Y - headAdr.Position.Y);
+                        if (diffY <= SectionWidth)
+                        {
+                            if (aPosition.X > tailAdr.Position.X || aPosition.X < headAdr.Position.X)
+                            {
+                                return false;
+                            }
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                case EnumSectionType.Vertical:
+                    {
+                        float diffX = Math.Abs(aPosition.X - headAdr.Position.X);
+                        if (diffX <= SectionWidth)
+                        {
+                            if (aPosition.Y > tailAdr.Position.Y || aPosition.Y < headAdr.Position.Y)
+                            {
+                                return false;
+                            }
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                case EnumSectionType.R2000:
+                    //TODO: Analysis diff <= SectionWidth?
+                    //TODO: Analysis position is in the R2000 rectangle(sin45/cos45)
+                    break;
+                case EnumSectionType.None:
+                default:
+                    break;
+            }
+
+            return true;
+        }
+
+        public bool IsPositionInThisAddress(MapPosition aPosition, MapAddress anAddress)
+        {
+            var diffX = Math.Abs(aPosition.X - anAddress.Position.X);
+            var diffY = Math.Abs(aPosition.Y - anAddress.Position.Y);
+            return diffX * diffX + diffY * diffY <= AddressArea * AddressArea;
+        }
+
     }
 
 }

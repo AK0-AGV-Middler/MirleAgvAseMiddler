@@ -17,12 +17,13 @@ namespace Mirle.Agv.View
     {
         private MainFlowHandler mainFlowHandler;
         private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
-        private MapInfo theMapInfo = MapInfo.Instance;
+        private MapInfo theMapInfo = new MapInfo();
 
-        public ManualMoveCmdForm(MainFlowHandler mainFlowHandler)
+        public ManualMoveCmdForm(MainFlowHandler mainFlowHandler, MapInfo theMapInfo)
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
+            this.theMapInfo = theMapInfo;
             AddListMapAddressPositions();
             AddListMapAddressActions();
             AddListMapSpeedLimits();
@@ -34,8 +35,8 @@ namespace Mirle.Agv.View
             foreach (var valuePair in theMapInfo.allMapAddresses)
             {
                 MapAddress mapAddress = valuePair.Value;
-                MapPosition mapPosition = mapAddress.GetPosition();
-                string txtPosition = $"{mapPosition.PositionX},{mapPosition.PositionY}";
+                MapPosition mapPosition = mapAddress.Position.DeepClone();
+                string txtPosition = $"{mapPosition.X},{mapPosition.Y}";
                 listMapAddressPositions.Items.Add(txtPosition);
             }
         }
@@ -332,9 +333,9 @@ namespace Mirle.Agv.View
 
         private bool RepeatNext(MapPosition pos1, MapPosition pos2)
         {
-            if (pos1.PositionX == pos2.PositionX)
+            if (pos1.X == pos2.X)
             {
-                if (pos1.PositionY == pos2.PositionY)
+                if (pos1.Y == pos2.Y)
                 {
                     return true;
                 }

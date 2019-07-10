@@ -8,12 +8,10 @@ namespace Mirle.Agv.Model
 {
     public class MapBarcode
     {
-        public int BarcodeNum { get; set; }
-        public float PositionX { get; set; }
-        public float PositionY { get; set; }
+        public int Number { get; set; }
+        public MapPosition Position { get; set; } = new MapPosition();
+        public MapPosition Offset { get; set; } = new MapPosition();
         public int Direction { get; set; }
-        public float OffsetX { get; set; }
-        public float OffsetY { get; set; }
 
         public int BarcodeDirectionConvert(string v)
         {

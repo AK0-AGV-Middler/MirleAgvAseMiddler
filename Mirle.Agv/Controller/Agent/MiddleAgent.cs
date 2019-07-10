@@ -32,23 +32,20 @@ namespace Mirle.Agv.Controller
 
         #endregion
 
-        private List<TransCmd> transCmds;
-        private LoggerAgent theLoggerAgent;
-        private Vehicle theVehicle;
+        private List<TransCmd> transCmds = new List<TransCmd>();
+        private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
+        private Vehicle theVehicle = Vehicle.Instance;
         private MiddlerConfigs middlerConfigs;
+        private MapInfo theMapInfo = new MapInfo();
 
         public TcpIpAgent ClientAgent { get; private set; }
 
-        public MiddleAgent(MiddlerConfigs middlerConfigs)
+        public MiddleAgent(MiddlerConfigs middlerConfigs, MapInfo theMapInfo)
         {
+            this.theMapInfo = theMapInfo;
             this.middlerConfigs = middlerConfigs;
-            transCmds = new List<TransCmd>();
-
-            theLoggerAgent = LoggerAgent.Instance;
-            theVehicle = Vehicle.Instance;
 
             CreatTcpIpClientAgent();
-
         }
 
         private void CreatTcpIpClientAgent()

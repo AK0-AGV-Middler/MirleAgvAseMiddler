@@ -18,7 +18,7 @@ namespace Mirle.Agv
         public string Id { get; set; } = "Empty";
         public Size labelSize { get; set; } = new Size(100, 100);
 
-        private MapInfo theMapInfo = MapInfo.Instance;
+        private MapInfo theMapInfo = new MapInfo();
         private Image image;
         private Graphics gra;
         private Pen bluePen = new Pen(Color.Blue, 1);
@@ -28,37 +28,34 @@ namespace Mirle.Agv
 
         private ToolTip toolTip = new ToolTip();
 
-
-        public UcSectionImage() : this(new MapSection())
-        {
-        }
-
-        public UcSectionImage(MapSection aSection)
+        public UcSectionImage() : this(new MapInfo(), new MapSection()) { }
+        public UcSectionImage(MapInfo theMapInfo) : this(theMapInfo, new MapSection()) { }
+        public UcSectionImage(MapInfo theMapInfo, MapSection aSection)
         {
             InitializeComponent();
+            this.theMapInfo = theMapInfo;
             Section = aSection;
             Id = Section.Id;
             label1.Text = Id;
             labelSize = label1.Size.DeepClone();
             DrawSectionImage(bluePen);
-            //pictureBox1.BackColor = Color.Red;
-            SetupShowInfo();
+            SetupShowSectionInfo();
         }
 
-        private void SetupShowInfo()
+        private void SetupShowSectionInfo()
         {
-            string msg = $"Id = {Section.Id}\n" + $"FromAdr = {Section.FromAddress}\n" + $"ToAdr = {Section.ToAddress}";
+            string msg = $"Id = {Section.Id}\n" + $"FromAdr = {Section.HeadAddress.Id}\n" + $"ToAdr = {Section.TailAddress.Id}";
 
             toolTip.SetToolTip(pictureBox1, msg);
         }
 
         private void DrawSectionImage(Pen aPen)
         {
-            MapAddress fromAdr = theMapInfo.allMapAddresses[Section.FromAddress];
-            MapAddress toAdr = theMapInfo.allMapAddresses[Section.ToAddress];
+            MapAddress headAdr = Section.HeadAddress;
+            MapAddress tailAdr = Section.TailAddress;
 
-            float disX = Math.Abs(toAdr.PositionX - fromAdr.PositionX) * coefficient;
-            float disY = Math.Abs(toAdr.PositionY - fromAdr.PositionY) * coefficient;
+            float disX = Math.Abs(tailAdr.Position.X - headAdr.Position.X) * coefficient;
+            float disY = Math.Abs(tailAdr.Position.Y - headAdr.Position.Y) * coefficient;
 
             switch (Section.Type)
             {

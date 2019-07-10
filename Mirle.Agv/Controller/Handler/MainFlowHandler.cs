@@ -82,7 +82,7 @@ namespace Mirle.Agv.Controller
 
         #region Events
 
-        public event EventHandler<InitialEventArgs> OnXXXIntialDoneEvent;
+        public event EventHandler<InitialEventArgs> OnComponentIntialDoneEvent;
         public event EventHandler<MoveCmdInfo> OnTransferMoveEvent;
         public event EventHandler<List<MapPosition>> OnReserveOkEvent;
         public event EventHandler<string> OnAgvcTransferCommandCheckedEvent;
@@ -99,7 +99,7 @@ namespace Mirle.Agv.Controller
 
         public Vehicle theVehicle;
         private bool isIniOk;
-        public MapInfo theMapInfo;
+        private MapInfo theMapInfo = new MapInfo();
 
         public MainFlowHandler()
         {
@@ -123,28 +123,22 @@ namespace Mirle.Agv.Controller
         {
             ConfigsInitial();
             LoggersInitial();
-
-            AgentInitial();
-            HandlerInitial();
-
+            ControllersInitial();
             VehicleInitial();
-            GetMapInfo();
             LoadAllAlarms();
-
             EventInitial();
-
             ThreadInitial();
 
             if (isIniOk)
             {
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = true,
                         ItemName = "全部"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
             }
         }
@@ -153,11 +147,6 @@ namespace Mirle.Agv.Controller
         {
             //TODO: load all alarms
             //throw new NotImplementedException();
-        }
-
-        private void GetMapInfo()
-        {
-            theMapInfo = MapInfo.Instance;
         }
 
         private void ThreadInitial()
@@ -241,27 +230,27 @@ namespace Mirle.Agv.Controller
                 int.TryParse(configHandler.GetString("Battery", "HighTemperatureThreshold", "45"), out int tempHighTemperatureThreshold);
                 batteryConfigs.HighTemperatureThreshold = tempHighTemperatureThreshold;
 
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = true,
                         ItemName = "讀寫設定檔"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
             }
             catch (Exception)
             {
                 isIniOk = false;
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = false,
                         ItemName = "讀寫設定檔"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
             }
         }
@@ -272,50 +261,59 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent = LoggerAgent.Instance;
 
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = true,
                         ItemName = "Logger"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
 
             }
             catch (Exception)
             {
                 isIniOk = false;
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = false,
                         ItemName = "Logger"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
 
             }
         }
 
-        private void AgentInitial()
+        private void ControllersInitial()
         {
             try
             {
+                mapHandler = new MapHandler(mapConfigs);
+                theMapInfo = mapHandler.GetMapInfo();
+
+                batteryHandler = new BatteryHandler();
+                coupleHandler = new CoupleHandler();
+                moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs, theMapInfo);
+                robotControlHandler = new RobotControlHandler();
+
+
                 bmsAgent = new BmsAgent();
                 elmoAgent = new ElmoAgent();
-                middleAgent = new MiddleAgent(middlerConfigs);
+                middleAgent = new MiddleAgent(middlerConfigs, theMapInfo);
                 plcAgent = new PlcAgent();
 
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = true,
-                        ItemName = "Agent"
+                        ItemName = "Controller"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
 
             }
@@ -323,51 +321,14 @@ namespace Mirle.Agv.Controller
             {
                 var temp = ex.StackTrace;
                 isIniOk = false;
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = false,
                         ItemName = "Agent"
                     };
-                    OnXXXIntialDoneEvent(this, args);
-                }
-            }
-        }
-
-        private void HandlerInitial()
-        {
-            try
-            {
-                batteryHandler = new BatteryHandler();
-                coupleHandler = new CoupleHandler();
-                mapHandler = new MapHandler(mapConfigs);
-                moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs);
-                robotControlHandler = new RobotControlHandler();
-
-                if (OnXXXIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = true,
-                        ItemName = "Handler"
-                    };
-                    OnXXXIntialDoneEvent(this, args);
-                }
-
-            }
-            catch (Exception)
-            {
-                isIniOk = false;
-
-                if (OnXXXIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = false,
-                        ItemName = "Handler"
-                    };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
             }
         }
@@ -377,29 +338,30 @@ namespace Mirle.Agv.Controller
             try
             {
                 theVehicle = Vehicle.Instance;
+                theVehicle.SetMapInfo(theMapInfo);
                 theVehicle.SetupBattery(batteryConfigs);
 
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = true,
                         ItemName = "Vehicle"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
             }
             catch (Exception)
             {
                 isIniOk = false;
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = false,
                         ItemName = "Vehicle"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
             }
 
@@ -443,14 +405,14 @@ namespace Mirle.Agv.Controller
 
 
 
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = true,
                         ItemName = "事件"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
 
             }
@@ -458,16 +420,21 @@ namespace Mirle.Agv.Controller
             {
                 isIniOk = false;
 
-                if (OnXXXIntialDoneEvent != null)
+                if (OnComponentIntialDoneEvent != null)
                 {
                     var args = new InitialEventArgs
                     {
                         IsOk = false,
                         ItemName = "事件"
                     };
-                    OnXXXIntialDoneEvent(this, args);
+                    OnComponentIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        public MapInfo GetMapInfo()
+        {
+            return theMapInfo;
         }
 
         private void MiddleAgent_OnGetBlockPassEvent(object sender, bool e)
@@ -606,9 +573,9 @@ namespace Mirle.Agv.Controller
                     return false;
                 }
 
-                if (tempSection.FromAddress == addresses[i])
+                if (tempSection.HeadAddress.Id == addresses[i])
                 {
-                    if (tempSection.ToAddress != addresses[i + 1])
+                    if (tempSection.TailAddress.Id != addresses[i + 1])
                     {
                         int replyCode = 1; // NG
                         string reason = $"guildSections and guildAddresses is not match";
@@ -616,9 +583,9 @@ namespace Mirle.Agv.Controller
                         return false;
                     }
                 }
-                else if (tempSection.ToAddress == addresses[i])
+                else if (tempSection.TailAddress.Id == addresses[i])
                 {
-                    if (tempSection.FromAddress != addresses[i + 1])
+                    if (tempSection.HeadAddress.Id != addresses[i + 1])
                     {
                         int replyCode = 1; // NG
                         string reason = $"guildSections and guildAddresses is not match";
@@ -921,13 +888,13 @@ namespace Mirle.Agv.Controller
                 MapAddress mapAddress = new MapAddress();
                 if (mapSection.CmdDirection == EnumPermitDirection.Backward)
                 {
-                    mapAddress = theMapInfo.allMapAddresses[mapSection.ToAddress].DeepClone();
+                    mapAddress = mapSection.TailAddress.DeepClone();
                 }
                 else
                 {
-                    mapAddress = theMapInfo.allMapAddresses[mapSection.FromAddress].DeepClone();
+                    mapAddress = mapSection.HeadAddress.DeepClone();
                 }
-                MapPosition mapPosition = new MapPosition(mapAddress.PositionX, mapAddress.PositionY);
+                MapPosition mapPosition = new MapPosition(mapAddress.Position.X, mapAddress.Position.Y);
                 reserveOkPositions.Add(mapPosition);
             }
 
@@ -1089,7 +1056,7 @@ namespace Mirle.Agv.Controller
 
         public TransCmd GetCurTransCmd()
         {
-            TransCmd transCmd = new EmptyTransCmd();
+            TransCmd transCmd = new EmptyTransCmd(theMapInfo);
             if (TransCmdsIndex < transCmds.Count)
             {
                 transCmd = transCmds[TransCmdsIndex];
@@ -1099,7 +1066,7 @@ namespace Mirle.Agv.Controller
 
         public TransCmd GetNextTransCmd()
         {
-            TransCmd transCmd = new EmptyTransCmd();
+            TransCmd transCmd = new EmptyTransCmd(theMapInfo);
             int nextIndex = TransCmdsIndex + 1;
             if (nextIndex < transCmds.Count)
             {
@@ -1204,13 +1171,13 @@ namespace Mirle.Agv.Controller
             {
                 //vehicle is in the last section of this moveCmdInfo.
                 MapSection currentSection = movingSections[movingSectionIndex];
-                MapAddress fromAdr = theMapInfo.allMapAddresses[currentSection.FromAddress];
-                MapAddress toAdr = theMapInfo.allMapAddresses[currentSection.ToAddress];
+                MapAddress headAdr = currentSection.HeadAddress;
+                MapAddress tailAdr = currentSection.TailAddress;
                 switch (currentSection.Type)
                 {
                     case EnumSectionType.Horizontal:
                         {
-                            if (IsOutsideSection(gxPosition.PositionY, fromAdr.PositionY))
+                            if (IsOutsideSection(gxPosition.Y, headAdr.Position.Y))
                             {
                                 //TODO:
                                 //Stop the vehicle.
@@ -1221,11 +1188,11 @@ namespace Mirle.Agv.Controller
                             float distance = 0;
                             if (currentSection.CmdDirection == EnumPermitDirection.Backward)
                             {
-                                distance = toAdr.PositionX - gxPosition.PositionX;
+                                distance = tailAdr.Position.X - gxPosition.X;
                             }
                             else
                             {
-                                distance = gxPosition.PositionX - fromAdr.PositionX;
+                                distance = gxPosition.X - headAdr.Position.X;
                             }
 
                             var location = theVehicle.GetVehLoacation();
