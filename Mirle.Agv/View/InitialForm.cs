@@ -37,7 +37,7 @@ namespace Mirle.Agv.View
                 ListBoxAppend(lst_StartUpMsg, msg);
                 if (e.ItemName=="全部")
                 {
-                    SpinWait.SpinUntil(() => false, 2000);
+                    SpinWait.SpinUntil(() => false, 1000);
                     GoNextForm();
                 }
             }

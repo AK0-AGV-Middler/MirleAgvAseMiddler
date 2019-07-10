@@ -110,11 +110,17 @@
     <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\TransferCmds\TransCmd.cs" />
     <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
-    <Compile Include="View\UserControls\ucLabelTextBox.cs">
+    <Compile Include="View\UserControls\UcSectionImage.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\UserControls\ucLabelTextBox.Designer.cs">
-      <DependentUpon>ucLabelTextBox.cs</DependentUpon>
+    <Compile Include="View\UserControls\UcSectionImage.Designer.cs">
+      <DependentUpon>UcSectionImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\UcLabelTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\UserControls\UcLabelTextBox.Designer.cs">
+      <DependentUpon>UcLabelTextBox.cs</DependentUpon>
     </Compile>
     <Compile Include="View\ManualMoveCmdForm.cs">
       <SubType>Form</SubType>
@@ -181,8 +187,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="View\UserControls\ucLabelTextBox.resx">
-      <DependentUpon>ucLabelTextBox.cs</DependentUpon>
+    <EmbeddedResource Include="View\UserControls\UcLabelTextBox.resx">
+      <DependentUpon>UcLabelTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\ManualMoveCmdForm.resx">
       <DependentUpon>ManualMoveCmdForm.cs</DependentUpon>
@@ -195,6 +201,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\UserControls\UcSectionImage.resx">
+      <DependentUpon>UcSectionImage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\WarningForm.resx">
       <DependentUpon>WarningForm.cs</DependentUpon>

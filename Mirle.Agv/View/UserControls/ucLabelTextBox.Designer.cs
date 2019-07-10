@@ -1,6 +1,6 @@
 ﻿namespace Mirle.Agv
 {
-    partial class ucLabelTextBox
+    partial class UcLabelTextBox
     {
         /// <summary> 
         /// 設計工具所需的變數。

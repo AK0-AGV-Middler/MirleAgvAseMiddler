@@ -36,7 +36,6 @@ namespace Mirle.Agv.View
 
         private Point mouseDownPbPoint;
         private Point mouseDownScreenPoint;
-        private bool isMouseDown;
 
         #endregion
 
@@ -53,7 +52,7 @@ namespace Mirle.Agv.View
         private SolidBrush redBrush = new SolidBrush(Color.Red);
 
         public bool IsBarcodeLineShow { get; set; } = true;
-        //private Dictionary<MapSection, ucSectionImage> allUcSectionImages = new Dictionary<MapSection, ucSectionImage>();
+        private Dictionary<MapSection, UcSectionImage> allUcSectionImages = new Dictionary<MapSection, UcSectionImage>();
         private float coefficient = 0.50f;
         private float deltaOrigion = 50;
         private float addressRadius = 3;
@@ -76,27 +75,34 @@ namespace Mirle.Agv.View
             InitialVehicleLocation();
             ResetImageAndPb();
 
-            // MakeATestPanel();
+            //MakeTestUcSectionImage();
         }
 
-        private void MakeATestPanel()
+        private void MakeTestUcSectionImage()
         {
-            Panel aPanel = new Panel();
-            aPanel.BackColor = Color.Red;
-            aPanel.Location = new Point(650, 420);
-            aPanel.Name = "testpanel";
-            aPanel.Size = new Size(257, 5);
-            aPanel.Visible = true;
-            // splitContainer3.Panel1.Controls.Add(aPanel);
+            MapSection section = theMapInfo.allMapSections["sec020"];
+            MapAddress fromAddress = theMapInfo.allMapAddresses[section.FromAddress];
+            MapAddress toAddress = theMapInfo.allMapAddresses[section.ToAddress];
 
-            pictureBox1.Controls.Add(aPanel);
+            float fromX = fromAddress.PositionX * coefficient + deltaOrigion;
+            float fromY = fromAddress.PositionY * coefficient + deltaOrigion;
+            float toX = toAddress.PositionX * coefficient + deltaOrigion;
+            float toY = toAddress.PositionY * coefficient + deltaOrigion;
 
 
-            //splitContainer1.Panel1.SendToBack();
+            UcSectionImage ucSectionImage = new UcSectionImage(section);
+            //if (!allUcSectionImages.ContainsKey(section))
+            //{
+            //    allUcSectionImages.Add(section, ucSectionImage);
+            //}
+
+            pictureBox1.Controls.Add(ucSectionImage);
+            //allUcSectionImages.Add(section, ucSectionImage);
+            ucSectionImage.Location = new Point(650, 420);
             pictureBox1.SendToBack();
-            aPanel.BringToFront();
+            ucSectionImage.BringToFront();
 
-            aPanel.MouseDown += APanel_MouseDown;
+
         }
 
         private void APanel_MouseDown(object sender, MouseEventArgs e)
@@ -120,8 +126,6 @@ namespace Mirle.Agv.View
 
         private void InitialPaintingItems()
         {
-            DrawBasicMap();
-
             blackDashPen.DashStyle = DashStyle.DashDot;
         }
 
@@ -188,7 +192,7 @@ namespace Mirle.Agv.View
                 }
             }
 
-            //allUcSectionImages.Clear();
+            allUcSectionImages.Clear();
 
             // Draw Sections in blueLine
             foreach (var section in theMapInfo.mapSections)
@@ -201,10 +205,36 @@ namespace Mirle.Agv.View
                 float toX = toAddress.PositionX * coefficient + deltaOrigion;
                 float toY = toAddress.PositionY * coefficient + deltaOrigion;
 
-                gra.DrawLine(bluePen, fromX, fromY, toX, toY);
+                //gra.DrawLine(bluePen, fromX, fromY, toX, toY);
 
-                //ucSectionImage ucSection = new ucSectionImage(section);
-                //allUcSectionImages.Add(section, ucSection);
+                UcSectionImage ucSectionImage = new UcSectionImage(section);
+                if (!allUcSectionImages.ContainsKey(section))
+                {
+                    allUcSectionImages.Add(section, ucSectionImage);
+                }
+                pictureBox1.Controls.Add(ucSectionImage);
+                switch (section.Type)
+                {
+                    case EnumSectionType.Horizontal:
+                        ucSectionImage.Location = new Point((int)fromX, (int)fromY - ucSectionImage.labelSize.Height);
+                        ucSectionImage.BringToFront();
+                        break;
+                    case EnumSectionType.Vertical:
+                        ucSectionImage.Location = new Point((int)fromX - ucSectionImage.labelSize.Width, (int)fromY);
+                        ucSectionImage.SendToBack();
+                        break;
+                    case EnumSectionType.R2000:
+                        ucSectionImage.Location = new Point((int)fromX, (int)fromY);
+                        ucSectionImage.BringToFront();
+                        break;
+                    case EnumSectionType.None:
+                    default:
+                        break;
+                }
+
+                ucSectionImage.MouseDown += UcSectionImage_MouseDown;
+                ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown; ;
+                ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
@@ -235,6 +265,28 @@ namespace Mirle.Agv.View
                     gra.FillPolygon(redBrush, pointFs);
                 }
             }
+
+            pictureBox1.SendToBack();
+        }
+
+        private void UcSectionImageItem_MouseDown(object sender, MouseEventArgs e)
+        {
+            Control control = (Control)sender;
+            Control parentControl = control.Parent;
+            Point point = new Point(e.X + parentControl.Location.X, e.Y + parentControl.Location.Y);
+            mouseDownPbPoint = point;
+            mouseDownScreenPoint = ((Control)sender).PointToScreen(new Point(e.X, e.Y));
+            UpdateStartPbPoint();
+
+        }
+
+        private void UcSectionImage_MouseDown(object sender, MouseEventArgs e)
+        {
+            Control control = (Control)sender;
+            Point point = new Point(e.X + control.Location.X, e.Y + control.Location.Y);
+            mouseDownPbPoint = point;
+            mouseDownScreenPoint = ((Control)sender).PointToScreen(new Point(e.X, e.Y));
+            UpdateStartPbPoint();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -281,11 +333,6 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void btnFakeCmdTest_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.FakeCmdTest();
-        }
-
         private void btnSwitchBarcodeLine_Click(object sender, EventArgs e)
         {
             IsBarcodeLineShow = !IsBarcodeLineShow;
@@ -306,7 +353,6 @@ namespace Mirle.Agv.View
             mouseDownPbPoint = e.Location;
             mouseDownScreenPoint = ((Control)sender).PointToScreen(new Point(e.X, e.Y));
             UpdateStartPbPoint();
-            isMouseDown = true;
         }
 
         private void TmpPngToImage()

@@ -23,8 +23,6 @@ namespace Mirle.Agv.Model.TransferCmds
         public string CmdId { get; set; } = "Empty";
         public ushort SeqNum { get; set; }
 
-        private MapInfo theMapInfo = MapInfo.Instance;
-
         public AgvcTransCmd()
         {
             CmdId = "Empty";

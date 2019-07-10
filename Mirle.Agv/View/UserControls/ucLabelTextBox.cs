@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv
 {
-    public partial class ucLabelTextBox : UserControl
+    public partial class UcLabelTextBox : UserControl
     {
         public string UcName
         {
@@ -36,7 +36,7 @@ namespace Mirle.Agv
             }
         }
 
-        public ucLabelTextBox()
+        public UcLabelTextBox()
         {
             InitializeComponent();
         }

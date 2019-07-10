@@ -64,15 +64,15 @@
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
-            this.ucRealPosition = new Mirle.Agv.ucLabelTextBox();
-            this.ucDeltaPosition = new Mirle.Agv.ucLabelTextBox();
-            this.ucBarcodePosition = new Mirle.Agv.ucLabelTextBox();
-            this.ucEncoderPosition = new Mirle.Agv.ucLabelTextBox();
-            this.ucMapAddress = new Mirle.Agv.ucLabelTextBox();
-            this.ucMapSection = new Mirle.Agv.ucLabelTextBox();
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
+            this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucDeltaPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucEncoderPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
+            this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -237,6 +237,7 @@
             // splitContainer3.Panel1
             // 
             this.splitContainer3.Panel1.AutoScroll = true;
+            this.splitContainer3.Panel1.BackColor = System.Drawing.Color.Transparent;
             this.splitContainer3.Panel1.Controls.Add(this.pictureBox1);
             // 
             // splitContainer3.Panel2
@@ -261,6 +262,7 @@
             // 
             // pictureBox1
             // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(1920, 1080);
@@ -445,6 +447,39 @@
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "VehicleLocation";
             // 
+            // gbConnection
+            // 
+            this.gbConnection.Controls.Add(this.radOnline);
+            this.gbConnection.Controls.Add(this.radOffline);
+            this.gbConnection.Location = new System.Drawing.Point(12, 14);
+            this.gbConnection.Name = "gbConnection";
+            this.gbConnection.Size = new System.Drawing.Size(200, 48);
+            this.gbConnection.TabIndex = 0;
+            this.gbConnection.TabStop = false;
+            this.gbConnection.Text = "Connection";
+            // 
+            // radOnline
+            // 
+            this.radOnline.AutoSize = true;
+            this.radOnline.Location = new System.Drawing.Point(68, 21);
+            this.radOnline.Name = "radOnline";
+            this.radOnline.Size = new System.Drawing.Size(54, 16);
+            this.radOnline.TabIndex = 1;
+            this.radOnline.TabStop = true;
+            this.radOnline.Text = "Online";
+            this.radOnline.UseVisualStyleBackColor = true;
+            // 
+            // radOffline
+            // 
+            this.radOffline.AutoSize = true;
+            this.radOffline.Location = new System.Drawing.Point(6, 21);
+            this.radOffline.Name = "radOffline";
+            this.radOffline.Size = new System.Drawing.Size(56, 16);
+            this.radOffline.TabIndex = 0;
+            this.radOffline.TabStop = true;
+            this.radOffline.Text = "Offline";
+            this.radOffline.UseVisualStyleBackColor = true;
+            // 
             // ucRealPosition
             // 
             this.ucRealPosition.Location = new System.Drawing.Point(0, 181);
@@ -498,39 +533,6 @@
             this.ucMapSection.TabIndex = 0;
             this.ucMapSection.UcName = "label1";
             this.ucMapSection.UcValue = "";
-            // 
-            // gbConnection
-            // 
-            this.gbConnection.Controls.Add(this.radOnline);
-            this.gbConnection.Controls.Add(this.radOffline);
-            this.gbConnection.Location = new System.Drawing.Point(12, 14);
-            this.gbConnection.Name = "gbConnection";
-            this.gbConnection.Size = new System.Drawing.Size(200, 48);
-            this.gbConnection.TabIndex = 0;
-            this.gbConnection.TabStop = false;
-            this.gbConnection.Text = "Connection";
-            // 
-            // radOnline
-            // 
-            this.radOnline.AutoSize = true;
-            this.radOnline.Location = new System.Drawing.Point(68, 21);
-            this.radOnline.Name = "radOnline";
-            this.radOnline.Size = new System.Drawing.Size(54, 16);
-            this.radOnline.TabIndex = 1;
-            this.radOnline.TabStop = true;
-            this.radOnline.Text = "Online";
-            this.radOnline.UseVisualStyleBackColor = true;
-            // 
-            // radOffline
-            // 
-            this.radOffline.AutoSize = true;
-            this.radOffline.Location = new System.Drawing.Point(6, 21);
-            this.radOffline.Name = "radOffline";
-            this.radOffline.Size = new System.Drawing.Size(56, 16);
-            this.radOffline.TabIndex = 0;
-            this.radOffline.TabStop = true;
-            this.radOffline.Text = "Offline";
-            this.radOffline.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -609,12 +611,12 @@
         private System.Windows.Forms.GroupBox gbConnection;
         private System.Windows.Forms.RadioButton radOnline;
         private System.Windows.Forms.RadioButton radOffline;
-        private ucLabelTextBox ucRealPosition;
-        private ucLabelTextBox ucDeltaPosition;
-        private ucLabelTextBox ucBarcodePosition;
-        private ucLabelTextBox ucEncoderPosition;
-        private ucLabelTextBox ucMapAddress;
-        private ucLabelTextBox ucMapSection;
+        private UcLabelTextBox ucRealPosition;
+        private UcLabelTextBox ucDeltaPosition;
+        private UcLabelTextBox ucBarcodePosition;
+        private UcLabelTextBox ucEncoderPosition;
+        private UcLabelTextBox ucMapAddress;
+        private UcLabelTextBox ucMapSection;
         private System.Windows.Forms.Button btnBuzzOff;
         private System.Windows.Forms.Button btnAlarmReset;
     }
