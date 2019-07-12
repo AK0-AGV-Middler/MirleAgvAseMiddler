@@ -91,14 +91,6 @@ namespace Mirle.Agv.Controller
 
         #endregion
 
-        #region Alarms
-
-        public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
-        public List<Alarm> happeningAlarms = new List<Alarm>();
-        public List<Alarm> historyAlarms = new List<Alarm>();
-
-        #endregion
-
         public Vehicle theVehicle;
         private bool isIniOk;
         private MapInfo theMapInfo = new MapInfo();
@@ -878,7 +870,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
         private void PublishReserveOkEvent()
         {
             if (queGotReserveOkSections.Count < 1)
@@ -1285,51 +1276,6 @@ namespace Mirle.Agv.Controller
             fakeCmd.ToUnloadAddresses = new string[] { "Adr201", "Adr202", "Adr203" };
 
             SendAgvcTransferCommandChecked(fakeCmd, true);
-        }
-
-        public void LogAlarm(Alarm alarm)
-        {
-            if (loggerAgent == null)
-            {
-                return;
-            }
-
-            loggerAgent.LogAlarm(alarm);
-        }
-
-        public void AlarmSet(int aAlarmId)
-        {
-            if (allAlarms.Count < 1)
-            {
-                string className = GetType().Name;
-                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name; //sender.ToString();
-                string classMethodName = className + ":" + methodName;
-                LogFormat logFormat = new LogFormat("Error", "3", classMethodName, "Device", "CarrierID", $"Allalarms is empty");
-                loggerAgent.LogMsg("Error", logFormat);
-
-                return;
-            }
-
-            if (!allAlarms.ContainsKey(aAlarmId))
-            {
-                string className = GetType().Name;
-                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name; //sender.ToString();
-                string classMethodName = className + ":" + methodName;
-                LogFormat logFormat = new LogFormat("Error", "3", classMethodName, "Device", "CarrierID", $"No such alarmId({aAlarmId})");
-                loggerAgent.LogMsg("Error", logFormat);
-
-                return;
-            }
-
-            DateTime alarmSetTime = DateTime.Now;
-            Alarm alarm = allAlarms[aAlarmId].DeepClone();
-            alarm.SetTime = alarmSetTime;
-            //通知AGVC
-
-            //通知PLC
-
-            //紀錄
-            loggerAgent.LogAlarm(alarm);
         }
     }
 }

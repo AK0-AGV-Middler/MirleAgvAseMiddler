@@ -18,7 +18,6 @@ namespace Mirle.Agv.Controller
         public List<Alarm> alarms = new List<Alarm>();
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
         public ConcurrentQueue<Alarm> happeningAlarms = new ConcurrentQueue<Alarm>();
-        public ConcurrentQueue<Alarm> historyAlarms = new ConcurrentQueue<Alarm>();
 
         #endregion
 
@@ -109,14 +108,11 @@ namespace Mirle.Agv.Controller
 
         public Alarm GetAlarm(int id)
         {
-            Alarm alarm = new Alarm();
+            Alarm alarm;
             if (!allAlarms.ContainsKey(id))
             {
-                string className = GetType().Name;
-                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-                string classMethodName = className + ":" + methodName;
-                LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", $"allAlarms has no {id} alarm");
-                loggerAgent.LogMsg("Error", logFormat);
+                alarm = new Alarm();
+                alarm.Id = id;                
             }
             else
             {
@@ -133,49 +129,61 @@ namespace Mirle.Agv.Controller
             alarm.SetTime = timeStamp;
 
             happeningAlarms.Enqueue(alarm);
+            loggerAgent.LogAlarmHistory(alarm);
         }
 
         public void ResetAlarm(int id)
         {
-           ConcurrentQueue<Alarm> tempAlarms;
+            List<Alarm> tempAlarms;
             lock (happeningAlarms)
             {
-                tempAlarms = happeningAlarms;
+                tempAlarms = happeningAlarms.ToList();
                 happeningAlarms = new ConcurrentQueue<Alarm>();
             }
 
-            //if (tempAlarms.Count > 0)
-            //{
-            //    for (int i = 0; i < tempAlarms.Count; i++)
-            //    {
-            //        Alarm alarm = tempAlarms[i];
-            //        if (alarm.Id == id)
-            //        {
-            //            DateTime resetTime = DateTime.Now;
-            //            tempAlarms.Remove(alarm);
-            //            alarm.ResetTime = resetTime;
-            //            historyAlarms.Add(alarm);
-            //        }
-            //    }
-            //}
+            if (tempAlarms.Count > 0)
+            {
+                for (int i = 0; i < tempAlarms.Count; i++)
+                {
+                    Alarm alarm = tempAlarms[i];
+                    if (alarm.Id == id)
+                    {
+                        DateTime resetTime = DateTime.Now;
+                        alarm.ResetTime = resetTime;
+                        loggerAgent.LogAlarmHistory(alarm);
+                        tempAlarms.Remove(alarm);
+                    }
+                }
+            }
 
-            //lock (happeningAlarms)
-            //{
-            //    if (happeningAlarms.Count > 0)
-            //    {
-            //        for (int i = 0; i < happeningAlarms.Count; i++)
-            //        {                        
-            //            tempAlarms.Add(happeningAlarms[i]);
-            //        }
-            //    }
-
-            //    happeningAlarms = tempAlarms;
-            //}
+            lock (happeningAlarms)
+            {
+                tempAlarms.AddRange(happeningAlarms.ToList());
+                ConcurrentQueue<Alarm> tempAlarmQue = new ConcurrentQueue<Alarm>(tempAlarms);
+                happeningAlarms = tempAlarmQue;
+            }
         }
 
         public void ResetAllAlarms()
         {
-            
+            List<Alarm> tempAlarms;
+            lock (happeningAlarms)
+            {
+                tempAlarms = happeningAlarms.ToList();
+                happeningAlarms = new ConcurrentQueue<Alarm>();
+            }
+
+            if (tempAlarms.Count > 0)
+            {
+                for (int i = 0; i < tempAlarms.Count; i++)
+                {
+                    Alarm alarm = tempAlarms[i];
+                    DateTime resetTime = DateTime.Now;
+                    alarm.ResetTime = resetTime;
+                    loggerAgent.LogAlarmHistory(alarm);
+                    tempAlarms.Remove(alarm);
+                }
+            }
         }
     }
 }

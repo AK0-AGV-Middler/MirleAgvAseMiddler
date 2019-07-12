@@ -21,5 +21,29 @@ namespace Mirle.Agv.Model.Tests
 
             Assert.AreEqual(distance, 123.45f);
         }
+
+        [Test()]
+        public void ReferenceTest()
+        {
+            List<string> list001 = new List<string>();
+            list001.Add("Apple");
+            list001.Add("Book");
+            Assert.AreEqual(2, list001.Count);
+
+            List<string> list002 = list001;
+            Assert.AreEqual(2, list002.Count);
+
+            list001 = new List<string>();
+            Assert.AreEqual(0, list001.Count);
+            Assert.AreEqual(2, list002.Count);
+
+            List<string> list003 = list002;
+            Assert.AreEqual(2, list003.Count);
+
+            list002.Clear();
+            Assert.AreEqual(0, list002.Count);
+            Assert.AreEqual(0, list003.Count);
+
+        }
     }
 }

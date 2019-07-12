@@ -59,7 +59,7 @@ namespace Mirle.Agv.Controller
                 aLogType.DelOverdueFile = configHandler.GetBool(strSectionName, "DelOverdueFile", "True");
                 aLogType.FileKeepDay = Convert.ToInt32(configHandler.GetString(strSectionName, "FileKeepDay", "30"));
                 aLogType.LogMaxSize = Convert.ToInt32(configHandler.GetString(strSectionName, "LogMaxSize", "2"));
-                aLogType.LogEnable = configHandler.GetBool(strSectionName, "LogEnable","True");
+                aLogType.LogEnable = configHandler.GetBool(strSectionName, "LogEnable", "True");
                 aLogType.LineSeparateToken = configHandler.GetString(strSectionName, "LineSeparateToken", "$.$");
                 aLogType.FileExtension = configHandler.GetString(strSectionName, "FileExtension", ".txt");
                 aLogType.DequeueInterval = int.Parse(configHandler.GetString("Basic", "DequeueInterval", "1000"));
@@ -68,9 +68,9 @@ namespace Mirle.Agv.Controller
 
                 dicLoggers.Add(aLogType.Name, logger);
             }
-        }       
+        }
 
-        public void LogMsg(string type,LogFormat logFormat)
+        public void LogMsg(string type, LogFormat logFormat)
         {
             if (dicLoggers.ContainsKey(type))
             {
@@ -79,12 +79,13 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void LogAlarm(Alarm alarm)
+        public void LogAlarmHistory(Alarm alarm)
         {
-            if (dicLoggers.ContainsKey("Error"))
+            if (dicLoggers.ContainsKey("AlarmHistory"))
             {
-                Logger logger = dicLoggers["Error"];
-                string msg = $"{alarm.Id},{alarm.ShortName},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
+                Logger logger = dicLoggers["AlarmHistory"];
+                string timeStamp = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff");
+                string msg = $"{timeStamp},{alarm.Id},{alarm.ShortName},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
                 logger.SavePureLog(msg);
             }
         }
