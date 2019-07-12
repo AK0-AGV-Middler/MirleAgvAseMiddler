@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
-    public class Sr2000Configs
+    public class Sr2000Config
     {
         public int TrackingInterval { get; set; }
     }

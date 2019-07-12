@@ -12,14 +12,14 @@ namespace Mirle.Agv.Controller
     public class Sr2000Agent
     {
         private Dictionary<EnumMapBarcodeReaderSide, MapBarcodeReader> dicMapBarcodeReaders;
-        private Sr2000Configs sr2000Configs;
+        private Sr2000Config sr2000Configs;
         private LoggerAgent loggerAgent;
 
-        public Sr2000Agent(Sr2000Configs sr2000Configs)
+        public Sr2000Agent(Sr2000Config sr2000Config)
         {
             loggerAgent = LoggerAgent.Instance;
             //TODO: fill dicMapBarcodeReaders from sr2000Configs setting.
-            this.sr2000Configs = sr2000Configs;
+            this.sr2000Configs = sr2000Config;
             dicMapBarcodeReaders = new Dictionary<EnumMapBarcodeReaderSide, MapBarcodeReader>();
             RunThreads();
         }

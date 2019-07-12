@@ -22,7 +22,7 @@ namespace Mirle.Agv.View
     {
         private MainFlowHandler mainFlowHandler;
         private MiddleAgent middleAgent;
-        private MiddlerConfigs middlerConfigs;
+        private MiddlerConfig middlerConfig;
 
         public MiddlerForm(MainFlowHandler mainFlowHandler)
         {
@@ -44,14 +44,14 @@ namespace Mirle.Agv.View
 
         private void SetMiddlerAndConfigs()
         {
-            middlerConfigs = mainFlowHandler.GetMiddlerConfigs();
+            middlerConfig = mainFlowHandler.GetMiddlerConfigs();
             middleAgent = mainFlowHandler.GetMiddleAgent();
         }
 
         private void ConfigToUI()
         {
-            txtRemoteIp.Text = middlerConfigs.RemoteIp;
-            txtRemotePort.Text = middlerConfigs.RemotePort.ToString();
+            txtRemoteIp.Text = middlerConfig.RemoteIp;
+            txtRemotePort.Text = middlerConfig.RemotePort.ToString();
         }
 
         private void EventInital()
@@ -86,7 +86,7 @@ namespace Mirle.Agv.View
 
                 richTextBox.Text = timeStamp + msg + Environment.NewLine + richTextBox.Text;
 
-                int RichTextBoxMaxLines = middlerConfigs.RichTextBoxMaxLines;
+                int RichTextBoxMaxLines = middlerConfig.RichTextBoxMaxLines;
 
                 if (richTextBox.Lines.Count() > RichTextBoxMaxLines)
                 {
@@ -409,8 +409,8 @@ namespace Mirle.Agv.View
         {
             try
             {
-                middlerConfigs.RemoteIp = txtRemoteIp.Text;
-                middlerConfigs.RemotePort = int.Parse(txtRemotePort.Text);
+                middlerConfig.RemoteIp = txtRemoteIp.Text;
+                middlerConfig.RemotePort = int.Parse(txtRemotePort.Text);
                 SaveMiddlerConfigs();
 
                 middleAgent.ReConnect();
@@ -427,8 +427,8 @@ namespace Mirle.Agv.View
             string iniPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
             var configHandler = new ConfigHandler(iniPath);
 
-            configHandler.SetString("Middler", "RemoteIp", middlerConfigs.RemoteIp);
-            configHandler.SetString("Middler", "RemotePort", middlerConfigs.RemotePort.ToString());
+            configHandler.SetString("Middler", "RemoteIp", middlerConfig.RemoteIp);
+            configHandler.SetString("Middler", "RemotePort", middlerConfig.RemotePort.ToString());
         }
 
         private void btnDisConnect_Click(object sender, EventArgs e)

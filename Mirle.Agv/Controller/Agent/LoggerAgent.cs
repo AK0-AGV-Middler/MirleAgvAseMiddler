@@ -84,7 +84,7 @@ namespace Mirle.Agv.Controller
             if (dicLoggers.ContainsKey("Error"))
             {
                 Logger logger = dicLoggers["Error"];
-                string msg = $"{alarm.ID},{alarm.ShortName},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
+                string msg = $"{alarm.Id},{alarm.ShortName},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
                 logger.SavePureLog(msg);
             }
         }

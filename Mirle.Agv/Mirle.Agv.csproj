@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="Controller\Agent\LoggerAgent.cs" />
     <Compile Include="Controller\Agent\Sr2000Agent.cs" />
+    <Compile Include="Controller\Handler\AlarmHandler.cs" />
     <Compile Include="Controller\Handler\BatteryHandler.cs" />
     <Compile Include="Controller\Handler\TransCmdsSteps\Idle.cs" />
     <Compile Include="Controller\Handler\TransCmdsSteps\ITransCmdsStep.cs" />
@@ -90,14 +91,15 @@
     <Compile Include="Model\AgvcCmds\Agvmessage.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Defines.cs" />
-    <Compile Include="Model\Configs\BatteryConfigs.cs" />
-    <Compile Include="Model\Configs\ElmoAxisConfigs.cs" />
+    <Compile Include="Model\Configs\AlarmConfig.cs" />
+    <Compile Include="Model\Configs\BatteryConfig.cs" />
+    <Compile Include="Model\Configs\ElmoAxisConfig.cs" />
     <Compile Include="Model\Configs\ElmoSingleAxisConfig.cs" />
-    <Compile Include="Model\Configs\MainFlowConfigs.cs" />
-    <Compile Include="Model\Configs\MapConfigs.cs" />
-    <Compile Include="Model\Configs\MiddlerConfigs.cs" />
-    <Compile Include="Model\Configs\MoveControlConfigs.cs" />
-    <Compile Include="Model\Configs\Sr2000Configs.cs" />
+    <Compile Include="Model\Configs\MainFlowConfig.cs" />
+    <Compile Include="Model\Configs\MapConfig.cs" />
+    <Compile Include="Model\Configs\MiddlerConfig.cs" />
+    <Compile Include="Model\Configs\MoveControlConfig.cs" />
+    <Compile Include="Model\Configs\Sr2000Config.cs" />
     <Compile Include="Model\MapBarcode.cs" />
     <Compile Include="Model\MapInfo.cs" />
     <Compile Include="Model\MapPosition.cs" />

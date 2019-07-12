@@ -17,9 +17,9 @@ namespace Mirle.Agv.Controller
         private EnumMoveState moveState;
         private VehLocation vehLocation;
         public Sr2000Agent sr2000Agent;
-        private MoveControlConfigs moveControlConfigs;
+        private MoveControlConfig moveControlConfig;
         private Dictionary<string, ElmoSingleAxisConfig> dicElmoSingleAxisConfigs;
-        private ElmoAxisConfigs elmoAxisConfigs;
+        private ElmoAxisConfig elmoAxisConfig;
         private MapInfo theMapInfo = new MapInfo();
 
         public event EventHandler<EnumCompleteStatus> OnMoveFinished;
@@ -29,13 +29,13 @@ namespace Mirle.Agv.Controller
         public MapPosition DeltaPosition { get; set; }
         public MapPosition RealPosition { get; set; }
 
-        public MoveControlHandler(MoveControlConfigs moveControlConfigs, Sr2000Configs sr2000Configs, MapInfo theMapInfo)
+        public MoveControlHandler(MoveControlConfig moveControlConfig, Sr2000Config sr2000Config, MapInfo theMapInfo)
         {
             this.theMapInfo = theMapInfo;
             loggerAgent = LoggerAgent.Instance;
             queReadyCmds = new ConcurrentQueue<MoveCmdInfo>();
-            this.moveControlConfigs = moveControlConfigs;
-            sr2000Agent = new Sr2000Agent(sr2000Configs);
+            this.moveControlConfig = moveControlConfig;
+            sr2000Agent = new Sr2000Agent(sr2000Config);
             AxisInitial();
 
             moveState = EnumMoveState.Idle;
@@ -48,15 +48,15 @@ namespace Mirle.Agv.Controller
             var path = Path.Combine(Environment.CurrentDirectory, "AxisConfig.ini");
             ConfigHandler configHandler = new ConfigHandler(path);
 
-            elmoAxisConfigs = new ElmoAxisConfigs();
+            elmoAxisConfig = new ElmoAxisConfig();
             int.TryParse(configHandler.GetString("ElmoAxis", "AxisNum", "18"), out int tempAxisNum);
-            elmoAxisConfigs.AxisNum = tempAxisNum;
-            elmoAxisConfigs.SectionName = configHandler.GetString("ElmoAxis", "SectionName", "Axis");
+            elmoAxisConfig.AxisNum = tempAxisNum;
+            elmoAxisConfig.SectionName = configHandler.GetString("ElmoAxis", "SectionName", "Axis");
 
-            for (int i = 0; i < elmoAxisConfigs.AxisNum; i++)
+            for (int i = 0; i < elmoAxisConfig.AxisNum; i++)
             {
                 int index = i + 1;
-                var sectionName = elmoAxisConfigs.SectionName + index.ToString();
+                var sectionName = elmoAxisConfig.SectionName + index.ToString();
 
                 ElmoSingleAxisConfig elmoSingleAxisConfigs = new ElmoSingleAxisConfig();
                 elmoSingleAxisConfigs.AxisAlias = configHandler.GetString(sectionName, "AxisAlias", "XXX");

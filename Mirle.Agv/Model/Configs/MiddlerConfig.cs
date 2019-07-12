@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
-    public class MiddlerConfigs
+    public class MiddlerConfig
     {
         public int ClientNum { get; set; }
         public string ClientName { get; set; }

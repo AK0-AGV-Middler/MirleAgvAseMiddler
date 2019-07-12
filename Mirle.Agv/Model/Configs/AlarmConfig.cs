@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Mirle.Agv.Model.Configs
 {
-    public class ElmoAxisConfigs
+    public class AlarmConfig
     {
-        public int AxisNum { get; set; }
-        public string SectionName { get; set; } = "Axis";
+        public string AlarmFileName { get; set; }
     }
 }

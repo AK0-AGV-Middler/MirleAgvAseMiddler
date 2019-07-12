@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using Mirle.Agv.Model.Configs;
 using System.Linq;
+using Mirle.Agv.Controller.Tools;
 
 namespace Mirle.Agv.Controller
 {
@@ -12,7 +13,7 @@ namespace Mirle.Agv.Controller
     {
         private string rootDir;
         private LoggerAgent loggerAgent;
-        private MapConfigs mapConfigs;
+        private MapConfig mapConfig;
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
@@ -20,14 +21,14 @@ namespace Mirle.Agv.Controller
         private float SectionWidth { get; set; } = 5;
         private float AddressArea { get; set; } = 5;
 
-        public MapHandler(MapConfigs mapConfigs)
+        public MapHandler(MapConfig mapConfig)
         {
-            this.mapConfigs = mapConfigs;
+            this.mapConfig = mapConfig;
             loggerAgent = LoggerAgent.Instance;
-            rootDir = mapConfigs.RootDir;
-            SectionPath = Path.Combine(rootDir, mapConfigs.SectionFileName);
-            AddressPath = Path.Combine(rootDir, mapConfigs.AddressFileName);
-            BarcodePath = Path.Combine(rootDir, mapConfigs.BarcodeFileName);
+            rootDir = mapConfig.RootDir;
+            SectionPath = Path.Combine(rootDir, mapConfig.SectionFileName);
+            AddressPath = Path.Combine(rootDir, mapConfig.AddressFileName);
+            BarcodePath = Path.Combine(rootDir, mapConfig.BarcodeFileName);
 
             LoadBarcodeLineCsv();
             LoadAddressCsv();
@@ -179,6 +180,12 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(BarcodePath);
                 if (allRows == null || allRows.Length < 2)
                 {
+                    string className = GetType().Name;
+                    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                    string classMethodName = className + ":" + methodName;
+                    LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", "There are no barcodes in file");
+                    loggerAgent.LogMsg("Error", logFormat);
+
                     return;
                 }
 
@@ -202,7 +209,7 @@ namespace Mirle.Agv.Controller
                 {
                     string[] getThisRow = allRows[i].Split(',');
                     MapBarcodeLine oneRow = new MapBarcodeLine();
-                    oneRow.Id = getThisRow[dicBarcodeIndexes["Id"]];
+                    string Id = getThisRow[dicBarcodeIndexes["Id"]];
                     int HeadNum = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeHeadNum"]]);
                     int TailNum = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeTailNum"]]);
                     float HeadX = float.Parse(getThisRow[dicBarcodeIndexes["HeadX"]]);
@@ -213,6 +220,7 @@ namespace Mirle.Agv.Controller
                     float OffsetX = float.Parse(getThisRow[dicBarcodeIndexes["OffsetX"]]);
                     float OffsetY = float.Parse(getThisRow[dicBarcodeIndexes["OffsetY"]]);
 
+                    oneRow.Id = Id;
                     oneRow.HeadBarcode.Number = HeadNum;
                     oneRow.HeadBarcode.Position.X = HeadX;
                     oneRow.HeadBarcode.Position.Y = HeadY;
@@ -242,6 +250,7 @@ namespace Mirle.Agv.Controller
                             mapBarcode.Offset.X = OffsetX;
                             mapBarcode.Offset.Y = OffsetY;
                             mapBarcode.Direction = Direction;
+                            mapBarcode.LineId = Id;
 
                             allBarcodes.Add(mapBarcode.Number, mapBarcode);
                         }
@@ -257,6 +266,7 @@ namespace Mirle.Agv.Controller
                             mapBarcode.Offset.X = OffsetX;
                             mapBarcode.Offset.Y = OffsetY;
                             mapBarcode.Direction = Direction;
+                            mapBarcode.LineId = Id;
 
                             allBarcodes.Add(mapBarcode.Number, mapBarcode);
                         }

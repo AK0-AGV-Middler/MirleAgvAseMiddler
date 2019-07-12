@@ -20,12 +20,13 @@ namespace Mirle.Agv.Controller
         private string rootDir = Environment.CurrentDirectory;
         private string configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
         private ConfigHandler configHandler;
-        private MiddlerConfigs middlerConfigs;
-        private Sr2000Configs sr2000Configs;
-        private MainFlowConfigs mainFlowConfigs;
-        private MapConfigs mapConfigs;
-        private MoveControlConfigs moveControlConfigs;
-        private BatteryConfigs batteryConfigs;
+        private MiddlerConfig middlerConfig;
+        private Sr2000Config sr2000Config;
+        private MainFlowConfig mainFlowConfig;
+        private MapConfig mapConfig;
+        private MoveControlConfig moveControlConfig;
+        private BatteryConfig batteryConfig;
+        private AlarmConfig alarmConfig;
 
         #endregion
 
@@ -63,6 +64,7 @@ namespace Mirle.Agv.Controller
 
         #region Handler
 
+        private AlarmHandler alarmHandler;
         private BatteryHandler batteryHandler;
         private CoupleHandler coupleHandler;
         private MapHandler mapHandler;
@@ -143,21 +145,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void LoadAllAlarms()
-        {
-            //TODO: load all alarms
-            //throw new NotImplementedException();
-        }
-
-        private void ThreadInitial()
-        {
-            thdGetNewAgvcTransferCommand = new Thread(new ThreadStart(VisitTransCmds));
-            thdGetNewAgvcTransferCommand.IsBackground = true;
-
-            thdAskReserve = new Thread(new ThreadStart(AskReserve));
-            thdAskReserve.IsBackground = true;
-        }
-
         private void ConfigsInitial()
         {
             try
@@ -165,70 +152,73 @@ namespace Mirle.Agv.Controller
                 configPath = Path.Combine(rootDir, "Configs.ini");
                 configHandler = new ConfigHandler(configPath);
 
-                mainFlowConfigs = new MainFlowConfigs();
-                mainFlowConfigs.LogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
-                LoggerAgent.LogConfigPath = mainFlowConfigs.LogConfigPath;
+                mainFlowConfig = new MainFlowConfig();
+                mainFlowConfig.LogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
+                LoggerAgent.LogConfigPath = mainFlowConfig.LogConfigPath;
                 int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
-                mainFlowConfigs.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
+                mainFlowConfig.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
                 int.TryParse(configHandler.GetString("MainFlow", "DoTransCmdsInterval", "15"), out int tempDoTransCmdsInterval);
-                mainFlowConfigs.DoTransCmdsInterval = tempDoTransCmdsInterval;
+                mainFlowConfig.DoTransCmdsInterval = tempDoTransCmdsInterval;
                 int.TryParse(configHandler.GetString("MainFlow", "ReserveLength", "3"), out int tempReserveLength);
-                mainFlowConfigs.ReserveLength = tempReserveLength;
+                mainFlowConfig.ReserveLength = tempReserveLength;
                 int.TryParse(configHandler.GetString("MainFlow", "AskReserveInterval", "15"), out int tempAskReserveInterval);
-                mainFlowConfigs.AskReserveInterval = tempAskReserveInterval;
+                mainFlowConfig.AskReserveInterval = tempAskReserveInterval;
 
-                middlerConfigs = new MiddlerConfigs();
+                middlerConfig = new MiddlerConfig();
                 int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
-                middlerConfigs.ClientNum = tempClientNum;
-                middlerConfigs.ClientName = configHandler.GetString("Middler", "ClientName", "AGV01");
-                middlerConfigs.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
+                middlerConfig.ClientNum = tempClientNum;
+                middlerConfig.ClientName = configHandler.GetString("Middler", "ClientName", "AGV01");
+                middlerConfig.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
                 int.TryParse(configHandler.GetString("Middler", "RemotePort", "10001"), out int tempRemotePort);
-                middlerConfigs.RemotePort = tempRemotePort;
-                middlerConfigs.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.131");
+                middlerConfig.RemotePort = tempRemotePort;
+                middlerConfig.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.131");
                 int.TryParse(configHandler.GetString("Middler", "LocalPort", "5002"), out int tempPort);
-                middlerConfigs.LocalPort = tempPort;
+                middlerConfig.LocalPort = tempPort;
                 int.TryParse(configHandler.GetString("Middler", "RecvTimeoutMs", "10000"), out int tempRecvTimeoutMs);
-                middlerConfigs.RecvTimeoutMs = tempRecvTimeoutMs;
+                middlerConfig.RecvTimeoutMs = tempRecvTimeoutMs;
                 int.TryParse(configHandler.GetString("Middler", "SendTimeoutMs", "0"), out int tempSendTimeoutMs);
-                middlerConfigs.SendTimeoutMs = tempSendTimeoutMs;
+                middlerConfig.SendTimeoutMs = tempSendTimeoutMs;
                 int.TryParse(configHandler.GetString("Middler", "MaxReadSize", "0"), out int tempMaxReadSize);
-                middlerConfigs.MaxReadSize = tempMaxReadSize;
+                middlerConfig.MaxReadSize = tempMaxReadSize;
                 int.TryParse(configHandler.GetString("Middler", "ReconnectionIntervalMs", "10000"), out int tempReconnectionIntervalMs);
-                middlerConfigs.ReconnectionIntervalMs = tempReconnectionIntervalMs;
+                middlerConfig.ReconnectionIntervalMs = tempReconnectionIntervalMs;
                 int.TryParse(configHandler.GetString("Middler", "MaxReconnectionCount", "10"), out int tempMaxReconnectionCount);
-                middlerConfigs.MaxReconnectionCount = tempMaxReconnectionCount;
+                middlerConfig.MaxReconnectionCount = tempMaxReconnectionCount;
                 int.TryParse(configHandler.GetString("Middler", "RetryCount", "2"), out int tempRetryCount);
-                middlerConfigs.RetryCount = tempRetryCount;
+                middlerConfig.RetryCount = tempRetryCount;
                 int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
-                middlerConfigs.SleepTime = tempSleepTime;
+                middlerConfig.SleepTime = tempSleepTime;
                 int.TryParse(configHandler.GetString("Middler", "RichTextBoxMaxLines ", "10"), out int tempRichTextBoxMaxLines);
-                middlerConfigs.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
+                middlerConfig.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
 
-                mapConfigs = new MapConfigs();
+                mapConfig = new MapConfig();
                 //mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", Environment.CurrentDirectory);
-                mapConfigs.RootDir = Environment.CurrentDirectory;
-                mapConfigs.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
-                mapConfigs.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
-                mapConfigs.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
-                mapConfigs.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
+                mapConfig.RootDir = Environment.CurrentDirectory;
+                mapConfig.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
+                mapConfig.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
+                mapConfig.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
+                mapConfig.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
 
-                sr2000Configs = new Sr2000Configs();
+                sr2000Config = new Sr2000Config();
                 int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
-                sr2000Configs.TrackingInterval = tempTrackingInterval;
+                sr2000Config.TrackingInterval = tempTrackingInterval;
 
-                moveControlConfigs = new MoveControlConfigs();
+                moveControlConfig = new MoveControlConfig();
 
-                batteryConfigs = new BatteryConfigs();
+                batteryConfig = new BatteryConfig();
                 int.TryParse(configHandler.GetString("Battery", "Percentage", "80"), out int tempPercentage);
-                batteryConfigs.Percentage = tempPercentage;
+                batteryConfig.Percentage = tempPercentage;
                 double.TryParse(configHandler.GetString("Battery", "Voltage", "40"), out double tempVoltage);
-                batteryConfigs.Voltage = tempVoltage;
+                batteryConfig.Voltage = tempVoltage;
                 int.TryParse(configHandler.GetString("Battery", "Temperature", "30"), out int tempTemperature);
-                batteryConfigs.Temperature = tempTemperature;
+                batteryConfig.Temperature = tempTemperature;
                 int.TryParse(configHandler.GetString("Battery", "LowPowerThreshold", "25"), out int tempLowPowerThreshold);
-                batteryConfigs.LowPowerThreshold = tempLowPowerThreshold;
+                batteryConfig.LowPowerThreshold = tempLowPowerThreshold;
                 int.TryParse(configHandler.GetString("Battery", "HighTemperatureThreshold", "45"), out int tempHighTemperatureThreshold);
-                batteryConfigs.HighTemperatureThreshold = tempHighTemperatureThreshold;
+                batteryConfig.HighTemperatureThreshold = tempHighTemperatureThreshold;
+
+                alarmConfig = new AlarmConfig();
+                alarmConfig.AlarmFileName = configHandler.GetString("Alarm", "AlarmFileName", "AlarmCode.csv");
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -292,18 +282,18 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                mapHandler = new MapHandler(mapConfigs);
+                mapHandler = new MapHandler(mapConfig);
                 theMapInfo = mapHandler.GetMapInfo();
 
                 batteryHandler = new BatteryHandler();
                 coupleHandler = new CoupleHandler();
-                moveControlHandler = new MoveControlHandler(moveControlConfigs, sr2000Configs, theMapInfo);
+                moveControlHandler = new MoveControlHandler(moveControlConfig, sr2000Config, theMapInfo);
                 robotControlHandler = new RobotControlHandler();
-
+                alarmHandler = new AlarmHandler(alarmConfig);
 
                 bmsAgent = new BmsAgent();
                 elmoAgent = new ElmoAgent();
-                middleAgent = new MiddleAgent(middlerConfigs, theMapInfo);
+                middleAgent = new MiddleAgent(middlerConfig, theMapInfo);
                 plcAgent = new PlcAgent();
 
                 if (OnComponentIntialDoneEvent != null)
@@ -339,7 +329,7 @@ namespace Mirle.Agv.Controller
             {
                 theVehicle = Vehicle.Instance;
                 theVehicle.SetMapInfo(theMapInfo);
-                theVehicle.SetupBattery(batteryConfigs);
+                theVehicle.SetupBattery(batteryConfig);
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -430,6 +420,21 @@ namespace Mirle.Agv.Controller
                     OnComponentIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        private void LoadAllAlarms()
+        {
+            //TODO: load all alarms
+            //throw new NotImplementedException();
+        }
+
+        private void ThreadInitial()
+        {
+            thdGetNewAgvcTransferCommand = new Thread(new ThreadStart(VisitTransCmds));
+            thdGetNewAgvcTransferCommand.IsBackground = true;
+
+            thdAskReserve = new Thread(new ThreadStart(AskReserve));
+            thdAskReserve.IsBackground = true;
         }
 
         public MapInfo GetMapInfo()
@@ -787,7 +792,7 @@ namespace Mirle.Agv.Controller
                     DoTransfer();
                 }
 
-                SpinWait.SpinUntil(() => false, mainFlowConfigs.DoTransCmdsInterval);
+                SpinWait.SpinUntil(() => false, mainFlowConfig.DoTransCmdsInterval);
             }
 
             //OnTransCmdsFinishedEvent(this, EnumCompleteStatus.TransferComplete);
@@ -812,7 +817,7 @@ namespace Mirle.Agv.Controller
 
         private bool IsQueGotReserveOkSectionsFull()
         {
-            return queGotReserveOkSections.Count >= mainFlowConfigs.ReserveLength;
+            return queGotReserveOkSections.Count >= mainFlowConfig.ReserveLength;
         }
 
         private bool CanVehUnload()
@@ -859,7 +864,7 @@ namespace Mirle.Agv.Controller
                     middleAgent.AskAgvcReserveSections(queNeedReserveSections);
                 }
 
-                SpinWait.SpinUntil(() => false, mainFlowConfigs.AskReserveInterval);
+                SpinWait.SpinUntil(() => false, mainFlowConfig.AskReserveInterval);
             }
         }
 
@@ -1122,9 +1127,9 @@ namespace Mirle.Agv.Controller
             return mapHandler;
         }
 
-        public MiddlerConfigs GetMiddlerConfigs()
+        public MiddlerConfig GetMiddlerConfigs()
         {
-            return middlerConfigs;
+            return middlerConfig;
         }
 
         public void PublishTransferMoveEvent(MoveCmdInfo moveCmd)
@@ -1248,7 +1253,7 @@ namespace Mirle.Agv.Controller
 
         private bool IsOutsideSection(float num1, float num2)
         {
-            return Math.Abs(num1 - num2) > mapConfigs.OutSectionThreshold;
+            return Math.Abs(num1 - num2) > mapConfig.OutSectionThreshold;
         }
 
         public MapBarcode GetMapBarcode(int baracodeNum)

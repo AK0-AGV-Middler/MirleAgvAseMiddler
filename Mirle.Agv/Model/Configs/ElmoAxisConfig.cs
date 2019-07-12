@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
-    public class MoveControlConfigs
+    public class ElmoAxisConfig
     {
+        public int AxisNum { get; set; }
+        public string SectionName { get; set; } = "Axis";
     }
 }

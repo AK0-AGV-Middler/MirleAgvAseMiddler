@@ -16,7 +16,7 @@ namespace Mirle.Agv.Model
         public int LowPowerThreshold { get; set; }
         public int HighTemperatureThreshold { get; set; }
 
-        private BatteryConfigs batteryConfigs;
+        private BatteryConfig batteryConfig;
 
         public Battery()
         {
@@ -32,15 +32,15 @@ namespace Mirle.Agv.Model
             return Temperature > HighTemperatureThreshold;
         }
 
-        public void SetupBattery(BatteryConfigs batteryConfigs)
+        public void SetupBattery(BatteryConfig aBatteryConfig)
         {
-            this.batteryConfigs = batteryConfigs;
+            this.batteryConfig = aBatteryConfig;
 
-            Percentage = batteryConfigs.Percentage;
-            Voltage = batteryConfigs.Voltage;
-            Temperature = batteryConfigs.Temperature;
-            LowPowerThreshold = batteryConfigs.LowPowerThreshold;
-            HighTemperatureThreshold = batteryConfigs.HighTemperatureThreshold;
+            Percentage = aBatteryConfig.Percentage;
+            Voltage = aBatteryConfig.Voltage;
+            Temperature = aBatteryConfig.Temperature;
+            LowPowerThreshold = aBatteryConfig.LowPowerThreshold;
+            HighTemperatureThreshold = aBatteryConfig.HighTemperatureThreshold;
         }
     }
 }

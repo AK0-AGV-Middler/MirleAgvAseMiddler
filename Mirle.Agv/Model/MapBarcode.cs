@@ -12,6 +12,7 @@ namespace Mirle.Agv.Model
         public MapPosition Position { get; set; } = new MapPosition();
         public MapPosition Offset { get; set; } = new MapPosition();
         public int Direction { get; set; }
+        public string LineId { get; set; }
 
         public int BarcodeDirectionConvert(string v)
         {

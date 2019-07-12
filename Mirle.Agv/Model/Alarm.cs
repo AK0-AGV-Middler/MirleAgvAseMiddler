@@ -8,7 +8,7 @@ namespace Mirle.Agv.Model
 {
     public class Alarm
     {
-        public int ID { get; set; } 
+        public int Id { get; set; } 
         public string ShortName { get; set; }
         public int WordNum { get; set; }
         public int BitNum { get; set; }

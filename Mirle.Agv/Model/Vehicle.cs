@@ -92,9 +92,9 @@ namespace Mirle.Agv.Model
             dicCarriersByStageNum.Add(tempCarrier.StageNum, tempCarrier);
         }
 
-        public void SetupBattery(BatteryConfigs batteryConfigs)
+        public void SetupBattery(BatteryConfig aBatteryConfig)
         {
-            battery.SetupBattery(batteryConfigs);
+            battery.SetupBattery(aBatteryConfig);
         }
 
         public void SetVehicleStop()

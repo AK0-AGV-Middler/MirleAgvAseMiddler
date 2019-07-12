@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
-    public class MainFlowConfigs
+    public class MainFlowConfig
     {
         public string LogConfigPath { get; set; }
         public int TransCmdsCheckInterval { get; set; }

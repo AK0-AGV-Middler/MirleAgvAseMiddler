@@ -166,106 +166,9 @@ namespace Mirle.Agv.View
             listCmdSpeedLimits.Items.Clear();
         }
 
-        //private void UpdateTxtAddressPositions()
-        //{
-        //    //List<MapPosition> addressPositions = moveCmdInfo.AddressPositions;
-        //    //if (addressPositions.Count == 0)
-        //    //{
-        //    //    txtAddressPositions.Clear();
-        //    //}
-        //    //else
-        //    //{
-        //    //    txtAddressPositions.Clear();
-        //    //    for (int i = 0; i < addressPositions.Count; i++)
-        //    //    {
-        //    //        MapPosition addressPosition = addressPositions[i];
-        //    //        string positionPair = $"({addressPosition.PositionX},{addressPosition.PositionY})";
-        //    //        if (i == 0)
-        //    //        {
-        //    //            txtAddressPositions.Text += positionPair;
-        //    //        }
-        //    //        else
-        //    //        {
-        //    //            txtAddressPositions.Text += " - " + positionPair;
-        //    //        }
-        //    //    }
-        //    //}
-        //}
-
-        //private void UpdateTxtAddressActions()
-        //{
-        //    //List<EnumAddressAction> addressActions = moveCmdInfo.AddressActions;
-        //    //if (addressActions.Count == 0)
-        //    //{
-        //    //    txtAddressActions.Clear();
-        //    //}
-        //    //else
-        //    //{
-        //    //    txtAddressActions.Clear();
-        //    //    for (int i = 0; i < addressActions.Count; i++)
-        //    //    {
-        //    //        EnumAddressAction addressAction = addressActions[i];
-        //    //        string actionMsg = $"({addressAction})";
-        //    //        if (i == 0)
-        //    //        {
-        //    //            txtAddressActions.Text += actionMsg;
-        //    //        }
-        //    //        else
-        //    //        {
-        //    //            txtAddressActions.Text += " - " + actionMsg;
-        //    //        }
-        //    //    }
-        //    //}
-        //}
-
-        //private void UpdateTxtSectionSpeedLimits()
-        //{
-        //    //var speedLimits = moveCmdInfo.SectionSpeedLimits;
-        //    //if (speedLimits.Count == 0)
-        //    //{
-        //    //    txtSectionSpeedLimits.Clear();
-        //    //}
-        //    //else
-        //    //{
-        //    //    txtSectionSpeedLimits.Clear();
-        //    //    for (int i = 0; i < speedLimits.Count; i++)
-        //    //    {
-        //    //        float speedLimit = speedLimits[i];
-        //    //        string msg = $"({speedLimit})";
-        //    //        if (i == 0)
-        //    //        {
-        //    //            txtSectionSpeedLimits.Text += msg;
-        //    //        }
-        //    //        else
-        //    //        {
-        //    //            txtSectionSpeedLimits.Text += " - " + msg;
-        //    //        }
-        //    //    }
-        //    //}
-        //}
-
-        //private void btnRemoveLastSpeedLimits_Click(object sender, EventArgs e)
-        //{
-        //    var speedLimits = moveCmdInfo.SectionSpeedLimits;
-        //    if (speedLimits.Count > 0)
-        //    {
-        //        speedLimits.RemoveAt(speedLimits.Count - 1);
-        //    }
-        //    //UpdateTxtSectionSpeedLimits();
-        //}
-
-        //private void btnClearSpeedLimits_Click(object sender, EventArgs e)
-        //{
-        //    moveCmdInfo.SectionSpeedLimits.Clear();
-        //    //txtSectionSpeedLimits.Clear();
-        //}
-
         private void btnClearMoveCmdInfo_Click(object sender, EventArgs e)
         {
             moveCmdInfo = new MoveCmdInfo();
-            //UpdateTxtAddressPositions();
-            //UpdateTxtAddressActions();
-            //UpdateTxtSectionSpeedLimits();
         }
 
         private void btnCheckMoveCmdInfo_Click(object sender, EventArgs e)
@@ -301,8 +204,6 @@ namespace Mirle.Agv.View
                 {
                     positions.RemoveAt(i);
                     actions.RemoveAt(i);
-                    //UpdateTxtAddressPositions();
-                    //UpdateTxtAddressActions();
                     btnCheckMoveCmdInfo_Click(sender, e);
                 }
             }
@@ -355,7 +256,8 @@ namespace Mirle.Agv.View
             SetActions();
             SetSpeedLimits();
 
-
+            //TODO: moveCmdInfo from this -> mainFlow -> moveController -> do move command
+            // mainFlowHandler.PublishTransferMoveEvent(moveCmdInfo);
         }
 
         private void SetSpeedLimits()
