@@ -160,7 +160,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 WrapperMessage wrappers = new WrapperMessage();
-                string msgShow = "";                
+                string msgShow = "";
 
                 var cmdType = (EnumCmdNums)cmdNum;
                 switch (cmdType)
@@ -174,6 +174,10 @@ namespace Mirle.Agv.Controller
                             aCmd.DestinationAdr = pairs["DestinationAdr"];
                             aCmd.LoadAdr = pairs["LoadAdr"];
                             aCmd.SecDistance = uint.Parse(pairs["SecDistance"]);
+                            aCmd.GuideAddressesStartToLoad.AddRange(StringSpilter(pairs["GuideAddressesStartToLoad"]));
+                            aCmd.GuideAddressesToDestination.AddRange(StringSpilter(pairs["GuideAddressesToDestination"]));
+                            aCmd.GuideSectionsStartToLoad.AddRange(StringSpilter(pairs["GuideSectionsStartToLoad"]));
+                            aCmd.GuideSectionsToDestination.AddRange(StringSpilter(pairs["GuideSectionsToDestination"]));
 
                             wrappers.ID = WrapperMessage.TransReqFieldNumber;
                             wrappers.TransReq = aCmd;
@@ -260,7 +264,7 @@ namespace Mirle.Agv.Controller
 
                             wrappers.ID = WrapperMessage.ModeChangeReqFieldNumber;
                             wrappers.ModeChangeReq = aCmd;
-                            
+
                             msgShow = $"[{cmdType}] [{aCmd}]";
                             break;
                         }
@@ -270,7 +274,7 @@ namespace Mirle.Agv.Controller
 
                             wrappers.ID = WrapperMessage.StatusReqFieldNumber;
                             wrappers.StatusReq = aCmd;
-                            
+
                             msgShow = $"[{cmdType}] [{aCmd}]";
                             break;
                         }
@@ -299,6 +303,8 @@ namespace Mirle.Agv.Controller
                     case EnumCmdNums.Cmd51_AvoidRequest:
                         {
                             ID_51_AVOID_REQUEST aCmd = new ID_51_AVOID_REQUEST();
+                            aCmd.GuideAddresses.AddRange(StringSpilter(pairs["GuideAddresses"]));
+                            aCmd.GuideSections.AddRange(StringSpilter(pairs["GuideSections"]));
 
                             wrappers.ID = WrapperMessage.AvoidReqFieldNumber;
                             wrappers.AvoidReq = aCmd;
@@ -645,6 +651,16 @@ namespace Mirle.Agv.Controller
 
         }
 
+        private string[] StringSpilter(string v)
+        {
+            v = v.Trim(new char[] { ' ', '[', ']' });
+            if (string.IsNullOrEmpty(v))
+            {
+                return new string[1] { " " };
+            }
+            return v.Split(',');
+        }
+
         private void SendCommandWrapper(WrapperMessage wrapper)
         {
             Task.Run(() => ClientAgent.TrxTcpIp.SendGoogleMsg(wrapper));
@@ -655,7 +671,7 @@ namespace Mirle.Agv.Controller
             queNeedReserveSections.TryPeek(out MapSection needReserveSection);
             Send_Cmd136_AskReserve(needReserveSection);
         }
-        
+
         #region EnumConverter
         private VhChargeStatus VhChargeStatusConverter(string v)
         {
@@ -1488,7 +1504,7 @@ namespace Mirle.Agv.Controller
                 OnGetReserveOkEvent?.Invoke(this, true);
             }
 
-            if (receive.IsBlockPass== PassType.Pass)
+            if (receive.IsBlockPass == PassType.Pass)
             {
                 OnGetBlockPassEvent?.Invoke(this, true);
             }
@@ -1526,7 +1542,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType =  EventType.BlockReq;
+                iD_136_TRANS_EVENT_REP.EventType = EventType.BlockReq;
                 iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
@@ -1553,7 +1569,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType =  EventType.BlockRelease;
+                iD_136_TRANS_EVENT_REP.EventType = EventType.BlockRelease;
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
                 iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;

@@ -15,6 +15,7 @@ using System.IO;
 using System.Reflection;
 using TcpIpClientSample;
 using Mirle.Agv.Model;
+using Google.Protobuf.Collections;
 
 namespace Mirle.Agv.View
 {
@@ -396,6 +397,17 @@ namespace Mirle.Agv.View
             foreach (var info in infos)
             {
                 if (info.CanWrite)
+                {
+                    var name = info.Name;
+                    var value = info.GetValue(obj);
+                    string[] row = { name, value.ToString() };
+                    dataGridView1.Rows.Add(row);
+                }
+            }
+
+            foreach (var info in infos)
+            {
+                if (info.PropertyType == typeof(RepeatedField<string>))
                 {
                     var name = info.Name;
                     var value = info.GetValue(obj);
