@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace Mirle.Agv.Model.Tests
 {
@@ -43,6 +44,23 @@ namespace Mirle.Agv.Model.Tests
             list002.Clear();
             Assert.AreEqual(0, list002.Count);
             Assert.AreEqual(0, list003.Count);
+
+
+            ConcurrentQueue<string> que004 = new ConcurrentQueue<string>();
+            que004.Enqueue("Cat");
+            que004.Enqueue("Dog");
+            Assert.AreEqual(2, que004.Count);
+
+            List<string> list005 = que004.ToList();
+            Assert.AreEqual(2, list005.Count);
+
+            string str001 = list005[1];   
+            Assert.AreEqual(str001.GetHashCode(), list005[1].GetHashCode());
+
+            list005.RemoveAt(1);
+            Assert.AreEqual(1, list005.Count);
+            Assert.AreEqual(2, que004.Count);
+
 
         }
     }

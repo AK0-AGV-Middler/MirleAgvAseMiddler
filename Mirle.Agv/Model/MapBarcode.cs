@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class MapBarcode
     {
         public int Number { get; set; }

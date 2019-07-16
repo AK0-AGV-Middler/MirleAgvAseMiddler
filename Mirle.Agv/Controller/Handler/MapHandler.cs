@@ -11,7 +11,6 @@ namespace Mirle.Agv.Controller
 {
     public class MapHandler
     {
-        private string rootDir;
         private LoggerAgent loggerAgent;
         private MapConfig mapConfig;
         public string SectionPath { get; set; }
@@ -20,15 +19,15 @@ namespace Mirle.Agv.Controller
         private MapInfo theMapInfo = new MapInfo();
         private float SectionWidth { get; set; } = 5;
         private float AddressArea { get; set; } = 5;
+        private Vehicle theVehicle = Vehicle.Instance;
 
         public MapHandler(MapConfig mapConfig)
         {
             this.mapConfig = mapConfig;
             loggerAgent = LoggerAgent.Instance;
-            rootDir = mapConfig.RootDir;
-            SectionPath = Path.Combine(rootDir, mapConfig.SectionFileName);
-            AddressPath = Path.Combine(rootDir, mapConfig.AddressFileName);
-            BarcodePath = Path.Combine(rootDir, mapConfig.BarcodeFileName);
+            SectionPath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionFileName);
+            AddressPath = Path.Combine(Environment.CurrentDirectory, mapConfig.AddressFileName);
+            BarcodePath = Path.Combine(Environment.CurrentDirectory, mapConfig.BarcodeFileName);
 
             LoadBarcodeLineCsv();
             LoadAddressCsv();
@@ -291,13 +290,28 @@ namespace Mirle.Agv.Controller
             MapAddress headAdr = aSection.HeadAddress;
             MapAddress tailAdr = aSection.TailAddress;
 
+            VehLocation location = theVehicle.GetVehLoacation();
+            MapSection mapSection = aSection.DeepClone();
+
             if (IsPositionInThisAddress(aPosition, headAdr))
             {
+                if (mapSection.CmdDirection == EnumPermitDirection.Forward)
+                {
+                    mapSection.Distance = 0;
+                }
+                location.Section = mapSection;
+                location.Address = headAdr;
                 return true;
             }
 
             if (IsPositionInThisAddress(aPosition, tailAdr))
             {
+                if (mapSection.CmdDirection != EnumPermitDirection.Forward)
+                {
+                    mapSection.Distance = 0;
+                }
+                location.Section = mapSection;
+                location.Address = tailAdr;
                 return true;
             }
 
@@ -312,7 +326,19 @@ namespace Mirle.Agv.Controller
                             {
                                 return false;
                             }
-                            return true;
+                            else
+                            {
+                                if (mapSection.CmdDirection == EnumPermitDirection.Forward)
+                                {
+                                    mapSection.Distance = Math.Abs(aPosition.X - headAdr.Position.X);
+                                }
+                                else
+                                {
+                                    mapSection.Distance = Math.Abs(tailAdr.Position.X - aPosition.X);
+                                }
+                                location.Section = mapSection;
+                                return true;
+                            }
                         }
                         else
                         {
@@ -328,7 +354,19 @@ namespace Mirle.Agv.Controller
                             {
                                 return false;
                             }
-                            return true;
+                            else
+                            {
+                                if (mapSection.CmdDirection == EnumPermitDirection.Forward)
+                                {
+                                    mapSection.Distance = Math.Abs(aPosition.Y - headAdr.Position.Y);
+                                }
+                                else
+                                {
+                                    mapSection.Distance = Math.Abs(tailAdr.Position.Y - aPosition.Y);
+                                }
+                                location.Section = mapSection;
+                                return true;
+                            }
                         }
                         else
                         {

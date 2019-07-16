@@ -25,6 +25,8 @@ namespace Mirle.Agv.View
         private MainFlowHandler mainFlowHandler;
         private ManualMoveCmdForm manualMoveCmdForm;
         private MiddlerForm middlerForm;
+        private AlarmForm alarmForm;
+        private AlarmHandler alarmHandler;
         //private MapForm mapForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
@@ -65,6 +67,7 @@ namespace Mirle.Agv.View
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
             this.theMapInfo = mainFlowHandler.GetMapInfo();
+            this.alarmHandler = mainFlowHandler.GetAlarmHandler();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -106,6 +109,9 @@ namespace Mirle.Agv.View
             manualMoveCmdForm.WindowState = FormWindowState.Normal;
 
             middlerForm = new MiddlerForm(mainFlowHandler);
+            middlerForm.WindowState = FormWindowState.Normal;
+
+            alarmForm = new AlarmForm(alarmHandler);
             middlerForm.WindowState = FormWindowState.Normal;
         }
 
@@ -305,6 +311,18 @@ namespace Mirle.Agv.View
             manualMoveCmdForm.BringToFront();
             manualMoveCmdForm.Show();
         }
+
+        private void alarmToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (alarmForm.IsDisposed)
+            {
+                alarmForm = new AlarmForm(alarmHandler);
+            }
+            alarmForm.BringToFront();
+            alarmForm.Show();
+
+        }
+
 
         public delegate void DelRenewUI(Control control, string msg);
         public void RenewUI(Control control, string msg)

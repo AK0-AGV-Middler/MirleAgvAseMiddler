@@ -85,7 +85,7 @@ namespace Mirle.Agv.Controller
             {
                 Logger logger = dicLoggers["AlarmHistory"];
                 string timeStamp = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff");
-                string msg = $"{timeStamp},{alarm.Id},{alarm.ShortName},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
+                string msg = $"{timeStamp},{alarm.Id},{alarm.AlarmText},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
                 logger.SavePureLog(msg);
             }
         }

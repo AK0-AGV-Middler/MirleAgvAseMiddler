@@ -8,7 +8,6 @@ namespace Mirle.Agv.Model.Configs
 {
     public class MapConfig
     {
-        public string RootDir { get; set; }
         public string SectionFileName { get; set; }
         public string AddressFileName { get; set; }
         public string BarcodeFileName { get; set; }

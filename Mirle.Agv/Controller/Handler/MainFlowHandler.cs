@@ -21,7 +21,6 @@ namespace Mirle.Agv.Controller
         private string configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
         private ConfigHandler configHandler;
         private MiddlerConfig middlerConfig;
-        private Sr2000Config sr2000Config;
         private MainFlowConfig mainFlowConfig;
         private MapConfig mapConfig;
         private MoveControlConfig moveControlConfig;
@@ -76,9 +75,12 @@ namespace Mirle.Agv.Controller
         #region Threads
 
         private Thread thdGetNewAgvcTransferCommand;
+        private ManualResetEvent ThdTransferCommandShutdownEvent = new ManualResetEvent(false);
+        private ManualResetEvent ThdTransferCommandPauseEvent = new ManualResetEvent(true);
+
         private Thread thdAskReserve;
-        private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
-        private ManualResetEvent PauseEvent = new ManualResetEvent(true);
+        private ManualResetEvent ThdAskReserveShutdownEvent = new ManualResetEvent(false);
+        private ManualResetEvent ThdAskReservePauseEvent = new ManualResetEvent(true);
 
         #endregion
 
@@ -184,16 +186,10 @@ namespace Mirle.Agv.Controller
                 middlerConfig.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
 
                 mapConfig = new MapConfig();
-                //mapConfigs.RootDir = configHandler.GetString("Map", "RootDir", Environment.CurrentDirectory);
-                mapConfig.RootDir = Environment.CurrentDirectory;
                 mapConfig.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
                 mapConfig.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
                 mapConfig.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
                 mapConfig.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
-
-                sr2000Config = new Sr2000Config();
-                int.TryParse(configHandler.GetString("Sr2000", "TrackingInterval", "10"), out int tempTrackingInterval);
-                sr2000Config.TrackingInterval = tempTrackingInterval;
 
                 moveControlConfig = new MoveControlConfig();
 
@@ -279,7 +275,7 @@ namespace Mirle.Agv.Controller
 
                 batteryHandler = new BatteryHandler();
                 coupleHandler = new CoupleHandler();
-                moveControlHandler = new MoveControlHandler(moveControlConfig, sr2000Config, theMapInfo);
+                moveControlHandler = new MoveControlHandler(moveControlConfig, theMapInfo);
                 robotControlHandler = new RobotControlHandler();
                 alarmHandler = new AlarmHandler(alarmConfig);
 
@@ -770,8 +766,8 @@ namespace Mirle.Agv.Controller
             {
                 #region Pause And Stop Check
 
-                PauseEvent.WaitOne(Timeout.Infinite);
-                if (ShutdownEvent.WaitOne(0))
+                ThdTransferCommandPauseEvent.WaitOne(Timeout.Infinite);
+                if (ThdTransferCommandShutdownEvent.WaitOne(0))
                 {
                     break;
                 }
@@ -803,8 +799,10 @@ namespace Mirle.Agv.Controller
         {
             TransCmdsIndex = 0;
             GoNextTransferStep = true;
-            PauseEvent.Set();
-            ShutdownEvent.Reset();
+            ThdTransferCommandPauseEvent.Set();
+            ThdTransferCommandShutdownEvent.Reset();
+            ThdAskReservePauseEvent.Set();
+            ThdAskReserveShutdownEvent.Reset();
         }
 
         private bool IsQueGotReserveOkSectionsFull()
@@ -843,8 +841,8 @@ namespace Mirle.Agv.Controller
             {
                 #region Pause And Stop Check
 
-                PauseEvent.WaitOne(Timeout.Infinite);
-                if (ShutdownEvent.WaitOne(0))
+                ThdAskReservePauseEvent.WaitOne(Timeout.Infinite);
+                if (ThdAskReserveShutdownEvent.WaitOne(0))
                 {
                     break;
                 }
@@ -909,19 +907,22 @@ namespace Mirle.Agv.Controller
 
         public void Pause()
         {
-            PauseEvent.Reset();
+            ThdTransferCommandPauseEvent.Reset();
             SetTransCmdsStep(new Idle());
         }
 
         public void Resume()
         {
-            PauseEvent.Set();
+            ThdTransferCommandPauseEvent.Set();
         }
 
         public void Stop()
         {
-            ShutdownEvent.Set();
-            PauseEvent.Set();
+            ThdTransferCommandShutdownEvent.Set();
+            ThdTransferCommandPauseEvent.Set();
+            ThdAskReserveShutdownEvent.Set();
+            ThdAskReservePauseEvent.Set();
+
             theVehicle.SetVehicleStop();
             if (thdGetNewAgvcTransferCommand.IsAlive)
             {
@@ -1108,6 +1109,11 @@ namespace Mirle.Agv.Controller
             middleAgent.Send_Cmd131_TransferResponse(20, 1, "SomeReason");
         }
 
+        public AlarmHandler GetAlarmHandler()
+        {
+            return this.alarmHandler;
+        }
+
         public MiddleAgent GetMiddleAgent()
         {
             return middleAgent;
@@ -1139,7 +1145,7 @@ namespace Mirle.Agv.Controller
             queNeedReserveSections = new ConcurrentQueue<MapSection>();
             for (int i = 0; i < moveCmd.MovingSections.Count; i++)
             {
-                MapSection section = moveCmd.MovingSections[i];
+                MapSection section = moveCmd.MovingSections[i].DeepClone();
                 queNeedReserveSections.Enqueue(section);
             }
         }
@@ -1155,96 +1161,46 @@ namespace Mirle.Agv.Controller
                 MoveCmdInfoUpdatePosition((MoveCmdInfo)curTransCmd, gxPosition);
             }
             middleAgent.Send_Cmd134_TransferEventReport();
-
-
         }
 
         private void MoveCmdInfoUpdatePosition(MoveCmdInfo curTransCmd, MapPosition gxPosition)
         {
             List<MapSection> movingSections = curTransCmd.MovingSections;
             int movingSectionIndex = curTransCmd.MovingSectionsIndex;
-            if (movingSectionIndex + 1 == movingSections.Count)
+            while (movingSectionIndex < movingSections.Count)
             {
-                //vehicle is in the last section of this moveCmdInfo.
-                MapSection currentSection = movingSections[movingSectionIndex];
-                MapAddress headAdr = currentSection.HeadAddress;
-                MapAddress tailAdr = currentSection.TailAddress;
-                switch (currentSection.Type)
+                if (mapHandler.IsPositionInThisSection(gxPosition, movingSections[movingSectionIndex].DeepClone()))
                 {
-                    case EnumSectionType.Horizontal:
+                    if (movingSectionIndex > curTransCmd.MovingSectionsIndex)
+                    {
+                        var peek = queGotReserveOkSections.TryPeek(out MapSection mapSection);
+                        var curSection = movingSections[curTransCmd.MovingSectionsIndex];
+                        if (mapSection.Id == curSection.Id)
                         {
-                            if (IsOutsideSection(gxPosition.Y, headAdr.Position.Y))
-                            {
-                                //TODO:
-                                //Stop the vehicle.
-                                //Send alarm to agvc.
-                                return;
-                            }
-
-                            float distance = 0;
-                            if (currentSection.CmdDirection == EnumPermitDirection.Backward)
-                            {
-                                distance = tailAdr.Position.X - gxPosition.X;
-                            }
-                            else
-                            {
-                                distance = gxPosition.X - headAdr.Position.X;
-                            }
-
-                            var location = theVehicle.GetVehLoacation();
-
-                            if (distance > 0.95 * currentSection.Distance) //0.95 can config
-                            {
-                                //算是進入終點區間
-                                //TODO: 
-                                //二次定位
-                                EnumTransCmdType type = transCmds[TransCmdsIndex + 1].GetCommandType();
-                                if (type == EnumTransCmdType.Load)
-                                {
-                                    middleAgent.Send_Cmd136_TransferEventReport(EventType.LoadArrivals);
-                                }
-                                else if (type == EnumTransCmdType.Unload)
-                                {
-                                    middleAgent.Send_Cmd136_TransferEventReport(EventType.UnloadArrivals);
-                                }
-                                else
-                                {
-                                    middleAgent.Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
-                                }
-
-
-                            }
-                            else
-                            {
-                                //還未到終點
-                                location.Section.Distance = distance;
-                                middleAgent.Send_Cmd134_TransferEventReport();
-                            }
-
+                            queGotReserveOkSections.TryDequeue(out MapSection passSection);
                         }
-                        break;
-                    case EnumSectionType.Vertical:
-                        break;
-                    case EnumSectionType.R2000:
-                        break;
-                    case EnumSectionType.None:
-                    default:
-                        break;
+                        else
+                        {
+                            //TODO : SetAlarm
+                        }
+                    }
+                    curTransCmd.MovingSectionsIndex = movingSectionIndex;
+                    break;
                 }
-
-
+                movingSectionIndex++;
             }
-            else
+
+            if (movingSectionIndex == movingSections.Count - 1)
             {
-                MapSection currentSection = movingSections[movingSectionIndex];
-                MapSection nextSection = movingSections[movingSectionIndex + 1];
+                ThdAskReserveShutdownEvent.Set();
+            }
+            else if (movingSectionIndex == movingSections.Count)
+            {
+                //gxPosition is not in curTransCmd.MovingSections
+                //TODO: PublishAlarm and log
             }
 
-        }
 
-        private bool IsOutsideSection(float num1, float num2)
-        {
-            return Math.Abs(num1 - num2) > mapConfig.OutSectionThreshold;
         }
 
         public MapBarcode GetMapBarcode(int baracodeNum)

@@ -39,7 +39,7 @@
             this.englishToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.模式ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.alarmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.通訊ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.手動測試動令ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.車輛狀態ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -64,15 +64,15 @@
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
-            this.gbConnection = new System.Windows.Forms.GroupBox();
-            this.radOnline = new System.Windows.Forms.RadioButton();
-            this.radOffline = new System.Windows.Forms.RadioButton();
             this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucDeltaPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucEncoderPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
             this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
+            this.gbConnection = new System.Windows.Forms.GroupBox();
+            this.radOnline = new System.Windows.Forms.RadioButton();
+            this.radOffline = new System.Windows.Forms.RadioButton();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -150,20 +150,20 @@
             // 中文ToolStripMenuItem
             // 
             this.中文ToolStripMenuItem.Name = "中文ToolStripMenuItem";
-            this.中文ToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.中文ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.中文ToolStripMenuItem.Text = "中文";
             // 
             // englishToolStripMenuItem
             // 
             this.englishToolStripMenuItem.Name = "englishToolStripMenuItem";
-            this.englishToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.englishToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.englishToolStripMenuItem.Text = "English";
             // 
             // 模式ToolStripMenuItem
             // 
             this.模式ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.jogToolStripMenuItem,
-            this.mapToolStripMenuItem,
+            this.alarmToolStripMenuItem,
             this.通訊ToolStripMenuItem,
             this.手動測試動令ToolStripMenuItem,
             this.車輛狀態ToolStripMenuItem});
@@ -174,33 +174,34 @@
             // jogToolStripMenuItem
             // 
             this.jogToolStripMenuItem.Name = "jogToolStripMenuItem";
-            this.jogToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.jogToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.jogToolStripMenuItem.Text = "Jog";
             // 
-            // mapToolStripMenuItem
+            // alarmToolStripMenuItem
             // 
-            this.mapToolStripMenuItem.Name = "mapToolStripMenuItem";
-            this.mapToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
-            this.mapToolStripMenuItem.Text = "地圖";
+            this.alarmToolStripMenuItem.Name = "alarmToolStripMenuItem";
+            this.alarmToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.alarmToolStripMenuItem.Text = "Alarm";
+            this.alarmToolStripMenuItem.Click += new System.EventHandler(this.alarmToolStripMenuItem_Click);
             // 
             // 通訊ToolStripMenuItem
             // 
             this.通訊ToolStripMenuItem.Name = "通訊ToolStripMenuItem";
-            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.通訊ToolStripMenuItem.Text = "通訊";
             this.通訊ToolStripMenuItem.Click += new System.EventHandler(this.通訊ToolStripMenuItem_Click);
             // 
             // 手動測試動令ToolStripMenuItem
             // 
             this.手動測試動令ToolStripMenuItem.Name = "手動測試動令ToolStripMenuItem";
-            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.手動測試動令ToolStripMenuItem.Text = "手動測試動令";
             this.手動測試動令ToolStripMenuItem.Click += new System.EventHandler(this.手動測試動令ToolStripMenuItem_Click);
             // 
             // 車輛狀態ToolStripMenuItem
             // 
             this.車輛狀態ToolStripMenuItem.Name = "車輛狀態ToolStripMenuItem";
-            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
             // 
             // 工程師ToolStripMenuItem
@@ -447,39 +448,6 @@
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "VehicleLocation";
             // 
-            // gbConnection
-            // 
-            this.gbConnection.Controls.Add(this.radOnline);
-            this.gbConnection.Controls.Add(this.radOffline);
-            this.gbConnection.Location = new System.Drawing.Point(12, 14);
-            this.gbConnection.Name = "gbConnection";
-            this.gbConnection.Size = new System.Drawing.Size(200, 48);
-            this.gbConnection.TabIndex = 0;
-            this.gbConnection.TabStop = false;
-            this.gbConnection.Text = "Connection";
-            // 
-            // radOnline
-            // 
-            this.radOnline.AutoSize = true;
-            this.radOnline.Location = new System.Drawing.Point(68, 21);
-            this.radOnline.Name = "radOnline";
-            this.radOnline.Size = new System.Drawing.Size(54, 16);
-            this.radOnline.TabIndex = 1;
-            this.radOnline.TabStop = true;
-            this.radOnline.Text = "Online";
-            this.radOnline.UseVisualStyleBackColor = true;
-            // 
-            // radOffline
-            // 
-            this.radOffline.AutoSize = true;
-            this.radOffline.Location = new System.Drawing.Point(6, 21);
-            this.radOffline.Name = "radOffline";
-            this.radOffline.Size = new System.Drawing.Size(56, 16);
-            this.radOffline.TabIndex = 0;
-            this.radOffline.TabStop = true;
-            this.radOffline.Text = "Offline";
-            this.radOffline.UseVisualStyleBackColor = true;
-            // 
             // ucRealPosition
             // 
             this.ucRealPosition.Location = new System.Drawing.Point(0, 181);
@@ -534,6 +502,39 @@
             this.ucMapSection.UcName = "label1";
             this.ucMapSection.UcValue = "";
             // 
+            // gbConnection
+            // 
+            this.gbConnection.Controls.Add(this.radOnline);
+            this.gbConnection.Controls.Add(this.radOffline);
+            this.gbConnection.Location = new System.Drawing.Point(12, 14);
+            this.gbConnection.Name = "gbConnection";
+            this.gbConnection.Size = new System.Drawing.Size(200, 48);
+            this.gbConnection.TabIndex = 0;
+            this.gbConnection.TabStop = false;
+            this.gbConnection.Text = "Connection";
+            // 
+            // radOnline
+            // 
+            this.radOnline.AutoSize = true;
+            this.radOnline.Location = new System.Drawing.Point(68, 21);
+            this.radOnline.Name = "radOnline";
+            this.radOnline.Size = new System.Drawing.Size(54, 16);
+            this.radOnline.TabIndex = 1;
+            this.radOnline.TabStop = true;
+            this.radOnline.Text = "Online";
+            this.radOnline.UseVisualStyleBackColor = true;
+            // 
+            // radOffline
+            // 
+            this.radOffline.AutoSize = true;
+            this.radOffline.Location = new System.Drawing.Point(6, 21);
+            this.radOffline.Name = "radOffline";
+            this.radOffline.Size = new System.Drawing.Size(56, 16);
+            this.radOffline.TabIndex = 0;
+            this.radOffline.TabStop = true;
+            this.radOffline.Text = "Offline";
+            this.radOffline.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -586,7 +587,7 @@
         private System.Windows.Forms.ToolStripMenuItem 中文ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem englishToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem jogToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem mapToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem alarmToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 通訊ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 車輛狀態ToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainer1;

@@ -35,7 +35,7 @@ namespace Mirle.Agv
         None,
         Forward,
         Backward
-    }   
+    }
 
     public enum EnumRowBarcodeType
     {
@@ -61,7 +61,7 @@ namespace Mirle.Agv
         Home,
         Override,
         Else
-    }   
+    }
 
     public enum EnumMoveState
     {
@@ -70,21 +70,7 @@ namespace Mirle.Agv
         MoveComplete,
         WaitForReserve,
         WaitForResume
-    }
-
-    public enum EnumMainFlowState
-    {
-        Idle,
-        Move,
-        Load,
-        Unload
-    }
-
-    public enum EnumAlarmType
-    {
-        Alarm1,
-        Alarm2
-    }
+    }    
 
     public enum EnumConnectState
     {
@@ -107,15 +93,7 @@ namespace Mirle.Agv
         Admin,
         OneAboveAll
     }
-
-    public enum EnumLogType
-    {
-        Debug,
-        Info,
-        Error,
-        Comm
-    }
-
+  
     public enum EnumCompleteStatus
     {
         Move = 0,

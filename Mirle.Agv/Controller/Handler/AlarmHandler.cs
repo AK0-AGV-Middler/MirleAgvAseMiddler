@@ -71,7 +71,7 @@ namespace Mirle.Agv.Controller
                 int nRows = allRows.Length;
                 int nColumns = titleRow.Length;
 
-                //Id, ShortName, WordNum, BitNum, Level, Description
+                //Id, AlarmText, PlcAddress, PlcBitNumber, Level, Description
                 for (int i = 0; i < nColumns; i++)
                 {
                     var keyword = titleRow[i].Trim();
@@ -86,9 +86,9 @@ namespace Mirle.Agv.Controller
                     string[] getThisRow = allRows[i].Split(',');
                     Alarm oneRow = new Alarm();
                     oneRow.Id = int.Parse(getThisRow[dicAlarmIndexes["Id"]]);
-                    oneRow.ShortName = getThisRow[dicAlarmIndexes["ShortName"]];
-                    oneRow.WordNum = int.Parse(getThisRow[dicAlarmIndexes["WordNum"]]);
-                    oneRow.BitNum = int.Parse(getThisRow[dicAlarmIndexes["BitNum"]]);
+                    oneRow.AlarmText = getThisRow[dicAlarmIndexes["AlarmText"]];
+                    oneRow.PlcAddress = getThisRow[dicAlarmIndexes["PlcAddress"]];
+                    oneRow.PlcBitNumber = getThisRow[dicAlarmIndexes["PlcBitNumber"]];
                     oneRow.Level = int.Parse(getThisRow[dicAlarmIndexes["Level"]]);
                     oneRow.Description = getThisRow[dicAlarmIndexes["Description"]];
 
