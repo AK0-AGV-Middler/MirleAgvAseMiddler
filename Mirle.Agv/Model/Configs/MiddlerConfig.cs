@@ -22,5 +22,6 @@ namespace Mirle.Agv.Model.Configs
         public int RetryCount { get; set; }
         public int SleepTime { get; set; }
         public int RichTextBoxMaxLines { get; set; }
+        public int AskReserveInterval { get; set; }
     }
 }

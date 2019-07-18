@@ -167,8 +167,11 @@ namespace Mirle.Agv
     {
         ST,
         TR,
+        TR50,
         BTR,
+        BTR50,
         R2000,
+        BR2000,
         End
     }
 

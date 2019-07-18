@@ -32,22 +32,15 @@ namespace Mirle.Agv.Controller
         #region TransCmds
 
         private List<TransCmd> transCmds = new List<TransCmd>();
-
         private List<TransCmd> lastTransCmds = new List<TransCmd>();
-
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
-
         public bool GoNextTransferStep { get; set; }
         public int TransCmdsIndex { get; set; }
-
         public bool IsReportingPosition { get; set; }
-
+        public bool IsReserveMechanism { get; set; } = true;
         private ITransCmdsStep transferCommandStep;
-
-        //private List<MapSection> movingSections = new List<MapSection>();
         private AgvcTransCmd agvcTransCmd;
-        //public int MovingSectionsIndex { get; set; } = 0;
 
         #endregion
 
@@ -75,12 +68,12 @@ namespace Mirle.Agv.Controller
         #region Threads
 
         private Thread thdGetNewAgvcTransferCommand;
-        private ManualResetEvent ThdTransferCommandShutdownEvent = new ManualResetEvent(false);
-        private ManualResetEvent ThdTransferCommandPauseEvent = new ManualResetEvent(true);
+        private ManualResetEvent doTransferCommandShutdownEvent = new ManualResetEvent(false);
+        private ManualResetEvent doTransferCommandPauseEvent = new ManualResetEvent(true);
 
-        private Thread thdAskReserve;
-        private ManualResetEvent ThdAskReserveShutdownEvent = new ManualResetEvent(false);
-        private ManualResetEvent ThdAskReservePauseEvent = new ManualResetEvent(true);
+        private Thread thdTrackingPosition;
+        private ManualResetEvent TrackingPositionShutdownEvent = new ManualResetEvent(false);
+        private ManualResetEvent TrackingPositionPauseEvent = new ManualResetEvent(true);
 
         #endregion
 
@@ -101,19 +94,15 @@ namespace Mirle.Agv.Controller
         {
             isIniOk = true;
             rootDir = Environment.CurrentDirectory;
-            //InitialMainFlowHandler();
-
-            //RunThreads();
         }
 
         public MainFlowHandler(string rootDir)
         {
             isIniOk = true;
             this.rootDir = rootDir;
-            //InitialMainFlowHandler();
-
-            //RunThreads();
         }
+
+        #region InitialComponents
 
         public void InitialMainFlowHandler()
         {
@@ -155,8 +144,8 @@ namespace Mirle.Agv.Controller
                 mainFlowConfig.DoTransCmdsInterval = tempDoTransCmdsInterval;
                 int.TryParse(configHandler.GetString("MainFlow", "ReserveLength", "3"), out int tempReserveLength);
                 mainFlowConfig.ReserveLength = tempReserveLength;
-                int.TryParse(configHandler.GetString("MainFlow", "AskReserveInterval", "15"), out int tempAskReserveInterval);
-                mainFlowConfig.AskReserveInterval = tempAskReserveInterval;
+                int.TryParse(configHandler.GetString("MainFlow", "TrackingPositionInterval", "100"), out int tempTrackingPositionInterval);
+                mainFlowConfig.TrackingPositionInterval = tempTrackingPositionInterval;
 
                 middlerConfig = new MiddlerConfig();
                 int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
@@ -184,6 +173,8 @@ namespace Mirle.Agv.Controller
                 middlerConfig.SleepTime = tempSleepTime;
                 int.TryParse(configHandler.GetString("Middler", "RichTextBoxMaxLines ", "10"), out int tempRichTextBoxMaxLines);
                 middlerConfig.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
+                int.TryParse(configHandler.GetString("Middler", "AskReserveInterval ", "250"), out int tempAskReserveInterval);
+                middlerConfig.AskReserveInterval = tempAskReserveInterval;
 
                 mapConfig = new MapConfig();
                 mapConfig.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
@@ -192,6 +183,10 @@ namespace Mirle.Agv.Controller
                 mapConfig.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
 
                 moveControlConfig = new MoveControlConfig();
+                moveControlConfig.Sr2000FileName = configHandler.GetString("MoveControl", "Sr2000FileName", "SR2KConfig.xml");
+                moveControlConfig.OnTimeReviseFileName = configHandler.GetString("MoveControl", "OnTimeReviseFileName", "OntimeReviseConfig.xml");
+                int.TryParse(configHandler.GetString("MoveControl", "SleepTime ", "10"), out int tempSleepTime2);
+                moveControlConfig.SleepTime = tempSleepTime2;
 
                 batteryConfig = new BatteryConfig();
                 int.TryParse(configHandler.GetString("Battery", "Percentage", "80"), out int tempPercentage);
@@ -361,10 +356,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.OnTransferAbortEvent += OnMiddlerGetsAbortEvent;
 
                 //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
-                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += OnMapBarcodeValuesChangedEvent;
-                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += middleAgent.OnMapBarcodeValuesChangedEvent;
-                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += mapHandler.OnMapBarcodeValuesChangedEvent;
-                //moveControlHandler.sr2000Agent.OnMapBarcodeValuesChange += moveControlHandler.OnMapBarcodeValuesChangedEvent;
 
                 middleAgent.OnGetReserveOkEvent += MiddleAgent_OnGetReserveOkEvent;
                 middleAgent.OnGetBlockPassEvent += MiddleAgent_OnGetBlockPassEvent;
@@ -421,14 +412,17 @@ namespace Mirle.Agv.Controller
             thdGetNewAgvcTransferCommand = new Thread(new ThreadStart(VisitTransCmds));
             thdGetNewAgvcTransferCommand.IsBackground = true;
 
-            thdAskReserve = new Thread(new ThreadStart(AskReserve));
-            thdAskReserve.IsBackground = true;
+            thdTrackingPosition = new Thread(new ThreadStart(TrackingPosition));
+            thdTrackingPosition.IsBackground = true;
         }
+
 
         public MapInfo GetMapInfo()
         {
             return theMapInfo;
         }
+
+        #endregion
 
         private void MiddleAgent_OnGetBlockPassEvent(object sender, bool e)
         {
@@ -597,7 +591,7 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-        private bool GenralTransCmds()
+        private bool IsBasicTransCmds()
         {
             switch (agvcTransCmd.CmdType)
             {
@@ -766,8 +760,8 @@ namespace Mirle.Agv.Controller
             {
                 #region Pause And Stop Check
 
-                ThdTransferCommandPauseEvent.WaitOne(Timeout.Infinite);
-                if (ThdTransferCommandShutdownEvent.WaitOne(0))
+                doTransferCommandPauseEvent.WaitOne(Timeout.Infinite);
+                if (doTransferCommandShutdownEvent.WaitOne(0))
                 {
                     break;
                 }
@@ -778,6 +772,12 @@ namespace Mirle.Agv.Controller
                 {
                     GoNextTransferStep = false;
                     DoTransfer();
+                }
+
+                if (CanAskNextReserveSection())
+                {
+                    queNeedReserveSections.TryPeek(out MapSection needReserveSection);
+                    middleAgent.SetupNeedReserveSections(needReserveSection);
                 }
 
                 SpinWait.SpinUntil(() => false, mainFlowConfig.DoTransCmdsInterval);
@@ -799,10 +799,8 @@ namespace Mirle.Agv.Controller
         {
             TransCmdsIndex = 0;
             GoNextTransferStep = true;
-            ThdTransferCommandPauseEvent.Set();
-            ThdTransferCommandShutdownEvent.Reset();
-            ThdAskReservePauseEvent.Set();
-            ThdAskReserveShutdownEvent.Reset();
+            doTransferCommandPauseEvent.Set();
+            doTransferCommandShutdownEvent.Reset();
         }
 
         private bool IsQueGotReserveOkSectionsFull()
@@ -835,35 +833,49 @@ namespace Mirle.Agv.Controller
             throw new NotImplementedException();
         }
 
-        private void AskReserve()
+        private void TrackingPosition()
         {
-            while (GetCurTransCmd().GetCommandType() == EnumTransCmdType.Move)
+            while (true)
             {
                 #region Pause And Stop Check
 
-                ThdAskReservePauseEvent.WaitOne(Timeout.Infinite);
-                if (ThdAskReserveShutdownEvent.WaitOne(0))
+                TrackingPositionPauseEvent.WaitOne(Timeout.Infinite);
+                if (TrackingPositionShutdownEvent.WaitOne(0))
                 {
                     break;
                 }
 
                 #endregion
 
-                if (CanAskReserve())
+                var position = moveControlHandler.RealPosition;
+
+                if (transCmds.Count > 0)
                 {
-                    middleAgent.AskAgvcReserveSections(queNeedReserveSections);
+                    var curTransCmd = GetCurTransCmd();
+                    if (curTransCmd.GetCommandType() == EnumTransCmdType.Move)
+                    {
+                        MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
+                        MoveCmdInfoUpdatePosition(moveCmd, position);
+                    }
+                }
+                else
+                {
+                    MoveCmdInfoUpdatePosition(position);
                 }
 
-                SpinWait.SpinUntil(() => false, mainFlowConfig.AskReserveInterval);
+                SpinWait.SpinUntil(() => false, mainFlowConfig.DoTransCmdsInterval);
             }
+
         }
 
-        private void MiddleAgent_OnGetReserveOkEvent(object sender, bool e)
+
+        private void MiddleAgent_OnGetReserveOkEvent(object sender, MapSection reserveOkSection)
         {
-            if (e)
+            queNeedReserveSections.TryPeek(out MapSection needReserveSection);
+            if (needReserveSection.Id == reserveOkSection.Id)
             {
-                queNeedReserveSections.TryDequeue(out MapSection reserveOkSection);
-                queGotReserveOkSections.Enqueue(reserveOkSection);
+                queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
+                queGotReserveOkSections.Enqueue(aReserveOkSection);
                 PublishReserveOkEvent();
             }
         }
@@ -895,9 +907,14 @@ namespace Mirle.Agv.Controller
             OnReserveOkEvent?.Invoke(this, reserveOkPositions);
         }
 
-        private bool CanAskReserve()
+        private bool CanAskNextReserveSection()
         {
-            return CanVehMove() && !IsQueGotReserveOkSectionsFull() && IsQueNeedReserveSectionsNotEmpty();
+            return IsMoveStep() && CanVehMove() && !IsQueGotReserveOkSectionsFull() && IsQueNeedReserveSectionsNotEmpty();
+        }
+
+        private bool IsMoveStep()
+        {
+            return GetCurTransCmd().GetCommandType() == EnumTransCmdType.Move;
         }
 
         private bool IsQueNeedReserveSectionsNotEmpty()
@@ -905,33 +922,35 @@ namespace Mirle.Agv.Controller
             return !queNeedReserveSections.IsEmpty;
         }
 
-        public void Pause()
+        public void PauseTransfer()
         {
-            ThdTransferCommandPauseEvent.Reset();
+            doTransferCommandPauseEvent.Reset();
+            //askReservePauseEvent.Reset();
             SetTransCmdsStep(new Idle());
         }
 
-        public void Resume()
+        public void ResumeTransfer()
         {
-            ThdTransferCommandPauseEvent.Set();
+            doTransferCommandPauseEvent.Set();
+            //askReservePauseEvent.Set();
         }
 
-        public void Stop()
+        public void StopTransfer()
         {
-            ThdTransferCommandShutdownEvent.Set();
-            ThdTransferCommandPauseEvent.Set();
-            ThdAskReserveShutdownEvent.Set();
-            ThdAskReservePauseEvent.Set();
+            doTransferCommandShutdownEvent.Set();
+            doTransferCommandPauseEvent.Set();
+            //askReserveShutdownEvent.Set();
+            //askReservePauseEvent.Set();
 
             theVehicle.SetVehicleStop();
             if (thdGetNewAgvcTransferCommand.IsAlive)
             {
                 thdGetNewAgvcTransferCommand.Join();
             }
-            if (thdAskReserve.IsAlive)
-            {
-                thdAskReserve.Join();
-            }
+            //if (thdAskReserve.IsAlive)
+            //{
+            //    thdAskReserve.Join();
+            //}
             SetTransCmdsStep(new Idle());
         }
 
@@ -955,13 +974,13 @@ namespace Mirle.Agv.Controller
 
         private void OnAbortEvent()
         {
-            Stop();
+            StopTransfer();
             middleAgent.MainFlowGetAbort();
         }
 
         private void OnCancelEvent()
         {
-            Stop();
+            StopTransfer();
             middleAgent.MainFlowGetCancel();
         }
 
@@ -1035,7 +1054,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                Stop();
+                StopTransfer();
                 SetLasTransCmds();
                 //Send Transfer Complete to Middler
             }
@@ -1134,13 +1153,13 @@ namespace Mirle.Agv.Controller
             OnTransferMoveEvent?.Invoke(this, moveCmd);
         }
 
-        public void StartAskingReserve(MoveCmdInfo moveCmd)
+        public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
-            FitPrepareForReserveSections(moveCmd);
-            thdAskReserve.Start();
+            SetupNeedReserveSections(moveCmd);
+            //thdAskReserve.Start();
         }
 
-        private void FitPrepareForReserveSections(MoveCmdInfo moveCmd)
+        private void SetupNeedReserveSections(MoveCmdInfo moveCmd)
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>();
             for (int i = 0; i < moveCmd.MovingSections.Count; i++)
@@ -1171,6 +1190,7 @@ namespace Mirle.Agv.Controller
             {
                 if (mapHandler.IsPositionInThisSection(gxPosition, movingSections[movingSectionIndex].DeepClone()))
                 {
+                    //TODO: Middler send vehicle location to agvc
                     if (movingSectionIndex > curTransCmd.MovingSectionsIndex)
                     {
                         var peek = queGotReserveOkSections.TryPeek(out MapSection mapSection);
@@ -1190,17 +1210,33 @@ namespace Mirle.Agv.Controller
                 movingSectionIndex++;
             }
 
-            if (movingSectionIndex == movingSections.Count - 1)
-            {
-                ThdAskReserveShutdownEvent.Set();
-            }
-            else if (movingSectionIndex == movingSections.Count)
+            if (movingSectionIndex == movingSections.Count)
             {
                 //gxPosition is not in curTransCmd.MovingSections
                 //TODO: PublishAlarm and log
             }
 
+        }
 
+        private void MoveCmdInfoUpdatePosition(MapPosition gxPosition)
+        {
+            bool isInMap = false;
+            foreach (var item in theMapInfo.allMapSections)
+            {
+                MapSection mapSection = item.Value.DeepClone();
+                mapSection.CmdDirection = EnumPermitDirection.Forward;
+                if (mapHandler.IsPositionInThisSection(gxPosition, mapSection))
+                {
+                    isInMap = true;
+                    //TODO: middler send vehicle location to agvc
+                    break;
+                }
+            }
+
+            if (!isInMap)
+            {
+                //TODO: send alarm and log Position is not in Map
+            }
         }
 
         public MapBarcode GetMapBarcode(int baracodeNum)

@@ -282,7 +282,7 @@ namespace Mirle.Agv.View
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mainFlowHandler.Stop();
+            mainFlowHandler.StopTransfer();
             ShutdownEvent.Set();
             PauseEvent.Set();
 

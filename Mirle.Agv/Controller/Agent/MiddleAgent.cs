@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using com.mirle.iibg3k0.ttc.Common;
+using com.mirle.iibg3k0.ttc.Common.TCPIP;
+using com.mirle.iibg3k0.ttc.Common.TCPIP.DecodRawData;
+using Google.Protobuf.Collections;
+using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model;
 using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model.TransferCmds;
-using com.mirle.iibg3k0.ttc.Common;
-using com.mirle.iibg3k0.ttc.Common.TCPIP;
-using TcpIpClientSample;
-using Google.Protobuf.Collections;
-using com.mirle.iibg3k0.ttc.Common.TCPIP.DecodRawData;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using TcpIpClientSample;
 
 namespace Mirle.Agv.Controller
 {
@@ -27,7 +27,7 @@ namespace Mirle.Agv.Controller
         public event EventHandler<string> OnCmdSend;
         public event EventHandler<string> OnTransferCancelEvent;
         public event EventHandler<string> OnTransferAbortEvent;
-        public event EventHandler<bool> OnGetReserveOkEvent;
+        public event EventHandler<MapSection> OnGetReserveOkEvent;
         public event EventHandler<bool> OnGetBlockPassEvent;
 
         #endregion
@@ -38,6 +38,12 @@ namespace Mirle.Agv.Controller
         private MiddlerConfig middlerConfig;
         private MapInfo theMapInfo = new MapInfo();
 
+        private bool IsReserveOk;
+        private Thread thdAskReserve;
+        private ManualResetEvent askReserveShutdownEvent = new ManualResetEvent(false);
+        private ManualResetEvent askReservePauseEvent = new ManualResetEvent(true);
+        private MapSection needReserveSection;
+
         public TcpIpAgent ClientAgent { get; private set; }
 
         public MiddleAgent(MiddlerConfig middlerConfigs, MapInfo theMapInfo)
@@ -46,6 +52,36 @@ namespace Mirle.Agv.Controller
             this.middlerConfig = middlerConfigs;
 
             CreatTcpIpClientAgent();
+            AskReserveStart();
+            AskReservePause();
+        }
+
+        private void AskReserve()
+        {
+            bool askResult = false;
+            while (!askResult)
+            {              
+                #region Pause And Stop Check
+
+                askReservePauseEvent.WaitOne(Timeout.Infinite);
+                if (askReserveShutdownEvent.WaitOne(0))
+                {
+                    break;
+                }
+
+                #endregion
+
+                askResult = Send_Cmd136_AskReserve();
+                if (!askResult)
+                {
+                    SpinWait.SpinUntil(() => false, middlerConfig.AskReserveInterval);
+                }              
+            }
+
+            if (askResult)
+            {
+                OnGetReserveOkEvent?.Invoke(this, needReserveSection);
+            }
         }
 
         private void CreatTcpIpClientAgent()
@@ -666,10 +702,42 @@ namespace Mirle.Agv.Controller
             Task.Run(() => ClientAgent.TrxTcpIp.SendGoogleMsg(wrapper));
         }
 
-        public void AskAgvcReserveSections(ConcurrentQueue<MapSection> queNeedReserveSections)
+        public void SetupNeedReserveSections(MapSection needReserveSection)
         {
-            queNeedReserveSections.TryPeek(out MapSection needReserveSection);
-            Send_Cmd136_AskReserve(needReserveSection);
+            AskReservePause();
+            this.needReserveSection = needReserveSection.DeepClone();
+            AskReservResume();
+        }
+
+        public void AskReservePause()
+        {
+            askReservePauseEvent.Reset();
+        }
+
+        public void AskReservResume()
+        {
+            askReservePauseEvent.Set();
+        }
+
+        public void AskReserveStart()
+        {
+            askReservePauseEvent.Set();
+            askReserveShutdownEvent.Reset();
+            thdAskReserve = new Thread(new ThreadStart(AskReserve));
+            thdAskReserve.IsBackground = true;
+            thdAskReserve.Start();
+        }
+
+        public void AskReservStop()
+        {
+            askReserveShutdownEvent.Set();
+            askReservePauseEvent.Set();
+
+            //if (thdAskReserve.IsAlive)
+            //{
+            //    thdAskReserve.Abort();
+            //    thdAskReserve.Join();
+            //}
         }
 
         #region EnumConverter
@@ -1499,10 +1567,10 @@ namespace Mirle.Agv.Controller
             ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
             //Get reserve, block, 
 
-            if (receive.IsReserveSuccess == ReserveResult.Success)
-            {
-                OnGetReserveOkEvent?.Invoke(this, true);
-            }
+            //if (receive.IsReserveSuccess == ReserveResult.Success)
+            //{
+            //    OnGetReserveOkEvent?.Invoke(this, true);
+            //}
 
             if (receive.IsBlockPass == PassType.Pass)
             {
@@ -1589,7 +1657,7 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
         }
-        public void Send_Cmd136_AskReserve(MapSection needReserveSection)
+        public bool Send_Cmd136_AskReserve()
         {
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
@@ -1597,7 +1665,7 @@ namespace Mirle.Agv.Controller
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = EventType.ReserveReq;
-                FitReserveInfos(needReserveSection, iD_136_TRANS_EVENT_REP.ReserveInfos);
+                FitReserveInfos(iD_136_TRANS_EVENT_REP.ReserveInfos);
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
@@ -1607,16 +1675,26 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                SendCommandWrapper(wrappers);
-
                 OnCmdSend?.Invoke(this, iD_136_TRANS_EVENT_REP.ToString());
+                // SendCommandWrapper(wrappers);
+                ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE resultObj, out string resultMsg);               
+
+                if (resultObj.IsReserveSuccess == ReserveResult.Success)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
+                return false;
             }
         }
-        private void FitReserveInfos(MapSection needReserveSection, RepeatedField<ReserveInfo> reserveInfos)
+        private void FitReserveInfos(RepeatedField<ReserveInfo> reserveInfos)
         {
             reserveInfos.Clear();
 
@@ -2101,6 +2179,8 @@ namespace Mirle.Agv.Controller
             Google.Protobuf.MessageParser<T> parser = new Google.Protobuf.MessageParser<T>(() => new T());
             return parser.ParseFrom(buf);
         }
+
+
 
     }
 
