@@ -24,7 +24,7 @@ namespace Mirle.Agv
         private Pen bluePen = new Pen(Color.Blue, 1);
         private Pen redPen = new Pen(Color.Red, 1);
         private SolidBrush blackBrush = new SolidBrush(Color.Black);
-        private float coefficient = 0.50f;
+        private float coefficient = 0.05f;
 
         private ToolTip toolTip = new ToolTip();
 
@@ -47,6 +47,7 @@ namespace Mirle.Agv
             string msg = $"Id = {Section.Id}\n" + $"FromAdr = {Section.HeadAddress.Id}\n" + $"ToAdr = {Section.TailAddress.Id}";
 
             toolTip.SetToolTip(pictureBox1, msg);
+            toolTip.SetToolTip(label1, msg);
         }
 
         private void DrawSectionImage(Pen aPen)

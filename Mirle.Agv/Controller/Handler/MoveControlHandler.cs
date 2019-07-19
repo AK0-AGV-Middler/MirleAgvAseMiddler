@@ -18,10 +18,10 @@ namespace Mirle.Agv.Controller
 
         public event EventHandler<EnumCompleteStatus> OnMoveFinished;
 
-        public MapPosition EncoderPosition { get; set; }
-        public MapPosition BarcodePosition { get; set; }
-        public MapPosition DeltaPosition { get; set; }
-        public MapPosition RealPosition { get; set; }
+        public MapPosition EncoderPosition { get; set; } = new MapPosition();
+        public MapPosition BarcodePosition { get; set; } = new MapPosition();
+        public MapPosition DeltaPosition { get; set; } = new MapPosition();
+        public MapPosition RealPosition { get; set; } = new MapPosition();
 
         public MoveControlHandler(MoveControlConfig moveControlConfig, MapInfo theMapInfo)
         {
@@ -46,6 +46,11 @@ namespace Mirle.Agv.Controller
         public bool AddReservedOkMapPosition(MapPosition mapPosition)
         {
             return true;
+        }
+
+        internal void StopFlagOn()
+        {
+            throw new NotImplementedException();
         }
     }
 }

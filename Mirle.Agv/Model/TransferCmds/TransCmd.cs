@@ -9,6 +9,7 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public abstract class TransCmd
     {
+        protected Vehicle theVehicle = Vehicle.Instance;
         protected MapInfo theMapInfo = new MapInfo();
         protected EnumTransCmdType type;
         public string CmdId { get; set; } = "Empty";

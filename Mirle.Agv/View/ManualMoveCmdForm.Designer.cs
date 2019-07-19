@@ -56,6 +56,12 @@
             this.btnClearSpeedLimit = new System.Windows.Forms.Button();
             this.txtCmdId = new System.Windows.Forms.TextBox();
             this.btnClearIds = new System.Windows.Forms.Button();
+            this.btnPositionXY = new System.Windows.Forms.Button();
+            this.numPositionX = new System.Windows.Forms.NumericUpDown();
+            this.numPositionY = new System.Windows.Forms.NumericUpDown();
+            this.btnStopVehicle = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
             this.SuspendLayout();
             // 
             // label3
@@ -349,11 +355,61 @@
             this.btnClearIds.UseVisualStyleBackColor = true;
             this.btnClearIds.Click += new System.EventHandler(this.btnClearIds_Click);
             // 
+            // btnPositionXY
+            // 
+            this.btnPositionXY.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnPositionXY.Location = new System.Drawing.Point(12, 477);
+            this.btnPositionXY.Name = "btnPositionXY";
+            this.btnPositionXY.Size = new System.Drawing.Size(180, 23);
+            this.btnPositionXY.TabIndex = 32;
+            this.btnPositionXY.Text = "Add";
+            this.btnPositionXY.UseVisualStyleBackColor = true;
+            this.btnPositionXY.Click += new System.EventHandler(this.btnPositionXY_Click);
+            // 
+            // numPositionX
+            // 
+            this.numPositionX.Location = new System.Drawing.Point(12, 421);
+            this.numPositionX.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numPositionX.Name = "numPositionX";
+            this.numPositionX.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.numPositionX.Size = new System.Drawing.Size(180, 22);
+            this.numPositionX.TabIndex = 39;
+            // 
+            // numPositionY
+            // 
+            this.numPositionY.Location = new System.Drawing.Point(12, 449);
+            this.numPositionY.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numPositionY.Name = "numPositionY";
+            this.numPositionY.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.numPositionY.Size = new System.Drawing.Size(180, 22);
+            this.numPositionY.TabIndex = 40;
+            // 
+            // btnStopVehicle
+            // 
+            this.btnStopVehicle.Location = new System.Drawing.Point(954, 717);
+            this.btnStopVehicle.Name = "btnStopVehicle";
+            this.btnStopVehicle.Size = new System.Drawing.Size(237, 33);
+            this.btnStopVehicle.TabIndex = 41;
+            this.btnStopVehicle.Text = "Stop";
+            this.btnStopVehicle.UseVisualStyleBackColor = true;
+            this.btnStopVehicle.Click += new System.EventHandler(this.btnStopVehicle_Click);
+            // 
             // ManualMoveCmdForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1214, 797);
+            this.Controls.Add(this.btnStopVehicle);
+            this.Controls.Add(this.numPositionY);
+            this.Controls.Add(this.numPositionX);
             this.Controls.Add(this.listCmdSpeedLimits);
             this.Controls.Add(this.listMapSpeedLimits);
             this.Controls.Add(this.listCmdAddressActions);
@@ -362,6 +418,7 @@
             this.Controls.Add(this.listCmdAddressPositions);
             this.Controls.Add(this.btnAddressPositionsClear);
             this.Controls.Add(this.btnRemoveLastAddressPosition);
+            this.Controls.Add(this.btnPositionXY);
             this.Controls.Add(this.btnAddAddressPosition);
             this.Controls.Add(this.listMapAddressPositions);
             this.Controls.Add(this.btnClearIds);
@@ -384,6 +441,8 @@
             this.Controls.Add(this.label1);
             this.Name = "ManualMoveCmdForm";
             this.Text = "ManualMoveCmdForm";
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -418,5 +477,9 @@
         private System.Windows.Forms.Button btnClearSpeedLimit;
         private System.Windows.Forms.TextBox txtCmdId;
         private System.Windows.Forms.Button btnClearIds;
+        private System.Windows.Forms.Button btnPositionXY;
+        private System.Windows.Forms.NumericUpDown numPositionX;
+        private System.Windows.Forms.NumericUpDown numPositionY;
+        private System.Windows.Forms.Button btnStopVehicle;
     }
 }

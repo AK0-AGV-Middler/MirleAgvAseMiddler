@@ -24,6 +24,7 @@ namespace Mirle.Agv.View
         private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
         private ManualMoveCmdForm manualMoveCmdForm;
+        private MoveControlHandler moveControlHandler;
         private MiddlerForm middlerForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
@@ -55,19 +56,19 @@ namespace Mirle.Agv.View
 
         public bool IsBarcodeLineShow { get; set; } = true;
         private Dictionary<MapSection, UcSectionImage> allUcSectionImages = new Dictionary<MapSection, UcSectionImage>();
-        private float coefficient = 0.50f;
-        private float deltaOrigion = 50;
+        private float coefficient = 0.05f;
+        private float deltaOrigion = 25;
         private float addressRadius = 3;
         private float triangleCoefficient = (float)(1 / Math.Sqrt(3.0));
-
         #endregion
 
         public MainForm(MainFlowHandler mainFlowHandler)
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
-            this.theMapInfo = mainFlowHandler.GetMapInfo();
-            this.alarmHandler = mainFlowHandler.GetAlarmHandler();
+            theMapInfo = mainFlowHandler.GetMapInfo();
+            alarmHandler = mainFlowHandler.GetAlarmHandler();
+            moveControlHandler = mainFlowHandler.GetMoveControlHandler();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -78,29 +79,6 @@ namespace Mirle.Agv.View
             InitialEvents();
             InitialVehicleLocation();
             ResetImageAndPb();
-
-            //MakeTestUcSectionImage();
-        }
-
-        private void MakeTestUcSectionImage()
-        {
-            MapSection section = theMapInfo.allMapSections["sec020"];
-            MapAddress fromAddress = section.HeadAddress;
-            MapAddress toAddress = section.TailAddress;
-
-            UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
-
-            pictureBox1.Controls.Add(ucSectionImage);
-            ucSectionImage.Location = new Point(650, 420);
-            pictureBox1.SendToBack();
-            ucSectionImage.BringToFront();
-        }
-
-        private void APanel_MouseDown(object sender, MouseEventArgs e)
-        {
-            Panel thePanel = (Panel)sender;
-
-            RenewUI(txtCropY, thePanel.Name);
         }
 
         private void InitialForms()
@@ -113,6 +91,9 @@ namespace Mirle.Agv.View
 
             alarmForm = new AlarmForm(alarmHandler);
             middlerForm.WindowState = FormWindowState.Normal;
+
+            numPositionX.Maximum = decimal.MaxValue;
+            numPositionY.Maximum = decimal.MaxValue;
         }
 
         private void InitialPaintingItems()
@@ -133,7 +114,7 @@ namespace Mirle.Agv.View
 
         private void InitialEvents()
         {
-            mainFlowHandler.OnAgvcTransferCommandCheckedEvent += MainFlowHandler_OnAgvcTransferCommandCheckedEvent;
+            mainFlowHandler.OnAgvcTransferCommandCheckedEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
         }
 
         private void InitialVehicleLocation()
@@ -155,12 +136,7 @@ namespace Mirle.Agv.View
             ucDeltaPosition.UcValue = $"(0,0)";
             ucRealPosition.UcName = "RealPosition";
             ucRealPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
-        }
-
-        private void MainFlowHandler_OnAgvcTransferCommandCheckedEvent(object sender, string msg)
-        {
-            //RichTextBoxAppendHead(richTextBox1, msg);
-        }
+        }       
 
         public void DrawBasicMap()
         {
@@ -282,7 +258,7 @@ namespace Mirle.Agv.View
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mainFlowHandler.StopTransfer();
+            mainFlowHandler.StopVisitTransCmds();
             ShutdownEvent.Set();
             PauseEvent.Set();
 
@@ -323,7 +299,6 @@ namespace Mirle.Agv.View
 
         }
 
-
         public delegate void DelRenewUI(Control control, string msg);
         public void RenewUI(Control control, string msg)
         {
@@ -348,9 +323,16 @@ namespace Mirle.Agv.View
 
         private void UpdateStartPbPoint()
         {
-            RenewUI(txtCropX, mouseDownPbPoint.X.ToString());
-            RenewUI(txtCropY, mouseDownPbPoint.Y.ToString());
-            RenewUI(this, mouseDownPbPoint.ToString());
+            var pX = (mouseDownPbPoint.X - deltaOrigion) / coefficient;
+            var pY = (mouseDownPbPoint.Y - deltaOrigion) / coefficient;
+            string msg = $"Position({pX},{pY})";
+
+            numPositionX.Value = (decimal)pX;
+            numPositionY.Value = (decimal)pY;
+            //RenewUI(txtCropX, pX.ToString());
+            //RenewUI(txtCropY, pY.ToString());
+
+            RenewUI(this, msg);
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
@@ -491,5 +473,68 @@ namespace Mirle.Agv.View
 
         #endregion
 
+        private void btnStartTrackingPosition_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StartTrackingPosition();
+        }
+
+        private void btnPauseTrackingPosition_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.PauseTrackingPosition();
+        }
+
+        private void btnResumeTrackingPostiion_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.ResumeTrackingPosition();
+        }
+
+        private void btnStopTrackingPosition_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StopTrackingPosition();
+        }
+
+        private void TestReserveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            listNeedReserveSections.Items.Clear();
+            listReserveOkSections.Items.Clear();
+
+            List<MapSection> needReserveSections = mainFlowHandler.GetNeedReserveSections();
+            if (needReserveSections.Count > 0)
+            {
+                UpdateListNeedReserveSections(needReserveSections);
+            }
+            List<MapSection> reserveOkSections = mainFlowHandler.GetReserveOkSections();
+            if (reserveOkSections.Count > 0)
+            {
+                UpdateListReserveOkSections(reserveOkSections);
+            }
+        }
+
+        private void UpdateListReserveOkSections(List<MapSection> reserveOkSections)
+        {
+            listReserveOkSections.Items.Clear();
+            for (int i = 0; i < reserveOkSections.Count; i++)
+            {
+                listReserveOkSections.Items.Add(reserveOkSections[i].Id);
+            }
+        }
+
+        private void UpdateListNeedReserveSections(List<MapSection> needReserveSections)
+        {           
+            for (int i = 0; i < needReserveSections.Count; i++)
+            {
+                listNeedReserveSections.Items.Add(needReserveSections[i].Id);
+            }
+        }       
+
+        private void btnSetPosition_Click_1(object sender, EventArgs e)
+        {
+            moveControlHandler.RealPosition = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
+        }
     }
 }

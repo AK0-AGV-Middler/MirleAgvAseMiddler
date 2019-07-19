@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class MapSection
     {
         //Id, FromAddress, ToAddress, Distance, Speed, Type, PermitDirection, FowardBeamSensorEnable, BackwardBeamSensorEnable

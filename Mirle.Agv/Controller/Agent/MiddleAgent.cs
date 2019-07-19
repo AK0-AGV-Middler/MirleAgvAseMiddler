@@ -42,7 +42,7 @@ namespace Mirle.Agv.Controller
         private Thread thdAskReserve;
         private ManualResetEvent askReserveShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent askReservePauseEvent = new ManualResetEvent(true);
-        private MapSection needReserveSection;
+        private MapSection needReserveSection = new MapSection();
 
         public TcpIpAgent ClientAgent { get; private set; }
 
@@ -707,6 +707,11 @@ namespace Mirle.Agv.Controller
             AskReservePause();
             this.needReserveSection = needReserveSection.DeepClone();
             AskReservResume();
+        }
+
+        public string GetNeedReserveSectionId()
+        {
+            return needReserveSection.Id;
         }
 
         public void AskReservePause()
@@ -1677,8 +1682,7 @@ namespace Mirle.Agv.Controller
 
                 OnCmdSend?.Invoke(this, iD_136_TRANS_EVENT_REP.ToString());
                 // SendCommandWrapper(wrappers);
-                ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE resultObj, out string resultMsg);               
-
+                ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE resultObj, out string resultMsg);
                 if (resultObj.IsReserveSuccess == ReserveResult.Success)
                 {
                     return true;
@@ -1772,10 +1776,7 @@ namespace Mirle.Agv.Controller
 
                 var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, false);
 
-                if (OnCmdSend != null)
-                {
-                    OnCmdSend(this, iD_134_TRANS_EVENT_REP.ToString());
-                }
+                OnCmdSend?.Invoke(this, iD_134_TRANS_EVENT_REP.ToString());
             }
             catch (Exception ex)
             {

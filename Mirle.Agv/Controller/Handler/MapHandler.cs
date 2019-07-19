@@ -17,8 +17,8 @@ namespace Mirle.Agv.Controller
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
         private MapInfo theMapInfo = new MapInfo();
-        private float SectionWidth { get; set; } = 5;
-        private float AddressArea { get; set; } = 5;
+        private float SectionWidth { get; set; } = 50;
+        private float AddressArea { get; set; } = 50;
         private Vehicle theVehicle = Vehicle.Instance;
 
         public MapHandler(MapConfig mapConfig)
@@ -287,11 +287,12 @@ namespace Mirle.Agv.Controller
 
         public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection)
         {
-            MapAddress headAdr = aSection.HeadAddress;
-            MapAddress tailAdr = aSection.TailAddress;
+            MapSection mapSection = aSection.DeepClone();
+            MapAddress headAdr = mapSection.HeadAddress;
+            MapAddress tailAdr = mapSection.TailAddress;
 
             VehLocation location = theVehicle.GetVehLoacation();
-            MapSection mapSection = aSection.DeepClone();
+           
 
             if (IsPositionInThisAddress(aPosition, headAdr))
             {

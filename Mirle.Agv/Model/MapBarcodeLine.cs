@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class MapBarcodeLine
     {
         //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, Direction

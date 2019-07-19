@@ -74,11 +74,27 @@ namespace Mirle.Agv.Model.TransferCmds
             }
         }
 
+        protected void SetToLoadAddresses(RepeatedField<string> guideAddressesStartToLoad)
+        {
+            if (guideAddressesStartToLoad != null)
+            {
+                ToLoadAddresses = guideAddressesStartToLoad.ToArray();
+            }
+        }
+
         protected void SetToLoadSections(RepeatedField<string> guideSectionsStartToLoad)
         {
             if (guideSectionsStartToLoad != null)
             {
                 ToLoadSections = guideSectionsStartToLoad.ToArray();
+            }
+        }
+
+        protected void SetToUnloadAddresses(RepeatedField<string> guideAddressesToDestination)
+        {
+            if (guideAddressesToDestination != null)
+            {
+                ToUnloadAddresses = guideAddressesToDestination.ToArray();
             }
         }
 
@@ -88,16 +104,7 @@ namespace Mirle.Agv.Model.TransferCmds
             {
                 ToUnloadSections = guideSectionsToDestination.ToArray();
             }
-
-        }
-
-        protected void SetToLoadAddresses(RepeatedField<string> guideAddressesStartToLoad)
-        {
-            if (guideAddressesStartToLoad != null)
-            {
-                ToLoadAddresses = guideAddressesStartToLoad.ToArray();
-            }
-        }
+        }        
     }
 
     public class AgvcMoveCmd : AgvcTransCmd
@@ -107,6 +114,7 @@ namespace Mirle.Agv.Model.TransferCmds
             try
             {
                 SecToUnloadSections(transRequest.GuideSectionsToDestination);
+                SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
 
                 UnloadAddtess = transRequest.DestinationAdr;
             }
@@ -124,6 +132,7 @@ namespace Mirle.Agv.Model.TransferCmds
             try
             {
                 SetToLoadSections(transRequest.GuideSectionsStartToLoad);
+                SetToLoadAddresses(transRequest.GuideAddressesStartToLoad);
                 LoadAddress = transRequest.LoadAdr;
             }
             catch (Exception ex)
@@ -140,6 +149,7 @@ namespace Mirle.Agv.Model.TransferCmds
             try
             {
                 SecToUnloadSections(transRequest.GuideSectionsToDestination);
+                SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
                 UnloadAddtess = transRequest.DestinationAdr;
             }
             catch (Exception ex)
@@ -156,8 +166,10 @@ namespace Mirle.Agv.Model.TransferCmds
             try
             {
                 SetToLoadSections(transRequest.GuideSectionsStartToLoad);
+                SetToLoadAddresses(transRequest.GuideAddressesStartToLoad);
                 LoadAddress = transRequest.LoadAdr;
                 SecToUnloadSections(transRequest.GuideSectionsToDestination);
+                SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
                 UnloadAddtess = transRequest.DestinationAdr;
             }
             catch (Exception ex)
@@ -179,7 +191,9 @@ namespace Mirle.Agv.Model.TransferCmds
         public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             SetToLoadSections(transRequest.GuideSectionsStartToLoad);
+            SetToLoadAddresses(transRequest.GuideAddressesStartToLoad);
             SecToUnloadSections(transRequest.GuideSectionsToDestination);
+            SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
         }
     }
 }

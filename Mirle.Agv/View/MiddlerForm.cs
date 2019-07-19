@@ -61,16 +61,29 @@ namespace Mirle.Agv.View
             middleAgent.OnDisConnected += ConnectionStatusToToolStrip;
             middleAgent.OnCmdReceive += SendOrReceiveCmdToRichTextBox;
             middleAgent.OnCmdSend += SendOrReceiveCmdToRichTextBox;
-        }
+        }       
 
-        private void SendOrReceiveCmdToRichTextBox(object sender, string e)
+        public void SendOrReceiveCmdToRichTextBox(object sender, string e)
         {
             RichTextBoxAppendHead(richTextBox1, e);
         }
 
-        private void ConnectionStatusToToolStrip(object sender, string e)
+        public delegate void ToolStripStatusLabelTextChangeCallback(ToolStripStatusLabel toolStripStatusLabel, string msg);
+        public void ToolStripStatusLabelTextChange(ToolStripStatusLabel toolStripStatusLabel, string msg)
         {
-            toolStripStatusLabel1.Text = e;
+            if (this.InvokeRequired)
+            {
+                ToolStripStatusLabelTextChangeCallback mydel = new ToolStripStatusLabelTextChangeCallback(ToolStripStatusLabelTextChange);
+                this.Invoke(mydel, new object[] { toolStripStatusLabel, msg });
+            }
+            else
+            {
+                toolStripStatusLabel.Text = msg;
+            }
+        }
+        private void ConnectionStatusToToolStrip(object sender, string msg)
+        {
+            ToolStripStatusLabelTextChange(toolStripStatusLabel1, msg);
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);

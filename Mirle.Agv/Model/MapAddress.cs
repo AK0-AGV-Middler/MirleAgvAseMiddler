@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class MapAddress
     {
         //Id, Barcode, PositionX, PositionY, IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin

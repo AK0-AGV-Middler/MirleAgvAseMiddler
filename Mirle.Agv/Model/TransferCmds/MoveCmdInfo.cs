@@ -28,13 +28,14 @@ namespace Mirle.Agv.Model.TransferCmds
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
+            var vehLoc = theVehicle.GetVehLoacation();
+            //TODO Check Current Position is equal to First Position in MoveCmd.            
             try
             {
                 for (int i = 0; i < AddressIds.Count; i++)
                 {
-                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]];
-                    MapPosition position = mapAddress.Position.DeepClone();
-                    AddressPositions.Add(position);
+                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]].DeepClone();                   
+                    AddressPositions.Add(mapAddress.Position);
                 }
             }
             catch (Exception ex)

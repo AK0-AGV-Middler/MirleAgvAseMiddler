@@ -16,20 +16,21 @@ namespace Mirle.Agv.View
     public partial class ManualMoveCmdForm : Form
     {
         private MainFlowHandler mainFlowHandler;
-        private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
-        private MapInfo theMapInfo = new MapInfo();
+        private MoveCmdInfo moveCmdInfo;
+        private MapInfo theMapInfo;
 
         public ManualMoveCmdForm(MainFlowHandler mainFlowHandler, MapInfo theMapInfo)
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
             this.theMapInfo = theMapInfo;
-            AddListMapAddressPositions();
-            AddListMapAddressActions();
-            AddListMapSpeedLimits();
+            this.moveCmdInfo = new MoveCmdInfo(theMapInfo);
+            ListMapAddressPositionsAddItems();
+            ListMapAddressActionsAddItems();
+            ListMapSpeedLimitsAddItems();
         }
 
-        private void AddListMapAddressPositions()
+        private void ListMapAddressPositionsAddItems()
         {
             listMapAddressPositions.Items.Clear();
             foreach (var valuePair in theMapInfo.allMapAddresses)
@@ -41,7 +42,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void AddListMapAddressActions()
+        private void ListMapAddressActionsAddItems()
         {
             listMapAddressActions.Items.Clear();
             foreach (string item in Enum.GetNames(typeof(EnumAddressAction)))
@@ -50,7 +51,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void AddListMapSpeedLimits()
+        private void ListMapSpeedLimitsAddItems()
         {
             listMapSpeedLimits.Items.Clear();
             Dictionary<float, short> dicSpeedLimits = new Dictionary<float, short>();
@@ -168,7 +169,7 @@ namespace Mirle.Agv.View
 
         private void btnClearMoveCmdInfo_Click(object sender, EventArgs e)
         {
-            moveCmdInfo = new MoveCmdInfo();
+            moveCmdInfo = new MoveCmdInfo(theMapInfo);
         }
 
         private void btnCheckMoveCmdInfo_Click(object sender, EventArgs e)
@@ -317,5 +318,15 @@ namespace Mirle.Agv.View
             txtCstId.Text = cstId;
         }
 
+        private void btnPositionXY_Click(object sender, EventArgs e)
+        {
+            string txtPosition = $"{numPositionX.Value},{numPositionY.Value}";         
+            listCmdAddressPositions.Items.Add(txtPosition);
+        }
+
+        private void btnStopVehicle_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StopVehicle();
+        }
     }
 }

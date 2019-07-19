@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.系統ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.啟動ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,22 +58,32 @@
             this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
-            this.txtCropX = new System.Windows.Forms.TextBox();
-            this.txtCropY = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.btnResumeTrackingPostiion = new System.Windows.Forms.Button();
+            this.btnPauseTrackingPosition = new System.Windows.Forms.Button();
+            this.btnStopTrackingPosition = new System.Windows.Forms.Button();
+            this.btnStartTrackingPosition = new System.Windows.Forms.Button();
+            this.btnStopVehicle = new System.Windows.Forms.Button();
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
+            this.gbConnection = new System.Windows.Forms.GroupBox();
+            this.radOnline = new System.Windows.Forms.RadioButton();
+            this.radOffline = new System.Windows.Forms.RadioButton();
+            this.TestReserveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnSetPosition = new System.Windows.Forms.Button();
+            this.listReserveOkSections = new System.Windows.Forms.ListBox();
+            this.listNeedReserveSections = new System.Windows.Forms.ListBox();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.numPositionX = new System.Windows.Forms.NumericUpDown();
+            this.numPositionY = new System.Windows.Forms.NumericUpDown();
             this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucDeltaPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucEncoderPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
             this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
-            this.gbConnection = new System.Windows.Forms.GroupBox();
-            this.radOnline = new System.Windows.Forms.RadioButton();
-            this.radOffline = new System.Windows.Forms.RadioButton();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -88,6 +99,8 @@
             this.splitContainer2.SuspendLayout();
             this.gbVehicleLocation.SuspendLayout();
             this.gbConnection.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -150,13 +163,13 @@
             // 中文ToolStripMenuItem
             // 
             this.中文ToolStripMenuItem.Name = "中文ToolStripMenuItem";
-            this.中文ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.中文ToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.中文ToolStripMenuItem.Text = "中文";
             // 
             // englishToolStripMenuItem
             // 
             this.englishToolStripMenuItem.Name = "englishToolStripMenuItem";
-            this.englishToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.englishToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.englishToolStripMenuItem.Text = "English";
             // 
             // 模式ToolStripMenuItem
@@ -166,7 +179,8 @@
             this.alarmToolStripMenuItem,
             this.通訊ToolStripMenuItem,
             this.手動測試動令ToolStripMenuItem,
-            this.車輛狀態ToolStripMenuItem});
+            this.車輛狀態ToolStripMenuItem,
+            this.TestReserveToolStripMenuItem});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.模式ToolStripMenuItem.Text = "模式";
@@ -174,34 +188,34 @@
             // jogToolStripMenuItem
             // 
             this.jogToolStripMenuItem.Name = "jogToolStripMenuItem";
-            this.jogToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.jogToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             this.jogToolStripMenuItem.Text = "Jog";
             // 
             // alarmToolStripMenuItem
             // 
             this.alarmToolStripMenuItem.Name = "alarmToolStripMenuItem";
-            this.alarmToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.alarmToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             this.alarmToolStripMenuItem.Text = "Alarm";
             this.alarmToolStripMenuItem.Click += new System.EventHandler(this.alarmToolStripMenuItem_Click);
             // 
             // 通訊ToolStripMenuItem
             // 
             this.通訊ToolStripMenuItem.Name = "通訊ToolStripMenuItem";
-            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             this.通訊ToolStripMenuItem.Text = "通訊";
             this.通訊ToolStripMenuItem.Click += new System.EventHandler(this.通訊ToolStripMenuItem_Click);
             // 
             // 手動測試動令ToolStripMenuItem
             // 
             this.手動測試動令ToolStripMenuItem.Name = "手動測試動令ToolStripMenuItem";
-            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             this.手動測試動令ToolStripMenuItem.Text = "手動測試動令";
             this.手動測試動令ToolStripMenuItem.Click += new System.EventHandler(this.手動測試動令ToolStripMenuItem_Click);
             // 
             // 車輛狀態ToolStripMenuItem
             // 
             this.車輛狀態ToolStripMenuItem.Name = "車輛狀態ToolStripMenuItem";
-            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
             // 
             // 工程師ToolStripMenuItem
@@ -225,7 +239,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Size = new System.Drawing.Size(1218, 700);
-            this.splitContainer1.SplitterDistance = 812;
+            this.splitContainer1.SplitterDistance = 754;
             this.splitContainer1.TabIndex = 1;
             // 
             // splitContainer3
@@ -243,6 +257,11 @@
             // 
             // splitContainer3.Panel2
             // 
+            this.splitContainer3.Panel2.Controls.Add(this.listReserveOkSections);
+            this.splitContainer3.Panel2.Controls.Add(this.numPositionY);
+            this.splitContainer3.Panel2.Controls.Add(this.numPositionX);
+            this.splitContainer3.Panel2.Controls.Add(this.btnSetPosition);
+            this.splitContainer3.Panel2.Controls.Add(this.listNeedReserveSections);
             this.splitContainer3.Panel2.Controls.Add(this.btnYflip);
             this.splitContainer3.Panel2.Controls.Add(this.btnXflip);
             this.splitContainer3.Panel2.Controls.Add(this.txtResizePercent);
@@ -253,11 +272,9 @@
             this.splitContainer3.Panel2.Controls.Add(this.btnSaveImage);
             this.splitContainer3.Panel2.Controls.Add(this.btnSwitchBarcodeLine);
             this.splitContainer3.Panel2.Controls.Add(this.label4);
-            this.splitContainer3.Panel2.Controls.Add(this.txtCropX);
-            this.splitContainer3.Panel2.Controls.Add(this.txtCropY);
             this.splitContainer3.Panel2.Controls.Add(this.label3);
-            this.splitContainer3.Size = new System.Drawing.Size(812, 700);
-            this.splitContainer3.SplitterDistance = 467;
+            this.splitContainer3.Size = new System.Drawing.Size(754, 700);
+            this.splitContainer3.SplitterDistance = 466;
             this.splitContainer3.SplitterIncrement = 10;
             this.splitContainer3.TabIndex = 0;
             // 
@@ -266,7 +283,7 @@
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1920, 1080);
+            this.pictureBox1.Size = new System.Drawing.Size(1920, 1024);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
@@ -369,26 +386,6 @@
             this.label4.TabIndex = 23;
             this.label4.Text = "Y";
             // 
-            // txtCropX
-            // 
-            this.txtCropX.Location = new System.Drawing.Point(40, 198);
-            this.txtCropX.Name = "txtCropX";
-            this.txtCropX.ShortcutsEnabled = false;
-            this.txtCropX.Size = new System.Drawing.Size(64, 22);
-            this.txtCropX.TabIndex = 20;
-            this.txtCropX.Text = "0";
-            this.txtCropX.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // txtCropY
-            // 
-            this.txtCropY.Location = new System.Drawing.Point(164, 198);
-            this.txtCropY.Name = "txtCropY";
-            this.txtCropY.ShortcutsEnabled = false;
-            this.txtCropY.Size = new System.Drawing.Size(64, 22);
-            this.txtCropY.TabIndex = 22;
-            this.txtCropY.Text = "0";
-            this.txtCropY.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
             // label3
             // 
             this.label3.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -407,13 +404,72 @@
             // 
             // splitContainer2.Panel1
             // 
+            this.splitContainer2.Panel1.AutoScroll = true;
+            this.splitContainer2.Panel1.Controls.Add(this.btnResumeTrackingPostiion);
+            this.splitContainer2.Panel1.Controls.Add(this.btnPauseTrackingPosition);
+            this.splitContainer2.Panel1.Controls.Add(this.btnStopTrackingPosition);
+            this.splitContainer2.Panel1.Controls.Add(this.btnStartTrackingPosition);
+            this.splitContainer2.Panel1.Controls.Add(this.btnStopVehicle);
             this.splitContainer2.Panel1.Controls.Add(this.btnBuzzOff);
             this.splitContainer2.Panel1.Controls.Add(this.btnAlarmReset);
             this.splitContainer2.Panel1.Controls.Add(this.gbVehicleLocation);
             this.splitContainer2.Panel1.Controls.Add(this.gbConnection);
-            this.splitContainer2.Size = new System.Drawing.Size(402, 700);
-            this.splitContainer2.SplitterDistance = 467;
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.AutoScroll = true;
+            this.splitContainer2.Size = new System.Drawing.Size(460, 700);
+            this.splitContainer2.SplitterDistance = 466;
             this.splitContainer2.TabIndex = 0;
+            // 
+            // btnResumeTrackingPostiion
+            // 
+            this.btnResumeTrackingPostiion.Location = new System.Drawing.Point(12, 354);
+            this.btnResumeTrackingPostiion.Name = "btnResumeTrackingPostiion";
+            this.btnResumeTrackingPostiion.Size = new System.Drawing.Size(150, 23);
+            this.btnResumeTrackingPostiion.TabIndex = 8;
+            this.btnResumeTrackingPostiion.Text = "Resume Tracking Position";
+            this.btnResumeTrackingPostiion.UseVisualStyleBackColor = true;
+            this.btnResumeTrackingPostiion.Click += new System.EventHandler(this.btnResumeTrackingPostiion_Click);
+            // 
+            // btnPauseTrackingPosition
+            // 
+            this.btnPauseTrackingPosition.Location = new System.Drawing.Point(12, 325);
+            this.btnPauseTrackingPosition.Name = "btnPauseTrackingPosition";
+            this.btnPauseTrackingPosition.Size = new System.Drawing.Size(150, 23);
+            this.btnPauseTrackingPosition.TabIndex = 7;
+            this.btnPauseTrackingPosition.Text = "Pause Tracking Position";
+            this.btnPauseTrackingPosition.UseVisualStyleBackColor = true;
+            this.btnPauseTrackingPosition.Click += new System.EventHandler(this.btnPauseTrackingPosition_Click);
+            // 
+            // btnStopTrackingPosition
+            // 
+            this.btnStopTrackingPosition.Location = new System.Drawing.Point(12, 383);
+            this.btnStopTrackingPosition.Name = "btnStopTrackingPosition";
+            this.btnStopTrackingPosition.Size = new System.Drawing.Size(150, 23);
+            this.btnStopTrackingPosition.TabIndex = 6;
+            this.btnStopTrackingPosition.Text = "Stop Tracking Position";
+            this.btnStopTrackingPosition.UseVisualStyleBackColor = true;
+            this.btnStopTrackingPosition.Click += new System.EventHandler(this.btnStopTrackingPosition_Click);
+            // 
+            // btnStartTrackingPosition
+            // 
+            this.btnStartTrackingPosition.Location = new System.Drawing.Point(12, 296);
+            this.btnStartTrackingPosition.Name = "btnStartTrackingPosition";
+            this.btnStartTrackingPosition.Size = new System.Drawing.Size(150, 23);
+            this.btnStartTrackingPosition.TabIndex = 5;
+            this.btnStartTrackingPosition.Text = "Start Tracking Position";
+            this.btnStartTrackingPosition.UseVisualStyleBackColor = true;
+            this.btnStartTrackingPosition.Click += new System.EventHandler(this.btnStartTrackingPosition_Click);
+            // 
+            // btnStopVehicle
+            // 
+            this.btnStopVehicle.Location = new System.Drawing.Point(315, 72);
+            this.btnStopVehicle.Name = "btnStopVehicle";
+            this.btnStopVehicle.Size = new System.Drawing.Size(75, 23);
+            this.btnStopVehicle.TabIndex = 4;
+            this.btnStopVehicle.Text = "StopVehicle";
+            this.btnStopVehicle.UseVisualStyleBackColor = true;
             // 
             // btnBuzzOff
             // 
@@ -447,6 +503,102 @@
             this.gbVehicleLocation.TabIndex = 1;
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "VehicleLocation";
+            // 
+            // gbConnection
+            // 
+            this.gbConnection.Controls.Add(this.radOnline);
+            this.gbConnection.Controls.Add(this.radOffline);
+            this.gbConnection.Location = new System.Drawing.Point(12, 14);
+            this.gbConnection.Name = "gbConnection";
+            this.gbConnection.Size = new System.Drawing.Size(200, 48);
+            this.gbConnection.TabIndex = 0;
+            this.gbConnection.TabStop = false;
+            this.gbConnection.Text = "Connection";
+            // 
+            // radOnline
+            // 
+            this.radOnline.AutoSize = true;
+            this.radOnline.Location = new System.Drawing.Point(68, 21);
+            this.radOnline.Name = "radOnline";
+            this.radOnline.Size = new System.Drawing.Size(54, 16);
+            this.radOnline.TabIndex = 1;
+            this.radOnline.TabStop = true;
+            this.radOnline.Text = "Online";
+            this.radOnline.UseVisualStyleBackColor = true;
+            // 
+            // radOffline
+            // 
+            this.radOffline.AutoSize = true;
+            this.radOffline.Location = new System.Drawing.Point(6, 21);
+            this.radOffline.Name = "radOffline";
+            this.radOffline.Size = new System.Drawing.Size(56, 16);
+            this.radOffline.TabIndex = 0;
+            this.radOffline.TabStop = true;
+            this.radOffline.Text = "Offline";
+            this.radOffline.UseVisualStyleBackColor = true;
+            // 
+            // TestReserveToolStripMenuItem
+            // 
+            this.TestReserveToolStripMenuItem.Name = "TestReserveToolStripMenuItem";
+            this.TestReserveToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.TestReserveToolStripMenuItem.Text = "測試Reserve與位置";
+            this.TestReserveToolStripMenuItem.Click += new System.EventHandler(this.TestReserveToolStripMenuItem_Click);
+            // 
+            // btnSetPosition
+            // 
+            this.btnSetPosition.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSetPosition.Location = new System.Drawing.Point(267, 198);
+            this.btnSetPosition.Name = "btnSetPosition";
+            this.btnSetPosition.Size = new System.Drawing.Size(115, 23);
+            this.btnSetPosition.TabIndex = 40;
+            this.btnSetPosition.Text = "SetPosition";
+            this.btnSetPosition.UseVisualStyleBackColor = true;
+            this.btnSetPosition.Click += new System.EventHandler(this.btnSetPosition_Click_1);
+            // 
+            // listReserveOkSections
+            // 
+            this.listReserveOkSections.FormattingEnabled = true;
+            this.listReserveOkSections.ItemHeight = 12;
+            this.listReserveOkSections.Location = new System.Drawing.Point(538, 49);
+            this.listReserveOkSections.Name = "listReserveOkSections";
+            this.listReserveOkSections.ScrollAlwaysVisible = true;
+            this.listReserveOkSections.Size = new System.Drawing.Size(134, 172);
+            this.listReserveOkSections.TabIndex = 42;
+            // 
+            // listNeedReserveSections
+            // 
+            this.listNeedReserveSections.FormattingEnabled = true;
+            this.listNeedReserveSections.ItemHeight = 12;
+            this.listNeedReserveSections.Location = new System.Drawing.Point(388, 49);
+            this.listNeedReserveSections.Name = "listNeedReserveSections";
+            this.listNeedReserveSections.ScrollAlwaysVisible = true;
+            this.listNeedReserveSections.Size = new System.Drawing.Size(144, 172);
+            this.listNeedReserveSections.TabIndex = 41;
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 50;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // numPositionX
+            // 
+            this.numPositionX.Location = new System.Drawing.Point(38, 199);
+            this.numPositionX.Name = "numPositionX";
+            this.numPositionX.Size = new System.Drawing.Size(92, 22);
+            this.numPositionX.TabIndex = 41;
+            // 
+            // numPositionY
+            // 
+            this.numPositionY.Location = new System.Drawing.Point(163, 198);
+            this.numPositionY.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numPositionY.Name = "numPositionY";
+            this.numPositionY.Size = new System.Drawing.Size(92, 22);
+            this.numPositionY.TabIndex = 41;
             // 
             // ucRealPosition
             // 
@@ -502,39 +654,6 @@
             this.ucMapSection.UcName = "label1";
             this.ucMapSection.UcValue = "";
             // 
-            // gbConnection
-            // 
-            this.gbConnection.Controls.Add(this.radOnline);
-            this.gbConnection.Controls.Add(this.radOffline);
-            this.gbConnection.Location = new System.Drawing.Point(12, 14);
-            this.gbConnection.Name = "gbConnection";
-            this.gbConnection.Size = new System.Drawing.Size(200, 48);
-            this.gbConnection.TabIndex = 0;
-            this.gbConnection.TabStop = false;
-            this.gbConnection.Text = "Connection";
-            // 
-            // radOnline
-            // 
-            this.radOnline.AutoSize = true;
-            this.radOnline.Location = new System.Drawing.Point(68, 21);
-            this.radOnline.Name = "radOnline";
-            this.radOnline.Size = new System.Drawing.Size(54, 16);
-            this.radOnline.TabIndex = 1;
-            this.radOnline.TabStop = true;
-            this.radOnline.Text = "Online";
-            this.radOnline.UseVisualStyleBackColor = true;
-            // 
-            // radOffline
-            // 
-            this.radOffline.AutoSize = true;
-            this.radOffline.Location = new System.Drawing.Point(6, 21);
-            this.radOffline.Name = "radOffline";
-            this.radOffline.Size = new System.Drawing.Size(56, 16);
-            this.radOffline.TabIndex = 0;
-            this.radOffline.TabStop = true;
-            this.radOffline.Text = "Offline";
-            this.radOffline.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -568,6 +687,8 @@
             this.gbVehicleLocation.ResumeLayout(false);
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -595,8 +716,6 @@
         private System.Windows.Forms.ToolStripMenuItem 手動測試動令ToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox txtCropX;
-        private System.Windows.Forms.TextBox txtCropY;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnSwitchBarcodeLine;
@@ -620,5 +739,17 @@
         private UcLabelTextBox ucMapSection;
         private System.Windows.Forms.Button btnBuzzOff;
         private System.Windows.Forms.Button btnAlarmReset;
+        private System.Windows.Forms.Button btnStartTrackingPosition;
+        private System.Windows.Forms.Button btnStopVehicle;
+        private System.Windows.Forms.Button btnResumeTrackingPostiion;
+        private System.Windows.Forms.Button btnPauseTrackingPosition;
+        private System.Windows.Forms.Button btnStopTrackingPosition;
+        private System.Windows.Forms.ToolStripMenuItem TestReserveToolStripMenuItem;
+        private System.Windows.Forms.Button btnSetPosition;
+        private System.Windows.Forms.ListBox listReserveOkSections;
+        private System.Windows.Forms.ListBox listNeedReserveSections;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.NumericUpDown numPositionY;
+        private System.Windows.Forms.NumericUpDown numPositionX;
     }
 }
