@@ -30,13 +30,13 @@ namespace Mirle.Agv.View
         private void RefreshHappeningAlarms()
         {
             listHappeningAlarms.Items.Clear();
-            var happeningAlarms = alarmHandler.happeningAlarms.ToList();
-            for (int i = 0; i < happeningAlarms.Count; i++)
+            var tempHappeningAlarms = alarmHandler.dicHappeningAlarms.ToList();
+            foreach (var item in tempHappeningAlarms)
             {
-                Alarm alarm = happeningAlarms[i];
+                Alarm alarm = item.Value;
                 string txtAlarm = $"[{alarm.SetTime.ToString("yyyy/MM/dd_HH/mm/ss.fff")}] [{alarm.Id}] [{alarm.AlarmText}] [{alarm.Level}] [{alarm.Description}]";
                 listHappeningAlarms.Items.Add(txtAlarm);
-            }
+            }            
         }
 
         private void btnResetSelectAlarm_Click(object sender, EventArgs e)

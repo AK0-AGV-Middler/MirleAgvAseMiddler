@@ -17,7 +17,7 @@ namespace Mirle.Agv.Controller
 
         public List<Alarm> alarms = new List<Alarm>();
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
-        public ConcurrentQueue<Alarm> happeningAlarms = new ConcurrentQueue<Alarm>();
+        public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
 
         #endregion
 
@@ -124,65 +124,43 @@ namespace Mirle.Agv.Controller
 
         public void SetAlarm(int id)
         {
+            if (dicHappeningAlarms.ContainsKey(id))
+            {
+                //Already have this alarm in happening list
+                return;
+            }
+
             Alarm alarm = GetAlarm(id);
             DateTime timeStamp = DateTime.Now;
             alarm.SetTime = timeStamp;
-
-            happeningAlarms.Enqueue(alarm);
+            dicHappeningAlarms.TryAdd(id, alarm);
             loggerAgent.LogAlarmHistory(alarm);
         }
 
         public void ResetAlarm(int id)
         {
-            List<Alarm> tempAlarms;
-            lock (happeningAlarms)
+            if (!dicHappeningAlarms.ContainsKey(id))
             {
-                tempAlarms = happeningAlarms.ToList();
-                happeningAlarms = new ConcurrentQueue<Alarm>();
+                return;
             }
 
-            if (tempAlarms.Count > 0)
-            {
-                for (int i = 0; i < tempAlarms.Count; i++)
-                {
-                    Alarm alarm = tempAlarms[i];
-                    if (alarm.Id == id)
-                    {
-                        DateTime resetTime = DateTime.Now;
-                        alarm.ResetTime = resetTime;
-                        loggerAgent.LogAlarmHistory(alarm);
-                        tempAlarms.Remove(alarm);
-                    }
-                }
-            }
-
-            lock (happeningAlarms)
-            {
-                tempAlarms.AddRange(happeningAlarms.ToList());
-                ConcurrentQueue<Alarm> tempAlarmQue = new ConcurrentQueue<Alarm>(tempAlarms);
-                happeningAlarms = tempAlarmQue;
-            }
+            DateTime resetTime = DateTime.Now;
+            dicHappeningAlarms.TryRemove(id, out Alarm alarm);
+            alarm.ResetTime = resetTime;
+            loggerAgent.LogAlarmHistory(alarm);          
         }
 
         public void ResetAllAlarms()
         {
-            List<Alarm> tempAlarms;
-            lock (happeningAlarms)
-            {
-                tempAlarms = happeningAlarms.ToList();
-                happeningAlarms = new ConcurrentQueue<Alarm>();
-            }
+            var tempHappeningAlarms = dicHappeningAlarms;
+            dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
+            DateTime resetTime = DateTime.Now;
 
-            if (tempAlarms.Count > 0)
+            foreach (KeyValuePair<int, Alarm> item in tempHappeningAlarms)
             {
-                for (int i = 0; i < tempAlarms.Count; i++)
-                {
-                    Alarm alarm = tempAlarms[i];
-                    DateTime resetTime = DateTime.Now;
-                    alarm.ResetTime = resetTime;
-                    loggerAgent.LogAlarmHistory(alarm);
-                    tempAlarms.Remove(alarm);
-                }
+                Alarm alarm = item.Value;
+                alarm.ResetTime = resetTime;
+                loggerAgent.LogAlarmHistory(alarm);                
             }
         }
     }

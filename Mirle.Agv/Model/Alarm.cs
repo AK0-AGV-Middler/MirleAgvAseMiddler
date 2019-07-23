@@ -19,9 +19,9 @@ namespace Mirle.Agv.Model
         public DateTime ResetTime { get; set; }
 
         //AlarmCode:
-        //MainFLow = 0XXXX
-        //Move = 1XXXX
-        //Plc = 2XXXX
-        //Middler = 3XXXX
+        //MainFLow = 0XXXXX
+        //Move = 1XXXXX
+        //Plc = 2XXXXX
+        //Middler = 3XXXXX
     }
 }
