@@ -18,7 +18,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public string[] ToLoadAddresses { get; set; }
         public string[] ToUnloadAddresses { get; set; }
         public string LoadAddress { get; set; } = "Empty";
-        public string UnloadAddtess { get; set; } = "Empty";
+        public string UnloadAddress { get; set; } = "Empty";
         public string CarrierId { get; set; } = "Empty";
         public string CmdId { get; set; } = "Empty";
         public ushort SeqNum { get; set; }
@@ -116,7 +116,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 SecToUnloadSections(transRequest.GuideSectionsToDestination);
                 SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
 
-                UnloadAddtess = transRequest.DestinationAdr;
+                UnloadAddress = transRequest.DestinationAdr;
             }
             catch (Exception ex)
             {
@@ -150,7 +150,7 @@ namespace Mirle.Agv.Model.TransferCmds
             {
                 SecToUnloadSections(transRequest.GuideSectionsToDestination);
                 SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
-                UnloadAddtess = transRequest.DestinationAdr;
+                UnloadAddress = transRequest.DestinationAdr;
             }
             catch (Exception ex)
             {
@@ -170,7 +170,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 LoadAddress = transRequest.LoadAdr;
                 SecToUnloadSections(transRequest.GuideSectionsToDestination);
                 SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
-                UnloadAddtess = transRequest.DestinationAdr;
+                UnloadAddress = transRequest.DestinationAdr;
             }
             catch (Exception ex)
             {

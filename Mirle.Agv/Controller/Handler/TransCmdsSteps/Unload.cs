@@ -26,6 +26,12 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     mainFlowHandler.DoTransfer();
                     break;
                 case EnumTransCmdType.Unload:
+                    //TODO:
+                    //resume tracking position
+                    //-> get position
+                    //-> send "InPosition" to Plc
+                    //-> pause tracking position
+                    //-> send "load" to plc
                     UnloadCmdInfo unloadCmd = (UnloadCmdInfo)curTransCmd;
                     mainFlowHandler.Unload(unloadCmd);
                     break;

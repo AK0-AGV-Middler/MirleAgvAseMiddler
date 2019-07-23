@@ -136,7 +136,7 @@ namespace Mirle.Agv.View
             ucDeltaPosition.UcValue = $"(0,0)";
             ucRealPosition.UcName = "RealPosition";
             ucRealPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
-        }       
+        }
 
         public void DrawBasicMap()
         {
@@ -500,41 +500,27 @@ namespace Mirle.Agv.View
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            listNeedReserveSections.Items.Clear();
-            listReserveOkSections.Items.Clear();
-
-            List<MapSection> needReserveSections = mainFlowHandler.GetNeedReserveSections();
-            if (needReserveSections.Count > 0)
-            {
-                UpdateListNeedReserveSections(needReserveSections);
-            }
-            List<MapSection> reserveOkSections = mainFlowHandler.GetReserveOkSections();
-            if (reserveOkSections.Count > 0)
-            {
-                UpdateListReserveOkSections(reserveOkSections);
-            }
+            UpdateListBoxSections(listNeedReserveSections, mainFlowHandler.GetNeedReserveSections());
+            UpdateListBoxSections(listReserveOkSections, mainFlowHandler.GetReserveOkSections());
+            UpdateListBoxSections(listAskingReserveSections, mainFlowHandler.GetAskingReserveSections());
         }
 
-        private void UpdateListReserveOkSections(List<MapSection> reserveOkSections)
+        private void UpdateListBoxSections(ListBox aListBox, List<MapSection> aListOfSections)
         {
-            listReserveOkSections.Items.Clear();
-            for (int i = 0; i < reserveOkSections.Count; i++)
+            aListBox.Items.Clear();
+            if (aListOfSections.Count > 0)
             {
-                listReserveOkSections.Items.Add(reserveOkSections[i].Id);
+                for (int i = 0; i < aListOfSections.Count; i++)
+                {
+                    aListBox.Items.Add(aListOfSections[i].Id);
+                }
             }
         }
-
-        private void UpdateListNeedReserveSections(List<MapSection> needReserveSections)
-        {           
-            for (int i = 0; i < needReserveSections.Count; i++)
-            {
-                listNeedReserveSections.Items.Add(needReserveSections[i].Id);
-            }
-        }       
 
         private void btnSetPosition_Click_1(object sender, EventArgs e)
         {
             moveControlHandler.RealPosition = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
         }
+
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Mirle.Agv.Model;
 using Mirle.Agv.Model.TransferCmds;
@@ -31,6 +32,13 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     break;
                 case EnumTransCmdType.Empty:
                 default:
+                    //TODO:
+                    //resume tracking position
+                    //-> get position                    
+                    //-> pause tracking position
+                    mainFlowHandler.ResumeTrackingPosition();
+                    SpinWait.SpinUntil(() => false, 50);
+                    mainFlowHandler.PauseTrackingPosition();
                     mainFlowHandler.SetTransCmdsStep(new Idle());
                     mainFlowHandler.DoTransfer();
                     break;

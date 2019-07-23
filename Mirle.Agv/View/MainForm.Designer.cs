@@ -44,10 +44,16 @@
             this.通訊ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.手動測試動令ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.車輛狀態ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.TestReserveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.listReserveOkSections = new System.Windows.Forms.ListBox();
+            this.numPositionY = new System.Windows.Forms.NumericUpDown();
+            this.numPositionX = new System.Windows.Forms.NumericUpDown();
+            this.btnSetPosition = new System.Windows.Forms.Button();
+            this.listNeedReserveSections = new System.Windows.Forms.ListBox();
             this.btnYflip = new System.Windows.Forms.Button();
             this.btnXflip = new System.Windows.Forms.Button();
             this.txtResizePercent = new System.Windows.Forms.TextBox();
@@ -71,19 +77,14 @@
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
-            this.TestReserveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnSetPosition = new System.Windows.Forms.Button();
-            this.listReserveOkSections = new System.Windows.Forms.ListBox();
-            this.listNeedReserveSections = new System.Windows.Forms.ListBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.numPositionX = new System.Windows.Forms.NumericUpDown();
-            this.numPositionY = new System.Windows.Forms.NumericUpDown();
             this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucDeltaPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucEncoderPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
             this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
+            this.listAskingReserveSections = new System.Windows.Forms.ListBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -94,13 +95,14 @@
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.gbVehicleLocation.SuspendLayout();
             this.gbConnection.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -218,6 +220,13 @@
             this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
             // 
+            // TestReserveToolStripMenuItem
+            // 
+            this.TestReserveToolStripMenuItem.Name = "TestReserveToolStripMenuItem";
+            this.TestReserveToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.TestReserveToolStripMenuItem.Text = "測試Reserve與位置";
+            this.TestReserveToolStripMenuItem.Click += new System.EventHandler(this.TestReserveToolStripMenuItem_Click);
+            // 
             // 工程師ToolStripMenuItem
             // 
             this.工程師ToolStripMenuItem.Name = "工程師ToolStripMenuItem";
@@ -257,11 +266,9 @@
             // 
             // splitContainer3.Panel2
             // 
-            this.splitContainer3.Panel2.Controls.Add(this.listReserveOkSections);
             this.splitContainer3.Panel2.Controls.Add(this.numPositionY);
             this.splitContainer3.Panel2.Controls.Add(this.numPositionX);
             this.splitContainer3.Panel2.Controls.Add(this.btnSetPosition);
-            this.splitContainer3.Panel2.Controls.Add(this.listNeedReserveSections);
             this.splitContainer3.Panel2.Controls.Add(this.btnYflip);
             this.splitContainer3.Panel2.Controls.Add(this.btnXflip);
             this.splitContainer3.Panel2.Controls.Add(this.txtResizePercent);
@@ -287,6 +294,56 @@
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // listReserveOkSections
+            // 
+            this.listReserveOkSections.FormattingEnabled = true;
+            this.listReserveOkSections.ItemHeight = 12;
+            this.listReserveOkSections.Location = new System.Drawing.Point(303, 3);
+            this.listReserveOkSections.Name = "listReserveOkSections";
+            this.listReserveOkSections.ScrollAlwaysVisible = true;
+            this.listReserveOkSections.Size = new System.Drawing.Size(134, 172);
+            this.listReserveOkSections.TabIndex = 42;
+            // 
+            // numPositionY
+            // 
+            this.numPositionY.Location = new System.Drawing.Point(163, 198);
+            this.numPositionY.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.numPositionY.Name = "numPositionY";
+            this.numPositionY.Size = new System.Drawing.Size(92, 22);
+            this.numPositionY.TabIndex = 41;
+            // 
+            // numPositionX
+            // 
+            this.numPositionX.Location = new System.Drawing.Point(38, 199);
+            this.numPositionX.Name = "numPositionX";
+            this.numPositionX.Size = new System.Drawing.Size(92, 22);
+            this.numPositionX.TabIndex = 41;
+            // 
+            // btnSetPosition
+            // 
+            this.btnSetPosition.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSetPosition.Location = new System.Drawing.Point(267, 198);
+            this.btnSetPosition.Name = "btnSetPosition";
+            this.btnSetPosition.Size = new System.Drawing.Size(115, 23);
+            this.btnSetPosition.TabIndex = 40;
+            this.btnSetPosition.Text = "鍵入車輛位置";
+            this.btnSetPosition.UseVisualStyleBackColor = true;
+            this.btnSetPosition.Click += new System.EventHandler(this.btnSetPosition_Click_1);
+            // 
+            // listNeedReserveSections
+            // 
+            this.listNeedReserveSections.FormattingEnabled = true;
+            this.listNeedReserveSections.ItemHeight = 12;
+            this.listNeedReserveSections.Location = new System.Drawing.Point(3, 4);
+            this.listNeedReserveSections.Name = "listNeedReserveSections";
+            this.listNeedReserveSections.ScrollAlwaysVisible = true;
+            this.listNeedReserveSections.Size = new System.Drawing.Size(144, 172);
+            this.listNeedReserveSections.TabIndex = 41;
             // 
             // btnYflip
             // 
@@ -418,6 +475,9 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
+            this.splitContainer2.Panel2.Controls.Add(this.listAskingReserveSections);
+            this.splitContainer2.Panel2.Controls.Add(this.listReserveOkSections);
+            this.splitContainer2.Panel2.Controls.Add(this.listNeedReserveSections);
             this.splitContainer2.Size = new System.Drawing.Size(460, 700);
             this.splitContainer2.SplitterDistance = 466;
             this.splitContainer2.TabIndex = 0;
@@ -537,68 +597,11 @@
             this.radOffline.Text = "Offline";
             this.radOffline.UseVisualStyleBackColor = true;
             // 
-            // TestReserveToolStripMenuItem
-            // 
-            this.TestReserveToolStripMenuItem.Name = "TestReserveToolStripMenuItem";
-            this.TestReserveToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.TestReserveToolStripMenuItem.Text = "測試Reserve與位置";
-            this.TestReserveToolStripMenuItem.Click += new System.EventHandler(this.TestReserveToolStripMenuItem_Click);
-            // 
-            // btnSetPosition
-            // 
-            this.btnSetPosition.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnSetPosition.Location = new System.Drawing.Point(267, 198);
-            this.btnSetPosition.Name = "btnSetPosition";
-            this.btnSetPosition.Size = new System.Drawing.Size(115, 23);
-            this.btnSetPosition.TabIndex = 40;
-            this.btnSetPosition.Text = "SetPosition";
-            this.btnSetPosition.UseVisualStyleBackColor = true;
-            this.btnSetPosition.Click += new System.EventHandler(this.btnSetPosition_Click_1);
-            // 
-            // listReserveOkSections
-            // 
-            this.listReserveOkSections.FormattingEnabled = true;
-            this.listReserveOkSections.ItemHeight = 12;
-            this.listReserveOkSections.Location = new System.Drawing.Point(538, 49);
-            this.listReserveOkSections.Name = "listReserveOkSections";
-            this.listReserveOkSections.ScrollAlwaysVisible = true;
-            this.listReserveOkSections.Size = new System.Drawing.Size(134, 172);
-            this.listReserveOkSections.TabIndex = 42;
-            // 
-            // listNeedReserveSections
-            // 
-            this.listNeedReserveSections.FormattingEnabled = true;
-            this.listNeedReserveSections.ItemHeight = 12;
-            this.listNeedReserveSections.Location = new System.Drawing.Point(388, 49);
-            this.listNeedReserveSections.Name = "listNeedReserveSections";
-            this.listNeedReserveSections.ScrollAlwaysVisible = true;
-            this.listNeedReserveSections.Size = new System.Drawing.Size(144, 172);
-            this.listNeedReserveSections.TabIndex = 41;
-            // 
             // timer1
             // 
             this.timer1.Enabled = true;
             this.timer1.Interval = 50;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // numPositionX
-            // 
-            this.numPositionX.Location = new System.Drawing.Point(38, 199);
-            this.numPositionX.Name = "numPositionX";
-            this.numPositionX.Size = new System.Drawing.Size(92, 22);
-            this.numPositionX.TabIndex = 41;
-            // 
-            // numPositionY
-            // 
-            this.numPositionY.Location = new System.Drawing.Point(163, 198);
-            this.numPositionY.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numPositionY.Name = "numPositionY";
-            this.numPositionY.Size = new System.Drawing.Size(92, 22);
-            this.numPositionY.TabIndex = 41;
             // 
             // ucRealPosition
             // 
@@ -654,6 +657,16 @@
             this.ucMapSection.UcName = "label1";
             this.ucMapSection.UcValue = "";
             // 
+            // listAskingReserveSections
+            // 
+            this.listAskingReserveSections.FormattingEnabled = true;
+            this.listAskingReserveSections.ItemHeight = 12;
+            this.listAskingReserveSections.Location = new System.Drawing.Point(153, 4);
+            this.listAskingReserveSections.Name = "listAskingReserveSections";
+            this.listAskingReserveSections.ScrollAlwaysVisible = true;
+            this.listAskingReserveSections.Size = new System.Drawing.Size(144, 172);
+            this.listAskingReserveSections.TabIndex = 43;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -681,14 +694,15 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.gbVehicleLocation.ResumeLayout(false);
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -751,5 +765,6 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.NumericUpDown numPositionY;
         private System.Windows.Forms.NumericUpDown numPositionX;
+        private System.Windows.Forms.ListBox listAskingReserveSections;
     }
 }

@@ -29,24 +29,19 @@ namespace Mirle.Agv.View
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
+            middlerConfig = mainFlowHandler.GetMiddlerConfigs();
+            middleAgent = mainFlowHandler.GetMiddleAgent();
+            EventInital();
+
         }
 
         private void CommunicationForm_Load(object sender, EventArgs e)
-        {            
-            SetMiddlerAndConfigs();
-            EventInital();
-
+        {
             ConfigToUI();
             if (middleAgent.ClientAgent.IsConnection)
             {
                 toolStripStatusLabel1.Text = "Connect";
             }
-        }
-
-        private void SetMiddlerAndConfigs()
-        {
-            middlerConfig = mainFlowHandler.GetMiddlerConfigs();
-            middleAgent = mainFlowHandler.GetMiddleAgent();
         }
 
         private void ConfigToUI()
@@ -61,7 +56,7 @@ namespace Mirle.Agv.View
             middleAgent.OnDisConnected += ConnectionStatusToToolStrip;
             middleAgent.OnCmdReceive += SendOrReceiveCmdToRichTextBox;
             middleAgent.OnCmdSend += SendOrReceiveCmdToRichTextBox;
-        }       
+        }
 
         public void SendOrReceiveCmdToRichTextBox(object sender, string e)
         {
@@ -461,6 +456,6 @@ namespace Mirle.Agv.View
             middleAgent.DisConnect();
         }
 
-       
+
     }
 }

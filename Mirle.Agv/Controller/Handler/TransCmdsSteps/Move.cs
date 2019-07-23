@@ -22,6 +22,8 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
                     mainFlowHandler.PrepareForAskingReserve(moveCmd);
                     mainFlowHandler.PublishTransferMoveEvent(moveCmd);
+                    mainFlowHandler.StartTrackingPosition();
+                    mainFlowHandler.MiddleAgent_ResumeAskingReserve();                    
                     break;
                 case EnumTransCmdType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());
@@ -39,15 +41,5 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
             }
         }
 
-        private static void EnqueMoveCmd(MainFlowHandler mainFlowHandler, TransCmd curTransCmd)
-        {
-            //MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
-            //mainFlowHandler.EnqueWaitForReserve(moveCmd);
-            //if (!moveCmd.IsPrecisePositioning)
-            //{
-            //    mainFlowHandler.TransCmdsIndex++;
-            //    mainFlowHandler.GoNextTransCmd = true;
-            //}
-        }
     }
 }

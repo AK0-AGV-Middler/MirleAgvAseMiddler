@@ -60,8 +60,31 @@ namespace Mirle.Agv.Model.Tests
             list005.RemoveAt(1);
             Assert.AreEqual(1, list005.Count);
             Assert.AreEqual(2, que004.Count);
+        }
 
+        [Test()]
+        public void QueToListTest()
+        {
+            ConcurrentQueue<string> tempQue = new ConcurrentQueue<string>();
+            string str001 = "str001";
+            string str002 = "str002";
+            string str003 = "str003";
 
+            tempQue.Enqueue(str001);
+            tempQue.Enqueue(str002);
+            tempQue.Enqueue(str003);
+
+            Assert.AreEqual(3, tempQue.Count);
+
+            var array01 = tempQue.ToArray();
+            Assert.AreEqual(3, array01.Length);
+
+            Assert.AreEqual(str001, array01[0]);
+
+            var list01 = tempQue.ToList();
+            Assert.AreEqual(3, list01.Count);
+
+            Assert.AreEqual(str001, list01[0]);
         }
     }
 }
