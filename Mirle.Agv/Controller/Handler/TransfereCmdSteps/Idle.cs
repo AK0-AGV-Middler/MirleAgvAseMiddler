@@ -2,28 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Mirle.Agv.Model;
 using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
-    public class Move : ITransCmdsStep
+    public class Idle : ITransferCmdStep
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
-            TransCmd curTransCmd = mainFlowHandler.GetCurTransCmd();
-            EnumTransCmdType type = curTransCmd.GetCommandType();
+            TransferStep curTransCmd = mainFlowHandler.GetCurTransCmd();
+            var type = curTransCmd.GetCommandType();
 
             switch (type)
             {
-                case EnumTransCmdType.Move:                   
-                    //TODO:                   
-                    //Check if move complete
-                    MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
-                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
-                    mainFlowHandler.PublishTransferMoveEvent(moveCmd);
-                    mainFlowHandler.StartTrackingPosition();
-                    mainFlowHandler.MiddleAgent_ResumeAskingReserve();                    
+                case EnumTransCmdType.Move:
+                    mainFlowHandler.SetTransCmdsStep(new Move());
+                    mainFlowHandler.DoTransfer();
                     break;
                 case EnumTransCmdType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());
@@ -35,11 +32,18 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     break;
                 case EnumTransCmdType.Empty:
                 default:
+                    //TODO:
+                    //resume tracking position
+                    //-> get position                    
+                    //-> pause tracking position
+                    mainFlowHandler.ResumeTrackingPosition();
+                    SpinWait.SpinUntil(() => false, 50);
+                    mainFlowHandler.PauseTrackingPosition();
                     mainFlowHandler.SetTransCmdsStep(new Idle());
                     mainFlowHandler.DoTransfer();
                     break;
             }
-        }
 
+        }
     }
 }

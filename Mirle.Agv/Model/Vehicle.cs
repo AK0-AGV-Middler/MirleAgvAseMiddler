@@ -20,7 +20,7 @@ namespace Mirle.Agv.Model
         private Dictionary<string, Carrier> dicCarriersById;
         private Dictionary<int, Carrier> dicCarriersByStageNum;
         private PlcRobot PlcRobot;
-        private TransCmd transCmd;
+        private TransferStep transCmd;
         private LoggerAgent theLoggerAgent;
         private MapInfo theMapInfo = new MapInfo();
 
@@ -80,7 +80,7 @@ namespace Mirle.Agv.Model
             this.vehLoacation = vehLoacation;
         }
 
-        public void UpdateStatus(TransCmd transCmd)
+        public void UpdateStatus(TransferStep transCmd)
         {
             this.transCmd = transCmd;
         }
@@ -118,7 +118,7 @@ namespace Mirle.Agv.Model
             return this.vehLoacation;
         }
 
-        public TransCmd GetTransCmd()
+        public TransferStep GetTransCmd()
         {
             return transCmd;
         }

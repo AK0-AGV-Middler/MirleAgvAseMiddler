@@ -7,7 +7,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
-    public abstract class TransCmd
+    public abstract class TransferStep
     {
         protected Vehicle theVehicle = Vehicle.Instance;
         protected MapInfo theMapInfo = new MapInfo();
@@ -16,7 +16,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public string CstId { get; set; } = "Empty";
 
         //public TransCmd() : this(new MapInfo()) { }
-        public TransCmd(MapInfo theMapInfo)
+        public TransferStep(MapInfo theMapInfo)
         {
             this.theMapInfo = theMapInfo;
         }
@@ -24,11 +24,6 @@ namespace Mirle.Agv.Model.TransferCmds
         public EnumTransCmdType GetCommandType()
         {
             return type;
-        }
-
-        public TransCmd Clone()
-        {
-            return ExtensionMethods.DeepClone(this);
-        }
+        }       
     }
 }

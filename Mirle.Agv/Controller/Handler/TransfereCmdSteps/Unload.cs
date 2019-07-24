@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Mirle.Agv.Model;
 using Mirle.Agv.Model.TransferCmds;
+
 
 namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
-    public class Idle : ITransCmdsStep
+    public class Unload : ITransferCmdStep
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
-            TransCmd curTransCmd = mainFlowHandler.GetCurTransCmd();
+            TransferStep curTransCmd = mainFlowHandler.GetCurTransCmd();
             var type = curTransCmd.GetCommandType();
 
             switch (type)
@@ -27,23 +26,21 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     mainFlowHandler.DoTransfer();
                     break;
                 case EnumTransCmdType.Unload:
-                    mainFlowHandler.SetTransCmdsStep(new Unload());
-                    mainFlowHandler.DoTransfer();
+                    //TODO:
+                    //resume tracking position
+                    //-> get position
+                    //-> send "InPosition" to Plc
+                    //-> pause tracking position
+                    //-> send "load" to plc
+                    UnloadCmdInfo unloadCmd = (UnloadCmdInfo)curTransCmd;
+                    mainFlowHandler.Unload(unloadCmd);
                     break;
                 case EnumTransCmdType.Empty:
                 default:
-                    //TODO:
-                    //resume tracking position
-                    //-> get position                    
-                    //-> pause tracking position
-                    mainFlowHandler.ResumeTrackingPosition();
-                    SpinWait.SpinUntil(() => false, 50);
-                    mainFlowHandler.PauseTrackingPosition();
                     mainFlowHandler.SetTransCmdsStep(new Idle());
                     mainFlowHandler.DoTransfer();
                     break;
             }
-
         }
     }
 }

@@ -7,7 +7,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
-    public class UnloadCmdInfo : TransCmd
+    public class UnloadCmdInfo : TransferStep
     {
         public string UnloadAddress { get; set; } = "Empty";
         public int StageNum { get; set; }

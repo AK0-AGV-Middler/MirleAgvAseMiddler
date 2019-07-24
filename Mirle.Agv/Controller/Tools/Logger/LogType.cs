@@ -18,5 +18,6 @@ namespace Mirle.Agv.Controller.Tools
         public string LineSeparateToken { get; set; } = "$.$";
         public string FileExtension { get; set; } = ".txt";
         public int DequeueInterval { get; set; } = 1000;
+        public string FirstLineString { get; set; } = " ";
     }
 }

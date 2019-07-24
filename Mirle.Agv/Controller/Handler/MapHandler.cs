@@ -81,8 +81,10 @@ namespace Mirle.Agv.Controller
                     oneRow.Speed = float.Parse(getThisRow[dicSectionIndexes["Speed"]]);
                     oneRow.Type = oneRow.SectionTypeConvert(getThisRow[dicSectionIndexes["Type"]]);
                     oneRow.PermitDirection = oneRow.PermitDirectionConvert(getThisRow[dicSectionIndexes["PermitDirection"]]);
-                    oneRow.FowardBeamSensorEnable = bool.Parse(getThisRow[dicSectionIndexes["FowardBeamSensorEnable"]]);
-                    oneRow.BackwardBeamSensorEnable = bool.Parse(getThisRow[dicSectionIndexes["BackwardBeamSensorEnable"]]);
+                    oneRow.FowardBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["FowardBeamSensorDisable"]]);
+                    oneRow.BackwardBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["BackwardBeamSensorDisable"]]);
+                    oneRow.LeftBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["LeftBeamSensorDisable"]]);
+                    oneRow.RightBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["RightBeamSensorDisable"]]);
 
                     mapSections.Add(oneRow);
                     allMapSections.Add(oneRow.Id, oneRow);

@@ -15,6 +15,7 @@ using Mirle.Agv.Model;
 using Mirle.Agv.Model.TransferCmds;
 using System.Drawing.Imaging;
 using System.Diagnostics;
+using Mirle.Agv.Controller.Tools;
 
 namespace Mirle.Agv.View
 {
@@ -34,6 +35,11 @@ namespace Mirle.Agv.View
         private Panel panelRightUp;
         private Panel panelRightDown;
         private MapInfo theMapInfo = new MapInfo();
+        PerformanceCounter performanceCounterCpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
+        //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "Available MBytes");
+        PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
+        private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
+
 
         #region MouseDownCalculus
 
@@ -503,6 +509,14 @@ namespace Mirle.Agv.View
             UpdateListBoxSections(listNeedReserveSections, mainFlowHandler.GetNeedReserveSections());
             UpdateListBoxSections(listReserveOkSections, mainFlowHandler.GetReserveOkSections());
             UpdateListBoxSections(listAskingReserveSections, mainFlowHandler.GetAskingReserveSections());
+            UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
+            UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
+        }
+
+        private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
+        {
+            float value = performanceCounter.NextValue();
+            ucLabelTextBox.UcValue = string.Format("{0:0.0}%", value);
         }
 
         private void UpdateListBoxSections(ListBox aListBox, List<MapSection> aListOfSections)
@@ -522,5 +536,33 @@ namespace Mirle.Agv.View
             moveControlHandler.RealPosition = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                Task.Run(() => SimpleLogTest());
+                Thread.Sleep(5);
+            }                            
+        }
+
+        private void SimpleLogTest()
+        {
+            string className = GetType().Name;
+            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name; //sender.ToString();
+            string classMethodName = className + ":" + methodName;
+            LogFormat logFormat = new LogFormat("Debug", "3", classMethodName, "Device", "CarrierID", "This is a test log.");
+
+
+            var counter = 1000;
+            while (counter>0)
+            {
+                theLoggerAgent.LogMsg("Debug", logFormat);
+
+                Thread.Sleep(1);
+                counter--;
+            }
+
+            
+        }
     }
 }

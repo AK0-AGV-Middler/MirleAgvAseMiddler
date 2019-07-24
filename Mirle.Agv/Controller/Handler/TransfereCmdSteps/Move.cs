@@ -7,28 +7,27 @@ using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
-    public class Load : ITransCmdsStep
+    public class Move : ITransferCmdStep
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
-            TransCmd curTransCmd = mainFlowHandler.GetCurTransCmd();
-            var type = curTransCmd.GetCommandType();
+            TransferStep curTransCmd = mainFlowHandler.GetCurTransCmd();
+            EnumTransCmdType type = curTransCmd.GetCommandType();
 
             switch (type)
             {
-                case EnumTransCmdType.Move:
-                    mainFlowHandler.SetTransCmdsStep(new Move());
-                    mainFlowHandler.DoTransfer();
+                case EnumTransCmdType.Move:                   
+                    //TODO:                   
+                    //Check if move complete
+                    MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
+                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
+                    mainFlowHandler.PublishTransferMoveEvent(moveCmd);
+                    mainFlowHandler.StartTrackingPosition();
+                    mainFlowHandler.MiddleAgent_ResumeAskingReserve();                    
                     break;
                 case EnumTransCmdType.Load:
-                    //TODO:
-                    //resume tracking position
-                    //-> get position
-                    //-> send "InPosition" to Plc
-                    //-> pause tracking position
-                    //-> send "load" to plc
-                    LoadCmdInfo loadCmdInfo = (LoadCmdInfo)curTransCmd;
-                    mainFlowHandler.Load(loadCmdInfo);
+                    mainFlowHandler.SetTransCmdsStep(new Load());
+                    mainFlowHandler.DoTransfer();
                     break;
                 case EnumTransCmdType.Unload:
                     mainFlowHandler.SetTransCmdsStep(new Unload());
@@ -41,5 +40,6 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     break;
             }
         }
+
     }
 }

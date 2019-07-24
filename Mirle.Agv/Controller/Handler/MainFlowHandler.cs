@@ -32,18 +32,18 @@ namespace Mirle.Agv.Controller
 
         #region TransCmds
 
-        private List<TransCmd> transCmds = new List<TransCmd>();
-        private List<TransCmd> lastTransCmds = new List<TransCmd>();
+        private List<TransferStep> transferSteps = new List<TransferStep>();
+        private List<TransferStep> lastTransferSteps = new List<TransferStep>();
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queAskingReserveSections = new ConcurrentQueue<MapSection>();
         // private List<MapSection> gotReserveOkSections = new List<MapSection>();
         private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
 
         public bool GoNextTransferStep { get; set; }
-        public int TransCmdsIndex { get; set; }
+        public int TransferStepsIndex { get; set; }
         public bool IsReportingPosition { get; set; }
         public bool IsReserveMechanism { get; set; } = true;
-        private ITransCmdsStep transferCommandStep;
+        private ITransferCmdStep transferCmdStep;
         private AgvcTransCmd agvcTransCmd;
 
         #endregion
@@ -440,21 +440,24 @@ namespace Mirle.Agv.Controller
 
         private void MiddleAgent_OnInstallTransferCommandEvent(object sender, AgvcTransCmd agvcTransCmd)
         {
+            //TODO:
+            //Multi-AgvcTransCmd protect
+
             try
             {
                 this.agvcTransCmd = agvcTransCmd;
                 if (!CheckTransCmdSectionsAndAddressesMatch(agvcTransCmd))
                 {
-                    SendAgvcTransferCommandChecked(agvcTransCmd, false);
+                    PublishAgvcTransferCommandChecked(agvcTransCmd, false);
                     return;
                 }
 
-                SendAgvcTransferCommandChecked(agvcTransCmd, true);
-                AgvcTransferCommandIntoTransferSteps();
-                transCmds.Add(new EmptyTransCmd());
+                PublishAgvcTransferCommandChecked(agvcTransCmd, true);
+                SetupTransferSteps();
+                transferSteps.Add(new EmptyTransCmd());
 
                 //開始尋訪 transCmds as List<TransCmd> 裡的每一步MoveCmdInfo/LoadCmdInfo
-                StartVisitTransCmds();
+                RestartVisitTransCmds();
 
             }
             catch (Exception ex)
@@ -467,7 +470,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void SendAgvcTransferCommandChecked(AgvcTransCmd agvcTransCmd, bool isOk)
+        private void PublishAgvcTransferCommandChecked(AgvcTransCmd agvcTransCmd, bool isOk)
         {
             string fullMsg = Environment.NewLine;
             PropertyInfo[] infos = agvcTransCmd.GetType().GetProperties();
@@ -475,27 +478,24 @@ namespace Mirle.Agv.Controller
             {
                 if (info.CanWrite)
                 {
-                    if (info.PropertyType == typeof(string[]))
+                    if (info.PropertyType == typeof(List<string>))
                     {
                         var name = info.Name;
-                        string arrayMsg = "";
-                        string[] array1 = (string[])info.GetValue(agvcTransCmd);
-                        if (array1 != null)
+                        List<string> aList = (List<string>)info.GetValue(agvcTransCmd);
+                        string values = "";
+                        for (int i = 0; i < aList.Count; i++)
                         {
-                            for (int i = 0; i < array1.Length; i++)
-                            {
-                                arrayMsg += array1[i] + " ";
-                            }
-
-                            fullMsg += $"[{name}={arrayMsg}]" + Environment.NewLine;
+                            values += aList[i] + " ";
                         }
+
+                        fullMsg += $"[{name}={values}]" + Environment.NewLine;
+
                     }
                     else
                     {
                         var name = info.Name;
                         var value = info.GetValue(agvcTransCmd);
                         fullMsg += $"[{name}={value}]" + Environment.NewLine;
-
                     }
                 }
             }
@@ -505,24 +505,24 @@ namespace Mirle.Agv.Controller
 
         private bool CheckTransCmdSectionsAndAddressesMatch(AgvcTransCmd agvcTransCmd)
         {
-            switch (agvcTransCmd.CmdType)
+            switch (agvcTransCmd.CommandType)
             {
-                case EnumAgvcTransCmdType.Move:
+                case EnumAgvcTransCommandType.Move:
                     return IsSectionsAndAddressesMatch(agvcTransCmd.ToUnloadSections, agvcTransCmd.ToUnloadAddresses, agvcTransCmd.SeqNum);
-                case EnumAgvcTransCmdType.Load:
+                case EnumAgvcTransCommandType.Load:
                     return IsSectionsAndAddressesMatch(agvcTransCmd.ToLoadSections, agvcTransCmd.ToLoadAddresses, agvcTransCmd.SeqNum);
-                case EnumAgvcTransCmdType.Unload:
+                case EnumAgvcTransCommandType.Unload:
                     return IsSectionsAndAddressesMatch(agvcTransCmd.ToUnloadSections, agvcTransCmd.ToUnloadAddresses, agvcTransCmd.SeqNum);
-                case EnumAgvcTransCmdType.LoadUnload:
+                case EnumAgvcTransCommandType.LoadUnload:
                     return IsSectionsAndAddressesMatch(agvcTransCmd.ToLoadSections, agvcTransCmd.ToLoadAddresses, agvcTransCmd.SeqNum) || IsSectionsAndAddressesMatch(agvcTransCmd.ToUnloadSections, agvcTransCmd.ToUnloadAddresses, agvcTransCmd.SeqNum);
                 default:
                     return true;
             }
         }
 
-        private bool IsSectionsAndAddressesMatch(string[] sections, string[] addresses, ushort aSeqNum)
+        private bool IsSectionsAndAddressesMatch(List<string> sections, List<string> addresses, ushort aSeqNum)
         {
-            if (sections.Length + 1 != addresses.Length)
+            if (sections.Count + 1 != addresses.Count)
             {
                 int replyCode = 1; // NG
                 string reason = $"guildSections and guildAddresses is not match";
@@ -530,7 +530,7 @@ namespace Mirle.Agv.Controller
                 return false;
             }
 
-            for (int i = 0; i < sections.Length; i++)
+            for (int i = 0; i < sections.Count; i++)
             {
                 if (!theMapInfo.allMapSections.ContainsKey(sections[i]))
                 {
@@ -591,46 +591,46 @@ namespace Mirle.Agv.Controller
 
         private bool IsBasicTransCmds()
         {
-            switch (agvcTransCmd.CmdType)
+            switch (agvcTransCmd.CommandType)
             {
-                case EnumAgvcTransCmdType.Move:
-                case EnumAgvcTransCmdType.Load:
-                case EnumAgvcTransCmdType.Unload:
-                case EnumAgvcTransCmdType.LoadUnload:
+                case EnumAgvcTransCommandType.Move:
+                case EnumAgvcTransCommandType.Load:
+                case EnumAgvcTransCommandType.Unload:
+                case EnumAgvcTransCommandType.LoadUnload:
                     return true;
-                case EnumAgvcTransCmdType.Home:
-                case EnumAgvcTransCmdType.Override:
-                case EnumAgvcTransCmdType.Else:
+                case EnumAgvcTransCommandType.Home:
+                case EnumAgvcTransCommandType.Override:
+                case EnumAgvcTransCommandType.Else:
                 default:
                     return false;
             }
         }
 
-        private void AgvcTransferCommandIntoTransferSteps()
+        private void SetupTransferSteps()
         {
-            transCmds.Clear();
+            transferSteps.Clear();
 
-            switch (agvcTransCmd.CmdType)
+            switch (agvcTransCmd.CommandType)
             {
-                case EnumAgvcTransCmdType.Move:
+                case EnumAgvcTransCommandType.Move:
                     ConvertAgvcMoveCmdIntoList(agvcTransCmd);
                     break;
-                case EnumAgvcTransCmdType.Load:
+                case EnumAgvcTransCommandType.Load:
                     ConvertAgvcLoadCmdIntoList(agvcTransCmd);
                     break;
-                case EnumAgvcTransCmdType.Unload:
+                case EnumAgvcTransCommandType.Unload:
                     ConvertAgvcUnloadCmdIntoList(agvcTransCmd);
                     break;
-                case EnumAgvcTransCmdType.LoadUnload:
+                case EnumAgvcTransCommandType.LoadUnload:
                     ConvertAgvcLoadUnloadCmdIntoList(agvcTransCmd);
                     break;
-                case EnumAgvcTransCmdType.Home:
+                case EnumAgvcTransCommandType.Home:
                     ConvertAgvcHomeCmdIntoList(agvcTransCmd);
                     break;
-                case EnumAgvcTransCmdType.Override:
+                case EnumAgvcTransCommandType.Override:
                     ConvertAgvcOverrideCmdIntoList(agvcTransCmd);
                     break;
-                case EnumAgvcTransCmdType.Else:
+                case EnumAgvcTransCommandType.Else:
                 default:
                     ConvertAgvcElseCmdIntoList(agvcTransCmd);
                     break;
@@ -681,27 +681,27 @@ namespace Mirle.Agv.Controller
 
         private void ConvertAgvcUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            if (agvcTransCmd.ToUnloadSections.Length > 0)
+            if (agvcTransCmd.ToUnloadSections.Count > 0)
             {
                 MoveCmdInfo moveCmd = SetMoveToUnloadCmdInfo(agvcTransCmd);
-                transCmds.Add(moveCmd);
+                transferSteps.Add(moveCmd);
             }
 
             UnloadCmdInfo unloadCmd = new UnloadCmdInfo();
             unloadCmd.CstId = agvcTransCmd.CarrierId;
-            unloadCmd.CmdId = agvcTransCmd.CmdId;
+            unloadCmd.CmdId = agvcTransCmd.CommandId;
             unloadCmd.UnloadAddress = agvcTransCmd.UnloadAddress;
 
-            transCmds.Add(unloadCmd);
+            transferSteps.Add(unloadCmd);
         }
 
         private MoveCmdInfo SetMoveToUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             MoveCmdInfo moveCmd = new MoveCmdInfo(theMapInfo);
-            moveCmd.CmdId = agvcTransCmd.CmdId;
+            moveCmd.CmdId = agvcTransCmd.CommandId;
             moveCmd.CstId = agvcTransCmd.CarrierId;
-            moveCmd.AddressIds = moveCmd.SetListIds(agvcTransCmd.ToUnloadAddresses);
-            moveCmd.SectionIds = moveCmd.SetListIds(agvcTransCmd.ToUnloadSections);
+            moveCmd.AddressIds = agvcTransCmd.ToUnloadAddresses;
+            moveCmd.SectionIds = agvcTransCmd.ToUnloadSections;
             moveCmd.SetAddressPositions();
             moveCmd.SetAddressActions();
             moveCmd.SetSectionSpeedLimits();
@@ -712,27 +712,27 @@ namespace Mirle.Agv.Controller
 
         private void ConvertAgvcLoadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            if (agvcTransCmd.ToLoadSections.Length > 0)
+            if (agvcTransCmd.ToLoadSections.Count > 0)
             {
                 MoveCmdInfo moveCmd = SetMoveToLoadCmdInfo(agvcTransCmd);
-                transCmds.Add(moveCmd);
+                transferSteps.Add(moveCmd);
             }
 
             LoadCmdInfo loadCmd = new LoadCmdInfo();
             loadCmd.CstId = agvcTransCmd.CarrierId;
-            loadCmd.CmdId = agvcTransCmd.CmdId;
+            loadCmd.CmdId = agvcTransCmd.CommandId;
             loadCmd.LoadAddress = agvcTransCmd.LoadAddress;
 
-            transCmds.Add(loadCmd);
+            transferSteps.Add(loadCmd);
         }
 
         private MoveCmdInfo SetMoveToLoadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             MoveCmdInfo moveCmd = new MoveCmdInfo(theMapInfo);
-            moveCmd.CmdId = agvcTransCmd.CmdId;
+            moveCmd.CmdId = agvcTransCmd.CommandId;
             moveCmd.CstId = agvcTransCmd.CarrierId;
-            moveCmd.AddressIds = moveCmd.SetListIds(agvcTransCmd.ToLoadAddresses);
-            moveCmd.SectionIds = moveCmd.SetListIds(agvcTransCmd.ToLoadSections);
+            moveCmd.AddressIds = agvcTransCmd.ToLoadAddresses;
+            moveCmd.SectionIds = agvcTransCmd.ToLoadSections;
             moveCmd.SetAddressPositions();
             moveCmd.SetAddressActions();
             moveCmd.SetSectionSpeedLimits();
@@ -743,10 +743,10 @@ namespace Mirle.Agv.Controller
 
         private void ConvertAgvcMoveCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            if (agvcTransCmd.ToUnloadSections.Length > 0)
+            if (agvcTransCmd.ToUnloadSections.Count > 0)
             {
                 MoveCmdInfo moveCmd = SetMoveToUnloadCmdInfo(agvcTransCmd);
-                transCmds.Add(moveCmd);
+                transferSteps.Add(moveCmd);
             }
         }
 
@@ -754,7 +754,7 @@ namespace Mirle.Agv.Controller
         {
             PreVisitTransCmds();
 
-            while (TransCmdsIndex < transCmds.Count)
+            while (TransferStepsIndex < transferSteps.Count)
             {
                 #region Pause And Stop Check
 
@@ -787,6 +787,12 @@ namespace Mirle.Agv.Controller
 
             //OnTransCmdsFinishedEvent(this, EnumCompleteStatus.TransferComplete);
             AfterVisitTransCmds();
+        }
+
+        public void RestartVisitTransCmds()
+        {
+            StopVisitTransCmds();
+            StartVisitTransCmds();
         }
 
         public void StartVisitTransCmds()
@@ -824,15 +830,15 @@ namespace Mirle.Agv.Controller
 
         private void AfterVisitTransCmds()
         {
-            transCmds.Clear();
-            TransCmdsIndex = 0;
+            transferSteps.Clear();
+            TransferStepsIndex = 0;
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
         }
 
         private void PreVisitTransCmds()
         {
-            TransCmdsIndex = 0;
+            TransferStepsIndex = 0;
             GoNextTransferStep = true;
             visitTransCmdsPauseEvent.Set();
             visitTransCmdsShutdownEvent.Reset();
@@ -882,7 +888,7 @@ namespace Mirle.Agv.Controller
 
                 var position = moveControlHandler.RealPosition;
 
-                if (transCmds.Count > 0)
+                if (transferSteps.Count > 0)
                 {
                     //有搬送命令時，比對當前Position與搬送路徑Sections確定section-distance
                     var curTransCmd = GetCurTransCmd();
@@ -935,9 +941,6 @@ namespace Mirle.Agv.Controller
 
         private void MiddleAgent_OnGetReserveOkEvent(object sender, MapSection reserveOkSection)
         {
-            //gotReserveOkSections = queAskingReserveSections.ToList().DeepClone();
-
-            //PublishReserveOkEvent();
             queNeedReserveSections.TryPeek(out MapSection needReserveSection);
             if (needReserveSection.Id == reserveOkSection.Id)
             {
@@ -945,7 +948,6 @@ namespace Mirle.Agv.Controller
                 queGotReserveOkSections.Enqueue(aReserveOkSection);
                 PublishReserveOkEvent();
             }
-
         }
 
         public void MiddleAgent_ResumeAskingReserve()
@@ -983,8 +985,8 @@ namespace Mirle.Agv.Controller
                 return;
             }
             List<MapPosition> reserveOkPositions = new List<MapPosition>();
-            MapSection[] reserveOkSections = queGotReserveOkSections.ToArray();
-            for (int i = 0; i < reserveOkSections.Length; i++)
+            List<MapSection> reserveOkSections = queGotReserveOkSections.ToList();
+            for (int i = 0; i < reserveOkSections.Count; i++)
             {
                 MapSection mapSection = reserveOkSections[i];
                 MapAddress mapAddress = new MapAddress();
@@ -1096,22 +1098,22 @@ namespace Mirle.Agv.Controller
 
         private bool NextTransCmdIsUnload()
         {
-            return transCmds[TransCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Unload;
+            return transferSteps[TransferStepsIndex + 1].GetCommandType() == EnumTransCmdType.Unload;
         }
 
         private bool NextTransCmdIsLoad()
         {
-            return transCmds[TransCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Load;
+            return transferSteps[TransferStepsIndex + 1].GetCommandType() == EnumTransCmdType.Load;
         }
 
         private bool NextTransCmdIsMove()
         {
-            return transCmds[TransCmdsIndex + 1].GetCommandType() == EnumTransCmdType.Move;
+            return transferSteps[TransferStepsIndex + 1].GetCommandType() == EnumTransCmdType.Move;
         }
 
         private bool IsLoadUnloadComplete()
         {
-            return agvcTransCmd.CmdType == EnumAgvcTransCmdType.LoadUnload;
+            return agvcTransCmd.CommandType == EnumAgvcTransCommandType.LoadUnload;
         }
 
         private void OnLoadunloadFinishedEvent()
@@ -1121,9 +1123,9 @@ namespace Mirle.Agv.Controller
 
         private void VisitNextTransCmd()
         {
-            if (TransCmdsIndex < transCmds.Count)
+            if (TransferStepsIndex < transferSteps.Count)
             {
-                TransCmdsIndex++;
+                TransferStepsIndex++;
                 GoNextTransferStep = true;
             }
             else
@@ -1136,43 +1138,43 @@ namespace Mirle.Agv.Controller
 
         private void SetLasTransCmds()
         {
-            lastTransCmds.Clear();
-            for (int i = 0; i < transCmds.Count; i++)
+            lastTransferSteps.Clear();
+            for (int i = 0; i < transferSteps.Count; i++)
             {
-                lastTransCmds.Add(transCmds[i]);
+                lastTransferSteps.Add(transferSteps[i]);
             }
-            transCmds.Clear();
+            transferSteps.Clear();
         }
 
-        public TransCmd GetCurTransCmd()
+        public TransferStep GetCurTransCmd()
         {
-            TransCmd transCmd = new EmptyTransCmd(theMapInfo);
-            if (TransCmdsIndex < transCmds.Count)
+            TransferStep transCmd = new EmptyTransCmd(theMapInfo);
+            if (TransferStepsIndex < transferSteps.Count)
             {
-                transCmd = transCmds[TransCmdsIndex];
-            }
-            return transCmd;
-        }
-
-        public TransCmd GetNextTransCmd()
-        {
-            TransCmd transCmd = new EmptyTransCmd(theMapInfo);
-            int nextIndex = TransCmdsIndex + 1;
-            if (nextIndex < transCmds.Count)
-            {
-                transCmd = transCmds[nextIndex];
+                transCmd = transferSteps[TransferStepsIndex];
             }
             return transCmd;
         }
 
-        public void SetTransCmdsStep(ITransCmdsStep step)
+        public TransferStep GetNextTransCmd()
         {
-            this.transferCommandStep = step;
+            TransferStep transCmd = new EmptyTransCmd(theMapInfo);
+            int nextIndex = TransferStepsIndex + 1;
+            if (nextIndex < transferSteps.Count)
+            {
+                transCmd = transferSteps[nextIndex];
+            }
+            return transCmd;
+        }
+
+        public void SetTransCmdsStep(ITransferCmdStep step)
+        {
+            this.transferCmdStep = step;
         }
 
         public void DoTransfer()
         {
-            transferCommandStep.DoTransfer(this);
+            transferCmdStep.DoTransfer(this);
         }
 
         public void Unload(UnloadCmdInfo unloadCmd)

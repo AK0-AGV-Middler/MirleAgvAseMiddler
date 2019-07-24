@@ -20,6 +20,7 @@ namespace Mirle.Agv.Controller.Tools
         private LogType logType;
 
         private string strDirectoryFullPath = "Empty";
+        private string firstLineString;
 
         private FileStream fileStream;
         private StreamWriter fileWriteStream;
@@ -53,7 +54,7 @@ namespace Mirle.Agv.Controller.Tools
             thdDataSave.Start();
 
             lngLogMaxSize = logType.LogMaxSize * MB;
-
+            firstLineString = logType.FirstLineString;
             // 應該檢查不合法字元
             PathCheck();
         }
@@ -74,13 +75,15 @@ namespace Mirle.Agv.Controller.Tools
             if (File.Exists(strFileFullPath))
             {
                 fileStream = new FileStream(strFileFullPath, FileMode.Append, FileAccess.Write, FileShare.Read);
+                fileWriteStream = new StreamWriter(fileStream, encodingType);
             }
             else
             {
                 fileStream = new FileStream(strFileFullPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);   // 建立檔案
+                fileWriteStream = new StreamWriter(fileStream, encodingType);
+                fileWriteStream.Write(firstLineString + Environment.NewLine);
+                fileWriteStream.Flush();
             }
-
-            fileWriteStream = new StreamWriter(fileStream, encodingType);
         }
 
         private void AddDebugLog(string aFunctionName, string aMessage)
@@ -126,7 +129,8 @@ namespace Mirle.Agv.Controller.Tools
                         // 超過限制的大小，換檔再刪除
                         SpinWait.SpinUntil(() => false, 1000); // 避免產生同時間的檔案
                         var dateTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-                        var copyName = string.Concat(strDirectoryFullPath, logType.LogFileName, "_", dateTime, logType.FileExtension);
+                        var copyName = string.Concat(logType.LogFileName, "_", dateTime, logType.FileExtension);
+                        copyName = Path.Combine(strDirectoryFullPath, copyName);
                         File.Copy(strFileFullPath, copyName);
                         iStep = iStep + 1;
 
@@ -134,6 +138,8 @@ namespace Mirle.Agv.Controller.Tools
                         fileWriteStream.Close();
                         fileStream = new FileStream(strFileFullPath, FileMode.Truncate, FileAccess.Write, FileShare.Read);
                         fileWriteStream = new StreamWriter(fileStream, encodingType);
+                        fileWriteStream.Write(firstLineString + Environment.NewLine);
+                        fileWriteStream.Flush();
 
                         iStep = iStep + 1;
                     }

@@ -66,12 +66,12 @@
     <Compile Include="Controller\Agent\LoggerAgent.cs" />
     <Compile Include="Controller\Handler\AlarmHandler.cs" />
     <Compile Include="Controller\Handler\BatteryHandler.cs" />
-    <Compile Include="Controller\Handler\TransCmdsSteps\Idle.cs" />
-    <Compile Include="Controller\Handler\TransCmdsSteps\ITransCmdsStep.cs" />
+    <Compile Include="Controller\Handler\TransfereCmdSteps\Idle.cs" />
+    <Compile Include="Controller\Handler\TransfereCmdSteps\ITransferCmdStep.cs" />
     <Compile Include="Controller\Handler\RobotControlHandler.cs" />
-    <Compile Include="Controller\Handler\TransCmdsSteps\Load.cs" />
-    <Compile Include="Controller\Handler\TransCmdsSteps\Move.cs" />
-    <Compile Include="Controller\Handler\TransCmdsSteps\Unload.cs" />
+    <Compile Include="Controller\Handler\TransfereCmdSteps\Load.cs" />
+    <Compile Include="Controller\Handler\TransfereCmdSteps\Move.cs" />
+    <Compile Include="Controller\Handler\TransfereCmdSteps\Unload.cs" />
     <Compile Include="Controller\IComplete.cs" />
     <Compile Include="Controller\Agent\BmsAgent.cs" />
     <Compile Include="Controller\Handler\CoupleHandler.cs" />

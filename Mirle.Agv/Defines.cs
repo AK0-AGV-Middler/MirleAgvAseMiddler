@@ -52,7 +52,7 @@ namespace Mirle.Agv
         Empty
     }
 
-    public enum EnumAgvcTransCmdType
+    public enum EnumAgvcTransCommandType
     {
         Move,
         Load,

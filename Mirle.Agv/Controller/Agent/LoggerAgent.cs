@@ -63,6 +63,7 @@ namespace Mirle.Agv.Controller
                 aLogType.LineSeparateToken = configHandler.GetString(strSectionName, "LineSeparateToken", "$.$");
                 aLogType.FileExtension = configHandler.GetString(strSectionName, "FileExtension", ".txt");
                 aLogType.DequeueInterval = int.Parse(configHandler.GetString("Basic", "DequeueInterval", "1000"));
+                aLogType.FirstLineString = configHandler.GetString(strSectionName, "FirstLineString", " ");
 
                 Logger logger = new Logger(aLogType);
 

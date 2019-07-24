@@ -12,26 +12,26 @@ namespace Mirle.Agv.Model.TransferCmds
 {
     public class AgvcTransCmd
     {
-        public EnumAgvcTransCmdType CmdType { get; set; }
-        public string[] ToLoadSections { get; set; }
-        public string[] ToUnloadSections { get; set; }
-        public string[] ToLoadAddresses { get; set; }
-        public string[] ToUnloadAddresses { get; set; }
+        public EnumAgvcTransCommandType CommandType { get; set; }
+        public List<string> ToLoadSections { get; set; } = new List<string>();
+        public List<string> ToUnloadSections { get; set; } = new List<string>();
+        public List<string> ToLoadAddresses { get; set; } = new List<string>();
+        public List<string> ToUnloadAddresses { get; set; } = new List<string>();
         public string LoadAddress { get; set; } = "Empty";
         public string UnloadAddress { get; set; } = "Empty";
         public string CarrierId { get; set; } = "Empty";
-        public string CmdId { get; set; } = "Empty";
+        public string CommandId { get; set; } = "Empty";
         public ushort SeqNum { get; set; }
 
         public AgvcTransCmd()
         {
-            CmdId = "Empty";
+            CommandId = "Empty";
             CarrierId = "Empty";
         }
 
         public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum)
         {
-            CmdId = transRequest.CmdID;
+            CommandId = transRequest.CmdID;
             if (!string.IsNullOrEmpty(transRequest.CSTID))
             {
                 CarrierId = transRequest.CSTID;
@@ -45,22 +45,22 @@ namespace Mirle.Agv.Model.TransferCmds
             switch (activeType)
             {
                 case ActiveType.Move:
-                    CmdType = EnumAgvcTransCmdType.Move;
+                    CommandType = EnumAgvcTransCommandType.Move;
                     break;
                 case ActiveType.Load:
-                    CmdType = EnumAgvcTransCmdType.Load;
+                    CommandType = EnumAgvcTransCommandType.Load;
                     break;
                 case ActiveType.Unload:
-                    CmdType = EnumAgvcTransCmdType.Unload;
+                    CommandType = EnumAgvcTransCommandType.Unload;
                     break;
                 case ActiveType.Loadunload:
-                    CmdType = EnumAgvcTransCmdType.LoadUnload;
+                    CommandType = EnumAgvcTransCommandType.LoadUnload;
                     break;
                 case ActiveType.Home:
-                    CmdType = EnumAgvcTransCmdType.Home;
+                    CommandType = EnumAgvcTransCommandType.Home;
                     break;
                 case ActiveType.Override:
-                    CmdType = EnumAgvcTransCmdType.Override;
+                    CommandType = EnumAgvcTransCommandType.Override;
                     break;
                 case ActiveType.Mtlhome:
                 case ActiveType.Movetomtl:
@@ -69,7 +69,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    CmdType = EnumAgvcTransCmdType.Else;
+                    CommandType = EnumAgvcTransCommandType.Else;
                     break;
             }
         }
@@ -78,7 +78,7 @@ namespace Mirle.Agv.Model.TransferCmds
         {
             if (guideAddressesStartToLoad != null)
             {
-                ToLoadAddresses = guideAddressesStartToLoad.ToArray();
+                ToLoadAddresses = guideAddressesStartToLoad.ToList();
             }
         }
 
@@ -86,7 +86,7 @@ namespace Mirle.Agv.Model.TransferCmds
         {
             if (guideSectionsStartToLoad != null)
             {
-                ToLoadSections = guideSectionsStartToLoad.ToArray();
+                ToLoadSections = guideSectionsStartToLoad.ToList();
             }
         }
 
@@ -94,7 +94,7 @@ namespace Mirle.Agv.Model.TransferCmds
         {
             if (guideAddressesToDestination != null)
             {
-                ToUnloadAddresses = guideAddressesToDestination.ToArray();
+                ToUnloadAddresses = guideAddressesToDestination.ToList();
             }
         }
 
@@ -102,7 +102,7 @@ namespace Mirle.Agv.Model.TransferCmds
         {
             if (guideSectionsToDestination != null)
             {
-                ToUnloadSections = guideSectionsToDestination.ToArray();
+                ToUnloadSections = guideSectionsToDestination.ToList();
             }
         }        
     }

@@ -7,7 +7,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
-    public class MoveCmdInfo : TransCmd
+    public class MoveCmdInfo : TransferStep
     {
         public List<MapPosition> AddressPositions { get; set; } = new List<MapPosition>();
         public List<EnumAddressAction> AddressActions { get; set; } = new List<EnumAddressAction>();
@@ -233,9 +233,9 @@ namespace Mirle.Agv.Model.TransferCmds
             }
         }
 
-        public List<string> SetListIds(string[] addresses)
-        {
-            return addresses.ToList();
-        }
+        //public List<string> SetListIds(string[] addresses)
+        //{
+        //    return addresses.ToList();
+        //}
     }
 }
