@@ -1338,7 +1338,8 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd144_StatusChangeReport()
         {
-            Battery battery = theVehicle.GetBattery();
+            PlcBatterys batterys = theVehicle.GetPlcVehicle().Batterys;
+
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
             try
@@ -1359,8 +1360,8 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CmdID;
                 iD_144_STATUS_CHANGE_REP.CSTID = theVehicle.CarrierID;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
-                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)battery.Percentage;
-                iD_144_STATUS_CHANGE_REP.BatteryTemperature = battery.Temperature;
+                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
+                iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_144_STATUS_CHANGE_REP.ChargeStatus = theVehicle.ChargeStatus;
 
 
@@ -1389,16 +1390,17 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
-            Battery battery = theVehicle.GetBattery();
             TransferStep transCmd = theVehicle.GetTransCmd();
             VehLocation vehLocation = theVehicle.GetVehLoacation();
+
+            PlcBatterys batterys = theVehicle.GetPlcVehicle().Batterys;
 
             try
             {
                 ID_143_STATUS_RESPONSE iD_143_STATUS_RESPONSE = new ID_143_STATUS_RESPONSE();
                 iD_143_STATUS_RESPONSE.ActionStatus = theVehicle.ActionStatus;
-                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)battery.Percentage;
-                iD_143_STATUS_RESPONSE.BatteryTemperature = battery.Temperature;
+                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage;
+                iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_143_STATUS_RESPONSE.BlockingStatus = theVehicle.BlockingStatus;
                 iD_143_STATUS_RESPONSE.ChargeStatus = theVehicle.ChargeStatus;
                 iD_143_STATUS_RESPONSE.CmdID = transCmd.CmdId;
@@ -1907,20 +1909,22 @@ namespace Mirle.Agv.Controller
 
         private bool CanVehDoTransfer(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
         {
-            if (theVehicle.GetBattery().IsBatteryLowPower())
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle is in low power can not do transfer command.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (theVehicle.GetBattery().IsBatteryHighTemperature())
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle is in battery temperature too hight can not do transfer command.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
+            //TODO: Implement new battery protect.
+
+            //if (theVehicle.GetBattery().IsBatteryLowPower())
+            //{
+            //    int replyCode = 1; // NG
+            //    string reason = "Vehicle is in low power can not do transfer command.";
+            //    Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
+            //    return false;
+            //}
+            //else if (theVehicle.GetBattery().IsBatteryHighTemperature())
+            //{
+            //    int replyCode = 1; // NG
+            //    string reason = "Vehicle is in battery temperature too hight can not do transfer command.";
+            //    Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
+            //    return false;
+            //}
 
             var type = transRequest.ActType;
             switch (type)

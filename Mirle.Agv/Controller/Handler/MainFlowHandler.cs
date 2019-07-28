@@ -11,6 +11,7 @@ using Mirle.Agv.Controller.Handler.TransCmdsSteps;
 using TcpIpClientSample;
 using System.Reflection;
 using System.Linq;
+using ClsMCProtocol;
 
 namespace Mirle.Agv.Controller
 {
@@ -25,7 +26,6 @@ namespace Mirle.Agv.Controller
         private MainFlowConfig mainFlowConfig;
         private MapConfig mapConfig;
         private MoveControlConfig moveControlConfig;
-        private BatteryConfig batteryConfig;
         private AlarmConfig alarmConfig;
 
         #endregion
@@ -89,6 +89,7 @@ namespace Mirle.Agv.Controller
         public Vehicle theVehicle;
         private bool isIniOk;
         private MapInfo theMapInfo = new MapInfo();
+        private MCProtocol mcProtocol;
 
         public MainFlowHandler()
         {
@@ -189,18 +190,6 @@ namespace Mirle.Agv.Controller
                 int.TryParse(configHandler.GetString("MoveControl", "SleepTime ", "10"), out int tempSleepTime2);
                 moveControlConfig.SleepTime = tempSleepTime2;
 
-                batteryConfig = new BatteryConfig();
-                int.TryParse(configHandler.GetString("Battery", "Percentage", "80"), out int tempPercentage);
-                batteryConfig.Percentage = tempPercentage;
-                double.TryParse(configHandler.GetString("Battery", "Voltage", "40"), out double tempVoltage);
-                batteryConfig.Voltage = tempVoltage;
-                int.TryParse(configHandler.GetString("Battery", "Temperature", "30"), out int tempTemperature);
-                batteryConfig.Temperature = tempTemperature;
-                int.TryParse(configHandler.GetString("Battery", "LowPowerThreshold", "25"), out int tempLowPowerThreshold);
-                batteryConfig.LowPowerThreshold = tempLowPowerThreshold;
-                int.TryParse(configHandler.GetString("Battery", "HighTemperatureThreshold", "45"), out int tempHighTemperatureThreshold);
-                batteryConfig.HighTemperatureThreshold = tempHighTemperatureThreshold;
-
                 alarmConfig = new AlarmConfig();
                 alarmConfig.AlarmFileName = configHandler.GetString("Alarm", "AlarmFileName", "AlarmCode.csv");
 
@@ -283,8 +272,9 @@ namespace Mirle.Agv.Controller
                 bmsAgent = new BmsAgent();
                 elmoAgent = new ElmoAgent();
                 middleAgent = new MiddleAgent(middlerConfig, theMapInfo);
-                //middleAgent.SetupNeedReserveSections(queAskingReserveSections);
-                plcAgent = new PlcAgent();
+                mcProtocol = new MCProtocol();
+                mcProtocol.Name = "MCProtocol";
+                plcAgent = new PlcAgent(mcProtocol,alarmHandler);
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -306,11 +296,16 @@ namespace Mirle.Agv.Controller
                     var args = new InitialEventArgs
                     {
                         IsOk = false,
-                        ItemName = "Agent"
+                        ItemName = "Controller"
                     };
                     OnComponentIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        private void McProtocol_OnDataChangeEvent(string sMessage, clsColParameter oColParam)
+        {
+            
         }
 
         private void VehicleInitial()
@@ -318,8 +313,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 theVehicle = Vehicle.Instance;
-                theVehicle.SetMapInfo(theMapInfo);
-                theVehicle.SetupBattery(batteryConfig);
+                theVehicle.SetMapInfo(theMapInfo);               
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -379,6 +373,7 @@ namespace Mirle.Agv.Controller
                 robotControlHandler.OnUnloadFinished += RobotControlHandler_OnUnloadFinished;
                 //robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
 
+                mcProtocol.OnDataChangeEvent += McProtocol_OnDataChangeEvent;
 
 
                 if (OnComponentIntialDoneEvent != null)
@@ -1337,6 +1332,16 @@ namespace Mirle.Agv.Controller
         public List<MapSection> GetReserveOkSections()
         {
             return queGotReserveOkSections.ToList().DeepClone();
+        }
+
+        public MCProtocol GetMcProtocol()
+        {
+            return mcProtocol;
+        }
+
+        public PlcAgent GetPlcAgent()
+        {
+            return plcAgent;
         }
     }
 }

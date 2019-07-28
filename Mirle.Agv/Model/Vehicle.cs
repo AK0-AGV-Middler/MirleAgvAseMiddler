@@ -15,14 +15,13 @@ namespace Mirle.Agv.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
 
-        private Battery battery;
         private VehLocation vehLoacation;
         private Dictionary<string, Carrier> dicCarriersById;
         private Dictionary<int, Carrier> dicCarriersByStageNum;
-        private PlcRobot PlcRobot;
         private TransferStep transCmd;
         private LoggerAgent theLoggerAgent;
         private MapInfo theMapInfo = new MapInfo();
+        private PlcVehicle plcVehicle;
 
         #region Comm Property
 
@@ -56,7 +55,6 @@ namespace Mirle.Agv.Model
 
         private Vehicle()
         {
-            battery = new Battery();
             vehLoacation = new VehLocation(theMapInfo);
             dicCarriersById = new Dictionary<string, Carrier>();
             dicCarriersByStageNum = new Dictionary<int, Carrier>();
@@ -64,16 +62,11 @@ namespace Mirle.Agv.Model
             CarrierID = "Empty";
             ObstVehicleID = "Empty";
             StoppedBlockID = "Empty";
-            PlcRobot = new PlcRobot();
+            plcVehicle = new PlcVehicle();
             theLoggerAgent = LoggerAgent.Instance;
         }
 
-        #region Setter
-
-        public void UpdateStatus(Battery battery)
-        {
-            this.battery = battery;
-        }
+        #region Setter       
 
         public void UpdateStatus(VehLocation vehLoacation)
         {
@@ -92,26 +85,26 @@ namespace Mirle.Agv.Model
             dicCarriersByStageNum.Add(tempCarrier.StageNum, tempCarrier);
         }
 
-        public void SetupBattery(BatteryConfig aBatteryConfig)
-        {
-            battery.SetupBattery(aBatteryConfig);
-        }
+        
 
         public void SetVehicleStop()
         {
 
         }
 
+        public void SetMapInfo(MapInfo theMapInfo)
+        {
+            this.theMapInfo = theMapInfo;
+        }
 
+        public void SetPlcVehicle(PlcVehicle aPlcVehicle)
+        {
+            plcVehicle = aPlcVehicle;
+        }
 
         #endregion
 
-        #region Getter
-
-        public Battery GetBattery()
-        {
-            return this.battery;
-        }
+        #region Getter       
 
         public VehLocation GetVehLoacation()
         {
@@ -157,11 +150,11 @@ namespace Mirle.Agv.Model
             }
         }
 
-        public void SetMapInfo(MapInfo theMapInfo)
+        public PlcVehicle GetPlcVehicle()
         {
-            this.theMapInfo = theMapInfo;
+            return plcVehicle;
         }
-
         #endregion
+
     }
 }

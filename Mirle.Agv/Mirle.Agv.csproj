@@ -50,9 +50,6 @@
     <Reference Include="Keyence.AutoID.SDK">
       <HintPath>OutsideDll\Keyence.AutoID.SDK.dll</HintPath>
     </Reference>
-    <Reference Include="Keyence.AutoID.SDK_">
-      <HintPath>OutsideDll\Keyence.AutoID.SDK_.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework, Version=3.11.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.11.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
@@ -95,6 +92,7 @@
     <Compile Include="Controller\Agent\PlcAgent.cs" />
     <Compile Include="Controller\InitialEventArgs.cs" />
     <Compile Include="Controller\Tools\AgvcConnecter.cs" />
+    <Compile Include="Controller\Tools\CassetteIDReader.cs" />
     <Compile Include="Controller\Tools\ConfigHandler.cs" />
     <Compile Include="Controller\Tools\CsvHandler.cs" />
     <Compile Include="Controller\Tools\Logger\LogBasicConfigs.cs" />
@@ -106,20 +104,23 @@
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Defines.cs" />
     <Compile Include="Model\Configs\AlarmConfig.cs" />
-    <Compile Include="Model\Configs\BatteryConfig.cs" />
     <Compile Include="Model\Configs\ElmoAxisConfig.cs" />
     <Compile Include="Model\Configs\ElmoSingleAxisConfig.cs" />
     <Compile Include="Model\Configs\MainFlowConfig.cs" />
     <Compile Include="Model\Configs\MapConfig.cs" />
     <Compile Include="Model\Configs\MiddlerConfig.cs" />
     <Compile Include="Model\Configs\MoveControlConfig.cs" />
-    <Compile Include="Model\MapBarcode.cs" />
-    <Compile Include="Model\MapInfo.cs" />
-    <Compile Include="Model\MapPosition.cs" />
-    <Compile Include="Model\MapBarcodeLine.cs" />
-    <Compile Include="Model\PlcLoadingSensor.cs" />
-    <Compile Include="Model\PlcRobot.cs" />
-    <Compile Include="Model\PlcStage.cs" />
+    <Compile Include="Model\Map\MapBarcode.cs" />
+    <Compile Include="Model\Map\MapInfo.cs" />
+    <Compile Include="Model\Map\MapPosition.cs" />
+    <Compile Include="Model\Map\MapBarcodeLine.cs" />
+    <Compile Include="Model\Plc\PlcBatterys.cs" />
+    <Compile Include="Model\Plc\PlcBeamSensor.cs" />
+    <Compile Include="Model\Plc\PlcBumper.cs" />
+    <Compile Include="Model\Plc\PlcEmo.cs" />
+    <Compile Include="Model\Plc\PlcForkCommand.cs" />
+    <Compile Include="Model\Plc\PlcRobot.cs" />
+    <Compile Include="Model\Plc\PlcVehicle.cs" />
     <Compile Include="Model\TransferCmds\EmptyTransCmd.cs" />
     <Compile Include="Model\TransferCmds\LoadCmdInfo.cs" />
     <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
@@ -130,6 +131,12 @@
     </Compile>
     <Compile Include="View\AlarmForm.Designer.cs">
       <DependentUpon>AlarmForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\PlcForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\PlcForm.designer.cs">
+      <DependentUpon>PlcForm.cs</DependentUpon>
     </Compile>
     <Compile Include="View\UserControls\UcSectionImage.cs">
       <SubType>UserControl</SubType>
@@ -155,7 +162,6 @@
     <Compile Include="View\MiddlerForm.Designer.cs">
       <DependentUpon>MiddlerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\Bettery.cs" />
     <Compile Include="Controller\Handler\MainFlowHandler.cs" />
     <Compile Include="Model\Carrier.cs" />
     <Compile Include="Model\VehLocation.cs" />
@@ -163,16 +169,13 @@
     <Compile Include="Controller\Agent\MiddleAgent.cs" />
     <Compile Include="Model\TransferCmds\AgvcTransCmd.cs" />
     <Compile Include="Model\Report.cs" />
-    <Compile Include="Model\MapBarcodeReader.cs" />
+    <Compile Include="Model\Map\MapBarcodeReader.cs" />
     <Compile Include="Model\ElmoCmd.cs" />
-    <Compile Include="Model\PlcBeam.cs" />
     <Compile Include="Model\Coupler.cs" />
-    <Compile Include="Model\PlcEmo.cs" />
-    <Compile Include="Model\PlcPortPio.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Model\MapAddress.cs" />
-    <Compile Include="Model\MapSection.cs" />
+    <Compile Include="Model\Map\MapAddress.cs" />
+    <Compile Include="Model\Map\MapSection.cs" />
     <Compile Include="Controller\Handler\MapHandler.cs" />
     <Compile Include="View\InitialForm.cs">
       <SubType>Form</SubType>
@@ -210,6 +213,9 @@
     </Compile>
     <EmbeddedResource Include="View\AlarmForm.resx">
       <DependentUpon>AlarmForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\PlcForm.resx">
+      <DependentUpon>PlcForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\UcLabelTextBox.resx">
       <DependentUpon>UcLabelTextBox.cs</DependentUpon>

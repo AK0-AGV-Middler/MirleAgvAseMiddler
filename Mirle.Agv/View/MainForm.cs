@@ -1,21 +1,17 @@
-﻿using System;
+﻿using ClsMCProtocol;
+using Mirle.Agv.Controller;
+using Mirle.Agv.Controller.Tools;
+using Mirle.Agv.Model;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.TransferCmds;
-using System.Drawing.Imaging;
-using System.Diagnostics;
-using Mirle.Agv.Controller.Tools;
 
 namespace Mirle.Agv.View
 {
@@ -29,6 +25,9 @@ namespace Mirle.Agv.View
         private MiddlerForm middlerForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
+        private PlcForm  plcForm;
+        private PlcAgent plcAgent;
+        private MCProtocol mcProtocol;
         //private MapForm mapForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
@@ -75,6 +74,8 @@ namespace Mirle.Agv.View
             theMapInfo = mainFlowHandler.GetMapInfo();
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             moveControlHandler = mainFlowHandler.GetMoveControlHandler();
+            plcAgent = mainFlowHandler.GetPlcAgent();
+            mcProtocol = mainFlowHandler.GetMcProtocol();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -97,6 +98,9 @@ namespace Mirle.Agv.View
 
             alarmForm = new AlarmForm(alarmHandler);
             middlerForm.WindowState = FormWindowState.Normal;
+
+            plcForm = new PlcForm(mcProtocol, plcAgent);
+            plcForm.WindowState = FormWindowState.Normal;
 
             numPositionX.Maximum = decimal.MaxValue;
             numPositionY.Maximum = decimal.MaxValue;
@@ -273,7 +277,7 @@ namespace Mirle.Agv.View
 
         }
 
-        private void 通訊ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MiddlerPage_Click(object sender, EventArgs e)
         {
             if (middlerForm.IsDisposed)
             {
@@ -284,7 +288,7 @@ namespace Mirle.Agv.View
 
         }
 
-        private void 手動測試動令ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ManualMoveCmdPage_Click(object sender, EventArgs e)
         {
             if (manualMoveCmdForm.IsDisposed)
             {
@@ -294,7 +298,7 @@ namespace Mirle.Agv.View
             manualMoveCmdForm.Show();
         }
 
-        private void alarmToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AlarmPage_Click(object sender, EventArgs e)
         {
             if (alarmForm.IsDisposed)
             {
@@ -302,7 +306,16 @@ namespace Mirle.Agv.View
             }
             alarmForm.BringToFront();
             alarmForm.Show();
+        }
 
+        private void PlcPage_Click(object sender, EventArgs e)
+        {
+            if (plcForm.IsDisposed)
+            {
+                plcForm = new PlcForm(mcProtocol,plcAgent);
+            }
+            plcForm.BringToFront();
+            plcForm.Show();
         }
 
         public delegate void DelRenewUI(Control control, string msg);
@@ -499,11 +512,6 @@ namespace Mirle.Agv.View
             mainFlowHandler.StopTrackingPosition();
         }
 
-        private void TestReserveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             UpdateListBoxSections(listNeedReserveSections, mainFlowHandler.GetNeedReserveSections());
@@ -564,5 +572,6 @@ namespace Mirle.Agv.View
 
             
         }
+
     }
 }

@@ -33,8 +33,6 @@ namespace Mirle.Agv.Model.Tests
             Console.WriteLine($"ca1: id={ca1.Id}, size ={ca1.Size}, stageNum={ca1.StageNum}");
             Console.WriteLine($"ca2: id={ca2.Id}, size ={ca2.Size}, stageNum={ca2.StageNum}");
 
-            Battery battery1 = new Battery();
-            var b2 = battery1.DeepClone();
         }
 
         [Test()]
@@ -130,16 +128,16 @@ namespace Mirle.Agv.Model.Tests
                 var name = info.Name;
                 var value = info.GetValue(agvcTransCmd);
                 List<string> valueInList = new List<string>();
-                if (info.PropertyType==typeof(List<string>))
+                if (info.PropertyType == typeof(List<string>))
                 {
                     valueInList = (List<string>)value;
                     var xx1 = valueInList.ToString();
                     for (int i = 0; i < valueInList.Count; i++)
                     {
-                        var xx = valueInList[i]; 
+                        var xx = valueInList[i];
                     }
                 }
-                var valueToString = value.ToString();               
+                var valueToString = value.ToString();
 
             }
 

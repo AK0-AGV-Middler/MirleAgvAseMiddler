@@ -17,7 +17,7 @@ namespace Mirle.Agv.Controller.Tools
         public static readonly String LOG_DEBUG = "Debug";
 
         // Default value
-        private LogType logType;
+        private LogType logType;       
 
         private string strDirectoryFullPath = "Empty";
         private string firstLineString;
@@ -299,6 +299,11 @@ namespace Mirle.Agv.Controller.Tools
                 AddDebugLog("SaveLogFile", aMessage + ex.StackTrace);
             }
 
+        }
+
+        public string GetLogTypeName()
+        {
+            return logType.Name;
         }
 
         #region CheckPathValid() 判斷路徑或檔名是是否有不合法的字元

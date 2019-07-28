@@ -54,7 +54,7 @@ namespace Mirle.Agv.Model.Tests
             List<string> list005 = que004.ToList();
             Assert.AreEqual(2, list005.Count);
 
-            string str001 = list005[1];   
+            string str001 = list005[1];
             Assert.AreEqual(str001.GetHashCode(), list005[1].GetHashCode());
 
             list005.RemoveAt(1);
@@ -85,6 +85,18 @@ namespace Mirle.Agv.Model.Tests
             Assert.AreEqual(3, list01.Count);
 
             Assert.AreEqual(str001, list01[0]);
+        }
+
+        [Test()]
+        public void StringReferenceTest()
+        {
+            string msg = "PQR";
+            Assert.AreEqual("PQR", msg);
+
+            Alarm alarm = new Alarm();
+            alarm.TestChangeStrToABC(msg);
+
+            Assert.AreEqual("ABC", msg);
         }
     }
 }

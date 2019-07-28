@@ -1,0 +1,143 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using Mirle.Agv.Controller;
+using Mirle.Agv;
+
+namespace Mirle.Agv.Model
+{
+    public class PlcBatterys
+    {
+        public EnumBatteryType BatteryType { get; set; } = EnumBatteryType.Yinda;
+        public double MeterCurrent { get; set; }
+        public double MeterVoltage { get; set; }
+        public double MeterWatt { get; set; }
+        public double MeterWattHour { get; set; }
+
+        public double FBatteryTemperature { get; set; }
+        public double BBatteryTemperature { get; set; }
+
+        public Stopwatch SwBatteryAhSetToZero { get; set; } = new Stopwatch();
+        public uint ResetAhTimeout { get; set; } = 10;
+        public ushort MaxResetAhCcounter { get; set; } = 50;
+        public ushort FullChargeIndex { get; set; } = 50;
+        //Port_AutoCharge_Low_SOC
+        public double PortAutoChargeLowSoc { get; set; } = 50.00;
+
+        public bool Charging { get; set; }
+        public bool CcModeFlag { get; set; } = false;
+        public ushort CcModeCounter { get; set; } = 0;
+
+        private double dblMeterAH = 0;
+        public double MeterAh
+        {
+            get { return dblMeterAH; }
+            set
+            {
+                dblMeterAH = value;
+                CountPercentage();
+            }
+        }
+
+        private double dblCCModeAH = 0;
+        public double CcModeAh  //充電達到cc mode時當下的Meter AH值
+        {
+            get { return dblCCModeAH; }
+            set
+            {
+                dblCCModeAH = value;
+                //countPercentage();
+                if (!SetMeterAhToZeroFlag)
+                {
+                    Percentage = 100.00;
+                    CcModeCounter++;
+                }
+            }
+        }
+        public double Percentage { get; private set; } = 0;  //剩餘電量百分比
+
+        private double dblAHWorkingRange = 23.0;
+        public double AhWorkingRange//我們使用的電池AH Range (User config)
+        {
+            get { return dblAHWorkingRange; }
+            set
+            {
+                if (value != 0)
+                {
+                    dblAHWorkingRange = value;
+                    CcModeAh = dblAHWorkingRange;
+                    CountPercentage();
+                }
+            }
+        }
+
+        private bool boolSetMeterAhToZeroFlag = false;
+        public bool SetMeterAhToZeroFlag//是否正在執行AH Reset flag
+        {
+            get { return boolSetMeterAhToZeroFlag; }
+            set
+            {
+                if (boolSetMeterAhToZeroFlag != value)
+                {
+                    boolSetMeterAhToZeroFlag = value;
+                    if (value)
+                    {
+                        SetMeterAhToZeroAh = dblMeterAH;
+                        SwBatteryAhSetToZero.Reset();
+                        SwBatteryAhSetToZero.Start();
+                    }
+                    else
+                    {
+                        SetMeterAhToZeroAh = 0;
+                        SwBatteryAhSetToZero.Stop();
+                    }
+                }
+            }
+        }
+        public double SetMeterAhToZeroAh { get; set; } = 0.0;//執行AH Reset flag前的AH
+
+        //改由毛哥卡CC mode停止,抓FullChargeIndex變化,代表達到CC mode
+        //public double CCModeStopVoltage { get; set; } = 61.5; //CC Mode充電停止電壓 (User config)
+        private void CountPercentage()
+        {
+            if (!boolSetMeterAhToZeroFlag)
+            {
+                if (Percentage != 100.00)
+                {
+                    Percentage = ((dblAHWorkingRange - (dblCCModeAH - dblMeterAH)) / dblAHWorkingRange) * 100;
+                    if (Percentage > 99.99)
+                    {
+                        Percentage = 99.99;
+                    }
+
+                    if (Percentage < 0.00)
+                    {
+                        Percentage = 0.00;
+                    }
+                }
+                else
+                {
+                    double temp = ((dblAHWorkingRange - (dblCCModeAH - dblMeterAH)) / dblAHWorkingRange) * 100;
+                    if (temp > 99.99)
+                    {
+                        //keep 100%
+                    }
+                    else if (Percentage < 0.00)
+                    {
+                        Percentage = 0.00;
+                    }
+                    else
+                    {
+                        Percentage = temp;
+                    }
+                }
+
+            }
+
+        }
+
+    }
+}

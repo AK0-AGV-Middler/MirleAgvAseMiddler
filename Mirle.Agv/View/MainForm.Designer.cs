@@ -39,21 +39,23 @@
             this.中文ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.englishToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.模式ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.jogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.alarmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.通訊ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.手動測試動令ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.車輛狀態ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.TestReserveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.JogPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.AlarmPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.MiddlerPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.ManualMoveCmdPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.listReserveOkSections = new System.Windows.Forms.ListBox();
+            this.gbTrackingPosition = new System.Windows.Forms.GroupBox();
+            this.btnStartTrackingPosition = new System.Windows.Forms.Button();
+            this.btnResumeTrackingPostiion = new System.Windows.Forms.Button();
+            this.btnStopTrackingPosition = new System.Windows.Forms.Button();
+            this.btnPauseTrackingPosition = new System.Windows.Forms.Button();
             this.numPositionY = new System.Windows.Forms.NumericUpDown();
             this.numPositionX = new System.Windows.Forms.NumericUpDown();
             this.btnSetPosition = new System.Windows.Forms.Button();
-            this.listNeedReserveSections = new System.Windows.Forms.ListBox();
             this.btnYflip = new System.Windows.Forms.Button();
             this.btnXflip = new System.Windows.Forms.Button();
             this.txtResizePercent = new System.Windows.Forms.TextBox();
@@ -66,29 +68,27 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.btnResumeTrackingPostiion = new System.Windows.Forms.Button();
-            this.btnPauseTrackingPosition = new System.Windows.Forms.Button();
-            this.btnStopTrackingPosition = new System.Windows.Forms.Button();
-            this.btnStartTrackingPosition = new System.Windows.Forms.Button();
+            this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
+            this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
+            this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
             this.btnStopVehicle = new System.Windows.Forms.Button();
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
-            this.gbConnection = new System.Windows.Forms.GroupBox();
-            this.radOnline = new System.Windows.Forms.RadioButton();
-            this.radOffline = new System.Windows.Forms.RadioButton();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.listAskingReserveSections = new System.Windows.Forms.ListBox();
-            this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
-            this.gbTrackingPosition = new System.Windows.Forms.GroupBox();
-            this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
-            this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
             this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucDeltaPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucEncoderPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
             this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
+            this.gbConnection = new System.Windows.Forms.GroupBox();
+            this.radOnline = new System.Windows.Forms.RadioButton();
+            this.radOffline = new System.Windows.Forms.RadioButton();
+            this.listAskingReserveSections = new System.Windows.Forms.ListBox();
+            this.listReserveOkSections = new System.Windows.Forms.ListBox();
+            this.listNeedReserveSections = new System.Windows.Forms.ListBox();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.PlcPage = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -99,16 +99,16 @@
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.gbTrackingPosition.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            this.gbPerformanceCounter.SuspendLayout();
             this.gbVehicleLocation.SuspendLayout();
             this.gbConnection.SuspendLayout();
-            this.gbPerformanceCounter.SuspendLayout();
-            this.gbTrackingPosition.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -183,55 +183,48 @@
             // 模式ToolStripMenuItem
             // 
             this.模式ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.jogToolStripMenuItem,
-            this.alarmToolStripMenuItem,
-            this.通訊ToolStripMenuItem,
-            this.手動測試動令ToolStripMenuItem,
-            this.車輛狀態ToolStripMenuItem,
-            this.TestReserveToolStripMenuItem});
+            this.JogPage,
+            this.AlarmPage,
+            this.MiddlerPage,
+            this.ManualMoveCmdPage,
+            this.VehicleStatusPage,
+            this.PlcPage});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.模式ToolStripMenuItem.Text = "模式";
             // 
-            // jogToolStripMenuItem
+            // JogPage
             // 
-            this.jogToolStripMenuItem.Name = "jogToolStripMenuItem";
-            this.jogToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.jogToolStripMenuItem.Text = "Jog";
+            this.JogPage.Name = "JogPage";
+            this.JogPage.Size = new System.Drawing.Size(180, 22);
+            this.JogPage.Text = "Jog";
             // 
-            // alarmToolStripMenuItem
+            // AlarmPage
             // 
-            this.alarmToolStripMenuItem.Name = "alarmToolStripMenuItem";
-            this.alarmToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.alarmToolStripMenuItem.Text = "Alarm";
-            this.alarmToolStripMenuItem.Click += new System.EventHandler(this.alarmToolStripMenuItem_Click);
+            this.AlarmPage.Name = "AlarmPage";
+            this.AlarmPage.Size = new System.Drawing.Size(180, 22);
+            this.AlarmPage.Text = "Alarm";
+            this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
-            // 通訊ToolStripMenuItem
+            // MiddlerPage
             // 
-            this.通訊ToolStripMenuItem.Name = "通訊ToolStripMenuItem";
-            this.通訊ToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.通訊ToolStripMenuItem.Text = "通訊";
-            this.通訊ToolStripMenuItem.Click += new System.EventHandler(this.通訊ToolStripMenuItem_Click);
+            this.MiddlerPage.Name = "MiddlerPage";
+            this.MiddlerPage.Size = new System.Drawing.Size(180, 22);
+            this.MiddlerPage.Text = "通訊";
+            this.MiddlerPage.Click += new System.EventHandler(this.MiddlerPage_Click);
             // 
-            // 手動測試動令ToolStripMenuItem
+            // ManualMoveCmdPage
             // 
-            this.手動測試動令ToolStripMenuItem.Name = "手動測試動令ToolStripMenuItem";
-            this.手動測試動令ToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.手動測試動令ToolStripMenuItem.Text = "手動測試動令";
-            this.手動測試動令ToolStripMenuItem.Click += new System.EventHandler(this.手動測試動令ToolStripMenuItem_Click);
+            this.ManualMoveCmdPage.Name = "ManualMoveCmdPage";
+            this.ManualMoveCmdPage.Size = new System.Drawing.Size(180, 22);
+            this.ManualMoveCmdPage.Text = "手動測試動令";
+            this.ManualMoveCmdPage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
             // 
-            // 車輛狀態ToolStripMenuItem
+            // VehicleStatusPage
             // 
-            this.車輛狀態ToolStripMenuItem.Name = "車輛狀態ToolStripMenuItem";
-            this.車輛狀態ToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.車輛狀態ToolStripMenuItem.Text = "車輛狀態";
-            // 
-            // TestReserveToolStripMenuItem
-            // 
-            this.TestReserveToolStripMenuItem.Name = "TestReserveToolStripMenuItem";
-            this.TestReserveToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.TestReserveToolStripMenuItem.Text = "測試Reserve與位置";
-            this.TestReserveToolStripMenuItem.Click += new System.EventHandler(this.TestReserveToolStripMenuItem_Click);
+            this.VehicleStatusPage.Name = "VehicleStatusPage";
+            this.VehicleStatusPage.Size = new System.Drawing.Size(180, 22);
+            this.VehicleStatusPage.Text = "車輛狀態";
             // 
             // 工程師ToolStripMenuItem
             // 
@@ -302,15 +295,58 @@
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             // 
-            // listReserveOkSections
+            // gbTrackingPosition
             // 
-            this.listReserveOkSections.FormattingEnabled = true;
-            this.listReserveOkSections.ItemHeight = 12;
-            this.listReserveOkSections.Location = new System.Drawing.Point(303, 3);
-            this.listReserveOkSections.Name = "listReserveOkSections";
-            this.listReserveOkSections.ScrollAlwaysVisible = true;
-            this.listReserveOkSections.Size = new System.Drawing.Size(134, 172);
-            this.listReserveOkSections.TabIndex = 42;
+            this.gbTrackingPosition.Controls.Add(this.btnStartTrackingPosition);
+            this.gbTrackingPosition.Controls.Add(this.btnResumeTrackingPostiion);
+            this.gbTrackingPosition.Controls.Add(this.btnStopTrackingPosition);
+            this.gbTrackingPosition.Controls.Add(this.btnPauseTrackingPosition);
+            this.gbTrackingPosition.Location = new System.Drawing.Point(388, 78);
+            this.gbTrackingPosition.Name = "gbTrackingPosition";
+            this.gbTrackingPosition.Size = new System.Drawing.Size(165, 143);
+            this.gbTrackingPosition.TabIndex = 42;
+            this.gbTrackingPosition.TabStop = false;
+            this.gbTrackingPosition.Text = "Tracking Position";
+            // 
+            // btnStartTrackingPosition
+            // 
+            this.btnStartTrackingPosition.Location = new System.Drawing.Point(6, 21);
+            this.btnStartTrackingPosition.Name = "btnStartTrackingPosition";
+            this.btnStartTrackingPosition.Size = new System.Drawing.Size(150, 23);
+            this.btnStartTrackingPosition.TabIndex = 5;
+            this.btnStartTrackingPosition.Text = "Start Tracking Position";
+            this.btnStartTrackingPosition.UseVisualStyleBackColor = true;
+            this.btnStartTrackingPosition.Click += new System.EventHandler(this.btnStartTrackingPosition_Click);
+            // 
+            // btnResumeTrackingPostiion
+            // 
+            this.btnResumeTrackingPostiion.Location = new System.Drawing.Point(6, 79);
+            this.btnResumeTrackingPostiion.Name = "btnResumeTrackingPostiion";
+            this.btnResumeTrackingPostiion.Size = new System.Drawing.Size(150, 23);
+            this.btnResumeTrackingPostiion.TabIndex = 8;
+            this.btnResumeTrackingPostiion.Text = "Resume Tracking Position";
+            this.btnResumeTrackingPostiion.UseVisualStyleBackColor = true;
+            this.btnResumeTrackingPostiion.Click += new System.EventHandler(this.btnResumeTrackingPostiion_Click);
+            // 
+            // btnStopTrackingPosition
+            // 
+            this.btnStopTrackingPosition.Location = new System.Drawing.Point(6, 108);
+            this.btnStopTrackingPosition.Name = "btnStopTrackingPosition";
+            this.btnStopTrackingPosition.Size = new System.Drawing.Size(150, 23);
+            this.btnStopTrackingPosition.TabIndex = 6;
+            this.btnStopTrackingPosition.Text = "Stop Tracking Position";
+            this.btnStopTrackingPosition.UseVisualStyleBackColor = true;
+            this.btnStopTrackingPosition.Click += new System.EventHandler(this.btnStopTrackingPosition_Click);
+            // 
+            // btnPauseTrackingPosition
+            // 
+            this.btnPauseTrackingPosition.Location = new System.Drawing.Point(6, 50);
+            this.btnPauseTrackingPosition.Name = "btnPauseTrackingPosition";
+            this.btnPauseTrackingPosition.Size = new System.Drawing.Size(150, 23);
+            this.btnPauseTrackingPosition.TabIndex = 7;
+            this.btnPauseTrackingPosition.Text = "Pause Tracking Position";
+            this.btnPauseTrackingPosition.UseVisualStyleBackColor = true;
+            this.btnPauseTrackingPosition.Click += new System.EventHandler(this.btnPauseTrackingPosition_Click);
             // 
             // numPositionY
             // 
@@ -341,16 +377,6 @@
             this.btnSetPosition.Text = "鍵入車輛位置";
             this.btnSetPosition.UseVisualStyleBackColor = true;
             this.btnSetPosition.Click += new System.EventHandler(this.btnSetPosition_Click_1);
-            // 
-            // listNeedReserveSections
-            // 
-            this.listNeedReserveSections.FormattingEnabled = true;
-            this.listNeedReserveSections.ItemHeight = 12;
-            this.listNeedReserveSections.Location = new System.Drawing.Point(3, 4);
-            this.listNeedReserveSections.Name = "listNeedReserveSections";
-            this.listNeedReserveSections.ScrollAlwaysVisible = true;
-            this.listNeedReserveSections.Size = new System.Drawing.Size(144, 172);
-            this.listNeedReserveSections.TabIndex = 41;
             // 
             // btnYflip
             // 
@@ -486,45 +512,34 @@
             this.splitContainer2.SplitterDistance = 466;
             this.splitContainer2.TabIndex = 0;
             // 
-            // btnResumeTrackingPostiion
+            // gbPerformanceCounter
             // 
-            this.btnResumeTrackingPostiion.Location = new System.Drawing.Point(6, 79);
-            this.btnResumeTrackingPostiion.Name = "btnResumeTrackingPostiion";
-            this.btnResumeTrackingPostiion.Size = new System.Drawing.Size(150, 23);
-            this.btnResumeTrackingPostiion.TabIndex = 8;
-            this.btnResumeTrackingPostiion.Text = "Resume Tracking Position";
-            this.btnResumeTrackingPostiion.UseVisualStyleBackColor = true;
-            this.btnResumeTrackingPostiion.Click += new System.EventHandler(this.btnResumeTrackingPostiion_Click);
+            this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterRam);
+            this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterCpu);
+            this.gbPerformanceCounter.Location = new System.Drawing.Point(12, 363);
+            this.gbPerformanceCounter.Name = "gbPerformanceCounter";
+            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 100);
+            this.gbPerformanceCounter.TabIndex = 10;
+            this.gbPerformanceCounter.TabStop = false;
+            this.gbPerformanceCounter.Text = "Performance Counter";
             // 
-            // btnPauseTrackingPosition
+            // ucPerformanceCounterRam
             // 
-            this.btnPauseTrackingPosition.Location = new System.Drawing.Point(6, 50);
-            this.btnPauseTrackingPosition.Name = "btnPauseTrackingPosition";
-            this.btnPauseTrackingPosition.Size = new System.Drawing.Size(150, 23);
-            this.btnPauseTrackingPosition.TabIndex = 7;
-            this.btnPauseTrackingPosition.Text = "Pause Tracking Position";
-            this.btnPauseTrackingPosition.UseVisualStyleBackColor = true;
-            this.btnPauseTrackingPosition.Click += new System.EventHandler(this.btnPauseTrackingPosition_Click);
+            this.ucPerformanceCounterRam.Location = new System.Drawing.Point(7, 55);
+            this.ucPerformanceCounterRam.Name = "ucPerformanceCounterRam";
+            this.ucPerformanceCounterRam.Size = new System.Drawing.Size(187, 30);
+            this.ucPerformanceCounterRam.TabIndex = 1;
+            this.ucPerformanceCounterRam.UcName = "RAM";
+            this.ucPerformanceCounterRam.UcValue = "";
             // 
-            // btnStopTrackingPosition
+            // ucPerformanceCounterCpu
             // 
-            this.btnStopTrackingPosition.Location = new System.Drawing.Point(6, 108);
-            this.btnStopTrackingPosition.Name = "btnStopTrackingPosition";
-            this.btnStopTrackingPosition.Size = new System.Drawing.Size(150, 23);
-            this.btnStopTrackingPosition.TabIndex = 6;
-            this.btnStopTrackingPosition.Text = "Stop Tracking Position";
-            this.btnStopTrackingPosition.UseVisualStyleBackColor = true;
-            this.btnStopTrackingPosition.Click += new System.EventHandler(this.btnStopTrackingPosition_Click);
-            // 
-            // btnStartTrackingPosition
-            // 
-            this.btnStartTrackingPosition.Location = new System.Drawing.Point(6, 21);
-            this.btnStartTrackingPosition.Name = "btnStartTrackingPosition";
-            this.btnStartTrackingPosition.Size = new System.Drawing.Size(150, 23);
-            this.btnStartTrackingPosition.TabIndex = 5;
-            this.btnStartTrackingPosition.Text = "Start Tracking Position";
-            this.btnStartTrackingPosition.UseVisualStyleBackColor = true;
-            this.btnStartTrackingPosition.Click += new System.EventHandler(this.btnStartTrackingPosition_Click);
+            this.ucPerformanceCounterCpu.Location = new System.Drawing.Point(6, 19);
+            this.ucPerformanceCounterCpu.Name = "ucPerformanceCounterCpu";
+            this.ucPerformanceCounterCpu.Size = new System.Drawing.Size(187, 30);
+            this.ucPerformanceCounterCpu.TabIndex = 0;
+            this.ucPerformanceCounterCpu.UcName = "CPU";
+            this.ucPerformanceCounterCpu.UcValue = "";
             // 
             // btnStopVehicle
             // 
@@ -567,97 +582,6 @@
             this.gbVehicleLocation.TabIndex = 1;
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "VehicleLocation";
-            // 
-            // gbConnection
-            // 
-            this.gbConnection.Controls.Add(this.radOnline);
-            this.gbConnection.Controls.Add(this.radOffline);
-            this.gbConnection.Location = new System.Drawing.Point(12, 14);
-            this.gbConnection.Name = "gbConnection";
-            this.gbConnection.Size = new System.Drawing.Size(200, 48);
-            this.gbConnection.TabIndex = 0;
-            this.gbConnection.TabStop = false;
-            this.gbConnection.Text = "Connection";
-            // 
-            // radOnline
-            // 
-            this.radOnline.AutoSize = true;
-            this.radOnline.Location = new System.Drawing.Point(68, 21);
-            this.radOnline.Name = "radOnline";
-            this.radOnline.Size = new System.Drawing.Size(54, 16);
-            this.radOnline.TabIndex = 1;
-            this.radOnline.TabStop = true;
-            this.radOnline.Text = "Online";
-            this.radOnline.UseVisualStyleBackColor = true;
-            // 
-            // radOffline
-            // 
-            this.radOffline.AutoSize = true;
-            this.radOffline.Location = new System.Drawing.Point(6, 21);
-            this.radOffline.Name = "radOffline";
-            this.radOffline.Size = new System.Drawing.Size(56, 16);
-            this.radOffline.TabIndex = 0;
-            this.radOffline.TabStop = true;
-            this.radOffline.Text = "Offline";
-            this.radOffline.UseVisualStyleBackColor = true;
-            // 
-            // timer1
-            // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 250;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // listAskingReserveSections
-            // 
-            this.listAskingReserveSections.FormattingEnabled = true;
-            this.listAskingReserveSections.ItemHeight = 12;
-            this.listAskingReserveSections.Location = new System.Drawing.Point(153, 4);
-            this.listAskingReserveSections.Name = "listAskingReserveSections";
-            this.listAskingReserveSections.ScrollAlwaysVisible = true;
-            this.listAskingReserveSections.Size = new System.Drawing.Size(144, 172);
-            this.listAskingReserveSections.TabIndex = 43;
-            // 
-            // gbPerformanceCounter
-            // 
-            this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterRam);
-            this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterCpu);
-            this.gbPerformanceCounter.Location = new System.Drawing.Point(12, 363);
-            this.gbPerformanceCounter.Name = "gbPerformanceCounter";
-            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 100);
-            this.gbPerformanceCounter.TabIndex = 10;
-            this.gbPerformanceCounter.TabStop = false;
-            this.gbPerformanceCounter.Text = "Performance Counter";
-            // 
-            // gbTrackingPosition
-            // 
-            this.gbTrackingPosition.Controls.Add(this.btnStartTrackingPosition);
-            this.gbTrackingPosition.Controls.Add(this.btnResumeTrackingPostiion);
-            this.gbTrackingPosition.Controls.Add(this.btnStopTrackingPosition);
-            this.gbTrackingPosition.Controls.Add(this.btnPauseTrackingPosition);
-            this.gbTrackingPosition.Location = new System.Drawing.Point(388, 78);
-            this.gbTrackingPosition.Name = "gbTrackingPosition";
-            this.gbTrackingPosition.Size = new System.Drawing.Size(165, 143);
-            this.gbTrackingPosition.TabIndex = 42;
-            this.gbTrackingPosition.TabStop = false;
-            this.gbTrackingPosition.Text = "Tracking Position";
-            // 
-            // ucPerformanceCounterRam
-            // 
-            this.ucPerformanceCounterRam.Location = new System.Drawing.Point(7, 55);
-            this.ucPerformanceCounterRam.Name = "ucPerformanceCounterRam";
-            this.ucPerformanceCounterRam.Size = new System.Drawing.Size(187, 30);
-            this.ucPerformanceCounterRam.TabIndex = 1;
-            this.ucPerformanceCounterRam.UcName = "RAM";
-            this.ucPerformanceCounterRam.UcValue = "";
-            // 
-            // ucPerformanceCounterCpu
-            // 
-            this.ucPerformanceCounterCpu.Location = new System.Drawing.Point(6, 19);
-            this.ucPerformanceCounterCpu.Name = "ucPerformanceCounterCpu";
-            this.ucPerformanceCounterCpu.Size = new System.Drawing.Size(187, 30);
-            this.ucPerformanceCounterCpu.TabIndex = 0;
-            this.ucPerformanceCounterCpu.UcName = "CPU";
-            this.ucPerformanceCounterCpu.UcValue = "";
             // 
             // ucRealPosition
             // 
@@ -713,6 +637,82 @@
             this.ucMapSection.UcName = "label1";
             this.ucMapSection.UcValue = "";
             // 
+            // gbConnection
+            // 
+            this.gbConnection.Controls.Add(this.radOnline);
+            this.gbConnection.Controls.Add(this.radOffline);
+            this.gbConnection.Location = new System.Drawing.Point(12, 14);
+            this.gbConnection.Name = "gbConnection";
+            this.gbConnection.Size = new System.Drawing.Size(200, 48);
+            this.gbConnection.TabIndex = 0;
+            this.gbConnection.TabStop = false;
+            this.gbConnection.Text = "Connection";
+            // 
+            // radOnline
+            // 
+            this.radOnline.AutoSize = true;
+            this.radOnline.Location = new System.Drawing.Point(68, 21);
+            this.radOnline.Name = "radOnline";
+            this.radOnline.Size = new System.Drawing.Size(54, 16);
+            this.radOnline.TabIndex = 1;
+            this.radOnline.TabStop = true;
+            this.radOnline.Text = "Online";
+            this.radOnline.UseVisualStyleBackColor = true;
+            // 
+            // radOffline
+            // 
+            this.radOffline.AutoSize = true;
+            this.radOffline.Location = new System.Drawing.Point(6, 21);
+            this.radOffline.Name = "radOffline";
+            this.radOffline.Size = new System.Drawing.Size(56, 16);
+            this.radOffline.TabIndex = 0;
+            this.radOffline.TabStop = true;
+            this.radOffline.Text = "Offline";
+            this.radOffline.UseVisualStyleBackColor = true;
+            // 
+            // listAskingReserveSections
+            // 
+            this.listAskingReserveSections.FormattingEnabled = true;
+            this.listAskingReserveSections.ItemHeight = 12;
+            this.listAskingReserveSections.Location = new System.Drawing.Point(153, 4);
+            this.listAskingReserveSections.Name = "listAskingReserveSections";
+            this.listAskingReserveSections.ScrollAlwaysVisible = true;
+            this.listAskingReserveSections.Size = new System.Drawing.Size(144, 172);
+            this.listAskingReserveSections.TabIndex = 43;
+            // 
+            // listReserveOkSections
+            // 
+            this.listReserveOkSections.FormattingEnabled = true;
+            this.listReserveOkSections.ItemHeight = 12;
+            this.listReserveOkSections.Location = new System.Drawing.Point(303, 3);
+            this.listReserveOkSections.Name = "listReserveOkSections";
+            this.listReserveOkSections.ScrollAlwaysVisible = true;
+            this.listReserveOkSections.Size = new System.Drawing.Size(134, 172);
+            this.listReserveOkSections.TabIndex = 42;
+            // 
+            // listNeedReserveSections
+            // 
+            this.listNeedReserveSections.FormattingEnabled = true;
+            this.listNeedReserveSections.ItemHeight = 12;
+            this.listNeedReserveSections.Location = new System.Drawing.Point(3, 4);
+            this.listNeedReserveSections.Name = "listNeedReserveSections";
+            this.listNeedReserveSections.ScrollAlwaysVisible = true;
+            this.listNeedReserveSections.Size = new System.Drawing.Size(144, 172);
+            this.listNeedReserveSections.TabIndex = 41;
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 250;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // PlcPage
+            // 
+            this.PlcPage.Name = "PlcPage";
+            this.PlcPage.Size = new System.Drawing.Size(180, 22);
+            this.PlcPage.Text = "Plc";
+            this.PlcPage.Click += new System.EventHandler(this.PlcPage_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -740,17 +740,17 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.gbTrackingPosition.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            this.gbPerformanceCounter.ResumeLayout(false);
             this.gbVehicleLocation.ResumeLayout(false);
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
-            this.gbPerformanceCounter.ResumeLayout(false);
-            this.gbTrackingPosition.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -769,13 +769,13 @@
         private System.Windows.Forms.ToolStripMenuItem 關閉ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 中文ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem englishToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem jogToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem alarmToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 通訊ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 車輛狀態ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem JogPage;
+        private System.Windows.Forms.ToolStripMenuItem AlarmPage;
+        private System.Windows.Forms.ToolStripMenuItem MiddlerPage;
+        private System.Windows.Forms.ToolStripMenuItem VehicleStatusPage;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.ToolStripMenuItem 手動測試動令ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ManualMoveCmdPage;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
@@ -806,7 +806,6 @@
         private System.Windows.Forms.Button btnResumeTrackingPostiion;
         private System.Windows.Forms.Button btnPauseTrackingPosition;
         private System.Windows.Forms.Button btnStopTrackingPosition;
-        private System.Windows.Forms.ToolStripMenuItem TestReserveToolStripMenuItem;
         private System.Windows.Forms.Button btnSetPosition;
         private System.Windows.Forms.ListBox listReserveOkSections;
         private System.Windows.Forms.ListBox listNeedReserveSections;
@@ -818,5 +817,6 @@
         private System.Windows.Forms.GroupBox gbPerformanceCounter;
         private UcLabelTextBox ucPerformanceCounterRam;
         private UcLabelTextBox ucPerformanceCounterCpu;
+        private System.Windows.Forms.ToolStripMenuItem PlcPage;
     }
 }

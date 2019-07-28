@@ -23,5 +23,11 @@ namespace Mirle.Agv.Model
         //Move = 1XXXXX
         //Plc = 2XXXXX
         //Middler = 3XXXXX
+
+        public void TestChangeStrToABC(string msg)
+        {
+            msg = "ABC";
+        }
+
     }
 }

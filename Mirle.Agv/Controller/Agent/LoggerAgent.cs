@@ -90,5 +90,23 @@ namespace Mirle.Agv.Controller
                 logger.SavePureLog(msg);
             }
         }
+
+        public Logger GetLooger(string v)
+        {
+            v = v.Trim();
+
+            if (dicLoggers.ContainsKey(v))
+            {
+                return dicLoggers[v];
+            }
+            else
+            {
+                LogType logType = new LogType();               
+                logType.Name = v;
+                logType.LogFileName = v;
+                logType.DirName = v;
+                return new Logger(logType);
+            }
+        }
     }
 }
