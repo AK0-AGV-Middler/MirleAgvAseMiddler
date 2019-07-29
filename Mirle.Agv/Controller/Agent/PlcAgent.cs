@@ -33,7 +33,7 @@ namespace Mirle.Agv.Controller
 
         public PlcVehicle thePlcVehicle;
 
-        private PLCForkCommand eventForkCommand; //發event前 先把executing commnad reference先放過來, 避免外部exevnt處理時發生null問題
+        private PlcForkCommand eventForkCommand; //發event前 先把executing commnad reference先放過來, 避免外部exevnt處理時發生null問題
         private bool clearExecutingForkCommandFlag = false;
 
         private Thread plcOtherControlThread;
@@ -42,9 +42,9 @@ namespace Mirle.Agv.Controller
         private ushort beforeBatteryPercentageInteger = 0;
         private uint alarmReadIndex = 0;
 
-        public event EventHandler<PLCForkCommand> OnForkCommandExecutingEvent;
-        public event EventHandler<PLCForkCommand> OnForkCommandFinishEvent;
-        public event EventHandler<PLCForkCommand> OnForkCommandErrorEvent;
+        public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
+        public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
+        public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
         public event EventHandler<ushort> OnBatteryPercentageChangeEvent;
         public event EventHandler<string> OnCassetteIDReadFinishEvent;
 
@@ -947,7 +947,7 @@ namespace Mirle.Agv.Controller
 
 
 
-                System.Threading.Thread.Sleep(1);
+                Thread.Sleep(1);
             }
         }
 
@@ -1500,7 +1500,7 @@ namespace Mirle.Agv.Controller
 
         }
 
-        public bool WriteForkCommandInfo(ushort commandNo, EnumForkCommand enumForkCommand, string stageNo, EnumStageDirection direction, bool eQIF, ushort forkSpeed)
+        public bool WriteForkCommandInfo(ushort commandNo, EnumForkCommand enumForkCommand, string stageNo, EnumStageDirection direction, bool isEqPio, ushort forkSpeed)
         {
             string functionName = "PLCAgent:WriteForkCommand";
             this.aMCProtocol.get_ItemByTag("CommandNo").AsUInt16 = commandNo;
@@ -1509,7 +1509,7 @@ namespace Mirle.Agv.Controller
 
             this.aMCProtocol.get_ItemByTag("StageNo").AsUInt16 = Convert.ToUInt16(stageNo);
             this.aMCProtocol.get_ItemByTag("StageDirection").AsUInt16 = Convert.ToUInt16(direction);
-            this.aMCProtocol.get_ItemByTag("EQPIO").AsBoolean = eQIF;
+            this.aMCProtocol.get_ItemByTag("EQPIO").AsBoolean = isEqPio;
             this.aMCProtocol.get_ItemByTag("ForkSpeed").AsUInt16 = forkSpeed;
             if (this.aMCProtocol.WritePLC())
             {
@@ -1722,7 +1722,7 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.WritePLC();
             ipcAliveCounter++;
             ipcAliveCounter = Convert.ToUInt16(Convert.ToInt32(ipcAliveCounter) % 65536);
-            //System.Threading.Thread.Sleep(1000);
+            //Thread.Sleep(1000);
         }
 
         private ushort eqActionIndex = 0;
@@ -1733,7 +1733,7 @@ namespace Mirle.Agv.Controller
             {
                 this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = 10;
                 this.aMCProtocol.WritePLC();
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 eqActionIndex++;
                 eqActionIndex = Convert.ToUInt16(Convert.ToInt32(eqActionIndex) % 65536);
                 this.aMCProtocol.get_ItemByTag("EquipementActionIndex").AsUInt16 = eqActionIndex;
@@ -1749,7 +1749,7 @@ namespace Mirle.Agv.Controller
             {
                 this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = 11;
                 this.aMCProtocol.WritePLC();
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 eqActionIndex++;
                 eqActionIndex = Convert.ToUInt16(Convert.ToInt32(eqActionIndex) % 65536);
                 this.aMCProtocol.get_ItemByTag("EquipementActionIndex").AsUInt16 = eqActionIndex;
@@ -1765,7 +1765,7 @@ namespace Mirle.Agv.Controller
             {
                 this.aMCProtocol.get_ItemByTag("MeterAHToZero").AsBoolean = true;
                 this.aMCProtocol.WritePLC();
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 this.aMCProtocol.get_ItemByTag("MeterAHToZero").AsBoolean = false;
                 this.aMCProtocol.WritePLC();
             });
@@ -1812,21 +1812,22 @@ namespace Mirle.Agv.Controller
         //private ForkCommand executingForkCommand = null;
         public bool IsForkCommandExist()
         {
-            if (this.thePlcVehicle.Robot.ExecutingCommand == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return thePlcVehicle.Robot.ExecutingCommand != null;
+            //if (this.thePlcVehicle.Robot.ExecutingCommand == null)
+            //{
+            //    return false;
+            //}
+            //else
+            //{
+            //    return true;
+            //}
         }
 
         public string GetErrorReason()
         {
             try
             {
-                PLCForkCommand aForkcommand = this.thePlcVehicle.Robot.ExecutingCommand; //避免executingForkCommand同時被clear
+                PlcForkCommand aForkcommand = this.thePlcVehicle.Robot.ExecutingCommand; //避免executingForkCommand同時被clear
                 if (aForkcommand != null)
                 {
                     return aForkcommand.Reason;
@@ -1844,7 +1845,7 @@ namespace Mirle.Agv.Controller
 
         }
 
-        public bool AddForkComand(PLCForkCommand aForkCommand)
+        public bool AddForkComand(PlcForkCommand aForkCommand)
         {
             string functionName = "PLCAgent:AddForkComand";
             if (this.thePlcVehicle.Robot.ExecutingCommand == null)
@@ -1901,8 +1902,8 @@ namespace Mirle.Agv.Controller
         public void TriggerCassetteIDReader(ref string CassetteID)
         {
             string strCassetteID = "ERROR";
-            this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-            this.thePlcVehicle.CassetteID = strCassetteID;
+            aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
+            thePlcVehicle.CassetteId = strCassetteID;
             CassetteID = strCassetteID;
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
         }
@@ -1936,9 +1937,9 @@ namespace Mirle.Agv.Controller
                             if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
                             {
                                 this.thePlcVehicle.Robot.ExecutingCommand.Reason = "";
-                                this.WriteForkCommandInfo(Convert.ToUInt16(this.thePlcVehicle.Robot.ExecutingCommand.CommandNo), this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandType, this.thePlcVehicle.Robot.ExecutingCommand.StageNo, this.thePlcVehicle.Robot.ExecutingCommand.Direction, this.thePlcVehicle.Robot.ExecutingCommand.Eqif, this.thePlcVehicle.Robot.ExecutingCommand.ForkSpeed);
+                                this.WriteForkCommandInfo(Convert.ToUInt16(this.thePlcVehicle.Robot.ExecutingCommand.CommandNo), this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandType, this.thePlcVehicle.Robot.ExecutingCommand.StageNo, this.thePlcVehicle.Robot.ExecutingCommand.Direction, this.thePlcVehicle.Robot.ExecutingCommand.IsEqPio, this.thePlcVehicle.Robot.ExecutingCommand.ForkSpeed);
 
-                                System.Threading.Thread.Sleep(500);
+                                Thread.Sleep(500);
                                 this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
                                 sw.Reset();
                                 sw.Start();
@@ -1947,7 +1948,7 @@ namespace Mirle.Agv.Controller
                                     if (this.aMCProtocol.get_ItemByTag("ForkCommandOK").AsBoolean)
                                     {
                                         this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                        System.Threading.Thread.Sleep(1000);
+                                        Thread.Sleep(1000);
                                         this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
                                         break;
                                     }
@@ -1968,7 +1969,7 @@ namespace Mirle.Agv.Controller
                                     {
                                         if (sw.ElapsedMilliseconds < ForkCommandReadTimeout)
                                         {
-                                            System.Threading.Thread.Sleep(20);
+                                            Thread.Sleep(20);
                                         }
                                         else
                                         {
@@ -2007,7 +2008,7 @@ namespace Mirle.Agv.Controller
                                     {
                                         if (sw.ElapsedMilliseconds < this.ForkCommandBusyTimeout)
                                         {
-                                            System.Threading.Thread.Sleep(20);
+                                            Thread.Sleep(20);
                                         }
                                         else
                                         {
@@ -2035,7 +2036,7 @@ namespace Mirle.Agv.Controller
                                 eventForkCommand = this.thePlcVehicle.Robot.ExecutingCommand;
                                 OnForkCommandExecutingEvent?.Invoke(this, eventForkCommand);
                                 this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
-                                System.Threading.Thread.Sleep(1000);
+                                Thread.Sleep(1000);
 
                             }
                             else
@@ -2051,7 +2052,7 @@ namespace Mirle.Agv.Controller
                             {
                                 if (sw.ElapsedMilliseconds < this.ForkCommandMovingTimeout)
                                 {
-                                    System.Threading.Thread.Sleep(500);
+                                    Thread.Sleep(500);
                                 }
                                 else
                                 {
@@ -2071,7 +2072,7 @@ namespace Mirle.Agv.Controller
                             if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean)
                             {
                                 this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                                System.Threading.Thread.Sleep(1000);
+                                Thread.Sleep(1000);
                                 this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
                                 this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
                             }
@@ -2090,7 +2091,7 @@ namespace Mirle.Agv.Controller
                                 {
                                     String cassetteID = "ERROR";
                                     this.aCassetteIDReader.ReadBarcode(ref cassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-                                    this.thePlcVehicle.CassetteID = cassetteID;
+                                    this.thePlcVehicle.CassetteId = cassetteID;
                                     OnCassetteIDReadFinishEvent?.Invoke(this, cassetteID);
                                 }
                                 else
@@ -2100,7 +2101,7 @@ namespace Mirle.Agv.Controller
                             }
                             else if (this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
                             {
-                                this.thePlcVehicle.CassetteID = "";
+                                this.thePlcVehicle.CassetteId = "";
                             }
                             else
                             {
@@ -2115,7 +2116,7 @@ namespace Mirle.Agv.Controller
                     }
 
                 }
-                System.Threading.Thread.Sleep(5);
+                Thread.Sleep(5);
             }
 
 

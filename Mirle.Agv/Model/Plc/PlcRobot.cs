@@ -21,6 +21,6 @@ namespace Mirle.Agv.Model
                 return currentCommandNo;
             }
         }
-        public PLCForkCommand ExecutingCommand { get; set; } = null;
+        public PlcForkCommand ExecutingCommand { get; set; } = null;
     }
 }

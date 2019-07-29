@@ -80,7 +80,6 @@
     <Compile Include="Controller\Handler\BatteryHandler.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\Idle.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\ITransferCmdStep.cs" />
-    <Compile Include="Controller\Handler\RobotControlHandler.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\Load.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\Move.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\Unload.cs" />
@@ -163,15 +162,11 @@
       <DependentUpon>MiddlerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Controller\Handler\MainFlowHandler.cs" />
-    <Compile Include="Model\Carrier.cs" />
     <Compile Include="Model\VehLocation.cs" />
     <Compile Include="Model\Vehicle.cs" />
     <Compile Include="Controller\Agent\MiddleAgent.cs" />
     <Compile Include="Model\TransferCmds\AgvcTransCmd.cs" />
-    <Compile Include="Model\Report.cs" />
     <Compile Include="Model\Map\MapBarcodeReader.cs" />
-    <Compile Include="Model\ElmoCmd.cs" />
-    <Compile Include="Model\Coupler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\Map\MapAddress.cs" />

@@ -187,6 +187,7 @@
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.btnBuzzerStop = new System.Windows.Forms.Button();
             this.timCycle = new System.Windows.Forms.Timer(this.components);
+            this.btnHide = new System.Windows.Forms.Button();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -1973,17 +1974,30 @@
             this.timCycle.Interval = 1000;
             this.timCycle.Tick += new System.EventHandler(this.timCycle_Tick);
             // 
-            // frmPLCAgent
+            // btnHide
+            // 
+            this.btnHide.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnHide.Location = new System.Drawing.Point(1196, 2);
+            this.btnHide.Name = "btnHide";
+            this.btnHide.Size = new System.Drawing.Size(113, 35);
+            this.btnHide.TabIndex = 40;
+            this.btnHide.Text = "Hide";
+            this.btnHide.UseVisualStyleBackColor = true;
+            this.btnHide.Click += new System.EventHandler(this.btnHide_Click);
+            // 
+            // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1321, 724);
+            this.ControlBox = false;
+            this.Controls.Add(this.btnHide);
             this.Controls.Add(this.btnBuzzerStop);
             this.Controls.Add(this.btnAlarmReset);
             this.Controls.Add(this.txtTriggerEvent);
             this.Controls.Add(this.label19);
             this.Controls.Add(this.tabContol1);
-            this.Name = "frmPLCAgent";
+            this.Name = "PlcForm";
             this.Text = "PLCAgent";
             this.Load += new System.EventHandler(this.PlcForm_Load);
             this.tabContol1.ResumeLayout(false);
@@ -2171,5 +2185,6 @@
         private System.Windows.Forms.Button btnBeamSensorAutoSleepSet;
         private System.Windows.Forms.RadioButton rdoBeamSensorAutoSleepDisable;
         private System.Windows.Forms.RadioButton rdoBeamSensorAutoSleepEnable;
+        private System.Windows.Forms.Button btnHide;
     }
 }

@@ -23,13 +23,13 @@ namespace Mirle.Agv.Model
         public bool RightBeamSensorDisable { get; set; }
         public EnumPermitDirection CmdDirection { get; set; } = EnumPermitDirection.None;
 
-        public EnumPermitDirection PermitDirectionConvert(string v)
+        public EnumPermitDirection PermitDirectionParse(string v)
         {
             v = v.Trim();
             return (EnumPermitDirection)Enum.Parse(typeof(EnumPermitDirection), v);
         }
 
-        public EnumSectionType SectionTypeConvert(string v)
+        public EnumSectionType SectionTypeParse(string v)
         {
             v = v.Trim();
             return (EnumSectionType)Enum.Parse(typeof(EnumSectionType), v);

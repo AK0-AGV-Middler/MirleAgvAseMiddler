@@ -277,7 +277,7 @@ namespace Mirle.Agv.View
             for (int i = 0; i < listCmdAddressActions.Items.Count; i++)
             {
                 string strAction = (string)listCmdAddressActions.Items[i];
-                EnumAddressAction action = (EnumAddressAction)Enum.Parse(typeof(EnumAddressAction), strAction);
+                EnumAddressAction action = EnumAddressActionParse(strAction);
                 moveCmdInfo.AddressActions.Add(action);
             }
         }
@@ -327,6 +327,12 @@ namespace Mirle.Agv.View
         private void btnStopVehicle_Click(object sender, EventArgs e)
         {
             mainFlowHandler.StopVehicle();
+        }
+
+        private EnumAddressAction EnumAddressActionParse(string v)
+        {
+            v.Trim();
+            return (EnumAddressAction)Enum.Parse(typeof(EnumAddressAction), v);
         }
     }
 }

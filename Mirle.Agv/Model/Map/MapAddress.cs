@@ -25,13 +25,13 @@ namespace Mirle.Agv.Model
         public bool CanSpin { get; set; }
         public EnumPioDirection PioDirection { get; set; } = EnumPioDirection.None;
 
-        public EnumChargeDirection ChargeDirectionConvert(string v)
+        public EnumChargeDirection ChargeDirectionParse(string v)
         {
             v = v.Trim();
             return (EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), v);
         }
 
-        public EnumPioDirection PioDirectionConvert(string v)
+        public EnumPioDirection PioDirectionParse(string v)
         {
             v = v.Trim();
             return (EnumPioDirection)Enum.Parse(typeof(EnumPioDirection), v);

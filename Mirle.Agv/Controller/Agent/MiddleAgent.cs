@@ -7,7 +7,6 @@ using Mirle.Agv.Model;
 using Mirle.Agv.Model.Configs;
 using Mirle.Agv.Model.TransferCmds;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -250,8 +249,8 @@ namespace Mirle.Agv.Controller
         }
         #endregion
 
-        #region EnumConverter
-        private VhChargeStatus VhChargeStatusConverter(string v)
+        #region EnumParse
+        private VhChargeStatus VhChargeStatusParse(string v)
         {
             try
             {
@@ -266,7 +265,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private VhStopSingle VhStopSingleConverter(string v)
+        private VhStopSingle VhStopSingleParse(string v)
         {
             try
             {
@@ -281,7 +280,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private VHActionStatus VHActionStatusConverter(string v)
+        private VHActionStatus VHActionStatusParse(string v)
         {
             try
             {
@@ -296,7 +295,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private DriveDirction DriveDirctionConverter(string v)
+        private DriveDirction DriveDirctionParse(string v)
         {
             try
             {
@@ -311,7 +310,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private EventType EventTypeConverter(string v)
+        private EventType EventTypeParse(string v)
         {
             try
             {
@@ -326,7 +325,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private CompleteStatus CompleteStatusConverter(string v)
+        private CompleteStatus CompleteStatusParse(string v)
         {
             try
             {
@@ -341,7 +340,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private OperatingPowerMode OperatingPowerModeConverter(string v)
+        private OperatingPowerMode OperatingPowerModeParse(string v)
         {
             try
             {
@@ -356,7 +355,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private OperatingVHMode OperatingVHModeConverter(string v)
+        private OperatingVHMode OperatingVHModeParse(string v)
         {
             try
             {
@@ -371,7 +370,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private PauseType PauseTypeConverter(string v)
+        private PauseType PauseTypeParse(string v)
         {
             try
             {
@@ -386,7 +385,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private PauseEvent PauseEventConverter(string v)
+        private PauseEvent PauseEventParse(string v)
         {
             try
             {
@@ -401,7 +400,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private CMDCancelType CMDCancelTypeConverter(string v)
+        private CMDCancelType CMDCancelTypeParse(string v)
         {
             try
             {
@@ -416,7 +415,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private ReserveResult ReserveResultConverter(string v)
+        private ReserveResult ReserveResultParse(string v)
         {
             try
             {
@@ -431,7 +430,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private PassType PassTypeConverter(string v)
+        private PassType PassTypeParse(string v)
         {
             try
             {
@@ -446,7 +445,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private ErrorStatus ErrorStatusConverter(string v)
+        private ErrorStatus ErrorStatusParse(string v)
         {
             try
             {
@@ -461,7 +460,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private ActiveType ActiveTypeConverter(string v)
+        private ActiveType ActiveTypeParse(string v)
         {
             try
             {
@@ -476,7 +475,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private ControlType ControlTypeConverter(string v)
+        private ControlType ControlTypeParse(string v)
         {
             try
             {
@@ -490,6 +489,12 @@ namespace Mirle.Agv.Controller
                 return ControlType.Nothing;
             }
         }
+
+        public void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string e)
+        {
+            Send_Cmd144_StatusChangeReport();
+        }
+
         #endregion
 
         public void SendMiddlerFormConfigCommand(int cmdNum, Dictionary<string, string> pairs)
@@ -506,7 +511,7 @@ namespace Mirle.Agv.Controller
                         {
                             ID_31_TRANS_REQUEST aCmd = new ID_31_TRANS_REQUEST();
                             aCmd.CmdID = pairs["CmdID"];
-                            aCmd.ActType = ActiveTypeConverter(pairs["ActType"]);
+                            aCmd.ActType = ActiveTypeParse(pairs["ActType"]);
                             aCmd.CSTID = pairs["CSTID"];
                             aCmd.DestinationAdr = pairs["DestinationAdr"];
                             aCmd.LoadAdr = pairs["LoadAdr"];
@@ -537,7 +542,7 @@ namespace Mirle.Agv.Controller
                         {
                             ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST aCmd = new ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST();
                             aCmd.CancelSecID = pairs["CancelSecID"];
-                            aCmd.ControlType = ControlTypeConverter(pairs["ControlType"]);
+                            aCmd.ControlType = ControlTypeParse(pairs["ControlType"]);
 
                             wrappers.ID = WrapperMessage.ControlZoneReqFieldNumber;
                             wrappers.ControlZoneReq = aCmd;
@@ -560,8 +565,8 @@ namespace Mirle.Agv.Controller
                     case EnumCmdNums.Cmd36_TransferEventResponse:
                         {
                             ID_36_TRANS_EVENT_RESPONSE aCmd = new ID_36_TRANS_EVENT_RESPONSE();
-                            aCmd.IsBlockPass = PassTypeConverter(pairs["IsBlockPass"]);
-                            aCmd.IsReserveSuccess = ReserveResultConverter(pairs["IsReserveSuccess"]);
+                            aCmd.IsBlockPass = PassTypeParse(pairs["IsBlockPass"]);
+                            aCmd.IsReserveSuccess = ReserveResultParse(pairs["IsReserveSuccess"]);
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
 
                             wrappers.ID = WrapperMessage.ImpTransEventRespFieldNumber;
@@ -574,7 +579,7 @@ namespace Mirle.Agv.Controller
                         {
                             ID_37_TRANS_CANCEL_REQUEST aCmd = new ID_37_TRANS_CANCEL_REQUEST();
                             aCmd.CmdID = pairs["CmdID"];
-                            aCmd.ActType = CMDCancelTypeConverter(pairs["ActType"]);
+                            aCmd.ActType = CMDCancelTypeParse(pairs["ActType"]);
 
                             wrappers.ID = WrapperMessage.TransCancelReqFieldNumber;
                             wrappers.TransCancelReq = aCmd;
@@ -585,8 +590,8 @@ namespace Mirle.Agv.Controller
                     case EnumCmdNums.Cmd39_PauseRequest:
                         {
                             ID_39_PAUSE_REQUEST aCmd = new ID_39_PAUSE_REQUEST();
-                            aCmd.EventType = PauseEventConverter(pairs["EventType"]);
-                            aCmd.PauseType = PauseTypeConverter(pairs["PauseType"]);
+                            aCmd.EventType = PauseEventParse(pairs["EventType"]);
+                            aCmd.PauseType = PauseTypeParse(pairs["PauseType"]);
 
                             wrappers.ID = WrapperMessage.PauseReqFieldNumber;
                             wrappers.PauseReq = aCmd;
@@ -597,7 +602,7 @@ namespace Mirle.Agv.Controller
                     case EnumCmdNums.Cmd41_ModeChange:
                         {
                             ID_41_MODE_CHANGE_REQ aCmd = new ID_41_MODE_CHANGE_REQ();
-                            aCmd.OperatingVHMode = OperatingVHModeConverter(pairs["EventType"]);
+                            aCmd.OperatingVHMode = OperatingVHModeParse(pairs["EventType"]);
 
                             wrappers.ID = WrapperMessage.ModeChangeReqFieldNumber;
                             wrappers.ModeChangeReq = aCmd;
@@ -629,7 +634,7 @@ namespace Mirle.Agv.Controller
                     case EnumCmdNums.Cmd45_PowerOnoffRequest:
                         {
                             ID_45_POWER_OPE_REQ aCmd = new ID_45_POWER_OPE_REQ();
-                            aCmd.OperatingPowerMode = OperatingPowerModeConverter(pairs["OperatingPowerMode"]);
+                            aCmd.OperatingPowerMode = OperatingPowerModeParse(pairs["OperatingPowerMode"]);
 
                             wrappers.ID = WrapperMessage.PowerOpeReqFieldNumber;
                             wrappers.PowerOpeReq = aCmd;
@@ -716,7 +721,7 @@ namespace Mirle.Agv.Controller
                         {
                             ID_131_TRANS_RESPONSE aCmd = new ID_131_TRANS_RESPONSE();
                             aCmd.CmdID = pairs["CmdID"];
-                            aCmd.ActType = ActiveTypeConverter(pairs["ActType"]);
+                            aCmd.ActType = ActiveTypeParse(pairs["ActType"]);
                             aCmd.NgReason = pairs["NgReason"];
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
 
@@ -732,7 +737,7 @@ namespace Mirle.Agv.Controller
                             aCmd.CmdID = pairs["CmdID"];
                             aCmd.CmdDistance = int.Parse(pairs["CmdDistance"]);
                             aCmd.CmdPowerConsume = uint.Parse(pairs["CmdPowerConsume"]);
-                            aCmd.CmpStatus = CompleteStatusConverter(pairs["CmpStatus"]);
+                            aCmd.CmpStatus = CompleteStatusParse(pairs["CmpStatus"]);
                             aCmd.CSTID = pairs["CSTID"];
                             aCmd.CurrentAdrID = pairs["CurrentAdrID"];
                             aCmd.CurrentSecID = pairs["CurrentSecID"];
@@ -747,7 +752,7 @@ namespace Mirle.Agv.Controller
                         {
                             ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE aCmd = new ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE();
                             aCmd.CancelSecID = pairs["CancelSecID"];
-                            aCmd.ControlType = ControlTypeConverter(pairs["ControlType"]);
+                            aCmd.ControlType = ControlTypeParse(pairs["ControlType"]);
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
 
                             wrappers.ID = WrapperMessage.ControlZoneRespFieldNumber;
@@ -761,8 +766,8 @@ namespace Mirle.Agv.Controller
                             ID_134_TRANS_EVENT_REP aCmd = new ID_134_TRANS_EVENT_REP();
                             aCmd.CurrentAdrID = pairs["CurrentAdrID"];
                             aCmd.CurrentSecID = pairs["CurrentSecID"];
-                            aCmd.EventType = EventTypeConverter(pairs["EventType"]);
-                            aCmd.DrivingDirection = DriveDirctionConverter(pairs["DrivingDirection"]);
+                            aCmd.EventType = EventTypeParse(pairs["EventType"]);
+                            aCmd.DrivingDirection = DriveDirctionParse(pairs["DrivingDirection"]);
 
                             wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                             wrappers.TransEventRep = aCmd;
@@ -787,7 +792,7 @@ namespace Mirle.Agv.Controller
                             aCmd.CSTID = pairs["CSTID"];
                             aCmd.CurrentAdrID = pairs["CurrentAdrID"];
                             aCmd.CurrentSecID = pairs["CurrentSecID"];
-                            aCmd.EventType = EventTypeConverter(pairs["EventType"]);
+                            aCmd.EventType = EventTypeParse(pairs["EventType"]);
 
                             wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                             wrappers.ImpTransEventRep = aCmd;
@@ -799,7 +804,7 @@ namespace Mirle.Agv.Controller
                         {
                             ID_137_TRANS_CANCEL_RESPONSE aCmd = new ID_137_TRANS_CANCEL_RESPONSE();
                             aCmd.CmdID = pairs["CmdID"];
-                            aCmd.ActType = CMDCancelTypeConverter(pairs["ActType"]);
+                            aCmd.ActType = CMDCancelTypeParse(pairs["ActType"]);
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
 
                             wrappers.ID = WrapperMessage.TransCancelRespFieldNumber;
@@ -811,7 +816,7 @@ namespace Mirle.Agv.Controller
                     case EnumCmdNums.Cmd139_PauseResponse:
                         {
                             ID_139_PAUSE_RESPONSE aCmd = new ID_139_PAUSE_RESPONSE();
-                            aCmd.EventType = PauseEventConverter(pairs["EventType"]);
+                            aCmd.EventType = PauseEventParse(pairs["EventType"]);
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
 
                             wrappers.ID = WrapperMessage.PauseRespFieldNumber;
@@ -835,11 +840,11 @@ namespace Mirle.Agv.Controller
                         {
                             //TODO: 補完屬性
                             ID_143_STATUS_RESPONSE aCmd = new ID_143_STATUS_RESPONSE();
-                            aCmd.ActionStatus = VHActionStatusConverter(pairs["ActionStatus"]);
+                            aCmd.ActionStatus = VHActionStatusParse(pairs["ActionStatus"]);
                             aCmd.BatteryCapacity = uint.Parse(pairs["BatteryCapacity"]);
                             aCmd.BatteryTemperature = int.Parse(pairs["BatteryTemperature"]);
-                            aCmd.BlockingStatus = VhStopSingleConverter(pairs["BlockingStatus"]);
-                            aCmd.ChargeStatus = VhChargeStatusConverter(pairs["ChargeStatus"]);
+                            aCmd.BlockingStatus = VhStopSingleParse(pairs["BlockingStatus"]);
+                            aCmd.ChargeStatus = VhChargeStatusParse(pairs["ChargeStatus"]);
                             aCmd.CmdID = pairs["CmdID"];
                             aCmd.CSTID = pairs["CSTID"];
                             aCmd.CurrentAdrID = pairs["CurrentAdrID"];
@@ -855,11 +860,11 @@ namespace Mirle.Agv.Controller
                             //TODO: 補完屬性
                             ID_144_STATUS_CHANGE_REP aCmd = new ID_144_STATUS_CHANGE_REP();
                             aCmd.CmdID = pairs["CmdID"];
-                            aCmd.ActionStatus = VHActionStatusConverter(pairs["ActionStatus"]);
+                            aCmd.ActionStatus = VHActionStatusParse(pairs["ActionStatus"]);
                             aCmd.BatteryCapacity = uint.Parse(pairs["BatteryCapacity"]);
                             aCmd.BatteryTemperature = int.Parse(pairs["BatteryTemperature"]);
-                            aCmd.BlockingStatus = VhStopSingleConverter(pairs["BlockingStatus"]);
-                            aCmd.ChargeStatus = VhChargeStatusConverter(pairs["ChargeStatus"]);
+                            aCmd.BlockingStatus = VhStopSingleParse(pairs["BlockingStatus"]);
+                            aCmd.ChargeStatus = VhChargeStatusParse(pairs["ChargeStatus"]);
                             aCmd.CmdID = pairs["CmdID"];
                             aCmd.CSTID = pairs["CSTID"];
 
@@ -956,7 +961,7 @@ namespace Mirle.Agv.Controller
                             ID_194_ALARM_REPORT aCmd = new ID_194_ALARM_REPORT();
                             aCmd.ErrCode = pairs["ErrCode"];
                             aCmd.ErrDescription = pairs["ErrDescription"];
-                            aCmd.ErrStatus = ErrorStatusConverter(pairs["ErrStatus"]);
+                            aCmd.ErrStatus = ErrorStatusParse(pairs["ErrStatus"]);
 
                             wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
                             wrappers.AlarmRep = aCmd;
@@ -1017,6 +1022,11 @@ namespace Mirle.Agv.Controller
             string classMethodName = className + ":" + methodName;
             LogFormat logFormat = new LogFormat("Debug", "3", classMethodName, "Device", "CarrierID", e);
             theLoggerAgent.LogMsg("Debug", logFormat);
+        }
+
+        public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort e)
+        {
+            Send_Cmd144_StatusChangeReport();
         }
 
         public void ReportLoadArrivals()
@@ -1351,18 +1361,18 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.ModeStatus = theVehicle.ModeStatus;
                 iD_144_STATUS_CHANGE_REP.ActionStatus = theVehicle.ActionStatus;
                 iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
-                iD_144_STATUS_CHANGE_REP.HasCST = theVehicle.HasCst;
+                iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(theVehicle.GetPlcVehicle().Loading);
                 iD_144_STATUS_CHANGE_REP.ObstacleStatus = theVehicle.ObstacleStatus;
                 iD_144_STATUS_CHANGE_REP.ReserveStatus = theVehicle.ReserveStatus;
                 iD_144_STATUS_CHANGE_REP.BlockingStatus = theVehicle.BlockingStatus;
                 iD_144_STATUS_CHANGE_REP.PauseStatus = theVehicle.PauseStatus;
                 iD_144_STATUS_CHANGE_REP.ErrorStatus = theVehicle.ErrorStatus;
-                iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CmdID;
-                iD_144_STATUS_CHANGE_REP.CSTID = theVehicle.CarrierID;
+                iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
+                iD_144_STATUS_CHANGE_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
                 iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
                 iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
-                iD_144_STATUS_CHANGE_REP.ChargeStatus = theVehicle.ChargeStatus;
+                iD_144_STATUS_CHANGE_REP.ChargeStatus =VhChargeStatusParse(theVehicle.GetPlcVehicle().Batterys.Charging);
 
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -1390,7 +1400,6 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
-            TransferStep transCmd = theVehicle.GetTransCmd();
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
             PlcBatterys batterys = theVehicle.GetPlcVehicle().Batterys;
@@ -1402,14 +1411,14 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage;
                 iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_143_STATUS_RESPONSE.BlockingStatus = theVehicle.BlockingStatus;
-                iD_143_STATUS_RESPONSE.ChargeStatus = theVehicle.ChargeStatus;
-                iD_143_STATUS_RESPONSE.CmdID = transCmd.CmdId;
-                iD_143_STATUS_RESPONSE.CSTID = theVehicle.CarrierID;
+                iD_143_STATUS_RESPONSE.ChargeStatus = VhChargeStatusParse(theVehicle.GetPlcVehicle().Batterys.Charging); 
+                iD_143_STATUS_RESPONSE.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
+                iD_143_STATUS_RESPONSE.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_143_STATUS_RESPONSE.CurrentAdrID = vehLocation.Address.Id;
                 iD_143_STATUS_RESPONSE.CurrentSecID = vehLocation.Section.Id;
                 iD_143_STATUS_RESPONSE.DrivingDirection = theVehicle.DrivingDirection;
                 iD_143_STATUS_RESPONSE.ErrorStatus = theVehicle.ErrorStatus;
-                iD_143_STATUS_RESPONSE.HasCST = theVehicle.HasCst;
+                iD_143_STATUS_RESPONSE.HasCST = VhLoadCSTStatusParse(theVehicle.GetPlcVehicle().Loading);
                 iD_143_STATUS_RESPONSE.ModeStatus = theVehicle.ModeStatus;
                 iD_143_STATUS_RESPONSE.ObstacleStatus = theVehicle.ObstacleStatus;
                 iD_143_STATUS_RESPONSE.ObstDistance = theVehicle.ObstDistance;
@@ -1434,6 +1443,30 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
 
+        }
+
+        private VhChargeStatus VhChargeStatusParse(bool charging)
+        {
+            if (charging)
+            {
+                return VhChargeStatus.ChargeStatusCharging;
+            }
+            else
+            {
+                return VhChargeStatus.ChargeStatusNone;
+            }
+        }
+
+        private VhLoadCSTStatus VhLoadCSTStatusParse(bool loading)
+        {
+            if (loading)
+            {
+                return VhLoadCSTStatus.Exist;
+            }
+            else
+            {
+                return VhLoadCSTStatus.NotExist;
+            }
         }
 
         public void Receive_Cmd41_ModeChange(object sender, TcpIpEventArgs e)
@@ -1541,7 +1574,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_137_TRANS_CANCEL_RESPONSE iD_137_TRANS_CANCEL_RESPONSE = new ID_137_TRANS_CANCEL_RESPONSE();
-                iD_137_TRANS_CANCEL_RESPONSE.CmdID = theVehicle.CmdID;
+                iD_137_TRANS_CANCEL_RESPONSE.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
                 iD_137_TRANS_CANCEL_RESPONSE.ActType = theVehicle.Cmd137ActType;
                 iD_137_TRANS_CANCEL_RESPONSE.ReplyCode = replyCode;
 
@@ -1590,7 +1623,7 @@ namespace Mirle.Agv.Controller
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = eventType;
-                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
                 iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
@@ -1618,7 +1651,7 @@ namespace Mirle.Agv.Controller
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = EventType.BlockReq;
                 iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
-                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
                 iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
@@ -1644,7 +1677,7 @@ namespace Mirle.Agv.Controller
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = EventType.BlockRelease;
-                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
@@ -1672,7 +1705,7 @@ namespace Mirle.Agv.Controller
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = EventType.ReserveReq;
                 FitReserveInfos(iD_136_TRANS_EVENT_REP.ReserveInfos);
-                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.CarrierID;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
                 iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
@@ -1727,13 +1760,11 @@ namespace Mirle.Agv.Controller
         public void Receive_Cmd35_CarrierIdRenameRequest(object sender, TcpIpEventArgs e)
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
-            bool result = theVehicle.CarrierID == receive.OLDCSTID;
+            bool result = theVehicle.GetPlcVehicle().CassetteId == receive.OLDCSTID;
             if (result)
             {
-                theVehicle.CarrierID = receive.NEWCSTID;
+                theVehicle.GetPlcVehicle().CassetteId = receive.NEWCSTID;
             }
-
-
 
             int replyCode = result ? 0 : 1;
             Send_Cmd135_CarrierIdRenameResponse(e.iSeqNum, replyCode);
@@ -1841,14 +1872,13 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd132_TransferCompleteReport()
         {
-            TransferStep transCmd = theVehicle.GetTransCmd();
             VehLocation vehLocation = theVehicle.GetVehLoacation();
 
             try
             {
                 ID_132_TRANS_COMPLETE_REPORT iD_132_TRANS_COMPLETE_REPORT = new ID_132_TRANS_COMPLETE_REPORT();
-                iD_132_TRANS_COMPLETE_REPORT.CmdID = transCmd.CmdId;
-                iD_132_TRANS_COMPLETE_REPORT.CSTID = theVehicle.CarrierID;
+                iD_132_TRANS_COMPLETE_REPORT.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
+                iD_132_TRANS_COMPLETE_REPORT.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = theVehicle.CompleteStatus;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = vehLocation.Address.Id;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = vehLocation.Section.Id;
@@ -1881,12 +1911,10 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd131_TransferResponse(ushort seqNum, int replyCode, string reason)
         {
-            TransferStep transCmd = theVehicle.GetTransCmd();
-
             try
             {
                 ID_131_TRANS_RESPONSE iD_131_TRANS_RESPONSE = new ID_131_TRANS_RESPONSE();
-                iD_131_TRANS_RESPONSE.CmdID = transCmd.CmdId;
+                iD_131_TRANS_RESPONSE.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
                 iD_131_TRANS_RESPONSE.ActType = theVehicle.Cmd131ActType;
                 iD_131_TRANS_RESPONSE.ReplyCode = replyCode;
                 iD_131_TRANS_RESPONSE.NgReason = reason;
@@ -2012,7 +2040,7 @@ namespace Mirle.Agv.Controller
                 Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
-            else if (theVehicle.HasCst == VhLoadCSTStatus.Exist)
+            else if (theVehicle.GetPlcVehicle().Loading)
             {
                 int replyCode = 1; // NG
                 string reason = "Vehicle has a carrier can not do loadunload.";
@@ -2047,21 +2075,21 @@ namespace Mirle.Agv.Controller
             if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
             {
                 int replyCode = 1; // NG
-                string reason = "Vehicle is not idle can not do unload.";
+                string reason = "Vehicle is not idle can not unload.";
                 Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
-            else if (theVehicle.HasCst == VhLoadCSTStatus.NotExist)
+            else if (!theVehicle.GetPlcVehicle().Loading)
             {
                 int replyCode = 1; // NG
-                string reason = "Vehicle has no carrier can not do unload.";
+                string reason = "Vehicle has no carrier can not unload.";
                 Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
             else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
             {
                 int replyCode = 1; // NG
-                string reason = "Transfer command has no unload address can not do unload.";
+                string reason = "Transfer command has no unload address can not unload.";
                 Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
@@ -2080,14 +2108,14 @@ namespace Mirle.Agv.Controller
             if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
             {
                 int replyCode = 1; // NG
-                string reason = "Vehicle is not idle can not do load.";
+                string reason = "Vehicle is not idle can not load.";
                 Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }
-            else if (theVehicle.HasCst == VhLoadCSTStatus.Exist)
+            else if (theVehicle.GetPlcVehicle().Loading)
             {
                 int replyCode = 1; // NG
-                string reason = "Vehicle has a carrier can not do load.";
+                string reason = "Vehicle has a carrier can not load";
                 Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
                 return false;
             }

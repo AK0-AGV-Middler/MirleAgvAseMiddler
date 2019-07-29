@@ -45,6 +45,7 @@ namespace Mirle.Agv.Controller
         public bool IsReserveMechanism { get; set; } = true;
         private ITransferCmdStep transferCmdStep;
         private AgvcTransCmd agvcTransCmd;
+        private AgvcTransCmd lastAgvcTransCmd;
 
         #endregion
 
@@ -90,6 +91,7 @@ namespace Mirle.Agv.Controller
         private bool isIniOk;
         private MapInfo theMapInfo = new MapInfo();
         private MCProtocol mcProtocol;
+        private ushort forkCommandNumber = 0;
 
         public MainFlowHandler()
         {
@@ -266,7 +268,6 @@ namespace Mirle.Agv.Controller
                 batteryHandler = new BatteryHandler();
                 coupleHandler = new CoupleHandler();
                 moveControlHandler = new MoveControlHandler(moveControlConfig, theMapInfo);
-                robotControlHandler = new RobotControlHandler();
                 alarmHandler = new AlarmHandler(alarmConfig);
 
                 bmsAgent = new BmsAgent();
@@ -274,7 +275,7 @@ namespace Mirle.Agv.Controller
                 middleAgent = new MiddleAgent(middlerConfig, theMapInfo);
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
-                plcAgent = new PlcAgent(mcProtocol,alarmHandler);
+                plcAgent = new PlcAgent(mcProtocol, alarmHandler);
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -303,17 +304,12 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void McProtocol_OnDataChangeEvent(string sMessage, clsColParameter oColParam)
-        {
-            
-        }
-
         private void VehicleInitial()
         {
             try
             {
                 theVehicle = Vehicle.Instance;
-                theVehicle.SetMapInfo(theMapInfo);               
+                theVehicle.SetMapInfo(theMapInfo);
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -363,18 +359,15 @@ namespace Mirle.Agv.Controller
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
-                //moveControlHandler.OnMoveFinished += mapHandler.OnTransCmdsFinishedEvent;
 
-                //來自RobotControl的取貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-                robotControlHandler.OnLoadFinished += RobotControlHandler_OnLoadFinished;
-                //robotControlHandler.OnLoadFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //來自PlcAgent的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                plcAgent.OnForkCommandFinishEvent += PlcAgent_OnForkCommandFinishEvent;
 
-                //來自RobotControl的放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-                robotControlHandler.OnUnloadFinished += RobotControlHandler_OnUnloadFinished;
-                //robotControlHandler.OnUnloadFinished += mapHandler.OnTransCmdsFinishedEvent;
+                //來自PlcBattery的電量改變訊息，通知middleAgent
+                plcAgent.OnBatteryPercentageChangeEvent += middleAgent.PlcAgent_OnBatteryPercentageChangeEvent;
 
-                mcProtocol.OnDataChangeEvent += McProtocol_OnDataChangeEvent;
-
+                //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
+                plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -403,6 +396,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
+
         private void LoadAllAlarms()
         {
             //TODO: load all alarms
@@ -423,13 +417,13 @@ namespace Mirle.Agv.Controller
 
         private void OnMiddlerGetsAbortEvent(object sender, string e)
         {
-            theVehicle.CmdID = e;
+            theVehicle.GetTransCmd().CmdId = e;
             OnAbortEvent();
         }
 
         private void OnMiddlerGetsCancelEvent(object sender, string e)
         {
-            theVehicle.CmdID = e;
+            theVehicle.GetTransCmd().CmdId = e;
             OnCancelEvent();
         }
 
@@ -448,6 +442,7 @@ namespace Mirle.Agv.Controller
                 }
 
                 PublishAgvcTransferCommandChecked(agvcTransCmd, true);
+                theVehicle.SetAgvcTransCmd(agvcTransCmd);
                 SetupTransferSteps();
                 transferSteps.Add(new EmptyTransCmd());
 
@@ -849,7 +844,9 @@ namespace Mirle.Agv.Controller
         private bool CanVehLoad()
         {
             // 判斷當前是否可卸貨 若否 則發送報告
-            //throw new NotImplementedException();
+            MapPosition position = theVehicle.GetVehLoacation().RealPosition;
+            //TODO: Check if it is in position to Load
+
             return true;
         }
 
@@ -861,10 +858,28 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-        private bool CanCarrierIdRead()
+        private bool CanCassetteIdRead()
         {
             // 判斷當前貨物的ID是否可正確讀取 若否 則發送報告
-            throw new NotImplementedException();
+            if (!theVehicle.GetPlcVehicle().Loading)
+            {
+                //Alarm plcVehicle is not Loading
+                return false;
+            }
+            else if (!string.IsNullOrEmpty(theVehicle.GetPlcVehicle().CassetteId))
+            {
+                //CassetteId is null or Empty
+                return false;
+            }
+            else if (theVehicle.GetPlcVehicle().CassetteId == "ERROR")
+            {
+                //CassetteId is Error
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         private void TrackingPosition()
@@ -1055,40 +1070,40 @@ namespace Mirle.Agv.Controller
             middleAgent.MainFlowGetCancel();
         }
 
-        private void RobotControlHandler_OnUnloadFinished(object sender, EnumCompleteStatus e)
+        private void PlcAgent_OnForkCommandFinishEvent(object sender, PlcForkCommand forkCommand)
         {
-            if (IsLoadUnloadComplete())
+            if (forkCommand.ForkCommandType == EnumForkCommand.Load)
             {
-                middleAgent.LoadUnloadComplete();
-            }
-            else
-            {
-                middleAgent.UnloadComplete();
-            }
+                if (!CanCassetteIdRead())
+                {
+                    return;
+                }
 
-        }
-
-        private void RobotControlHandler_OnLoadFinished(object sender, EnumCompleteStatus e)
-        {
-            if (CanCarrierIdRead())
-            {
-                //update carrierId
+                if (NextTransCmdIsMove())
+                {
+                    middleAgent.LoadCompleteInLoadunload();
+                    VisitNextTransCmd();
+                }
+                else
+                {
+                    middleAgent.LoadComplete();
+                }
             }
-            else
+            else if (forkCommand.ForkCommandType == EnumForkCommand.Unload)
             {
-                //carrierId = unknow
-            }
-
-            if (NextTransCmdIsMove())
+                if (IsLoadUnloadComplete())
+                {
+                    middleAgent.LoadUnloadComplete();
+                }
+                else
+                {
+                    middleAgent.UnloadComplete();
+                }
+            }           
+            else if (forkCommand.ForkCommandType == EnumForkCommand.Home)
             {
-                middleAgent.LoadCompleteInLoadunload();
-                VisitNextTransCmd();
+                //TODO: RobotHomeComplete
             }
-            else
-            {
-                middleAgent.LoadComplete();
-            }
-
         }
 
         private bool NextTransCmdIsUnload()
@@ -1173,18 +1188,53 @@ namespace Mirle.Agv.Controller
         }
 
         public void Unload(UnloadCmdInfo unloadCmd)
-        {
+        { 
+            //Check if it is in position to unload here
             if (CanVehUnload())
             {
-                robotControlHandler.DoUnload(unloadCmd);
+                try
+                {
+                    if (!plcAgent.IsForkCommandExist())
+                    {
+                        PlcForkCommand aForkCommand = new PlcForkCommand(forkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
+                        plcAgent.AddForkComand(aForkCommand);
+                    }
+                    else
+                    {
+
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    var msg = ex.ToString();
+                }
+
             }
         }
 
         public void Load(LoadCmdInfo loadCmd)
         {
+            //Check if it is in position to load here
             if (CanVehLoad())
             {
-                robotControlHandler.DoLoad(loadCmd);
+                try
+                {
+                    if (!plcAgent.IsForkCommandExist())
+                    {
+                        PlcForkCommand aForkCommand = new PlcForkCommand(forkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
+                        plcAgent.AddForkComand(aForkCommand);
+                    }
+                    else
+                    {
+
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    var msg = ex.ToString();
+                }
             }
         }
 

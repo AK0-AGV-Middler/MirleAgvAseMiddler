@@ -79,8 +79,8 @@ namespace Mirle.Agv.Controller
                     oneRow.TailAddress = theMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["ToAddress"]]];
                     oneRow.Distance = float.Parse(getThisRow[dicSectionIndexes["Distance"]]);
                     oneRow.Speed = float.Parse(getThisRow[dicSectionIndexes["Speed"]]);
-                    oneRow.Type = oneRow.SectionTypeConvert(getThisRow[dicSectionIndexes["Type"]]);
-                    oneRow.PermitDirection = oneRow.PermitDirectionConvert(getThisRow[dicSectionIndexes["PermitDirection"]]);
+                    oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicSectionIndexes["Type"]]);
+                    oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicSectionIndexes["PermitDirection"]]);
                     oneRow.FowardBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["FowardBeamSensorDisable"]]);
                     oneRow.BackwardBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["BackwardBeamSensorDisable"]]);
                     oneRow.LeftBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["LeftBeamSensorDisable"]]);
@@ -149,10 +149,10 @@ namespace Mirle.Agv.Controller
                     oneRow.CanRightUnload = bool.Parse(getThisRow[dicAddressIndexes["CanRightUnload"]]);
                     oneRow.IsCharger = bool.Parse(getThisRow[dicAddressIndexes["IsCharger"]]);
                     oneRow.CouplerId = getThisRow[dicAddressIndexes["CouplerId"]];
-                    oneRow.ChargeDirection = oneRow.ChargeDirectionConvert(getThisRow[dicAddressIndexes["ChargeDirection"]]);
+                    oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicAddressIndexes["ChargeDirection"]]);
                     oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicAddressIndexes["IsSegmentPoint"]]);
                     oneRow.CanSpin = bool.Parse(getThisRow[dicAddressIndexes["CanSpin"]]);
-                    oneRow.PioDirection = oneRow.PioDirectionConvert(getThisRow[dicAddressIndexes["PioDirection"]]);
+                    oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicAddressIndexes["PioDirection"]]);
 
                     mapAddresses.Add(oneRow);
                     allMapAddresses.Add(oneRow.Id, oneRow);

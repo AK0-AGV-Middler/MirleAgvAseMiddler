@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace Mirle.Agv.View
 {
@@ -25,12 +26,12 @@ namespace Mirle.Agv.View
             //一些Form Control要給進去Entity物件
             FormControlAddToEnityClass();
             EventInitial();
-                  
+
             mcProtocol.LoadXMLConfig();
             mcProtocol.OperationMode = MCProtocol.enOperationMode.NORMAL_MODE;
 
             mcProtocol.Height = tabPage1.Height;
-            mcProtocol.Width = tabPage1.Width;          
+            mcProtocol.Width = tabPage1.Width;
         }
 
         private void EventInitial()
@@ -47,9 +48,9 @@ namespace Mirle.Agv.View
         {
             Control aControl = null;
             aControl = grpF.Controls[aId];
-            if(aControl != null)
+            if (aControl != null)
             {
-                return aControl;                
+                return aControl;
             }
 
             aControl = grpB.Controls[aId];
@@ -72,7 +73,7 @@ namespace Mirle.Agv.View
 
             return aControl;
         }
-         
+
         private void LabelAddToSideBeamSensor(List<PlcBeamSensor> listBeamSensor)
         {
             foreach (PlcBeamSensor aBeamSensor in listBeamSensor)
@@ -103,17 +104,17 @@ namespace Mirle.Agv.View
             }
         }
         //
-        private void PlcAgent_OnForkCommandErrorEvent(object sender, PLCForkCommand aForkCommand)
+        private void PlcAgent_OnForkCommandErrorEvent(object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandErrorEvent";
         }
 
-        private void PlcAgent_OnForkCommandExecutingEvent(object sender, PLCForkCommand aForkCommand)
+        private void PlcAgent_OnForkCommandExecutingEvent(object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandExecutingEvent";
         }
 
-        private void PlcAgent_OnForkCommandFinishEvent(object sender, PLCForkCommand aForkCommand)
+        private void PlcAgent_OnForkCommandFinishEvent(object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandFinishEvent";
         }
@@ -142,11 +143,11 @@ namespace Mirle.Agv.View
         private void btnForkCommandExecute_Click(object sender, EventArgs e)
         {
             //this.aPLCAgent.WriteForkCommand(Convert.ToUInt16(txtCommandNo.Text), (EnumForkCommand)Enum.Parse(typeof(EnumForkCommand), cmbOperationType.Text, false), txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
-            
+
             Task.Run(() =>
             {
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
 
             });
@@ -155,7 +156,7 @@ namespace Mirle.Agv.View
         private void PlcForm_Load(object sender, EventArgs e)
         {
             cmbOperationType.Items.Clear();
-          
+
             foreach (string item in Enum.GetNames(typeof(EnumForkCommand)))
             {
                 cmbOperationType.Items.Add(item);
@@ -177,7 +178,7 @@ namespace Mirle.Agv.View
             }
             cmbChargeDirection.SelectedIndex = 1;
             txtAutoChargeLowSOC.Text = this.plcAgent.thePlcVehicle.Batterys.PortAutoChargeLowSoc.ToString();
-            
+
             cmbEQPIO.Items.Clear();
             cmbEQPIO.Items.Add(bool.TrueString);
             cmbEQPIO.Items.Add(bool.FalseString);
@@ -212,21 +213,21 @@ namespace Mirle.Agv.View
 
                 this.triggerEvent = ex.ToString();
             }
-            
+
         }
 
         private void btnForkCommandReadRequest_Click(object sender, EventArgs e)
         {
-            
+
             Task.Run(() =>
             {
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
 
             });
         }
-        
+
         private void btnChargeLeftStart_Click(object sender, EventArgs e)
         {
             this.plcAgent.ChargeStartCommand(EnumChargeDirection.Left);
@@ -248,14 +249,10 @@ namespace Mirle.Agv.View
         {
             Task.Run(() =>
             {
-                this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack,true);
-                System.Threading.Thread.Sleep(1000);
+                this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                Thread.Sleep(1000);
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
-
             });
-
-                
-
         }
 
         private void timGUIRefresh_Tick(object sender, EventArgs e)
@@ -306,7 +303,7 @@ namespace Mirle.Agv.View
 
             txtErrorReason.Text = this.plcAgent.GetErrorReason();
 
-            txtCassetteID.Text = this.plcAgent.thePlcVehicle.CassetteID;
+            txtCassetteID.Text = this.plcAgent.thePlcVehicle.CassetteId;
 
             if (this.plcAgent.thePlcVehicle.Robot.ForkBusy)
             {
@@ -376,7 +373,7 @@ namespace Mirle.Agv.View
                     aPLCBumper.FormLabel.BackColor = this.lblNoDetect.BackColor;
                 }
                 else
-                {                    
+                {
                     aPLCBumper.FormLabel.BackColor = this.lblNearDetect.BackColor;
                 }
             }
@@ -398,7 +395,7 @@ namespace Mirle.Agv.View
                     aPlcEmo.FormLabel.BackColor = this.lblNoDetect.BackColor;
                 }
                 else
-                {                    
+                {
                     aPlcEmo.FormLabel.BackColor = this.lblNearDetect.BackColor;
                 }
             }
@@ -515,18 +512,18 @@ namespace Mirle.Agv.View
                         }
                         else
                         {
-                            aBeamSensor.FormLabel.BackColor = this.lblFarDetect.BackColor;                            
+                            aBeamSensor.FormLabel.BackColor = this.lblFarDetect.BackColor;
                         }
                     }
                     else
                     {
                         aBeamSensor.FormLabel.BackColor = this.lblNearDetect.BackColor;
-                        
+
                     }
                 }
-                
+
             }
-        }        
+        }
 
         private void btnMeterAHReset_Click(object sender, EventArgs e)
         {
@@ -540,7 +537,7 @@ namespace Mirle.Agv.View
             {
                 if (!plcAgent.IsForkCommandExist())
                 {
-                    PLCForkCommand aForkCommand = new PLCForkCommand(Convert.ToUInt16(txtCommandNo.Text), (EnumForkCommand)Enum.Parse(typeof(EnumForkCommand), cmbOperationType.Text, false), txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
+                    PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommandParse(cmbOperationType.Text), txtStageNo.Text, EnumStageDirectionParse(cmbDirection.Text), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
                     plcAgent.AddForkComand(aForkCommand);
                 }
                 else
@@ -554,7 +551,7 @@ namespace Mirle.Agv.View
                 this.triggerEvent = ex.ToString();
             }
 
-            
+
         }
 
         private void btnClearForkCommand_Click(object sender, EventArgs e)
@@ -568,8 +565,8 @@ namespace Mirle.Agv.View
 
                 this.triggerEvent = ex.ToString();
             }
-            
-        }      
+
+        }
 
         private void btnBuzzerStop_Click(object sender, EventArgs e)
         {
@@ -589,7 +586,7 @@ namespace Mirle.Agv.View
 
         private void btnCycle_Click(object sender, EventArgs e)
         {
-            if(btnCycle.Text == "Cycle Start")
+            if (btnCycle.Text == "Cycle Start")
             {
                 cycleForkCommandCount = 0;
                 cycleChargeCommandCount = 0;
@@ -608,42 +605,43 @@ namespace Mirle.Agv.View
 
         private void timCycle_Tick(object sender, EventArgs e)
         {
-            if(this.plcAgent.thePlcVehicle.Robot.ForkReady && this.plcAgent.thePlcVehicle.Robot.ForkBusy == false)
+            if (this.plcAgent.thePlcVehicle.Robot.ForkReady && this.plcAgent.thePlcVehicle.Robot.ForkBusy == false)
             {
                 if (!plcAgent.IsForkCommandExist())
                 {
                     //判斷loading 決定load/unload
                     if (plcAgent.thePlcVehicle.Loading)
                     {
-                        PLCForkCommand aForkCommand = new PLCForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Unload, txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
+                        PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Unload, txtStageNo.Text, EnumStageDirectionParse(cmbDirection.Text), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
                         plcAgent.AddForkComand(aForkCommand);
                         cycleForkCommandCount++;
                         txtCycleForkCommandCount.Text = cycleForkCommandCount.ToString();
                     }
                     else
                     {
-                        PLCForkCommand aForkCommand = new PLCForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Load, txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
+                        PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Load, txtStageNo.Text, EnumStageDirectionParse(cmbDirection.Text), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
                         plcAgent.AddForkComand(aForkCommand);
                         cycleForkCommandCount++;
                         txtCycleForkCommandCount.Text = cycleForkCommandCount.ToString();
                     }
-                    
+
 
                 }
             }
 
-            if(this.plcAgent.thePlcVehicle.Batterys.Charging == false)
+            if (!plcAgent.thePlcVehicle.Batterys.Charging)
             {
-                if (this.plcAgent.thePlcVehicle.Batterys.Percentage < this. plcAgent.thePlcVehicle.Batterys.PortAutoChargeLowSoc)
+                if (this.plcAgent.thePlcVehicle.Batterys.Percentage < this.plcAgent.thePlcVehicle.Batterys.PortAutoChargeLowSoc)
                 {
                     //自動充電
-                    if ((EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), cmbChargeDirection.Text, false) == EnumChargeDirection.Left)
+                    EnumChargeDirection chargeDirection = EnumChargeDirectionParse(cmbChargeDirection.Text);
+                    if (chargeDirection == EnumChargeDirection.Left)
                     {
                         this.plcAgent.ChargeStartCommand(EnumChargeDirection.Left);
                         cycleChargeCommandCount++;
                         txtCycleChargeCommandCount.Text = cycleChargeCommandCount.ToString();
                     }
-                    else if ((EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), cmbChargeDirection.Text, false) == EnumChargeDirection.Right)
+                    else if (chargeDirection == EnumChargeDirection.Right)
                     {
                         this.plcAgent.ChargeStartCommand(EnumChargeDirection.Right);
                         cycleChargeCommandCount++;
@@ -790,6 +788,29 @@ namespace Mirle.Agv.View
             {
                 plcAgent.thePlcVehicle.BeamSensorAutoSleep = false;
             }
+        }
+
+        private void btnHide_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+        }
+
+        private EnumStageDirection EnumStageDirectionParse(string v)
+        {
+            v = v.Trim();
+            return (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), v);
+        }
+
+        private EnumChargeDirection EnumChargeDirectionParse(string v)
+        {
+            v = v.Trim();
+            return (EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), v);
+        }
+
+        private EnumForkCommand EnumForkCommandParse(string v)
+        {
+            v = v.Trim();
+            return (EnumForkCommand)Enum.Parse(typeof(EnumForkCommand), v);
         }
     }
 }
