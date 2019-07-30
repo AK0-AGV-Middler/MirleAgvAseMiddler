@@ -1592,11 +1592,8 @@ namespace Mirle.Agv.Controller
             {
                 LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command fail, ");
                 loggerAgent.LogMsg("PlcAgent", logFormat);
-
-
             }
             return result;
-
         }
 
         public bool ChargeStopCommand()

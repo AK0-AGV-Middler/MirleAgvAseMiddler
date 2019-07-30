@@ -19,14 +19,14 @@ namespace Mirle.Agv.Model.TransferCmds
         public List<string> ToUnloadAddresses { get; set; } = new List<string>();
         public string LoadAddress { get; set; } = "Empty";
         public string UnloadAddress { get; set; } = "Empty";
-        public string CarrierId { get; set; } = "Empty";
+        public string CassetteId { get; set; } = "Empty";
         public string CommandId { get; set; } = "Empty";
         public ushort SeqNum { get; set; }
 
         public AgvcTransCmd()
         {
             CommandId = "Empty";
-            CarrierId = "Empty";
+            CassetteId = "Empty";
         }
 
         public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum)
@@ -34,7 +34,7 @@ namespace Mirle.Agv.Model.TransferCmds
             CommandId = transRequest.CmdID;
             if (!string.IsNullOrEmpty(transRequest.CSTID))
             {
-                CarrierId = transRequest.CSTID;
+                CassetteId = transRequest.CSTID;
             }
             SetCmdType(transRequest.ActType);
             SeqNum = aSeqNum;

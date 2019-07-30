@@ -1031,15 +1031,16 @@ namespace Mirle.Agv.Controller
 
         public void ReportLoadArrivals()
         {
-            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
-            Send_Cmd134_TransferEventReport();
+            theVehicle.Cmd134EventType = EventType.LoadArrivals;
             Send_Cmd136_TransferEventReport(EventType.LoadArrivals);
+            Send_Cmd134_TransferEventReport();
+
         }
         public void UnloadArrivals()
         {
-            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
-            Send_Cmd134_TransferEventReport();
+            theVehicle.Cmd134EventType = EventType.UnloadArrivals;
             Send_Cmd136_TransferEventReport(EventType.UnloadArrivals);
+            Send_Cmd134_TransferEventReport();
         }
         public void MoveComplete()
         {
@@ -1372,7 +1373,7 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
                 iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
                 iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
-                iD_144_STATUS_CHANGE_REP.ChargeStatus =VhChargeStatusParse(theVehicle.GetPlcVehicle().Batterys.Charging);
+                iD_144_STATUS_CHANGE_REP.ChargeStatus = theVehicle.ChargeStatus;
 
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -1411,7 +1412,7 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage;
                 iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_143_STATUS_RESPONSE.BlockingStatus = theVehicle.BlockingStatus;
-                iD_143_STATUS_RESPONSE.ChargeStatus = VhChargeStatusParse(theVehicle.GetPlcVehicle().Batterys.Charging); 
+                iD_143_STATUS_RESPONSE.ChargeStatus = theVehicle.ChargeStatus;
                 iD_143_STATUS_RESPONSE.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
                 iD_143_STATUS_RESPONSE.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_143_STATUS_RESPONSE.CurrentAdrID = vehLocation.Address.Id;
@@ -1443,18 +1444,6 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
 
-        }
-
-        private VhChargeStatus VhChargeStatusParse(bool charging)
-        {
-            if (charging)
-            {
-                return VhChargeStatus.ChargeStatusCharging;
-            }
-            else
-            {
-                return VhChargeStatus.ChargeStatusNone;
-            }
         }
 
         private VhLoadCSTStatus VhLoadCSTStatusParse(bool loading)
@@ -1623,7 +1612,7 @@ namespace Mirle.Agv.Controller
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = eventType;
-                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
+                iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrEmpty(theVehicle.GetPlcVehicle().CassetteId) ? "Empty" : theVehicle.GetPlcVehicle().CassetteId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
                 iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;

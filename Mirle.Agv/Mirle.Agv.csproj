@@ -99,7 +99,7 @@
     <Compile Include="Controller\Tools\Logger\Logger.cs" />
     <Compile Include="Controller\Tools\Logger\LogType.cs" />
     <Compile Include="Controller\Tools\XmlHandler.cs" />
-    <Compile Include="Model\AgvcCmds\Agvmessage.cs" />
+    <Compile Include="Model\Agvmessage.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Defines.cs" />
     <Compile Include="Model\Configs\AlarmConfig.cs" />
@@ -120,11 +120,11 @@
     <Compile Include="Model\Plc\PlcForkCommand.cs" />
     <Compile Include="Model\Plc\PlcRobot.cs" />
     <Compile Include="Model\Plc\PlcVehicle.cs" />
-    <Compile Include="Model\TransferCmds\EmptyTransCmd.cs" />
-    <Compile Include="Model\TransferCmds\LoadCmdInfo.cs" />
-    <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
-    <Compile Include="Model\TransferCmds\TransCmd.cs" />
-    <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
+    <Compile Include="Model\AgvcTransferCmds\EmptyTransCmd.cs" />
+    <Compile Include="Model\AgvcTransferCmds\LoadCmdInfo.cs" />
+    <Compile Include="Model\AgvcTransferCmds\MoveCmdInfo.cs" />
+    <Compile Include="Model\AgvcTransferCmds\TransCmd.cs" />
+    <Compile Include="Model\AgvcTransferCmds\UnloadCmdInfo.cs" />
     <Compile Include="View\AlarmForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -165,7 +165,7 @@
     <Compile Include="Model\VehLocation.cs" />
     <Compile Include="Model\Vehicle.cs" />
     <Compile Include="Controller\Agent\MiddleAgent.cs" />
-    <Compile Include="Model\TransferCmds\AgvcTransCmd.cs" />
+    <Compile Include="Model\AgvcTransferCmds\AgvcTransCmd.cs" />
     <Compile Include="Model\Map\MapBarcodeReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

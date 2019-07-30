@@ -66,7 +66,6 @@ namespace Mirle.Agv.Controller
         private CoupleHandler coupleHandler;
         private MapHandler mapHandler;
         private MoveControlHandler moveControlHandler;
-        private RobotControlHandler robotControlHandler;
 
         #endregion
 
@@ -150,6 +149,10 @@ namespace Mirle.Agv.Controller
                 mainFlowConfig.ReserveLength = tempReserveLength;
                 int.TryParse(configHandler.GetString("MainFlow", "TrackingPositionInterval", "100"), out int tempTrackingPositionInterval);
                 mainFlowConfig.TrackingPositionInterval = tempTrackingPositionInterval;
+                int.TryParse(configHandler.GetString("MainFlow", "StopChargeInterval", "100"), out int tempStopChargeInterval);
+                mainFlowConfig.StopChargeInterval = tempStopChargeInterval;
+                int.TryParse(configHandler.GetString("MainFlow", "StopChargeInterval", "100"), out int tempStartChargeInterval);
+                mainFlowConfig.StartChargeInterval = tempStartChargeInterval;
 
                 middlerConfig = new MiddlerConfig();
                 int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
@@ -352,8 +355,7 @@ namespace Mirle.Agv.Controller
 
                 middleAgent.OnTransferAbortEvent += OnMiddlerGetsAbortEvent;
 
-                //來自MoveControl的Barcode更新訊息，通知MainFlow(this)'middleAgent'mapHandler
-
+                //來自MiddleAgent的取得Reserve/BlockZone訊息，通知MainFlow(this)
                 middleAgent.OnGetReserveOkEvent += MiddleAgent_OnGetReserveOkEvent;
                 middleAgent.OnGetBlockPassEvent += MiddleAgent_OnGetBlockPassEvent;
 
@@ -396,7 +398,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
         private void LoadAllAlarms()
         {
             //TODO: load all alarms
@@ -430,21 +431,26 @@ namespace Mirle.Agv.Controller
         private void MiddleAgent_OnInstallTransferCommandEvent(object sender, AgvcTransCmd agvcTransCmd)
         {
             //TODO:
-            //Multi-AgvcTransCmd protect
+            if (agvcTransCmd != null)
+            {
+                middleAgent.Send_Cmd131_TransferResponse(agvcTransCmd.SeqNum, 1, "Agv already have transfer command.");
+                return;
+            }
 
             try
             {
                 this.agvcTransCmd = agvcTransCmd;
+                theVehicle.SetAgvcTransCmd(agvcTransCmd);
                 if (!CheckTransCmdSectionsAndAddressesMatch(agvcTransCmd))
                 {
                     PublishAgvcTransferCommandChecked(agvcTransCmd, false);
                     return;
                 }
 
+                middleAgent.Send_Cmd131_TransferResponse(agvcTransCmd.SeqNum, 0, " ");
                 PublishAgvcTransferCommandChecked(agvcTransCmd, true);
                 theVehicle.SetAgvcTransCmd(agvcTransCmd);
                 SetupTransferSteps();
-                transferSteps.Add(new EmptyTransCmd());
 
                 //開始尋訪 transCmds as List<TransCmd> 裡的每一步MoveCmdInfo/LoadCmdInfo
                 RestartVisitTransCmds();
@@ -660,7 +666,7 @@ namespace Mirle.Agv.Controller
 
         private void ConvertAgvcHomeCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         private void ConvertAgvcLoadUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
@@ -678,10 +684,26 @@ namespace Mirle.Agv.Controller
             }
 
             UnloadCmdInfo unloadCmd = new UnloadCmdInfo();
-            unloadCmd.CstId = agvcTransCmd.CarrierId;
+            unloadCmd.CstId = agvcTransCmd.CassetteId;
             unloadCmd.CmdId = agvcTransCmd.CommandId;
             unloadCmd.UnloadAddress = agvcTransCmd.UnloadAddress;
-
+            MapAddress mapAddress = theMapInfo.allMapAddresses[unloadCmd.UnloadAddress];
+            unloadCmd.IsEqPio = mapAddress.PioDirection == EnumPioDirection.None ? false : true;
+            if (mapAddress.CanLeftUnload && !mapAddress.CanRightUnload)
+            {
+                unloadCmd.StageDirection = EnumStageDirection.Left;
+                unloadCmd.StageNum = 1;
+            }
+            else if (!mapAddress.CanLeftUnload && mapAddress.CanRightUnload)
+            {
+                unloadCmd.StageDirection = EnumStageDirection.Right;
+                unloadCmd.StageNum = 2;
+            }
+            else
+            {
+                unloadCmd.StageDirection = EnumStageDirection.None;
+                unloadCmd.StageNum = 3;
+            }
             transferSteps.Add(unloadCmd);
         }
 
@@ -689,7 +711,7 @@ namespace Mirle.Agv.Controller
         {
             MoveCmdInfo moveCmd = new MoveCmdInfo(theMapInfo);
             moveCmd.CmdId = agvcTransCmd.CommandId;
-            moveCmd.CstId = agvcTransCmd.CarrierId;
+            moveCmd.CstId = agvcTransCmd.CassetteId;
             moveCmd.AddressIds = agvcTransCmd.ToUnloadAddresses;
             moveCmd.SectionIds = agvcTransCmd.ToUnloadSections;
             moveCmd.SetAddressPositions();
@@ -709,9 +731,26 @@ namespace Mirle.Agv.Controller
             }
 
             LoadCmdInfo loadCmd = new LoadCmdInfo();
-            loadCmd.CstId = agvcTransCmd.CarrierId;
+            loadCmd.CstId = agvcTransCmd.CassetteId;
             loadCmd.CmdId = agvcTransCmd.CommandId;
             loadCmd.LoadAddress = agvcTransCmd.LoadAddress;
+            MapAddress mapAddress = theMapInfo.allMapAddresses[loadCmd.LoadAddress];
+            loadCmd.IsEqPio = mapAddress.PioDirection == EnumPioDirection.None ? false : true;
+            if (mapAddress.CanLeftLoad && !mapAddress.CanRightLoad)
+            {
+                loadCmd.StageDirection = EnumStageDirection.Left;
+                loadCmd.StageNum = 1;
+            }
+            else if (!mapAddress.CanLeftLoad && mapAddress.CanRightLoad)
+            {
+                loadCmd.StageDirection = EnumStageDirection.Right;
+                loadCmd.StageNum = 2;
+            }
+            else
+            {
+                loadCmd.StageDirection = EnumStageDirection.None;
+                loadCmd.StageNum = 3;
+            }
 
             transferSteps.Add(loadCmd);
         }
@@ -720,7 +759,7 @@ namespace Mirle.Agv.Controller
         {
             MoveCmdInfo moveCmd = new MoveCmdInfo(theMapInfo);
             moveCmd.CmdId = agvcTransCmd.CommandId;
-            moveCmd.CstId = agvcTransCmd.CarrierId;
+            moveCmd.CstId = agvcTransCmd.CassetteId;
             moveCmd.AddressIds = agvcTransCmd.ToLoadAddresses;
             moveCmd.SectionIds = agvcTransCmd.ToLoadSections;
             moveCmd.SetAddressPositions();
@@ -815,15 +854,22 @@ namespace Mirle.Agv.Controller
             {
                 thdVisitTransCmds.Join();
             }
-            SetTransCmdsStep(new Idle());
+
+            AfterVisitTransCmds();
+
         }
 
         private void AfterVisitTransCmds()
         {
+            lastAgvcTransCmd = agvcTransCmd;
+            agvcTransCmd = null;
+            theVehicle.SetAgvcTransCmd(new AgvcTransCmd());
             transferSteps.Clear();
             TransferStepsIndex = 0;
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
+            theVehicle.ActionStatus = VHActionStatus.NoCommand;
+            middleAgent.Send_Cmd144_StatusChangeReport();
         }
 
         private void PreVisitTransCmds()
@@ -832,6 +878,8 @@ namespace Mirle.Agv.Controller
             GoNextTransferStep = true;
             visitTransCmdsPauseEvent.Set();
             visitTransCmdsShutdownEvent.Reset();
+            theVehicle.ActionStatus = VHActionStatus.Commanding;
+            middleAgent.Send_Cmd144_StatusChangeReport();
         }
 
         private bool CanVehUnload()
@@ -1043,6 +1091,8 @@ namespace Mirle.Agv.Controller
 
         public void MoveControlHandler_OnMoveFinished(object sender, EnumCompleteStatus status)
         {
+            StartCharge();
+
             if (NextTransCmdIsLoad())
             {
                 middleAgent.ReportLoadArrivals();
@@ -1091,6 +1141,12 @@ namespace Mirle.Agv.Controller
             }
             else if (forkCommand.ForkCommandType == EnumForkCommand.Unload)
             {
+                if (theVehicle.GetPlcVehicle().Loading)
+                {
+                    //Alarm : loading is still on
+                    return;
+                }
+
                 if (IsLoadUnloadComplete())
                 {
                     middleAgent.LoadUnloadComplete();
@@ -1099,7 +1155,7 @@ namespace Mirle.Agv.Controller
                 {
                     middleAgent.UnloadComplete();
                 }
-            }           
+            }
             else if (forkCommand.ForkCommandType == EnumForkCommand.Home)
             {
                 //TODO: RobotHomeComplete
@@ -1133,27 +1189,13 @@ namespace Mirle.Agv.Controller
 
         private void VisitNextTransCmd()
         {
-            if (TransferStepsIndex < transferSteps.Count)
+            if (TransferStepsIndex == transferSteps.Count - 1)
             {
-                TransferStepsIndex++;
-                GoNextTransferStep = true;
+                //Middler send transfer complete to agvc
             }
-            else
-            {
-                StopVisitTransCmds();
-                SetLasTransCmds();
-                //Send Transfer Complete to Middler
-            }
-        }
 
-        private void SetLasTransCmds()
-        {
-            lastTransferSteps.Clear();
-            for (int i = 0; i < transferSteps.Count; i++)
-            {
-                lastTransferSteps.Add(transferSteps[i]);
-            }
-            transferSteps.Clear();
+            TransferStepsIndex++;
+            GoNextTransferStep = true;
         }
 
         public TransferStep GetCurTransCmd()
@@ -1188,7 +1230,7 @@ namespace Mirle.Agv.Controller
         }
 
         public void Unload(UnloadCmdInfo unloadCmd)
-        { 
+        {
             //Check if it is in position to unload here
             if (CanVehUnload())
             {
@@ -1196,6 +1238,7 @@ namespace Mirle.Agv.Controller
                 {
                     if (!plcAgent.IsForkCommandExist())
                     {
+                        middleAgent.Send_Cmd136_TransferEventReport(EventType.Vhunloading);
                         PlcForkCommand aForkCommand = new PlcForkCommand(forkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
                         plcAgent.AddForkComand(aForkCommand);
                     }
@@ -1222,6 +1265,7 @@ namespace Mirle.Agv.Controller
                 {
                     if (!plcAgent.IsForkCommandExist())
                     {
+                        middleAgent.Send_Cmd136_TransferEventReport(EventType.Vhloading);
                         PlcForkCommand aForkCommand = new PlcForkCommand(forkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
                         plcAgent.AddForkComand(aForkCommand);
                     }
@@ -1393,5 +1437,55 @@ namespace Mirle.Agv.Controller
         {
             return plcAgent;
         }
+
+        private void StartCharge()
+        {
+            MapAddress address = theVehicle.GetVehLoacation().Address;
+            if (address.IsCharger)
+            {
+                EnumChargeDirection chargeDirection;
+
+                switch (address.ChargeDirection)
+                {
+                    case EnumChargeDirection.Left:
+                        chargeDirection = EnumChargeDirection.Left;
+                        break;
+                    case EnumChargeDirection.Right:
+                        chargeDirection = EnumChargeDirection.Right;
+                        break;
+                    case EnumChargeDirection.None:
+                    default:
+                        //Alarm : charge direction error
+                        return;
+                }
+
+                theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusHandshaking;
+                middleAgent.Send_Cmd144_StatusChangeReport();
+
+                while (!theVehicle.GetPlcVehicle().Batterys.Charging)
+                {
+                    plcAgent.ChargeStartCommand(chargeDirection);
+
+                    SpinWait.SpinUntil(() => false, mainFlowConfig.StartChargeInterval);
+                }
+
+                theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusCharging;
+                middleAgent.Send_Cmd144_StatusChangeReport();
+            }
+        }
+
+        public void StopCharge()
+        {
+            while (theVehicle.GetPlcVehicle().Batterys.Charging)
+            {
+                plcAgent.ChargeStopCommand();
+
+                SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeInterval);
+            }
+
+            theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
+            middleAgent.Send_Cmd144_StatusChangeReport();
+        }
+
     }
 }
