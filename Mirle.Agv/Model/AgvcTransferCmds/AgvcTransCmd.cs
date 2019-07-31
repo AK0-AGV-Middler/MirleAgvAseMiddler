@@ -10,6 +10,7 @@ using Google.Protobuf.Collections;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
+    [Serializable]
     public class AgvcTransCmd
     {
         public EnumAgvcTransCommandType CommandType { get; set; }

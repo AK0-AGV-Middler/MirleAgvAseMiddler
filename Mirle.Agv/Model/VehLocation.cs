@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿
+using System;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class VehLocation
     {
         private MapInfo theMapInfo = new MapInfo();
@@ -20,7 +22,7 @@ namespace Mirle.Agv.Model
         public void SetBarcodePosition(int barcodeNum)
         {
             MapBarcode mapBarcode = theMapInfo.allBarcodes[barcodeNum];
-            BarcodePosition = new MapPosition(mapBarcode.Position.X, mapBarcode.Position.Y);           
+            BarcodePosition = new MapPosition(mapBarcode.Position.X, mapBarcode.Position.Y);
         }
     }
 }

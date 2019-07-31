@@ -7,6 +7,7 @@ using System.IO;
 
 namespace Mirle.Agv.Model.Configs
 {
+    [Serializable]
     public class AlarmConfig
     {
         public string AlarmFileName { get; set; }

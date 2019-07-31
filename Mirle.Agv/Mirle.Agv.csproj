@@ -10,12 +10,13 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Mirle.Agv</RootNamespace>
     <AssemblyName>Mirle.Agv</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -42,6 +43,15 @@
     </Reference>
     <Reference Include="Communication">
       <HintPath>OutsideDll\Communication.dll</HintPath>
+    </Reference>
+    <Reference Include="ElmoMotionControlComponents.Common.EASComponents">
+      <HintPath>OutsideDll\ElmoMotionControlComponents.Common.EASComponents.dll</HintPath>
+    </Reference>
+    <Reference Include="ElmoMotionControlComponents.Drive.EASComponents">
+      <HintPath>OutsideDll\ElmoMotionControlComponents.Drive.EASComponents.dll</HintPath>
+    </Reference>
+    <Reference Include="ElmoMotionControlComponents.GMAS.MMCLibDotNET">
+      <HintPath>OutsideDll\ElmoMotionControlComponents.GMAS.MMCLibDotNET.dll</HintPath>
     </Reference>
     <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -75,9 +85,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\MoveControl\CreateMoveControlList.cs" />
+    <Compile Include="Controller\MoveControl\Sr2000Driver.cs" />
+    <Compile Include="Controller\MoveControl\ElmoDriver.cs" />
     <Compile Include="Controller\Agent\LoggerAgent.cs" />
     <Compile Include="Controller\Handler\AlarmHandler.cs" />
-    <Compile Include="Controller\Handler\BatteryHandler.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\Idle.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\ITransferCmdStep.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\Load.cs" />
@@ -85,12 +97,9 @@
     <Compile Include="Controller\Handler\TransfereCmdSteps\Unload.cs" />
     <Compile Include="Controller\IComplete.cs" />
     <Compile Include="Controller\Agent\BmsAgent.cs" />
-    <Compile Include="Controller\Handler\CoupleHandler.cs" />
-    <Compile Include="Controller\Agent\ElmoAgent.cs" />
-    <Compile Include="Controller\Handler\MoveControlHandler.cs" />
+    <Compile Include="Controller\MoveControl\MoveControlHandler.cs" />
     <Compile Include="Controller\Agent\PlcAgent.cs" />
     <Compile Include="Controller\InitialEventArgs.cs" />
-    <Compile Include="Controller\Tools\AgvcConnecter.cs" />
     <Compile Include="Controller\Tools\CassetteIDReader.cs" />
     <Compile Include="Controller\Tools\ConfigHandler.cs" />
     <Compile Include="Controller\Tools\CsvHandler.cs" />
@@ -103,16 +112,33 @@
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Defines.cs" />
     <Compile Include="Model\Configs\AlarmConfig.cs" />
-    <Compile Include="Model\Configs\ElmoAxisConfig.cs" />
-    <Compile Include="Model\Configs\ElmoSingleAxisConfig.cs" />
     <Compile Include="Model\Configs\MainFlowConfig.cs" />
     <Compile Include="Model\Configs\MapConfig.cs" />
     <Compile Include="Model\Configs\MiddlerConfig.cs" />
-    <Compile Include="Model\Configs\MoveControlConfig.cs" />
     <Compile Include="Model\Map\MapBarcode.cs" />
     <Compile Include="Model\Map\MapInfo.cs" />
     <Compile Include="Model\Map\MapPosition.cs" />
     <Compile Include="Model\Map\MapBarcodeLine.cs" />
+    <Compile Include="Model\MoveModel\Configs\ElmoSingleAxisConfig.cs" />
+    <Compile Include="Model\MoveModel\Configs\MoveControlConfig.cs" />
+    <Compile Include="Model\MoveModel\Configs\OntimeReviseConfig.cs" />
+    <Compile Include="Model\MoveModel\Configs\Sr2000Config.cs" />
+    <Compile Include="Model\MoveModel\Elmo\AxisInfo.cs" />
+    <Compile Include="Model\MoveModel\Elmo\ElmoAxisFeedbackData.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\AxisData.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\Command.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\MoveControlParameter.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\OneMoveCommand.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\Position.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\ReserveData.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\SectionLine.cs" />
+    <Compile Include="Model\MoveModel\SR2000\AGVPosition.cs" />
+    <Compile Include="Model\MoveModel\SR2000\BarcodeData.cs" />
+    <Compile Include="Model\MoveModel\SR2000\ReviseData.cs" />
+    <Compile Include="Model\MoveModel\SR2000\SectionDeviationTheta.cs" />
+    <Compile Include="Model\MoveModel\SR2000\SpeedAndMaxTheta.cs" />
+    <Compile Include="Model\MoveModel\SR2000\Sr2000Info.cs" />
+    <Compile Include="Model\MoveModel\SR2000\Sr2000ReadData.cs" />
     <Compile Include="Model\Plc\PlcBatterys.cs" />
     <Compile Include="Model\Plc\PlcBeamSensor.cs" />
     <Compile Include="Model\Plc\PlcBumper.cs" />
@@ -131,11 +157,23 @@
     <Compile Include="View\AlarmForm.Designer.cs">
       <DependentUpon>AlarmForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="View\JogPitchForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\JogPitchForm.designer.cs">
+      <DependentUpon>JogPitchForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\PlcForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="View\PlcForm.designer.cs">
       <DependentUpon>PlcForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\JogPitchAxis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\UserControls\JogPitchAxis.designer.cs">
+      <DependentUpon>JogPitchAxis.cs</DependentUpon>
     </Compile>
     <Compile Include="View\UserControls\UcSectionImage.cs">
       <SubType>UserControl</SubType>
@@ -209,8 +247,14 @@
     <EmbeddedResource Include="View\AlarmForm.resx">
       <DependentUpon>AlarmForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="View\JogPitchForm.resx">
+      <DependentUpon>JogPitchForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\PlcForm.resx">
       <DependentUpon>PlcForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\UserControls\JogPitchAxis.resx">
+      <DependentUpon>JogPitchAxis.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\UcLabelTextBox.resx">
       <DependentUpon>UcLabelTextBox.cs</DependentUpon>

@@ -98,5 +98,15 @@ namespace Mirle.Agv.Model.Tests
 
             Assert.AreEqual("ABC", msg);
         }
+
+        //[Test()]
+        //public void GetterSetterTest()
+        //{
+        //    Vehicle vehicle = Vehicle.Instance;
+        //    vehicle.someTestVeh.Loading = false;
+        //    vehicle.someTestVeh.Loading = true;
+        //    vehicle.someTestVeh.Loading = false;
+        //    Assert.IsTrue(true);
+        //}
     }
 }

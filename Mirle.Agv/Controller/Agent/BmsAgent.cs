@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Controller
 {
+    [Serializable]
     public class BmsAgent
     {
         private LoggerAgent loggerAgent;

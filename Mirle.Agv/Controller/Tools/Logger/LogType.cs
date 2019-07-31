@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Controller.Tools
 {
+    [Serializable]
     public class LogType
     {                   
         public string Name { get; set; }

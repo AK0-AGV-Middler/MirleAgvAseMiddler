@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 
 namespace Mirle.Agv.Controller
 {
+    [Serializable]
     public class AlarmHandler
     {
         #region Containers

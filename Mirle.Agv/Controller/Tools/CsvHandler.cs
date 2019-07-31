@@ -3,6 +3,7 @@ using System.IO;
 
 namespace Mirle.Agv.Controller.Tools
 {
+    [Serializable]
     public class CsvHandler
     {
         private string filePath;

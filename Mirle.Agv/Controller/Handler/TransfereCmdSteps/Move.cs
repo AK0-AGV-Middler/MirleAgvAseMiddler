@@ -20,7 +20,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     //TODO:                   
                     //Check if move complete
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
-                    mainFlowHandler.StopCharging();
+                    mainFlowHandler.StopCharge();
                     mainFlowHandler.PrepareForAskingReserve(moveCmd);
                     mainFlowHandler.PublishTransferMoveEvent(moveCmd);
                     mainFlowHandler.StartTrackingPosition();

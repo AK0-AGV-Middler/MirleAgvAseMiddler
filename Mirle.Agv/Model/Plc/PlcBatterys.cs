@@ -9,6 +9,7 @@ using Mirle.Agv;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class PlcBatterys
     {
         public EnumBatteryType BatteryType { get; set; } = EnumBatteryType.Yinda;

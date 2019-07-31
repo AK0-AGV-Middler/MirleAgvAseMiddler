@@ -15,7 +15,7 @@ using ClsMCProtocol;
 
 namespace Mirle.Agv.Controller
 {
-    public class MainFlowHandler : ICmdFinished
+    public class MainFlowHandler
     {
         #region Configs
 
@@ -25,7 +25,6 @@ namespace Mirle.Agv.Controller
         private MiddlerConfig middlerConfig;
         private MainFlowConfig mainFlowConfig;
         private MapConfig mapConfig;
-        private MoveControlConfig moveControlConfig;
         private AlarmConfig alarmConfig;
 
         #endregion
@@ -52,7 +51,6 @@ namespace Mirle.Agv.Controller
         #region Agent
 
         private BmsAgent bmsAgent;
-        private ElmoAgent elmoAgent;
         private MiddleAgent middleAgent;
         private PlcAgent plcAgent;
         private LoggerAgent loggerAgent;
@@ -62,8 +60,6 @@ namespace Mirle.Agv.Controller
         #region Handler
 
         private AlarmHandler alarmHandler;
-        private BatteryHandler batteryHandler;
-        private CoupleHandler coupleHandler;
         private MapHandler mapHandler;
         private MoveControlHandler moveControlHandler;
 
@@ -81,7 +77,6 @@ namespace Mirle.Agv.Controller
 
         #region Events
         public event EventHandler<InitialEventArgs> OnComponentIntialDoneEvent;
-        public event EventHandler<MoveCmdInfo> OnTransferMoveEvent;
         public event EventHandler<List<MapPosition>> OnReserveOkEvent;
         public event EventHandler<string> OnAgvcTransferCommandCheckedEvent;
         #endregion
@@ -115,7 +110,7 @@ namespace Mirle.Agv.Controller
             LoadAllAlarms();
             EventInitial();
             SetTransCmdsStep(new Idle());
-            StartTrackingPosition();
+            //StartTrackingPosition();
 
             if (isIniOk)
             {
@@ -188,12 +183,6 @@ namespace Mirle.Agv.Controller
                 mapConfig.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
                 mapConfig.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
                 mapConfig.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
-
-                moveControlConfig = new MoveControlConfig();
-                moveControlConfig.Sr2000FileName = configHandler.GetString("MoveControl", "Sr2000FileName", "SR2KConfig.xml");
-                moveControlConfig.OnTimeReviseFileName = configHandler.GetString("MoveControl", "OnTimeReviseFileName", "OntimeReviseConfig.xml");
-                int.TryParse(configHandler.GetString("MoveControl", "SleepTime ", "10"), out int tempSleepTime2);
-                moveControlConfig.SleepTime = tempSleepTime2;
 
                 alarmConfig = new AlarmConfig();
                 alarmConfig.AlarmFileName = configHandler.GetString("Alarm", "AlarmFileName", "AlarmCode.csv");
@@ -268,13 +257,10 @@ namespace Mirle.Agv.Controller
                 mapHandler = new MapHandler(mapConfig);
                 theMapInfo = mapHandler.GetMapInfo();
 
-                batteryHandler = new BatteryHandler();
-                coupleHandler = new CoupleHandler();
-                moveControlHandler = new MoveControlHandler(moveControlConfig, theMapInfo);
+                moveControlHandler = new MoveControlHandler("", theMapInfo);
                 alarmHandler = new AlarmHandler(alarmConfig);
 
                 bmsAgent = new BmsAgent();
-                elmoAgent = new ElmoAgent();
                 middleAgent = new MiddleAgent(middlerConfig, theMapInfo);
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
@@ -459,7 +445,7 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 string className = GetType().Name;
-                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                string methodName = MethodBase.GetCurrentMethod().Name;
                 string classMethodName = className + ":" + methodName;
                 LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", ex.StackTrace);
                 loggerAgent.LogMsg("Error", logFormat);
@@ -944,7 +930,7 @@ namespace Mirle.Agv.Controller
 
                 #endregion
 
-                var position = moveControlHandler.RealPosition;
+                var position = moveControlHandler.position.Real;
 
                 if (transferSteps.Count > 0)
                 {
@@ -1089,8 +1075,18 @@ namespace Mirle.Agv.Controller
             return !queNeedReserveSections.IsEmpty;
         }
 
-        public void MoveControlHandler_OnMoveFinished(object sender, EnumCompleteStatus status)
+        public void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete status)
         {
+            //TODO: if error stop ,
+            if (status == EnumMoveComplete.Fail)
+            {
+                //Alarm
+                StopVisitTransCmds();
+                lastTransferSteps = transferSteps;
+                transferSteps = new List<TransferStep>();
+                return;
+            }
+
             StartCharge();
 
             if (NextTransCmdIsLoad())
@@ -1314,7 +1310,7 @@ namespace Mirle.Agv.Controller
 
         public void PublishTransferMoveEvent(MoveCmdInfo moveCmd)
         {
-            OnTransferMoveEvent?.Invoke(this, moveCmd);
+            moveControlHandler.TransferMove(moveCmd);
         }
 
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
@@ -1461,11 +1457,10 @@ namespace Mirle.Agv.Controller
 
                 theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusHandshaking;
                 middleAgent.Send_Cmd144_StatusChangeReport();
+                plcAgent.ChargeStartCommand(chargeDirection);
 
                 while (!theVehicle.GetPlcVehicle().Batterys.Charging)
-                {
-                    plcAgent.ChargeStartCommand(chargeDirection);
-
+                {                
                     SpinWait.SpinUntil(() => false, mainFlowConfig.StartChargeInterval);
                 }
 
@@ -1476,10 +1471,10 @@ namespace Mirle.Agv.Controller
 
         public void StopCharge()
         {
-            while (theVehicle.GetPlcVehicle().Batterys.Charging)
-            {
-                plcAgent.ChargeStopCommand();
+            plcAgent.ChargeStopCommand();
 
+            while (theVehicle.GetPlcVehicle().Batterys.Charging)
+            {            
                 SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeInterval);
             }
 

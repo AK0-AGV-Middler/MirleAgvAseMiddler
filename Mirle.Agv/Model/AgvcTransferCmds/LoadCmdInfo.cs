@@ -7,6 +7,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
+    [Serializable]
     public class LoadCmdInfo : TransferStep
     {
         public string LoadAddress { get; set; } = "Empty";

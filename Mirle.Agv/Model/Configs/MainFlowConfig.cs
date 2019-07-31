@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
+    [Serializable]
     public class MainFlowConfig
     {
         public string LogConfigPath { get; set; }

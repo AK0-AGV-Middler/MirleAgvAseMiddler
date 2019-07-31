@@ -6,6 +6,7 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.Controller.Tools
 {
+    [Serializable]
     public class ConfigHandler
     {
         private const int STRING_BUILDER_SIZE = 256;

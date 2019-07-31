@@ -9,6 +9,7 @@ using System.Threading;
 
 namespace Mirle.Agv.Controller.Tools
 {
+    [Serializable]
     public class Logger
     {
         public static readonly long MB = 1024 * 1024;

@@ -7,6 +7,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
+    [Serializable]
     public class MoveCmdInfo : TransferStep
     {
         public List<MapPosition> AddressPositions { get; set; } = new List<MapPosition>();
@@ -139,9 +140,9 @@ namespace Mirle.Agv.Model.TransferCmds
                     if (PredictVehicleAngle < -100)
                     {
                         PredictVehicleAngle = 0;
-                        return EnumAddressAction.BTR;
+                        return EnumAddressAction.BTR350;
                     }
-                    return EnumAddressAction.TR;
+                    return EnumAddressAction.TR350;
                 }
                 else
                 {
@@ -150,9 +151,9 @@ namespace Mirle.Agv.Model.TransferCmds
                     if (PredictVehicleAngle > 100)
                     {
                         PredictVehicleAngle = 0;
-                        return EnumAddressAction.BTR;
+                        return EnumAddressAction.BTR350;
                     }
-                    return EnumAddressAction.TR;
+                    return EnumAddressAction.TR350;
                 }
             }
         }

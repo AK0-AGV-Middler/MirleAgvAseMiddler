@@ -10,6 +10,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class Vehicle
     {
         private static readonly Vehicle theVehicle = new Vehicle();
@@ -21,6 +22,8 @@ namespace Mirle.Agv.Model
         private MapInfo theMapInfo = new MapInfo();
         private PlcVehicle plcVehicle = new PlcVehicle();
         private AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
+
+        public PlcVehicle someTestVeh { get; private set; }
 
         #region Comm Property
 

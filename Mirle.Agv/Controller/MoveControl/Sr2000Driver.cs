@@ -1,0 +1,465 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Mirle.Agv.Model;
+using Mirle.Agv.Model.TransferCmds;
+using Mirle.Agv.Model.Configs;
+using System.Threading;
+using System.Text.RegularExpressions;
+using Keyence.AutoID.SDK;
+using Mirle.Agv.Controller.Tools;
+using System.Collections.Concurrent;
+
+namespace Mirle.Agv.Controller
+{
+    public class Sr2000Driver
+    {
+        private MapInfo theMapInfo;
+        private Sr2000Config sr2000Config;
+        private Sr2000Info sr2000Info;
+        private LoggerAgent loggerAgent;
+
+        private Sr2000ReadData returnData = null;
+        private ConcurrentQueue<Sr2000ReadData> readDataQueue = new ConcurrentQueue<Sr2000ReadData>();
+        private string LON = "LON", LOFF = "LOFF", ChangeMode = "BLOAD,3";
+        private uint count = 0;
+        private const int AllowableTheta = 10;
+
+        public Sr2000Driver(Sr2000Config sr2000Config, MapInfo theMapInfo)
+        {
+            try
+            {
+                this.theMapInfo = theMapInfo;
+                this.sr2000Config = sr2000Config;
+
+                sr2000Info = new Sr2000Info(sr2000Config.IP);
+                Connect();
+
+                loggerAgent = LoggerAgent.Instance;
+            }
+            catch (Exception ex)
+            {
+                //. 參考出問題,可能CPU x64 x86 anyCPU參考用錯,或sr2000Config = null. 或Connect Excpition.
+
+                string classMethodName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+                LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", "There are no barcodes in file");
+                loggerAgent.LogMsg("Error", logFormat);
+            }
+        }
+
+        public void Disconnect()
+        {
+            try
+            {
+                if (sr2000Info.Connect)
+                {
+                    sr2000Info.Trigger = false;
+                    SendCommandLOFF();
+                    sr2000Info.Reader.Dispose();
+                    sr2000Info.Connect = false;
+                }
+            }
+            catch
+            {
+                //. Dispose Excption, 不該發生.
+
+            }
+        }
+
+        public bool Trigger
+        {
+            get
+            {
+                return sr2000Info.Trigger;
+            }
+
+            set
+            {
+                if (sr2000Info.Trigger != value)
+                {
+                    sr2000Info.Trigger = value;
+
+                    if (!sr2000Info.Trigger)
+                        SendCommandLOFF();
+                }
+            }
+        }
+
+        public bool GetConnect()
+        {
+            return sr2000Info.Connect;
+        }
+
+        public ThetaSectionDeviation GetThetaSectionDeviation()
+        {
+            if (returnData == null)
+                return null;
+
+            return returnData.ReviseData;
+        }
+
+        public AGVPosition GetAGVPosition()
+        {
+            if (returnData == null)
+                return null;
+
+            return returnData.AGV;
+        }
+
+        public bool LogMode
+        {
+            get
+            {
+                return sr2000Config.LogMode;
+            }
+
+            set
+            {
+                sr2000Config.LogMode = value;
+            }
+        }
+
+        private void WriteLog(Sr2000ReadData sr2000ReadData)
+        {
+            Sr2000ReadData deletaQueue;
+            readDataQueue.Enqueue(sr2000ReadData);
+            if (sr2000ReadData.Count > 3000)
+                readDataQueue.TryDequeue(out deletaQueue);
+
+            if (sr2000Config.LogMode)
+            {
+                if (sr2000ReadData == null)
+                {
+
+                }
+                else
+                {
+
+                }
+
+                // write log.
+
+            }
+        }
+
+
+        private MapPosition XChangeTheta55Single(MapPosition barcode)
+        {
+            double mid = (sr2000Config.Up + sr2000Config.Down) / 2;
+            double value = sr2000Config.Down + (sr2000Config.Up - sr2000Config.Down) * (barcode.Y / (2 * sr2000Config.ViewCenter.Y)); ;
+            double x = sr2000Config.ViewCenter.X + (barcode.X - sr2000Config.ViewCenter.X) * (mid / value);
+            MapPosition returnPosition = new MapPosition((float)x, barcode.Y);
+            return returnPosition;
+        }
+
+        private void XChangeTheta55ALL(Sr2000ReadData sr2000ReadData)
+        {
+            sr2000ReadData.Barcode1.ViewPosition = XChangeTheta55Single(sr2000ReadData.Barcode1.ViewPosition);
+            sr2000ReadData.Barcode2.ViewPosition = XChangeTheta55Single(sr2000ReadData.Barcode2.ViewPosition);
+        }
+
+        private Sr2000ReadData SendCommandLON()
+        {
+            Sr2000ReadData sr2000ReadData;
+
+            try
+            {
+                string receivedData = sr2000Info.Reader.ExecCommand(LON, sr2000Config.TimeOutValue);
+
+                if (receivedData == null || receivedData == "")
+                {
+                    sr2000ReadData = new Sr2000ReadData(LON, receivedData, count);
+                }
+                else
+                {
+                    string[] splitResult = Regex.Split(receivedData, "[: / ,]+", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
+
+                    if (splitResult.Length == 7)
+                    {
+
+                        sr2000ReadData = new Sr2000ReadData(splitResult, LON, receivedData, count);
+                        XChangeTheta55ALL(sr2000ReadData);
+                        if (sr2000ReadData.ScanTime < sr2000Config.TimeOutValue && GetReadDataPosition(sr2000ReadData))
+                        {
+                            ComputeMapPosition(sr2000ReadData);
+                            ComputeThetaSectionDeviation(sr2000ReadData);
+                        }
+                        // scanTime > timeoutvalue ??
+                    }
+                    else
+                    {
+                        // SR200回傳資料有問題,設定跑掉.
+                        sr2000ReadData = new Sr2000ReadData(LON, receivedData, count);
+                    }
+                }
+            }
+            catch
+            {
+                sr2000ReadData = new Sr2000ReadData(LON, "excption", count);
+            }
+
+            return sr2000ReadData;
+        }
+
+        private void SendCommandLOFF()
+        {
+            try
+            {
+                Task.Factory.StartNew(() =>
+                {
+                    string receivedData = sr2000Info.Reader.ExecCommand(LOFF);
+                    Sr2000ReadData sr2000ReadData = new Sr2000ReadData(LOFF, receivedData);
+                    WriteLog(sr2000ReadData);
+                });
+            }
+            catch
+            {
+                // log..
+            }
+        }
+
+        private void SendCommandChangeMode()
+        {
+            try
+            {
+                string receivedData = sr2000Info.Reader.ExecCommand(ChangeMode);
+                Sr2000ReadData sr2000ReadData = new Sr2000ReadData(ChangeMode, receivedData);
+                WriteLog(sr2000ReadData);
+            }
+            catch
+            {
+                // log..
+            }
+        }
+
+        private bool Connect()
+        {
+            if (sr2000Info.Reader.Connect())
+            {
+                SendCommandChangeMode();
+
+                sr2000Info.Connect = true;
+                sr2000Info.Trigger = true;
+                sr2000Info.RunThread = new Thread(TriggerThread);
+                sr2000Info.RunThread.Start();
+                return true;
+            }
+            else
+            {
+                return false;
+                //. 連線失敗 查看ip或者是 172.168.9.5 AGV車的類似問題.
+            }
+        }
+
+
+        private bool GetBarcodePosition(BarcodeData barcodeData)
+        {
+            if (theMapInfo.allBarcodes.ContainsKey(barcodeData.ID))
+            {
+                barcodeData.MapPosition = new MapPosition(theMapInfo.allBarcodes[barcodeData.ID].Position.X, theMapInfo.allBarcodes[barcodeData.ID].Position.Y);
+                barcodeData.MapPositionOffset = new MapPosition(theMapInfo.allBarcodes[barcodeData.ID].Offset.X, theMapInfo.allBarcodes[barcodeData.ID].Offset.Y);
+                barcodeData.LineBarcodeAngle = theMapInfo.allBarcodes[barcodeData.ID].Direction;
+                barcodeData.LineId = theMapInfo.allBarcodes[barcodeData.ID].LineId;
+                return true;
+            }
+            else
+            {
+                // can't find in map, print error in log.
+                return false;
+            }
+        }
+
+        private bool GetReadDataPosition(Sr2000ReadData sr2000ReadData)
+        {
+            if (GetBarcodePosition(sr2000ReadData.Barcode1) && GetBarcodePosition(sr2000ReadData.Barcode2))
+            {
+                return sr2000ReadData.Barcode1.LineId == sr2000ReadData.Barcode2.LineId;
+                // 不同條Barcode就不計算?
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        // angle : start to end.
+        // input : ( x, y ) ( x2, y2 ), output : angle ( -180 < angle <= 180 ).
+        private double ComputeAngle(MapPosition start, MapPosition end)
+        {
+            double returnAngle = 0;
+            try
+            {
+                if (start.X == end.X)
+                {
+                    if (start.Y > end.Y)
+                        returnAngle = 90;
+                    else
+                        returnAngle = -90;
+                }
+                else
+                {
+                    returnAngle = Math.Atan(-(start.Y - end.Y) / (start.X - end.X)) * 180 / Math.PI;
+
+                    if (start.X > end.X)
+                    {
+                        if (returnAngle > 0)
+                            returnAngle -= 180;
+                        else
+                            returnAngle += 180;
+                    }
+                }
+
+                return returnAngle;
+            }
+            catch
+            {
+                // log..
+                return returnAngle;
+            }
+        }
+
+        private double Interpolation(double start, double startValue, double end, double endValue, double target)
+        {
+            if (start == end)
+                return (startValue + endValue) / 2;
+            else
+                return startValue + (endValue - startValue) * (target - start) / (end - start);
+        }
+
+        private void ComputeMapPosition(Sr2000ReadData sr2000ReadData)
+        {
+            double barcodeInViewAngle = ComputeAngle(sr2000ReadData.Barcode1.ViewPosition, sr2000ReadData.Barcode2.ViewPosition); // pointer barcode1 to barcode2.
+            // barcode在reader上面的角度 = barcode - reader.
+            double barcodeInMapAngle = ComputeAngle(sr2000ReadData.Barcode1.MapPosition, sr2000ReadData.Barcode2.MapPosition);    // barcode in Map's angle.
+            // barcode在Map上的角度 = barcode - Map.
+            double barcode1ToCenterInViewAngle = ComputeAngle(sr2000ReadData.Barcode1.ViewPosition, sr2000Config.Target);
+            double barcode1ToCenterInMapAngle = 0;
+            double agvAngleInMap = 0;
+            double barcode1ToCenterDistance = Math.Sqrt(Math.Pow((sr2000Config.Target.X - sr2000ReadData.Barcode1.ViewPosition.X) * sr2000Config.Change.X, 2) +
+                                                        Math.Pow((sr2000Config.Target.Y - sr2000ReadData.Barcode1.ViewPosition.Y) * sr2000Config.Change.Y, 2));
+            barcodeInViewAngle += sr2000Config.OffsetTheta;
+            barcode1ToCenterInViewAngle += sr2000Config.OffsetTheta;
+            // Map在reader上的角度 = Map -reader = barcodeInViewAngle - barcodeInMapAngle;
+            agvAngleInMap = barcodeInMapAngle - barcodeInViewAngle - sr2000Config.ReaderSetupAngle;
+            if (agvAngleInMap > 180)
+                agvAngleInMap -= 360;
+            else if (agvAngleInMap <= -180)
+                agvAngleInMap += 360;
+
+            barcode1ToCenterInMapAngle = barcodeInMapAngle - barcodeInViewAngle + barcode1ToCenterInViewAngle;
+
+            sr2000ReadData.TargetCenter =
+                new MapPosition(sr2000ReadData.Barcode1.MapPosition.X + (float)(barcode1ToCenterDistance * Math.Cos(-barcode1ToCenterInMapAngle / 180 * Math.PI)),
+                                sr2000ReadData.Barcode1.MapPosition.Y + (float)(barcode1ToCenterDistance * Math.Sin(-barcode1ToCenterInMapAngle / 180 * Math.PI)));
+
+            MapPosition agvPosition = new MapPosition(
+                sr2000ReadData.TargetCenter.X + (float)(sr2000Config.ReaderToCenterDistance *
+                Math.Cos((agvAngleInMap + sr2000Config.ReaderToCenterDegree) / 180 * Math.PI)),
+                sr2000ReadData.TargetCenter.Y + (float)(sr2000Config.ReaderToCenterDistance *
+                Math.Sin((agvAngleInMap + sr2000Config.ReaderToCenterDegree) / 180 * Math.PI)));
+
+            sr2000ReadData.AGV = new AGVPosition(agvPosition, agvAngleInMap, barcodeInViewAngle, sr2000ReadData.ScanTime, sr2000ReadData.GetDataTime, sr2000ReadData.Count);
+
+            sr2000ReadData.AngleOfMapInReader = barcodeInViewAngle - barcodeInMapAngle;
+            if (sr2000ReadData.AngleOfMapInReader > 180)
+                sr2000ReadData.AngleOfMapInReader -= 360;
+            else if (sr2000ReadData.AngleOfMapInReader <= -180)
+                sr2000ReadData.AngleOfMapInReader += 360;
+        }
+
+        private MapPosition BarcodeOffsetChange(BarcodeData barcodeData, double AngleOfMapInReader)
+        {
+            MapPosition returnData = new MapPosition(barcodeData.ViewPosition.X, barcodeData.ViewPosition.Y);
+
+            if (barcodeData.MapPositionOffset.X != 0)
+            {
+                returnData.X += barcodeData.MapPositionOffset.X * (float)Math.Cos(-AngleOfMapInReader / 180 * Math.PI);
+                returnData.Y += barcodeData.MapPositionOffset.X * (float)Math.Sin(-AngleOfMapInReader / 180 * Math.PI);
+            }
+
+            if (barcodeData.MapPositionOffset.Y != 0)
+            {
+                returnData.X += barcodeData.MapPositionOffset.Y * (float)Math.Cos(-(AngleOfMapInReader - 90) / 180 * Math.PI);
+                returnData.Y += barcodeData.MapPositionOffset.Y * (float)Math.Sin(-(AngleOfMapInReader - 90) / 180 * Math.PI);
+            }
+
+            return returnData;
+        }
+
+        private void ComputeThetaSectionDeviation(Sr2000ReadData sr2000ReadData)
+        {
+            double theta = 0, sectionDeviation = 0, centerPixel = 0;
+            MapPosition offsetBarcode1 = BarcodeOffsetChange(sr2000ReadData.Barcode1, sr2000ReadData.AngleOfMapInReader);
+            MapPosition offsetBarcode2 = BarcodeOffsetChange(sr2000ReadData.Barcode2, sr2000ReadData.AngleOfMapInReader);
+
+            if (Math.Abs(sr2000ReadData.AGV.BarcodeAngle - 0) <= AllowableTheta ||
+                Math.Abs(sr2000ReadData.AGV.BarcodeAngle - 180) <= AllowableTheta ||
+                Math.Abs(sr2000ReadData.AGV.BarcodeAngle - -180) <= AllowableTheta)
+            {
+                if (Math.Abs(sr2000ReadData.AGV.AGVAngle - 90) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - 90;
+                else if (Math.Abs(sr2000ReadData.AGV.AGVAngle - -90) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - -90;
+                else if (Math.Abs(sr2000ReadData.AGV.AGVAngle - 180) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - 180;
+                else if (Math.Abs(sr2000ReadData.AGV.AGVAngle - -180) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - -180;
+                else
+                    theta = sr2000ReadData.AGV.AGVAngle;
+
+                centerPixel = offsetBarcode1.Y + (double)(offsetBarcode2.Y - offsetBarcode1.Y) *
+                              (sr2000Config.Target.X - offsetBarcode1.X) / (offsetBarcode2.X - offsetBarcode1.X);
+
+                sectionDeviation = -Math.Cos(-sr2000Config.ReaderSetupAngle / 180 * Math.PI) * (centerPixel - sr2000Config.Target.Y) * sr2000Config.Change.Y;
+                sr2000ReadData.ReviseData = new ThetaSectionDeviation(theta, sectionDeviation);
+            }
+            else if (Math.Abs(sr2000ReadData.AGV.BarcodeAngle - 90) <= AllowableTheta ||
+                     Math.Abs(sr2000ReadData.AGV.BarcodeAngle - -90) <= AllowableTheta)
+            {
+                if (Math.Abs(sr2000ReadData.AGV.AGVAngle - 90) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - 90;
+                else if (Math.Abs(sr2000ReadData.AGV.AGVAngle - -90) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - -90;
+                else if (Math.Abs(sr2000ReadData.AGV.AGVAngle - 180) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - 180;
+                else if (Math.Abs(sr2000ReadData.AGV.AGVAngle - -180) <= AllowableTheta)
+                    theta = sr2000ReadData.AGV.AGVAngle - -180;
+                else
+                    theta = sr2000ReadData.AGV.AGVAngle;
+
+                centerPixel = offsetBarcode1.X + (double)(offsetBarcode2.X - offsetBarcode1.X) *
+                              (sr2000Config.Target.Y - offsetBarcode1.Y) / (offsetBarcode2.Y - offsetBarcode1.Y);
+
+                sectionDeviation = -Math.Cos(-sr2000Config.ReaderSetupAngle / 180 * Math.PI) * (centerPixel - sr2000Config.Target.X) * sr2000Config.Change.X;
+                sr2000ReadData.ReviseData = new ThetaSectionDeviation(theta, sectionDeviation);
+            }
+            else
+            {
+                //. Error theta ??
+            }
+        }
+
+        private void TriggerThread()
+        {
+            Sr2000ReadData sr2000ReadData;
+
+            while (sr2000Info.Connect)
+            {
+                if (sr2000Info.Trigger)
+                    sr2000ReadData = SendCommandLON();
+                else
+                {
+                    Thread.Sleep(sr2000Config.TimeOutValue - sr2000Config.SleepTime);
+                    sr2000ReadData = new Sr2000ReadData("No Trigger", "", count);
+                }
+
+                count++;
+                returnData = sr2000ReadData;
+                WriteLog(sr2000ReadData);
+                Thread.Sleep(sr2000Config.SleepTime);
+            }
+        }
+    }
+}

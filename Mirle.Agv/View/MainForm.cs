@@ -25,9 +25,10 @@ namespace Mirle.Agv.View
         private MiddlerForm middlerForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
-        private PlcForm  plcForm;
+        private PlcForm plcForm;
         private PlcAgent plcAgent;
         private MCProtocol mcProtocol;
+        private JogPitchForm jogPitchForm;
         //private MapForm mapForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
@@ -101,6 +102,9 @@ namespace Mirle.Agv.View
 
             plcForm = new PlcForm(mcProtocol, plcAgent);
             plcForm.WindowState = FormWindowState.Normal;
+
+            jogPitchForm = new JogPitchForm(moveControlHandler);
+            jogPitchForm.WindowState = FormWindowState.Normal;
 
             numPositionX.Maximum = decimal.MaxValue;
             numPositionY.Maximum = decimal.MaxValue;
@@ -312,10 +316,20 @@ namespace Mirle.Agv.View
         {
             if (plcForm.IsDisposed)
             {
-                plcForm = new PlcForm(mcProtocol,plcAgent);
+                plcForm = new PlcForm(mcProtocol, plcAgent);
             }
             plcForm.BringToFront();
             plcForm.Show();
+        }
+
+        private void JogPage_Click(object sender, EventArgs e)
+        {
+            if (jogPitchForm.IsDisposed)
+            {
+                jogPitchForm = new JogPitchForm(moveControlHandler);
+            }
+            jogPitchForm.BringToFront();
+            jogPitchForm.Show();
         }
 
         public delegate void DelRenewUI(Control control, string msg);
@@ -541,37 +555,7 @@ namespace Mirle.Agv.View
 
         private void btnSetPosition_Click_1(object sender, EventArgs e)
         {
-            moveControlHandler.RealPosition = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                Task.Run(() => SimpleLogTest());
-                Thread.Sleep(5);
-            }                            
-        }
-
-        private void SimpleLogTest()
-        {
-            string className = GetType().Name;
-            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name; //sender.ToString();
-            string classMethodName = className + ":" + methodName;
-            LogFormat logFormat = new LogFormat("Debug", "3", classMethodName, "Device", "CarrierID", "This is a test log.");
-
-
-            var counter = 1000;
-            while (counter>0)
-            {
-                theLoggerAgent.LogMsg("Debug", logFormat);
-
-                Thread.Sleep(1);
-                counter--;
-            }
-
-            
-        }
-
+            moveControlHandler.position.Real = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
+        }    
     }
 }

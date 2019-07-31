@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.Configs
 {
+    [Serializable]
     public class MapConfig
     {
         public string SectionFileName { get; set; }

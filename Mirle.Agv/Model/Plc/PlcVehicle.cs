@@ -7,11 +7,11 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model
 {
-
+    [Serializable]
     public class PlcVehicle
     {
         public PlcBatterys Batterys { get; set; } = new PlcBatterys();
-        public PLCRobot Robot { get; set; } = new PLCRobot();
+        public PlcRobot Robot { get; set; } = new PlcRobot();
 
         public bool Loading { get; set; }
         public string CassetteId { get; set; }

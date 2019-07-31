@@ -10,6 +10,7 @@ using Mirle.Agv.Model;
 
 namespace Mirle.Agv.Controller
 {
+    [Serializable]
     public class LoggerAgent
     {
         private Dictionary<string, Logger> dicLoggers;

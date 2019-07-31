@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
-    public class PLCRobot
+    [Serializable]
+    public class PlcRobot
     {
         public bool ForkReady { get; set; }
         public bool ForkBusy { get; set; }

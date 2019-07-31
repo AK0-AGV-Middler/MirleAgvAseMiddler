@@ -15,6 +15,7 @@ using TcpIpClientSample;
 
 namespace Mirle.Agv.Controller
 {
+    [Serializable]
     public class MiddleAgent
     {
         #region Events

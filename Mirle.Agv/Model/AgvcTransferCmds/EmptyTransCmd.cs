@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
+    [Serializable]
     public class EmptyTransCmd : TransferStep
     {
         public EmptyTransCmd() : this(new MapInfo()) { }     

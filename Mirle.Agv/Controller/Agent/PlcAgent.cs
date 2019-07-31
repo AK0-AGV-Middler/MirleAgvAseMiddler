@@ -10,6 +10,7 @@ using System.Xml;
 
 namespace Mirle.Agv.Controller
 {
+    [Serializable]
     public class PlcAgent
     {
         private MCProtocol aMCProtocol;
@@ -1987,8 +1988,6 @@ namespace Mirle.Agv.Controller
                                         }
 
                                     }
-
-
                                 }
                                 sw.Stop();
 

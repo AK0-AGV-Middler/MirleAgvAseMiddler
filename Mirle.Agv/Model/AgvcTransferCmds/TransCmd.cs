@@ -7,6 +7,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
+    [Serializable]
     public abstract class TransferStep
     {
         protected Vehicle theVehicle = Vehicle.Instance;

@@ -62,16 +62,7 @@ namespace Mirle.Agv
         Home,
         Override,
         Else
-    }
-
-    public enum EnumMoveState
-    {
-        Idle,
-        Moving,
-        MoveComplete,
-        WaitForReserve,
-        WaitForResume
-    }
+    }   
 
     public enum EnumConnectState
     {
@@ -167,13 +158,14 @@ namespace Mirle.Agv
     public enum EnumAddressAction
     {
         ST,
-        TR,
         TR50,
-        BTR,
+        TR350,
         BTR50,
+        BTR350,
         R2000,
         BR2000,
-        End
+        End,
+        SlowSotp
     }
     #endregion
 
@@ -251,6 +243,110 @@ namespace Mirle.Agv
         Maintance = 8,
         Teaching = 9
 
+    }
+    #endregion
+
+    #region MoveControlEnums
+
+    public enum EnumLineReviseType
+    {
+        None,
+        Theta,
+        SectionDeviation
+    }
+
+    public enum EnumCommandType
+    {
+        TR,
+        R2000,
+        Vchange,
+        ReviseOpen,
+        ReviseClose,
+        Move,
+        SlowStop,
+        Stop,
+        End
+    }
+
+    public enum EnumJogPitchMode
+    {
+        Normal,
+        ForwardWheel,
+        BackwardWheel,
+        SpinTurn
+    }
+
+    public enum EnumJogPitchModeName
+    {
+        四軸同動模式 = EnumJogPitchMode.Normal,
+        前輪轉動模式 = EnumJogPitchMode.ForwardWheel,
+        後輪轉動模式 = EnumJogPitchMode.BackwardWheel,
+        原地旋轉模式 = EnumJogPitchMode.SpinTurn,
+    }
+
+    public enum EnumAxis
+    {
+        None,
+        // 走行單軸.
+        XFL,
+        XFR,
+        XRL,
+        XRR,
+        // 轉向單軸.
+        TFL,
+        TFR,
+        TRL,
+        TRR,
+        // 走行單軸虛擬軸.
+        VXFL,
+        VXFR,
+        VXRL,
+        VXRR,
+        // 轉向單軸虛擬軸.
+        VTFL,
+        VTFR,
+        VTRL,
+        VTRR,
+        // Group.
+        GX,
+        GT
+    }
+
+    public enum EnumAxisType
+    {
+        Move,
+        Turn
+    }
+
+    public enum EnumMoveType
+    {
+        Relative,
+        Absolute
+    }
+
+    public enum EnumBeamSensorLocate
+    {
+        Front,
+        Back,
+        Left,
+        Right
+    }
+
+    public enum EnumMoveState
+    {
+        Idle,
+        Moving,
+        TR,
+        R2000,
+        MoveComplete,
+        WaitForReserve,
+        WaitForResume
+    }
+
+    public enum EnumMoveComplete
+    {
+        Success,
+        Fail
     }
     #endregion
 

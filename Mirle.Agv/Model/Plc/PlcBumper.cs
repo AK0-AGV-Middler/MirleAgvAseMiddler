@@ -7,6 +7,7 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.Model
 {
+    [Serializable]
     public class PlcBumper
     {
         public string Id { get; } 
