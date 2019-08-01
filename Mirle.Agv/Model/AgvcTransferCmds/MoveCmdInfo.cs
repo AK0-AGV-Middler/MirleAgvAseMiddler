@@ -29,11 +29,12 @@ namespace Mirle.Agv.Model.TransferCmds
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-            var vehLoc = theVehicle.GetVehLoacation();
-            //TODO Check Current Position is equal to First Position in MoveCmd.            
+            var firstPosition = Vehicle.Instance.GetVehLoacation().RealPosition;
+            AddressPositions.Add(firstPosition);
+
             try
             {
-                for (int i = 0; i < AddressIds.Count; i++)
+                for (int i = 1; i < AddressIds.Count; i++)
                 {
                     MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]].DeepClone();                   
                     AddressPositions.Add(mapAddress.Position);
@@ -233,10 +234,5 @@ namespace Mirle.Agv.Model.TransferCmds
                 }
             }
         }
-
-        //public List<string> SetListIds(string[] addresses)
-        //{
-        //    return addresses.ToList();
-        //}
     }
 }

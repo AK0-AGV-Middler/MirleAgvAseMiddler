@@ -12,6 +12,7 @@ using TcpIpClientSample;
 using System.Reflection;
 using System.Linq;
 using ClsMCProtocol;
+using System.Diagnostics;
 
 namespace Mirle.Agv.Controller
 {
@@ -45,6 +46,18 @@ namespace Mirle.Agv.Controller
         private ITransferCmdStep transferCmdStep;
         private AgvcTransCmd agvcTransCmd;
         private AgvcTransCmd lastAgvcTransCmd;
+        public MapSection TrackingSection { get; set; } = new MapSection();
+        public long DoTransferTimeout { get; private set; } = 10000;
+        public long SetupReserveTimeout { get; private set; } = 10000;
+        public long DoTransferLoopTimeout { get; private set; }
+        public long PositionFindSectionTimeout { get; private set; }
+        public long ReserveDequeueTimeout { get; private set; }
+        public long TotalReserveDequeueTimeout { get; private set; }
+        public long SearchSectionTimeout { get; private set; }
+        public long SearchSectionLoopTimeout { get; private set; }
+        public long TrackingPositionTimeout { get; private set; }
+        public long StartChargeTimeout { get; private set; }
+        public long StopChargeTimeout { get; private set; }
 
         #endregion
 
@@ -768,18 +781,19 @@ namespace Mirle.Agv.Controller
         private void VisitTransCmds()
         {
             PreVisitTransCmds();
-
+            Stopwatch sw = new Stopwatch();
+            long total = 0;
             while (TransferStepsIndex < transferSteps.Count)
             {
                 #region Pause And Stop Check
-
                 visitTransCmdsPauseEvent.WaitOne(Timeout.Infinite);
                 if (visitTransCmdsShutdownEvent.WaitOne(0))
                 {
                     break;
                 }
-
                 #endregion
+
+                sw.Start();
 
                 if (GoNextTransferStep)
                 {
@@ -796,6 +810,20 @@ namespace Mirle.Agv.Controller
                         middleAgent.StartAskingReserve();
                     }
                 }
+
+                sw.Stop();
+                total += sw.ElapsedMilliseconds;
+                if (sw.ElapsedMilliseconds > DoTransferTimeout)
+                {
+                    //Alarm:
+                    break;
+                }
+                if (total > DoTransferLoopTimeout)
+                {
+                    //Alarm:
+                    break;
+                }
+                sw.Reset();
 
                 SpinWait.SpinUntil(() => false, mainFlowConfig.DoTransCmdsInterval);
             }
@@ -918,8 +946,10 @@ namespace Mirle.Agv.Controller
 
         private void TrackingPosition()
         {
+            Stopwatch sw = new Stopwatch();
             while (true)
             {
+                sw.Start();
                 #region Pause And Stop Check
 
                 trackingPositionPauseEvent.WaitOne(Timeout.Infinite);
@@ -930,7 +960,7 @@ namespace Mirle.Agv.Controller
 
                 #endregion
 
-                var position = moveControlHandler.position.Real;
+                var position = theVehicle.GetVehLoacation().RealPosition;
 
                 if (transferSteps.Count > 0)
                 {
@@ -947,6 +977,14 @@ namespace Mirle.Agv.Controller
                     //無搬送命令時，比對當前Position與全地圖Sections確定section-distance
                     MoveCmdInfoUpdatePosition(position);
                 }
+
+                sw.Stop();
+                if (sw.ElapsedMilliseconds > TrackingPositionTimeout)
+                {
+                    //Alarm             
+                    break;
+                }
+                sw.Reset();
 
                 SpinWait.SpinUntil(() => false, mainFlowConfig.DoTransCmdsInterval);
             }
@@ -1328,21 +1366,27 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public MapSection TrackingSection { get; set; } = new MapSection();
 
         private void MoveCmdInfoUpdatePosition(MoveCmdInfo curTransCmd, MapPosition gxPosition)
         {
             List<MapSection> movingSections = curTransCmd.MovingSections;
             int searchingSectionIndex = curTransCmd.MovingSectionsIndex;
+            Stopwatch sw1 = new Stopwatch();
+            Stopwatch sw2 = new Stopwatch();
+            long total = 0;
+
             while (searchingSectionIndex < movingSections.Count)
             {
+                sw1.Start();
                 if (mapHandler.IsPositionInThisSection(gxPosition, movingSections[searchingSectionIndex]))
                 {
                     TrackingSection = movingSections[searchingSectionIndex];
+
                     //Middler send vehicle location to agvc
                     middleAgent.Send_Cmd134_TransferEventReport();
                     while (searchingSectionIndex > curTransCmd.MovingSectionsIndex)
                     {
+                        sw2.Start();
                         var peek = queGotReserveOkSections.TryPeek(out MapSection mapSection);
                         var curSection = movingSections[curTransCmd.MovingSectionsIndex];
                         if (mapSection.Id == curSection.Id)
@@ -1354,14 +1398,34 @@ namespace Mirle.Agv.Controller
                         {
                             //TODO : SetAlarm : reserveOkSection and curSection unmatch
                         }
-
                         curTransCmd.MovingSectionsIndex++;
+                        sw2.Stop();
+                        if (sw2.ElapsedMilliseconds > SetupReserveTimeout)
+                        {
+                            //Alarm
+                            break;
+                        }
+                        sw2.Reset();
+                        SpinWait.SpinUntil(() => false, 1);
                     }
+                    break;
+                }
 
-
+                sw1.Stop();
+                total += sw1.ElapsedMilliseconds;
+                if (sw1.ElapsedMilliseconds > SearchSectionTimeout)
+                {
+                    //Alarm
+                    break;
+                }
+                if (total > SearchSectionLoopTimeout)
+                {
+                    //Alarm
                     break;
                 }
                 searchingSectionIndex++;
+                sw1.Reset();
+                SpinWait.SpinUntil(() => false, 1);
             }
 
             if (searchingSectionIndex == movingSections.Count)
@@ -1374,6 +1438,8 @@ namespace Mirle.Agv.Controller
 
         private void MoveCmdInfoUpdatePosition(MapPosition gxPosition)
         {
+            if (gxPosition == null) return;
+
             bool isInMap = false;
             foreach (var item in theMapInfo.allMapSections)
             {
@@ -1459,9 +1525,18 @@ namespace Mirle.Agv.Controller
                 middleAgent.Send_Cmd144_StatusChangeReport();
                 plcAgent.ChargeStartCommand(chargeDirection);
 
+                Stopwatch sw = new Stopwatch();
+
                 while (!theVehicle.GetPlcVehicle().Batterys.Charging)
-                {                
+                {
+                    sw.Start();
                     SpinWait.SpinUntil(() => false, mainFlowConfig.StartChargeInterval);
+                    sw.Stop();
+                    if (sw.ElapsedMilliseconds > StartChargeTimeout)
+                    {
+                        //Alarm
+                        break;
+                    }
                 }
 
                 theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusCharging;
@@ -1472,10 +1547,17 @@ namespace Mirle.Agv.Controller
         public void StopCharge()
         {
             plcAgent.ChargeStopCommand();
-
+            Stopwatch sw = new Stopwatch();
             while (theVehicle.GetPlcVehicle().Batterys.Charging)
-            {            
+            {
+                sw.Start();
                 SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeInterval);
+                sw.Stop();
+                if (sw.ElapsedMilliseconds > StopChargeTimeout)
+                {
+                    //Alarm
+                    break;
+                }
             }
 
             theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;

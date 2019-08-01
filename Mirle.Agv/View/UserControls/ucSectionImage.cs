@@ -21,8 +21,8 @@ namespace Mirle.Agv
         private MapInfo theMapInfo = new MapInfo();
         private Image image;
         private Graphics gra;
-        private Pen bluePen = new Pen(Color.Blue, 1);
-        private Pen redPen = new Pen(Color.Red, 1);
+        private Pen bluePen = new Pen(Color.Blue, 2);
+        private Pen redPen = new Pen(Color.Red, 2);
         private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private float coefficient = 0.05f;
 
@@ -30,15 +30,15 @@ namespace Mirle.Agv
 
         public UcSectionImage() : this(new MapInfo(), new MapSection()) { }
         public UcSectionImage(MapInfo theMapInfo) : this(theMapInfo, new MapSection()) { }
-        public UcSectionImage(MapInfo theMapInfo, MapSection aSection)
+        public UcSectionImage(MapInfo theMapInfo, MapSection section)
         {
             InitializeComponent();
             this.theMapInfo = theMapInfo;
-            Section = aSection;
+            Section = section;
             Id = Section.Id;
             label1.Text = Id;
             labelSize = label1.Size.DeepClone();
-            DrawSectionImage(bluePen);
+            DrawSectionImage();
             SetupShowSectionInfo();
         }
 
@@ -50,8 +50,8 @@ namespace Mirle.Agv
             toolTip.SetToolTip(label1, msg);
         }
 
-        private void DrawSectionImage(Pen aPen)
-        {
+        public void DrawSectionImage(Pen aPen)
+        {           
             MapAddress headAdr = Section.HeadAddress;
             MapAddress tailAdr = Section.TailAddress;
 
@@ -102,5 +102,9 @@ namespace Mirle.Agv
 
         }
 
+        public void DrawSectionImage()
+        {
+            DrawSectionImage(bluePen);
+        }
     }
 }

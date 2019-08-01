@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TcpIpClientSample;
+using System.Diagnostics;
 
 namespace Mirle.Agv.Controller
 {
@@ -45,6 +46,9 @@ namespace Mirle.Agv.Controller
         private MapSection needReserveSection = new MapSection();
 
         public TcpIpAgent ClientAgent { get; private set; }
+
+        public int AskReserveTimeout { get; set; } = 10000;
+        public int AskReserveLoopTimeout { get; set; } = 10000;
 
         public MiddleAgent(MiddlerConfig middlerConfig, MapInfo theMapInfo)
         {
@@ -187,6 +191,9 @@ namespace Mirle.Agv.Controller
         private void AskReserve()
         {
             bool askResult = false;
+            Stopwatch sw = new Stopwatch();
+            long total = 0;
+           
             while (!askResult)
             {
                 #region Pause And Stop Check
@@ -198,13 +205,33 @@ namespace Mirle.Agv.Controller
                 }
 
                 #endregion
+                sw.Start();
 
                 askResult = Send_Cmd136_AskReserve();
-                if (!askResult)
+
+                sw.Stop();
+                total += sw.ElapsedMilliseconds;
+                if (sw.ElapsedMilliseconds > AskReserveTimeout)
                 {
+                    //Alarm 
+                    break;
+                }
+                if (total > AskReserveLoopTimeout)
+                {
+                    //Alarm
+                    break;
+                }
+                sw.Reset();
+              
+
+                if (!askResult)
+                {                    
                     SpinWait.SpinUntil(() => false, middlerConfig.AskReserveInterval);
                 }
             }
+
+            sw.Stop();
+            //Log total to be askreserve span time.
 
             if (askResult)
             {

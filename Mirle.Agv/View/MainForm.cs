@@ -247,6 +247,12 @@ namespace Mirle.Agv.View
                 }
             }
 
+            MapAddress mapAddress = theMapInfo.allMapAddresses["adr010"];
+            UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, mapAddress);
+            pictureBox1.Controls.Add(ucAddressImage);
+            ucAddressImage.Location = new Point((int)(4940 * coefficient + deltaOrigion), (int)(8500 * coefficient + deltaOrigion));
+            ucAddressImage.BringToFront();
+
             pictureBox1.SendToBack();
         }
 
@@ -358,6 +364,10 @@ namespace Mirle.Agv.View
         {
             var pX = (mouseDownPbPoint.X - deltaOrigion) / coefficient;
             var pY = (mouseDownPbPoint.Y - deltaOrigion) / coefficient;
+
+            if (pX < 0) pX = 0;
+            if (pY < 0) pY = 0;
+
             string msg = $"Position({pX},{pY})";
 
             numPositionX.Value = (decimal)pX;
@@ -555,7 +565,14 @@ namespace Mirle.Agv.View
 
         private void btnSetPosition_Click_1(object sender, EventArgs e)
         {
-            moveControlHandler.position.Real = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
-        }    
+            Vehicle.Instance.GetVehLoacation().RealPosition = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MapSection mapSection = theMapInfo.allMapSections["sec002"];
+            UcSectionImage sectionImage = allUcSectionImages[mapSection];
+            sectionImage.DrawSectionImage(redPen);
+        }
     }
 }

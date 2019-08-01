@@ -151,6 +151,12 @@
     <Compile Include="Model\AgvcTransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\AgvcTransferCmds\TransCmd.cs" />
     <Compile Include="Model\AgvcTransferCmds\UnloadCmdInfo.cs" />
+    <Compile Include="View\UserControls\UcAddressImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\UserControls\UcAddressImage.Designer.cs">
+      <DependentUpon>UcAddressImage.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\AlarmForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -255,6 +261,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\JogPitchAxis.resx">
       <DependentUpon>JogPitchAxis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\UserControls\ucAddressImage.resx">
+      <DependentUpon>UcAddressImage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\UcLabelTextBox.resx">
       <DependentUpon>UcLabelTextBox.cs</DependentUpon>

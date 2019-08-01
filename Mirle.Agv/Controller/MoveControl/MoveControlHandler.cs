@@ -744,6 +744,7 @@ namespace Mirle.Agv.Controller
                 }
 
                 position.Real = GetMapPosition(SectionLineList[indexOflisSectionLine], realElmoEncode);
+                Vehicle.Instance.GetVehLoacation().RealPosition = position.Real;
             }
         }
 
