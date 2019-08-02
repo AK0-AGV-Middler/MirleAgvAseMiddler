@@ -119,6 +119,7 @@ namespace Mirle.Agv.Controller
             ConfigsInitial();
             LoggersInitial();
             ControllersInitial();
+            XmlInitial();
             VehicleInitial();
             LoadAllAlarms();
             EventInitial();
@@ -223,6 +224,16 @@ namespace Mirle.Agv.Controller
                     OnComponentIntialDoneEvent(this, args);
                 }
             }
+        }
+
+        private void XmlInitial()
+        {
+            XmlHandler xmlHandler = new XmlHandler();
+
+            mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>("MainFlow.xml");
+            mapConfig = xmlHandler.ReadXml<MapConfig>("Map.xml");
+            middlerConfig = xmlHandler.ReadXml<MiddlerConfig>("Middler.xml");
+            alarmConfig = xmlHandler.ReadXml<AlarmConfig>("Alarm.xml");
         }
 
         public void StopVehicle()
@@ -1562,7 +1573,6 @@ namespace Mirle.Agv.Controller
 
             theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
             middleAgent.Send_Cmd144_StatusChangeReport();
-        }
-
+        }       
     }
 }

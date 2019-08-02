@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using Google.Protobuf.Collections;
 using Mirle.Agv.Controller;
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model.Configs;
-using System.Threading;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using TcpIpClientSample;
-using Mirle.Agv.Model;
-using Google.Protobuf.Collections;
 
 namespace Mirle.Agv.View
 {

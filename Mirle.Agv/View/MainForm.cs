@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace Mirle.Agv.View
 {
@@ -130,6 +131,12 @@ namespace Mirle.Agv.View
         private void InitialEvents()
         {
             mainFlowHandler.OnAgvcTransferCommandCheckedEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
+            mainFlowHandler.OnAgvcTransferCommandCheckedEvent += ShowMsgOnMainForm;
+        }
+
+        private void ShowMsgOnMainForm(object sender, string e)
+        {
+            RichTextBoxAppendHead(richTextBox1, e);
         }
 
         private void InitialVehicleLocation()
@@ -608,5 +615,31 @@ namespace Mirle.Agv.View
             UcSectionImage sectionImage = allUcSectionImages[mapSection];
             sectionImage.DrawSectionImage(redPen);
         }
+
+        public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
+        public void RichTextBoxAppendHead(RichTextBox richTextBox, string msg)
+        {
+            if (richTextBox.InvokeRequired)
+            {
+                RichTextBoxAppendHeadCallback mydel = new RichTextBoxAppendHeadCallback(RichTextBoxAppendHead);
+                this.Invoke(mydel, new object[] { richTextBox, msg });
+            }
+            else
+            {
+                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff] ");
+
+                richTextBox.Text = timeStamp + msg + Environment.NewLine + richTextBox.Text;
+
+                int RichTextBoxMaxLines = 20;  // middlerConfig.RichTextBoxMaxLines;
+
+                if (richTextBox.Lines.Count() > RichTextBoxMaxLines)
+                {
+                    string[] sNewLines = new string[RichTextBoxMaxLines];
+                    Array.Copy(richTextBox.Lines, 0, sNewLines, 0, sNewLines.Length);
+                    richTextBox.Lines = sNewLines;
+                }
+            }
+        }
+       
     }
 }
