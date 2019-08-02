@@ -62,6 +62,7 @@ namespace Mirle.Agv.View
 
         public bool IsBarcodeLineShow { get; set; } = true;
         private Dictionary<MapSection, UcSectionImage> allUcSectionImages = new Dictionary<MapSection, UcSectionImage>();
+        private Dictionary<MapAddress, UcAddressImage> allUcAddressImages = new Dictionary<MapAddress, UcAddressImage>();
         private float coefficient = 0.05f;
         private float deltaOrigion = 25;
         private float addressRadius = 3;
@@ -214,46 +215,79 @@ namespace Mirle.Agv.View
                 }
 
                 ucSectionImage.MouseDown += UcSectionImage_MouseDown;
-                ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown; ;
+                ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
                 ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
             foreach (var address in theMapInfo.mapAddresses)
             {
-                if (address.IsWorkStation)
+                UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
+                if (!allUcAddressImages.ContainsKey(address))
                 {
-                    var bigRadius = 2 * addressRadius;
-                    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion - bigRadius, address.Position.Y * coefficient + deltaOrigion - bigRadius);
-                    RectangleF rectangleF = new RectangleF(pointf.X, pointf.Y, 2 * bigRadius, 2 * bigRadius);
-                    gra.DrawEllipse(redPen, rectangleF);
+                    allUcAddressImages.Add(address, ucAddressImage);
                 }
-                else if (address.IsSegmentPoint)
-                {
-                    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion - addressRadius, address.Position.Y * coefficient + deltaOrigion - addressRadius);
-                    RectangleF rectangleF = new RectangleF(pointf.X, pointf.Y, 2 * addressRadius, 2 * addressRadius);
-                    gra.FillRectangle(blackBrush, rectangleF);
-                }
+                pictureBox1.Controls.Add(ucAddressImage);
+                Point addPosition = new Point((int)(address.Position.X * coefficient + deltaOrigion), (int)(address.Position.Y * coefficient + deltaOrigion));
+                ucAddressImage.Location = new Point(addPosition.X - (ucAddressImage.Radius + ucAddressImage.Delta), addPosition.Y - (ucAddressImage.label1.Height + 3 + ucAddressImage.Radius));
+                ucAddressImage.BringToFront();
 
-                if (address.IsCharger)
-                {
-                    var bigRadius = 2 * addressRadius;
-                    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion, address.Position.Y * coefficient + deltaOrigion);
-                    PointF p1 = new PointF(pointf.X + bigRadius, pointf.Y + bigRadius * triangleCoefficient);
-                    PointF p2 = new PointF(pointf.X - bigRadius, pointf.Y + bigRadius * triangleCoefficient);
-                    PointF p3 = new PointF(pointf.X, pointf.Y - bigRadius * triangleCoefficient * 2);
-                    PointF[] pointFs = new PointF[] { p1, p2, p3 };
-                    gra.FillPolygon(redBrush, pointFs);
-                }
+                ucAddressImage.MouseDown += UcAddressImage_MouseDown;
+                ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
+                ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
+
+
+                //if (address.IsWorkStation)
+                //{
+                //    var bigRadius = 2 * addressRadius;
+                //    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion - bigRadius, address.Position.Y * coefficient + deltaOrigion - bigRadius);
+                //    RectangleF rectangleF = new RectangleF(pointf.X, pointf.Y, 2 * bigRadius, 2 * bigRadius);
+                //    gra.DrawEllipse(redPen, rectangleF);
+                //}
+                //else if (address.IsSegmentPoint)
+                //{
+                //    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion - addressRadius, address.Position.Y * coefficient + deltaOrigion - addressRadius);
+                //    RectangleF rectangleF = new RectangleF(pointf.X, pointf.Y, 2 * addressRadius, 2 * addressRadius);
+                //    gra.FillRectangle(blackBrush, rectangleF);
+                //}
+
+                //if (address.IsCharger)
+                //{
+                //    var bigRadius = 2 * addressRadius;
+                //    PointF pointf = new PointF(address.Position.X * coefficient + deltaOrigion, address.Position.Y * coefficient + deltaOrigion);
+                //    PointF p1 = new PointF(pointf.X + bigRadius, pointf.Y + bigRadius * triangleCoefficient);
+                //    PointF p2 = new PointF(pointf.X - bigRadius, pointf.Y + bigRadius * triangleCoefficient);
+                //    PointF p3 = new PointF(pointf.X, pointf.Y - bigRadius * triangleCoefficient * 2);
+                //    PointF[] pointFs = new PointF[] { p1, p2, p3 };
+                //    gra.FillPolygon(redBrush, pointFs);
+                //}
             }
 
-            MapAddress mapAddress = theMapInfo.allMapAddresses["adr010"];
-            UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, mapAddress);
-            pictureBox1.Controls.Add(ucAddressImage);
-            ucAddressImage.Location = new Point((int)(4940 * coefficient + deltaOrigion), (int)(8500 * coefficient + deltaOrigion));
-            ucAddressImage.BringToFront();
-
             pictureBox1.SendToBack();
+        }
+
+        private void UcAddressImageItem_MouseDown(object sender, MouseEventArgs e)
+        {
+            Control control = ((Control)sender).Parent;
+            UcAddressImage ucAddressImage = (UcAddressImage)control;
+            int addX = (int)(ucAddressImage.Address.Position.X * coefficient + deltaOrigion);
+            int addY = (int)(ucAddressImage.Address.Position.Y * coefficient + deltaOrigion);
+            Point point = new Point(addX, addY);
+            mouseDownPbPoint = point;
+            mouseDownScreenPoint = ((Control)sender).PointToScreen(new Point(e.X, e.Y));
+            UpdateStartPbPoint();
+        }
+
+        private void UcAddressImage_MouseDown(object sender, MouseEventArgs e)
+        {
+            Control control = (Control)sender;
+            UcAddressImage ucAddressImage = (UcAddressImage)control;
+            int addX = (int)(ucAddressImage.Address.Position.X * coefficient + deltaOrigion);
+            int addY = (int)(ucAddressImage.Address.Position.Y * coefficient + deltaOrigion);
+            Point point = new Point(addX, addY);
+            mouseDownPbPoint = point;
+            mouseDownScreenPoint = ((Control)sender).PointToScreen(new Point(e.X, e.Y));
+            UpdateStartPbPoint();
         }
 
         private void UcSectionImageItem_MouseDown(object sender, MouseEventArgs e)

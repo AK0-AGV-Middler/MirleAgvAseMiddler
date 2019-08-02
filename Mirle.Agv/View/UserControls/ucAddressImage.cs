@@ -16,6 +16,8 @@ namespace Mirle.Agv
         public MapAddress Address { get; set; } = new MapAddress();
         public string Id { get; set; } = "Empty";
         public Size labelSize { get; set; } = new Size(100, 100);
+        public int Delta { get; set; } = 0;
+        public int Radius { get; set; } = 6;
 
         private MapInfo theMapInfo = new MapInfo();
         private Image image;
@@ -25,10 +27,8 @@ namespace Mirle.Agv
         private Pen redPen = new Pen(Color.Red, 1);
         private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private SolidBrush redBrush = new SolidBrush(Color.Red);
-        private float coefficient = 0.05f;
-        private float deltaOrigion = 25;
-        private float addressRadius = 3;
-        private float triangleCoefficient = (float)(1 / Math.Sqrt(3.0));
+        private float addressRadius = 6;
+        private float triangleCoefficient = (float)(Math.Sqrt(3.0));
 
         private ToolTip toolTip = new ToolTip();
 
@@ -38,8 +38,7 @@ namespace Mirle.Agv
             this.theMapInfo = theMapInfo;
             Address = address;
             Id = Address.Id;
-            //label1.Text = Id;
-            label1.Text = "";
+            label1.Text = Id;
             labelSize = label1.Size.DeepClone();
             DrawAddressImage();
             SetupShowAddressInfo();
@@ -47,41 +46,43 @@ namespace Mirle.Agv
 
         private void SetupShowAddressInfo()
         {
+            string msg = $"Id = {Address.Id}\n" + $"Position = ({Address.Position.X},{Address.Position.Y})\n" + $"BarcodeNum = {Address.Barcode}\n" + $"Coupler = {Address.CouplerId}";
 
+            toolTip.SetToolTip(pictureBox1, msg);
+            toolTip.SetToolTip(label1, msg);
         }
 
         public void DrawAddressImage(Pen pen)
         {
-            var bigRadius = 2 * addressRadius;
-            int recSize = (int)(2 * bigRadius);
-            Size = new Size(Math.Max(label1.Width, recSize), label1.Height + recSize);
+            int recSize = (int)(2 * Radius);
+            Size = new Size(Math.Max(label1.Width, recSize) + 2, label1.Height + recSize + 4);
             image = new Bitmap(Size.Width, Size.Height);
             gra = Graphics.FromImage(image);
-            int delta = 0;
             if (label1.Width >= recSize)
             {
-                delta = (label1.Width - recSize) / 2;
+                Delta = (label1.Width - recSize) / 2;
             }
 
             if (Address.IsWorkStation)
             {
-                RectangleF rectangleF = new RectangleF(delta, label1.Height, recSize, recSize);
+                RectangleF rectangleF = new RectangleF(Delta + 1, label1.Height + 3, recSize, recSize);
                 gra.DrawEllipse(redPen, rectangleF);
             }
 
             if (Address.IsCharger)
             {
-                PointF pointf = new PointF(delta, label1.Height);
-                PointF p1 = new PointF(pointf.X + bigRadius, pointf.Y + 0);
-                PointF p2 = new PointF(pointf.X + 0, pointf.Y + bigRadius * triangleCoefficient * 2);
-                PointF p3 = new PointF(pointf.X + 2 * bigRadius, pointf.Y + bigRadius * triangleCoefficient * 2);
+                PointF pointf = new PointF(Delta + 1, label1.Height + 3);
+                PointF p1 = new PointF(pointf.X + Radius, pointf.Y);
+                PointF p2 = new PointF(pointf.X, pointf.Y + (Radius * triangleCoefficient));
+                PointF p3 = new PointF(pointf.X + 2 * Radius, pointf.Y + (Radius * triangleCoefficient));
                 PointF[] pointFs = new PointF[] { p1, p2, p3 };
                 gra.FillPolygon(redBrush, pointFs);
             }
 
             if (Address.IsSegmentPoint)
             {
-
+                Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
+                gra.DrawRectangle(blackPen, rectangle);
             }
 
             pictureBox1.Image = image;
