@@ -158,6 +158,7 @@ namespace Mirle.Agv
     public enum EnumAddressAction
     {
         ST,
+        BST,
         TR50,
         TR350,
         BTR50,
@@ -248,14 +249,14 @@ namespace Mirle.Agv
 
     #region MoveControlEnums
 
-    public enum LineReviseType
+    public enum EnumLineReviseType
     {
         None,
         Theta,
         SectionDeviation
     }
 
-    public enum CommandType
+    public enum EnumCommandType
     {
         TR,
         R2000,
@@ -268,7 +269,7 @@ namespace Mirle.Agv
         End
     }
 
-    public enum JogPitchMode
+    public enum EnumJogPitchMode
     {
         Normal,
         ForwardWheel,
@@ -276,15 +277,15 @@ namespace Mirle.Agv
         SpinTurn
     }
 
-    public enum JogPitchModeName
+    public enum EnumJogPitchModeName
     {
-        四軸同動模式 = JogPitchMode.Normal,
-        前輪轉動模式 = JogPitchMode.ForwardWheel,
-        後輪轉動模式 = JogPitchMode.BackwardWheel,
-        原地旋轉模式 = JogPitchMode.SpinTurn,
+        四軸同動模式 = EnumJogPitchMode.Normal,
+        前輪轉動模式 = EnumJogPitchMode.ForwardWheel,
+        後輪轉動模式 = EnumJogPitchMode.BackwardWheel,
+        原地旋轉模式 = EnumJogPitchMode.SpinTurn,
     }
 
-    public enum Axis
+    public enum EnumAxis
     {
         None,
         // 走行單軸.
@@ -312,19 +313,19 @@ namespace Mirle.Agv
         GT
     }
 
-    public enum AxisType
+    public enum EnumAxisType
     {
         Move,
         Turn
     }
 
-    public enum MoveType
+    public enum EnumMoveType
     {
         Relative,
         Absolute
     }
 
-    public enum BeamSensorLocate
+    public enum EnumBeamSensorLocate
     {
         Front,
         Back,
@@ -343,7 +344,7 @@ namespace Mirle.Agv
         WaitForResume
     }
 
-    public enum MoveComplete
+    public enum EnumMoveComplete
     {
         Success,
         Fail

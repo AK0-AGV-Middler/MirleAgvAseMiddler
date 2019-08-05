@@ -32,6 +32,23 @@
             this.tabContol1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.tbxCommBusyTimeout_SV = new System.Windows.Forms.TextBox();
+            this.tbxCommMovingTimeout_PV = new System.Windows.Forms.TextBox();
+            this.tbxCommMovingTimeout_SV = new System.Windows.Forms.TextBox();
+            this.tbxCommReadTimeout_PV = new System.Windows.Forms.TextBox();
+            this.btnForkCommParamSet = new System.Windows.Forms.Button();
+            this.tbxCommReadTimeout_SV = new System.Windows.Forms.TextBox();
+            this.tbxReadCassetteID_PV = new System.Windows.Forms.TextBox();
+            this.label30 = new System.Windows.Forms.Label();
+            this.tbxCommBusyTimeout_PV = new System.Windows.Forms.TextBox();
+            this.label31 = new System.Windows.Forms.Label();
+            this.label32 = new System.Windows.Forms.Label();
+            this.label37 = new System.Windows.Forms.Label();
+            this.label38 = new System.Windows.Forms.Label();
+            this.label39 = new System.Windows.Forms.Label();
+            this.label40 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label23 = new System.Windows.Forms.Label();
             this.btnCycle = new System.Windows.Forms.Button();
@@ -74,6 +91,26 @@
             this.label20 = new System.Windows.Forms.Label();
             this.txtErrorReason = new System.Windows.Forms.TextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.txtAutoChargeLowSOC_SV = new System.Windows.Forms.TextBox();
+            this.tbxResetAHTimeout_PV = new System.Windows.Forms.TextBox();
+            this.tbxResetAHTimeout_SV = new System.Windows.Forms.TextBox();
+            this.tbxMaxCCModeCounter_PV = new System.Windows.Forms.TextBox();
+            this.btnBatteryParamSet = new System.Windows.Forms.Button();
+            this.tbxMaxCCModeCounter_SV = new System.Windows.Forms.TextBox();
+            this.tbxAHWorkingRange_PV = new System.Windows.Forms.TextBox();
+            this.tbxAHWorkingRange_SV = new System.Windows.Forms.TextBox();
+            this.label51 = new System.Windows.Forms.Label();
+            this.txtAutoChargeLowSOC_PV = new System.Windows.Forms.TextBox();
+            this.label52 = new System.Windows.Forms.Label();
+            this.label54 = new System.Windows.Forms.Label();
+            this.label53 = new System.Windows.Forms.Label();
+            this.label50 = new System.Windows.Forms.Label();
+            this.label55 = new System.Windows.Forms.Label();
+            this.label56 = new System.Windows.Forms.Label();
+            this.txtSOCSet = new System.Windows.Forms.TextBox();
+            this.btnSOCSet = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
             this.txtCCModeAH = new System.Windows.Forms.TextBox();
             this.label18 = new System.Windows.Forms.Label();
@@ -108,6 +145,8 @@
             this.btnChargeRightStart = new System.Windows.Forms.Button();
             this.btnChargeLeftStart = new System.Windows.Forms.Button();
             this.tabSafety = new System.Windows.Forms.TabPage();
+            this.lblEMO = new System.Windows.Forms.Label();
+            this.lblBumperAlarm = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.btnBeamSensorAutoSleepSet = new System.Windows.Forms.Button();
             this.rdoBeamSensorAutoSleepDisable = new System.Windows.Forms.RadioButton();
@@ -131,7 +170,6 @@
             this.lblFarDetect = new System.Windows.Forms.Label();
             this.lblNoDetect = new System.Windows.Forms.Label();
             this.grpR = new System.Windows.Forms.GroupBox();
-            this.pnlR = new System.Windows.Forms.Panel();
             this.lblBumpDR = new System.Windows.Forms.Label();
             this.lblBumpUR = new System.Windows.Forms.Label();
             this.lblBeamSensorRDR = new System.Windows.Forms.Label();
@@ -139,6 +177,7 @@
             this.lblBeamSensorRUC = new System.Windows.Forms.Label();
             this.lblBeamSensorRUR = new System.Windows.Forms.Label();
             this.lblBeamSensorRUL = new System.Windows.Forms.Label();
+            this.pnlR = new System.Windows.Forms.Panel();
             this.grpL = new System.Windows.Forms.GroupBox();
             this.lblEMOTotal = new System.Windows.Forms.Label();
             this.lblBumpDL = new System.Windows.Forms.Label();
@@ -150,7 +189,6 @@
             this.lblBeamSensorLUL = new System.Windows.Forms.Label();
             this.pnlL = new System.Windows.Forms.Panel();
             this.grpB = new System.Windows.Forms.GroupBox();
-            this.pnlB = new System.Windows.Forms.Panel();
             this.lblEMOBR = new System.Windows.Forms.Label();
             this.lblEMOBC = new System.Windows.Forms.Label();
             this.lblEMOBL = new System.Windows.Forms.Label();
@@ -165,8 +203,8 @@
             this.lblBeamSensorBDC = new System.Windows.Forms.Label();
             this.lblBeamSensorBUR = new System.Windows.Forms.Label();
             this.lblBeamSensorBUL = new System.Windows.Forms.Label();
+            this.pnlB = new System.Windows.Forms.Panel();
             this.grpF = new System.Windows.Forms.GroupBox();
-            this.pnlF = new System.Windows.Forms.Panel();
             this.lblEMOFR = new System.Windows.Forms.Label();
             this.lblEMOFC = new System.Windows.Forms.Label();
             this.lblEMOFL = new System.Windows.Forms.Label();
@@ -181,19 +219,26 @@
             this.lblBeamSensorFDC = new System.Windows.Forms.Label();
             this.lblBeamSensorFUR = new System.Windows.Forms.Label();
             this.lblBeamSensorFUL = new System.Windows.Forms.Label();
+            this.pnlF = new System.Windows.Forms.Panel();
             this.timGUIRefresh = new System.Windows.Forms.Timer(this.components);
             this.label19 = new System.Windows.Forms.Label();
             this.txtTriggerEvent = new System.Windows.Forms.TextBox();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.btnBuzzerStop = new System.Windows.Forms.Button();
             this.timCycle = new System.Windows.Forms.Timer(this.components);
-            this.btnHide = new System.Windows.Forms.Button();
+            this.tbxLogView = new System.Windows.Forms.TextBox();
+            this.label29 = new System.Windows.Forms.Label();
+            this.chbCassetteID_SV = new System.Windows.Forms.CheckBox();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.tableLayoutPanel2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
             this.tabSafety.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.grpSafety.SuspendLayout();
@@ -228,6 +273,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.panel2);
             this.tabPage2.Controls.Add(this.groupBox3);
             this.tabPage2.Controls.Add(this.groupBox2);
             this.tabPage2.Controls.Add(this.groupBox1);
@@ -238,6 +284,200 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fork";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.tableLayoutPanel2);
+            this.panel2.Location = new System.Drawing.Point(994, 6);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(292, 218);
+            this.panel2.TabIndex = 68;
+            // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.tableLayoutPanel2.ColumnCount = 3;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.Controls.Add(this.tbxCommBusyTimeout_SV, 2, 3);
+            this.tableLayoutPanel2.Controls.Add(this.chbCassetteID_SV, 2, 1);
+            this.tableLayoutPanel2.Controls.Add(this.tbxCommMovingTimeout_PV, 1, 4);
+            this.tableLayoutPanel2.Controls.Add(this.tbxCommMovingTimeout_SV, 2, 4);
+            this.tableLayoutPanel2.Controls.Add(this.tbxCommReadTimeout_PV, 1, 2);
+            this.tableLayoutPanel2.Controls.Add(this.btnForkCommParamSet, 1, 5);
+            this.tableLayoutPanel2.Controls.Add(this.tbxCommReadTimeout_SV, 2, 2);
+            this.tableLayoutPanel2.Controls.Add(this.tbxReadCassetteID_PV, 1, 1);
+            this.tableLayoutPanel2.Controls.Add(this.label30, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.tbxCommBusyTimeout_PV, 1, 3);
+            this.tableLayoutPanel2.Controls.Add(this.label31, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.label32, 0, 1);
+            this.tableLayoutPanel2.Controls.Add(this.label37, 2, 0);
+            this.tableLayoutPanel2.Controls.Add(this.label38, 0, 2);
+            this.tableLayoutPanel2.Controls.Add(this.label39, 0, 3);
+            this.tableLayoutPanel2.Controls.Add(this.label40, 0, 4);
+            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 6;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(292, 218);
+            this.tableLayoutPanel2.TabIndex = 73;
+            // 
+            // tbxCommBusyTimeout_SV
+            // 
+            this.tbxCommBusyTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCommBusyTimeout_SV.Location = new System.Drawing.Point(215, 113);
+            this.tbxCommBusyTimeout_SV.Name = "tbxCommBusyTimeout_SV";
+            this.tbxCommBusyTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommBusyTimeout_SV.TabIndex = 61;
+            // 
+            // tbxCommMovingTimeout_PV
+            // 
+            this.tbxCommMovingTimeout_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCommMovingTimeout_PV.Location = new System.Drawing.Point(135, 149);
+            this.tbxCommMovingTimeout_PV.Name = "tbxCommMovingTimeout_PV";
+            this.tbxCommMovingTimeout_PV.ReadOnly = true;
+            this.tbxCommMovingTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommMovingTimeout_PV.TabIndex = 64;
+            // 
+            // tbxCommMovingTimeout_SV
+            // 
+            this.tbxCommMovingTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCommMovingTimeout_SV.Location = new System.Drawing.Point(215, 149);
+            this.tbxCommMovingTimeout_SV.Name = "tbxCommMovingTimeout_SV";
+            this.tbxCommMovingTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommMovingTimeout_SV.TabIndex = 61;
+            // 
+            // tbxCommReadTimeout_PV
+            // 
+            this.tbxCommReadTimeout_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCommReadTimeout_PV.Location = new System.Drawing.Point(135, 77);
+            this.tbxCommReadTimeout_PV.Name = "tbxCommReadTimeout_PV";
+            this.tbxCommReadTimeout_PV.ReadOnly = true;
+            this.tbxCommReadTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommReadTimeout_PV.TabIndex = 64;
+            // 
+            // btnForkCommParamSet
+            // 
+            this.tableLayoutPanel2.SetColumnSpan(this.btnForkCommParamSet, 2);
+            this.btnForkCommParamSet.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnForkCommParamSet.Location = new System.Drawing.Point(135, 182);
+            this.btnForkCommParamSet.Name = "btnForkCommParamSet";
+            this.btnForkCommParamSet.Size = new System.Drawing.Size(153, 32);
+            this.btnForkCommParamSet.TabIndex = 63;
+            this.btnForkCommParamSet.Text = "Set";
+            this.btnForkCommParamSet.UseVisualStyleBackColor = true;
+            this.btnForkCommParamSet.Click += new System.EventHandler(this.btnForkCommParamSet_Click);
+            // 
+            // tbxCommReadTimeout_SV
+            // 
+            this.tbxCommReadTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCommReadTimeout_SV.Location = new System.Drawing.Point(215, 77);
+            this.tbxCommReadTimeout_SV.Name = "tbxCommReadTimeout_SV";
+            this.tbxCommReadTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommReadTimeout_SV.TabIndex = 61;
+            // 
+            // tbxReadCassetteID_PV
+            // 
+            this.tbxReadCassetteID_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxReadCassetteID_PV.Location = new System.Drawing.Point(135, 41);
+            this.tbxReadCassetteID_PV.Name = "tbxReadCassetteID_PV";
+            this.tbxReadCassetteID_PV.ReadOnly = true;
+            this.tbxReadCassetteID_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxReadCassetteID_PV.TabIndex = 64;
+            this.tbxReadCassetteID_PV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label30
+            // 
+            this.label30.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label30.AutoSize = true;
+            this.label30.Location = new System.Drawing.Point(4, 11);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(124, 13);
+            this.label30.TabIndex = 69;
+            this.label30.Text = "Parameter Name";
+            this.label30.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // tbxCommBusyTimeout_PV
+            // 
+            this.tbxCommBusyTimeout_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCommBusyTimeout_PV.Location = new System.Drawing.Point(135, 113);
+            this.tbxCommBusyTimeout_PV.Name = "tbxCommBusyTimeout_PV";
+            this.tbxCommBusyTimeout_PV.ReadOnly = true;
+            this.tbxCommBusyTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommBusyTimeout_PV.TabIndex = 64;
+            // 
+            // label31
+            // 
+            this.label31.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(135, 11);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(73, 13);
+            this.label31.TabIndex = 70;
+            this.label31.Text = "Present Value";
+            this.label31.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label32
+            // 
+            this.label32.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(4, 46);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(124, 13);
+            this.label32.TabIndex = 72;
+            this.label32.Text = "Read Cassette ID";
+            this.label32.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label37
+            // 
+            this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label37.AutoSize = true;
+            this.label37.Location = new System.Drawing.Point(215, 11);
+            this.label37.Name = "label37";
+            this.label37.Size = new System.Drawing.Size(73, 13);
+            this.label37.TabIndex = 71;
+            this.label37.Text = "Set Value";
+            this.label37.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label38
+            // 
+            this.label38.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label38.AutoSize = true;
+            this.label38.Location = new System.Drawing.Point(4, 75);
+            this.label38.Name = "label38";
+            this.label38.Size = new System.Drawing.Size(124, 26);
+            this.label38.TabIndex = 73;
+            this.label38.Text = "Fork Command Read Timeout";
+            this.label38.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label39
+            // 
+            this.label39.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label39.AutoSize = true;
+            this.label39.Location = new System.Drawing.Point(4, 111);
+            this.label39.Name = "label39";
+            this.label39.Size = new System.Drawing.Size(124, 26);
+            this.label39.TabIndex = 74;
+            this.label39.Text = "Fork Command Busy Timeout";
+            this.label39.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label40
+            // 
+            this.label40.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label40.AutoSize = true;
+            this.label40.Location = new System.Drawing.Point(4, 147);
+            this.label40.Name = "label40";
+            this.label40.Size = new System.Drawing.Size(124, 26);
+            this.label40.TabIndex = 75;
+            this.label40.Text = "Fork Command Moving Timeout";
+            this.label40.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // groupBox3
             // 
@@ -570,7 +810,7 @@
             this.btnForkCommandClear.Name = "btnForkCommandClear";
             this.btnForkCommandClear.Size = new System.Drawing.Size(123, 37);
             this.btnForkCommandClear.TabIndex = 13;
-            this.btnForkCommandClear.Text = "Clear";
+            this.btnForkCommandClear.Text = "Clear Command Info";
             this.btnForkCommandClear.UseVisualStyleBackColor = true;
             this.btnForkCommandClear.Click += new System.EventHandler(this.btnForkCommandClear_Click);
             // 
@@ -679,6 +919,9 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.panel1);
+            this.tabPage3.Controls.Add(this.txtSOCSet);
+            this.tabPage3.Controls.Add(this.btnSOCSet);
             this.tabPage3.Controls.Add(this.label21);
             this.tabPage3.Controls.Add(this.txtCCModeAH);
             this.tabPage3.Controls.Add(this.label18);
@@ -720,6 +963,225 @@
             this.tabPage3.Text = "Charge&Battery";
             this.tabPage3.UseVisualStyleBackColor = true;
             this.tabPage3.Click += new System.EventHandler(this.btnBuzzerStop_Click);
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.tableLayoutPanel1);
+            this.panel1.Location = new System.Drawing.Point(992, 6);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(292, 217);
+            this.panel1.TabIndex = 65;
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.tableLayoutPanel1.ColumnCount = 3;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.Controls.Add(this.txtAutoChargeLowSOC_SV, 2, 3);
+            this.tableLayoutPanel1.Controls.Add(this.tbxResetAHTimeout_PV, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.tbxResetAHTimeout_SV, 2, 4);
+            this.tableLayoutPanel1.Controls.Add(this.tbxMaxCCModeCounter_PV, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.btnBatteryParamSet, 1, 5);
+            this.tableLayoutPanel1.Controls.Add(this.tbxMaxCCModeCounter_SV, 2, 2);
+            this.tableLayoutPanel1.Controls.Add(this.tbxAHWorkingRange_PV, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.tbxAHWorkingRange_SV, 2, 1);
+            this.tableLayoutPanel1.Controls.Add(this.label51, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.txtAutoChargeLowSOC_PV, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.label52, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.label54, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.label53, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.label50, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.label55, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.label56, 0, 4);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 6;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(292, 217);
+            this.tableLayoutPanel1.TabIndex = 73;
+            // 
+            // txtAutoChargeLowSOC_SV
+            // 
+            this.txtAutoChargeLowSOC_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtAutoChargeLowSOC_SV.Location = new System.Drawing.Point(215, 113);
+            this.txtAutoChargeLowSOC_SV.Name = "txtAutoChargeLowSOC_SV";
+            this.txtAutoChargeLowSOC_SV.Size = new System.Drawing.Size(73, 23);
+            this.txtAutoChargeLowSOC_SV.TabIndex = 61;
+            // 
+            // tbxResetAHTimeout_PV
+            // 
+            this.tbxResetAHTimeout_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxResetAHTimeout_PV.Location = new System.Drawing.Point(135, 149);
+            this.tbxResetAHTimeout_PV.Name = "tbxResetAHTimeout_PV";
+            this.tbxResetAHTimeout_PV.ReadOnly = true;
+            this.tbxResetAHTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxResetAHTimeout_PV.TabIndex = 64;
+            // 
+            // tbxResetAHTimeout_SV
+            // 
+            this.tbxResetAHTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxResetAHTimeout_SV.Location = new System.Drawing.Point(215, 149);
+            this.tbxResetAHTimeout_SV.Name = "tbxResetAHTimeout_SV";
+            this.tbxResetAHTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxResetAHTimeout_SV.TabIndex = 61;
+            // 
+            // tbxMaxCCModeCounter_PV
+            // 
+            this.tbxMaxCCModeCounter_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxMaxCCModeCounter_PV.Location = new System.Drawing.Point(135, 77);
+            this.tbxMaxCCModeCounter_PV.Name = "tbxMaxCCModeCounter_PV";
+            this.tbxMaxCCModeCounter_PV.ReadOnly = true;
+            this.tbxMaxCCModeCounter_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxMaxCCModeCounter_PV.TabIndex = 64;
+            // 
+            // btnBatteryParamSet
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnBatteryParamSet, 2);
+            this.btnBatteryParamSet.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnBatteryParamSet.Location = new System.Drawing.Point(135, 182);
+            this.btnBatteryParamSet.Name = "btnBatteryParamSet";
+            this.btnBatteryParamSet.Size = new System.Drawing.Size(153, 31);
+            this.btnBatteryParamSet.TabIndex = 63;
+            this.btnBatteryParamSet.Text = "Set";
+            this.btnBatteryParamSet.UseVisualStyleBackColor = true;
+            this.btnBatteryParamSet.Click += new System.EventHandler(this.btnBatteryParamSet_Click);
+            // 
+            // tbxMaxCCModeCounter_SV
+            // 
+            this.tbxMaxCCModeCounter_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxMaxCCModeCounter_SV.Location = new System.Drawing.Point(215, 77);
+            this.tbxMaxCCModeCounter_SV.Name = "tbxMaxCCModeCounter_SV";
+            this.tbxMaxCCModeCounter_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxMaxCCModeCounter_SV.TabIndex = 61;
+            // 
+            // tbxAHWorkingRange_PV
+            // 
+            this.tbxAHWorkingRange_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAHWorkingRange_PV.Location = new System.Drawing.Point(135, 41);
+            this.tbxAHWorkingRange_PV.Name = "tbxAHWorkingRange_PV";
+            this.tbxAHWorkingRange_PV.ReadOnly = true;
+            this.tbxAHWorkingRange_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxAHWorkingRange_PV.TabIndex = 64;
+            // 
+            // tbxAHWorkingRange_SV
+            // 
+            this.tbxAHWorkingRange_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAHWorkingRange_SV.Location = new System.Drawing.Point(215, 41);
+            this.tbxAHWorkingRange_SV.Name = "tbxAHWorkingRange_SV";
+            this.tbxAHWorkingRange_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxAHWorkingRange_SV.TabIndex = 61;
+            // 
+            // label51
+            // 
+            this.label51.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label51.AutoSize = true;
+            this.label51.Location = new System.Drawing.Point(4, 11);
+            this.label51.Name = "label51";
+            this.label51.Size = new System.Drawing.Size(124, 13);
+            this.label51.TabIndex = 69;
+            this.label51.Text = "Parameter Name";
+            this.label51.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtAutoChargeLowSOC_PV
+            // 
+            this.txtAutoChargeLowSOC_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtAutoChargeLowSOC_PV.Location = new System.Drawing.Point(135, 113);
+            this.txtAutoChargeLowSOC_PV.Name = "txtAutoChargeLowSOC_PV";
+            this.txtAutoChargeLowSOC_PV.ReadOnly = true;
+            this.txtAutoChargeLowSOC_PV.Size = new System.Drawing.Size(73, 23);
+            this.txtAutoChargeLowSOC_PV.TabIndex = 64;
+            // 
+            // label52
+            // 
+            this.label52.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label52.AutoSize = true;
+            this.label52.Location = new System.Drawing.Point(135, 11);
+            this.label52.Name = "label52";
+            this.label52.Size = new System.Drawing.Size(73, 13);
+            this.label52.TabIndex = 70;
+            this.label52.Text = "Present Value";
+            this.label52.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label54
+            // 
+            this.label54.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label54.AutoSize = true;
+            this.label54.Location = new System.Drawing.Point(4, 46);
+            this.label54.Name = "label54";
+            this.label54.Size = new System.Drawing.Size(124, 13);
+            this.label54.TabIndex = 72;
+            this.label54.Text = "AH Working Range";
+            this.label54.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label53
+            // 
+            this.label53.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label53.AutoSize = true;
+            this.label53.Location = new System.Drawing.Point(215, 11);
+            this.label53.Name = "label53";
+            this.label53.Size = new System.Drawing.Size(73, 13);
+            this.label53.TabIndex = 71;
+            this.label53.Text = "Set Value";
+            this.label53.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label50
+            // 
+            this.label50.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label50.AutoSize = true;
+            this.label50.Location = new System.Drawing.Point(4, 82);
+            this.label50.Name = "label50";
+            this.label50.Size = new System.Drawing.Size(124, 13);
+            this.label50.TabIndex = 73;
+            this.label50.Text = "Max CC Mode Counter";
+            this.label50.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label55
+            // 
+            this.label55.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label55.AutoSize = true;
+            this.label55.Location = new System.Drawing.Point(4, 118);
+            this.label55.Name = "label55";
+            this.label55.Size = new System.Drawing.Size(124, 13);
+            this.label55.TabIndex = 74;
+            this.label55.Text = "Low SOC";
+            this.label55.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label56
+            // 
+            this.label56.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label56.AutoSize = true;
+            this.label56.Location = new System.Drawing.Point(4, 154);
+            this.label56.Name = "label56";
+            this.label56.Size = new System.Drawing.Size(124, 13);
+            this.label56.TabIndex = 75;
+            this.label56.Text = "Reset AH Timeout";
+            this.label56.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtSOCSet
+            // 
+            this.txtSOCSet.Location = new System.Drawing.Point(154, 260);
+            this.txtSOCSet.Name = "txtSOCSet";
+            this.txtSOCSet.Size = new System.Drawing.Size(125, 23);
+            this.txtSOCSet.TabIndex = 55;
+            this.txtSOCSet.Text = "70.00";
+            // 
+            // btnSOCSet
+            // 
+            this.btnSOCSet.Location = new System.Drawing.Point(154, 289);
+            this.btnSOCSet.Name = "btnSOCSet";
+            this.btnSOCSet.Size = new System.Drawing.Size(125, 29);
+            this.btnSOCSet.TabIndex = 54;
+            this.btnSOCSet.Text = "SOC Set";
+            this.btnSOCSet.UseVisualStyleBackColor = true;
+            this.btnSOCSet.Click += new System.EventHandler(this.btnSOCSet_Click);
             // 
             // label21
             // 
@@ -1020,6 +1482,8 @@
             // 
             // tabSafety
             // 
+            this.tabSafety.Controls.Add(this.lblEMO);
+            this.tabSafety.Controls.Add(this.lblBumperAlarm);
             this.tabSafety.Controls.Add(this.groupBox4);
             this.tabSafety.Controls.Add(this.chkMoveRight);
             this.tabSafety.Controls.Add(this.chkMoveLeft);
@@ -1047,6 +1511,30 @@
             this.tabSafety.TabIndex = 3;
             this.tabSafety.Text = "Safety";
             this.tabSafety.UseVisualStyleBackColor = true;
+            // 
+            // lblEMO
+            // 
+            this.lblEMO.BackColor = System.Drawing.Color.LightGreen;
+            this.lblEMO.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblEMO.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblEMO.Location = new System.Drawing.Point(874, 577);
+            this.lblEMO.Name = "lblEMO";
+            this.lblEMO.Size = new System.Drawing.Size(315, 34);
+            this.lblEMO.TabIndex = 79;
+            this.lblEMO.Text = "EMO";
+            this.lblEMO.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblBumperAlarm
+            // 
+            this.lblBumperAlarm.BackColor = System.Drawing.Color.LightGreen;
+            this.lblBumperAlarm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblBumperAlarm.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblBumperAlarm.Location = new System.Drawing.Point(874, 527);
+            this.lblBumperAlarm.Name = "lblBumperAlarm";
+            this.lblBumperAlarm.Size = new System.Drawing.Size(315, 34);
+            this.lblBumperAlarm.TabIndex = 78;
+            this.lblBumperAlarm.Text = "Bumper Alarm";
+            this.lblBumperAlarm.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBox4
             // 
@@ -1285,7 +1773,6 @@
             // 
             // grpR
             // 
-            this.grpR.Controls.Add(this.pnlR);
             this.grpR.Controls.Add(this.lblBumpDR);
             this.grpR.Controls.Add(this.lblBumpUR);
             this.grpR.Controls.Add(this.lblBeamSensorRDR);
@@ -1293,6 +1780,7 @@
             this.grpR.Controls.Add(this.lblBeamSensorRUC);
             this.grpR.Controls.Add(this.lblBeamSensorRUR);
             this.grpR.Controls.Add(this.lblBeamSensorRUL);
+            this.grpR.Controls.Add(this.pnlR);
             this.grpR.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.grpR.Location = new System.Drawing.Point(380, 248);
             this.grpR.Name = "grpR";
@@ -1300,14 +1788,6 @@
             this.grpR.TabIndex = 57;
             this.grpR.TabStop = false;
             this.grpR.Text = "右";
-            // 
-            // pnlR
-            // 
-            this.pnlR.Location = new System.Drawing.Point(126, 105);
-            this.pnlR.Name = "pnlR";
-            this.pnlR.Size = new System.Drawing.Size(279, 57);
-            this.pnlR.TabIndex = 69;
-            this.pnlR.DoubleClick += new System.EventHandler(this.pnlR_DoubleClick);
             // 
             // lblBumpDR
             // 
@@ -1344,6 +1824,7 @@
             this.lblBeamSensorRDR.TabIndex = 54;
             this.lblBeamSensorRDR.Text = "RDR";
             this.lblBeamSensorRDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRDL
             // 
@@ -1356,6 +1837,7 @@
             this.lblBeamSensorRDL.TabIndex = 53;
             this.lblBeamSensorRDL.Text = "RDL";
             this.lblBeamSensorRDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRUC
             // 
@@ -1368,6 +1850,7 @@
             this.lblBeamSensorRUC.TabIndex = 52;
             this.lblBeamSensorRUC.Text = "RUC";
             this.lblBeamSensorRUC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRUC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRUR
             // 
@@ -1380,6 +1863,7 @@
             this.lblBeamSensorRUR.TabIndex = 51;
             this.lblBeamSensorRUR.Text = "RUR";
             this.lblBeamSensorRUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRUL
             // 
@@ -1392,6 +1876,15 @@
             this.lblBeamSensorRUL.TabIndex = 50;
             this.lblBeamSensorRUL.Text = "RUL";
             this.lblBeamSensorRUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
+            // 
+            // pnlR
+            // 
+            this.pnlR.Location = new System.Drawing.Point(12, 19);
+            this.pnlR.Name = "pnlR";
+            this.pnlR.Size = new System.Drawing.Size(497, 172);
+            this.pnlR.TabIndex = 69;
+            this.pnlR.DoubleClick += new System.EventHandler(this.pnlR_DoubleClick);
             // 
             // grpL
             // 
@@ -1423,6 +1916,7 @@
             this.lblEMOTotal.TabIndex = 67;
             this.lblEMOTotal.Text = "EMO-Total";
             this.lblEMOTotal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOTotal.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblBumpDL
             // 
@@ -1459,6 +1953,7 @@
             this.lblBeamSensorLDR.TabIndex = 54;
             this.lblBeamSensorLDR.Text = "LDR";
             this.lblBeamSensorLDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLDL
             // 
@@ -1471,6 +1966,7 @@
             this.lblBeamSensorLDL.TabIndex = 53;
             this.lblBeamSensorLDL.Text = "LDL";
             this.lblBeamSensorLDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLUC
             // 
@@ -1483,6 +1979,7 @@
             this.lblBeamSensorLUC.TabIndex = 52;
             this.lblBeamSensorLUC.Text = "LUC";
             this.lblBeamSensorLUC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLUC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLUR
             // 
@@ -1495,6 +1992,7 @@
             this.lblBeamSensorLUR.TabIndex = 51;
             this.lblBeamSensorLUR.Text = "LUR";
             this.lblBeamSensorLUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLUL
             // 
@@ -1507,18 +2005,18 @@
             this.lblBeamSensorLUL.TabIndex = 50;
             this.lblBeamSensorLUL.Text = "LUL";
             this.lblBeamSensorLUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // pnlL
             // 
-            this.pnlL.Location = new System.Drawing.Point(126, 105);
+            this.pnlL.Location = new System.Drawing.Point(12, 19);
             this.pnlL.Name = "pnlL";
-            this.pnlL.Size = new System.Drawing.Size(279, 57);
+            this.pnlL.Size = new System.Drawing.Size(497, 168);
             this.pnlL.TabIndex = 70;
             this.pnlL.DoubleClick += new System.EventHandler(this.pnlL_DoubleClick);
             // 
             // grpB
             // 
-            this.grpB.Controls.Add(this.pnlB);
             this.grpB.Controls.Add(this.lblEMOBR);
             this.grpB.Controls.Add(this.lblEMOBC);
             this.grpB.Controls.Add(this.lblEMOBL);
@@ -1533,6 +2031,7 @@
             this.grpB.Controls.Add(this.lblBeamSensorBDC);
             this.grpB.Controls.Add(this.lblBeamSensorBUR);
             this.grpB.Controls.Add(this.lblBeamSensorBUL);
+            this.grpB.Controls.Add(this.pnlB);
             this.grpB.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.grpB.Location = new System.Drawing.Point(19, 43);
             this.grpB.Name = "grpB";
@@ -1540,14 +2039,6 @@
             this.grpB.TabIndex = 1;
             this.grpB.TabStop = false;
             this.grpB.Text = "後";
-            // 
-            // pnlB
-            // 
-            this.pnlB.Location = new System.Drawing.Point(46, 285);
-            this.pnlB.Name = "pnlB";
-            this.pnlB.Size = new System.Drawing.Size(230, 70);
-            this.pnlB.TabIndex = 68;
-            this.pnlB.DoubleClick += new System.EventHandler(this.pnlB_DoubleClick);
             // 
             // lblEMOBR
             // 
@@ -1560,6 +2051,7 @@
             this.lblEMOBR.TabIndex = 66;
             this.lblEMOBR.Text = "EMO-BR";
             this.lblEMOBR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOBR.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblEMOBC
             // 
@@ -1572,6 +2064,7 @@
             this.lblEMOBC.TabIndex = 65;
             this.lblEMOBC.Text = "EMO-BC";
             this.lblEMOBC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOBC.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblEMOBL
             // 
@@ -1584,6 +2077,7 @@
             this.lblEMOBL.TabIndex = 64;
             this.lblEMOBL.Text = "EMO-BL";
             this.lblEMOBL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOBL.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblBumpBDL
             // 
@@ -1672,6 +2166,7 @@
             this.lblBeamSensorBDR.TabIndex = 54;
             this.lblBeamSensorBDR.Text = "BDR";
             this.lblBeamSensorBDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBDL
             // 
@@ -1684,6 +2179,7 @@
             this.lblBeamSensorBDL.TabIndex = 53;
             this.lblBeamSensorBDL.Text = "BDL";
             this.lblBeamSensorBDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBDC
             // 
@@ -1696,6 +2192,7 @@
             this.lblBeamSensorBDC.TabIndex = 52;
             this.lblBeamSensorBDC.Text = "BDC";
             this.lblBeamSensorBDC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBDC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBUR
             // 
@@ -1708,6 +2205,7 @@
             this.lblBeamSensorBUR.TabIndex = 51;
             this.lblBeamSensorBUR.Text = "BUR";
             this.lblBeamSensorBUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBUL
             // 
@@ -1720,10 +2218,18 @@
             this.lblBeamSensorBUL.TabIndex = 50;
             this.lblBeamSensorBUL.Text = "BUL";
             this.lblBeamSensorBUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
+            // 
+            // pnlB
+            // 
+            this.pnlB.Location = new System.Drawing.Point(6, 19);
+            this.pnlB.Name = "pnlB";
+            this.pnlB.Size = new System.Drawing.Size(313, 377);
+            this.pnlB.TabIndex = 68;
+            this.pnlB.DoubleClick += new System.EventHandler(this.pnlB_DoubleClick);
             // 
             // grpF
             // 
-            this.grpF.Controls.Add(this.pnlF);
             this.grpF.Controls.Add(this.lblEMOFR);
             this.grpF.Controls.Add(this.lblEMOFC);
             this.grpF.Controls.Add(this.lblEMOFL);
@@ -1738,6 +2244,7 @@
             this.grpF.Controls.Add(this.lblBeamSensorFDC);
             this.grpF.Controls.Add(this.lblBeamSensorFUR);
             this.grpF.Controls.Add(this.lblBeamSensorFUL);
+            this.grpF.Controls.Add(this.pnlF);
             this.grpF.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.grpF.Location = new System.Drawing.Point(931, 43);
             this.grpF.Name = "grpF";
@@ -1745,14 +2252,6 @@
             this.grpF.TabIndex = 0;
             this.grpF.TabStop = false;
             this.grpF.Text = "前";
-            // 
-            // pnlF
-            // 
-            this.pnlF.Location = new System.Drawing.Point(45, 285);
-            this.pnlF.Name = "pnlF";
-            this.pnlF.Size = new System.Drawing.Size(230, 70);
-            this.pnlF.TabIndex = 69;
-            this.pnlF.DoubleClick += new System.EventHandler(this.pnlF_DoubleClick);
             // 
             // lblEMOFR
             // 
@@ -1765,6 +2264,7 @@
             this.lblEMOFR.TabIndex = 63;
             this.lblEMOFR.Text = "EMO-FR";
             this.lblEMOFR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOFR.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblEMOFC
             // 
@@ -1777,6 +2277,7 @@
             this.lblEMOFC.TabIndex = 62;
             this.lblEMOFC.Text = "EMO-FC";
             this.lblEMOFC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOFC.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblEMOFL
             // 
@@ -1789,6 +2290,7 @@
             this.lblEMOFL.TabIndex = 61;
             this.lblEMOFL.Text = "EMO-FL";
             this.lblEMOFL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOFL.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblBumpFDL
             // 
@@ -1877,6 +2379,7 @@
             this.lblBeamSensorFDR.TabIndex = 54;
             this.lblBeamSensorFDR.Text = "FDR";
             this.lblBeamSensorFDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFDL
             // 
@@ -1889,6 +2392,7 @@
             this.lblBeamSensorFDL.TabIndex = 53;
             this.lblBeamSensorFDL.Text = "FDL";
             this.lblBeamSensorFDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFDC
             // 
@@ -1901,6 +2405,7 @@
             this.lblBeamSensorFDC.TabIndex = 52;
             this.lblBeamSensorFDC.Text = "FDC";
             this.lblBeamSensorFDC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFDC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFUR
             // 
@@ -1913,6 +2418,7 @@
             this.lblBeamSensorFUR.TabIndex = 51;
             this.lblBeamSensorFUR.Text = "FUR";
             this.lblBeamSensorFUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFUL
             // 
@@ -1925,6 +2431,15 @@
             this.lblBeamSensorFUL.TabIndex = 50;
             this.lblBeamSensorFUL.Text = "FUL";
             this.lblBeamSensorFUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
+            // 
+            // pnlF
+            // 
+            this.pnlF.Location = new System.Drawing.Point(5, 19);
+            this.pnlF.Name = "pnlF";
+            this.pnlF.Size = new System.Drawing.Size(314, 377);
+            this.pnlF.TabIndex = 69;
+            this.pnlF.DoubleClick += new System.EventHandler(this.pnlF_DoubleClick);
             // 
             // timGUIRefresh
             // 
@@ -1974,34 +2489,62 @@
             this.timCycle.Interval = 1000;
             this.timCycle.Tick += new System.EventHandler(this.timCycle_Tick);
             // 
-            // btnHide
+            // tbxLogView
             // 
-            this.btnHide.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnHide.Location = new System.Drawing.Point(1196, 2);
-            this.btnHide.Name = "btnHide";
-            this.btnHide.Size = new System.Drawing.Size(113, 35);
-            this.btnHide.TabIndex = 40;
-            this.btnHide.Text = "Hide";
-            this.btnHide.UseVisualStyleBackColor = true;
-            this.btnHide.Click += new System.EventHandler(this.btnHide_Click);
+            this.tbxLogView.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxLogView.Location = new System.Drawing.Point(12, 727);
+            this.tbxLogView.MaxLength = 65550;
+            this.tbxLogView.Multiline = true;
+            this.tbxLogView.Name = "tbxLogView";
+            this.tbxLogView.ReadOnly = true;
+            this.tbxLogView.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxLogView.Size = new System.Drawing.Size(1293, 142);
+            this.tbxLogView.TabIndex = 40;
+            // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Location = new System.Drawing.Point(14, 711);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(71, 12);
+            this.label29.TabIndex = 42;
+            this.label29.Text = "PLC Log Msg";
+            // 
+            // chbCassetteID_SV
+            // 
+            this.chbCassetteID_SV.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chbCassetteID_SV.AutoSize = true;
+            this.chbCassetteID_SV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.chbCassetteID_SV.Location = new System.Drawing.Point(215, 38);
+            this.chbCassetteID_SV.Name = "chbCassetteID_SV";
+            this.chbCassetteID_SV.Size = new System.Drawing.Size(73, 29);
+            this.chbCassetteID_SV.TabIndex = 69;
+            this.chbCassetteID_SV.Text = "checkBox1";
+            this.chbCassetteID_SV.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chbCassetteID_SV.UseVisualStyleBackColor = true;
+            this.chbCassetteID_SV.CheckedChanged += new System.EventHandler(this.chbCassetteID_SV_CheckedChanged);
             // 
             // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1321, 724);
-            this.ControlBox = false;
-            this.Controls.Add(this.btnHide);
+            this.ClientSize = new System.Drawing.Size(1321, 876);
+            this.Controls.Add(this.label29);
+            this.Controls.Add(this.tbxLogView);
             this.Controls.Add(this.btnBuzzerStop);
             this.Controls.Add(this.btnAlarmReset);
             this.Controls.Add(this.txtTriggerEvent);
             this.Controls.Add(this.label19);
             this.Controls.Add(this.tabContol1);
             this.Name = "PlcForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PLCAgent";
-            this.Load += new System.EventHandler(this.PlcForm_Load);
+            this.Load += new System.EventHandler(this.frmPLCAgent_Load);
             this.tabContol1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
+            this.tableLayoutPanel2.ResumeLayout(false);
+            this.tableLayoutPanel2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -2010,6 +2553,9 @@
             this.groupBox1.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.tabSafety.ResumeLayout(false);
             this.tabSafety.PerformLayout();
             this.groupBox4.ResumeLayout(false);
@@ -2185,6 +2731,47 @@
         private System.Windows.Forms.Button btnBeamSensorAutoSleepSet;
         private System.Windows.Forms.RadioButton rdoBeamSensorAutoSleepDisable;
         private System.Windows.Forms.RadioButton rdoBeamSensorAutoSleepEnable;
-        private System.Windows.Forms.Button btnHide;
+        private System.Windows.Forms.TextBox txtSOCSet;
+        private System.Windows.Forms.Button btnSOCSet;
+        private System.Windows.Forms.Label lblBumperAlarm;
+        private System.Windows.Forms.TextBox tbxLogView;
+        private System.Windows.Forms.Label label29;
+        private System.Windows.Forms.Label lblEMO;
+        private System.Windows.Forms.TextBox txtAutoChargeLowSOC_SV;
+        private System.Windows.Forms.Button btnBatteryParamSet;
+        private System.Windows.Forms.TextBox txtAutoChargeLowSOC_PV;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.TextBox tbxAHWorkingRange_PV;
+        private System.Windows.Forms.TextBox tbxAHWorkingRange_SV;
+        private System.Windows.Forms.TextBox tbxResetAHTimeout_PV;
+        private System.Windows.Forms.TextBox tbxResetAHTimeout_SV;
+        private System.Windows.Forms.TextBox tbxMaxCCModeCounter_PV;
+        private System.Windows.Forms.TextBox tbxMaxCCModeCounter_SV;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.Label label51;
+        private System.Windows.Forms.Label label52;
+        private System.Windows.Forms.Label label54;
+        private System.Windows.Forms.Label label53;
+        private System.Windows.Forms.Label label50;
+        private System.Windows.Forms.Label label55;
+        private System.Windows.Forms.Label label56;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.TextBox tbxCommBusyTimeout_SV;
+        private System.Windows.Forms.TextBox tbxCommMovingTimeout_PV;
+        private System.Windows.Forms.TextBox tbxCommMovingTimeout_SV;
+        private System.Windows.Forms.TextBox tbxCommReadTimeout_PV;
+        private System.Windows.Forms.Button btnForkCommParamSet;
+        private System.Windows.Forms.TextBox tbxCommReadTimeout_SV;
+        private System.Windows.Forms.TextBox tbxReadCassetteID_PV;
+        private System.Windows.Forms.Label label30;
+        private System.Windows.Forms.TextBox tbxCommBusyTimeout_PV;
+        private System.Windows.Forms.Label label31;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.Label label37;
+        private System.Windows.Forms.Label label38;
+        private System.Windows.Forms.Label label39;
+        private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.CheckBox chbCassetteID_SV;
     }
 }

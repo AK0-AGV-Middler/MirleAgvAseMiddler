@@ -12,7 +12,7 @@ namespace Mirle.Agv.Model
         public double Velocity { get; set; }
         public double ModifyTheta { get; set; }
         public double ModifySectionDeviation { get; set; }
-        public LineReviseType ReviseType { get; set; }
+        public EnumLineReviseType ReviseType { get; set; }
         public double ReviseValue { get; set; }
         public double MaxTheta { get; set; }
         public double ThetaCommandSpeed { get; set; }
@@ -46,7 +46,7 @@ namespace Mirle.Agv.Model
 
             ModifyTheta = velocity / config.ModifyPriority.Theta;
             ModifySectionDeviation = velocity / config.ModifyPriority.SectionDeviation;
-            ReviseType = LineReviseType.None;
+            ReviseType = EnumLineReviseType.None;
             ReviseValue = 0;
             ThetaCommandSpeed = 10;
             DirFlag = dirFlag;

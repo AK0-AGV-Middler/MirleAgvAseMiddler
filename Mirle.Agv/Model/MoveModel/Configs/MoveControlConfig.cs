@@ -18,7 +18,7 @@ namespace Mirle.Agv.Model.Configs
         public double EQVelocityDistance { get; set; }
         public AxisData Move { get; set; }
         public AxisData Turn { get; set; }
-        public Dictionary<CommandType, double> SafteyDistance { get; set; } = new Dictionary<CommandType, double>();
+        public Dictionary<EnumCommandType, double> SafteyDistance { get; set; } = new Dictionary<EnumCommandType, double>();
         public double ElmoDataInterval_half { get; set; }
         public double MoveCommandDistanceMagnification { get; set; }
         public double StartWheelAngleRange { get; set; }
@@ -72,14 +72,14 @@ namespace Mirle.Agv.Model.Configs
             ElmoDataInterval_half = 20;
             TurnSpeedSafetyRange = 5 / 100;
 
-            SafteyDistance.Add(CommandType.Vchange, 200);
-            SafteyDistance.Add(CommandType.Stop, 50);
-            SafteyDistance.Add(CommandType.SlowStop, 20);
-            SafteyDistance.Add(CommandType.End, 10);
-            SafteyDistance.Add(CommandType.Move, 50);
-            SafteyDistance.Add(CommandType.ReviseClose, 100);
-            SafteyDistance.Add(CommandType.ReviseOpen, 100);
-            SafteyDistance.Add(CommandType.TR, 40);
+            SafteyDistance.Add(EnumCommandType.Vchange, 200);
+            SafteyDistance.Add(EnumCommandType.Stop, 50);
+            SafteyDistance.Add(EnumCommandType.SlowStop, 20);
+            SafteyDistance.Add(EnumCommandType.End, 10);
+            SafteyDistance.Add(EnumCommandType.Move, 50);
+            SafteyDistance.Add(EnumCommandType.ReviseClose, 100);
+            SafteyDistance.Add(EnumCommandType.ReviseOpen, 100);
+            SafteyDistance.Add(EnumCommandType.TR, 40);
         }
     }
 }

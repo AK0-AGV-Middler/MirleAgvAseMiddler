@@ -7,11 +7,11 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model
 {
-    [Serializable]
+
     public class PlcVehicle
     {
-        public PlcBatterys Batterys { get; set; } = new PlcBatterys();
-        public PlcRobot Robot { get; set; } = new PlcRobot();
+        public PlcBatterys Batterys = new PlcBatterys();
+        public PlcRobot Robot = new PlcRobot();
 
         public bool Loading { get; set; }
         public string CassetteId { get; set; }
@@ -19,10 +19,10 @@ namespace Mirle.Agv.Model
         //以下屬性會影響方向燈,語音和Beam sensor sleep
         public bool Forward { get; set; }
         public bool Backward { get; set; }
-        public bool SpinTurnLeft { get; set; }
-        public bool SpinTurnRight { get; set; }
-        public bool TraverseLeft { get; set; }
-        public bool TraverseRight { get; set; }
+        public bool SpinTurnLeft { get; set; }//左旋轉
+        public bool SpinTurnRight { get; set; }//右旋轉
+        public bool TraverseLeft { get; set; }//左橫移
+        public bool TraverseRight { get; set; }//右橫移
         public bool SteeringFL { get; set; }
         public bool SteeringFR { get; set; }
         public bool SteeringBL { get; set; }
@@ -54,10 +54,16 @@ namespace Mirle.Agv.Model
         public Dictionary<string, PlcBumper> dicBumper = new Dictionary<string, PlcBumper>();
         public List<PlcBumper> listBumper = new List<PlcBumper>();
 
+        public bool BumperAlarmStatus { get; set; } = false;
+        public bool PlcEmoStatus { get; set; } = false; //201907301_Rudy 任何一個EMO ON -> ON
+
         public Dictionary<string, PlcEmo> dicPlcEmo = new Dictionary<string, PlcEmo>();
         public List<PlcEmo> listPlcEmo = new List<PlcEmo>();
+
         public bool SafetyDisable { get; set; }
         public EnumVehicleSafetyAction VehicleSafetyAction { get; set; } = EnumVehicleSafetyAction.Normal;
+
+      
 
         public PlcVehicle()
         {
@@ -267,12 +273,13 @@ namespace Mirle.Agv.Model
         }
         #endregion
 
-        private void DictionaryAddBeamSensor(PlcBeamSensor aPLCBeamSensor)
+        private void DictionaryAddBeamSensor(PlcBeamSensor aPlcBeamSensor)
         {
-            dicBeamSensor.Add(aPLCBeamSensor.PlcNearSignalTagId, aPLCBeamSensor);
-            dicBeamSensor.Add(aPLCBeamSensor.PlcFarSignalTagId, aPLCBeamSensor);
-            dicBeamSensor.Add(aPLCBeamSensor.PlcReadSleepTagId, aPLCBeamSensor);
-            dicBeamSensor.Add(aPLCBeamSensor.PlcWriteSleepTagId, aPLCBeamSensor);
-        }
+            dicBeamSensor.Add(aPlcBeamSensor.PlcNearSignalTagId, aPlcBeamSensor);
+            dicBeamSensor.Add(aPlcBeamSensor.PlcFarSignalTagId, aPlcBeamSensor);
+            dicBeamSensor.Add(aPlcBeamSensor.PlcReadSleepTagId, aPlcBeamSensor);
+            dicBeamSensor.Add(aPlcBeamSensor.PlcWriteSleepTagId, aPlcBeamSensor);
+        }       
+
     }
 }

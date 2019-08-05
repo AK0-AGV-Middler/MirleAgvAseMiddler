@@ -25,7 +25,7 @@ namespace Mirle.Agv.Controller.Tools
 
         }
 
-        public bool ReadBarcode(ref string cassetteID)
+        public bool ReadBarcode(ref string cassetteID)//20190801_Rudy cassetteID =>改為ref方式
         {
             try
             {

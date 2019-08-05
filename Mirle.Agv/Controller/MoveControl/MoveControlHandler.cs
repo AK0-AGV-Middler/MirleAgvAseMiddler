@@ -26,7 +26,7 @@ namespace Mirle.Agv.Controller
         public OntimeReviseConfig ontimeReviseConfig = null;
         private AGVMoveRevise agvRevise;
 
-        public event EventHandler<MoveComplete> OnMoveFinished;
+        public event EventHandler<EnumMoveComplete> OnMoveFinished;
 
         private List<SectionLine> SectionLineList = new List<SectionLine>();
         private int indexOflisSectionLine = 0;
@@ -61,8 +61,8 @@ namespace Mirle.Agv.Controller
             controlData.MoveControlThread.Start();
             MoveState = EnumMoveState.Idle;
 
-            elmoDriver.ElmoStop(Axis.GX);
-            elmoDriver.ElmoMove(Axis.GT, 0, 75, MoveType.Absolute);
+            elmoDriver.ElmoStop(EnumAxis.GX);
+            elmoDriver.ElmoMove(EnumAxis.GT, 0, 75, EnumMoveType.Absolute);
 
             threadSCVLog = new Thread(WriteLogCSV);
             threadSCVLog.Start();
@@ -467,11 +467,11 @@ namespace Mirle.Agv.Controller
         {
             bool newBarcodeData = false;
 
-            ElmoAxisFeedbackData elmoData = elmoDriver.ElmoGetFeedbackData(Axis.XFL);
+            ElmoAxisFeedbackData elmoData = elmoDriver.ElmoGetFeedbackData(EnumAxis.XFL);
             if (elmoData != null)
             {
                 position.XFLVelocity = elmoData.Feedback_Velocity;
-                position.XRRVelocity = elmoDriver.ElmoGetVelocity(Axis.XRR);
+                position.XRRVelocity = elmoDriver.ElmoGetVelocity(EnumAxis.XRR);
                 position.ElmoGetDataTime = elmoData.GetDataTime;
                 position.ElmoEncoder = elmoData.Feedback_Position +
                 (controlData.DirFlag ? position.XFLVelocity : -position.XFLVelocity) *
@@ -531,10 +531,10 @@ namespace Mirle.Agv.Controller
             if (Math.Abs(position.XFLVelocity - velocity) >= velocity * moveControlConfig.TurnSpeedSafetyRange &&
                 Math.Abs(position.XRRVelocity - velocity) >= velocity * moveControlConfig.TurnSpeedSafetyRange)
             { // Normal
-                if (!elmoDriver.MoveCompelete(Axis.GT))
+                if (!elmoDriver.MoveCompelete(EnumAxis.GT))
                     Console.WriteLine("GT Moving~~");
 
-                elmoDriver.ElmoMove(Axis.GT, wheelAngle, moveControlConfig.TR[type].AxisParameter.Velocity, MoveType.Absolute,
+                elmoDriver.ElmoMove(EnumAxis.GT, wheelAngle, moveControlConfig.TR[type].AxisParameter.Velocity, EnumMoveType.Absolute,
                                     moveControlConfig.TR[type].AxisParameter.Acceleration,
                                     moveControlConfig.TR[type].AxisParameter.Deceleration,
                                     moveControlConfig.TR[type].AxisParameter.Jerk);
@@ -577,13 +577,13 @@ namespace Mirle.Agv.Controller
             switch (wheelAngle)
             {
                 case 0:
-                    BeamSensorOnlyOnOff((controlData.DirFlag ? BeamSensorLocate.Front : BeamSensorLocate.Back), true);
+                    BeamSensorOnlyOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back), true);
                     break;
                 case 90:
-                    BeamSensorOnlyOnOff((controlData.DirFlag ? BeamSensorLocate.Left : BeamSensorLocate.Right), true);
+                    BeamSensorOnlyOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right), true);
                     break;
                 case -90:
-                    BeamSensorOnlyOnOff((controlData.DirFlag ? BeamSensorLocate.Right : BeamSensorLocate.Left), true);
+                    BeamSensorOnlyOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left), true);
                     break;
                 default:
                     // 不該發生 log..
@@ -613,20 +613,20 @@ namespace Mirle.Agv.Controller
 
 
             Console.WriteLine("V Change : " + velocity.ToString("0.00") + ", " + TRWheelAngle.ToString());
-            elmoDriver.ElmoGroupVelocityChange(Axis.GX, velocity);
+            elmoDriver.ElmoGroupVelocityChange(EnumAxis.GX, velocity);
 
             if (isTRVChange)
             {
                 switch (TRWheelAngle)
                 {
                     case 0:
-                        BeamSensorSingleOnOff((controlData.DirFlag ? BeamSensorLocate.Front : BeamSensorLocate.Back), true);
+                        BeamSensorSingleOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back), true);
                         break;
                     case 90:
-                        BeamSensorSingleOnOff((controlData.DirFlag ? BeamSensorLocate.Left : BeamSensorLocate.Right), true);
+                        BeamSensorSingleOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right), true);
                         break;
                     case -90:
-                        BeamSensorSingleOnOff((controlData.DirFlag ? BeamSensorLocate.Right : BeamSensorLocate.Left), true);
+                        BeamSensorSingleOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left), true);
                         break;
                     default:
                         // 不該發生 log..
@@ -639,7 +639,7 @@ namespace Mirle.Agv.Controller
         private void MoveCommandControl(double velocity, double distance, bool difFlag, int wheelAngle, bool isFirstMove)
         {
             flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + " : 舵輪旋轉至 " + wheelAngle.ToString("0") + " 度!");
-            elmoDriver.ElmoMove(Axis.GT, wheelAngle, moveControlConfig.Turn.Velocity, MoveType.Absolute,
+            elmoDriver.ElmoMove(EnumAxis.GT, wheelAngle, moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
                     moveControlConfig.Turn.Acceleration, moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
 
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
@@ -659,13 +659,13 @@ namespace Mirle.Agv.Controller
             switch (wheelAngle)
             {
                 case 0: // 朝前面.
-                    BeamSensorSingleOnOff((controlData.DirFlag ? BeamSensorLocate.Front : BeamSensorLocate.Back), true);
+                    BeamSensorSingleOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back), true);
                     break;
                 case 90: // 朝左.
-                    BeamSensorSingleOnOff((controlData.DirFlag ? BeamSensorLocate.Left : BeamSensorLocate.Right), true);
+                    BeamSensorSingleOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right), true);
                     break;
                 case -90: // 朝右.
-                    BeamSensorSingleOnOff((controlData.DirFlag ? BeamSensorLocate.Right : BeamSensorLocate.Left), true);
+                    BeamSensorSingleOnOff((controlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left), true);
                     break;
                 default:
                     // log..
@@ -683,24 +683,24 @@ namespace Mirle.Agv.Controller
             controlData.VelocityCommand = velocity;
 
             if (difFlag)
-                elmoDriver.ElmoMove(Axis.GX, distance, velocity, MoveType.Relative, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                elmoDriver.ElmoMove(EnumAxis.GX, distance, velocity, EnumMoveType.Relative, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
             else
-                elmoDriver.ElmoMove(Axis.GX, -distance, velocity, MoveType.Relative, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                elmoDriver.ElmoMove(EnumAxis.GX, -distance, velocity, EnumMoveType.Relative, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
         }
 
         private void SlowStopControl(MapPosition endPosition)
         {
             flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "SlowStop!");
-            elmoDriver.ElmoStop(Axis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+            elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
 
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
 
             timer.Reset();
             timer.Start();
-            while (!elmoDriver.MoveCompelete(Axis.GX) && timer.ElapsedMilliseconds < moveControlConfig.SlowStopTimeoutValue)
+            while (!elmoDriver.MoveCompelete(EnumAxis.GX) && timer.ElapsedMilliseconds < moveControlConfig.SlowStopTimeoutValue)
                 Thread.Sleep(50);
 
-            if (!elmoDriver.MoveCompelete(Axis.GX))
+            if (!elmoDriver.MoveCompelete(EnumAxis.GX))
             {
                 flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + " : SlowStop Timeout!");
                 EMSControl();
@@ -719,8 +719,8 @@ namespace Mirle.Agv.Controller
         private void StopControl()
         {
             flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "Stop!");
-            elmoDriver.ElmoStop(Axis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
-            elmoDriver.ElmoStop(Axis.GT, moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
+            elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+            elmoDriver.ElmoStop(EnumAxis.GT, moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
         }
 
         private void EMSControl()
@@ -835,16 +835,16 @@ namespace Mirle.Agv.Controller
 
                         switch (CommandList[indexOfCmdList].CmdType)
                         {
-                            case CommandType.TR:
+                            case EnumCommandType.TR:
                                 TRControl(CommandList[indexOfCmdList].WheelAngle, CommandList[indexOfCmdList].TRType);
                                 break;
-                            case CommandType.R2000:
+                            case EnumCommandType.R2000:
                                 R2000Control(CommandList[indexOfCmdList].WheelAngle);
                                 break;
-                            case CommandType.Vchange:
+                            case EnumCommandType.Vchange:
                                 VchangeControl(CommandList[indexOfCmdList].Velocity);
                                 break;
-                            case CommandType.ReviseOpen:
+                            case EnumCommandType.ReviseOpen:
                                 if (controlData.OntimeReviseFlag == false)
                                 {
                                     agvRevise.SettingReviseData(controlData.VelocityCommand, controlData.DirFlag);
@@ -852,22 +852,22 @@ namespace Mirle.Agv.Controller
                                 }
 
                                 break;
-                            case CommandType.ReviseClose:
+                            case EnumCommandType.ReviseClose:
                                 controlData.OntimeReviseFlag = false;
-                                elmoDriver.ElmoStop(Axis.GT);
+                                elmoDriver.ElmoStop(EnumAxis.GT);
                                 break;
-                            case CommandType.Move:
+                            case EnumCommandType.Move:
                                 MoveCommandControl(CommandList[indexOfCmdList].Velocity, CommandList[indexOfCmdList].Distance, CommandList[indexOfCmdList].DirFlag,
                                                    CommandList[indexOfCmdList].WheelAngle, CommandList[indexOfCmdList].IsFirstMove);
                                 break;
-                            case CommandType.SlowStop:
+                            case EnumCommandType.SlowStop:
                                 SlowStopControl(CommandList[indexOfCmdList].EndPosition);
                                 break;
-                            case CommandType.End:
+                            case EnumCommandType.End:
                                 SlowStopControl(CommandList[indexOfCmdList].EndPosition);
                                 SecondCorrectionControl(CommandList[indexOfCmdList].EndPosition);
                                 break;
-                            case CommandType.Stop:
+                            case EnumCommandType.Stop:
                                 StopControl();
                                 break;
                             default:
@@ -882,8 +882,8 @@ namespace Mirle.Agv.Controller
                 {
                     if (agvRevise.OntimeRevise(ref reviseWheelAngle, controlData.WheelAngle))
                     {
-                        elmoDriver.ElmoMove(Axis.GT, reviseWheelAngle[0], reviseWheelAngle[1], reviseWheelAngle[2], reviseWheelAngle[3],
-                                          ontimeReviseConfig.ThetaSpeed, MoveType.Absolute, moveControlConfig.Turn.Acceleration,
+                        elmoDriver.ElmoMove(EnumAxis.GT, reviseWheelAngle[0], reviseWheelAngle[1], reviseWheelAngle[2], reviseWheelAngle[3],
+                                          ontimeReviseConfig.ThetaSpeed, EnumMoveType.Absolute, moveControlConfig.Turn.Acceleration,
                                           moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
                     }
                 }
@@ -902,7 +902,7 @@ namespace Mirle.Agv.Controller
         /// <summary>
         ///  when move finished, call this function to notice other class instance that move is finished with status
         /// </summary>
-        private void MoveFinished(MoveComplete status)
+        private void MoveFinished(EnumMoveComplete status)
         {
             OnMoveFinished?.Invoke(this, status);
         }
@@ -911,7 +911,7 @@ namespace Mirle.Agv.Controller
         {
             MapPosition nowPosition;
 
-            double elmoEncoder = elmoDriver.ElmoGetPosition(Axis.XFL);// 更新elmo encoder(走行距離).
+            double elmoEncoder = elmoDriver.ElmoGetPosition(EnumAxis.XFL);// 更新elmo encoder(走行距離).
 
             if (position.Real != null)
                 nowPosition = position.Real.Position;
@@ -970,7 +970,7 @@ namespace Mirle.Agv.Controller
                 return false;
             }
 
-            elmoDriver.SetPosition(Axis.GX, 0);
+            elmoDriver.SetPosition(EnumAxis.GX, 0);
             ResetEncoder(sectionLineList[0].Start, sectionLineList[0].End, sectionLineList[0].DirFlag);
 
             // 暫時直接取得所有Reserve
@@ -1000,7 +1000,7 @@ namespace Mirle.Agv.Controller
             CommandList = moveCmdList;
             indexOfCmdList = 0;
 
-            elmoDriver.SetPosition(Axis.GX, 0);
+            elmoDriver.SetPosition(EnumAxis.GX, 0);
             ResetEncoder(sectionLineList[0].Start, sectionLineList[0].End, sectionLineList[0].DirFlag);
 
             MoveState = EnumMoveState.Moving;
@@ -1020,13 +1020,13 @@ namespace Mirle.Agv.Controller
             MoveState = EnumMoveState.Idle;
         }
 
-        private void BeamSensorSingleOnOff(BeamSensorLocate locate, bool flag)
+        private void BeamSensorSingleOnOff(EnumBeamSensorLocate locate, bool flag)
         {
             flow.SavePureLog("Beam sensor 切換 : 修改 " + locate.ToString() + " 變更為 " + (flag ? "On" : "Off") + " !");
 
         }
 
-        private void BeamSensorOnlyOnOff(BeamSensorLocate locate, bool flag)
+        private void BeamSensorOnlyOnOff(EnumBeamSensorLocate locate, bool flag)
         {
             flow.SavePureLog("Beam sensor 切換 : 只剩 " + locate.ToString() + " !");
 
@@ -1102,11 +1102,11 @@ namespace Mirle.Agv.Controller
 
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
             ElmoAxisFeedbackData feedBackData;
-            Axis[] order = new Axis[18] { Axis.XFL, Axis.XFR, Axis.XRL, Axis.XRR,
-                                          Axis.TFL, Axis.TFR, Axis.TRL, Axis.TRR,
-                                          Axis.VXFL, Axis.VXFR, Axis.VXRL, Axis.VXRR,
-                                          Axis.VTFL, Axis.VTFR, Axis.VTRL, Axis.VTRR,
-                                          Axis.GX, Axis.GT };
+            EnumAxis[] order = new EnumAxis[18] { EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
+                                          EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
+                                          EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
+                                          EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
+                                          EnumAxis.GX, EnumAxis.GT };
             AGVPosition logAGVPosition;
             ThetaSectionDeviation logThetaDeviation;
             DateTime now;
@@ -1250,14 +1250,14 @@ namespace Mirle.Agv.Controller
                                                 (feedBackData.Disable ? "Disable" : "Enable") + "," +
                                                 (feedBackData.StandStill ? "Stop" : "Move") + "," + (feedBackData.ErrorStop ? "Error" : "Normal");
 
-                        if (csvLogResult && (order[i] == Axis.XFL) || order[i] == Axis.TFL)
+                        if (csvLogResult && (order[i] == EnumAxis.XFL) || order[i] == EnumAxis.TFL)
                             debugList = debugList + "\t" + feedBackData.Feedback_Position + "\t" + feedBackData.Feedback_Velocity;
                     }
                     else
                     {
                         csvLog = csvLog + ",N/A,N/A,N/A,N/A,N/A,N/A,N/A";
 
-                        if (csvLogResult && (order[i] == Axis.XFL) || order[i] == Axis.TFL)
+                        if (csvLogResult && (order[i] == EnumAxis.XFL) || order[i] == EnumAxis.TFL)
                             debugList = debugList + "\tN/A\tN/A";
                     }
                 }

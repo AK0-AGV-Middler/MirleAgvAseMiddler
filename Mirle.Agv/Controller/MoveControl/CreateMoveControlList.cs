@@ -29,9 +29,9 @@ namespace Mirle.Agv.Controller
         {
             Command returnCommand = new Command();
             returnCommand.Position = position;
-            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[CommandType.Move];
+            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.Move];
             returnCommand.TriggerEncoder = realEncoder - (dirFlag ? returnCommand.SafetyDistance / 2 : -returnCommand.SafetyDistance / 2);
-            returnCommand.CmdType = CommandType.Move;
+            returnCommand.CmdType = EnumCommandType.Move;
             returnCommand.Distance = commandDistance * moveControlConfig.MoveCommandDistanceMagnification;
             returnCommand.Velocity = commandVelocity;
             returnCommand.DirFlag = dirFlag;
@@ -48,8 +48,8 @@ namespace Mirle.Agv.Controller
             Command returnCommand = new Command();
             returnCommand.TriggerEncoder = realEncoder;
             returnCommand.Position = position;
-            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[CommandType.Vchange];
-            returnCommand.CmdType = CommandType.Vchange;
+            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.Vchange];
+            returnCommand.CmdType = EnumCommandType.Vchange;
             returnCommand.Velocity = commandVelocity;
             returnCommand.ReserveNumber = reserveNumber;
             returnCommand.NextRserveCancel = cancel;
@@ -66,8 +66,8 @@ namespace Mirle.Agv.Controller
             Command returnCommand = new Command();
             returnCommand.TriggerEncoder = realEncoder;
             returnCommand.Position = position;
-            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[CommandType.TR];
-            returnCommand.CmdType = CommandType.TR;
+            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.TR];
+            returnCommand.CmdType = EnumCommandType.TR;
             returnCommand.ReserveNumber = reserveNumber;
             returnCommand.NextRserveCancel = false;
             returnCommand.DirFlag = dirFlag;
@@ -82,8 +82,8 @@ namespace Mirle.Agv.Controller
             Command returnCommand = new Command();
             returnCommand.TriggerEncoder = realEncoder;
             returnCommand.Position = position;
-            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[CommandType.SlowStop];
-            returnCommand.CmdType = CommandType.SlowStop;
+            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.SlowStop];
+            returnCommand.CmdType = EnumCommandType.SlowStop;
             returnCommand.ReserveNumber = reserveNumber;
             returnCommand.NextRserveCancel = cancel;
             returnCommand.DirFlag = dirFlag;
@@ -95,8 +95,8 @@ namespace Mirle.Agv.Controller
         {
             Command returnCommand = new Command();
             returnCommand.Position = null;
-            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[CommandType.End];
-            returnCommand.CmdType = CommandType.End;
+            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.End];
+            returnCommand.CmdType = EnumCommandType.End;
             returnCommand.ReserveNumber = reserveNumber;
             returnCommand.NextRserveCancel = false;
             returnCommand.DirFlag = dirFlag;
@@ -111,7 +111,7 @@ namespace Mirle.Agv.Controller
         {
             Command returnCommand = new Command();
             returnCommand.Position = null;
-            returnCommand.CmdType = CommandType.ReviseOpen;
+            returnCommand.CmdType = EnumCommandType.ReviseOpen;
             returnCommand.NextRserveCancel = false;
             returnCommand.ReserveNumber = reserveNumber;
 
@@ -123,8 +123,8 @@ namespace Mirle.Agv.Controller
             Command returnCommand = new Command();
             returnCommand.Position = position;
             returnCommand.TriggerEncoder = realEncoder;
-            returnCommand.CmdType = CommandType.ReviseClose;
-            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[CommandType.ReviseClose];
+            returnCommand.CmdType = EnumCommandType.ReviseClose;
+            returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.ReviseClose];
             returnCommand.NextRserveCancel = false;
             returnCommand.ReserveNumber = reserveNumber;
             returnCommand.DirFlag = dirFlag;
@@ -354,31 +354,31 @@ namespace Mirle.Agv.Controller
                 tempLogMessage = "";
                 switch (moveCmdList[i].CmdType)
                 {
-                    case CommandType.Move:
+                    case EnumCommandType.Move:
                         WriteMoveCommandListLogTypeMove(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.ReviseOpen:
+                    case EnumCommandType.ReviseOpen:
                         WriteMoveCommandListLogTypeReviseOpen(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.ReviseClose:
+                    case EnumCommandType.ReviseClose:
                         WriteMoveCommandListLogTypeReviseClose(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.TR:
+                    case EnumCommandType.TR:
                         WriteMoveCommandListLogTypeTR(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.R2000:
+                    case EnumCommandType.R2000:
                         WriteMoveCommandListLogTypeR2000(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.Vchange:
+                    case EnumCommandType.Vchange:
                         WriteMoveCommandListLogTypeVchange(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.SlowStop:
+                    case EnumCommandType.SlowStop:
                         WriteMoveCommandListLogTypeSlowStop(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.Stop:
+                    case EnumCommandType.Stop:
                         WriteMoveCommandListLogTypeStop(moveCmdList[i], ref tempLogMessage);
                         break;
-                    case CommandType.End:
+                    case EnumCommandType.End:
                         WriteMoveCommandListLogTypeEnd(moveCmdList[i], ref tempLogMessage);
                         break;
                     default:

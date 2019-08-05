@@ -12,7 +12,7 @@ namespace Mirle.Agv.Model
         public MapPosition Position { get; set; }
         public double TriggerEncoder { get; set; }
         public double SafetyDistance { get; set; }
-        public CommandType CmdType { get; set; }
+        public EnumCommandType CmdType { get; set; }
         public EnumAddressAction TRType { get; set; }
         public double Velocity { get; set; }
         public double Distance { get; set; }
@@ -29,7 +29,7 @@ namespace Mirle.Agv.Model
         {
             Position = null;
             EndPosition = null;
-            CmdType = CommandType.Stop;
+            CmdType = EnumCommandType.Stop;
         }
     }
 }

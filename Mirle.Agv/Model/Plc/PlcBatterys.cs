@@ -9,7 +9,6 @@ using Mirle.Agv;
 
 namespace Mirle.Agv.Model
 {
-    [Serializable]
     public class PlcBatterys
     {
         public EnumBatteryType BatteryType { get; set; } = EnumBatteryType.Yinda;
@@ -42,34 +41,45 @@ namespace Mirle.Agv.Model
                 CountPercentage();
             }
         }
+        public double CcModeAh { get; private set; } = 0;//充電達到cc mode時當下的Meter AH值
 
-        private double dblCCModeAH = 0;
-        public double CcModeAh  //充電達到cc mode時當下的Meter AH值
+        public void SetCcModeAh(double setAh, bool realCcMode)
         {
-            get { return dblCCModeAH; }
-            set
+            CcModeAh = setAh;
+            if (realCcMode)
             {
-                dblCCModeAH = value;
-                //countPercentage();
                 if (!SetMeterAhToZeroFlag)
                 {
                     Percentage = 100.00;
                     CcModeCounter++;
                 }
-            }
-        }
-        public double Percentage { get; private set; } = 0;  //剩餘電量百分比
+                else
+                {
+                    this.CountPercentage();
+                }
 
-        private double dblAHWorkingRange = 23.0;
+            }
+            else
+            {
+                this.CountPercentage();
+            }
+            
+
+        }
+
+        public double Percentage { get; private set; } = 0;  //剩餘電量s分比
+
+        private double dblAhWorkingRange = 23.0;
         public double AhWorkingRange//我們使用的電池AH Range (User config)
         {
-            get { return dblAHWorkingRange; }
+            get { return dblAhWorkingRange; }
             set
             {
                 if (value != 0)
                 {
-                    dblAHWorkingRange = value;
-                    CcModeAh = dblAHWorkingRange;
+                    dblAhWorkingRange = value;
+                    //CcModeAh = dblAHWorkingRange;
+                    SetCcModeAh(dblAhWorkingRange, false);
                     CountPercentage();
                 }
             }
@@ -108,7 +118,7 @@ namespace Mirle.Agv.Model
             {
                 if (Percentage != 100.00)
                 {
-                    Percentage = ((dblAHWorkingRange - (dblCCModeAH - dblMeterAH)) / dblAHWorkingRange) * 100;
+                    Percentage = ((dblAhWorkingRange - (CcModeAh - dblMeterAH)) / dblAhWorkingRange) * 100;
                     if (Percentage > 99.99)
                     {
                         Percentage = 99.99;
@@ -121,7 +131,7 @@ namespace Mirle.Agv.Model
                 }
                 else
                 {
-                    double temp = ((dblAHWorkingRange - (dblCCModeAH - dblMeterAH)) / dblAHWorkingRange) * 100;
+                    double temp = ((dblAhWorkingRange - (CcModeAh - dblMeterAH)) / dblAhWorkingRange) * 100;
                     if (temp > 99.99)
                     {
                         //keep 100%

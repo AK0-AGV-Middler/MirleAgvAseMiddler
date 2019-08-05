@@ -18,15 +18,15 @@ namespace Mirle.Agv.View
     {
         private Thread ontimeRevise;
         private Thread homeThread;
-        private JogPitchMode mode;
+        private EnumJogPitchMode mode;
         private AGVMoveRevise agvRevise;
         private bool changingMode = false;
         private int wheelAngle = 0;
-        private Axis[] AxisList = new Axis[18] {Axis.XFL, Axis.XFR, Axis.XRL, Axis.XRR,
-                                                Axis.TFL, Axis.TFR, Axis.TRL, Axis.TRR,
-                                                Axis.VXFL, Axis.VXFR, Axis.VXRL, Axis.VXRR,
-                                                Axis.VTFL, Axis.VTFR, Axis.VTRL, Axis.VTRR,
-                                                Axis.GX, Axis.GT};
+        private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
+                                                EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
+                                                EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
+                                                EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
+                                                EnumAxis.GX, EnumAxis.GT};
         private EnumMoveState nowState, lastState;
         private bool homing = false;
 
@@ -37,7 +37,7 @@ namespace Mirle.Agv.View
 
             this.moveControl = moveControl;
             InitializeComponent();
-            ChangeMode(JogPitchMode.Normal);
+            ChangeMode(EnumJogPitchMode.Normal);
             agvRevise = new AGVMoveRevise(moveControl.ontimeReviseConfig, moveControl.elmoDriver, moveControl.DriverSr2000List);
         }
 
@@ -130,7 +130,7 @@ namespace Mirle.Agv.View
                 {
                     position = tempData.Feedback_Position.ToString("0");
 
-                    if (AxisList[i] == Axis.GX || AxisList[i] == Axis.GT)
+                    if (AxisList[i] == EnumAxis.GX || AxisList[i] == EnumAxis.GT)
                         standStill = moveControl.elmoDriver.MoveCompelete(AxisList[i]);
 
                     allAxis[i].Update(position, tempData.Disable, tempData.StandStill, tempData.ErrorStop);
@@ -140,7 +140,7 @@ namespace Mirle.Agv.View
 
             if (changingMode)
             {
-                if (moveControl.elmoDriver.MoveCompelete(Axis.GT) && moveControl.elmoDriver.MoveCompelete(Axis.GX) && !homing)
+                if (moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && !homing)
                 {
                     changingMode = false;
                     EnalbeDisableButton(true);
@@ -171,16 +171,16 @@ namespace Mirle.Agv.View
             {
                 switch (mode)
                 {
-                    case JogPitchMode.Normal:
+                    case EnumJogPitchMode.Normal:
                         button_JogPitch_Normal.Enabled = false;
                         break;
-                    case JogPitchMode.ForwardWheel:
+                    case EnumJogPitchMode.ForwardWheel:
                         button_JogPitch_ForwardWheel.Enabled = false;
                         break;
-                    case JogPitchMode.BackwardWheel:
+                    case EnumJogPitchMode.BackwardWheel:
                         button_JogPitch_BackwardWheel.Enabled = false;
                         break;
-                    case JogPitchMode.SpinTurn:
+                    case EnumJogPitchMode.SpinTurn:
                         button_JogPitch_SpinTurn.Enabled = false;
                         button_JogPitch_TurnLeft.Enabled = false;
                         button_JogPitch_TurnRight.Enabled = false;
@@ -192,32 +192,32 @@ namespace Mirle.Agv.View
         }
 
 
-        private void ChangeMode(JogPitchMode changemode)
+        private void ChangeMode(EnumJogPitchMode changemode)
         {
             EnalbeDisableButton(false);
             rB_JogPitch_TurnSpeed_High.Checked = true;
             mode = changemode;
-            label_JogPich_NowMode.Text = ((JogPitchModeName)(int)mode).ToString();
+            label_JogPich_NowMode.Text = ((EnumJogPitchModeName)(int)mode).ToString();
 
             switch (mode)
             {
-                case JogPitchMode.Normal:
-                case JogPitchMode.ForwardWheel:
-                case JogPitchMode.BackwardWheel:
+                case EnumJogPitchMode.Normal:
+                case EnumJogPitchMode.ForwardWheel:
+                case EnumJogPitchMode.BackwardWheel:
                     button_JogPitch_Forward.Text = "前進";
                     button_JogPitch_Backward.Text = "後退";
-                    moveControl.elmoDriver.ElmoStop(Axis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
-                    moveControl.elmoDriver.ElmoMove(Axis.GT, 0, moveControl.moveControlConfig.Turn.Velocity, MoveType.Absolute,
+                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
+                    moveControl.elmoDriver.ElmoMove(EnumAxis.GT, 0, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
                         moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
                     tB_JogPitch_Distance.Text = "1000";
                     rB_JogPitch_MoveVelocity_100.Checked = true;
                     rB_JogPitch_MoveVelocity_300.Enabled = true;
                     break;
-                case JogPitchMode.SpinTurn:
+                case EnumJogPitchMode.SpinTurn:
                     button_JogPitch_Forward.Text = "原地左轉";
                     button_JogPitch_Backward.Text = "原地右轉";
-                    moveControl.elmoDriver.ElmoStop(Axis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
-                    moveControl.elmoDriver.ElmoMove(Axis.GT, -59.744, 59.744, 59.744, -59.744, moveControl.moveControlConfig.Turn.Velocity, MoveType.Absolute,
+                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
+                    moveControl.elmoDriver.ElmoMove(EnumAxis.GT, -59.744, 59.744, 59.744, -59.744, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
                         moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
                     tB_JogPitch_Distance.Text = "1000";
                     rB_JogPitch_MoveVelocity_10.Checked = true;
@@ -236,12 +236,12 @@ namespace Mirle.Agv.View
             double[] reviseWheelAngle = new double[4];
             Thread.Sleep(20);
 
-            while (!moveControl.elmoDriver.MoveCompelete(Axis.GX))
+            while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
             {
                 if (agvRevise.OntimeRevise(ref reviseWheelAngle, wheelAngle))
                 {
-                    moveControl.elmoDriver.ElmoMove(Axis.GT, reviseWheelAngle[0], reviseWheelAngle[1], reviseWheelAngle[2], reviseWheelAngle[3],
-                        moveControl.ontimeReviseConfig.ThetaSpeed, MoveType.Absolute,
+                    moveControl.elmoDriver.ElmoMove(EnumAxis.GT, reviseWheelAngle[0], reviseWheelAngle[1], reviseWheelAngle[2], reviseWheelAngle[3],
+                        moveControl.ontimeReviseConfig.ThetaSpeed, EnumMoveType.Absolute,
                         moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration,
                         moveControl.moveControlConfig.Turn.Jerk);
                 }
@@ -249,7 +249,7 @@ namespace Mirle.Agv.View
                 Thread.Sleep(50);
             }
 
-            moveControl.elmoDriver.ElmoMove(Axis.GT, 0, moveControl.ontimeReviseConfig.ThetaSpeed, MoveType.Absolute,
+            moveControl.elmoDriver.ElmoMove(EnumAxis.GT, 0, moveControl.ontimeReviseConfig.ThetaSpeed, EnumMoveType.Absolute,
                 moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration,
                 moveControl.moveControlConfig.Turn.Jerk);
         }
@@ -262,27 +262,27 @@ namespace Mirle.Agv.View
                 homing = false;
             }
 
-            ChangeMode(JogPitchMode.Normal);
+            ChangeMode(EnumJogPitchMode.Normal);
         }
 
         private void button_JogPitch_Normal_Click(object sender, EventArgs e)
         {
-            ChangeMode(JogPitchMode.Normal);
+            ChangeMode(EnumJogPitchMode.Normal);
         }
 
         private void button_JogPitch_ForwardWheel_Click(object sender, EventArgs e)
         {
-            ChangeMode(JogPitchMode.ForwardWheel);
+            ChangeMode(EnumJogPitchMode.ForwardWheel);
         }
 
         private void button_JogPitch_BackwardWheel_Click(object sender, EventArgs e)
         {
-            ChangeMode(JogPitchMode.BackwardWheel);
+            ChangeMode(EnumJogPitchMode.BackwardWheel);
         }
 
         private void button_JogPitch_SpinTurn_Click(object sender, EventArgs e)
         {
-            ChangeMode(JogPitchMode.SpinTurn);
+            ChangeMode(EnumJogPitchMode.SpinTurn);
         }
 
         private void CheckTurnData(ref double vel, ref double acc, ref double dec, ref double jerk)
@@ -310,7 +310,7 @@ namespace Mirle.Agv.View
 
         private void button_JogPitch_Turn_MouseUp(object sender, MouseEventArgs e)
         {
-            moveControl.elmoDriver.ElmoStop(Axis.GT, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.GT, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
             moveControl.position.Real = null;
         }
 
@@ -323,13 +323,13 @@ namespace Mirle.Agv.View
 
             switch (mode)
             {
-                case JogPitchMode.Normal:
+                case EnumJogPitchMode.Normal:
                     turn = new double[4] { angle, angle, angle, angle };
                     break;
-                case JogPitchMode.ForwardWheel:
+                case EnumJogPitchMode.ForwardWheel:
                     turn = new double[4] { angle, angle, 0, 0 };
                     break;
-                case JogPitchMode.BackwardWheel:
+                case EnumJogPitchMode.BackwardWheel:
                     turn = new double[4] { 0, 0, angle, angle };
                     break;
                 default:
@@ -337,7 +337,7 @@ namespace Mirle.Agv.View
                     break;
             }
 
-            moveControl.elmoDriver.ElmoMove(Axis.GT, turn[0], turn[1], turn[2], turn[3], vel, MoveType.Absolute, acc, dec, jerk);
+            moveControl.elmoDriver.ElmoMove(EnumAxis.GT, turn[0], turn[1], turn[2], turn[3], vel, EnumMoveType.Absolute, acc, dec, jerk);
         }
 
         private void button_JogPitch_TurnRight_MouseDown(object sender, MouseEventArgs e)
@@ -389,7 +389,7 @@ namespace Mirle.Agv.View
             if (!GetVelocityAndDistance(ref velocity, ref distance))
                 return;
 
-            if (mode == JogPitchMode.SpinTurn)
+            if (mode == EnumJogPitchMode.SpinTurn)
             { // turn left
                 double[] move;
                 if (flag) // right
@@ -397,7 +397,7 @@ namespace Mirle.Agv.View
                 else
                     move = new double[4] { distance, -distance, distance, -distance };
 
-                moveControl.elmoDriver.ElmoMove(Axis.GX, move[0], move[1], move[2], move[3], velocity, MoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, move[0], move[1], move[2], move[3], velocity, EnumMoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
                                          moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
             }
             else if (cB_JogPitch_MoveAndOntimeRevise.Checked)
@@ -413,7 +413,7 @@ namespace Mirle.Agv.View
                 else
                     wheelAngle = 0;
 
-                moveControl.elmoDriver.ElmoMove(Axis.GX, (flag ? distance : -distance), velocity, MoveType.Relative,
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, (flag ? distance : -distance), velocity, EnumMoveType.Relative,
                     moveControl.moveControlConfig.Move.Acceleration, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
 
                 ontimeRevise = new Thread(OntimeReviseThread);
@@ -421,7 +421,7 @@ namespace Mirle.Agv.View
             }
             else
             {
-                moveControl.elmoDriver.ElmoMove(Axis.GX, (flag ? distance : -distance), velocity, MoveType.Relative,
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, (flag ? distance : -distance), velocity, EnumMoveType.Relative,
                     moveControl.moveControlConfig.Move.Acceleration, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
             }
         }
@@ -438,7 +438,7 @@ namespace Mirle.Agv.View
 
         private void button_JogPitch_Move_MouseUp(object sender, MouseEventArgs e)
         {
-            moveControl.elmoDriver.ElmoStop(Axis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
             moveControl.position.Real = null;
         }
 
@@ -490,7 +490,7 @@ namespace Mirle.Agv.View
             lastState = moveControl.MoveState;
         }
 
-        private bool GetVelocityAndDistanceAndSingleAxis(ref Axis axis, ref double velocity, ref double distance)
+        private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)
         {
             if (double.TryParse(tB_JogPitch_AxisMove_Disance.Text, out distance) && distance > 0 &&
                 double.TryParse(tB_JogPitch_AxisMove_Velocity.Text, out velocity) && velocity > 0)
@@ -506,33 +506,33 @@ namespace Mirle.Agv.View
         {
             double velocity = 0;
             double distance = 0;
-            Axis axis = Axis.None;
+            EnumAxis axis = EnumAxis.None;
             if (!GetVelocityAndDistanceAndSingleAxis(ref axis, ref velocity, ref distance))
                 return;
 
-            moveControl.elmoDriver.ElmoMove(axis, distance, velocity, MoveType.Absolute);
+            moveControl.elmoDriver.ElmoMove(axis, distance, velocity, EnumMoveType.Absolute);
         }
 
         private void button_JogPitch_AxisMove_RelativeAdd_Click(object sender, EventArgs e)
         {
             double velocity = 0;
             double distance = 0;
-            Axis axis = Axis.None;
+            EnumAxis axis = EnumAxis.None;
             if (!GetVelocityAndDistanceAndSingleAxis(ref axis, ref velocity, ref distance))
                 return;
 
-            moveControl.elmoDriver.ElmoMove(axis, distance, velocity, MoveType.Relative);
+            moveControl.elmoDriver.ElmoMove(axis, distance, velocity, EnumMoveType.Relative);
         }
 
         private void button_JogPitch_AxisMove_RelativeLess_Click(object sender, EventArgs e)
         {
             double velocity = 0;
             double distance = 0;
-            Axis axis = Axis.None;
+            EnumAxis axis = EnumAxis.None;
             if (!GetVelocityAndDistanceAndSingleAxis(ref axis, ref velocity, ref distance))
                 return;
 
-            moveControl.elmoDriver.ElmoMove(axis, -distance, velocity, MoveType.Relative);
+            moveControl.elmoDriver.ElmoMove(axis, -distance, velocity, EnumMoveType.Relative);
         }
 
         private void HomeThread()
@@ -570,7 +570,7 @@ namespace Mirle.Agv.View
 
             if (Math.Abs(reviseData.Theta) > 0.1)
             {
-                moveControl.elmoDriver.ElmoMove(Axis.GT, -59.744, 59.744, 59.744, -59.744, moveControl.moveControlConfig.Turn.Velocity, MoveType.Absolute,
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GT, -59.744, 59.744, 59.744, -59.744, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
                             moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
 
                 spinDistance = reviseData.Theta / 360 * oneCycleDistance;
@@ -579,33 +579,33 @@ namespace Mirle.Agv.View
                 servoOnTimer.Reset();
                 servoOnTimer.Start();
 
-                while (!moveControl.elmoDriver.MoveCompelete(Axis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
+                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
                 {
                     Thread.Sleep(50);
                 }
 
-                if (!moveControl.elmoDriver.MoveCompelete(Axis.GT))
+                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT))
                 {
-                    moveControl.elmoDriver.ElmoStop(Axis.GT);
+                    moveControl.elmoDriver.ElmoStop(EnumAxis.GT);
                     MessageBox.Show("轉向角度至Spin Turn角度時Timeout!");
                     homing = false;
                     return;
                 }
 
-                moveControl.elmoDriver.ElmoMove(Axis.GX, move[0], move[1], move[2], move[3], 10, MoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, move[0], move[1], move[2], move[3], 10, EnumMoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
                                          moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
 
                 servoOnTimer.Reset();
                 servoOnTimer.Start();
 
-                while (!moveControl.elmoDriver.MoveCompelete(Axis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
+                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
                 {
                     Thread.Sleep(50);
                 }
 
-                if (!moveControl.elmoDriver.MoveCompelete(Axis.GX))
+                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
                 {
-                    moveControl.elmoDriver.ElmoStop(Axis.GX);
+                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
                     MessageBox.Show("Spin Turn至軌道平行時Timeout!");
                     homing = false;
                     return;
@@ -633,39 +633,39 @@ namespace Mirle.Agv.View
 
             if (Math.Abs(reviseData.SectionDeviation) > 5)
             {
-                moveControl.elmoDriver.ElmoMove(Axis.GT, 90, 90, 90, 90, moveControl.moveControlConfig.Turn.Velocity, MoveType.Absolute,
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GT, 90, 90, 90, 90, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
                 moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
 
                 servoOnTimer.Reset();
                 servoOnTimer.Start();
 
-                while (!moveControl.elmoDriver.MoveCompelete(Axis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
+                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
                 {
                     Thread.Sleep(50);
                 }
 
-                if (!moveControl.elmoDriver.MoveCompelete(Axis.GT))
+                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT))
                 {
-                    moveControl.elmoDriver.ElmoStop(Axis.GT);
+                    moveControl.elmoDriver.ElmoStop(EnumAxis.GT);
                     MessageBox.Show("轉向角度至90度時Timeout!");
                     homing = false;
                     return;
                 }
 
-                moveControl.elmoDriver.ElmoMove(Axis.GX, reviseData.SectionDeviation, 50, MoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, reviseData.SectionDeviation, 50, EnumMoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
                                          moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
 
                 servoOnTimer.Reset();
                 servoOnTimer.Start();
 
-                while (!moveControl.elmoDriver.MoveCompelete(Axis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
+                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
                 {
                     Thread.Sleep(50);
                 }
 
-                if (!moveControl.elmoDriver.MoveCompelete(Axis.GX))
+                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
                 {
-                    moveControl.elmoDriver.ElmoStop(Axis.GX);
+                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
                     MessageBox.Show("平移行時Timeout!");
                     homing = false;
                     return;

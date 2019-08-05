@@ -20,8 +20,7 @@ namespace Mirle.Agv.Controller
     {
         #region Configs
 
-        private string rootDir = Environment.CurrentDirectory;
-        private string configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
+        //private string configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
         private ConfigHandler configHandler;
         private MiddlerConfig middlerConfig;
         private MainFlowConfig mainFlowConfig;
@@ -103,23 +102,16 @@ namespace Mirle.Agv.Controller
         public MainFlowHandler()
         {
             isIniOk = true;
-            rootDir = Environment.CurrentDirectory;
-        }
-
-        public MainFlowHandler(string rootDir)
-        {
-            isIniOk = true;
-            this.rootDir = rootDir;
         }
 
         #region InitialComponents
 
         public void InitialMainFlowHandler()
         {
-            ConfigsInitial();
-            LoggersInitial();
-            ControllersInitial();
+            //ConfigsInitial();
             XmlInitial();
+            LoggersInitial();
+            ControllersInitial();           
             VehicleInitial();
             LoadAllAlarms();
             EventInitial();
@@ -144,62 +136,62 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                configPath = Path.Combine(rootDir, "Configs.ini");
-                configHandler = new ConfigHandler(configPath);
+                //configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
+                //configHandler = new ConfigHandler(configPath);
 
-                mainFlowConfig = new MainFlowConfig();
-                mainFlowConfig.LogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
-                LoggerAgent.LogConfigPath = mainFlowConfig.LogConfigPath;
-                int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
-                mainFlowConfig.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
-                int.TryParse(configHandler.GetString("MainFlow", "DoTransCmdsInterval", "15"), out int tempDoTransCmdsInterval);
-                mainFlowConfig.DoTransCmdsInterval = tempDoTransCmdsInterval;
-                int.TryParse(configHandler.GetString("MainFlow", "ReserveLength", "3"), out int tempReserveLength);
-                mainFlowConfig.ReserveLength = tempReserveLength;
-                int.TryParse(configHandler.GetString("MainFlow", "TrackingPositionInterval", "100"), out int tempTrackingPositionInterval);
-                mainFlowConfig.TrackingPositionInterval = tempTrackingPositionInterval;
-                int.TryParse(configHandler.GetString("MainFlow", "StopChargeInterval", "100"), out int tempStopChargeInterval);
-                mainFlowConfig.StopChargeInterval = tempStopChargeInterval;
-                int.TryParse(configHandler.GetString("MainFlow", "StopChargeInterval", "100"), out int tempStartChargeInterval);
-                mainFlowConfig.StartChargeInterval = tempStartChargeInterval;
+                //mainFlowConfig = new MainFlowConfig();
+                //mainFlowConfig.LogConfigPath = configHandler.GetString("MainFlow", "LogConfigPath", "Log.ini");
+                //LoggerAgent.LogConfigPath = mainFlowConfig.LogConfigPath;
+                //int.TryParse(configHandler.GetString("MainFlow", "TransCmdsCheckInterval", "15"), out int tempTransCmdsCheckInterval);
+                //mainFlowConfig.TransCmdsCheckInterval = tempTransCmdsCheckInterval;
+                //int.TryParse(configHandler.GetString("MainFlow", "DoTransCmdsInterval", "15"), out int tempDoTransCmdsInterval);
+                //mainFlowConfig.DoTransCmdsInterval = tempDoTransCmdsInterval;
+                //int.TryParse(configHandler.GetString("MainFlow", "ReserveLength", "3"), out int tempReserveLength);
+                //mainFlowConfig.ReserveLength = tempReserveLength;
+                //int.TryParse(configHandler.GetString("MainFlow", "TrackingPositionInterval", "100"), out int tempTrackingPositionInterval);
+                //mainFlowConfig.TrackingPositionInterval = tempTrackingPositionInterval;
+                //int.TryParse(configHandler.GetString("MainFlow", "StopChargeInterval", "100"), out int tempStopChargeInterval);
+                //mainFlowConfig.StopChargeInterval = tempStopChargeInterval;
+                //int.TryParse(configHandler.GetString("MainFlow", "StopChargeInterval", "100"), out int tempStartChargeInterval);
+                //mainFlowConfig.StartChargeInterval = tempStartChargeInterval;
 
-                middlerConfig = new MiddlerConfig();
-                int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
-                middlerConfig.ClientNum = tempClientNum;
-                middlerConfig.ClientName = configHandler.GetString("Middler", "ClientName", "AGV01");
-                middlerConfig.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
-                int.TryParse(configHandler.GetString("Middler", "RemotePort", "10001"), out int tempRemotePort);
-                middlerConfig.RemotePort = tempRemotePort;
-                middlerConfig.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.131");
-                int.TryParse(configHandler.GetString("Middler", "LocalPort", "5002"), out int tempPort);
-                middlerConfig.LocalPort = tempPort;
-                int.TryParse(configHandler.GetString("Middler", "RecvTimeoutMs", "10000"), out int tempRecvTimeoutMs);
-                middlerConfig.RecvTimeoutMs = tempRecvTimeoutMs;
-                int.TryParse(configHandler.GetString("Middler", "SendTimeoutMs", "0"), out int tempSendTimeoutMs);
-                middlerConfig.SendTimeoutMs = tempSendTimeoutMs;
-                int.TryParse(configHandler.GetString("Middler", "MaxReadSize", "0"), out int tempMaxReadSize);
-                middlerConfig.MaxReadSize = tempMaxReadSize;
-                int.TryParse(configHandler.GetString("Middler", "ReconnectionIntervalMs", "10000"), out int tempReconnectionIntervalMs);
-                middlerConfig.ReconnectionIntervalMs = tempReconnectionIntervalMs;
-                int.TryParse(configHandler.GetString("Middler", "MaxReconnectionCount", "10"), out int tempMaxReconnectionCount);
-                middlerConfig.MaxReconnectionCount = tempMaxReconnectionCount;
-                int.TryParse(configHandler.GetString("Middler", "RetryCount", "2"), out int tempRetryCount);
-                middlerConfig.RetryCount = tempRetryCount;
-                int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
-                middlerConfig.SleepTime = tempSleepTime;
-                int.TryParse(configHandler.GetString("Middler", "RichTextBoxMaxLines ", "10"), out int tempRichTextBoxMaxLines);
-                middlerConfig.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
-                int.TryParse(configHandler.GetString("Middler", "AskReserveInterval ", "1000"), out int tempAskReserveInterval);
-                middlerConfig.AskReserveInterval = tempAskReserveInterval;
+                //middlerConfig = new MiddlerConfig();
+                //int.TryParse(configHandler.GetString("Middler", "ClientNum", "1"), out int tempClientNum);
+                //middlerConfig.ClientNum = tempClientNum;
+                //middlerConfig.ClientName = configHandler.GetString("Middler", "ClientName", "AGV01");
+                //middlerConfig.RemoteIp = configHandler.GetString("Middler", "RemoteIp", "192.168.9.203");
+                //int.TryParse(configHandler.GetString("Middler", "RemotePort", "10001"), out int tempRemotePort);
+                //middlerConfig.RemotePort = tempRemotePort;
+                //middlerConfig.LocalIp = configHandler.GetString("Middler", "LocalIp", "192.168.9.131");
+                //int.TryParse(configHandler.GetString("Middler", "LocalPort", "5002"), out int tempPort);
+                //middlerConfig.LocalPort = tempPort;
+                //int.TryParse(configHandler.GetString("Middler", "RecvTimeoutMs", "10000"), out int tempRecvTimeoutMs);
+                //middlerConfig.RecvTimeoutMs = tempRecvTimeoutMs;
+                //int.TryParse(configHandler.GetString("Middler", "SendTimeoutMs", "0"), out int tempSendTimeoutMs);
+                //middlerConfig.SendTimeoutMs = tempSendTimeoutMs;
+                //int.TryParse(configHandler.GetString("Middler", "MaxReadSize", "0"), out int tempMaxReadSize);
+                //middlerConfig.MaxReadSize = tempMaxReadSize;
+                //int.TryParse(configHandler.GetString("Middler", "ReconnectionIntervalMs", "10000"), out int tempReconnectionIntervalMs);
+                //middlerConfig.ReconnectionIntervalMs = tempReconnectionIntervalMs;
+                //int.TryParse(configHandler.GetString("Middler", "MaxReconnectionCount", "10"), out int tempMaxReconnectionCount);
+                //middlerConfig.MaxReconnectionCount = tempMaxReconnectionCount;
+                //int.TryParse(configHandler.GetString("Middler", "RetryCount", "2"), out int tempRetryCount);
+                //middlerConfig.RetryCount = tempRetryCount;
+                //int.TryParse(configHandler.GetString("Middler", "SleepTime", "10"), out int tempSleepTime);
+                //middlerConfig.SleepTime = tempSleepTime;
+                //int.TryParse(configHandler.GetString("Middler", "RichTextBoxMaxLines ", "10"), out int tempRichTextBoxMaxLines);
+                //middlerConfig.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
+                //int.TryParse(configHandler.GetString("Middler", "AskReserveInterval ", "1000"), out int tempAskReserveInterval);
+                //middlerConfig.AskReserveInterval = tempAskReserveInterval;
 
-                mapConfig = new MapConfig();
-                mapConfig.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
-                mapConfig.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
-                mapConfig.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
-                mapConfig.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
+                //mapConfig = new MapConfig();
+                //mapConfig.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
+                //mapConfig.AddressFileName = configHandler.GetString("Map", "AddressFileName", "AADDRESS.csv");
+                //mapConfig.BarcodeFileName = configHandler.GetString("Map", "BarcodeFileName", "LBARCODE.csv");
+                //mapConfig.OutSectionThreshold = float.Parse(configHandler.GetString("Map", "OutSectionThreshold", "10"));
 
-                alarmConfig = new AlarmConfig();
-                alarmConfig.AlarmFileName = configHandler.GetString("Alarm", "AlarmFileName", "AlarmCode.csv");
+                //alarmConfig = new AlarmConfig();
+                //alarmConfig.AlarmFileName = configHandler.GetString("Alarm", "AlarmFileName", "AlarmCode.csv");
 
                 if (OnComponentIntialDoneEvent != null)
                 {
@@ -228,12 +220,39 @@ namespace Mirle.Agv.Controller
 
         private void XmlInitial()
         {
-            XmlHandler xmlHandler = new XmlHandler();
+            try
+            {
+                XmlHandler xmlHandler = new XmlHandler();
 
-            mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>("MainFlow.xml");
-            mapConfig = xmlHandler.ReadXml<MapConfig>("Map.xml");
-            middlerConfig = xmlHandler.ReadXml<MiddlerConfig>("Middler.xml");
-            alarmConfig = xmlHandler.ReadXml<AlarmConfig>("Alarm.xml");
+                mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>("MainFlow.xml");
+                LoggerAgent.LogConfigPath = mainFlowConfig.LogConfigPath;
+                mapConfig = xmlHandler.ReadXml<MapConfig>("Map.xml");
+                middlerConfig = xmlHandler.ReadXml<MiddlerConfig>("Middler.xml");
+                alarmConfig = xmlHandler.ReadXml<AlarmConfig>("Alarm.xml");
+
+                if (OnComponentIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = true,
+                        ItemName = "讀寫設定檔"
+                    };
+                    OnComponentIntialDoneEvent(this, args);
+                }
+            }
+            catch (Exception)
+            {
+                isIniOk = false;
+                if (OnComponentIntialDoneEvent != null)
+                {
+                    var args = new InitialEventArgs
+                    {
+                        IsOk = false,
+                        ItemName = "讀寫設定檔"
+                    };
+                    OnComponentIntialDoneEvent(this, args);
+                }
+            }
         }
 
         public void StopVehicle()
@@ -1124,10 +1143,10 @@ namespace Mirle.Agv.Controller
             return !queNeedReserveSections.IsEmpty;
         }
 
-        public void MoveControlHandler_OnMoveFinished(object sender, MoveComplete status)
+        public void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete status)
         {
             //TODO: if error stop ,
-            if (status == MoveComplete.Fail)
+            if (status == EnumMoveComplete.Fail)
             {
                 //Alarm
                 StopVisitTransCmds();

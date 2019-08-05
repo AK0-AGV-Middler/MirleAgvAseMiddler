@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Threading;
 
 namespace Mirle.Agv.View
 {
@@ -18,20 +17,36 @@ namespace Mirle.Agv.View
         public PlcForm(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
         {
             InitializeComponent();
+            //mcProtocol = new MCProtocol();
+            //mcProtocol.Name = "MCProtocol";
+            //mcProtocol.OnDataChangeEvent += MCProtocol_OnDataChangeEvent;
             mcProtocol = aMcProtocol;
             tabPage1.Controls.Add(mcProtocol);
 
             plcAgent = aPlcAgent;
 
+            //plcAgent = new PlcAgent(mcProtocol, null);
             //一些Form Control要給進去Entity物件
             FormControlAddToEnityClass();
+            //this.plcAgent.OnForkCommandExecutingEvent += PLCAgent_OnForkCommandExecutingEvent;
+            //this.plcAgent.OnForkCommandFinishEvent += PLCAgent_OnForkCommandFinishEvent;
+            //this.plcAgent.OnForkCommandErrorEvent += PLCAgent_OnForkCommandErrorEvent;
+            //this.plcAgent.OnCassetteIDReadFinishEvent += PLCAgent_OnCassetteIDReadFinishEvent;
+            //OnCassetteIDReadFinishEvent
             EventInitial();
 
+
             mcProtocol.LoadXMLConfig();
+
             mcProtocol.OperationMode = MCProtocol.enOperationMode.NORMAL_MODE;
+
+            //aMCProtocol.Open("127.0.0.1", "3001");
+            //aMCProtocol.ConnectToPLC("127.0.0.1", "5000");
 
             mcProtocol.Height = tabPage1.Height;
             mcProtocol.Width = tabPage1.Width;
+
+
         }
 
         private void EventInitial()
@@ -44,28 +59,28 @@ namespace Mirle.Agv.View
             plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
         }
 
-        private Control FindControlById(string aId)
+        private Control findControlByID(string strID)
         {
             Control aControl = null;
-            aControl = grpF.Controls[aId];
+            aControl = grpF.Controls[strID];
             if (aControl != null)
             {
                 return aControl;
             }
 
-            aControl = grpB.Controls[aId];
+            aControl = grpB.Controls[strID];
             if (aControl != null)
             {
                 return aControl;
             }
 
-            aControl = grpL.Controls[aId];
+            aControl = grpL.Controls[strID];
             if (aControl != null)
             {
                 return aControl;
             }
 
-            aControl = grpR.Controls[aId];
+            aControl = grpR.Controls[strID];
             if (aControl != null)
             {
                 return aControl;
@@ -74,58 +89,59 @@ namespace Mirle.Agv.View
             return aControl;
         }
 
+
         private void LabelAddToSideBeamSensor(List<PlcBeamSensor> listBeamSensor)
         {
             foreach (PlcBeamSensor aBeamSensor in listBeamSensor)
             {
-                aBeamSensor.FormLabel = (Label)FindControlById("lblBeamSensor" + aBeamSensor.Id);
-                ((Label)FindControlById("lblBeamSensor" + aBeamSensor.Id)).Tag = aBeamSensor;
+                aBeamSensor.FormLabel = (Label)findControlByID("lblBeamSensor" + aBeamSensor.Id);
+                ((Label)findControlByID("lblBeamSensor" + aBeamSensor.Id)).Tag = aBeamSensor;
             }
         }
 
         private void FormControlAddToEnityClass()
         {
             //BeamSensor
-            LabelAddToSideBeamSensor(this.plcAgent.thePlcVehicle.listFrontBeamSensor);
-            LabelAddToSideBeamSensor(this.plcAgent.thePlcVehicle.listBackBeamSensor);
-            LabelAddToSideBeamSensor(this.plcAgent.thePlcVehicle.listLeftBeamSensor);
-            LabelAddToSideBeamSensor(this.plcAgent.thePlcVehicle.listRightBeamSensor);
+            LabelAddToSideBeamSensor(this.plcAgent.APLCVehicle.listFrontBeamSensor);
+            LabelAddToSideBeamSensor(this.plcAgent.APLCVehicle.listBackBeamSensor);
+            LabelAddToSideBeamSensor(this.plcAgent.APLCVehicle.listLeftBeamSensor);
+            LabelAddToSideBeamSensor(this.plcAgent.APLCVehicle.listRightBeamSensor);
             //Bumper
-            foreach (PlcBumper aBumper in this.plcAgent.thePlcVehicle.listBumper)
+            foreach (PlcBumper aBumper in this.plcAgent.APLCVehicle.listBumper)
             {
-                aBumper.FormLabel = (Label)FindControlById("lblBump" + aBumper.Id);
-                ((Label)FindControlById("lblBump" + aBumper.Id)).Tag = aBumper;
+                aBumper.FormLabel = (Label)findControlByID("lblBump" + aBumper.Id);
+                ((Label)findControlByID("lblBump" + aBumper.Id)).Tag = aBumper;
             }
             //EMO
-            foreach (PlcEmo aPlcEmo in this.plcAgent.thePlcVehicle.listPlcEmo)
+            foreach (PlcEmo aPlcEmo in this.plcAgent.APLCVehicle.listPlcEmo)
             {
-                aPlcEmo.FormLabel = (Label)FindControlById("lblEMO" + aPlcEmo.Id);
-                ((Label)FindControlById("lblEMO" + aPlcEmo.Id)).Tag = aPlcEmo;
+                aPlcEmo.FormLabel = (Label)findControlByID("lblEMO" + aPlcEmo.Id);
+                ((Label)findControlByID("lblEMO" + aPlcEmo.Id)).Tag = aPlcEmo;
             }
         }
         //
-        private void PlcAgent_OnForkCommandErrorEvent(object sender, PlcForkCommand aForkCommand)
+        private void PlcAgent_OnForkCommandErrorEvent(Object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandErrorEvent";
         }
 
-        private void PlcAgent_OnForkCommandExecutingEvent(object sender, PlcForkCommand aForkCommand)
+        private void PlcAgent_OnForkCommandExecutingEvent(Object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandExecutingEvent";
         }
 
-        private void PlcAgent_OnForkCommandFinishEvent(object sender, PlcForkCommand aForkCommand)
+        private void PlcAgent_OnForkCommandFinishEvent(Object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandFinishEvent";
         }
 
-        private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string aCassetteId)
+        private void PlcAgent_OnCassetteIDReadFinishEvent(Object sender, String cassetteID)
         {
-            triggerEvent = "PLCAgent_OnCassetteIDReadFinishEvent cassetteID = " + aCassetteId;
+            triggerEvent = "PLCAgent_OnCassetteIDReadFinishEvent cassetteID = " + cassetteID;
         }
 
         private string triggerEvent;
-        private void McProtocol_OnDataChangeEvent(string sMessage, clsColParameter oColParam)
+        private void McProtocol_OnDataChangeEvent(string sMessage, ClsMCProtocol.clsColParameter oColParam)
         {
             //int tagChangeCount = oColParam.Count();
             //for (int i=1;i<= tagChangeCount; i++)
@@ -147,13 +163,13 @@ namespace Mirle.Agv.View
             Task.Run(() =>
             {
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
-                Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1000);
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
 
             });
         }
 
-        private void PlcForm_Load(object sender, EventArgs e)
+        private void frmPLCAgent_Load(object sender, EventArgs e)
         {
             cmbOperationType.Items.Clear();
 
@@ -177,7 +193,7 @@ namespace Mirle.Agv.View
                 cmbChargeDirection.Items.Add(item);
             }
             cmbChargeDirection.SelectedIndex = 1;
-            txtAutoChargeLowSOC.Text = this.plcAgent.thePlcVehicle.Batterys.PortAutoChargeLowSoc.ToString();
+            txtAutoChargeLowSOC.Text = this.plcAgent.APLCVehicle.Batterys.PortAutoChargeLowSoc.ToString();
 
             cmbEQPIO.Items.Clear();
             cmbEQPIO.Items.Add(bool.TrueString);
@@ -187,6 +203,12 @@ namespace Mirle.Agv.View
             //this.WindowState = FormWindowState.Minimized;
             timGUIRefresh.Enabled = true;
 
+            //20190802_Rudy 新增XML Param 可修改                
+            FillSVToBatteryParamTbx();           
+            FillPVToBatteryParamTbx();
+
+            FillSVToForkCommParamTbx();
+            FillPVToForkCommParamTbx();
         }
 
         private void btnForkCommandClear_Click(object sender, EventArgs e)
@@ -222,7 +244,7 @@ namespace Mirle.Agv.View
             Task.Run(() =>
             {
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
-                Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1000);
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
 
             });
@@ -250,15 +272,21 @@ namespace Mirle.Agv.View
             Task.Run(() =>
             {
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1000);
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+
             });
+
+
+
         }
 
         private void timGUIRefresh_Tick(object sender, EventArgs e)
         {
+            tbxLogView.Text = plcAgent.logMsg;
+
             txtTriggerEvent.Text = triggerEvent;
-            if (this.plcAgent.thePlcVehicle.Batterys.BatteryType == EnumBatteryType.Gotech)
+            if (this.plcAgent.APLCVehicle.Batterys.BatteryType == EnumBatteryType.Gotech)
             {
                 this.lblGotech.BackColor = Color.LightGreen;
             }
@@ -267,7 +295,7 @@ namespace Mirle.Agv.View
                 this.lblGotech.BackColor = Color.Silver;
             }
 
-            if (this.plcAgent.thePlcVehicle.Batterys.BatteryType == EnumBatteryType.Yinda)
+            if (this.plcAgent.APLCVehicle.Batterys.BatteryType == EnumBatteryType.Yinda)
             {
                 this.lblYinda.BackColor = Color.LightGreen;
             }
@@ -276,7 +304,7 @@ namespace Mirle.Agv.View
                 this.lblYinda.BackColor = Color.Silver;
             }
 
-            if (this.plcAgent.thePlcVehicle.Batterys.Charging)
+            if (this.plcAgent.APLCVehicle.Batterys.Charging)
             {
                 lblCharging.BackColor = Color.LightGreen;
             }
@@ -285,27 +313,27 @@ namespace Mirle.Agv.View
                 lblCharging.BackColor = Color.Silver;
             }
 
-            txtCurrent.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.MeterCurrent);
-            txtVoltage.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.MeterVoltage);
-            txtWatt.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.MeterWatt);
-            txtWattHour.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.MeterWattHour);
-            txtAH.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.MeterAh);
-            txtSOC.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.Percentage);
-            txtAHWorkingRange.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.AhWorkingRange);
-            txtCCModeAH.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.CcModeAh);
+            txtCurrent.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterCurrent);
+            txtVoltage.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterVoltage);
+            txtWatt.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterWatt);
+            txtWattHour.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterWattHour);
+            txtAH.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterAh);
+            txtSOC.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.Percentage);
+            txtAHWorkingRange.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.AhWorkingRange);
+            txtCCModeAH.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.CcModeAh);
 
-            txtCCModeCounter.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.CcModeCounter);
-            txtMaxCCmodeCounter.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.MaxResetAhCcounter);
-            txtFullChargeIndex.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.FullChargeIndex);
+            txtCCModeCounter.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.CcModeCounter);
+            txtMaxCCmodeCounter.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter);
+            txtFullChargeIndex.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.FullChargeIndex);
 
-            txtFBatteryTemp.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.FBatteryTemperature);
-            txtBBatteryTemp.Text = Convert.ToString(this.plcAgent.thePlcVehicle.Batterys.BBatteryTemperature);
+            txtFBatteryTemp.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.FBatteryTemperature);
+            txtBBatteryTemp.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.BBatteryTemperature);
 
-            txtErrorReason.Text = this.plcAgent.GetErrorReason();
+            txtErrorReason.Text = this.plcAgent.getErrorReason();
 
-            txtCassetteID.Text = this.plcAgent.thePlcVehicle.CassetteId;
+            txtCassetteID.Text = this.plcAgent.APLCVehicle.CassetteId;
 
-            if (this.plcAgent.thePlcVehicle.Robot.ForkBusy)
+            if (this.plcAgent.APLCVehicle.Robot.ForkBusy)
             {
                 lblForkBusy.BackColor = Color.LightGreen;
             }
@@ -313,7 +341,7 @@ namespace Mirle.Agv.View
             {
                 lblForkBusy.BackColor = Color.Silver;
             }
-            if (this.plcAgent.thePlcVehicle.Robot.ForkReady)
+            if (this.plcAgent.APLCVehicle.Robot.ForkReady)
             {
                 lblForkReady.BackColor = Color.LightGreen;
             }
@@ -322,7 +350,7 @@ namespace Mirle.Agv.View
                 lblForkReady.BackColor = Color.Silver;
             }
 
-            if (this.plcAgent.thePlcVehicle.Robot.ForkFinish)
+            if (this.plcAgent.APLCVehicle.Robot.ForkFinish)
             {
                 lblForkFinish.BackColor = Color.LightGreen;
             }
@@ -331,7 +359,7 @@ namespace Mirle.Agv.View
                 lblForkFinish.BackColor = Color.Silver;
             }
 
-            if (this.plcAgent.thePlcVehicle.Loading)
+            if (this.plcAgent.APLCVehicle.Loading)
             {
                 lblLoading.BackColor = Color.LightGreen;
             }
@@ -340,7 +368,7 @@ namespace Mirle.Agv.View
                 lblLoading.BackColor = Color.Silver;
             }
 
-            if (this.plcAgent.thePlcVehicle.SafetyDisable)
+            if (this.plcAgent.APLCVehicle.SafetyDisable)
             {
                 tabSafety.BackColor = Color.Pink;
             }
@@ -349,15 +377,15 @@ namespace Mirle.Agv.View
                 tabSafety.BackColor = Color.Transparent;
             }
 
-            txtSafetyAction.Text = plcAgent.thePlcVehicle.VehicleSafetyAction.ToString();
+            txtSafetyAction.Text = plcAgent.APLCVehicle.VehicleSafetyAction.ToString();
             //BeamSensor color
-            ShowSideBeamcolor(plcAgent.thePlcVehicle.listFrontBeamSensor);
-            ShowSideBeamcolor(plcAgent.thePlcVehicle.listBackBeamSensor);
-            ShowSideBeamcolor(plcAgent.thePlcVehicle.listLeftBeamSensor);
-            ShowSideBeamcolor(plcAgent.thePlcVehicle.listRightBeamSensor);
+            showSideBeamcolor(plcAgent.APLCVehicle.listFrontBeamSensor);
+            showSideBeamcolor(plcAgent.APLCVehicle.listBackBeamSensor);
+            showSideBeamcolor(plcAgent.APLCVehicle.listLeftBeamSensor);
+            showSideBeamcolor(plcAgent.APLCVehicle.listRightBeamSensor);
 
             //Bumper color
-            foreach (PlcBumper aPLCBumper in plcAgent.thePlcVehicle.listBumper)
+            foreach (PlcBumper aPLCBumper in plcAgent.APLCVehicle.listBumper)
             {
                 if (aPLCBumper.Disable)
                 {
@@ -368,7 +396,7 @@ namespace Mirle.Agv.View
                     aPLCBumper.FormLabel.BorderStyle = BorderStyle.FixedSingle;
                 }
 
-                if (aPLCBumper.Signal)
+                if (!aPLCBumper.Signal) //20190730_Rudy 顯示改反向
                 {
                     aPLCBumper.FormLabel.BackColor = this.lblNoDetect.BackColor;
                 }
@@ -377,9 +405,18 @@ namespace Mirle.Agv.View
                     aPLCBumper.FormLabel.BackColor = this.lblNearDetect.BackColor;
                 }
             }
+            //20190730_Rudy 新增EMO Status 顯示
+            if (plcAgent.APLCVehicle.PlcEmoStatus)
+            {
+                lblEMO.BackColor = Color.Pink;
+            }
+            else
+            {
+                lblEMO.BackColor = Color.LightGreen;
+            }
 
             //EMO color
-            foreach (PlcEmo aPlcEmo in plcAgent.thePlcVehicle.listPlcEmo)
+            foreach (PlcEmo aPlcEmo in plcAgent.APLCVehicle.listPlcEmo)
             {
                 if (aPlcEmo.Disable)
                 {
@@ -400,7 +437,7 @@ namespace Mirle.Agv.View
                 }
             }
 
-            if (plcAgent.thePlcVehicle.MoveFront)
+            if (plcAgent.APLCVehicle.MoveFront)
             {
                 chkMoveFront.BackColor = Color.LightGreen;
             }
@@ -409,7 +446,7 @@ namespace Mirle.Agv.View
                 chkMoveFront.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.MoveBack)
+            if (plcAgent.APLCVehicle.MoveBack)
             {
                 chkMoveBack.BackColor = Color.LightGreen;
             }
@@ -418,7 +455,7 @@ namespace Mirle.Agv.View
                 chkMoveBack.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.MoveLeft)
+            if (plcAgent.APLCVehicle.MoveLeft)
             {
                 chkMoveLeft.BackColor = Color.LightGreen;
             }
@@ -427,7 +464,7 @@ namespace Mirle.Agv.View
                 chkMoveLeft.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.MoveRight)
+            if (plcAgent.APLCVehicle.MoveRight)
             {
                 chkMoveRight.BackColor = Color.LightGreen;
             }
@@ -436,7 +473,7 @@ namespace Mirle.Agv.View
                 chkMoveRight.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.FrontBeamSensorDisable)
+            if (plcAgent.APLCVehicle.FrontBeamSensorDisable)
             {
                 grpF.BackColor = Color.Pink;
             }
@@ -445,7 +482,7 @@ namespace Mirle.Agv.View
                 grpF.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.BackBeamSensorDisable)
+            if (plcAgent.APLCVehicle.BackBeamSensorDisable)
             {
                 grpB.BackColor = Color.Pink;
             }
@@ -454,7 +491,7 @@ namespace Mirle.Agv.View
                 grpB.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.LeftBeamSensorDisable)
+            if (plcAgent.APLCVehicle.LeftBeamSensorDisable)
             {
                 grpL.BackColor = Color.Pink;
             }
@@ -463,7 +500,7 @@ namespace Mirle.Agv.View
                 grpL.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.RightBeamSensorDisable)
+            if (plcAgent.APLCVehicle.RightBeamSensorDisable)
             {
                 grpR.BackColor = Color.Pink;
             }
@@ -472,7 +509,7 @@ namespace Mirle.Agv.View
                 grpR.BackColor = Color.Transparent;
             }
 
-            if (plcAgent.thePlcVehicle.BeamSensorAutoSleep)
+            if (plcAgent.APLCVehicle.BeamSensorAutoSleep)
             {
                 rdoBeamSensorAutoSleepEnable.BackColor = Color.LightGreen;
                 rdoBeamSensorAutoSleepDisable.BackColor = Color.Transparent;
@@ -483,9 +520,19 @@ namespace Mirle.Agv.View
                 rdoBeamSensorAutoSleepDisable.BackColor = Color.LightGreen;
             }
 
+            if (plcAgent.APLCVehicle.BumperAlarmStatus)//20190730_Rudy 新增Bumper Alarm Status 顯示
+            {
+                lblBumperAlarm.BackColor = Color.Pink;
+            }
+            else
+            {
+                lblBumperAlarm.BackColor = Color.LightGreen;
+            }
+
+
         }
 
-        private void ShowSideBeamcolor(List<PlcBeamSensor> listBeamSensor)
+        private void showSideBeamcolor(List<PlcBeamSensor> listBeamSensor)
         {
             foreach (PlcBeamSensor aBeamSensor in listBeamSensor)
             {
@@ -525,6 +572,8 @@ namespace Mirle.Agv.View
             }
         }
 
+
+
         private void btnMeterAHReset_Click(object sender, EventArgs e)
         {
             plcAgent.SetMeterAHToZero();
@@ -537,7 +586,7 @@ namespace Mirle.Agv.View
             {
                 if (!plcAgent.IsForkCommandExist())
                 {
-                    PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommandParse(cmbOperationType.Text), txtStageNo.Text, EnumStageDirectionParse(cmbDirection.Text), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
+                    PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), (EnumForkCommand)Enum.Parse(typeof(EnumForkCommand), cmbOperationType.Text, false), txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
                     plcAgent.AddForkComand(aForkCommand);
                 }
                 else
@@ -558,7 +607,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                plcAgent.ClearExecutingForkCommand();
+                plcAgent.clearExecutingForkCommand();
             }
             catch (Exception ex)
             {
@@ -567,6 +616,8 @@ namespace Mirle.Agv.View
             }
 
         }
+
+
 
         private void btnBuzzerStop_Click(object sender, EventArgs e)
         {
@@ -581,7 +632,7 @@ namespace Mirle.Agv.View
         private void btnTriggerCassetteReader_Click(object sender, EventArgs e)
         {
             string CassetteID = "";
-            this.plcAgent.TriggerCassetteIDReader(ref CassetteID);
+            this.plcAgent.triggerCassetteIDReader(ref CassetteID);
         }
 
         private void btnCycle_Click(object sender, EventArgs e)
@@ -600,26 +651,26 @@ namespace Mirle.Agv.View
             }
         }
 
-        private ulong cycleForkCommandCount = 0;
-        private ulong cycleChargeCommandCount = 0;
+        private UInt64 cycleForkCommandCount = 0;
+        private UInt64 cycleChargeCommandCount = 0;
 
         private void timCycle_Tick(object sender, EventArgs e)
         {
-            if (this.plcAgent.thePlcVehicle.Robot.ForkReady && this.plcAgent.thePlcVehicle.Robot.ForkBusy == false)
+            if (this.plcAgent.APLCVehicle.Robot.ForkReady && this.plcAgent.APLCVehicle.Robot.ForkBusy == false)
             {
                 if (!plcAgent.IsForkCommandExist())
                 {
                     //判斷loading 決定load/unload
-                    if (plcAgent.thePlcVehicle.Loading)
+                    if (plcAgent.APLCVehicle.Loading)
                     {
-                        PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Unload, txtStageNo.Text, EnumStageDirectionParse(cmbDirection.Text), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
+                        PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Unload, txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
                         plcAgent.AddForkComand(aForkCommand);
                         cycleForkCommandCount++;
                         txtCycleForkCommandCount.Text = cycleForkCommandCount.ToString();
                     }
                     else
                     {
-                        PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Load, txtStageNo.Text, EnumStageDirectionParse(cmbDirection.Text), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
+                        PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Load, txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
                         plcAgent.AddForkComand(aForkCommand);
                         cycleForkCommandCount++;
                         txtCycleForkCommandCount.Text = cycleForkCommandCount.ToString();
@@ -629,19 +680,18 @@ namespace Mirle.Agv.View
                 }
             }
 
-            if (!plcAgent.thePlcVehicle.Batterys.Charging)
+            if (this.plcAgent.APLCVehicle.Batterys.Charging == false)
             {
-                if (this.plcAgent.thePlcVehicle.Batterys.Percentage < this.plcAgent.thePlcVehicle.Batterys.PortAutoChargeLowSoc)
+                if (this.plcAgent.APLCVehicle.Batterys.Percentage < this.plcAgent.APLCVehicle.Batterys.PortAutoChargeLowSoc)
                 {
                     //自動充電
-                    EnumChargeDirection chargeDirection = EnumChargeDirectionParse(cmbChargeDirection.Text);
-                    if (chargeDirection == EnumChargeDirection.Left)
+                    if ((EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), cmbChargeDirection.Text, false) == EnumChargeDirection.Left)
                     {
                         this.plcAgent.ChargeStartCommand(EnumChargeDirection.Left);
                         cycleChargeCommandCount++;
                         txtCycleChargeCommandCount.Text = cycleChargeCommandCount.ToString();
                     }
-                    else if (chargeDirection == EnumChargeDirection.Right)
+                    else if ((EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), cmbChargeDirection.Text, false) == EnumChargeDirection.Right)
                     {
                         this.plcAgent.ChargeStartCommand(EnumChargeDirection.Right);
                         cycleChargeCommandCount++;
@@ -666,30 +716,38 @@ namespace Mirle.Agv.View
         {
             if (rdoSafetyDisable.Checked)
             {
-                this.plcAgent.thePlcVehicle.SafetyDisable = true;
+                this.plcAgent.APLCVehicle.SafetyDisable = true;
             }
             else
             {
-                this.plcAgent.thePlcVehicle.SafetyDisable = false;
+                this.plcAgent.APLCVehicle.SafetyDisable = false;
             }
         }
 
+
         private void lblBump_DoubleClick(object sender, EventArgs e)
         {
-            PlcBumper aPLCBumper = (PlcBumper)((Label)sender).Tag;
-            aPLCBumper.Disable = !aPLCBumper.Disable;
+            //PlcBumper aPLCBumper = (PlcBumper)((Label)sender).Tag;
+            //aPLCBumper.Disable = !aPLCBumper.Disable;
         }
+
+        private void lblBeamSensor_DoubleClick(object sender, EventArgs e)
+        {
+            PlcBeamSensor aPlcBeamSensor = (PlcBeamSensor)((Label)sender).Tag;
+            aPlcBeamSensor.Disable = !aPlcBeamSensor.Disable;
+        }
+
 
         private void chkMoveFront_CheckedChanged(object sender, EventArgs e)
         {
             if (chkMoveFront.Checked)
             {
-                plcAgent.thePlcVehicle.MoveFront = true;
+                plcAgent.APLCVehicle.MoveFront = true;
 
             }
             else
             {
-                plcAgent.thePlcVehicle.MoveFront = false;
+                plcAgent.APLCVehicle.MoveFront = false;
             }
         }
 
@@ -697,11 +755,11 @@ namespace Mirle.Agv.View
         {
             if (chkMoveBack.Checked)
             {
-                plcAgent.thePlcVehicle.MoveBack = true;
+                plcAgent.APLCVehicle.MoveBack = true;
             }
             else
             {
-                plcAgent.thePlcVehicle.MoveBack = false;
+                plcAgent.APLCVehicle.MoveBack = false;
             }
         }
 
@@ -709,11 +767,11 @@ namespace Mirle.Agv.View
         {
             if (chkMoveLeft.Checked)
             {
-                plcAgent.thePlcVehicle.MoveLeft = true;
+                plcAgent.APLCVehicle.MoveLeft = true;
             }
             else
             {
-                plcAgent.thePlcVehicle.MoveLeft = false;
+                plcAgent.APLCVehicle.MoveLeft = false;
             }
         }
 
@@ -721,60 +779,60 @@ namespace Mirle.Agv.View
         {
             if (chkMoveRight.Checked)
             {
-                plcAgent.thePlcVehicle.MoveRight = true;
+                plcAgent.APLCVehicle.MoveRight = true;
 
             }
             else
             {
-                plcAgent.thePlcVehicle.MoveRight = false;
+                plcAgent.APLCVehicle.MoveRight = false;
             }
         }
 
         private void pnlF_DoubleClick(object sender, EventArgs e)
         {
-            if (plcAgent.thePlcVehicle.FrontBeamSensorDisable)
+            if (plcAgent.APLCVehicle.FrontBeamSensorDisable)
             {
-                plcAgent.thePlcVehicle.FrontBeamSensorDisable = false;
+                plcAgent.APLCVehicle.FrontBeamSensorDisable = false;
             }
             else
             {
-                plcAgent.thePlcVehicle.FrontBeamSensorDisable = true;
+                plcAgent.APLCVehicle.FrontBeamSensorDisable = true;
             }
         }
 
         private void pnlL_DoubleClick(object sender, EventArgs e)
         {
-            if (plcAgent.thePlcVehicle.LeftBeamSensorDisable)
+            if (plcAgent.APLCVehicle.LeftBeamSensorDisable)
             {
-                plcAgent.thePlcVehicle.LeftBeamSensorDisable = false;
+                plcAgent.APLCVehicle.LeftBeamSensorDisable = false;
             }
             else
             {
-                plcAgent.thePlcVehicle.LeftBeamSensorDisable = true;
+                plcAgent.APLCVehicle.LeftBeamSensorDisable = true;
             }
         }
 
         private void pnlB_DoubleClick(object sender, EventArgs e)
         {
-            if (plcAgent.thePlcVehicle.BackBeamSensorDisable)
+            if (plcAgent.APLCVehicle.BackBeamSensorDisable)
             {
-                plcAgent.thePlcVehicle.BackBeamSensorDisable = false;
+                plcAgent.APLCVehicle.BackBeamSensorDisable = false;
             }
             else
             {
-                plcAgent.thePlcVehicle.BackBeamSensorDisable = true;
+                plcAgent.APLCVehicle.BackBeamSensorDisable = true;
             }
         }
 
         private void pnlR_DoubleClick(object sender, EventArgs e)
         {
-            if (plcAgent.thePlcVehicle.RightBeamSensorDisable)
+            if (plcAgent.APLCVehicle.RightBeamSensorDisable)
             {
-                plcAgent.thePlcVehicle.RightBeamSensorDisable = false;
+                plcAgent.APLCVehicle.RightBeamSensorDisable = false;
             }
             else
             {
-                plcAgent.thePlcVehicle.RightBeamSensorDisable = true;
+                plcAgent.APLCVehicle.RightBeamSensorDisable = true;
             }
         }
 
@@ -782,35 +840,306 @@ namespace Mirle.Agv.View
         {
             if (rdoBeamSensorAutoSleepEnable.Checked)
             {
-                plcAgent.thePlcVehicle.BeamSensorAutoSleep = true;
+                plcAgent.APLCVehicle.BeamSensorAutoSleep = true;
             }
             else
             {
-                plcAgent.thePlcVehicle.BeamSensorAutoSleep = false;
+                plcAgent.APLCVehicle.BeamSensorAutoSleep = false;
             }
         }
 
-        private void btnHide_Click(object sender, EventArgs e)
+
+
+        private void btnSOCSet_Click(object sender, EventArgs e)
         {
-            this.Hide();
+            plcAgent.APLCVehicle.Batterys.SetCcModeAh(plcAgent.APLCVehicle.Batterys.MeterAh + plcAgent.APLCVehicle.Batterys.AhWorkingRange * (100.0 - Convert.ToDouble(txtSOCSet.Text)) / 100.00, false);
         }
 
-        private EnumStageDirection EnumStageDirectionParse(string v)
+        private void lblEMO_DoubleClick(object sender, EventArgs e)//20190801_Rudy 新增EMO DoubleClick
         {
-            v = v.Trim();
-            return (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), v);
+            PlcEmo aPlcEMOSensor = (PlcEmo)((Label)sender).Tag;
+            aPlcEMOSensor.Disable = !aPlcEMOSensor.Disable;
         }
 
-        private EnumChargeDirection EnumChargeDirectionParse(string v)
+        private enum ParamtTbxType//20190802_Rudy 新增XML Param 可修改   
         {
-            v = v.Trim();
-            return (EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), v);
+            BatteryPV,
+            BatterySV,
+            ForkCommPV,
+            ForkCommSV
+        }
+        //20190802_Rudy 新增XML Param 可修改   
+        private void BatteryParamTbxFillToList(ref List<TextBox> tboxes, ParamtTbxType TbxType = ParamtTbxType.BatteryPV)
+        {
+            switch (TbxType)
+            {
+                case ParamtTbxType.BatteryPV:
+                    tboxes.Add(tbxAHWorkingRange_PV);
+                    tboxes.Add(tbxMaxCCModeCounter_PV);
+                    tboxes.Add(txtAutoChargeLowSOC_PV);
+                    tboxes.Add(tbxResetAHTimeout_PV);
+                    break;
+                case ParamtTbxType.BatterySV:
+                    tboxes.Add(tbxAHWorkingRange_SV);
+                    tboxes.Add(tbxMaxCCModeCounter_SV);
+                    tboxes.Add(txtAutoChargeLowSOC_SV);
+                    tboxes.Add(tbxResetAHTimeout_SV);
+                    break;
+                case ParamtTbxType.ForkCommPV:
+                    tboxes.Add(tbxReadCassetteID_PV);
+                    tboxes.Add(tbxCommReadTimeout_PV);
+                    tboxes.Add(tbxCommBusyTimeout_PV);
+                    tboxes.Add(tbxCommMovingTimeout_PV);
+                    break;
+                case ParamtTbxType.ForkCommSV:
+                    tboxes.Add(new TextBox());
+                    tboxes.Add(tbxCommReadTimeout_SV);
+                    tboxes.Add(tbxCommBusyTimeout_SV);
+                    tboxes.Add(tbxCommMovingTimeout_SV);
+                    break;
+            }
+        }
+        private void FillPVToBatteryParamTbx()//20190802_Rudy 新增XML Param 可修改   
+        {
+            List<TextBox> liTextbox = new List<TextBox>();
+            BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.BatteryPV);
+
+            foreach (TextBox box in liTextbox)
+            {
+                switch (box.Name)
+                {
+                    case "tbxAHWorkingRange_PV":
+                        box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                        break;
+                    case "tbxMaxCCModeCounter_PV":
+                        box.Text = this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                        break;
+                    case "txtAutoChargeLowSOC_PV":
+                        box.Text = this.plcAgent.APLCVehicle.Batterys.PortAutoChargeLowSoc.ToString();
+                        break;
+                    case "tbxResetAHTimeout_PV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.ResetAhTimeout / 1000).ToString();
+                        break;
+                }
+            }
+            liTextbox.Clear();
+        }
+        private void FillSVToBatteryParamTbx()//20190802_Rudy 新增XML Param 可修改   
+        {
+            List<TextBox> liTextbox = new List<TextBox>();
+            BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.BatterySV);
+
+            foreach (TextBox box in liTextbox)
+            {
+                switch (box.Name)
+                {
+                    case "tbxAHWorkingRange_SV":
+                        box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                        break;
+                    case "tbxMaxCCModeCounter_SV":
+                        box.Text = this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                        break;
+                    case "txtAutoChargeLowSOC_SV":
+                        box.Text = this.plcAgent.APLCVehicle.Batterys.PortAutoChargeLowSoc.ToString();
+                        break;
+                    case "tbxResetAHTimeout_SV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.ResetAhTimeout / 1000).ToString();
+                        break;
+                }
+            }
+            liTextbox.Clear();
+        }
+        private void FillPVToForkCommParamTbx()//20190802_Rudy 新增XML Param 可修改   
+        {
+            List<TextBox> liTextbox = new List<TextBox>();
+            BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.ForkCommPV);
+
+            foreach (TextBox box in liTextbox)
+            {
+                switch (box.Name)
+                {
+                    case "tbxReadCassetteID_PV":
+                        if (this.plcAgent.IsNeedReadCassetteID)
+                            box.Text = "TRUE";
+                        else
+                            box.Text = "FALSE";
+                        break;
+                    case "tbxCommReadTimeout_PV":
+                        box.Text = (this.plcAgent.ForkCommandReadTimeout / 1000).ToString();
+                        break;
+                    case "tbxCommBusyTimeout_PV":
+                        box.Text = (this.plcAgent.ForkCommandBusyTimeout / 1000).ToString();
+                        break;
+                    case "tbxCommMovingTimeout_PV":
+                        box.Text = (this.plcAgent.ForkCommandMovingTimeout / 1000).ToString();
+                        break;
+                }
+            }
+            liTextbox.Clear();
         }
 
-        private EnumForkCommand EnumForkCommandParse(string v)
+        private void FillSVToForkCommParamTbx()//20190802_Rudy 新增XML Param 可修改   
         {
-            v = v.Trim();
-            return (EnumForkCommand)Enum.Parse(typeof(EnumForkCommand), v);
+            List<TextBox> liTextbox = new List<TextBox>();
+            BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.ForkCommSV);
+
+            if (this.plcAgent.IsNeedReadCassetteID)
+            {
+                chbCassetteID_SV.Checked = true;
+                chbCassetteID_SV.Text = "TRUE";
+            }
+            else
+            {
+                chbCassetteID_SV.Checked = false;
+                chbCassetteID_SV.Text = "FALSE";
+            }
+
+            foreach (TextBox box in liTextbox)
+            {
+                switch (box.Name)
+                {
+                    case "tbxCommReadTimeout_SV":
+                        box.Text = (this.plcAgent.ForkCommandReadTimeout / 1000).ToString();
+                        break;
+                    case "tbxCommBusyTimeout_SV":
+                        box.Text = (this.plcAgent.ForkCommandBusyTimeout / 1000).ToString();
+                        break;
+                    case "tbxCommMovingTimeout_SV":
+                        box.Text = (this.plcAgent.ForkCommandMovingTimeout / 1000).ToString();
+                        break;
+                }
+            }
+            liTextbox.Clear();
+        }
+        private bool CheckBatteryParamSVInput()//20190802_Rudy 新增XML Param 可修改   
+        {
+            bool result = true;
+            List<TextBox> liTextbox = new List<TextBox>();
+            BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.BatterySV);
+            foreach (TextBox box in liTextbox)
+            {
+                switch (box.Name)
+                {
+                    case "tbxAHWorkingRange_SV":
+                        {
+                            if (!double.TryParse(box.Text, out double value))
+                            {
+                                box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                    case "tbxMaxCCModeCounter_SV":
+                        {
+                            if (!ushort.TryParse(box.Text, out ushort value))
+                            {
+                                box.Text = this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                    case "txtAutoChargeLowSOC_SV":
+                        {
+                            if (!double.TryParse(box.Text, out double value))
+                            {
+                                box.Text = this.plcAgent.APLCVehicle.Batterys.PortAutoChargeLowSoc.ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                    case "tbxResetAHTimeout_SV":
+                        {
+                            if (!uint.TryParse(box.Text, out uint value))
+                            {
+                                box.Text = (this.plcAgent.APLCVehicle.Batterys.ResetAhTimeout / 1000).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                }
+            }
+            liTextbox.Clear();
+            return result;
+        }
+        private bool CheckForkCommParamSVInput()//20190802_Rudy 新增XML Param 可修改   
+        {
+            bool result = true;
+            List<TextBox> liTextbox = new List<TextBox>();
+            BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.ForkCommSV);
+            foreach (TextBox box in liTextbox)
+            {
+                switch (box.Name)
+                {
+                    case "tbxCommReadTimeout_SV":
+                        {
+                            if (!uint.TryParse(box.Text, out uint value))
+                            {
+                                box.Text = (this.plcAgent.ForkCommandReadTimeout / 1000).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                    case "tbxCommBusyTimeout_SV":
+                        {
+                            if (!uint.TryParse(box.Text, out uint value))
+                            {
+                                box.Text = (this.plcAgent.ForkCommandBusyTimeout / 1000).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                    case "tbxCommMovingTimeout_SV":
+                        {
+                            if (!uint.TryParse(box.Text, out uint value))
+                            {
+                                box.Text = (this.plcAgent.ForkCommandMovingTimeout / 1000).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                }
+            }
+            liTextbox.Clear();
+            return result;
+        }
+        private void btnBatteryParamSet_Click(object sender, EventArgs e)//20190801_Rudy 新增Auto Charge Low SOC Set
+        {
+            if (!CheckBatteryParamSVInput()) return;
+            Dictionary<string, string> dicSetValue = new Dictionary<string, string>()
+                {
+                    {"SOC_AH",tbxAHWorkingRange_SV.Text },
+                    {"Ah_Reset_CCmode_Counter", tbxMaxCCModeCounter_SV.Text},
+                    {"Port_AutoCharge_Low_SOC",txtAutoChargeLowSOC_SV.Text},
+                    {"Ah_Reset_Timeout", tbxResetAHTimeout_SV.Text}
+                };
+            plcAgent.WritePlcConfigToXML(dicSetValue);
+            FillPVToBatteryParamTbx();
+            FillSVToBatteryParamTbx();
+            dicSetValue.Clear();
+        }
+
+        private void btnForkCommParamSet_Click(object sender, EventArgs e)//20190802_Rudy 新增XML Param 可修改   
+        {
+            if (!CheckForkCommParamSVInput()) return;
+            string strReadCassetteID = "";
+            if (chbCassetteID_SV.Checked) strReadCassetteID = "true"; else strReadCassetteID = "false";
+
+            Dictionary<string, string> dicSetValue = new Dictionary<string, string>()
+                {
+                    {"IsNeedReadCassetteID", strReadCassetteID},
+                    {"Fork_Command_Read_Timeout", tbxCommReadTimeout_SV.Text},
+                    {"Fork_Command_Busy_Timeout",tbxCommBusyTimeout_SV.Text},
+                    {"Fork_Command_Moving_Timeout", tbxCommMovingTimeout_SV.Text}
+                };
+            plcAgent.WritePlcConfigToXML(dicSetValue);
+            FillPVToForkCommParamTbx();
+            FillSVToForkCommParamTbx();
+            dicSetValue.Clear();
+        }
+        private void chbCassetteID_SV_CheckedChanged(object sender, EventArgs e)//20190802_Rudy 新增XML Param 可修改   
+        {
+            if (((CheckBox)sender).Checked) ((CheckBox)sender).Text = "TRUE";
+            else ((CheckBox)sender).Text = "FALSE";
         }
     }
 }

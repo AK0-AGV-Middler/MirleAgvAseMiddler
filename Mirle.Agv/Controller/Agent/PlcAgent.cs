@@ -2,15 +2,18 @@
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
+
+
+
 namespace Mirle.Agv.Controller
 {
-    [Serializable]
     public class PlcAgent
     {
         private MCProtocol aMCProtocol;
@@ -22,9 +25,9 @@ namespace Mirle.Agv.Controller
         public string LocalIp { get; set; } = "192.168.3.100";
         public string LocalPort { get; set; } = "3001";
 
-        public long ForkCommandReadTimeout { get; set; } = 5000;
-        public long ForkCommandBusyTimeout { get; set; } = 5000;
-        public long ForkCommandMovingTimeout { get; set; } = 120000;
+        public Int64 ForkCommandReadTimeout { get; set; } = 5000;
+        public Int64 ForkCommandBusyTimeout { get; set; } = 5000;
+        public Int64 ForkCommandMovingTimeout { get; set; } = 120000;
 
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
         private Logger plcAgentLogger;
@@ -32,59 +35,64 @@ namespace Mirle.Agv.Controller
         private Logger portPIOLogger;
         private Logger chargerPIOLogger;
 
-        public PlcVehicle thePlcVehicle;
+        public PlcVehicle APLCVehicle;
 
         private PlcForkCommand eventForkCommand; //發event前 先把executing commnad reference先放過來, 避免外部exevnt處理時發生null問題
         private bool clearExecutingForkCommandFlag = false;
 
-        private Thread plcOtherControlThread;
-        private Thread plcForkCommandControlThread;
+        private Thread plcOtherControlThread = null;//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New 
+        private Thread plcForkCommandControlThread = null;//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New
 
-        private ushort beforeBatteryPercentageInteger = 0;
-        private uint alarmReadIndex = 0;
+        private UInt16 beforeBatteryPercentageInteger = 0;
+        private UInt32 alarmReadIndex = 0;
 
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
-        public event EventHandler<ushort> OnBatteryPercentageChangeEvent;
+        public event EventHandler<UInt16> OnBatteryPercentageChangeEvent;
         public event EventHandler<string> OnCassetteIDReadFinishEvent;
 
-        public bool IsNeedReadCassetteID { get; set; } = true;
-        public bool ConnectionState { get; private set;}
+        public Boolean IsNeedReadCassetteID { get; set; } = true;
 
-        private AlarmHandler alarmHandler;
-
-        public PlcAgent(MCProtocol aMcProtocol, AlarmHandler aAlarmHandler)
+        private Boolean boolConnectionState = false;
+        public Boolean ConnectionState
         {
-            string functionName = "PLCAgent:PLCAgent";
+            get { return boolConnectionState; }
+            //set
+            //{
+            //    boolConnectionState = value;
+            //}
+        }
 
-            thePlcVehicle = Vehicle.Instance.GetPlcVehicle();
+        private AlarmHandler aAlarmHandler = null;
 
+        public PlcAgent(MCProtocol objMCProtocol, AlarmHandler objAlarmHandler)
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
+            APLCVehicle = Vehicle.Instance.GetPlcVehicle();
             SetupLoggers();
 
-            alarmHandler = aAlarmHandler;
+            this.aAlarmHandler = objAlarmHandler;
 
-            aMCProtocol = aMcProtocol;
-            ReadXml("PLC_Config.xml");            //PLC_Config.xml
-            aMCProtocol.Name = "McProtocol";
+            this.aMCProtocol = objMCProtocol;
+            //PLC_Config.xml
+            ReadXml("PLC_Config.xml");
+            aMCProtocol.Name = "";
+            aMCProtocol.OnDataChangeEvent += MCProtocol_OnDataChangeEvent;
+            aMCProtocol.ConnectEvent += MCProtocol_OnConnectEvent;
+            aMCProtocol.DisConnectEvent += MCProtocol_OnDisConnectEvent;
 
-            McProtocolEventInitial();
-
-            aMCProtocol.Open(LocalIp, LocalPort);
-            aMCProtocol.ConnectToPLC(Ip, Port);
+            aMCProtocol.Open(this.LocalIp, this.LocalPort);
+            aMCProtocol.ConnectToPLC(this.Ip, this.Port);
 
             aCassetteIDReader.Connect();
 
             aMCProtocol.Start();
 
-            plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC Connect Start");
-        }
-
-        private void McProtocolEventInitial()
-        {
-            aMCProtocol.OnDataChangeEvent += McProtocol_OnDataChangeEvent;
-            aMCProtocol.ConnectEvent += McProtocol_OnConnectEvent;
-            aMCProtocol.DisConnectEvent += McProtocol_OnDisConnectEvent;
+            //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC Connect Start");
+            LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "PLC Connect Start");
+            LogPlcMsg(loggerAgent, logFormat);
         }
 
         private void SetupLoggers()
@@ -98,7 +106,7 @@ namespace Mirle.Agv.Controller
         //讀取XML
         private void ReadXml(string file_address)//Gavin 20190615
         {
-            string functionName = "PLCAgent:read_xml";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             XmlDocument doc = new XmlDocument();
             doc.Load(file_address);
             var rootNode = doc.DocumentElement;     // <Motion>
@@ -112,316 +120,66 @@ namespace Mirle.Agv.Controller
                     switch (childItem.Name)
                     {
                         case "ID":
-                            PlcId = childItem.InnerText;
+                            this.PlcId = childItem.InnerText;
                             break;
                         case "IP":
-                            Ip = childItem.InnerText;
+                            this.Ip = childItem.InnerText;
                             break;
                         case "Port":
-                            Port = childItem.InnerText;
+                            this.Port = childItem.InnerText;
                             break;
                         case "LocalIP":
-                            LocalIp = childItem.InnerText;
+                            this.LocalIp = childItem.InnerText;
                             break;
                         case "LocalPort":
-                            LocalPort = childItem.InnerText;
+                            this.LocalPort = childItem.InnerText;
                             break;
                         case "SOC_AH":
-                            thePlcVehicle.Batterys.AhWorkingRange = Convert.ToDouble(childItem.InnerText);
+                            this.APLCVehicle.Batterys.AhWorkingRange = Convert.ToDouble(childItem.InnerText);
                             break;
                         case "Ah_Reset_CCmode_Counter":
-                            thePlcVehicle.Batterys.MaxResetAhCcounter = Convert.ToUInt16(childItem.InnerText);
+                            this.APLCVehicle.Batterys.MaxResetAhCcounter = Convert.ToUInt16(childItem.InnerText);
                             break;
                         case "Ah_Reset_Timeout":
-                            thePlcVehicle.Batterys.ResetAhTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
+                            this.APLCVehicle.Batterys.ResetAhTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
                             break;
                         case "CassetteIDReaderIP":
                             aCassetteIDReader.Ip = childItem.InnerText;
                             break;
                         case "IsNeedReadCassetteID":
-                            //if (childItem.InnerText.ToLower() != "true")
-                            //{
-                            //    this.IsNeedReadCassetteID = false;
-                            //}
-                            //else
-                            //{
-                            //    this.IsNeedReadCassetteID = true;
-                            //}
-                            IsNeedReadCassetteID = bool.Parse(childItem.InnerText.Trim());
-
+                            if (childItem.InnerText.ToLower() != "true")
+                            {
+                                this.IsNeedReadCassetteID = false;
+                            }
+                            else
+                            {
+                                this.IsNeedReadCassetteID = true;
+                            }
                             break;
                         case "Fork_Command_Read_Timeout":
-                            ForkCommandReadTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
+                            this.ForkCommandReadTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
                             break;
                         case "Fork_Command_Busy_Timeout":
-                            ForkCommandBusyTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
+                            this.ForkCommandBusyTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
                             break;
                         case "Fork_Command_Moving_Timeout":
-                            ForkCommandMovingTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
+                            this.ForkCommandMovingTimeout = Convert.ToUInt32(childItem.InnerText) * 1000;
                             break;
+
                         case "Port_AutoCharge_Low_SOC":
-                            thePlcVehicle.Batterys.PortAutoChargeLowSoc = Convert.ToDouble(childItem.InnerText);
+                            this.APLCVehicle.Batterys.PortAutoChargeLowSoc = Convert.ToDouble(childItem.InnerText);
                             break;
+
+
                     }
 
                 }
             }
         }
 
-        //private void MCProtocol_OnDataChangeEvent(string sMessage, ClsMCProtocol.clsColParameter oColParam)
-        //{
-        //    string functionName = "PLCAgent:MCProtocol_OnDataChangeEvent";
-
-        //    try
-        //    {
-        //        int tagChangeCount = oColParam.Count();
-        //        for (int i = 1; i <= tagChangeCount; i++)
-        //        {
-        //            try
-        //            {
-        //                //temp = oColParam.Item(1).DataName.ToString() + " = " + oColParam.Item(1).AsBoolean.ToString();
-        //                if (oColParam.Item(i).DataName.ToString().EndsWith("_PIO"))
-        //                {
-        //                    this.portPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
-        //                }
-        //                else if (oColParam.Item(i).DataName.ToString().EndsWith("_CPIO"))
-        //                {
-        //                    this.chargerPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
-        //                }
-        //                else if (oColParam.Item(i).DataName.ToString().StartsWith("BeamSensor"))
-        //                {
-        //                    PlcBeamSensor aBeamSensor = this.APLCVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
-        //                    if (aBeamSensor != null)
-        //                    {
-        //                        if (oColParam.Item(i).DataName.ToString().EndsWith("Near"))
-        //                        {
-        //                            aBeamSensor.NearSignal = oColParam.Item(i).AsBoolean;
-        //                        }
-        //                        else if (oColParam.Item(i).DataName.ToString().EndsWith("Far"))
-        //                        {
-        //                            aBeamSensor.FarSignal = oColParam.Item(i).AsBoolean;
-        //                        }
-        //                        else
-        //                        {
-        //                            this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
-
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-        //                    }
-        //                }
-        //                else if (oColParam.Item(i).DataName.ToString().StartsWith("RBeamSensor"))
-        //                {
-        //                    //RBeamSensor Sleep read
-        //                    PlcBeamSensor aBeamSensor = this.APLCVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
-        //                    if (aBeamSensor != null)
-        //                    {
-        //                        if (oColParam.Item(i).DataName.ToString().EndsWith("_Sleep"))
-        //                        {
-        //                            aBeamSensor.ReadSleepSignal = oColParam.Item(i).AsBoolean;
-        //                        }
-        //                        else
-        //                        {
-        //                            this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-        //                    }
-        //                }
-        //                else if (oColParam.Item(i).DataName.ToString().StartsWith("WBeamSensor"))
-        //                {
-        //                    //WBeamSensor Sleep write
-        //                    PlcBeamSensor aBeamSensor = this.APLCVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
-        //                    if (aBeamSensor != null)
-        //                    {
-        //                        if (oColParam.Item(i).DataName.ToString().EndsWith("_Sleep"))
-        //                        {
-        //                            aBeamSensor.WriteSleepSignal = oColParam.Item(i).AsBoolean;
-        //                        }
-        //                        else
-        //                        {
-        //                            this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-        //                    }
-        //                }
-        //                else if (oColParam.Item(i).DataName.ToString().StartsWith("Bumper"))
-        //                {
-        //                    //WBeamSensor Sleep write
-        //                    PlcBumper aBumper = this.APLCVehicle.dicBumper[oColParam.Item(i).DataName.ToString()];
-        //                    if (aBumper != null)
-        //                    {
-        //                        aBumper.Signal = oColParam.Item(i).AsBoolean;
-        //                    }
-        //                    else
-        //                    {
-        //                        errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " can not find PlcEmo object");
-        //                    }
-        //                }
-        //                else if (oColParam.Item(i).DataName.ToString().StartsWith("EMO_"))
-        //                {
-        //                    //WBeamSensor Sleep write
-        //                    PlcEmo aPLCEMO = this.APLCVehicle.dicPlcEmos[oColParam.Item(i).DataName.ToString()];
-        //                    if (aPLCEMO != null)
-        //                    {
-        //                        aPLCEMO.Signal = oColParam.Item(i).AsBoolean;
-        //                    }
-        //                    else
-        //                    {
-        //                        errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", oColParam.Item(i).DataName.ToString() + " can not find PlcEmo object");
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    switch (oColParam.Item(i).DataName.ToString())
-        //                    {
-        //                        case "BatteryGotech":
-        //                            if (oColParam.Item(i).AsBoolean)
-        //                            {
-        //                                this.APLCVehicle.APLCBatterys.BatteryType = EnumBatteryType.Gotech;
-        //                            }
-        //                            else
-        //                            {
-
-        //                            }
-        //                            break;
-        //                        case "BatteryYinda":
-        //                            if (oColParam.Item(i).AsBoolean)
-        //                            {
-        //                                this.APLCVehicle.APLCBatterys.BatteryType = EnumBatteryType.Yinda;
-        //                            }
-        //                            else
-        //                            {
-
-        //                            }
-        //                            break;
-        //                        case "MeterVoltage":
-        //                            this.APLCVehicle.APLCBatterys.MeterVoltage = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
-        //                            break;
-        //                        case "MeterCurrent":
-        //                            this.APLCVehicle.APLCBatterys.MeterCurrent = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
-        //                            break;
-        //                        case "MeterWatt":
-        //                            this.APLCVehicle.APLCBatterys.MeterWatt = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
-        //                            break;
-        //                        case "MeterWattHour":
-        //                            this.APLCVehicle.APLCBatterys.MeterWattHour = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
-        //                            break;
-        //                        case "MeterAH":
-        //                            this.APLCVehicle.APLCBatterys.MeterAH = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
-        //                            break;
-        //                        case "FullChargeIndex":
-        //                            if (this.APLCVehicle.APLCBatterys.FullChargeIndex == 0)
-        //                            {
-        //                                //AGV斷電重開
-        //                                this.APLCVehicle.APLCBatterys.CCModeAH = this.APLCVehicle.APLCBatterys.CCModeAH - this.APLCVehicle.APLCBatterys.AHWorkingRange;
-        //                            }
-        //                            else
-        //                            {
-        //                                this.APLCVehicle.APLCBatterys.CCModeFlag = true;
-        //                                //CC Mode達到                                
-        //                                this.APLCVehicle.APLCBatterys.FullChargeIndex = oColParam.Item(i).AsUInt16;
-
-        //                            }
-
-        //                            break;
-        //                        case "ChargeStatus":
-        //                            this.APLCVehicle.APLCBatterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
-        //                            if (!this.APLCVehicle.APLCBatterys.Charging)
-        //                            {
-        //                                ccModeAHSet();
-        //                            }
-        //                            break;
-
-        //                        case "FBatteryTemperature":
-        //                            this.APLCVehicle.APLCBatterys.FBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
-        //                            break;
-        //                        case "BBatteryTemperature":
-        //                            this.APLCVehicle.APLCBatterys.BBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
-        //                            break;
-        //                        case "PLCAlarmIndex":
-        //                            //7個alarm set/reset
-        //                            for (i = 0; i < 7; i++)
-        //                            {
-        //                                if (this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmCode").AsUInt16 != 0)
-        //                                {
-        //                                    //if (this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmLevel").AsUInt16 == 1)
-        //                                    //{
-        //                                    //    //warning
-
-        //                                    //}
-        //                                    //else if (this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmLevel").AsUInt16 == 2)
-        //                                    //{
-        //                                    //    //alarm
-
-        //                                    //}
-        //                                    //else
-        //                                    //{
-
-        //                                    //}
-        //                                    //不區分alarm/warning => alarm CSV裡區分
-        //                                    if (this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmEvent").AsUInt16 == 1)
-        //                                    {
-        //                                        //set
-        //                                        this.setAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmCode").AsUInt16));
-        //                                    }
-        //                                    else if (this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmEvent").AsUInt16 == 2)
-        //                                    {
-        //                                        //clear
-        //                                        this.resetAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmCode").AsUInt16));
-        //                                    }
-        //                                    else
-        //                                    {
-
-        //                                    }
-        //                                }
-        //                            }
-        //                            break;
-        //                        case "EquipementActionIndex":
-        //                            this.eqActionIndex = oColParam.Item(i).AsUInt16;
-        //                            break;
-        //                        case "ForkReady":
-        //                            this.APLCVehicle.APLCRobot.ForkReady = aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
-        //                            break;
-        //                        case "ForkBusy":
-        //                            this.APLCVehicle.APLCRobot.ForkBusy = aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean;
-        //                            break;
-        //                        case "ForkCommandFinish":
-        //                            this.APLCVehicle.APLCRobot.ForkFinish = aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean;
-        //                            break;
-        //                        case "StageLoading":
-        //                            this.APLCVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
-        //                            break;
-        //                    }
-        //                }
-        //            }
-        //            catch (Exception ex)
-        //            {
-
-        //                this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", ex.ToString());
-        //            }
-
-
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.errLogger.SaveLogFile("Error", "1", functionName, this.PLCId, "", ex.ToString());
-        //    }
-        //}
-
-        private void McProtocol_OnDataChangeEvent(string sMessage, ClsMCProtocol.clsColParameter oColParam)
+        private void MCProtocol_OnDataChangeEvent(string sMessage, ClsMCProtocol.clsColParameter oColParam)
         {
-            string functionName = "PLCAgent:MCProtocol_OnDataChangeEvent";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
             try
             {
@@ -433,15 +191,17 @@ namespace Mirle.Agv.Controller
                     {
                         if (oColParam.Item(i).DataName.ToString().EndsWith("_PIO"))
                         {
-                            this.portPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
+                            //this.portPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
+                            LogPlcMsg(loggerAgent, new LogFormat("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean));
                         }
                         else if (oColParam.Item(i).DataName.ToString().EndsWith("_CPIO"))
                         {
-                            this.chargerPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
+                            //this.chargerPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
+                            LogPlcMsg(loggerAgent, new LogFormat("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean));
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("BeamSensor"))
                         {
-                            PlcBeamSensor aBeamSensor = this.thePlcVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
+                            PlcBeamSensor aBeamSensor = this.APLCVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
                             if (aBeamSensor != null)
                             {
                                 if (oColParam.Item(i).DataName.ToString().EndsWith("Near"))
@@ -454,19 +214,20 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
-
+                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
+                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far"));
                                 }
                             }
                             else
                             {
-                                errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("RBeamSensor"))
                         {
                             //RBeamSensor Sleep read
-                            PlcBeamSensor aBeamSensor = this.thePlcVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
+                            PlcBeamSensor aBeamSensor = this.APLCVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
                             if (aBeamSensor != null)
                             {
                                 if (oColParam.Item(i).DataName.ToString().EndsWith("_Sleep"))
@@ -475,19 +236,21 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-
+                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    LogFormat logFormat = new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    LogPlcMsg(loggerAgent, logFormat);
                                 }
                             }
                             else
                             {
-                                errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("WBeamSensor"))
                         {
                             //WBeamSensor Sleep write
-                            PlcBeamSensor aBeamSensor = this.thePlcVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
+                            PlcBeamSensor aBeamSensor = this.APLCVehicle.dicBeamSensor[oColParam.Item(i).DataName.ToString()];
                             if (aBeamSensor != null)
                             {
                                 if (oColParam.Item(i).DataName.ToString().EndsWith("_Sleep"))
@@ -496,39 +259,42 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-
+                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep"));
                                 }
                             }
                             else
                             {
-                                errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("Bumper"))
                         {
-                            //WBeamSensor Sleep write
-                            PlcBumper aBumper = this.thePlcVehicle.dicBumper[oColParam.Item(i).DataName.ToString()];
+
+                            PlcBumper aBumper = this.APLCVehicle.dicBumper[oColParam.Item(i).DataName.ToString()];
                             if (aBumper != null)
                             {
                                 aBumper.Signal = oColParam.Item(i).AsBoolean;
                             }
                             else
                             {
-                                errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object");
+                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("EMO_"))
                         {
-                            //WBeamSensor Sleep write
-                            PlcEmo aPLCEMO = this.thePlcVehicle.dicPlcEmo[oColParam.Item(i).DataName.ToString()];
+
+                            PlcEmo aPLCEMO = this.APLCVehicle.dicPlcEmo[oColParam.Item(i).DataName.ToString()];
                             if (aPLCEMO != null)
                             {
                                 aPLCEMO.Signal = oColParam.Item(i).AsBoolean;
                             }
                             else
                             {
-                                errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
+                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
                             }
                         }
                         else
@@ -538,7 +304,7 @@ namespace Mirle.Agv.Controller
                                 case "BatteryGotech":
                                     if (oColParam.Item(i).AsBoolean)
                                     {
-                                        this.thePlcVehicle.Batterys.BatteryType = EnumBatteryType.Gotech;
+                                        this.APLCVehicle.Batterys.BatteryType = EnumBatteryType.Gotech;
                                     }
                                     else
                                     {
@@ -548,7 +314,7 @@ namespace Mirle.Agv.Controller
                                 case "BatteryYinda":
                                     if (oColParam.Item(i).AsBoolean)
                                     {
-                                        this.thePlcVehicle.Batterys.BatteryType = EnumBatteryType.Yinda;
+                                        this.APLCVehicle.Batterys.BatteryType = EnumBatteryType.Yinda;
                                     }
                                     else
                                     {
@@ -556,48 +322,49 @@ namespace Mirle.Agv.Controller
                                     }
                                     break;
                                 case "MeterVoltage":
-                                    this.thePlcVehicle.Batterys.MeterVoltage = this.DecToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    this.APLCVehicle.Batterys.MeterVoltage = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
                                     break;
                                 case "MeterCurrent":
-                                    this.thePlcVehicle.Batterys.MeterCurrent = this.DecToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    this.APLCVehicle.Batterys.MeterCurrent = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
                                     break;
                                 case "MeterWatt":
-                                    this.thePlcVehicle.Batterys.MeterWatt = this.DecToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    this.APLCVehicle.Batterys.MeterWatt = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
                                     break;
                                 case "MeterWattHour":
-                                    this.thePlcVehicle.Batterys.MeterWattHour = this.DecToDouble(oColParam.Item(i).AsUInt32, 2);
+                                    this.APLCVehicle.Batterys.MeterWattHour = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
                                     break;
                                 case "MeterAH":
-                                    this.thePlcVehicle.Batterys.MeterAh = this.DecToDouble(oColParam.Item(i).AsUInt32, 2);
+                                    this.APLCVehicle.Batterys.MeterAh = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
                                     break;
                                 case "FullChargeIndex":
-                                    if (this.thePlcVehicle.Batterys.FullChargeIndex == 0)
+                                    if (this.APLCVehicle.Batterys.FullChargeIndex == 0)
                                     {
                                         //AGV斷電重開
-                                        this.thePlcVehicle.Batterys.CcModeAh = this.thePlcVehicle.Batterys.CcModeAh - this.thePlcVehicle.Batterys.AhWorkingRange;
+                                        //this.APLCVehicle.APlcBatterys.CcModeAh = this.APLCVehicle.APlcBatterys.CcModeAh - this.APLCVehicle.APlcBatterys.AhWorkingRange;
+                                        this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.CcModeAh - this.APLCVehicle.Batterys.AhWorkingRange, false);
                                     }
                                     else
                                     {
-                                        this.thePlcVehicle.Batterys.CcModeFlag = true;
+                                        this.APLCVehicle.Batterys.CcModeFlag = true;
                                         //CC Mode達到                                
-                                        this.thePlcVehicle.Batterys.FullChargeIndex = oColParam.Item(i).AsUInt16;
+                                        this.APLCVehicle.Batterys.FullChargeIndex = oColParam.Item(i).AsUInt16;
 
                                     }
 
                                     break;
                                 case "ChargeStatus":
-                                    this.thePlcVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
-                                    if (!this.thePlcVehicle.Batterys.Charging)
+                                    this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
+                                    if (!this.APLCVehicle.Batterys.Charging)
                                     {
-                                        SetupCcModeAh();
+                                        ccModeAHSet();
                                     }
                                     break;
 
                                 case "FBatteryTemperature":
-                                    this.thePlcVehicle.Batterys.FBatteryTemperature = this.DecToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    this.APLCVehicle.Batterys.FBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
                                     break;
                                 case "BBatteryTemperature":
-                                    this.thePlcVehicle.Batterys.BBatteryTemperature = this.DecToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    this.APLCVehicle.Batterys.BBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
                                     break;
                                 case "PLCAlarmIndex":
                                     //7個alarm set/reset
@@ -607,30 +374,17 @@ namespace Mirle.Agv.Controller
                                         {
                                             if (this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16 != 0)
                                             {
-                                                //if (this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmLevel").AsUInt16 == 1)
-                                                //{
-                                                //    //warning
 
-                                                //}
-                                                //else if (this.aMCProtocol.get_ItemByTag("0" + i.ToString().Trim() + "AlarmLevel").AsUInt16 == 2)
-                                                //{
-                                                //    //alarm
-
-                                                //}
-                                                //else
-                                                //{
-
-                                                //}
                                                 //不區分alarm/warning => alarm CSV裡區分
                                                 if (this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmEvent").AsUInt16 == 1)
                                                 {
                                                     //set
-                                                    this.SetAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16));
+                                                    this.setAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16));
                                                 }
                                                 else if (this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmEvent").AsUInt16 == 2)
                                                 {
                                                     //clear
-                                                    this.ResetAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16));
+                                                    this.resetAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16));
                                                 }
                                                 else
                                                 {
@@ -643,17 +397,20 @@ namespace Mirle.Agv.Controller
                                         alarmReadIndex = alarmReadIndex % 65535 + 1;
                                         if (this.aMCProtocol.WritePLC())
                                         {
-                                            plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC success");
+                                            //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC success");
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC success"));
                                         }
                                         else
                                         {
-                                            plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC fail");
+                                            //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC fail");
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC fail"));
                                         }
 
                                     }
                                     catch (Exception ex)
                                     {
-                                        this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
+                                        //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
+                                        LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
                                     }
 
                                     //Console.Out.Write("alarm");
@@ -662,24 +419,27 @@ namespace Mirle.Agv.Controller
                                     this.eqActionIndex = oColParam.Item(i).AsUInt16;
                                     break;
                                 case "ForkReady":
-                                    this.thePlcVehicle.Robot.ForkReady = aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
+                                    this.APLCVehicle.Robot.ForkReady = aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
                                     break;
                                 case "ForkBusy":
-                                    this.thePlcVehicle.Robot.ForkBusy = aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean;
+                                    this.APLCVehicle.Robot.ForkBusy = aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean;
                                     break;
                                 case "ForkCommandFinish":
-                                    this.thePlcVehicle.Robot.ForkFinish = aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean;
+                                    this.APLCVehicle.Robot.ForkFinish = aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean;
                                     break;
                                 case "StageLoading":
-                                    this.thePlcVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
+                                    this.APLCVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
+                                    break;
+                                case "BumperAlarmStatus":
+                                    this.APLCVehicle.BumperAlarmStatus = aMCProtocol.get_ItemByTag("BumperAlarmStatus").AsBoolean;
                                     break;
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString());
-
+                        //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString());
+                        LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString()));
                     }
 
 
@@ -687,32 +447,35 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
+                //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
             }
         }
 
-        private void SetupCcModeAh()
+        private void ccModeAHSet()
         {
 
-            if (this.thePlcVehicle.Batterys.CcModeFlag)
+            if (this.APLCVehicle.Batterys.CcModeFlag)
             {
-                this.thePlcVehicle.Batterys.CcModeAh = this.DecToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2);
+                //this.APLCVehicle.APlcBatterys.CcModeAh = this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2);
+                this.APLCVehicle.Batterys.SetCcModeAh(this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2), true);
+
                 //判斷CCModeCounter
-                if (this.thePlcVehicle.Batterys.MaxResetAhCcounter <= this.thePlcVehicle.Batterys.CcModeCounter)
+                if (this.APLCVehicle.Batterys.MaxResetAhCcounter <= this.APLCVehicle.Batterys.CcModeCounter)
                 {
-                    this.thePlcVehicle.Batterys.CcModeCounter = 0;
+                    this.APLCVehicle.Batterys.CcModeCounter = 0;
                     this.SetMeterAHToZero();
                 }
                 else
                 {
-                    if (this.thePlcVehicle.Batterys.CcModeAh > 0.5)
-                    {
-                        this.thePlcVehicle.Batterys.CcModeCounter = 0;
-                        this.SetMeterAHToZero();
-                    }
-                    this.thePlcVehicle.Batterys.CcModeCounter++;
+                    //if (this.APLCVehicle.APlcBatterys.CcModeAh > 0.5)
+                    //{
+                    //    this.APLCVehicle.APlcBatterys.CcModeCounter = 0;
+                    //    this.SetMeterAHToZero();
+                    //}
+                    this.APLCVehicle.Batterys.CcModeCounter++;
                 }
-                this.thePlcVehicle.Batterys.CcModeFlag = false;
+                this.APLCVehicle.Batterys.CcModeFlag = false;
 
             }
             else
@@ -722,7 +485,7 @@ namespace Mirle.Agv.Controller
 
         }
 
-        private double DecToDouble(long inputNum, int length)
+        private double DECToDouble(Int64 inputNum, int length)
         {
             double returnValue = 0.0;
             switch (length)
@@ -753,16 +516,27 @@ namespace Mirle.Agv.Controller
             return returnValue;
         }
 
-        private void McProtocol_OnConnectEvent(string message)
+        private void MCProtocol_OnConnectEvent(String message)
         {
-            string functionName = "PLCAgent:MCProtocol_OnConnectEvent";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is connected");
-            this.ConnectionState = true;
+            this.boolConnectionState = true;
 
-            plcOtherControlThread = new Thread(PlcOtherControlRun);
-            plcForkCommandControlThread = new Thread(PlcForkCommandControlRun);
-            plcOtherControlThread.Start();
-            plcForkCommandControlThread.Start();
+            if (plcOtherControlThread == null)//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New
+            {
+                plcOtherControlThread = new Thread(plcOtherControlRun);
+                plcOtherControlThread.Start();
+            }
+            if (plcForkCommandControlThread == null)//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New
+            {
+                plcForkCommandControlThread = new Thread(plcForkCommandControlRun);
+                plcForkCommandControlThread.Start();
+            }
+
+            //plcOtherControlThread = new Thread(plcOtherControlRun);
+            //plcForkCommandControlThread = new Thread(plcForkCommandControlRun);
+            //plcOtherControlThread.Start();
+            //plcForkCommandControlThread.Start();
 
             this.WriteCurrentDateTime();
             this.WriteIPCStatus(EnumIPCStatus.Initial);
@@ -771,96 +545,89 @@ namespace Mirle.Agv.Controller
         }
 
         private int beforeDay = DateTime.Now.Day;
-        public void PlcOtherControlRun()
+        private bool beforeEMOStatus;//201907301_Rudy
+
+        //處理非Fork command需要即時的邏輯
+        public void plcOtherControlRun()
         {
+            //20190730_Rudy 新增try catch
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
             while (true)
             {
-                //heartbeat
-                swAlive.Start();
-                if (swAlive.ElapsedMilliseconds > 1000)
+                try //20190730_Rudy 新增try catch
                 {
-                    WriteIPCAlive();
-                    swAlive.Stop();
-                    swAlive.Reset();
-                }
-
-                //時間寫入(跨日)
-                int currDay = DateTime.Now.Day;
-                if (currDay != beforeDay)
-                {
-                    beforeDay = currDay;
-                    this.WriteCurrentDateTime();
-                }
-
-                //判斷Meter歸０完成
-                if (this.thePlcVehicle.Batterys.SetMeterAhToZeroFlag)
-                {
-                    //判斷歸０完成　=> 電表ＡＨ變成0, 所以原先值SetMeterAHToZeroAH　應該要反映到CCmode AH值
-                    if (this.thePlcVehicle.Batterys.MeterAh < 0.5 && this.thePlcVehicle.Batterys.MeterAh > -0.5)
+                    //EMO
+                    APLCVehicle.PlcEmoStatus = DetectEMO();
+                    if (APLCVehicle.PlcEmoStatus && (beforeEMOStatus != APLCVehicle.PlcEmoStatus))
                     {
-                        this.thePlcVehicle.Batterys.CcModeAh = (0 - this.thePlcVehicle.Batterys.SetMeterAhToZeroAh) + this.thePlcVehicle.Batterys.CcModeAh;
-                        this.thePlcVehicle.Batterys.SetMeterAhToZeroFlag = false;
-                    }
-                    else
-                    {
-                        if (this.thePlcVehicle.Batterys.SwBatteryAhSetToZero.ElapsedMilliseconds > this.thePlcVehicle.Batterys.ResetAhTimeout)
-                        {
-                            //Raise Warning
-                            this.thePlcVehicle.Batterys.SetMeterAhToZeroFlag = false;
-
-                        }
+                        beforeEMOStatus = APLCVehicle.PlcEmoStatus;
+                        WriteForkCommandInfo(0, EnumForkCommand.None, "0", EnumStageDirection.None, true, 100);//待測試(看需要麼)
+                        clearExecutingForkCommand();
                     }
 
-                }
-
-                //Battery SOC => 寫在MeterAH發生變化事件裡
-                //這裡處理發事件
-                //OnBatteryPercentageChangeEvent
-                UInt16 currPercentage = Convert.ToUInt16(this.thePlcVehicle.Batterys.Percentage);
-                if (currPercentage != this.beforeBatteryPercentageInteger)
-                {
-                    this.beforeBatteryPercentageInteger = currPercentage;
-                    OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
-                }
-
-                //Safety Action 判斷
-                //決定safety action
-                //Bumper -> BeamSensor
-                //EMO就算Safety Disable也要生效 => MoveControl會直接看EMO訊號,直接disable各軸
-                if (thePlcVehicle.SafetyDisable)
-                {
-                    this.thePlcVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.Normal;
-                }
-                else
-                {
-                    //Bumper
-                    if (this.DetectBumperDisable())
+                    //heartbeat
+                    swAlive.Start();
+                    if (swAlive.ElapsedMilliseconds > 1000)
                     {
-                        //有Bumper是disable最多只能慢速
-                        if (this.DetectBumper())
+                        WriteIPCAlive();
+                        swAlive.Stop();
+                        swAlive.Reset();
+                    }
+
+                    //時間寫入(跨日)
+                    int currDay = DateTime.Now.Day;
+                    if (currDay != beforeDay)
+                    {
+                        beforeDay = currDay;
+                        this.WriteCurrentDateTime();
+                    }
+
+                    //判斷Meter歸０完成
+                    if (this.APLCVehicle.Batterys.SetMeterAhToZeroFlag)
+                    {
+                        //判斷歸０完成　=> 電表ＡＨ變成0, 所以原先值SetMeterAHToZeroAH　應該要反映到CCmode AH值
+                        if (this.APLCVehicle.Batterys.MeterAh < 0.5 && this.APLCVehicle.Batterys.MeterAh > -0.5)
                         {
-                            this.thePlcVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.Stop;
+                            //this.APLCVehicle.APlcBatterys.CcModeAh = (0 - this.APLCVehicle.APlcBatterys.SetMeterAHToZeroAH) + this.APLCVehicle.APlcBatterys.CcModeAh;
+                            this.APLCVehicle.Batterys.SetCcModeAh((0 - this.APLCVehicle.Batterys.SetMeterAhToZeroAh) + this.APLCVehicle.Batterys.CcModeAh, false);
+                            this.APLCVehicle.Batterys.SetMeterAhToZeroFlag = false;
                         }
                         else
                         {
-                            this.thePlcVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.LowSpeed;
-                            //續看beam sensor near
-                            if (DetectBeamSensorNear())
+                            if (this.APLCVehicle.Batterys.SwBatteryAhSetToZero.ElapsedMilliseconds > this.APLCVehicle.Batterys.ResetAhTimeout)
                             {
-                                this.thePlcVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.Stop;
-                            }
-                            else
-                            {
-                                //不用去看Far => 因為不能用Normal速度
-                                this.thePlcVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.LowSpeed;
+                                //Raise Warning
+                                this.APLCVehicle.Batterys.SetMeterAhToZeroFlag = false;
+
                             }
                         }
+
+                    }
+
+                    //Battery SOC => 寫在MeterAH發生變化事件裡
+                    //這裡處理發事件
+                    //OnBatteryPercentageChangeEvent
+                    UInt16 currPercentage = Convert.ToUInt16(this.APLCVehicle.Batterys.Percentage);
+                    if (currPercentage != this.beforeBatteryPercentageInteger)
+                    {
+                        this.beforeBatteryPercentageInteger = currPercentage;
+                        OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
+                    }
+
+                    //Safety Action 判斷
+                    //決定safety action
+                    //Bumper -> BeamSensor
+                    //EMO就算Safety Disable也要生效 => MoveControl會直接看EMO訊號,直接disable各軸                
+                    if (APLCVehicle.SafetyDisable)
+                    {
+                        this.APLCVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.Normal;
                     }
                     else
                     {
                         if (this.DetectBumper())
                         {
-                            this.thePlcVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.Stop;
+                            this.APLCVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.Stop;
                         }
                         else
                         {
@@ -872,12 +639,12 @@ namespace Mirle.Agv.Controller
 
                             //順便決定beam sensor sleep的範圍
                             EnumVehicleSafetyAction result = EnumVehicleSafetyAction.Normal;
-                            if (thePlcVehicle.BeamSensorAutoSleep)
+                            if (APLCVehicle.BeamSensorAutoSleep)
                             {
-                                frontSleepFlag = (!thePlcVehicle.MoveFront) || thePlcVehicle.FrontBeamSensorDisable || thePlcVehicle.SafetyDisable;
-                                backSleepFlag = (!thePlcVehicle.MoveBack) || thePlcVehicle.FrontBeamSensorDisable || thePlcVehicle.SafetyDisable;
-                                leftSleepFlag = (!thePlcVehicle.MoveLeft) || thePlcVehicle.FrontBeamSensorDisable || thePlcVehicle.SafetyDisable;
-                                rightSleepFlag = (!thePlcVehicle.MoveRight) || thePlcVehicle.FrontBeamSensorDisable || thePlcVehicle.SafetyDisable;
+                                frontSleepFlag = (!APLCVehicle.MoveFront) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
+                                backSleepFlag = (!APLCVehicle.MoveBack) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
+                                leftSleepFlag = (!APLCVehicle.MoveLeft) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
+                                rightSleepFlag = (!APLCVehicle.MoveRight) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
 
                                 if (frontSleepFlag)
                                 {
@@ -915,44 +682,52 @@ namespace Mirle.Agv.Controller
                                     this.SetBeamSensorSleepOff(EnumVehicleSide.Right);
                                 }
                             }
+                            else//20190802_Rudy Auto Sleep  Disable 時,關閉 Beam Sensor Sleep 
+                            {
+                                this.SetBeamSensorSleepOff(EnumVehicleSide.Forward);
+                                this.SetBeamSensorSleepOff(EnumVehicleSide.Backward);
+                                this.SetBeamSensorSleepOff(EnumVehicleSide.Left);
+                                this.SetBeamSensorSleepOff(EnumVehicleSide.Right);
+                            }
 
-                            if (thePlcVehicle.MoveFront == true)
+                            if (APLCVehicle.MoveFront == true)
                             {
                                 //前方
-                                result = DecideSafetyActionBySideBeamSensor(result, thePlcVehicle.listFrontBeamSensor, this.thePlcVehicle.FrontBeamSensorDisable);
+                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listFrontBeamSensor, this.APLCVehicle.FrontBeamSensorDisable);
                             }
 
-                            if (thePlcVehicle.MoveBack == true)
+                            if (APLCVehicle.MoveBack == true)
                             {
                                 //後方
-                                result = DecideSafetyActionBySideBeamSensor(result, thePlcVehicle.listBackBeamSensor, this.thePlcVehicle.BackBeamSensorDisable);
+                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listBackBeamSensor, this.APLCVehicle.BackBeamSensorDisable);
                             }
 
-                            if (thePlcVehicle.MoveLeft == true)
+                            if (APLCVehicle.MoveLeft == true)
                             {
                                 //左方
-                                result = DecideSafetyActionBySideBeamSensor(result, thePlcVehicle.listLeftBeamSensor, this.thePlcVehicle.LeftBeamSensorDisable);
+                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listLeftBeamSensor, this.APLCVehicle.LeftBeamSensorDisable);
                             }
 
-                            if (thePlcVehicle.MoveRight == true)
+                            if (APLCVehicle.MoveRight == true)
                             {
                                 //右方
-                                result = DecideSafetyActionBySideBeamSensor(result, thePlcVehicle.listRightBeamSensor, this.thePlcVehicle.RightBeamSensorDisable);
+                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listRightBeamSensor, this.APLCVehicle.RightBeamSensorDisable);
                             }
 
-                            this.thePlcVehicle.VehicleSafetyAction = result;
-
+                            this.APLCVehicle.VehicleSafetyAction = result;
                         }
                     }
                 }
-
-
-
-                Thread.Sleep(1);
+                catch (Exception ex)
+                {
+                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());//20190730_Rudy 新增try catch
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                }
+                System.Threading.Thread.Sleep(1);
             }
-        }
+        }           
 
-        private EnumVehicleSafetyAction DecideSafetyActionBySideBeamSensor(EnumVehicleSafetyAction initAction, List<PlcBeamSensor> listBeamSensor, Boolean SideBeamSensorDisable)
+        private EnumVehicleSafetyAction decideSafetyActionBySideBeamSensor(EnumVehicleSafetyAction initAction, List<PlcBeamSensor> listBeamSensor, Boolean SideBeamSensorDisable)
         {
             EnumVehicleSafetyAction result = initAction;
             //前方
@@ -1004,10 +779,10 @@ namespace Mirle.Agv.Controller
             return result;
         }
 
-        private bool DetectEMO()
+        private Boolean DetectEMO()
         {
             Boolean emoFlag = false;
-            foreach (PlcEmo aPlcEmo in thePlcVehicle.listPlcEmo)
+            foreach (PlcEmo aPlcEmo in APLCVehicle.listPlcEmo)
             {
                 if (aPlcEmo.Disable == false && aPlcEmo.Signal == false)
                 {
@@ -1019,28 +794,33 @@ namespace Mirle.Agv.Controller
             return emoFlag;
         }
 
-        private bool DetectBumper()
+        private Boolean DetectBumper()
         {
-            Boolean bumperFlag = false;
-            foreach (PlcBumper aPLCBumper in thePlcVehicle.listBumper)
-            {
-                if (aPLCBumper.Disable == false && aPLCBumper.Signal == false)
-                {
-                    bumperFlag = true;
-                    break;
-                }
-            }
+            //Boolean bumperFlag = false;
+            //foreach (PlcBumper aPLCBumper in APLCVehicle.listBumper)
+            //{
+            //    if (aPLCBumper.Disable == false && aPLCBumper.Signal == false)
+            //    {
+            //        bumperFlag = true;
+            //        break;
+            //    }
+            //}
+            //return bumperFlag;
+            //<-- 2019//07/29 modify by ellison
+            //改成看BumperAlarmStatus單一點位
 
-            return bumperFlag;
+            return this.APLCVehicle.BumperAlarmStatus;
+
+
         }
 
-        private bool DetectBeamSensorNear()
+        private Boolean DetectBeamSensorNear()
         {
             Boolean result = false;
             //front
-            if (this.thePlcVehicle.MoveFront)
+            if (this.APLCVehicle.MoveFront)
             {
-                if (DetectSideBeamSensorNear(this.thePlcVehicle.listFrontBeamSensor))
+                if (DetectSideBeamSensorNear(this.APLCVehicle.listFrontBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1056,9 +836,9 @@ namespace Mirle.Agv.Controller
             }
 
             //back
-            if (this.thePlcVehicle.MoveBack)
+            if (this.APLCVehicle.MoveBack)
             {
-                if (DetectSideBeamSensorNear(this.thePlcVehicle.listBackBeamSensor))
+                if (DetectSideBeamSensorNear(this.APLCVehicle.listBackBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1074,9 +854,9 @@ namespace Mirle.Agv.Controller
             }
 
             //left
-            if (this.thePlcVehicle.MoveLeft)
+            if (this.APLCVehicle.MoveLeft)
             {
-                if (DetectSideBeamSensorNear(this.thePlcVehicle.listLeftBeamSensor))
+                if (DetectSideBeamSensorNear(this.APLCVehicle.listLeftBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1092,9 +872,9 @@ namespace Mirle.Agv.Controller
             }
 
             //right
-            if (this.thePlcVehicle.MoveRight)
+            if (this.APLCVehicle.MoveRight)
             {
-                if (DetectSideBeamSensorNear(this.thePlcVehicle.listRightBeamSensor))
+                if (DetectSideBeamSensorNear(this.APLCVehicle.listRightBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1111,13 +891,13 @@ namespace Mirle.Agv.Controller
             return result;
         }
 
-        private bool DetectBeamSensorFar()
+        private Boolean DetectBeamSensorFar()
         {
             Boolean result = false;
             //front
-            if (this.thePlcVehicle.MoveFront)
+            if (this.APLCVehicle.MoveFront)
             {
-                if (DetectSideBeamSensorFar(this.thePlcVehicle.listFrontBeamSensor))
+                if (DetectSideBeamSensorFar(this.APLCVehicle.listFrontBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1133,9 +913,9 @@ namespace Mirle.Agv.Controller
             }
 
             //back
-            if (this.thePlcVehicle.MoveBack)
+            if (this.APLCVehicle.MoveBack)
             {
-                if (DetectSideBeamSensorFar(this.thePlcVehicle.listBackBeamSensor))
+                if (DetectSideBeamSensorFar(this.APLCVehicle.listBackBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1151,9 +931,9 @@ namespace Mirle.Agv.Controller
             }
 
             //left
-            if (this.thePlcVehicle.MoveLeft)
+            if (this.APLCVehicle.MoveLeft)
             {
-                if (DetectSideBeamSensorFar(this.thePlcVehicle.listLeftBeamSensor))
+                if (DetectSideBeamSensorFar(this.APLCVehicle.listLeftBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1169,9 +949,9 @@ namespace Mirle.Agv.Controller
             }
 
             //right
-            if (this.thePlcVehicle.MoveRight)
+            if (this.APLCVehicle.MoveRight)
             {
-                if (DetectSideBeamSensorFar(this.thePlcVehicle.listRightBeamSensor))
+                if (DetectSideBeamSensorFar(this.APLCVehicle.listRightBeamSensor))
                 {
                     result = true;
                     return result;
@@ -1188,7 +968,7 @@ namespace Mirle.Agv.Controller
             return result;
         }
 
-        private bool DetectSideBeamSensorNear(List<PlcBeamSensor> listBeamSensor)
+        private Boolean DetectSideBeamSensorNear(List<PlcBeamSensor> listBeamSensor)
         {
             Boolean nearFlag = false;
             foreach (PlcBeamSensor aPLCBeamSensor in listBeamSensor)
@@ -1203,7 +983,7 @@ namespace Mirle.Agv.Controller
             return nearFlag;
         }
 
-        private bool DetectSideBeamSensorFar(List<PlcBeamSensor> listBeamSensor)
+        private Boolean DetectSideBeamSensorFar(List<PlcBeamSensor> listBeamSensor)
         {
             Boolean farFlag = false;
             foreach (PlcBeamSensor aPLCBeamSensor in listBeamSensor)
@@ -1218,7 +998,7 @@ namespace Mirle.Agv.Controller
             return farFlag;
         }
 
-        private bool DetectSideBeamSensorDisable(List<PlcBeamSensor> listBeamSensor)
+        private Boolean DetectSideBeamSensorDisable(List<PlcBeamSensor> listBeamSensor)
         {
             Boolean disableFlag = false;
             foreach (PlcBeamSensor aPLCBeamSensor in listBeamSensor)
@@ -1233,62 +1013,31 @@ namespace Mirle.Agv.Controller
             return disableFlag;
         }
 
-        private bool DetectBumperDisable()
+
+        private void MCProtocol_OnDisConnectEvent(String message)
         {
-            Boolean disableFlag = false;
-            foreach (PlcBumper aPLCBeamSensor in thePlcVehicle.listBumper)
-            {
-                if (aPLCBeamSensor.Disable == true)
-                {
-                    disableFlag = true;
-                    break;
-                }
-            }
-
-            return disableFlag;
-        }
-
-        private bool DetectEMODisable()
-        {
-            Boolean disableFlag = false;
-
-            foreach (PlcEmo aPlcEmo in thePlcVehicle.listPlcEmo)
-            {
-                if (aPlcEmo.Disable == true)
-                {
-                    disableFlag = true;
-                    break;
-                }
-            }
-
-            return disableFlag;
-        }
-
-        private void McProtocol_OnDisConnectEvent(string message)
-        {
-            string functionName = "PLCAgent:MCProtocol_OnDisConnectEvent";
-            this.ConnectionState = false;
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            this.boolConnectionState = false;
             plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is disconnected");
-
         }
 
         public void SetBeamSensorSleepOn(EnumVehicleSide aSide)
         {
-            string functionName = "PLCAgent:SetBeamSensorSleep";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             List<PlcBeamSensor> listSideBeamSensor = null;
             switch (aSide)
             {
                 case EnumVehicleSide.Forward:
-                    listSideBeamSensor = this.thePlcVehicle.listFrontBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listFrontBeamSensor;
                     break;
                 case EnumVehicleSide.Backward:
-                    listSideBeamSensor = this.thePlcVehicle.listBackBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listBackBeamSensor;
                     break;
                 case EnumVehicleSide.Left:
-                    listSideBeamSensor = this.thePlcVehicle.listLeftBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listLeftBeamSensor;
                     break;
                 case EnumVehicleSide.Right:
-                    listSideBeamSensor = this.thePlcVehicle.listRightBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listRightBeamSensor;
                     break;
                 case EnumVehicleSide.None:
                     //全開
@@ -1300,24 +1049,24 @@ namespace Mirle.Agv.Controller
             if (listSideBeamSensor == null)
             {
                 //全開 安全起見 全開
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listFrontBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listFrontBeamSensor)
                 {
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
 
                 }
 
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listBackBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listBackBeamSensor)
                 {
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
                 }
 
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listLeftBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listLeftBeamSensor)
                 {
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
 
                 }
 
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listRightBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listRightBeamSensor)
                 {
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
 
@@ -1327,12 +1076,15 @@ namespace Mirle.Agv.Controller
                 {
                     if (this.aMCProtocol.WritePLC())
                     {
-                        plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Success");
+                        //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Success");
+                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Success");
+                        LogPlcMsg(loggerAgent, logFormat);
                     }
                     else
                     {
-                        plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Fail");
-
+                        //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Fail");
+                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Fail");
+                        LogPlcMsg(loggerAgent, logFormat);
 
                     }
                 }
@@ -1352,21 +1104,21 @@ namespace Mirle.Agv.Controller
                 {
                     if (this.aMCProtocol.WritePLC())
                     {
-                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on success.");
-                        loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                        //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on success.");
+                        //loggerAgent.LogMsg("PlcAgent", logFormat);
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on success."));
                     }
                     else
                     {
-                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on fail.");
-                        loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                        //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on fail.");
+                        //loggerAgent.LogMsg("PlcAgent", logFormat);
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on fail."));
                     }
                 }
             }
         }
 
-        private bool BeamSensorWriteSleep(PlcBeamSensor aPLCBeamSensor, bool flag)
+        private Boolean BeamSensorWriteSleep(PlcBeamSensor aPLCBeamSensor, Boolean flag)
         {
             Boolean writeFlag = false;
             if ((this.aMCProtocol.get_ItemByTag(aPLCBeamSensor.PlcReadSleepTagId).AsBoolean != flag) && (aPLCBeamSensor.BeforeWriteSleep != flag))
@@ -1380,21 +1132,21 @@ namespace Mirle.Agv.Controller
 
         public void SetBeamSensorSleepOff(EnumVehicleSide aSide)
         {
-            string functionName = "PLCAgent:SetBeamSensorSleepOff";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             List<PlcBeamSensor> listSideBeamSensor = null;
             switch (aSide)
             {
                 case EnumVehicleSide.Forward:
-                    listSideBeamSensor = this.thePlcVehicle.listFrontBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listFrontBeamSensor;
                     break;
                 case EnumVehicleSide.Backward:
-                    listSideBeamSensor = this.thePlcVehicle.listBackBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listBackBeamSensor;
                     break;
                 case EnumVehicleSide.Left:
-                    listSideBeamSensor = this.thePlcVehicle.listLeftBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listLeftBeamSensor;
                     break;
                 case EnumVehicleSide.Right:
-                    listSideBeamSensor = this.thePlcVehicle.listRightBeamSensor;
+                    listSideBeamSensor = this.APLCVehicle.listRightBeamSensor;
                     break;
                 case EnumVehicleSide.None:
                     //全開
@@ -1406,25 +1158,25 @@ namespace Mirle.Agv.Controller
             if (listSideBeamSensor == null)
             {
                 //全開 安全起見 全開
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listFrontBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listFrontBeamSensor)
                 {
 
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
 
                 }
 
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listBackBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listBackBeamSensor)
                 {
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
                 }
 
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listLeftBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listLeftBeamSensor)
                 {
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
 
                 }
 
-                foreach (PlcBeamSensor aPLCBeamSensor in this.thePlcVehicle.listRightBeamSensor)
+                foreach (PlcBeamSensor aPLCBeamSensor in this.APLCVehicle.listRightBeamSensor)
                 {
                     if (BeamSensorWriteSleep(aPLCBeamSensor, false)) writeFlag = true;
 
@@ -1434,15 +1186,15 @@ namespace Mirle.Agv.Controller
                 {
                     if (this.aMCProtocol.WritePLC())
                     {
-                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Success");
-                        loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                        //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Success");
+                        //loggerAgent.LogMsg("PlcAgent", logFormat);
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Success"));
                     }
                     else
                     {
-                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Fail");
-                        loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                        //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Fail");
+                        //loggerAgent.LogMsg("PlcAgent", logFormat);
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Fail"));
 
                     }
                 }
@@ -1460,15 +1212,15 @@ namespace Mirle.Agv.Controller
                 {
                     if (this.aMCProtocol.WritePLC())
                     {
-                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off success.");
-                        loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                        //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off success.");
+                        //loggerAgent.LogMsg("PlcAgent", logFormat);
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off success."));
                     }
                     else
                     {
-                        LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off fail.");
-                        loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                        //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off fail.");
+                        //loggerAgent.LogMsg("PlcAgent", logFormat);
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off fail."));
                     }
                 }
 
@@ -1477,9 +1229,11 @@ namespace Mirle.Agv.Controller
 
         }
 
+
+
         public void WriteCurrentDateTime()
         {
-            string functionName = "PLCAgent:WriteCurrentDateTime";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             String datetime = DateTime.Now.ToString("yyyyMMddHHmmss");
             //LogRecord(NLog.LogLevel.Info, "WriteDateTimeCalibrationReport", "DateTime: " + datetime);
             this.aMCProtocol.get_ItemByTag("YearMonth").AsHex = datetime.Substring(2, 4);
@@ -1487,52 +1241,56 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("MinSec").AsHex = datetime.Substring(10, 4);
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime success, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime success, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime success, "));
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime fail, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime fail, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime fail, "));
             }
 
 
         }
 
-        public bool WriteForkCommandInfo(ushort commandNo, EnumForkCommand enumForkCommand, string stageNo, EnumStageDirection direction, bool isEqPio, ushort forkSpeed)
+
+
+        public Boolean WriteForkCommandInfo(ushort commandNo, EnumForkCommand enumForkCommand, String stageNo, EnumStageDirection direction, Boolean eQIF, UInt16 forkSpeed)
         {
-            string functionName = "PLCAgent:WriteForkCommand";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             this.aMCProtocol.get_ItemByTag("CommandNo").AsUInt16 = commandNo;
 
             this.aMCProtocol.get_ItemByTag("OperationType").AsUInt16 = Convert.ToUInt16(enumForkCommand);
 
             this.aMCProtocol.get_ItemByTag("StageNo").AsUInt16 = Convert.ToUInt16(stageNo);
             this.aMCProtocol.get_ItemByTag("StageDirection").AsUInt16 = Convert.ToUInt16(direction);
-            this.aMCProtocol.get_ItemByTag("EQPIO").AsBoolean = isEqPio;
+            this.aMCProtocol.get_ItemByTag("EQPIO").AsBoolean = eQIF;
             this.aMCProtocol.get_ItemByTag("ForkSpeed").AsUInt16 = forkSpeed;
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, "));
                 return true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command fail, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command fail, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command fail, "));
                 return true;
             }
 
 
         }
 
-        public bool WriteForkCommandActionBit(EnumForkCommandExecutionType aEnumForkCommandExecutionType, bool Onflag)
+
+
+        public Boolean WriteForkCommandActionBit(EnumForkCommandExecutionType aEnumForkCommandExecutionType, Boolean Onflag)
         {
-            string functionName = "PLCAgent:WriteForkCommand";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             switch (aEnumForkCommandExecutionType)
@@ -1550,25 +1308,25 @@ namespace Mirle.Agv.Controller
 
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") success, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") success, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") success, "));
                 result = true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") fail, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") fail, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") fail, "));
 
             }
             return result;
 
         }
 
-        public bool ChargeStartCommand(EnumChargeDirection aEnumChargeDirection)
+        public Boolean ChargeStartCommand(EnumChargeDirection aEnumChargeDirection)
         {
-            string functionName = "PLCAgent:ChargeStartCommand";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             switch (aEnumChargeDirection)
@@ -1584,22 +1342,25 @@ namespace Mirle.Agv.Controller
 
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command success, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command success, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command success, "));
                 result = true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command fail, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command fail, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command fail, "));
+
             }
             return result;
+
         }
 
-        public bool ChargeStopCommand()
+        public Boolean ChargeStopCommand()
         {
-            string functionName = "PLCAgent:ChargeStopCommand";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             this.aMCProtocol.get_ItemByTag("LeftChargeRequest").AsBoolean = false;
@@ -1607,135 +1368,159 @@ namespace Mirle.Agv.Controller
 
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command success, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command success, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command success, "));
                 result = true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command fail, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command fail, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command fail, "));
 
             }
             return result;
 
         }
 
-        public bool WriteAGVCOnline(bool OnlineFlag)
+        public Boolean WriteAGVCOnline(Boolean OnlineFlag)
         {
-            string functionName = "PLCAgent:WriteAGVCOnline";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             this.aMCProtocol.get_ItemByTag("AGVCOnline").AsBoolean = OnlineFlag;
 
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " success");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " success");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " success"));
                 result = true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " fail");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " fail");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " fail"));
             }
             return result;
         }
 
-        public bool WriteAlarmWarningStatus(bool alarmStatus, Boolean warningStatus)
+        public Boolean WriteAlarmWarningStatus(Boolean alarmStatus, Boolean warningStatus)
         {
-            string functionName = "PLCAgent:WriteAlarmWarningStatus";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             this.aMCProtocol.get_ItemByTag("IPCAlarmStatus").AsBoolean = alarmStatus;
             this.aMCProtocol.get_ItemByTag("IPCWarningStatus").AsBoolean = warningStatus;
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " success");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " success");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " success"));
                 result = true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " fail");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " fail");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " fail"));
             }
             return result;
         }
 
-        public bool WriteIPCReady(bool readyStatus)
+        public Boolean WriteIPCReady(Boolean readyStatus)
         {
-            string functionName = "PLCAgent:WriteIPCReady";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             this.aMCProtocol.get_ItemByTag("IPCReady").AsBoolean = readyStatus;
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " success");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " success");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " success"));
                 result = true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " fail");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " fail");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " fail"));
             }
             return result;
         }
 
-        public bool WriteIPCStatus(EnumIPCStatus aEnumIPCStatus)
+        public Boolean WriteIPCStatus(EnumIPCStatus aEnumIPCStatus)
         {
-            string functionName = "PLCAgent:WriteIPCStatus";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             this.aMCProtocol.get_ItemByTag("IPCStatus").AsUInt16 = Convert.ToUInt16(aEnumIPCStatus);
             if (this.aMCProtocol.WritePLC())
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " success");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " success");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " success"));
                 result = true;
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " fail");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " fail");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " fail"));
             }
             return result;
         }
 
-        private ushort ipcAliveCounter = 1;
+        private UInt16 IPCAliveCounter = 1;
         public void WriteIPCAlive()
         {
             //heart beat量大不記log
-            this.aMCProtocol.get_ItemByTag("IPCAlive").AsUInt16 = ipcAliveCounter;
+            this.aMCProtocol.get_ItemByTag("IPCAlive").AsUInt16 = IPCAliveCounter;
 
             this.aMCProtocol.WritePLC();
-            ipcAliveCounter++;
-            ipcAliveCounter = Convert.ToUInt16(Convert.ToInt32(ipcAliveCounter) % 65536);
-            //Thread.Sleep(1000);
+            IPCAliveCounter++;
+            IPCAliveCounter = Convert.ToUInt16(Convert.ToInt32(IPCAliveCounter) % 65536);
+            //System.Threading.Thread.Sleep(1000);
         }
 
-        private ushort eqActionIndex = 0;
+        private UInt16 eqActionIndex = 0;
 
         public void WritePLCAlarmReset()
         {
             Task.Run(() =>
             {
+                string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+
                 this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = 10;
-                this.aMCProtocol.WritePLC();
-                Thread.Sleep(1000);
+
+                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(10) + " Success"));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(10) + " Fail"));
+                }
+
+
+                System.Threading.Thread.Sleep(1000);
+
                 eqActionIndex++;
                 eqActionIndex = Convert.ToUInt16(Convert.ToInt32(eqActionIndex) % 65536);
                 this.aMCProtocol.get_ItemByTag("EquipementActionIndex").AsUInt16 = eqActionIndex;
-                this.aMCProtocol.WritePLC();
+
+                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
+                }
+
             });
 
 
@@ -1745,34 +1530,53 @@ namespace Mirle.Agv.Controller
         {
             Task.Run(() =>
             {
+                string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
                 this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = 11;
-                this.aMCProtocol.WritePLC();
-                Thread.Sleep(1000);
+
+                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(11) + " Success"));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(11) + " Fail"));
+                }
+
+
+                System.Threading.Thread.Sleep(1000);
                 eqActionIndex++;
                 eqActionIndex = Convert.ToUInt16(Convert.ToInt32(eqActionIndex) % 65536);
                 this.aMCProtocol.get_ItemByTag("EquipementActionIndex").AsUInt16 = eqActionIndex;
-                this.aMCProtocol.WritePLC();
+
+                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
+                }
             });
         }
 
         public void SetMeterAHToZero()
         {
-            this.thePlcVehicle.Batterys.SetMeterAhToZeroFlag = true;
+            this.APLCVehicle.Batterys.SetMeterAhToZeroFlag = true;
             //this.this.APLCVehicle.PLCBatterys.SetMeterAHToZeroAH = this.this.APLCVehicle.PLCBatterys.MeterAH;
             Task.Run(() =>
             {
                 this.aMCProtocol.get_ItemByTag("MeterAHToZero").AsBoolean = true;
                 this.aMCProtocol.WritePLC();
-                Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1000);
                 this.aMCProtocol.get_ItemByTag("MeterAHToZero").AsBoolean = false;
                 this.aMCProtocol.WritePLC();
             });
         }
 
-        public bool WriteVehicleDirection(bool spinLeft, bool spinRight, bool TraverseLeft, bool TrverseRight, bool SteeringFL, bool SteeringFR, bool SteeringBL, bool SteeringBR, bool Forward, bool Backward)
+        public Boolean WriteVehicleDirection(Boolean spinLeft, Boolean spinRight, Boolean TraverseLeft, Boolean TrverseRight, Boolean SteeringFL, Boolean SteeringFR, Boolean SteeringBL, Boolean SteeringBR, Boolean Forward, Boolean Backward)
         {
 
-            string functionName = "PLCAgent:WriteVehicleDirection";
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
 
             this.aMCProtocol.get_ItemByTag("SpinTurn(L)").AsBoolean = spinLeft;
@@ -1794,8 +1598,9 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteVehicleDirection fail, ");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteVehicleDirection fail, ");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteVehicleDirection fail, "));
             }
             return result;
 
@@ -1808,24 +1613,23 @@ namespace Mirle.Agv.Controller
 
         private Stopwatch swAlive = new Stopwatch();
         //private ForkCommand executingForkCommand = null;
-        public bool IsForkCommandExist()
+        public Boolean IsForkCommandExist()
         {
-            return thePlcVehicle.Robot.ExecutingCommand != null;
-            //if (this.thePlcVehicle.Robot.ExecutingCommand == null)
-            //{
-            //    return false;
-            //}
-            //else
-            //{
-            //    return true;
-            //}
+            if (this.APLCVehicle.Robot.ExecutingCommand == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
-        public string GetErrorReason()
+        public String getErrorReason()
         {
             try
             {
-                PlcForkCommand aForkcommand = this.thePlcVehicle.Robot.ExecutingCommand; //避免executingForkCommand同時被clear
+                PlcForkCommand aForkcommand = this.APLCVehicle.Robot.ExecutingCommand; //避免executingForkCommand同時被clear
                 if (aForkcommand != null)
                 {
                     return aForkcommand.Reason;
@@ -1843,39 +1647,39 @@ namespace Mirle.Agv.Controller
 
         }
 
-        public bool AddForkComand(PlcForkCommand aForkCommand)
+        public Boolean AddForkComand(PlcForkCommand aForkCommand)
         {
-            string functionName = "PLCAgent:AddForkComand";
-            if (this.thePlcVehicle.Robot.ExecutingCommand == null)
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            if (this.APLCVehicle.Robot.ExecutingCommand == null)
             {
                 if (aForkCommand.ForkCommandState == EnumForkCommandState.Queue)
                 {
-                    this.thePlcVehicle.Robot.ExecutingCommand = aForkCommand;
+                    this.APLCVehicle.Robot.ExecutingCommand = aForkCommand;
                     return true;
                 }
                 else
                 {
-                    LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, aForkCommand.ForkCommandState = " + Convert.ToString(this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState) + ", is not Queue.");
-                    loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                    //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, aForkCommand.ForkCommandState = " + Convert.ToString(this.APLCVehicle.APlcRobot.ExecutingCommand.ForkCommandState) + ", is not Queue.");
+                    //loggerAgent.LogMsg("PlcAgent", logFormat);
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, aForkCommand.ForkCommandState = " + Convert.ToString(this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState) + ", is not Queue."));
                     return false;
                 }
             }
             else
             {
-                LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, executingForkCommand is not null.");
-                loggerAgent.LogMsg("PlcAgent", logFormat);
-
+                //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, executingForkCommand is not null.");
+                //loggerAgent.LogMsg("PlcAgent", logFormat);
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, executingForkCommand is not null."));
                 return false;
             }
         }
 
-        private void SetAlarm(int alarmCode)
+        private void setAlarm(int alarmCode)
         {
-            string functionName = "PLCAgent:setAlarm";
-            if (this.alarmHandler != null)
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            if (this.aAlarmHandler != null)
             {
-                this.alarmHandler.SetAlarm(alarmCode);
+                this.aAlarmHandler.SetAlarm(alarmCode);
             }
             else
             {
@@ -1884,11 +1688,11 @@ namespace Mirle.Agv.Controller
 
         }
 
-        private void ResetAlarm(int alarmCode)
+        private void resetAlarm(int alarmCode)
         {
-            if (this.alarmHandler != null)
+            if (this.aAlarmHandler != null)
             {
-                this.alarmHandler.ResetAlarm(alarmCode);
+                this.aAlarmHandler.ResetAlarm(alarmCode);
             }
             else
             {
@@ -1897,225 +1701,375 @@ namespace Mirle.Agv.Controller
 
         }
 
-        public void TriggerCassetteIDReader(ref string CassetteID)
+        public void triggerCassetteIDReader(ref string CassetteID)
         {
             string strCassetteID = "ERROR";
-            aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-            thePlcVehicle.CassetteId = strCassetteID;
+            this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
+            this.APLCVehicle.CassetteId = strCassetteID;
             CassetteID = strCassetteID;
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
+
+            //20190801_Rudy 新增Log Msg
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CassetteId) + " Success"));
+
         }
 
-        public void ClearExecutingForkCommand()
+
+        public void clearExecutingForkCommand()
         {
             clearExecutingForkCommandFlag = true;
         }
 
-        public void PlcForkCommandControlRun()
+        public void plcForkCommandControlRun()
         {
+            //20190730_Rudy 新增try catch
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
             while (true)
             {
-                //Ready
-                this.thePlcVehicle.Robot.ForkReady = this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
-
-                //Fork Command
-                if (clearExecutingForkCommandFlag)
+                try//20190730_Rudy 新增try catch
                 {
-                    clearExecutingForkCommandFlag = false;
-                    this.thePlcVehicle.Robot.ExecutingCommand = null;
-                }
+                    //Ready
+                    this.APLCVehicle.Robot.ForkReady = this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
 
-                if (this.thePlcVehicle.Robot.ExecutingCommand != null)
-                {
-                    Stopwatch sw = new Stopwatch();
-                    switch (this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState)
+                    //Fork Command
+                    if (clearExecutingForkCommandFlag)
                     {
-                        case EnumForkCommandState.Queue:
-                            //送出指令                              
-                            if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
-                            {
-                                this.thePlcVehicle.Robot.ExecutingCommand.Reason = "";
-                                this.WriteForkCommandInfo(Convert.ToUInt16(this.thePlcVehicle.Robot.ExecutingCommand.CommandNo), this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandType, this.thePlcVehicle.Robot.ExecutingCommand.StageNo, this.thePlcVehicle.Robot.ExecutingCommand.Direction, this.thePlcVehicle.Robot.ExecutingCommand.IsEqPio, this.thePlcVehicle.Robot.ExecutingCommand.ForkSpeed);
-
-                                Thread.Sleep(500);
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
-                                sw.Reset();
-                                sw.Start();
-                                while (true)
-                                {
-                                    if (this.aMCProtocol.get_ItemByTag("ForkCommandOK").AsBoolean)
-                                    {
-                                        this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                        Thread.Sleep(1000);
-                                        this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
-                                        break;
-                                    }
-                                    else if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
-                                    {
-                                        this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                        this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
-                                        this.thePlcVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
-                                        //Raise Alarm
-                                        //this.aAlarmHandler.SetAlarm(270001);
-                                        this.SetAlarm(270001);
-                                        eventForkCommand = this.thePlcVehicle.Robot.ExecutingCommand;
-                                        OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        if (sw.ElapsedMilliseconds < ForkCommandReadTimeout)
-                                        {
-                                            Thread.Sleep(20);
-                                        }
-                                        else
-                                        {
-                                            //read time out
-                                            //this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                            //System.Threading.Thread.Sleep(1000);
-                                            //this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
-                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                            this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
-                                            this.thePlcVehicle.Robot.ExecutingCommand.Reason = "Fork Command Read timeout";
-                                            //this.aAlarmHandler.SetAlarm(270002);
-                                            this.SetAlarm(270002);
-                                            eventForkCommand = this.thePlcVehicle.Robot.ExecutingCommand;
-                                            OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                            //Raise Alarm
-                                            //return;
-                                            break;
-                                        }
-
-                                    }
-                                }
-                                sw.Stop();
-
-                                if (this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState == EnumForkCommandState.Error)
-                                {
-                                    break;
-                                }
-
-                                sw.Reset();
-                                sw.Start();
-                                while (true)
-                                {
-                                    if (this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
-                                    {
-                                        if (sw.ElapsedMilliseconds < this.ForkCommandBusyTimeout)
-                                        {
-                                            Thread.Sleep(20);
-                                        }
-                                        else
-                                        {
-                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
-                                            this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
-                                            this.thePlcVehicle.Robot.ExecutingCommand.Reason = "ForkNotBusy timeout";
-                                            //this.aAlarmHandler.SetAlarm(270003);
-                                            this.SetAlarm(270003);
-                                            eventForkCommand = this.thePlcVehicle.Robot.ExecutingCommand;
-                                            OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                                sw.Stop();
-                                if (this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState == EnumForkCommandState.Error)
-                                {
-                                    break;
-                                }
-                                this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Executing;
-                                eventForkCommand = this.thePlcVehicle.Robot.ExecutingCommand;
-                                OnForkCommandExecutingEvent?.Invoke(this, eventForkCommand);
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
-                                Thread.Sleep(1000);
-
-                            }
-                            else
-                            {
-                                this.thePlcVehicle.Robot.ExecutingCommand.Reason = "ForkReady or ForkBusy is not correct";
-                            }
-
-                            break;
-                        case EnumForkCommandState.Executing:
-                            sw.Reset();
-                            sw.Start();
-                            while (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean == false)
-                            {
-                                if (sw.ElapsedMilliseconds < this.ForkCommandMovingTimeout)
-                                {
-                                    Thread.Sleep(500);
-                                }
-                                else
-                                {
-
-                                    //executingForkCommand.ForkCommandState = EnumForkCommandState.Error;
-                                    this.thePlcVehicle.Robot.ExecutingCommand.Reason = "ForkCommand Moving Timeout";
-                                    //Raise Alarm?Warning?   
-                                    //this.aAlarmHandler.SetAlarm(270004);
-                                    this.SetAlarm(270004);
-                                    eventForkCommand = this.thePlcVehicle.Robot.ExecutingCommand;
-                                    OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                    break;
-                                }
-                            }
-                            sw.Stop();
-
-                            if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean)
-                            {
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                                Thread.Sleep(1000);
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
-                                this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
-                            }
-                            else
-                            {
-
-                            }
-
-                            break;
-                        case EnumForkCommandState.Finish:
-                            //OnForkCommandFinishEvent?.Invoke(this, executingForkCommand);
-                            if (this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
-                            {
-                                //要讀完CasetteID才算完成
-                                if (this.IsNeedReadCassetteID)
-                                {
-                                    String cassetteID = "ERROR";
-                                    this.aCassetteIDReader.ReadBarcode(ref cassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-                                    this.thePlcVehicle.CassetteId = cassetteID;
-                                    OnCassetteIDReadFinishEvent?.Invoke(this, cassetteID);
-                                }
-                                else
-                                {
-
-                                }
-                            }
-                            else if (this.thePlcVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
-                            {
-                                this.thePlcVehicle.CassetteId = "";
-                            }
-                            else
-                            {
-
-                            }
-
-                            ////ForkCommand aForkCommand = executingForkCommand;
-                            eventForkCommand = this.thePlcVehicle.Robot.ExecutingCommand;
-                            OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
-                            clearExecutingForkCommandFlag = true;
-                            break;
+                        clearExecutingForkCommandFlag = false;
+                        this.APLCVehicle.Robot.ExecutingCommand = null;
                     }
 
+                    if (this.APLCVehicle.Robot.ExecutingCommand != null)
+                    {
+                        Stopwatch sw = new Stopwatch();
+                        switch (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState)
+                        {
+                            case EnumForkCommandState.Queue:
+                                //送出指令                              
+                                if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
+                                {
+                                    this.APLCVehicle.Robot.ExecutingCommand.Reason = "";
+                                    this.WriteForkCommandInfo(Convert.ToUInt16(this.APLCVehicle.Robot.ExecutingCommand.CommandNo), this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType, this.APLCVehicle.Robot.ExecutingCommand.StageNo, this.APLCVehicle.Robot.ExecutingCommand.Direction, this.APLCVehicle.Robot.ExecutingCommand.IsEqPio, this.APLCVehicle.Robot.ExecutingCommand.ForkSpeed);
+
+                                    System.Threading.Thread.Sleep(500);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
+                                    sw.Reset();
+                                    sw.Start();
+                                    while (true)
+                                    {
+                                        if (this.aMCProtocol.get_ItemByTag("ForkCommandOK").AsBoolean)
+                                        {
+                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                            System.Threading.Thread.Sleep(1000);
+                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                            break;
+                                        }
+                                        else if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
+                                        {
+                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                            this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                            this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
+                                            //Raise Alarm
+                                            //this.aAlarmHandler.SetAlarm(270001);
+                                            this.setAlarm(270001);
+                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                            OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            if (sw.ElapsedMilliseconds < ForkCommandReadTimeout)
+                                            {
+                                                System.Threading.Thread.Sleep(20);
+                                            }
+                                            else
+                                            {
+                                                //read time out
+                                                //this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                //System.Threading.Thread.Sleep(1000);
+                                                //this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                                this.APLCVehicle.Robot.ExecutingCommand.Reason = "Fork Command Read timeout";
+                                                //this.aAlarmHandler.SetAlarm(270002);
+                                                this.setAlarm(270002);
+                                                eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                                //Raise Alarm
+                                                //return;
+                                                break;
+                                            }
+
+                                        }
+
+
+                                    }
+                                    sw.Stop();
+
+                                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState == EnumForkCommandState.Error)
+                                    {
+                                        break;
+                                    }
+
+                                    sw.Reset();
+                                    sw.Start();
+                                    while (true)
+                                    {
+                                        if (this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
+                                        {
+                                            if (sw.ElapsedMilliseconds < this.ForkCommandBusyTimeout)
+                                            {
+                                                System.Threading.Thread.Sleep(20);
+                                            }
+                                            else
+                                            {
+                                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
+                                                this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                                this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkNotBusy timeout";
+                                                //this.aAlarmHandler.SetAlarm(270003);
+                                                this.setAlarm(270003);
+                                                eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    sw.Stop();
+                                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState == EnumForkCommandState.Error)
+                                    {
+                                        break;
+                                    }
+                                    this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Executing;
+                                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                    OnForkCommandExecutingEvent?.Invoke(this, eventForkCommand);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
+                                    System.Threading.Thread.Sleep(1000);
+
+                                }
+                                else
+                                {
+                                    this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkReady or ForkBusy is not correct";
+                                }
+
+                                break;
+                            case EnumForkCommandState.Executing:
+                                sw.Reset();
+                                sw.Start();
+                                while (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean == false)
+                                {
+                                    if (sw.ElapsedMilliseconds < this.ForkCommandMovingTimeout)
+                                    {
+                                        System.Threading.Thread.Sleep(500);
+                                    }
+                                    else
+                                    {
+
+                                        //executingForkCommand.ForkCommandState = EnumForkCommandState.Error;
+                                        this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommand Moving Timeout";
+                                        //Raise Alarm?Warning?   
+                                        //this.aAlarmHandler.SetAlarm(270004);
+                                        this.setAlarm(270004);
+                                        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                        OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                        break;
+                                    }
+                                }
+                                sw.Stop();
+
+                                if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean)
+                                {
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                                    System.Threading.Thread.Sleep(1000);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                    this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
+                                }
+                                else
+                                {
+
+                                }
+
+                                break;
+                            case EnumForkCommandState.Finish:
+                                //OnForkCommandFinishEvent?.Invoke(this, executingForkCommand);
+                                if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
+                                {
+                                    //要讀完CasetteID才算完成
+                                    if (this.IsNeedReadCassetteID)
+                                    {
+                                        String cassetteID = "ERROR";
+                                        this.aCassetteIDReader.ReadBarcode(ref cassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
+                                        this.APLCVehicle.CassetteId = cassetteID;
+                                        OnCassetteIDReadFinishEvent?.Invoke(this, cassetteID);
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                }
+                                else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
+                                {
+                                    this.APLCVehicle.CassetteId = "";
+                                }
+                                else
+                                {
+
+                                }
+
+                                ////ForkCommand aForkCommand = executingForkCommand;
+                                eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                                clearExecutingForkCommandFlag = true;
+                                break;
+                        }
+
+                    }
                 }
-                Thread.Sleep(5);
+                catch (Exception ex)
+                {
+                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());//20190730_Rudy 新增try catch
+
+                    //LogFormat logFormat = new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString());
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                }
+                System.Threading.Thread.Sleep(5);
             }
 
 
+        }
+        public Boolean SetVehicleChargeOn()//20190730_Rudy
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            Boolean result = false;
+
+            this.aMCProtocol.get_ItemByTag("VehicleCharge").AsBoolean = true;
+            if (this.aMCProtocol.WritePLC())
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge On = " + Convert.ToString(true) + " success"));
+                result = true;
+            }
+            else
+            {               
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge On = " + Convert.ToString(true) + " fail"));
+            }
+            return result;
+        }
+        public Boolean SetVehicleChargeOff()//20190730_Rudy
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            Boolean result = false;
+
+            this.aMCProtocol.get_ItemByTag("VehicleCharge").AsBoolean = false;
+            if (this.aMCProtocol.WritePLC())
+            {                
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge Off = " + Convert.ToString(false) + " success"));
+                result = true;
+            }
+            else
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge Off = " + Convert.ToString(false) + " fail"));
+            }
+            return result;
+        }
+
+        public Boolean SetVehicleInPositionOn()//20190730_Rudy
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            Boolean result = false;
+
+            this.aMCProtocol.get_ItemByTag("VehicleInPosition").AsBoolean = true;
+            if (this.aMCProtocol.WritePLC())
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition On = " + Convert.ToString(true) + " success"));
+                result = true;
+            }
+            else
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition On = " + Convert.ToString(true) + " fail"));
+            }
+            return result;
+        }
+        public Boolean SetVehicleInPositionOff()//20190730_Rudy
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            Boolean result = false;
+
+            this.aMCProtocol.get_ItemByTag("VehicleInPosition").AsBoolean = false;
+            if (this.aMCProtocol.WritePLC())
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition Off = " + Convert.ToString(false) + " success"));
+                result = true;
+            }
+            else
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition Off = " + Convert.ToString(false) + " fail"));
+            }
+            return result;
+        }
+        private string strlogMsg = "";//201907301_Rudy LogView
+        public string logMsg//201907301_Rudy
+        {
+            get
+            {
+                if (strlogMsg == "")
+                    return "";
+                if (strlogMsg.Length > 65535)
+                    return strlogMsg.Substring(0, 65535);
+                else
+                    return strlogMsg;
+            }
+        }
+        private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)//201907301_Rudy LogView
+        {
+            strlogMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
+
+            clsLoggerAgent.LogMsg(clsLogFormat.Category, clsLogFormat);
+        }
+        //20190802_Rudy 新增XML Param 可修改   
+        public bool WritePlcConfigToXML(Dictionary<string, string> dicSetValue, string file_address = "PLC_Config.xml")
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            bool searchStatus = false;
+            bool result = false;
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.Load(file_address);
+                var rootNode = doc.DocumentElement;
+                foreach (XmlNode item in rootNode.ChildNodes)
+                {
+                    XmlElement element = (XmlElement)item;
+                    foreach (XmlNode childItem in element.ChildNodes)
+                    {
+                        if (dicSetValue.ContainsKey(childItem.Name))
+                        {
+                            childItem.InnerText = dicSetValue[childItem.Name];
+                            searchStatus = true;
+                        }
+                    }
+                }
+                if (searchStatus)
+                {
+                    doc.Save(file_address);
+                    ReadXml("PLC_Config.xml");
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Write Plc Config To XML Success"));
+                    result = true;
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Write Plc Config To XML Fail"));
+                }
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+            }
+            return result;
         }
     }
 }

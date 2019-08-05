@@ -27,7 +27,7 @@ namespace Mirle.Agv.Controller
         private int elmoControlPort = 0;
         private int handler = 0;
 
-        private Dictionary<Axis, AxisInfo> allAxis = new Dictionary<Axis, AxisInfo>();
+        private Dictionary<EnumAxis, AxisInfo> allAxis = new Dictionary<EnumAxis, AxisInfo>();
         private List<AxisInfo> allAxisList = new List<AxisInfo>();
 
         private List<ElmoSingleAxisConfig> elmoAxisConfig = new List<ElmoSingleAxisConfig>();
@@ -40,7 +40,7 @@ namespace Mirle.Agv.Controller
         private int ServoOnTimeOut;
         private System.Diagnostics.Stopwatch scanTimeTimer = new System.Diagnostics.Stopwatch();
         private volatile double[] getPosFbk = new double[8];
-        private Dictionary<AxisType, AxisData> allType = new Dictionary<AxisType, AxisData>();
+        private Dictionary<EnumAxisType, AxisData> allType = new Dictionary<EnumAxisType, AxisData>();
 
         public ElmoDriver(string elmoConfigPath)
         {
@@ -152,11 +152,11 @@ namespace Mirle.Agv.Controller
                         break;
                     case "Move":
                         tempAxisData = ReadMoveTurnData((XmlElement)item);
-                        allType.Add(AxisType.Move, tempAxisData);
+                        allType.Add(EnumAxisType.Move, tempAxisData);
                         break;
                     case "Turn":
                         tempAxisData = ReadMoveTurnData((XmlElement)item);
-                        allType.Add(AxisType.Turn, tempAxisData);
+                        allType.Add(EnumAxisType.Turn, tempAxisData);
                         break;
                     default:
                         // log...
@@ -165,16 +165,16 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private List<Axis> ReadOrder(XmlElement element)
+        private List<EnumAxis> ReadOrder(XmlElement element)
         {
-            List<Axis> stringList = new List<Axis>();
+            List<EnumAxis> stringList = new List<EnumAxis>();
 
             foreach (XmlNode item in element.ChildNodes)
             {
                 switch (item.Name)
                 {
                     case "ID":
-                        stringList.Add((Axis)Enum.Parse(typeof(Axis), item.InnerText));
+                        stringList.Add((EnumAxis)Enum.Parse(typeof(EnumAxis), item.InnerText));
                         break;
                     default:
                         //log...
@@ -194,13 +194,13 @@ namespace Mirle.Agv.Controller
                 switch (item.Name)
                 {
                     case "ID":
-                        tempAxisConfig.ID = (Axis)Enum.Parse(typeof(Axis), item.InnerText);
+                        tempAxisConfig.ID = (EnumAxis)Enum.Parse(typeof(EnumAxis), item.InnerText);
                         break;
                     case "AxisName":
                         tempAxisConfig.AxisName = item.InnerText;
                         break;
                     case "VirtualDev4ID":
-                        tempAxisConfig.VirtualDev4ID = (Axis)Enum.Parse(typeof(Axis), item.InnerText);
+                        tempAxisConfig.VirtualDev4ID = (EnumAxis)Enum.Parse(typeof(EnumAxis), item.InnerText);
                         break;
                     case "GroupOrder":
                         tempAxisConfig.GroupOrder = ReadOrder((XmlElement)item);
@@ -209,7 +209,7 @@ namespace Mirle.Agv.Controller
                         tempAxisConfig.CommandOrder = ReadOrder((XmlElement)item);
                         break;
                     case "Type":
-                        tempAxisConfig.Type = (AxisType)Enum.Parse(typeof(AxisType), item.InnerText);
+                        tempAxisConfig.Type = (EnumAxisType)Enum.Parse(typeof(EnumAxisType), item.InnerText);
                         break;
                     default:
                         break;
@@ -217,7 +217,7 @@ namespace Mirle.Agv.Controller
             }
 
             tempAxisConfig.IsGroup = (tempAxisConfig.GroupOrder != null);
-            tempAxisConfig.IsVirtualDevice = (tempAxisConfig.VirtualDev4ID != Axis.None);
+            tempAxisConfig.IsVirtualDevice = (tempAxisConfig.VirtualDev4ID != EnumAxis.None);
 
             elmoAxisConfig.Add(tempAxisConfig);
         }
@@ -416,7 +416,7 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < MAX_AXIS; i++)
                 {
-                    if (allAxisList[i].Config.ID != Axis.GT && allAxisList[i].Config.ID != Axis.GX)
+                    if (allAxisList[i].Config.ID != EnumAxis.GT && allAxisList[i].Config.ID != EnumAxis.GX)
                     {
                         tempFeedbackData = new ElmoAxisFeedbackData();
                         tempFeedbackData.Feedback_Velocity = Convert.ToInt32(ncBulkRead[i].aVel * allAxisList[i].Config.PulseUnit);//速度
@@ -451,7 +451,7 @@ namespace Mirle.Agv.Controller
 
         #region Enable Disable fucntion
 
-        private void EnableRealAxis(Axis axis, bool onOff)
+        private void EnableRealAxis(EnumAxis axis, bool onOff)
         {
             string msg = "";
             System.Diagnostics.Stopwatch servoOnTimer = new System.Diagnostics.Stopwatch();
@@ -499,7 +499,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void EnableVirtualAxis(Axis axis, bool onOff)
+        private void EnableVirtualAxis(EnumAxis axis, bool onOff)
         {
             string msg = "";
             System.Diagnostics.Stopwatch servoOnTimer = new System.Diagnostics.Stopwatch();
@@ -541,7 +541,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void EnableGroupAxis(Axis axis, bool onOff)
+        private void EnableGroupAxis(EnumAxis axis, bool onOff)
         {
             string msg = "";
             System.Diagnostics.Stopwatch servoOnTimer = new System.Diagnostics.Stopwatch();
@@ -588,7 +588,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void DisableAxis(Axis axis)
+        public void DisableAxis(EnumAxis axis)
         {
             if (!connected)
                 return;
@@ -601,7 +601,7 @@ namespace Mirle.Agv.Controller
                 EnableRealAxis(axis, false);
         }
 
-        public void EnableAxis(Axis axis)
+        public void EnableAxis(EnumAxis axis)
         {
             if (!connected)
                 return;
@@ -692,14 +692,14 @@ namespace Mirle.Agv.Controller
             elmoLogger.SavePureLog(this.GetType().FullName + " end!");
         }
 
-        public void DisableMoveAxis(Axis axis)
+        public void DisableMoveAxis(EnumAxis axis)
         {
             elmoLogger.SavePureLog(this.GetType().FullName + " start!");
             // 0.0
             elmoLogger.SavePureLog(this.GetType().FullName + " end!");
         }
 
-        public void EnableMoveAxis(Axis axis)
+        public void EnableMoveAxis(EnumAxis axis)
         {
             elmoLogger.SavePureLog(this.GetType().FullName + " start!");
             // 0.0
@@ -708,7 +708,7 @@ namespace Mirle.Agv.Controller
 
         #endregion
 
-        public void ResetError(Axis axis)
+        public void ResetError(EnumAxis axis)
         {
             string msg = "";
 
@@ -761,10 +761,10 @@ namespace Mirle.Agv.Controller
                 if (!connected)
                     return false;
 
-                return Math.Abs(allAxis[Axis.TFL].FeedbackData.Feedback_Position - angle_FL) < range &&
-                       Math.Abs(allAxis[Axis.TFR].FeedbackData.Feedback_Position - angle_FR) < range &&
-                       Math.Abs(allAxis[Axis.TRL].FeedbackData.Feedback_Position - angle_RL) < range &&
-                       Math.Abs(allAxis[Axis.TRR].FeedbackData.Feedback_Position - angle_RR) < range;
+                return Math.Abs(allAxis[EnumAxis.TFL].FeedbackData.Feedback_Position - angle_FL) < range &&
+                       Math.Abs(allAxis[EnumAxis.TFR].FeedbackData.Feedback_Position - angle_FR) < range &&
+                       Math.Abs(allAxis[EnumAxis.TRL].FeedbackData.Feedback_Position - angle_RL) < range &&
+                       Math.Abs(allAxis[EnumAxis.TRR].FeedbackData.Feedback_Position - angle_RR) < range;
             }
             catch (MMCException ex)
             {
@@ -780,7 +780,7 @@ namespace Mirle.Agv.Controller
             return WheelAngleCompare(angle_ALL, angle_ALL, angle_ALL, angle_ALL, range);
         }
 
-        private void ElmoMoveGroupAxisAbsolute(Axis axis, double distance_FL, double distance_FR, double distance_RL, double distance_RR,
+        private void ElmoMoveGroupAxisAbsolute(EnumAxis axis, double distance_FL, double distance_FR, double distance_RL, double distance_RR,
                                                   double velocity, double acceleration, double deceleration, double jerk)
         {
             string msg = "";
@@ -791,10 +791,10 @@ namespace Mirle.Agv.Controller
                     return;
 
 
-                if (axis == Axis.GX)
+                if (axis == EnumAxis.GX)
                     return;
 
-                if (axis == Axis.GT)
+                if (axis == EnumAxis.GT)
                 {
                     if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
                         return;
@@ -829,7 +829,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void ElmoMoveGroupAxisRelative(Axis axis, double distance_FL, double distance_FR, double distance_RL, double distance_RR,
+        private void ElmoMoveGroupAxisRelative(EnumAxis axis, double distance_FL, double distance_FR, double distance_RL, double distance_RR,
                                                   double velocity, double acceleration, double deceleration, double jerk)
         {
             string msg = "";
@@ -871,7 +871,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void ElmoMoveSingleAxisRelative(Axis axis, double distance, double velocity, double acceleration, double deceleration, double jerk)
+        private void ElmoMoveSingleAxisRelative(EnumAxis axis, double distance, double velocity, double acceleration, double deceleration, double jerk)
         {
             string msg = "";
 
@@ -892,7 +892,7 @@ namespace Mirle.Agv.Controller
         }
 
 
-        private void ElmoMoveSingleAxisAbsolute(Axis axis, double distance, double velocity, double acceleration, double deceleration, double jerk)
+        private void ElmoMoveSingleAxisAbsolute(EnumAxis axis, double distance, double velocity, double acceleration, double deceleration, double jerk)
         {
             string msg = "";
 
@@ -912,7 +912,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void ElmoStopGroupAxis(Axis axis, double deceleration, double jerk)
+        private void ElmoStopGroupAxis(EnumAxis axis, double deceleration, double jerk)
         {
             string msg = "";
 
@@ -935,7 +935,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void ElmoStopSingleAxis(Axis axis, double deceleration, double jerk)
+        private void ElmoStopSingleAxis(EnumAxis axis, double deceleration, double jerk)
         {
             string msg = "";
 
@@ -955,7 +955,7 @@ namespace Mirle.Agv.Controller
         }
 
         // 對外開放 可Group(四軸同距離)可Single(虛實皆可以), acc dec jerk 可不填,不填使用MotionParameter預設值.
-        public void ElmoMove(Axis axis, double distance, double velocity, MoveType type, double acceleration = -1, double deceleration = -1, double jerk = -1)
+        public void ElmoMove(EnumAxis axis, double distance, double velocity, EnumMoveType type, double acceleration = -1, double deceleration = -1, double jerk = -1)
         {
             if (!connected)
                 return;
@@ -971,23 +971,23 @@ namespace Mirle.Agv.Controller
 
             if (allAxis[axis].Config.IsGroup)
             {
-                if (type == MoveType.Absolute)
+                if (type == EnumMoveType.Absolute)
                     ElmoMoveGroupAxisAbsolute(axis, distance, distance, distance, distance, velocity, acceleration, deceleration, jerk);
-                else if (type == MoveType.Relative)
+                else if (type == EnumMoveType.Relative)
                     ElmoMoveGroupAxisRelative(axis, distance, distance, distance, distance, velocity, acceleration, deceleration, jerk);
             }
             else
             {
-                if (type == MoveType.Absolute)
+                if (type == EnumMoveType.Absolute)
                     ElmoMoveSingleAxisAbsolute(axis, distance, velocity, acceleration, deceleration, jerk);
-                else if (type == MoveType.Relative)
+                else if (type == EnumMoveType.Relative)
                     ElmoMoveSingleAxisRelative(axis, distance, velocity, acceleration, deceleration, jerk);
             }
         }
 
         // 對外開放 必須是Group, acc dec jerk 可不填,不填使用MotionParameter預設值.
-        public void ElmoMove(Axis axis, double distance_FL, double distance_FR, double distance_RL, double distance_RR,
-                                        double velocity, MoveType type, double acceleration = -1, double deceleration = -1, double jerk = -1)
+        public void ElmoMove(EnumAxis axis, double distance_FL, double distance_FR, double distance_RL, double distance_RR,
+                                        double velocity, EnumMoveType type, double acceleration = -1, double deceleration = -1, double jerk = -1)
         {
             if (!connected || !allAxis[axis].Config.IsGroup)
                 return;
@@ -1001,14 +1001,14 @@ namespace Mirle.Agv.Controller
             if (jerk == -1)
                 jerk = allAxis[axis].Config.Jerk;
 
-            if (type == MoveType.Absolute)
+            if (type == EnumMoveType.Absolute)
                 ElmoMoveGroupAxisAbsolute(axis, distance_FL, distance_FR, distance_RL, distance_RR, velocity, acceleration, deceleration, jerk);
-            else if (type == MoveType.Relative)
+            else if (type == EnumMoveType.Relative)
                 ElmoMoveGroupAxisRelative(axis, distance_FL, distance_FR, distance_RL, distance_RR, velocity, acceleration, deceleration, jerk);
         }
 
         // 對外開放 可Group(四軸同距離)可Single(虛實皆可以), dec jerk 可不填,不填使用MotionParameter預設值.
-        public void ElmoStop(Axis axis, double deceleration = -1, double jerk = -1)
+        public void ElmoStop(EnumAxis axis, double deceleration = -1, double jerk = -1)
         {
             if (!connected || !allAxis[axis].Config.IsGroup)
                 return;
@@ -1026,7 +1026,7 @@ namespace Mirle.Agv.Controller
         }
 
         // 對外開放 必須是Group Change Velocity
-        public void ElmoGroupVelocityChange(Axis axis, double velocityRatio)
+        public void ElmoGroupVelocityChange(EnumAxis axis, double velocityRatio)
         {
             string msg = "";
 
@@ -1051,7 +1051,7 @@ namespace Mirle.Agv.Controller
         }
 
         // 對外開放 讀取position, 只能轉向4實體和 走行"前左","後右"
-        public double ElmoGetPosition(Axis axis)
+        public double ElmoGetPosition(EnumAxis axis)
         {
             string msg = "";
 
@@ -1060,8 +1060,8 @@ namespace Mirle.Agv.Controller
                 if (!connected)
                     return -1;
 
-                if (axis != Axis.XFL && axis != Axis.XRR &&
-                    axis != Axis.TFL && axis != Axis.TFR && axis != Axis.TRL && axis != Axis.TRR)
+                if (axis != EnumAxis.XFL && axis != EnumAxis.XRR &&
+                    axis != EnumAxis.TFL && axis != EnumAxis.TFR && axis != EnumAxis.TRL && axis != EnumAxis.TRR)
                     return -1;
 
                 return allAxis[axis].FeedbackData.Feedback_Position;
@@ -1075,7 +1075,7 @@ namespace Mirle.Agv.Controller
         }
 
         // 對外開放 讀取velocity.
-        public double ElmoGetVelocity(Axis axis)
+        public double ElmoGetVelocity(EnumAxis axis)
         {
             string msg = "";
 
@@ -1097,7 +1097,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public ElmoAxisFeedbackData ElmoGetFeedbackData(Axis axis)
+        public ElmoAxisFeedbackData ElmoGetFeedbackData(EnumAxis axis)
         {
             string msg = "";
 
@@ -1116,7 +1116,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool MoveCompelete(Axis axis)
+        public bool MoveCompelete(EnumAxis axis)
         {
             string msg = "";
 
@@ -1143,13 +1143,13 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void SetPosition(Axis axis, double position)
+        public void SetPosition(EnumAxis axis, double position)
         {
             try
             {
                 return;
 
-                if (allAxis[axis].Config.Type != AxisType.Move)
+                if (allAxis[axis].Config.Type != EnumAxisType.Move)
                     return;
 
                 if (allAxis[axis].Config.IsGroup)
