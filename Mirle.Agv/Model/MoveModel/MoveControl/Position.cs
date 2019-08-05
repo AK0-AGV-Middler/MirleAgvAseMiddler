@@ -9,10 +9,10 @@ namespace Mirle.Agv.Model
     public class Position
     {
         public MapPosition Encoder { get; set; }
-        public MapPosition Barcode { get; set; }
+        public AGVPosition Barcode { get; set; }
         public double Delta { get; set; }
         public double Offset { get; set; }
-        public MapPosition Real { get; set; }
+        public AGVPosition Real { get; set; }
         public double RealEncoder { get; set; }
         public double ElmoEncoder { get; set; }
         public int IndexOfSr2000List { get; set; }
@@ -25,8 +25,8 @@ namespace Mirle.Agv.Model
 
         public Position()
         {
-            Encoder = new MapPosition();
-            Barcode = new MapPosition();
+            Encoder = null;
+            Barcode = null;
             Delta = 0;
             RealEncoder = 0;
             Real = null;

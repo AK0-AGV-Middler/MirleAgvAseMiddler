@@ -15,7 +15,8 @@ namespace Mirle.Agv.Model
         public bool MoveControlStop { get; set; }
         public double VelocityCommand { get; set; }
         public Thread MoveControlThread { get; set; }
-        
+        public bool OntimeReviseFlag { get; set; }
+
         public MoveControlParameter()
         {
             DirFlag = true;
@@ -23,6 +24,7 @@ namespace Mirle.Agv.Model
             WheelAngle = 0;
             MoveControlStop = false;
             VelocityCommand = 100;
+            OntimeReviseFlag = false;
         }
     }
 }

@@ -21279,7 +21279,7 @@
             Initializes a new instance of the <see cref="T:NLog.Targets.DatabaseCommandInfo"/> class.
             </summary>
         </member>
-        <member name="P:NLog.Targets.DatabaseCommandInfo.CommandType">
+        <member name="P:NLog.Targets.DatabaseCommandInfo.EnumCommandType">
             <summary>
             Gets or sets the type of the command.
             </summary>
@@ -21520,7 +21520,7 @@
             </remarks>
             <docgen category='SQL Statement' order='10' />
         </member>
-        <member name="P:NLog.Targets.DatabaseTarget.CommandType">
+        <member name="P:NLog.Targets.DatabaseTarget.EnumCommandType">
             <summary>
             Gets or sets the type of the SQL command to be run on each log level.
             </summary>

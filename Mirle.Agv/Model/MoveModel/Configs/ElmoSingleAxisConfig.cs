@@ -10,7 +10,7 @@ namespace Mirle.Agv.Model.Configs
 {
     public class ElmoSingleAxisConfig
     {
-        public EnumAxis ID { get; set; }
+        public Axis ID { get; set; }
         public string AxisName { get; set; }
         public bool IsGroup { get; set; }
         public double MotorResolution { get; set; }
@@ -20,10 +20,10 @@ namespace Mirle.Agv.Model.Configs
         public double Deceleration { get; set; }
         public double Jerk { get; set; }
         public bool IsVirtualDevice { get; set; } = false;
-        public EnumAxis VirtualDev4ID { get; set; } = EnumAxis.None;
-        public List<EnumAxis> GroupOrder { get; set; } = null;
-        public List<EnumAxis> CommandOrder { get; set; } = null;
-        public EnumAxisType Type { get; set; }
+        public Axis VirtualDev4ID { get; set; } = Axis.None;
+        public List<Axis> GroupOrder { get; set; } = null;
+        public List<Axis> CommandOrder { get; set; } = null;
+        public AxisType Type { get; set; }
 
         // ??基本需求??
         public double dbDistance { get; set; } = 5000;

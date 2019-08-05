@@ -511,7 +511,7 @@ namespace Mirle.Agv.Controller
 
         private bool CheckTransCmdSectionsAndAddressesMatch(AgvcTransCmd agvcTransCmd)
         {
-            switch (agvcTransCmd.CommandType)
+            switch (agvcTransCmd.EnumCommandType)
             {
                 case EnumAgvcTransCommandType.Move:
                     return IsSectionsAndAddressesMatch(agvcTransCmd.ToUnloadSections, agvcTransCmd.ToUnloadAddresses, agvcTransCmd.SeqNum);
@@ -597,7 +597,7 @@ namespace Mirle.Agv.Controller
 
         private bool IsBasicTransCmds()
         {
-            switch (agvcTransCmd.CommandType)
+            switch (agvcTransCmd.EnumCommandType)
             {
                 case EnumAgvcTransCommandType.Move:
                 case EnumAgvcTransCommandType.Load:
@@ -616,7 +616,7 @@ namespace Mirle.Agv.Controller
         {
             transferSteps.Clear();
 
-            switch (agvcTransCmd.CommandType)
+            switch (agvcTransCmd.EnumCommandType)
             {
                 case EnumAgvcTransCommandType.Move:
                     ConvertAgvcMoveCmdIntoList(agvcTransCmd);
@@ -1124,10 +1124,10 @@ namespace Mirle.Agv.Controller
             return !queNeedReserveSections.IsEmpty;
         }
 
-        public void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete status)
+        public void MoveControlHandler_OnMoveFinished(object sender, MoveComplete status)
         {
             //TODO: if error stop ,
-            if (status == EnumMoveComplete.Fail)
+            if (status == MoveComplete.Fail)
             {
                 //Alarm
                 StopVisitTransCmds();
@@ -1224,7 +1224,7 @@ namespace Mirle.Agv.Controller
 
         private bool IsLoadUnloadComplete()
         {
-            return agvcTransCmd.CommandType == EnumAgvcTransCommandType.LoadUnload;
+            return agvcTransCmd.EnumCommandType == EnumAgvcTransCommandType.LoadUnload;
         }
 
         private void OnLoadunloadFinishedEvent()

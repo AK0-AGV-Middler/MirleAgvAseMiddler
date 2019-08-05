@@ -35,8 +35,10 @@
             this.pB_StandStill = new System.Windows.Forms.PictureBox();
             this.label_StandStill = new System.Windows.Forms.Label();
             this.label_AxisName = new System.Windows.Forms.Label();
+            this.pB_Error = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pB_Disable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pB_StandStill)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pB_Error)).BeginInit();
             this.SuspendLayout();
             // 
             // label_Disable
@@ -101,11 +103,21 @@
             this.label_AxisName.Size = new System.Drawing.Size(0, 12);
             this.label_AxisName.TabIndex = 146;
             // 
+            // pB_Error
+            // 
+            this.pB_Error.BackColor = System.Drawing.Color.LightGray;
+            this.pB_Error.Location = new System.Drawing.Point(67, 8);
+            this.pB_Error.Name = "pB_Error";
+            this.pB_Error.Size = new System.Drawing.Size(14, 10);
+            this.pB_Error.TabIndex = 147;
+            this.pB_Error.TabStop = false;
+            // 
             // JogPitchAxis
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.Controls.Add(this.pB_Error);
             this.Controls.Add(this.label_AxisName);
             this.Controls.Add(this.label_Disable);
             this.Controls.Add(this.pB_Disable);
@@ -117,6 +129,7 @@
             this.Size = new System.Drawing.Size(92, 100);
             ((System.ComponentModel.ISupportInitialize)(this.pB_Disable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pB_StandStill)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pB_Error)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -131,5 +144,6 @@
         private System.Windows.Forms.PictureBox pB_StandStill;
         private System.Windows.Forms.Label label_StandStill;
         private System.Windows.Forms.Label label_AxisName;
+        private System.Windows.Forms.PictureBox pB_Error;
     }
 }

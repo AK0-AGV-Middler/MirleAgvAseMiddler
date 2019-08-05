@@ -85,6 +85,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\MoveControl\AGVMoveRevise.cs" />
     <Compile Include="Controller\MoveControl\CreateMoveControlList.cs" />
     <Compile Include="Controller\MoveControl\Sr2000Driver.cs" />
     <Compile Include="Controller\MoveControl\ElmoDriver.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Model\MoveModel\Configs\Sr2000Config.cs" />
     <Compile Include="Model\MoveModel\Elmo\AxisInfo.cs" />
     <Compile Include="Model\MoveModel\Elmo\ElmoAxisFeedbackData.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\AGVTurnParameter.cs" />
     <Compile Include="Model\MoveModel\MoveControl\AxisData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\Command.cs" />
     <Compile Include="Model\MoveModel\MoveControl\MoveControlParameter.cs" />
@@ -151,6 +153,18 @@
     <Compile Include="Model\AgvcTransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\AgvcTransferCmds\TransCmd.cs" />
     <Compile Include="Model\AgvcTransferCmds\UnloadCmdInfo.cs" />
+    <Compile Include="View\JogPitch.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\JogPitch.designer.cs">
+      <DependentUpon>JogPitch.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\MoveCommandDebugMode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\MoveCommandDebugMode.designer.cs">
+      <DependentUpon>MoveCommandDebugMode.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\UserControls\UcAddressImage.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -162,12 +176,6 @@
     </Compile>
     <Compile Include="View\AlarmForm.Designer.cs">
       <DependentUpon>AlarmForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\JogPitchForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\JogPitchForm.designer.cs">
-      <DependentUpon>JogPitchForm.cs</DependentUpon>
     </Compile>
     <Compile Include="View\PlcForm.cs">
       <SubType>Form</SubType>
@@ -192,12 +200,6 @@
     </Compile>
     <Compile Include="View\UserControls\UcLabelTextBox.Designer.cs">
       <DependentUpon>UcLabelTextBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\ManualMoveCmdForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\ManualMoveCmdForm.Designer.cs">
-      <DependentUpon>ManualMoveCmdForm.cs</DependentUpon>
     </Compile>
     <Compile Include="View\MiddlerForm.cs">
       <SubType>Form</SubType>
@@ -253,8 +255,11 @@
     <EmbeddedResource Include="View\AlarmForm.resx">
       <DependentUpon>AlarmForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\JogPitchForm.resx">
-      <DependentUpon>JogPitchForm.cs</DependentUpon>
+    <EmbeddedResource Include="View\JogPitch.resx">
+      <DependentUpon>JogPitch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\MoveCommandDebugMode.resx">
+      <DependentUpon>MoveCommandDebugMode.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\PlcForm.resx">
       <DependentUpon>PlcForm.cs</DependentUpon>
@@ -267,9 +272,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\UcLabelTextBox.resx">
       <DependentUpon>UcLabelTextBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\ManualMoveCmdForm.resx">
-      <DependentUpon>ManualMoveCmdForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\MiddlerForm.resx">
       <DependentUpon>MiddlerForm.cs</DependentUpon>

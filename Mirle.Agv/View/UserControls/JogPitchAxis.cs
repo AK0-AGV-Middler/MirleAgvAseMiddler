@@ -18,7 +18,7 @@ namespace Mirle.Agv.View
             label_AxisName.Text = axisName;
         }
 
-        public void Update(string position, bool disable, bool standStill)
+        public void Update(string position, bool disable, bool standStill, bool error)
         {
             tB_Position.Text = position;
             if (disable)
@@ -30,6 +30,11 @@ namespace Mirle.Agv.View
                 pB_StandStill.BackColor = System.Drawing.Color.Green;
             else
                 pB_StandStill.BackColor = System.Drawing.Color.LightGray;
+
+            if (error)
+                pB_Error.BackColor = System.Drawing.Color.LightGray;
+            else
+                pB_Error.BackColor = System.Drawing.Color.DarkRed;
         }
     }
 }

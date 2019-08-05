@@ -21,7 +21,6 @@ namespace Mirle.Agv.View
         private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
-        private ManualMoveCmdForm manualMoveCmdForm;
         private MoveControlHandler moveControlHandler;
         private MiddlerForm middlerForm;
         private AlarmForm alarmForm;
@@ -29,7 +28,8 @@ namespace Mirle.Agv.View
         private PlcForm plcForm;
         private PlcAgent plcAgent;
         private MCProtocol mcProtocol;
-        private JogPitchForm jogPitchForm;
+        private MoveCommandDebugMode moveCommandDebugMode;
+        private JogPitch jogPitch;
         //private MapForm mapForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
@@ -93,8 +93,8 @@ namespace Mirle.Agv.View
 
         private void InitialForms()
         {
-            manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler, theMapInfo);
-            manualMoveCmdForm.WindowState = FormWindowState.Normal;
+            moveCommandDebugMode = new MoveCommandDebugMode(moveControlHandler, theMapInfo);
+            moveCommandDebugMode.WindowState = FormWindowState.Normal;
 
             middlerForm = new MiddlerForm(mainFlowHandler);
             middlerForm.WindowState = FormWindowState.Normal;
@@ -105,8 +105,8 @@ namespace Mirle.Agv.View
             plcForm = new PlcForm(mcProtocol, plcAgent);
             plcForm.WindowState = FormWindowState.Normal;
 
-            jogPitchForm = new JogPitchForm(moveControlHandler);
-            jogPitchForm.WindowState = FormWindowState.Normal;
+            jogPitch = new JogPitch(moveControlHandler);
+            jogPitch.WindowState = FormWindowState.Normal;
 
             numPositionX.Maximum = decimal.MaxValue;
             numPositionY.Maximum = decimal.MaxValue;
@@ -341,12 +341,12 @@ namespace Mirle.Agv.View
 
         private void ManualMoveCmdPage_Click(object sender, EventArgs e)
         {
-            if (manualMoveCmdForm.IsDisposed)
+            if (moveCommandDebugMode.IsDisposed)
             {
-                manualMoveCmdForm = new ManualMoveCmdForm(mainFlowHandler, theMapInfo);
+                moveCommandDebugMode = new MoveCommandDebugMode(moveControlHandler, theMapInfo);
             }
-            manualMoveCmdForm.BringToFront();
-            manualMoveCmdForm.Show();
+            moveCommandDebugMode.BringToFront();
+            moveCommandDebugMode.Show();
         }
 
         private void AlarmPage_Click(object sender, EventArgs e)
@@ -371,12 +371,12 @@ namespace Mirle.Agv.View
 
         private void JogPage_Click(object sender, EventArgs e)
         {
-            if (jogPitchForm.IsDisposed)
+            if (jogPitch.IsDisposed)
             {
-                jogPitchForm = new JogPitchForm(moveControlHandler);
+                jogPitch = new JogPitch(moveControlHandler);
             }
-            jogPitchForm.BringToFront();
-            jogPitchForm.Show();
+            jogPitch.BringToFront();
+            jogPitch.Show();
         }
 
         public delegate void DelRenewUI(Control control, string msg);
@@ -640,6 +640,10 @@ namespace Mirle.Agv.View
                 }
             }
         }
-       
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }

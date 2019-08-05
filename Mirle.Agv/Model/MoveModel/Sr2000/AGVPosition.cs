@@ -14,8 +14,9 @@ namespace Mirle.Agv.Model
         public int ScanTime { get; set; }
         public DateTime GetDataTime { get; set; }
         public uint Count { get; set; }
+        public double BarcodeAngleInMap { get; set; }
 
-        public AGVPosition(MapPosition agvPosition, double agvAngle, double barcodeAngle, int scanTime, DateTime getDataTime, uint count)
+        public AGVPosition(MapPosition agvPosition, double agvAngle, double barcodeAngle, int scanTime, DateTime getDataTime, uint count, double barcodeAngleInMap)
         {
             Position = agvPosition;
             AGVAngle = agvAngle;
@@ -23,6 +24,12 @@ namespace Mirle.Agv.Model
             ScanTime = scanTime;
             GetDataTime = getDataTime;
             Count = count;
+            BarcodeAngleInMap = barcodeAngleInMap;
+        }
+
+        public AGVPosition()
+        {
+            Position = new MapPosition();
         }
     }
 }

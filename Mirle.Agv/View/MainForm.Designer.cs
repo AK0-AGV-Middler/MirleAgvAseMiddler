@@ -48,7 +48,6 @@
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.btnYflip = new System.Windows.Forms.Button();
             this.btnXflip = new System.Windows.Forms.Button();
@@ -62,8 +61,6 @@
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.listAskingReserveSections = new System.Windows.Forms.ListBox();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
-            this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
-            this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
             this.gbTrackingPosition = new System.Windows.Forms.GroupBox();
             this.btnStartTrackingPosition = new System.Windows.Forms.Button();
             this.btnResumeTrackingPostiion = new System.Windows.Forms.Button();
@@ -76,12 +73,6 @@
             this.numPositionY = new System.Windows.Forms.NumericUpDown();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
-            this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucDeltaPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucEncoderPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
-            this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
             this.numPositionX = new System.Windows.Forms.NumericUpDown();
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.radOnline = new System.Windows.Forms.RadioButton();
@@ -90,6 +81,16 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
+            this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
+            this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucDeltaPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucEncoderPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
+            this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -99,9 +100,9 @@
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.gbPerformanceCounter.SuspendLayout();
             this.gbTrackingPosition.SuspendLayout();
@@ -109,6 +110,7 @@
             this.gbVehicleLocation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
             this.gbConnection.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -196,41 +198,41 @@
             // JogPage
             // 
             this.JogPage.Name = "JogPage";
-            this.JogPage.Size = new System.Drawing.Size(146, 22);
-            this.JogPage.Text = "Jog";
+            this.JogPage.Size = new System.Drawing.Size(180, 22);
+            this.JogPage.Text = "JogPitch";
             this.JogPage.Click += new System.EventHandler(this.JogPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(146, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(180, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // MiddlerPage
             // 
             this.MiddlerPage.Name = "MiddlerPage";
-            this.MiddlerPage.Size = new System.Drawing.Size(146, 22);
+            this.MiddlerPage.Size = new System.Drawing.Size(180, 22);
             this.MiddlerPage.Text = "通訊";
             this.MiddlerPage.Click += new System.EventHandler(this.MiddlerPage_Click);
             // 
             // ManualMoveCmdPage
             // 
             this.ManualMoveCmdPage.Name = "ManualMoveCmdPage";
-            this.ManualMoveCmdPage.Size = new System.Drawing.Size(146, 22);
-            this.ManualMoveCmdPage.Text = "手動測試動令";
+            this.ManualMoveCmdPage.Size = new System.Drawing.Size(208, 22);
+            this.ManualMoveCmdPage.Text = "半自動命令DebugMode";
             this.ManualMoveCmdPage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
             // 
             // VehicleStatusPage
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(146, 22);
+            this.VehicleStatusPage.Size = new System.Drawing.Size(180, 22);
             this.VehicleStatusPage.Text = "車輛狀態";
             // 
             // PlcPage
             // 
             this.PlcPage.Name = "PlcPage";
-            this.PlcPage.Size = new System.Drawing.Size(146, 22);
+            this.PlcPage.Size = new System.Drawing.Size(180, 22);
             this.PlcPage.Text = "Plc";
             this.PlcPage.Click += new System.EventHandler(this.PlcPage_Click);
             // 
@@ -287,16 +289,6 @@
             this.splitContainer3.SplitterDistance = 677;
             this.splitContainer3.SplitterIncrement = 10;
             this.splitContainer3.TabIndex = 0;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1920, 1024);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             // 
             // richTextBox1
             // 
@@ -424,6 +416,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
+            this.splitContainer2.Panel2.Controls.Add(this.button1);
             this.splitContainer2.Size = new System.Drawing.Size(722, 1017);
             this.splitContainer2.SplitterDistance = 677;
             this.splitContainer2.TabIndex = 0;
@@ -448,24 +441,6 @@
             this.gbPerformanceCounter.TabIndex = 10;
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
-            // 
-            // ucPerformanceCounterRam
-            // 
-            this.ucPerformanceCounterRam.Location = new System.Drawing.Point(7, 55);
-            this.ucPerformanceCounterRam.Name = "ucPerformanceCounterRam";
-            this.ucPerformanceCounterRam.Size = new System.Drawing.Size(187, 30);
-            this.ucPerformanceCounterRam.TabIndex = 1;
-            this.ucPerformanceCounterRam.UcName = "RAM";
-            this.ucPerformanceCounterRam.UcValue = "";
-            // 
-            // ucPerformanceCounterCpu
-            // 
-            this.ucPerformanceCounterCpu.Location = new System.Drawing.Point(6, 19);
-            this.ucPerformanceCounterCpu.Name = "ucPerformanceCounterCpu";
-            this.ucPerformanceCounterCpu.Size = new System.Drawing.Size(187, 30);
-            this.ucPerformanceCounterCpu.TabIndex = 0;
-            this.ucPerformanceCounterCpu.UcName = "CPU";
-            this.ucPerformanceCounterCpu.UcValue = "";
             // 
             // gbTrackingPosition
             // 
@@ -594,60 +569,6 @@
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "VehicleLocation";
             // 
-            // ucRealPosition
-            // 
-            this.ucRealPosition.Location = new System.Drawing.Point(0, 181);
-            this.ucRealPosition.Name = "ucRealPosition";
-            this.ucRealPosition.Size = new System.Drawing.Size(194, 26);
-            this.ucRealPosition.TabIndex = 5;
-            this.ucRealPosition.UcName = "label1";
-            this.ucRealPosition.UcValue = "";
-            // 
-            // ucDeltaPosition
-            // 
-            this.ucDeltaPosition.Location = new System.Drawing.Point(0, 149);
-            this.ucDeltaPosition.Name = "ucDeltaPosition";
-            this.ucDeltaPosition.Size = new System.Drawing.Size(194, 26);
-            this.ucDeltaPosition.TabIndex = 4;
-            this.ucDeltaPosition.UcName = "label1";
-            this.ucDeltaPosition.UcValue = "";
-            // 
-            // ucBarcodePosition
-            // 
-            this.ucBarcodePosition.Location = new System.Drawing.Point(0, 117);
-            this.ucBarcodePosition.Name = "ucBarcodePosition";
-            this.ucBarcodePosition.Size = new System.Drawing.Size(194, 26);
-            this.ucBarcodePosition.TabIndex = 3;
-            this.ucBarcodePosition.UcName = "label1";
-            this.ucBarcodePosition.UcValue = "";
-            // 
-            // ucEncoderPosition
-            // 
-            this.ucEncoderPosition.Location = new System.Drawing.Point(0, 85);
-            this.ucEncoderPosition.Name = "ucEncoderPosition";
-            this.ucEncoderPosition.Size = new System.Drawing.Size(194, 26);
-            this.ucEncoderPosition.TabIndex = 2;
-            this.ucEncoderPosition.UcName = "label1";
-            this.ucEncoderPosition.UcValue = "";
-            // 
-            // ucMapAddress
-            // 
-            this.ucMapAddress.Location = new System.Drawing.Point(0, 53);
-            this.ucMapAddress.Name = "ucMapAddress";
-            this.ucMapAddress.Size = new System.Drawing.Size(194, 26);
-            this.ucMapAddress.TabIndex = 1;
-            this.ucMapAddress.UcName = "label1";
-            this.ucMapAddress.UcValue = "";
-            // 
-            // ucMapSection
-            // 
-            this.ucMapSection.Location = new System.Drawing.Point(0, 21);
-            this.ucMapSection.Name = "ucMapSection";
-            this.ucMapSection.Size = new System.Drawing.Size(194, 26);
-            this.ucMapSection.TabIndex = 0;
-            this.ucMapSection.UcName = "label1";
-            this.ucMapSection.UcValue = "";
-            // 
             // numPositionX
             // 
             this.numPositionX.Location = new System.Drawing.Point(39, 412);
@@ -723,6 +644,98 @@
             this.timer1.Interval = 250;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // ucPerformanceCounterRam
+            // 
+            this.ucPerformanceCounterRam.Location = new System.Drawing.Point(7, 55);
+            this.ucPerformanceCounterRam.Name = "ucPerformanceCounterRam";
+            this.ucPerformanceCounterRam.Size = new System.Drawing.Size(187, 30);
+            this.ucPerformanceCounterRam.TabIndex = 1;
+            this.ucPerformanceCounterRam.UcName = "RAM";
+            this.ucPerformanceCounterRam.UcValue = "";
+            // 
+            // ucPerformanceCounterCpu
+            // 
+            this.ucPerformanceCounterCpu.Location = new System.Drawing.Point(6, 19);
+            this.ucPerformanceCounterCpu.Name = "ucPerformanceCounterCpu";
+            this.ucPerformanceCounterCpu.Size = new System.Drawing.Size(187, 30);
+            this.ucPerformanceCounterCpu.TabIndex = 0;
+            this.ucPerformanceCounterCpu.UcName = "CPU";
+            this.ucPerformanceCounterCpu.UcValue = "";
+            // 
+            // ucRealPosition
+            // 
+            this.ucRealPosition.Location = new System.Drawing.Point(0, 181);
+            this.ucRealPosition.Name = "ucRealPosition";
+            this.ucRealPosition.Size = new System.Drawing.Size(194, 26);
+            this.ucRealPosition.TabIndex = 5;
+            this.ucRealPosition.UcName = "label1";
+            this.ucRealPosition.UcValue = "";
+            // 
+            // ucDeltaPosition
+            // 
+            this.ucDeltaPosition.Location = new System.Drawing.Point(0, 149);
+            this.ucDeltaPosition.Name = "ucDeltaPosition";
+            this.ucDeltaPosition.Size = new System.Drawing.Size(194, 26);
+            this.ucDeltaPosition.TabIndex = 4;
+            this.ucDeltaPosition.UcName = "label1";
+            this.ucDeltaPosition.UcValue = "";
+            // 
+            // ucBarcodePosition
+            // 
+            this.ucBarcodePosition.Location = new System.Drawing.Point(0, 117);
+            this.ucBarcodePosition.Name = "ucBarcodePosition";
+            this.ucBarcodePosition.Size = new System.Drawing.Size(194, 26);
+            this.ucBarcodePosition.TabIndex = 3;
+            this.ucBarcodePosition.UcName = "label1";
+            this.ucBarcodePosition.UcValue = "";
+            // 
+            // ucEncoderPosition
+            // 
+            this.ucEncoderPosition.Location = new System.Drawing.Point(0, 85);
+            this.ucEncoderPosition.Name = "ucEncoderPosition";
+            this.ucEncoderPosition.Size = new System.Drawing.Size(194, 26);
+            this.ucEncoderPosition.TabIndex = 2;
+            this.ucEncoderPosition.UcName = "label1";
+            this.ucEncoderPosition.UcValue = "";
+            // 
+            // ucMapAddress
+            // 
+            this.ucMapAddress.Location = new System.Drawing.Point(0, 53);
+            this.ucMapAddress.Name = "ucMapAddress";
+            this.ucMapAddress.Size = new System.Drawing.Size(194, 26);
+            this.ucMapAddress.TabIndex = 1;
+            this.ucMapAddress.UcName = "label1";
+            this.ucMapAddress.UcValue = "";
+            // 
+            // ucMapSection
+            // 
+            this.ucMapSection.Location = new System.Drawing.Point(0, 21);
+            this.ucMapSection.Name = "ucMapSection";
+            this.ucMapSection.Size = new System.Drawing.Size(194, 26);
+            this.ucMapSection.TabIndex = 0;
+            this.ucMapSection.UcName = "label1";
+            this.ucMapSection.UcValue = "";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(1920, 1024);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(12, 21);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(57, 102);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -749,8 +762,8 @@
             this.splitContainer3.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.gbPerformanceCounter.ResumeLayout(false);
@@ -760,6 +773,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -828,5 +842,6 @@
         private UcLabelTextBox ucPerformanceCounterCpu;
         private System.Windows.Forms.ToolStripMenuItem PlcPage;
         private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.Button button1;
     }
 }

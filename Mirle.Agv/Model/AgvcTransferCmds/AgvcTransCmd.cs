@@ -13,7 +13,7 @@ namespace Mirle.Agv.Model.TransferCmds
     [Serializable]
     public class AgvcTransCmd
     {
-        public EnumAgvcTransCommandType CommandType { get; set; }
+        public EnumAgvcTransCommandType EnumCommandType { get; set; }
         public List<string> ToLoadSections { get; set; } = new List<string>();
         public List<string> ToUnloadSections { get; set; } = new List<string>();
         public List<string> ToLoadAddresses { get; set; } = new List<string>();
@@ -46,22 +46,22 @@ namespace Mirle.Agv.Model.TransferCmds
             switch (activeType)
             {
                 case ActiveType.Move:
-                    CommandType = EnumAgvcTransCommandType.Move;
+                    EnumCommandType = EnumAgvcTransCommandType.Move;
                     break;
                 case ActiveType.Load:
-                    CommandType = EnumAgvcTransCommandType.Load;
+                    EnumCommandType = EnumAgvcTransCommandType.Load;
                     break;
                 case ActiveType.Unload:
-                    CommandType = EnumAgvcTransCommandType.Unload;
+                    EnumCommandType = EnumAgvcTransCommandType.Unload;
                     break;
                 case ActiveType.Loadunload:
-                    CommandType = EnumAgvcTransCommandType.LoadUnload;
+                    EnumCommandType = EnumAgvcTransCommandType.LoadUnload;
                     break;
                 case ActiveType.Home:
-                    CommandType = EnumAgvcTransCommandType.Home;
+                    EnumCommandType = EnumAgvcTransCommandType.Home;
                     break;
                 case ActiveType.Override:
-                    CommandType = EnumAgvcTransCommandType.Override;
+                    EnumCommandType = EnumAgvcTransCommandType.Override;
                     break;
                 case ActiveType.Mtlhome:
                 case ActiveType.Movetomtl:
@@ -70,7 +70,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    CommandType = EnumAgvcTransCommandType.Else;
+                    EnumCommandType = EnumAgvcTransCommandType.Else;
                     break;
             }
         }

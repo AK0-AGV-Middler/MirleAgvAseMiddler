@@ -1,6 +1,6 @@
 ﻿namespace Mirle.Agv.View
 {
-    partial class JogPitchForm
+    partial class JogPitch
     {
         /// <summary>
         /// Required designer variable.
@@ -87,12 +87,8 @@
             this.rB_JogPitch_MoveVelocity_50 = new System.Windows.Forms.RadioButton();
             this.gB_JogPitch_ElmoFunction = new System.Windows.Forms.GroupBox();
             this.gB_JogPitch_JogPitch = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.tB_JogPitch_RealEncoder = new System.Windows.Forms.TextBox();
-            this.tB_JogPitch_Delta = new System.Windows.Forms.TextBox();
-            this.tB_JogPitch_RealPosition = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
+            this.button_JogPitch_Home = new System.Windows.Forms.Button();
+            this.button_JogPitch_ChangeFormSize = new System.Windows.Forms.Button();
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -426,7 +422,7 @@
             this.button_JogPitch_Normal.Name = "button_JogPitch_Normal";
             this.button_JogPitch_Normal.Size = new System.Drawing.Size(90, 80);
             this.button_JogPitch_Normal.TabIndex = 117;
-            this.button_JogPitch_Normal.Text = "四軸同動";
+            this.button_JogPitch_Normal.Text = "四軸\r\n同動";
             this.button_JogPitch_Normal.UseVisualStyleBackColor = true;
             this.button_JogPitch_Normal.Click += new System.EventHandler(this.button_JogPitch_Normal_Click);
             // 
@@ -437,7 +433,7 @@
             this.button_JogPitch_ForwardWheel.Name = "button_JogPitch_ForwardWheel";
             this.button_JogPitch_ForwardWheel.Size = new System.Drawing.Size(90, 80);
             this.button_JogPitch_ForwardWheel.TabIndex = 118;
-            this.button_JogPitch_ForwardWheel.Text = "前輪轉動";
+            this.button_JogPitch_ForwardWheel.Text = "前輪\r\n轉動";
             this.button_JogPitch_ForwardWheel.UseVisualStyleBackColor = true;
             this.button_JogPitch_ForwardWheel.Click += new System.EventHandler(this.button_JogPitch_ForwardWheel_Click);
             // 
@@ -448,7 +444,7 @@
             this.button_JogPitch_BackwardWheel.Name = "button_JogPitch_BackwardWheel";
             this.button_JogPitch_BackwardWheel.Size = new System.Drawing.Size(90, 80);
             this.button_JogPitch_BackwardWheel.TabIndex = 119;
-            this.button_JogPitch_BackwardWheel.Text = "後輪轉動";
+            this.button_JogPitch_BackwardWheel.Text = "後輪\r\n轉動";
             this.button_JogPitch_BackwardWheel.UseVisualStyleBackColor = true;
             this.button_JogPitch_BackwardWheel.Click += new System.EventHandler(this.button_JogPitch_BackwardWheel_Click);
             // 
@@ -459,7 +455,7 @@
             this.button_JogPitch_SpinTurn.Name = "button_JogPitch_SpinTurn";
             this.button_JogPitch_SpinTurn.Size = new System.Drawing.Size(90, 80);
             this.button_JogPitch_SpinTurn.TabIndex = 120;
-            this.button_JogPitch_SpinTurn.Text = "原地旋轉";
+            this.button_JogPitch_SpinTurn.Text = "原地\r\n旋轉";
             this.button_JogPitch_SpinTurn.UseVisualStyleBackColor = true;
             this.button_JogPitch_SpinTurn.Click += new System.EventHandler(this.button_JogPitch_SpinTurn_Click);
             // 
@@ -566,7 +562,7 @@
             // 
             this.tB_JogPitch_Velocity.Enabled = false;
             this.tB_JogPitch_Velocity.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tB_JogPitch_Velocity.Location = new System.Drawing.Point(176, 412);
+            this.tB_JogPitch_Velocity.Location = new System.Drawing.Point(158, 412);
             this.tB_JogPitch_Velocity.Name = "tB_JogPitch_Velocity";
             this.tB_JogPitch_Velocity.Size = new System.Drawing.Size(149, 27);
             this.tB_JogPitch_Velocity.TabIndex = 106;
@@ -576,7 +572,7 @@
             // tB_JogPitch_Distance
             // 
             this.tB_JogPitch_Distance.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tB_JogPitch_Distance.Location = new System.Drawing.Point(176, 375);
+            this.tB_JogPitch_Distance.Location = new System.Drawing.Point(158, 375);
             this.tB_JogPitch_Distance.Name = "tB_JogPitch_Distance";
             this.tB_JogPitch_Distance.Size = new System.Drawing.Size(149, 27);
             this.tB_JogPitch_Distance.TabIndex = 105;
@@ -703,6 +699,7 @@
             // 
             // gB_JogPitch_JogPitch
             // 
+            this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_Home);
             this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_SpinTurn);
             this.gB_JogPitch_JogPitch.Controls.Add(this.groupBox2);
             this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_Normal);
@@ -728,69 +725,40 @@
             this.gB_JogPitch_JogPitch.TabStop = false;
             this.gB_JogPitch_JogPitch.Text = "JogPitch";
             // 
-            // label1
+            // button_JogPitch_Home
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(18, 519);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(29, 12);
-            this.label1.TabIndex = 133;
-            this.label1.Text = "Delta";
+            this.button_JogPitch_Home.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_JogPitch_Home.Location = new System.Drawing.Point(313, 371);
+            this.button_JogPitch_Home.Name = "button_JogPitch_Home";
+            this.button_JogPitch_Home.Size = new System.Drawing.Size(90, 68);
+            this.button_JogPitch_Home.TabIndex = 131;
+            this.button_JogPitch_Home.Text = "回到軌\r\n道中央";
+            this.button_JogPitch_Home.UseVisualStyleBackColor = true;
+            this.button_JogPitch_Home.Click += new System.EventHandler(this.button_JogPitch_Home_Click);
             // 
-            // label2
+            // button_JogPitch_ChangeFormSize
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(18, 489);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(65, 12);
-            this.label2.TabIndex = 134;
-            this.label2.Text = "RealEncoder";
-            // 
-            // tB_JogPitch_RealEncoder
-            // 
-            this.tB_JogPitch_RealEncoder.Location = new System.Drawing.Point(96, 486);
-            this.tB_JogPitch_RealEncoder.Name = "tB_JogPitch_RealEncoder";
-            this.tB_JogPitch_RealEncoder.Size = new System.Drawing.Size(66, 22);
-            this.tB_JogPitch_RealEncoder.TabIndex = 135;
-            // 
-            // tB_JogPitch_Delta
-            // 
-            this.tB_JogPitch_Delta.Location = new System.Drawing.Point(96, 516);
-            this.tB_JogPitch_Delta.Name = "tB_JogPitch_Delta";
-            this.tB_JogPitch_Delta.Size = new System.Drawing.Size(66, 22);
-            this.tB_JogPitch_Delta.TabIndex = 136;
-            // 
-            // tB_JogPitch_RealPosition
-            // 
-            this.tB_JogPitch_RealPosition.Location = new System.Drawing.Point(264, 498);
-            this.tB_JogPitch_RealPosition.Name = "tB_JogPitch_RealPosition";
-            this.tB_JogPitch_RealPosition.Size = new System.Drawing.Size(66, 22);
-            this.tB_JogPitch_RealPosition.TabIndex = 137;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(196, 501);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(62, 12);
-            this.label3.TabIndex = 138;
-            this.label3.Text = "real position";
+            this.button_JogPitch_ChangeFormSize.Location = new System.Drawing.Point(708, 218);
+            this.button_JogPitch_ChangeFormSize.Name = "button_JogPitch_ChangeFormSize";
+            this.button_JogPitch_ChangeFormSize.Size = new System.Drawing.Size(16, 48);
+            this.button_JogPitch_ChangeFormSize.TabIndex = 133;
+            this.button_JogPitch_ChangeFormSize.Text = ">\r\n>\r\n>";
+            this.button_JogPitch_ChangeFormSize.UseVisualStyleBackColor = true;
+            this.button_JogPitch_ChangeFormSize.Click += new System.EventHandler(this.button_JogPitch_ChangeFormSize_Click);
             // 
             // JogPitch
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1235, 583);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.tB_JogPitch_RealPosition);
-            this.Controls.Add(this.tB_JogPitch_Delta);
-            this.Controls.Add(this.tB_JogPitch_RealEncoder);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(724, 481);
+            this.Controls.Add(this.button_JogPitch_ChangeFormSize);
             this.Controls.Add(this.gB_JogPitch_ElmoFunction);
             this.Controls.Add(this.gB_JogPitch_Sr2000);
             this.Controls.Add(this.groupBox_SingleAxis);
             this.Controls.Add(this.gB_JogPitch_JogPitch);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "JogPitch";
             this.Text = "JogPitch";
             this.Load += new System.EventHandler(this.JogPitch_Load);
@@ -806,7 +774,6 @@
             this.gB_JogPitch_JogPitch.ResumeLayout(false);
             this.gB_JogPitch_JogPitch.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -870,11 +837,7 @@
         private System.Windows.Forms.GroupBox gB_JogPitch_ElmoFunction;
         private System.Windows.Forms.GroupBox gB_JogPitch_JogPitch;
         private JogPitchAxis[] allAxis;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox tB_JogPitch_RealEncoder;
-        private System.Windows.Forms.TextBox tB_JogPitch_Delta;
-        private System.Windows.Forms.TextBox tB_JogPitch_RealPosition;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button button_JogPitch_Home;
+        private System.Windows.Forms.Button button_JogPitch_ChangeFormSize;
     }
 }

@@ -12,13 +12,14 @@ namespace Mirle.Agv.Model
         public double Velocity { get; set; }
         public double ModifyTheta { get; set; }
         public double ModifySectionDeviation { get; set; }
-        public EnumLineReviseType ReviseType { get; set; }
+        public LineReviseType ReviseType { get; set; }
         public double ReviseValue { get; set; }
         public double MaxTheta { get; set; }
         public double ThetaCommandSpeed { get; set; }
         public bool OntimeReviseFlag { get; set; }
+        public bool DirFlag { get; set; }
 
-        public ReviseParameter(OntimeReviseConfig config, double velocity, bool flag = false)
+        public ReviseParameter(OntimeReviseConfig config, double velocity, bool dirFlag, bool flag = false)
         {
             if (config == null)
                 return;
@@ -45,9 +46,10 @@ namespace Mirle.Agv.Model
 
             ModifyTheta = velocity / config.ModifyPriority.Theta;
             ModifySectionDeviation = velocity / config.ModifyPriority.SectionDeviation;
-            ReviseType = EnumLineReviseType.None;
+            ReviseType = LineReviseType.None;
             ReviseValue = 0;
             ThetaCommandSpeed = 10;
+            DirFlag = dirFlag;
             OntimeReviseFlag = flag;
         }
 

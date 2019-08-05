@@ -10,6 +10,8 @@ namespace Mirle.Agv.Model
     {
         public double Theta { get; set; }
         public double SectionDeviation { get; set; }
+        public double BarodeAngleInMap { get; set; }
+        public double AGVAngleInMap { get; set; }
 
         public ThetaSectionDeviation(double theta, double sectionDeviation)
         {
