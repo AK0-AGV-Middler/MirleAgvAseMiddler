@@ -415,7 +415,7 @@ namespace Mirle.Agv.Controller
             double x = end.X + (start.X - end.X) * endDistance / distance;
             double y = end.Y + (start.Y - end.Y) * endDistance / distance;
 
-            MapPosition returnData = new MapPosition((float)x, (float)y);
+            MapPosition returnData = new MapPosition((double)x, (double)y);
             return returnData;
         }
 
@@ -714,7 +714,7 @@ namespace Mirle.Agv.Controller
                                 case EnumAddressAction.SlowStop:
                                     if (commandDistance < 2 * GetSLowStopDistance())
                                     { // 距離非常短,不做加速到站前減速,改為直接用80速度慢慢走,在停止(和正常情況相比會缺少VChange command).
-                                        oneceMoveCommandList[listCount].SectionSpeedLimits[0] = (float)moveControlConfig.EQVelocity;
+                                        oneceMoveCommandList[listCount].SectionSpeedLimits[0] = (double)moveControlConfig.EQVelocity;
 
 
                                         distance = GetVChangeDistance(nowVelocity, 0, moveControlConfig.EQVelocity, stTotalDistance);

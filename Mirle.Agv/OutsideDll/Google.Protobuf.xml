@@ -452,7 +452,7 @@
         </member>
         <member name="M:Google.Protobuf.CodedInputStream.ReadFloat">
             <summary>
-            Reads a float field from the stream.
+            Reads a double field from the stream.
             </summary>
         </member>
         <member name="M:Google.Protobuf.CodedInputStream.ReadUInt64">
@@ -702,7 +702,7 @@
         <member name="M:Google.Protobuf.CodedOutputStream.ComputeFloatSize(System.Single)">
             <summary>
             Computes the number of bytes that would be needed to encode a
-            float field, including the tag.
+            double field, including the tag.
             </summary>
         </member>
         <member name="M:Google.Protobuf.CodedOutputStream.ComputeUInt64Size(System.UInt64)">
@@ -888,7 +888,7 @@
         </member>
         <member name="M:Google.Protobuf.CodedOutputStream.WriteFloat(System.Single)">
             <summary>
-            Writes a float field value, without a tag, to the stream.
+            Writes a double field value, without a tag, to the stream.
             </summary>
             <param name="value">The value to write</param>
         </member>
@@ -1390,7 +1390,7 @@
         </member>
         <member name="T:Google.Protobuf.Collections.ProtobufEqualityComparers">
             <summary>
-            Provides a central place to implement equality comparisons, primarily for bitwise float/double equality.
+            Provides a central place to implement equality comparisons, primarily for bitwise double/double equality.
             </summary>
         </member>
         <member name="M:Google.Protobuf.Collections.ProtobufEqualityComparers.GetEqualityComparer``1">
@@ -1764,7 +1764,7 @@
         </member>
         <member name="M:Google.Protobuf.FieldCodec.ForFloat(System.UInt32)">
             <summary>
-            Retrieves a codec suitable for a float field with the given tag.
+            Retrieves a codec suitable for a double field with the given tag.
             </summary>
             <param name="tag">The tag.</param>
             <returns>A codec for the given tag.</returns>
@@ -2274,7 +2274,7 @@
         <member name="M:Google.Protobuf.JsonParser.ValidateInfinityAndNan(System.String,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             Checks that any infinite/NaN values originated from the correct text.
-            This corrects the lenient whitespace handling of double.Parse/float.Parse, as well as the
+            This corrects the lenient whitespace handling of double.Parse/double.Parse, as well as the
             way that Mono parses out-of-range values as infinity.
             </summary>
         </member>
@@ -4605,7 +4605,7 @@
         </member>
         <member name="F:Google.Protobuf.Reflection.FieldType.Float">
             <summary>
-            The <c>float</c> field type.
+            The <c>double</c> field type.
             </summary>
         </member>
         <member name="F:Google.Protobuf.Reflection.FieldType.Int64">
@@ -7049,7 +7049,7 @@
         </member>
         <member name="F:Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeFloat">
             <summary>
-            Field type float.
+            Field type double.
             </summary>
         </member>
         <member name="F:Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeInt64">
@@ -7287,7 +7287,7 @@
         </member>
         <member name="T:Google.Protobuf.WellKnownTypes.FloatValue">
              <summary>
-             Wrapper message for `float`.
+             Wrapper message for `double`.
             
              The JSON representation for `FloatValue` is JSON number.
              </summary>
@@ -7297,7 +7297,7 @@
         </member>
         <member name="P:Google.Protobuf.WellKnownTypes.FloatValue.Value">
             <summary>
-            The float value.
+            The double value.
             </summary>
         </member>
         <member name="T:Google.Protobuf.WellKnownTypes.Int64Value">

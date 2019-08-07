@@ -1,6 +1,6 @@
 ﻿namespace Mirle.Agv.View
 {
-    partial class JogPitch
+    partial class JogPitchForm
     {
         /// <summary>
         /// Required designer variable.
@@ -401,7 +401,6 @@
             // 
             // timerUpdate
             // 
-            this.timerUpdate.Enabled = true;
             this.timerUpdate.Tick += new System.EventHandler(this.timerUpdate_Tick);
             // 
             // button_JogPitch_STOP

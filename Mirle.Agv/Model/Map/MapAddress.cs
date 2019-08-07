@@ -12,7 +12,7 @@ namespace Mirle.Agv.Model
         //Id, Barcode, PositionX, PositionY, IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin
         public string Id { get; set; } = "Empty";
         public MapPosition Position { get; set; } = new MapPosition();
-        public float Barcode { get; set; }
+        public double Barcode { get; set; }
         public bool IsWorkStation { get; set; }
         public bool CanLeftLoad { get; set; }
         public bool CanLeftUnload { get; set; }

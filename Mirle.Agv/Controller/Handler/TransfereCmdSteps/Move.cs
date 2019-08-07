@@ -7,7 +7,7 @@ using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
-    public class Move : ITransferCmdStep
+    public class Move : ITransferStatus
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
@@ -17,14 +17,13 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
             switch (type)
             {
                 case EnumTransCmdType.Move:                   
-                    //TODO:                   
-                    //Check if move complete
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
                     mainFlowHandler.StopCharge();
                     mainFlowHandler.PrepareForAskingReserve(moveCmd);
-                    mainFlowHandler.PublishTransferMoveEvent(moveCmd);
-                    mainFlowHandler.StartTrackingPosition();
-                    mainFlowHandler.MiddleAgent_ResumeAskingReserve();                    
+                    mainFlowHandler.CallMoveControlWork(moveCmd);
+                    //mainFlowHandler.StartTrackingPosition();
+                    //mainFlowHandler.MiddleAgent_ResumeAskingReserve();
+                    mainFlowHandler.MiddleAgent_RestartAskingReserve();
                     break;
                 case EnumTransCmdType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());

@@ -9,16 +9,16 @@ namespace Mirle.Agv.Model
     [Serializable]
     public class MapPosition
     {
-        public float X { get; set; }
-        public float Y { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
 
-        public MapPosition(float x,float y)
+        public MapPosition(double x, double y)
         {
             X = x;
             Y = y;
         }
 
-        public MapPosition() : this(0, 0)
+        public MapPosition() : this(0d, 0d)
         {
 
         }

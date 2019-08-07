@@ -1,6 +1,6 @@
 ﻿namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
-    public interface ITransferCmdStep
+    public interface ITransferStatus
     {
         void DoTransfer(MainFlowHandler mainFlowHandler);
     }

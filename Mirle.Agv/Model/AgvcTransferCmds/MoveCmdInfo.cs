@@ -12,7 +12,7 @@ namespace Mirle.Agv.Model.TransferCmds
     {
         public List<MapPosition> AddressPositions { get; set; } = new List<MapPosition>();
         public List<EnumAddressAction> AddressActions { get; set; } = new List<EnumAddressAction>();
-        public List<float> SectionSpeedLimits { get; set; } = new List<float>();
+        public List<double> SectionSpeedLimits { get; set; } = new List<double>();
         public int PredictVehicleAngle { get; set; } = 0;
         public List<string> SectionIds { get; set; } = new List<string>();
         public List<string> AddressIds { get; set; } = new List<string>();
@@ -46,15 +46,33 @@ namespace Mirle.Agv.Model.TransferCmds
             }
         }
 
+        public void SetNextUnloadAddressPositions()
+        {
+            AddressPositions = new List<MapPosition>();
+
+            try
+            {
+                for (int i = 0; i < AddressIds.Count; i++)
+                {
+                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]].DeepClone();
+                    AddressPositions.Add(mapAddress.Position);
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+
         public void SetSectionSpeedLimits()
         {
-            SectionSpeedLimits = new List<float>();
+            SectionSpeedLimits = new List<double>();
             try
             {
                 for (int i = 0; i < SectionIds.Count; i++)
                 {
                     MapSection mapSection = theMapInfo.allMapSections[SectionIds[i]];
-                    float SpeedLimit = mapSection.Speed;
+                    double SpeedLimit = mapSection.Speed;
                     SectionSpeedLimits.Add(SpeedLimit);
                 }
             }

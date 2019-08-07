@@ -153,17 +153,23 @@
     <Compile Include="Model\AgvcTransferCmds\MoveCmdInfo.cs" />
     <Compile Include="Model\AgvcTransferCmds\TransCmd.cs" />
     <Compile Include="Model\AgvcTransferCmds\UnloadCmdInfo.cs" />
-    <Compile Include="View\JogPitch.cs">
+    <Compile Include="UcThreadPad.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UcThreadPad.Designer.cs">
+      <DependentUpon>UcThreadPad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\JogPitchForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="View\JogPitch.designer.cs">
-      <DependentUpon>JogPitch.cs</DependentUpon>
+    <Compile Include="View\JogPitchForm.designer.cs">
+      <DependentUpon>JogPitchForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\MoveCommandDebugMode.cs">
+    <Compile Include="View\MoveCommandDebugModeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="View\MoveCommandDebugMode.designer.cs">
-      <DependentUpon>MoveCommandDebugMode.cs</DependentUpon>
+    <Compile Include="View\MoveCommandDebugModeForm.designer.cs">
+      <DependentUpon>MoveCommandDebugModeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="View\UserControls\UcAddressImage.cs">
       <SubType>UserControl</SubType>
@@ -252,14 +258,17 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="UcThreadPad.resx">
+      <DependentUpon>UcThreadPad.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\AlarmForm.resx">
       <DependentUpon>AlarmForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\JogPitch.resx">
-      <DependentUpon>JogPitch.cs</DependentUpon>
+    <EmbeddedResource Include="View\JogPitchForm.resx">
+      <DependentUpon>JogPitchForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\MoveCommandDebugMode.resx">
-      <DependentUpon>MoveCommandDebugMode.cs</DependentUpon>
+    <EmbeddedResource Include="View\MoveCommandDebugModeForm.resx">
+      <DependentUpon>MoveCommandDebugModeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\PlcForm.resx">
       <DependentUpon>PlcForm.cs</DependentUpon>

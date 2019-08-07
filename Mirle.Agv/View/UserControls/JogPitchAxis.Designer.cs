@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv.View
+﻿namespace Mirle.Agv
 {
     partial class JogPitchAxis
     {

@@ -1,7 +1,7 @@
 ﻿
 namespace Mirle.Agv.View
 {
-    partial class MoveCommandDebugMode
+    partial class MoveCommandDebugModeForm
     {
         /// <summary>
         /// Required designer variable.

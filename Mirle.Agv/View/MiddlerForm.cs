@@ -14,16 +14,14 @@ namespace Mirle.Agv.View
 {
     public partial class MiddlerForm : Form
     {
-        private MainFlowHandler mainFlowHandler;
         private MiddleAgent middleAgent;
         private MiddlerConfig middlerConfig;
 
-        public MiddlerForm(MainFlowHandler mainFlowHandler)
+        public MiddlerForm(MiddleAgent middleAgent)
         {
             InitializeComponent();
-            this.mainFlowHandler = mainFlowHandler;
-            middlerConfig = mainFlowHandler.GetMiddlerConfigs();
-            middleAgent = mainFlowHandler.GetMiddleAgent();
+            this.middleAgent = middleAgent;
+            middlerConfig = middleAgent.GetMiddlerConfig();
             EventInital();
 
         }
@@ -45,8 +43,8 @@ namespace Mirle.Agv.View
 
         private void EventInital()
         {
-            middleAgent.OnConnected += ConnectionStatusToToolStrip;
-            middleAgent.OnDisConnected += ConnectionStatusToToolStrip;
+            middleAgent.OnMessageShowEvent += ConnectionStatusToToolStrip;
+            //middleAgent.OnDisConnected += ConnectionStatusToToolStrip;
             middleAgent.OnCmdReceive += SendOrReceiveCmdToRichTextBox;
             middleAgent.OnCmdSend += SendOrReceiveCmdToRichTextBox;
         }

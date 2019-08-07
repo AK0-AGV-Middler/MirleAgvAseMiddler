@@ -22,23 +22,23 @@ namespace Mirle.Agv.View
         private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
         private MoveControlHandler moveControlHandler;
+        private MiddleAgent middleAgent;
         private MiddlerForm middlerForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
         private PlcForm plcForm;
         private PlcAgent plcAgent;
         private MCProtocol mcProtocol;
-        private MoveCommandDebugMode moveCommandDebugMode;
-        private JogPitch jogPitch;
-        //private MapForm mapForm;
+        private MoveCommandDebugModeForm moveCommandDebugMode;
+        private JogPitchForm jogPitch;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
         private Panel panelRightUp;
         private Panel panelRightDown;
         private MapInfo theMapInfo = new MapInfo();
-        PerformanceCounter performanceCounterCpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
+        //PerformanceCounter performanceCounterCpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "Available MBytes");
-        PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
+        //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
 
 
@@ -64,10 +64,10 @@ namespace Mirle.Agv.View
         public bool IsBarcodeLineShow { get; set; } = true;
         private Dictionary<MapSection, UcSectionImage> allUcSectionImages = new Dictionary<MapSection, UcSectionImage>();
         private Dictionary<MapAddress, UcAddressImage> allUcAddressImages = new Dictionary<MapAddress, UcAddressImage>();
-        private float coefficient = 0.05f;
-        private float deltaOrigion = 25;
-        private float addressRadius = 3;
-        private float triangleCoefficient = (float)(1 / Math.Sqrt(3.0));
+        private double coefficient = 0.05f;
+        private double deltaOrigion = 25;
+        private double addressRadius = 6;
+        private double triangleCoefficient = (double)(1 / Math.Sqrt(3.0));
         #endregion
 
         public MainForm(MainFlowHandler mainFlowHandler)
@@ -79,6 +79,7 @@ namespace Mirle.Agv.View
             moveControlHandler = mainFlowHandler.GetMoveControlHandler();
             plcAgent = mainFlowHandler.GetPlcAgent();
             mcProtocol = mainFlowHandler.GetMcProtocol();
+            middleAgent = mainFlowHandler.GetMiddleAgent();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -93,10 +94,10 @@ namespace Mirle.Agv.View
 
         private void InitialForms()
         {
-            moveCommandDebugMode = new MoveCommandDebugMode(moveControlHandler, theMapInfo);
+            moveCommandDebugMode = new MoveCommandDebugModeForm(moveControlHandler, theMapInfo);
             moveCommandDebugMode.WindowState = FormWindowState.Normal;
 
-            middlerForm = new MiddlerForm(mainFlowHandler);
+            middlerForm = new MiddlerForm(middleAgent);
             middlerForm.WindowState = FormWindowState.Normal;
 
             alarmForm = new AlarmForm(alarmHandler);
@@ -105,7 +106,7 @@ namespace Mirle.Agv.View
             plcForm = new PlcForm(mcProtocol, plcAgent);
             plcForm.WindowState = FormWindowState.Normal;
 
-            jogPitch = new JogPitch(moveControlHandler);
+            jogPitch = new JogPitchForm(moveControlHandler);
             jogPitch.WindowState = FormWindowState.Normal;
 
             numPositionX.Maximum = decimal.MaxValue;
@@ -130,8 +131,12 @@ namespace Mirle.Agv.View
 
         private void InitialEvents()
         {
-            mainFlowHandler.OnAgvcTransferCommandCheckedEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
-            mainFlowHandler.OnAgvcTransferCommandCheckedEvent += ShowMsgOnMainForm;
+            mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
+            mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
+            middleAgent.OnCmdReceive += ShowMsgOnMainForm;
+            middleAgent.OnCmdSend += ShowMsgOnMainForm;
+            middleAgent.OnMessageShowEvent += ShowMsgOnMainForm;
+            //middleAgent.OnDisConnected += ShowMsgOnMainForm;
         }
 
         private void ShowMsgOnMainForm(object sender, string e)
@@ -141,23 +146,19 @@ namespace Mirle.Agv.View
 
         private void InitialVehicleLocation()
         {
-            MapSection curSection = theMapInfo.allMapSections["sec001"];
-            MapAddress curAddress = curSection.HeadAddress;
-            MapPosition curPosition = curAddress.Position.DeepClone();
+            //MapSection curSection = theMapInfo.allMapSections["sec001"];
+            //MapAddress curAddress = curSection.HeadAddress;
+            //MapPosition curPosition = curAddress.Position.DeepClone();
 
             ucMapSection.UcName = "Last Section";
-            ucMapSection.UcValue = curSection.Id;
+            //ucMapSection.UcValue = curSection.Id;
             ucMapAddress.UcName = "Last Address";
-            ucMapAddress.UcValue = curAddress.Id;
+            //ucMapAddress.UcValue = curAddress.Id;
 
-            ucEncoderPosition.UcName = "EncoderPosition";
-            ucEncoderPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
             ucBarcodePosition.UcName = "BarcodePosition";
-            ucBarcodePosition.UcValue = $"({curPosition.X},{curPosition.Y})";
-            ucDeltaPosition.UcName = "DeltaPosition";
-            ucDeltaPosition.UcValue = $"(0,0)";
+            //ucBarcodePosition.UcValue = $"({curPosition.X},{curPosition.Y})";
             ucRealPosition.UcName = "RealPosition";
-            ucRealPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
+            //ucRealPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
         }
 
         public void DrawBasicMap()
@@ -172,12 +173,12 @@ namespace Mirle.Agv.View
                 //Draw Barcode in blackDash
                 foreach (var rowBarcode in theMapInfo.mapBarcodeLines)
                 {
-                    float fromX = rowBarcode.HeadBarcode.Position.X * coefficient + deltaOrigion;
-                    float fromY = rowBarcode.HeadBarcode.Position.Y * coefficient + deltaOrigion;
-                    float toX = rowBarcode.TailBarcode.Position.X * coefficient + deltaOrigion;
-                    float toY = rowBarcode.TailBarcode.Position.Y * coefficient + deltaOrigion;
+                    var fromX = rowBarcode.HeadBarcode.Position.X * coefficient + deltaOrigion;
+                    var fromY = rowBarcode.HeadBarcode.Position.Y * coefficient + deltaOrigion;
+                    var toX = rowBarcode.TailBarcode.Position.X * coefficient + deltaOrigion;
+                    var toY = rowBarcode.TailBarcode.Position.Y * coefficient + deltaOrigion;
 
-                    gra.DrawLine(blackDashPen, fromX, fromY, toX, toY);
+                    gra.DrawLine(blackDashPen, (float)fromX, (float)fromY, (float)toX, (float)toY);
                 }
             }
 
@@ -189,10 +190,10 @@ namespace Mirle.Agv.View
                 MapAddress fromAddress = section.HeadAddress;
                 MapAddress toAddress = section.TailAddress;
 
-                float fromX = fromAddress.Position.X * coefficient + deltaOrigion;
-                float fromY = fromAddress.Position.Y * coefficient + deltaOrigion;
-                float toX = toAddress.Position.X * coefficient + deltaOrigion;
-                float toY = toAddress.Position.Y * coefficient + deltaOrigion;
+                var fromX = fromAddress.Position.X * coefficient + deltaOrigion;
+                var fromY = fromAddress.Position.Y * coefficient + deltaOrigion;
+                var toX = toAddress.Position.X * coefficient + deltaOrigion;
+                var toY = toAddress.Position.Y * coefficient + deltaOrigion;
 
                 //gra.DrawLine(bluePen, fromX, fromY, toX, toY);
 
@@ -332,7 +333,7 @@ namespace Mirle.Agv.View
         {
             if (middlerForm.IsDisposed)
             {
-                middlerForm = new MiddlerForm(mainFlowHandler);
+                middlerForm = new MiddlerForm(middleAgent);
             }
             middlerForm.BringToFront();
             middlerForm.Show();
@@ -343,7 +344,7 @@ namespace Mirle.Agv.View
         {
             if (moveCommandDebugMode.IsDisposed)
             {
-                moveCommandDebugMode = new MoveCommandDebugMode(moveControlHandler, theMapInfo);
+                moveCommandDebugMode = new MoveCommandDebugModeForm(moveControlHandler, theMapInfo);
             }
             moveCommandDebugMode.BringToFront();
             moveCommandDebugMode.Show();
@@ -373,7 +374,7 @@ namespace Mirle.Agv.View
         {
             if (jogPitch.IsDisposed)
             {
-                jogPitch = new JogPitch(moveControlHandler);
+                jogPitch = new JogPitchForm(moveControlHandler);
             }
             jogPitch.BringToFront();
             jogPitch.Show();
@@ -579,16 +580,31 @@ namespace Mirle.Agv.View
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            UpdateListBoxSections(listNeedReserveSections, mainFlowHandler.GetNeedReserveSections());
-            UpdateListBoxSections(listReserveOkSections, mainFlowHandler.GetReserveOkSections());
-            UpdateListBoxSections(listAskingReserveSections, mainFlowHandler.GetAskingReserveSections());
-            UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
-            UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
+            UpdateListBoxSections(lbxNeedReserveSections, mainFlowHandler.GetNeedReserveSections());
+            UpdateListBoxSections(lbxReserveOkSections, mainFlowHandler.GetReserveOkSections());
+            //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
+            //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
+            lbxAskReserveSection.Items.Clear();
+            lbxAskReserveSection.Items.Add(middleAgent.GetNeedReserveSectionId());
+
+            var location = mainFlowHandler.theVehicle.GetVehLoacation();
+
+            var realPos = location.RealPosition;
+            ucRealPosition.UcValue = $"({(int)realPos.X},{(int)realPos.Y})";
+
+            var barPos = location.BarcodePosition;
+            ucBarcodePosition.UcValue = $"({(int)barPos.X},{(int)barPos.Y})";
+
+            var curAddress = location.Address;
+            ucMapAddress.UcValue = curAddress.Id;
+
+            var curSection = location.Section;
+            ucMapSection.UcValue = curSection.Id;           
         }
 
         private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
         {
-            float value = performanceCounter.NextValue();
+            double value = performanceCounter.NextValue();
             ucLabelTextBox.UcValue = string.Format("{0:0.0}%", value);
         }
 
@@ -606,14 +622,7 @@ namespace Mirle.Agv.View
 
         private void btnSetPosition_Click_1(object sender, EventArgs e)
         {
-            Vehicle.Instance.GetVehLoacation().RealPosition = new MapPosition((float)numPositionX.Value, (float)numPositionY.Value);
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            MapSection mapSection = theMapInfo.allMapSections["sec002"];
-            UcSectionImage sectionImage = allUcSectionImages[mapSection];
-            sectionImage.DrawSectionImage(redPen);
+            Vehicle.Instance.GetVehLoacation().RealPosition = new MapPosition((double)numPositionX.Value, (double)numPositionY.Value);
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
@@ -630,7 +639,7 @@ namespace Mirle.Agv.View
 
                 richTextBox.Text = timeStamp + msg + Environment.NewLine + richTextBox.Text;
 
-                int RichTextBoxMaxLines = 20;  // middlerConfig.RichTextBoxMaxLines;
+                int RichTextBoxMaxLines = 10000;  // middlerConfig.RichTextBoxMaxLines;
 
                 if (richTextBox.Lines.Count() > RichTextBoxMaxLines)
                 {
@@ -641,9 +650,109 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
-        {
 
+        private void btnMoveFinish_Click(object sender, EventArgs e)
+        {
+            if(mainFlowHandler.GetCurTransCmd().GetCommandType() == EnumTransCmdType.Move)
+            {
+                moveControlHandler.MoveFinished(EnumMoveComplete.Success);
+            }
+            else
+            {
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurTransCmd().GetCommandType()}");
+            }
+        }
+
+        private void btnCleanAgvcTransCmd_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.CleanAgvcTransCmd();
+        }
+
+        private void btnStartVisitTransCmds_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StartVisitTransCmds();
+        }
+
+        private void btnPauseVisitTransCmds_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.PauseVisitTransCmds();
+        }
+
+        private void btnResumeVisitTransCmds_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.ResumeVisitTransCmds();
+        }
+
+        private void btnStopVisitTransCmds_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StopVisitTransCmds();
+        }
+
+        private void btnSetTestTransferCmd_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.SetTestTransferCmd();
+        }
+
+        private void btnAutoApplyReserve_Click(object sender, EventArgs e)
+        {
+            middleAgent.AutoApplyReserve = !middleAgent.AutoApplyReserve;
+            middleAgent.ResumeAskingReserve();
+            RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve = {middleAgent.AutoApplyReserve}");
+        }
+
+        private void btnStartAskingReserve_Click(object sender, EventArgs e)
+        {
+            middleAgent.StartAskingReserve();
+        }
+
+        private void btnPauseAskingReserve_Click(object sender, EventArgs e)
+        {
+            middleAgent.PauseAskingReserve();
+        }
+
+        private void btnResumeAskingReserve_Click(object sender, EventArgs e)
+        {
+            middleAgent.ResumeAskingReserve();
+        }
+
+        private void btnStopAskingReserve_Click(object sender, EventArgs e)
+        {
+            middleAgent.StopAskingReserve();
+        }
+
+        private void btnLoadFinish_Click(object sender, EventArgs e)
+        {        
+            if (mainFlowHandler.GetCurTransCmd().GetCommandType() == EnumTransCmdType.Load)
+            {
+                var plcVeh = mainFlowHandler.theVehicle.GetPlcVehicle();
+                plcVeh.Loading = true;
+                plcVeh.CassetteId = "FakeCst001";
+
+                var plcForkLoadCmd = mainFlowHandler.PlcForkLoadCommand;
+                mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, plcForkLoadCmd);
+                plcVeh.Robot.ExecutingCommand = null;
+            }
+            else
+            {
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurTransCmd().GetCommandType()}");
+            }
+        }
+
+        private void btnUnloadFinish_Click(object sender, EventArgs e)
+        {
+            if (mainFlowHandler.GetCurTransCmd().GetCommandType() == EnumTransCmdType.Unload)
+            {
+                var plcVeh = mainFlowHandler.theVehicle.GetPlcVehicle();
+                plcVeh.Loading = false;
+                plcVeh.CassetteId = null;
+
+                var plcForkLoadCmd = mainFlowHandler.PlcForkUnloadCommand;
+                mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, plcForkLoadCmd);
+            }
+            else
+            {
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurTransCmd().GetCommandType()}");
+            }
         }
     }
 }

@@ -27,8 +27,8 @@ namespace Mirle.Agv
         private Pen redPen = new Pen(Color.Red, 1);
         private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private SolidBrush redBrush = new SolidBrush(Color.Red);
-        private float addressRadius = 6;
-        private float triangleCoefficient = (float)(Math.Sqrt(3.0));
+        private double addressRadius = 6;
+        private double triangleCoefficient = (double)(Math.Sqrt(3.0));
 
         private ToolTip toolTip = new ToolTip();
 
@@ -73,8 +73,8 @@ namespace Mirle.Agv
             {
                 PointF pointf = new PointF(Delta + 1, label1.Height + 3);
                 PointF p1 = new PointF(pointf.X + Radius, pointf.Y);
-                PointF p2 = new PointF(pointf.X, pointf.Y + (Radius * triangleCoefficient));
-                PointF p3 = new PointF(pointf.X + 2 * Radius, pointf.Y + (Radius * triangleCoefficient));
+                PointF p2 = new PointF(pointf.X, (float)(pointf.Y + (Radius * triangleCoefficient)));
+                PointF p3 = new PointF(pointf.X + 2 * Radius, (float)(pointf.Y + (Radius * triangleCoefficient)));
                 PointF[] pointFs = new PointF[] { p1, p2, p3 };
                 gra.FillPolygon(redBrush, pointFs);
             }

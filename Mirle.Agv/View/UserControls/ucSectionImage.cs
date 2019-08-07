@@ -24,7 +24,7 @@ namespace Mirle.Agv
         private Pen bluePen = new Pen(Color.Blue, 2);
         private Pen redPen = new Pen(Color.Red, 2);
         private SolidBrush blackBrush = new SolidBrush(Color.Black);
-        private float coefficient = 0.05f;
+        private double coefficient = 0.05f;
 
         private ToolTip toolTip = new ToolTip();
 
@@ -55,8 +55,8 @@ namespace Mirle.Agv
             MapAddress headAdr = Section.HeadAddress;
             MapAddress tailAdr = Section.TailAddress;
 
-            float disX = Math.Abs(tailAdr.Position.X - headAdr.Position.X) * coefficient;
-            float disY = Math.Abs(tailAdr.Position.Y - headAdr.Position.Y) * coefficient;
+            var disX = Math.Abs(tailAdr.Position.X - headAdr.Position.X) * coefficient;
+            var disY = Math.Abs(tailAdr.Position.Y - headAdr.Position.Y) * coefficient;
 
             switch (Section.Type)
             {

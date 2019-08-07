@@ -14,7 +14,7 @@ using Mirle.Agv.View;
 
 namespace Mirle.Agv.View
 {
-    public partial class JogPitch : Form
+    public partial class JogPitchForm : Form
     {
         private Thread ontimeRevise;
         private Thread homeThread;
@@ -30,7 +30,7 @@ namespace Mirle.Agv.View
         private EnumMoveState nowState, lastState;
         private bool homing = false;
 
-        public JogPitch(MoveControlHandler moveControl)
+        public JogPitchForm(MoveControlHandler moveControl)
         {
             if (moveControl == null)
                 return;
@@ -459,11 +459,11 @@ namespace Mirle.Agv.View
 
         private void JogPitch_Load(object sender, EventArgs e)
         {
-            this.allAxis = new Mirle.Agv.View.JogPitchAxis[AxisList.Count()];
+            this.allAxis = new JogPitchAxis[AxisList.Count()];
 
             for (int i = 0; i < AxisList.Count(); i++)
             {
-                this.allAxis[i] = new Mirle.Agv.View.JogPitchAxis(AxisList[i].ToString());
+                this.allAxis[i] = new JogPitchAxis(AxisList[i].ToString());
 
                 this.allAxis[i].BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
 
@@ -488,6 +488,7 @@ namespace Mirle.Agv.View
 
             cB_JogPitch_SelectAxis.SelectedIndex = AxisList.Count() - 2;
             lastState = moveControl.MoveState;
+            timerUpdate.Enabled = true;
         }
 
         private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)

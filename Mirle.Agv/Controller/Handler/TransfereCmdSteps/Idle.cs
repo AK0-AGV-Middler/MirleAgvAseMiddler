@@ -9,7 +9,7 @@ using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
-    public class Idle : ITransferCmdStep
+    public class Idle : ITransferStatus
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
@@ -36,11 +36,11 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     //resume tracking position
                     //-> get position                    
                     //-> pause tracking position
-                    mainFlowHandler.ResumeTrackingPosition();
-                    SpinWait.SpinUntil(() => false, 50);
-                    mainFlowHandler.PauseTrackingPosition();
-                    mainFlowHandler.SetTransCmdsStep(new Idle());
-                    mainFlowHandler.DoTransfer();
+                    //mainFlowHandler.ResumeTrackingPosition();
+                    //SpinWait.SpinUntil(() => false, 50);
+                    //mainFlowHandler.PauseTrackingPosition();
+                    //mainFlowHandler.SetTransCmdsStep(new Idle());
+                    //mainFlowHandler.DoTransfer();
                     break;
             }
 

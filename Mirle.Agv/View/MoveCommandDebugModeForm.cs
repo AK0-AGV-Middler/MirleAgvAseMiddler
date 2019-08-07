@@ -15,7 +15,7 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.View
 {
-    public partial class MoveCommandDebugMode : Form
+    public partial class MoveCommandDebugModeForm : Form
     {
         private MoveControlHandler moveControl;
         private CreateMoveControlList createMoveControlList;
@@ -33,7 +33,7 @@ namespace Mirle.Agv.View
         private string debugCSVHeader = "";
 
         #region Initail
-        public MoveCommandDebugMode(MoveControlHandler moveControl, MapInfo theMapInfo)
+        public MoveCommandDebugModeForm(MoveControlHandler moveControl, MapInfo theMapInfo)
         {
             InitializeComponent();
             this.moveControl = moveControl;
@@ -80,11 +80,11 @@ namespace Mirle.Agv.View
         private void AddListMapSpeedLimits()
         {
             listMapSpeedLimits.Items.Clear();
-            Dictionary<float, short> dicSpeedLimits = new Dictionary<float, short>();
+            Dictionary<double, short> dicSpeedLimits = new Dictionary<double, short>();
             foreach (var valuePair in theMapInfo.allMapSections)
             {
                 MapSection mapSection = valuePair.Value;
-                float speedLimit = mapSection.Speed;
+                double speedLimit = mapSection.Speed;
                 if (!dicSpeedLimits.ContainsKey(speedLimit))
                 {
                     dicSpeedLimits.Add(speedLimit, 1);
@@ -291,16 +291,16 @@ namespace Mirle.Agv.View
             if (moveCmdInfo == null)
             {
                 moveCmdInfo = new MoveCmdInfo();
-                moveCmdInfo.SectionSpeedLimits = new List<float>();
+                moveCmdInfo.SectionSpeedLimits = new List<double>();
             }
             else if (moveCmdInfo.SectionSpeedLimits == null)
-                moveCmdInfo.SectionSpeedLimits = new List<float>();
+                moveCmdInfo.SectionSpeedLimits = new List<double>();
             else
                 moveCmdInfo.SectionSpeedLimits.Clear();
 
             for (int i = 0; i < listCmdSpeedLimits.Items.Count; i++)
             {
-                float limit = (float)listCmdSpeedLimits.Items[i];
+                double limit = (double)listCmdSpeedLimits.Items[i];
                 moveCmdInfo.SectionSpeedLimits.Add(limit);
             }
         }
@@ -341,8 +341,8 @@ namespace Mirle.Agv.View
             {
                 string positionPair = (string)listCmdAddressPositions.Items[i];
                 string[] posXY = positionPair.Split(',');
-                var posX = float.Parse(posXY[0]);
-                var posY = float.Parse(posXY[1]);
+                var posX = double.Parse(posXY[0]);
+                var posY = double.Parse(posXY[1]);
                 moveCmdInfo.AddressPositions.Add(new MapPosition(posX, posY));
             }
         }
@@ -440,7 +440,7 @@ namespace Mirle.Agv.View
         {
             MoveCmdInfo backAGVMCommand = new MoveCmdInfo();
 
-            backAGVMCommand.SectionSpeedLimits = new List<float>();
+            backAGVMCommand.SectionSpeedLimits = new List<double>();
             backAGVMCommand.AddressActions = new List<EnumAddressAction>();
             backAGVMCommand.AddressPositions = new List<MapPosition>();
 

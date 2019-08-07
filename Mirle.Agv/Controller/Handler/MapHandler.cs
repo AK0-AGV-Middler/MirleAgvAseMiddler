@@ -17,8 +17,8 @@ namespace Mirle.Agv.Controller
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
         private MapInfo theMapInfo = new MapInfo();
-        private float SectionWidth { get; set; } = 50;
-        private float AddressArea { get; set; } = 50;
+        private double SectionWidth { get; set; } = 50;
+        private double AddressArea { get; set; } = 50;
         private Vehicle theVehicle = Vehicle.Instance;
 
         public MapHandler(MapConfig mapConfig)
@@ -77,8 +77,8 @@ namespace Mirle.Agv.Controller
                     oneRow.Id = getThisRow[dicSectionIndexes["Id"]];
                     oneRow.HeadAddress = theMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["FromAddress"]]];
                     oneRow.TailAddress = theMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["ToAddress"]]];
-                    oneRow.Distance = float.Parse(getThisRow[dicSectionIndexes["Distance"]]);
-                    oneRow.Speed = float.Parse(getThisRow[dicSectionIndexes["Speed"]]);
+                    oneRow.Distance = double.Parse(getThisRow[dicSectionIndexes["Distance"]]);
+                    oneRow.Speed = double.Parse(getThisRow[dicSectionIndexes["Speed"]]);
                     oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicSectionIndexes["Type"]]);
                     oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicSectionIndexes["PermitDirection"]]);
                     oneRow.FowardBeamSensorDisable = bool.Parse(getThisRow[dicSectionIndexes["FowardBeamSensorDisable"]]);
@@ -139,9 +139,9 @@ namespace Mirle.Agv.Controller
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
                     oneRow.Id = getThisRow[dicAddressIndexes["Id"]];
-                    oneRow.Barcode = float.Parse(getThisRow[dicAddressIndexes["Barcode"]]);
-                    oneRow.Position.X = float.Parse(getThisRow[dicAddressIndexes["PositionX"]]);
-                    oneRow.Position.Y = float.Parse(getThisRow[dicAddressIndexes["PositionY"]]);
+                    oneRow.Barcode = double.Parse(getThisRow[dicAddressIndexes["Barcode"]]);
+                    oneRow.Position.X = double.Parse(getThisRow[dicAddressIndexes["PositionX"]]);
+                    oneRow.Position.Y = double.Parse(getThisRow[dicAddressIndexes["PositionY"]]);
                     oneRow.IsWorkStation = bool.Parse(getThisRow[dicAddressIndexes["IsWorkStation"]]);
                     oneRow.CanLeftLoad = bool.Parse(getThisRow[dicAddressIndexes["CanLeftLoad"]]);
                     oneRow.CanLeftUnload = bool.Parse(getThisRow[dicAddressIndexes["CanLeftUnload"]]);
@@ -213,13 +213,13 @@ namespace Mirle.Agv.Controller
                     string Id = getThisRow[dicBarcodeIndexes["Id"]];
                     int HeadNum = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeHeadNum"]]);
                     int TailNum = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeTailNum"]]);
-                    float HeadX = float.Parse(getThisRow[dicBarcodeIndexes["HeadX"]]);
-                    float HeadY = float.Parse(getThisRow[dicBarcodeIndexes["HeadY"]]);
-                    float TailX = float.Parse(getThisRow[dicBarcodeIndexes["TailX"]]);
-                    float TailY = float.Parse(getThisRow[dicBarcodeIndexes["TailY"]]);
+                    double HeadX = double.Parse(getThisRow[dicBarcodeIndexes["HeadX"]]);
+                    double HeadY = double.Parse(getThisRow[dicBarcodeIndexes["HeadY"]]);
+                    double TailX = double.Parse(getThisRow[dicBarcodeIndexes["TailX"]]);
+                    double TailY = double.Parse(getThisRow[dicBarcodeIndexes["TailY"]]);
                     int Direction = oneRow.BarcodeDirectionConvert(getThisRow[dicBarcodeIndexes["Direction"]]);
-                    float OffsetX = float.Parse(getThisRow[dicBarcodeIndexes["OffsetX"]]);
-                    float OffsetY = float.Parse(getThisRow[dicBarcodeIndexes["OffsetY"]]);
+                    double OffsetX = double.Parse(getThisRow[dicBarcodeIndexes["OffsetX"]]);
+                    double OffsetY = double.Parse(getThisRow[dicBarcodeIndexes["OffsetY"]]);
 
                     oneRow.Id = Id;
                     oneRow.HeadBarcode.Number = HeadNum;
@@ -322,7 +322,7 @@ namespace Mirle.Agv.Controller
             {
                 case EnumSectionType.Horizontal:
                     {
-                        float diffY = Math.Abs(aPosition.Y - headAdr.Position.Y);
+                        double diffY = Math.Abs(aPosition.Y - headAdr.Position.Y);
                         if (diffY <= SectionWidth)
                         {
                             if (aPosition.X > tailAdr.Position.X || aPosition.X < headAdr.Position.X)
@@ -350,7 +350,7 @@ namespace Mirle.Agv.Controller
                     }
                 case EnumSectionType.Vertical:
                     {
-                        float diffX = Math.Abs(aPosition.X - headAdr.Position.X);
+                        double diffX = Math.Abs(aPosition.X - headAdr.Position.X);
                         if (diffX <= SectionWidth)
                         {
                             if (aPosition.Y > tailAdr.Position.Y || aPosition.Y < headAdr.Position.Y)

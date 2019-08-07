@@ -10,7 +10,7 @@ namespace Mirle.Agv.Model
     {
         public List<MapPosition> AddressPositions { get; set; }
         public List<EnumAddressAction> AddressActions { get; set; }
-        public List<float> SectionSpeedLimits { get; set; }
+        public List<double> SectionSpeedLimits { get; set; }
         public bool DirFlag { get; set; }
         public int WheelAngle { get; set; }
 
@@ -20,7 +20,7 @@ namespace Mirle.Agv.Model
             DirFlag = dirFlag;
             AddressPositions = new List<MapPosition>();
             AddressActions = new List<EnumAddressAction>();
-            SectionSpeedLimits = new List<float>();
+            SectionSpeedLimits = new List<double>();
         }
     }
 }

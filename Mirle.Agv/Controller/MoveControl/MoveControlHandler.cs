@@ -159,25 +159,25 @@ namespace Mirle.Agv.Controller
                         sr2000Config.ReaderSetupAngle = double.Parse(item.InnerText);
                         break;
                     case "OffsetX":
-                        sr2000Config.ViewOffset.X = float.Parse(item.InnerText);
+                        sr2000Config.ViewOffset.X = double.Parse(item.InnerText);
                         break;
                     case "OffsetY":
-                        sr2000Config.ViewOffset.Y = float.Parse(item.InnerText);
+                        sr2000Config.ViewOffset.Y = double.Parse(item.InnerText);
                         break;
                     case "OffsetTheta":
                         sr2000Config.OffsetTheta = double.Parse(item.InnerText);
                         break;
                     case "DatumX":
-                        sr2000Config.ViewCenter.X = float.Parse(item.InnerText);
+                        sr2000Config.ViewCenter.X = double.Parse(item.InnerText);
                         break;
                     case "DatumY":
-                        sr2000Config.ViewCenter.Y = float.Parse(item.InnerText);
+                        sr2000Config.ViewCenter.Y = double.Parse(item.InnerText);
                         break;
                     case "ChangeX":
-                        sr2000Config.Change.X = float.Parse(item.InnerText);
+                        sr2000Config.Change.X = double.Parse(item.InnerText);
                         break;
                     case "ChangeY":
-                        sr2000Config.Change.Y = float.Parse(item.InnerText);
+                        sr2000Config.Change.Y = double.Parse(item.InnerText);
                         break;
                     case "TimeOutValue":
                         sr2000Config.TimeOutValue = Int16.Parse(item.InnerText);
@@ -324,7 +324,7 @@ namespace Mirle.Agv.Controller
         {
             double x = sectionLine.Start.X + (sectionLine.End.X - sectionLine.Start.X) * (encode - sectionLine.EncoderStart) / (sectionLine.EncoderEnd - sectionLine.EncoderStart);
             double y = sectionLine.Start.Y + (sectionLine.End.Y - sectionLine.Start.Y) * (encode - sectionLine.EncoderStart) / (sectionLine.EncoderEnd - sectionLine.EncoderStart);
-            MapPosition returnPosition = new MapPosition((float)x, (float)y);
+            MapPosition returnPosition = new MapPosition((double)x, (double)y);
 
             return returnPosition;
         }
@@ -902,7 +902,7 @@ namespace Mirle.Agv.Controller
         /// <summary>
         ///  when move finished, call this function to notice other class instance that move is finished with status
         /// </summary>
-        private void MoveFinished(EnumMoveComplete status)
+        public void MoveFinished(EnumMoveComplete status)
         {
             OnMoveFinished?.Invoke(this, status);
         }

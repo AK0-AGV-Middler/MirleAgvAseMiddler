@@ -21,8 +21,7 @@ namespace Mirle.Agv.Controller
     {
         #region Events
 
-        public event EventHandler<string> OnConnected;
-        public event EventHandler<string> OnDisConnected;
+        public event EventHandler<string> OnMessageShowEvent;
         public event EventHandler<AgvcTransCmd> OnInstallTransferCommandEvent;
         public event EventHandler<string> OnCmdReceive;
         public event EventHandler<string> OnCmdSend;
@@ -33,29 +32,31 @@ namespace Mirle.Agv.Controller
 
         #endregion
 
-        private List<TransferStep> transCmds = new List<TransferStep>();
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
         private Vehicle theVehicle = Vehicle.Instance;
         private MiddlerConfig middlerConfig;
-        private MapInfo theMapInfo = new MapInfo();
+        private AlarmHandler alarmHandler;
 
-        private bool IsReserveOk;
         private Thread thdAskReserve;
         private ManualResetEvent askReserveShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent askReservePauseEvent = new ManualResetEvent(true);
         private MapSection needReserveSection = new MapSection();
+        public bool IsPauseAskReserve { get; private set; } = false;
 
         public TcpIpAgent ClientAgent { get; private set; }
 
         public int AskReserveTimeout { get; set; } = 10000;
         public int AskReserveLoopTimeout { get; set; } = 10000;
+        public bool AutoApplyReserve { get; set; } = false;
 
-        public MiddleAgent(MiddlerConfig middlerConfig, MapInfo theMapInfo)
+        public MiddleAgent(MiddlerConfig middlerConfig, AlarmHandler alarmHandler)
         {
-            this.theMapInfo = theMapInfo;
             this.middlerConfig = middlerConfig;
+            this.alarmHandler = alarmHandler;
 
             CreatTcpIpClientAgent();
+            StartAskingReserve();
+            PauseAskingReserve();
         }
 
         #region Initial
@@ -131,7 +132,7 @@ namespace Mirle.Agv.Controller
             var msg = $"Vh ID:{agent.Name}, connection.";
             Console.WriteLine(msg);
             OnCmdReceive?.Invoke(this, msg);
-            OnConnected?.Invoke(this, "Connected");
+            OnMessageShowEvent?.Invoke(this, "Middler : Connected");
         }
         protected void DoDisconnection(object sender, TcpIpEventArgs e)
         {
@@ -139,7 +140,7 @@ namespace Mirle.Agv.Controller
             var msg = $"Vh ID:{agent.Name}, disconnection.";
             Console.WriteLine(msg);
             OnCmdReceive?.Invoke(this, msg);
-            OnDisConnected?.Invoke(this, "Dis-Connect");
+            OnMessageShowEvent?.Invoke(this, "Middler : Dis-Connect");
         }
         private void EventInitial()
         {
@@ -207,7 +208,21 @@ namespace Mirle.Agv.Controller
                 #endregion
                 sw.Start();
 
-                askResult = Send_Cmd136_AskReserve();
+                if (AutoApplyReserve)
+                {
+                    askResult = true;
+                    AutoApplyReserve = false;
+                    OnMessageShowEvent?.Invoke(this, $"Middler : Auto Apply Reserve = {AutoApplyReserve}");
+                }
+                else
+                {
+                    askResult = false;                    
+                }
+
+                //askResult = Send_Cmd136_AskReserve();
+
+                //OnMessageShowEvent?.Invoke(this, $"Ask Reserve : [Result = {askResult}][ReserveId = {needReserveSection.Id}]");
+
 
                 sw.Stop();
                 total += sw.ElapsedMilliseconds;
@@ -221,6 +236,8 @@ namespace Mirle.Agv.Controller
                     //Alarm
                     break;
                 }
+                //OnMessageShowEvent?.Invoke(this, $"Ask Reserve : [StopWatch = {sw.ElapsedMilliseconds}][Total = {total}]");
+
                 sw.Reset();
               
 
@@ -235,7 +252,7 @@ namespace Mirle.Agv.Controller
 
             if (askResult)
             {
-                OnGetReserveOkEvent?.Invoke(this, needReserveSection);
+                OnGetReserveOkEvent?.Invoke(this, needReserveSection.DeepClone());
             }
         }
 
@@ -247,21 +264,31 @@ namespace Mirle.Agv.Controller
 
         public void PauseAskingReserve()
         {
-            askReservePauseEvent.Reset();
+            if (!IsPauseAskReserve)
+            {
+                askReservePauseEvent.Reset();
+                IsPauseAskReserve = true;
+                OnMessageShowEvent?.Invoke(this, $"Middler : Pause Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
+            }
         }
 
         public void ResumeAskingReserve()
-        {
+        {           
             askReservePauseEvent.Set();
+            IsPauseAskReserve = false;
+            OnMessageShowEvent?.Invoke(this, $"Middler : Resume Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
         }
 
         public void StartAskingReserve()
         {
             askReservePauseEvent.Set();
+            IsPauseAskReserve = false;
             askReserveShutdownEvent.Reset();
             thdAskReserve = new Thread(new ThreadStart(AskReserve));
             thdAskReserve.IsBackground = true;
             thdAskReserve.Start();
+
+            OnMessageShowEvent?.Invoke(this, $"Middler : Start Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
         }
 
         public void StopAskingReserve()
@@ -269,12 +296,13 @@ namespace Mirle.Agv.Controller
             askReserveShutdownEvent.Set();
             askReservePauseEvent.Set();
 
-            //if (thdAskReserve.IsAlive)
-            //{
-            //    thdAskReserve.Abort();
-            //    thdAskReserve.Join();
-            //}
+            OnMessageShowEvent?.Invoke(this, $"Middler : Stop Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
         }
+
+        //public bool IsThdAskReservePause()
+        //{
+        //    askReservePauseEvent.
+        //}
         #endregion
 
         #region EnumParse
@@ -1059,19 +1087,32 @@ namespace Mirle.Agv.Controller
 
         public void ReportLoadArrivals()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+
+            }
             theVehicle.Cmd134EventType = EventType.LoadArrivals;
             Send_Cmd136_TransferEventReport(EventType.LoadArrivals);
             Send_Cmd134_TransferEventReport();
-
         }
         public void UnloadArrivals()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
             theVehicle.Cmd134EventType = EventType.UnloadArrivals;
             Send_Cmd136_TransferEventReport(EventType.UnloadArrivals);
             Send_Cmd134_TransferEventReport();
         }
         public void MoveComplete()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
+
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
             Send_Cmd134_TransferEventReport();
             Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
@@ -1080,33 +1121,58 @@ namespace Mirle.Agv.Controller
         }
         public void LoadComplete()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
             Send_Cmd136_TransferEventReport(EventType.LoadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
             Send_Cmd132_TransferCompleteReport();
         }
         public void LoadCompleteInLoadunload()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
             Send_Cmd136_TransferEventReport(EventType.LoadComplete);
         }
         public void UnloadComplete()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
             Send_Cmd132_TransferCompleteReport();
         }
         public void LoadUnloadComplete()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
             Send_Cmd132_TransferCompleteReport();
+
         }
         public void MainFlowGetCancel()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusCancel;
             Send_Cmd132_TransferCompleteReport();
         }
         public void MainFlowGetAbort()
         {
+            if (!ClientAgent.IsConnection)
+            {
+                return;
+            }
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
             Send_Cmd132_TransferCompleteReport();
         }
@@ -1143,9 +1209,8 @@ namespace Mirle.Agv.Controller
         public void Receive_Cmd91_AlarmResetRequest(object sender, TcpIpEventArgs e)
         {
             ID_91_ALARM_RESET_REQUEST receive = (ID_91_ALARM_RESET_REQUEST)e.objPacket;
-            //TODO: Reset alarm
 
-
+            alarmHandler.ResetAllAlarms();
 
             int replyCode = 0;
             Send_Cmd191_AlarmResetResponse(e.iSeqNum, replyCode);
@@ -1562,20 +1627,14 @@ namespace Mirle.Agv.Controller
                     if (CanVehCancel())
                     {
                         result = true;
-                        if (OnTransferCancelEvent != null)
-                        {
-                            OnTransferCancelEvent(this, receive.CmdID);
-                        }
+                        OnTransferCancelEvent?.Invoke(this, receive.CmdID);
                     }
                     break;
                 case CMDCancelType.CmdAbout:
                     if (CanVehAbort())
                     {
                         result = true;
-                        if (OnTransferAbortEvent != null)
-                        {
-                            OnTransferAbortEvent(this, receive.CmdID);
-                        }
+                        OnTransferAbortEvent?.Invoke(this, receive.CmdID);
                     }
                     break;
                 default:
@@ -1951,232 +2010,7 @@ namespace Mirle.Agv.Controller
             }
         }
         #endregion
-
-        private bool CanVehDoTransfer(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
-        {
-            //TODO: Implement new battery protect.
-
-            //if (theVehicle.GetBattery().IsBatteryLowPower())
-            //{
-            //    int replyCode = 1; // NG
-            //    string reason = "Vehicle is in low power can not do transfer command.";
-            //    Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-            //    return false;
-            //}
-            //else if (theVehicle.GetBattery().IsBatteryHighTemperature())
-            //{
-            //    int replyCode = 1; // NG
-            //    string reason = "Vehicle is in battery temperature too hight can not do transfer command.";
-            //    Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-            //    return false;
-            //}
-
-            var type = transRequest.ActType;
-            switch (type)
-            {
-                case ActiveType.Move:
-                    return CanVehMove(transRequest, seqNum);
-                case ActiveType.Load:
-                    return CanVehLoad(transRequest, seqNum);
-                case ActiveType.Unload:
-                    return CanVehUnload(transRequest, seqNum);
-                case ActiveType.Loadunload:
-                    return CanVehLoadunload(transRequest, seqNum);
-                case ActiveType.Home:
-                    return CanVehHome(transRequest, seqNum);
-                case ActiveType.Override:
-                    return CanVehOverride(transRequest, seqNum);
-                case ActiveType.Mtlhome:
-                case ActiveType.Movetomtl:
-                case ActiveType.Systemout:
-                case ActiveType.Systemin:
-                case ActiveType.Techingmove:
-                case ActiveType.Round:
-                default:
-                    int replyCode = 0; // OK
-                    string reason = "Empty";
-                    Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                    return true;
-            }
-        }
-
-        private bool CanVehOverride(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
-        {
-            if (VehInOverrideSection(transRequest))
-            {
-                int replyCode = 0; // OK
-                string reason = "Empty";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return true;
-            }
-            else
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle current section not in override guideSections.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-        }
-
-        private bool VehInOverrideSection(ID_31_TRANS_REQUEST transRequest)
-        {
-            var location = theVehicle.GetVehLoacation();
-            var curSectionId = location.Section.Id;
-
-            var isInToLoadSections = false;
-            if (transRequest.GuideAddressesStartToLoad != null)
-            {
-                var toLoadSections = transRequest.GuideSectionsStartToLoad.ToList();
-                isInToLoadSections = toLoadSections.Contains(curSectionId);
-            }
-
-            var isInToUnloadSections = false;
-            if (transRequest.GuideSectionsToDestination != null)
-            {
-                var toUnloadSections = transRequest.GuideSectionsToDestination.ToList();
-                isInToUnloadSections = toUnloadSections.Contains(curSectionId);
-            }
-
-            return isInToLoadSections || isInToUnloadSections;
-        }
-
-        private bool CanVehHome(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
-        {
-            int replyCode = 0; // OK
-            string reason = "Empty";
-            Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-            return true;
-        }
-
-        private bool CanVehLoadunload(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
-        {
-            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle is not idle can not do loadunload.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (theVehicle.GetPlcVehicle().Loading)
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle has a carrier can not do loadunload.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (string.IsNullOrEmpty(transRequest.LoadAdr))
-            {
-                int replyCode = 1; // NG
-                string reason = "Transfer command has no load address can not do load.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
-            {
-                int replyCode = 1; // NG
-                string reason = "Transfer command has no unload address can not do unload.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else
-            {
-                int replyCode = 0; // OK
-                string reason = "Empty";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return true;
-            }
-        }
-
-        private bool CanVehUnload(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
-        {
-            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle is not idle can not unload.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (!theVehicle.GetPlcVehicle().Loading)
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle has no carrier can not unload.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
-            {
-                int replyCode = 1; // NG
-                string reason = "Transfer command has no unload address can not unload.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-
-            else
-            {
-                int replyCode = 0; // OK
-                string reason = "Empty";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return true;
-            }
-        }
-
-        private bool CanVehLoad(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
-        {
-            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle is not idle can not load.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (theVehicle.GetPlcVehicle().Loading)
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle has a carrier can not load";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (string.IsNullOrEmpty(transRequest.LoadAdr))
-            {
-                int replyCode = 1; // NG
-                string reason = "Transfer command has no load address can not do load.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else
-            {
-                int replyCode = 0; // OK
-                string reason = "Empty";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return true;
-            }
-        }
-
-        private bool CanVehMove(ID_31_TRANS_REQUEST transRequest, ushort seqNum)
-        {
-            if (theVehicle.ActionStatus != VHActionStatus.NoCommand)
-            {
-                int replyCode = 1; // NG
-                string reason = "Vehicle is not idle can not do move.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else if (string.IsNullOrEmpty(transRequest.DestinationAdr))
-            {
-                int replyCode = 1; // NG
-                string reason = "Transfer command has no move-end address can not do move.";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return false;
-            }
-            else
-            {
-                int replyCode = 0; // OK
-                string reason = "Empty";
-                Send_Cmd131_TransferResponse(seqNum, replyCode, reason);
-                return true;
-            }
-        }
-
+        
         private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
         {
             //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd 
@@ -2233,7 +2067,10 @@ namespace Mirle.Agv.Controller
             return parser.ParseFrom(buf);
         }
 
-
+        public MiddlerConfig GetMiddlerConfig()
+        {
+            return middlerConfig;
+        }
 
     }
 

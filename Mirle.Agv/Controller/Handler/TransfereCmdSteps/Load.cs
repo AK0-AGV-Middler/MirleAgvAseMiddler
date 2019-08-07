@@ -7,7 +7,7 @@ using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
-    public class Load : ITransferCmdStep
+    public class Load : ITransferStatus
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {

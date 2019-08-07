@@ -9,9 +9,7 @@ namespace Mirle.Agv.Model
         private MapInfo theMapInfo = new MapInfo();
         public MapSection Section { get; set; } = new MapSection();
         public MapAddress Address { get; set; } = new MapAddress();
-        public MapPosition EncoderGxPosition { get; set; } = new MapPosition();
         public MapPosition BarcodePosition { get; set; } = new MapPosition();
-        public MapPosition Delta { get; set; } = new MapPosition();
         public MapPosition RealPosition { get; set; } = new MapPosition();
 
         public VehLocation(MapInfo theMapInfo)

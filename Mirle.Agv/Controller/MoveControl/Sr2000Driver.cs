@@ -150,7 +150,7 @@ namespace Mirle.Agv.Controller
             double mid = (sr2000Config.Up + sr2000Config.Down) / 2;
             double value = sr2000Config.Down + (sr2000Config.Up - sr2000Config.Down) * (barcode.Y / (2 * sr2000Config.ViewCenter.Y)); ;
             double x = sr2000Config.ViewCenter.X + (barcode.X - sr2000Config.ViewCenter.X) * (mid / value);
-            MapPosition returnPosition = new MapPosition((float)x, barcode.Y);
+            MapPosition returnPosition = new MapPosition((double)x, barcode.Y);
             return returnPosition;
         }
 
@@ -353,13 +353,13 @@ namespace Mirle.Agv.Controller
             barcode1ToCenterAngleInMap = barcodeAngleInMap - barcodeAngleInView + barcode1ToCenterAngleInView;
 
             sr2000ReadData.TargetCenter =
-                new MapPosition(sr2000ReadData.Barcode1.MapPosition.X + (float)(barcode1ToCenterDistance * Math.Cos(-barcode1ToCenterAngleInMap / 180 * Math.PI)),
-                                sr2000ReadData.Barcode1.MapPosition.Y + (float)(barcode1ToCenterDistance * Math.Sin(-barcode1ToCenterAngleInMap / 180 * Math.PI)));
+                new MapPosition(sr2000ReadData.Barcode1.MapPosition.X + (double)(barcode1ToCenterDistance * Math.Cos(-barcode1ToCenterAngleInMap / 180 * Math.PI)),
+                                sr2000ReadData.Barcode1.MapPosition.Y + (double)(barcode1ToCenterDistance * Math.Sin(-barcode1ToCenterAngleInMap / 180 * Math.PI)));
 
             MapPosition agvPosition = new MapPosition(
-                sr2000ReadData.TargetCenter.X + (float)(sr2000Config.ReaderToCenterDistance *
+                sr2000ReadData.TargetCenter.X + (double)(sr2000Config.ReaderToCenterDistance *
                 Math.Cos((agvAngleInMap + sr2000Config.ReaderToCenterDegree) / 180 * Math.PI)),
-                sr2000ReadData.TargetCenter.Y + (float)(sr2000Config.ReaderToCenterDistance *
+                sr2000ReadData.TargetCenter.Y + (double)(sr2000Config.ReaderToCenterDistance *
                 Math.Sin((agvAngleInMap + sr2000Config.ReaderToCenterDegree) / 180 * Math.PI)));
 
             sr2000ReadData.AGV = new AGVPosition(agvPosition, agvAngleInMap, barcodeAngleInView, sr2000ReadData.ScanTime,
@@ -378,14 +378,14 @@ namespace Mirle.Agv.Controller
 
             if (barcodeData.MapPositionOffset.X != 0)
             {
-                returnData.X += barcodeData.MapPositionOffset.X * (float)Math.Cos(-AngleOfMapInReader / 180 * Math.PI);
-                returnData.Y += barcodeData.MapPositionOffset.X * (float)Math.Sin(-AngleOfMapInReader / 180 * Math.PI);
+                returnData.X += barcodeData.MapPositionOffset.X * (double)Math.Cos(-AngleOfMapInReader / 180 * Math.PI);
+                returnData.Y += barcodeData.MapPositionOffset.X * (double)Math.Sin(-AngleOfMapInReader / 180 * Math.PI);
             }
 
             if (barcodeData.MapPositionOffset.Y != 0)
             {
-                returnData.X += barcodeData.MapPositionOffset.Y * (float)Math.Cos(-(AngleOfMapInReader - 90) / 180 * Math.PI);
-                returnData.Y += barcodeData.MapPositionOffset.Y * (float)Math.Sin(-(AngleOfMapInReader - 90) / 180 * Math.PI);
+                returnData.X += barcodeData.MapPositionOffset.Y * (double)Math.Cos(-(AngleOfMapInReader - 90) / 180 * Math.PI);
+                returnData.Y += barcodeData.MapPositionOffset.Y * (double)Math.Sin(-(AngleOfMapInReader - 90) / 180 * Math.PI);
             }
 
             return returnData;
