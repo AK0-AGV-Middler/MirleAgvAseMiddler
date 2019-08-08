@@ -34,7 +34,7 @@ namespace Mirle.Agv.Controller
         private List<TransferStep> transferSteps = new List<TransferStep>();
         private List<TransferStep> lastTransferSteps = new List<TransferStep>();
 
-        
+
 
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
@@ -535,7 +535,7 @@ namespace Mirle.Agv.Controller
                 }
             }
 
-            OnMessageShowEvent?.Invoke(this, "MainFlow : "+ fullMsg);
+            OnMessageShowEvent?.Invoke(this, "MainFlow : " + fullMsg);
         }
 
         private bool CheckTransCmdSectionsAndAddressesMatch(AgvcTransCmd agvcTransCmd)
@@ -917,7 +917,7 @@ namespace Mirle.Agv.Controller
                         middleAgent.RestartAskingReserve();
 
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Visit TransCmds : [Middler.NeedReserveId.New = {needReserveSection.Id}]");
-                    }                  
+                    }
                 }
                 else
                 {
@@ -1031,7 +1031,7 @@ namespace Mirle.Agv.Controller
             // 判斷當前是否可卸貨 若否 則發送報告
             MapPosition position = theVehicle.GetVehLoacation().RealPosition;
             MapAddress loadAddress = theMapInfo.allMapAddresses[agvcTransCmd.LoadAddress];
-            return mapHandler.IsPositionInThisAddress(position, loadAddress);       
+            return mapHandler.IsPositionInThisAddress(position, loadAddress);
         }
 
         private bool CanVehMove()
@@ -1253,7 +1253,7 @@ namespace Mirle.Agv.Controller
             middleAgent.PauseAskingReserve();
             queGotReserveOkSections = new ConcurrentQueue<MapSection>();
             queNeedReserveSections = new ConcurrentQueue<MapSection>();
-        
+
             if (status == EnumMoveComplete.Fail)
             {
                 //TODO: Alarm
@@ -1505,6 +1505,24 @@ namespace Mirle.Agv.Controller
         public void CallMoveControlWork(MoveCmdInfo moveCmd)
         {
             moveControlHandler.TransferMove(moveCmd);
+            string msg = "MainFlow : Call Move Control Work";
+            msg += "[AddressPositions=";
+            for (int i = 0; i < moveCmd.AddressPositions.Count; i++)
+            {
+                msg += $"({(int)(moveCmd.AddressPositions[i].X)},{(int)(moveCmd.AddressPositions[i].Y)})";
+            }
+            msg += "][AddressActions=";
+            for (int i = 0; i < moveCmd.AddressActions.Count; i++)
+            {
+                msg += $"({moveCmd.AddressActions[i]})";
+            }
+            msg += "][SectionSpeedLimits=";
+            for (int i = 0; i < moveCmd.SectionSpeedLimits.Count; i++)
+            {
+                msg += $"({moveCmd.SectionSpeedLimits[i]})";
+            }
+            msg += "]";
+            OnMessageShowEvent?.Invoke(this, msg);
         }
 
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
@@ -1633,7 +1651,7 @@ namespace Mirle.Agv.Controller
         public List<MapSection> GetNeedReserveSections()
         {
             return queNeedReserveSections.ToList().DeepClone();
-        }       
+        }
 
         public List<MapSection> GetReserveOkSections()
         {
@@ -1725,6 +1743,6 @@ namespace Mirle.Agv.Controller
         public void CleanAgvcTransCmd()
         {
             this.agvcTransCmd = null;
-        }       
+        }
     }
 }
