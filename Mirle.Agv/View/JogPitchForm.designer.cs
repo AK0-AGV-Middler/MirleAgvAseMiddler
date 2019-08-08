@@ -181,6 +181,7 @@
             // 
             // button_JogPitch_AxisMove_Absolute
             // 
+            this.button_JogPitch_AxisMove_Absolute.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.button_JogPitch_AxisMove_Absolute.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_JogPitch_AxisMove_Absolute.Location = new System.Drawing.Point(101, 124);
             this.button_JogPitch_AxisMove_Absolute.Name = "button_JogPitch_AxisMove_Absolute";
@@ -745,22 +746,25 @@
             this.button_JogPitch_ChangeFormSize.UseVisualStyleBackColor = true;
             this.button_JogPitch_ChangeFormSize.Click += new System.EventHandler(this.button_JogPitch_ChangeFormSize_Click);
             // 
-            // JogPitch
+            // JogPitchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(724, 481);
+            this.ControlBox = false;
             this.Controls.Add(this.button_JogPitch_ChangeFormSize);
             this.Controls.Add(this.gB_JogPitch_ElmoFunction);
             this.Controls.Add(this.gB_JogPitch_Sr2000);
             this.Controls.Add(this.groupBox_SingleAxis);
             this.Controls.Add(this.gB_JogPitch_JogPitch);
+            this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "JogPitch";
+            this.Name = "JogPitchForm";
             this.Text = "JogPitch";
-            this.Load += new System.EventHandler(this.JogPitch_Load);
+            this.Shown += new System.EventHandler(this.JogPitchForm_Shown);
             this.groupBox_SingleAxis.ResumeLayout(false);
             this.groupBox_SingleAxis.PerformLayout();
             this.gB_JogPitch_Sr2000.ResumeLayout(false);

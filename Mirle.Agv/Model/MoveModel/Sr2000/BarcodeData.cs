@@ -18,7 +18,7 @@ namespace Mirle.Agv.Model
         public BarcodeData(int id, double x, double y)
         {
             ID = id;
-            ViewPosition = new MapPosition(x, y);
+            ViewPosition = new MapPosition((float)x, (float)y);
         }
     }
 }

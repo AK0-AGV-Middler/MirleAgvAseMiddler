@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Model
 {
-    public class Position
+    public class Location
     {
         public MapPosition Encoder { get; set; }
         public AGVPosition Barcode { get; set; }
@@ -23,7 +23,7 @@ namespace Mirle.Agv.Model
         public double XFLVelocity { get; set; }
         public double XRRVelocity { get; set; }
 
-        public Position()
+        public Location()
         {
             Encoder = null;
             Barcode = null;

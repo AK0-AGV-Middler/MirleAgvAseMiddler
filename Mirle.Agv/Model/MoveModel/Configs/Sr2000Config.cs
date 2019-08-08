@@ -23,5 +23,6 @@ namespace Mirle.Agv.Model.Configs
         public bool LogMode { get; set; }
         public double Up { get; set; }
         public double Down { get; set; }
+        public double DistanceSafetyRange { get; set; }
     }
 }

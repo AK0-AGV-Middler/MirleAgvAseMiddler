@@ -40,6 +40,7 @@ namespace Mirle.Agv.View
             this.timer_UpdateData = new System.Windows.Forms.Timer(this.components);
             this.tbC_Debug = new System.Windows.Forms.TabControl();
             this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
+            this.button_TurnOutSafetyDistance = new System.Windows.Forms.Button();
             this.tB_PositionY = new System.Windows.Forms.TextBox();
             this.tB_PositionX = new System.Windows.Forms.TextBox();
             this.button_DebugModeSend = new System.Windows.Forms.Button();
@@ -69,10 +70,44 @@ namespace Mirle.Agv.View
             this.label_DebugList = new System.Windows.Forms.Label();
             this.DebugList = new System.Windows.Forms.ListBox();
             this.tbP_DebugCSV = new System.Windows.Forms.TabPage();
+            this.dataGridView_CSVList = new System.Windows.Forms.DataGridView();
+            this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.moveState = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.realEncoder = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.nextCommand = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.triggerEncoder = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.delta = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.offset = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.realX = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.realY = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.barcodeX = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.barcodeY = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LGetDataTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LScanTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LMapX = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LMapY = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LMapTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LBarcodeAngle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LDelta = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LBarcode1ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000LBarcode2ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RGetDataTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RScanTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RMapX = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RMapY = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RMapTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RBarcodeAngle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RDelta = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RBarcode1ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sr2000RBarcode2ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.button_DebugCSV = new System.Windows.Forms.Button();
             this.button_DebugCSVClear = new System.Windows.Forms.Button();
             this.label_DebugCSVList = new System.Windows.Forms.Label();
-            this.DebugCSVList = new System.Windows.Forms.ListBox();
-            this.button_DebugCSV = new System.Windows.Forms.Button();
+            this.button_CSVListShowAll = new System.Windows.Forms.Button();
             this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTtB_CommandListState = new Mirle.Agv.UcLabelTextBox();
@@ -81,12 +116,13 @@ namespace Mirle.Agv.View
             this.ucLabelTB_Delta = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_RealEncoder = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTextBox1 = new Mirle.Agv.UcLabelTextBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.button_CSVListDisViewRang = new System.Windows.Forms.Button();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
             this.tbP_Debug.SuspendLayout();
             this.tbP_DebugCSV.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_CSVList)).BeginInit();
             this.SuspendLayout();
             // 
             // CommandList
@@ -184,6 +220,7 @@ namespace Mirle.Agv.View
             // 
             // tbP_CreateCommand
             // 
+            this.tbP_CreateCommand.Controls.Add(this.button_TurnOutSafetyDistance);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommand_BarcodePosition);
             this.tbP_CreateCommand.Controls.Add(this.tB_PositionY);
@@ -217,6 +254,16 @@ namespace Mirle.Agv.View
             this.tbP_CreateCommand.TabIndex = 0;
             this.tbP_CreateCommand.Text = "產生命令";
             this.tbP_CreateCommand.UseVisualStyleBackColor = true;
+            // 
+            // button_TurnOutSafetyDistance
+            // 
+            this.button_TurnOutSafetyDistance.Location = new System.Drawing.Point(453, 539);
+            this.button_TurnOutSafetyDistance.Name = "button_TurnOutSafetyDistance";
+            this.button_TurnOutSafetyDistance.Size = new System.Drawing.Size(160, 40);
+            this.button_TurnOutSafetyDistance.TabIndex = 79;
+            this.button_TurnOutSafetyDistance.Text = "button1";
+            this.button_TurnOutSafetyDistance.UseVisualStyleBackColor = true;
+            this.button_TurnOutSafetyDistance.Click += new System.EventHandler(this.button_TurnOutSafetyDistance_Click);
             // 
             // tB_PositionY
             // 
@@ -524,17 +571,241 @@ namespace Mirle.Agv.View
             // 
             // tbP_DebugCSV
             // 
-            this.tbP_DebugCSV.Controls.Add(this.label2);
+            this.tbP_DebugCSV.Controls.Add(this.button_CSVListDisViewRang);
+            this.tbP_DebugCSV.Controls.Add(this.button_CSVListShowAll);
+            this.tbP_DebugCSV.Controls.Add(this.dataGridView_CSVList);
             this.tbP_DebugCSV.Controls.Add(this.button_DebugCSV);
             this.tbP_DebugCSV.Controls.Add(this.button_DebugCSVClear);
             this.tbP_DebugCSV.Controls.Add(this.label_DebugCSVList);
-            this.tbP_DebugCSV.Controls.Add(this.DebugCSVList);
             this.tbP_DebugCSV.Location = new System.Drawing.Point(4, 22);
             this.tbP_DebugCSV.Name = "tbP_DebugCSV";
             this.tbP_DebugCSV.Size = new System.Drawing.Size(1283, 601);
             this.tbP_DebugCSV.TabIndex = 3;
             this.tbP_DebugCSV.Text = "DebugCSV";
             this.tbP_DebugCSV.UseVisualStyleBackColor = true;
+            // 
+            // dataGridView_CSVList
+            // 
+            this.dataGridView_CSVList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView_CSVList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.time,
+            this.moveState,
+            this.realEncoder,
+            this.nextCommand,
+            this.triggerEncoder,
+            this.delta,
+            this.offset,
+            this.realX,
+            this.realY,
+            this.barcodeX,
+            this.barcodeY,
+            this.sr2000LCount,
+            this.sr2000LGetDataTime,
+            this.sr2000LScanTime,
+            this.sr2000LMapX,
+            this.sr2000LMapY,
+            this.sr2000LMapTheta,
+            this.sr2000LBarcodeAngle,
+            this.sr2000LDelta,
+            this.sr2000LTheta,
+            this.sr2000LBarcode1ID,
+            this.sr2000LBarcode2ID,
+            this.sr2000RCount,
+            this.sr2000RGetDataTime,
+            this.sr2000RScanTime,
+            this.sr2000RMapX,
+            this.sr2000RMapY,
+            this.sr2000RMapTheta,
+            this.sr2000RBarcodeAngle,
+            this.sr2000RDelta,
+            this.sr2000RTheta,
+            this.sr2000RBarcode1ID,
+            this.sr2000RBarcode2ID});
+            this.dataGridView_CSVList.Cursor = System.Windows.Forms.Cursors.Default;
+            this.dataGridView_CSVList.Location = new System.Drawing.Point(6, 44);
+            this.dataGridView_CSVList.Name = "dataGridView_CSVList";
+            this.dataGridView_CSVList.RowTemplate.Height = 24;
+            this.dataGridView_CSVList.Size = new System.Drawing.Size(1271, 551);
+            this.dataGridView_CSVList.TabIndex = 46;
+            this.dataGridView_CSVList.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_CSVList_ColumnHeaderMouseClick);
+            this.dataGridView_CSVList.ColumnHeaderMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_CSVList_ColumnHeaderMouseDoubleClick);
+            // 
+            // time
+            // 
+            this.time.Frozen = true;
+            this.time.HeaderText = "Time";
+            this.time.Name = "time";
+            // 
+            // moveState
+            // 
+            this.moveState.HeaderText = "State";
+            this.moveState.Name = "moveState";
+            this.moveState.Width = 50;
+            // 
+            // realEncoder
+            // 
+            this.realEncoder.HeaderText = "RealEncoder";
+            this.realEncoder.Name = "realEncoder";
+            // 
+            // nextCommand
+            // 
+            this.nextCommand.HeaderText = "Command";
+            this.nextCommand.Name = "nextCommand";
+            // 
+            // triggerEncoder
+            // 
+            this.triggerEncoder.HeaderText = "Trigger";
+            this.triggerEncoder.Name = "triggerEncoder";
+            // 
+            // delta
+            // 
+            this.delta.HeaderText = "Delta";
+            this.delta.Name = "delta";
+            // 
+            // offset
+            // 
+            this.offset.HeaderText = "offset";
+            this.offset.Name = "offset";
+            // 
+            // realX
+            // 
+            this.realX.HeaderText = "RealX";
+            this.realX.Name = "realX";
+            // 
+            // realY
+            // 
+            this.realY.HeaderText = "RealY";
+            this.realY.Name = "realY";
+            // 
+            // barcodeX
+            // 
+            this.barcodeX.HeaderText = "BarcodeX";
+            this.barcodeX.Name = "barcodeX";
+            // 
+            // barcodeY
+            // 
+            this.barcodeY.HeaderText = "BarcodeY";
+            this.barcodeY.Name = "barcodeY";
+            // 
+            // sr2000LCount
+            // 
+            this.sr2000LCount.HeaderText = "SR2000LCount";
+            this.sr2000LCount.Name = "sr2000LCount";
+            // 
+            // sr2000LGetDataTime
+            // 
+            this.sr2000LGetDataTime.HeaderText = "SR2000LGetTime";
+            this.sr2000LGetDataTime.Name = "sr2000LGetDataTime";
+            // 
+            // sr2000LScanTime
+            // 
+            this.sr2000LScanTime.HeaderText = "SR2000LScanTime";
+            this.sr2000LScanTime.Name = "sr2000LScanTime";
+            // 
+            // sr2000LMapX
+            // 
+            this.sr2000LMapX.HeaderText = "SR2000LMapX";
+            this.sr2000LMapX.Name = "sr2000LMapX";
+            // 
+            // sr2000LMapY
+            // 
+            this.sr2000LMapY.HeaderText = "SR2000LMapY";
+            this.sr2000LMapY.Name = "sr2000LMapY";
+            // 
+            // sr2000LMapTheta
+            // 
+            this.sr2000LMapTheta.HeaderText = "SR2000LMapTheta";
+            this.sr2000LMapTheta.Name = "sr2000LMapTheta";
+            // 
+            // sr2000LBarcodeAngle
+            // 
+            this.sr2000LBarcodeAngle.HeaderText = "SR2000LAngle";
+            this.sr2000LBarcodeAngle.Name = "sr2000LBarcodeAngle";
+            // 
+            // sr2000LDelta
+            // 
+            this.sr2000LDelta.HeaderText = "SR2000Ldelta";
+            this.sr2000LDelta.Name = "sr2000LDelta";
+            // 
+            // sr2000LTheta
+            // 
+            this.sr2000LTheta.HeaderText = "SR2000LTheta";
+            this.sr2000LTheta.Name = "sr2000LTheta";
+            // 
+            // sr2000LBarcode1ID
+            // 
+            this.sr2000LBarcode1ID.HeaderText = "SR2000LID1";
+            this.sr2000LBarcode1ID.Name = "sr2000LBarcode1ID";
+            // 
+            // sr2000LBarcode2ID
+            // 
+            this.sr2000LBarcode2ID.HeaderText = "SR2000LID2";
+            this.sr2000LBarcode2ID.Name = "sr2000LBarcode2ID";
+            // 
+            // sr2000RCount
+            // 
+            this.sr2000RCount.HeaderText = "SR2000RCount";
+            this.sr2000RCount.Name = "sr2000RCount";
+            // 
+            // sr2000RGetDataTime
+            // 
+            this.sr2000RGetDataTime.HeaderText = "SR2000RGetTime";
+            this.sr2000RGetDataTime.Name = "sr2000RGetDataTime";
+            // 
+            // sr2000RScanTime
+            // 
+            this.sr2000RScanTime.HeaderText = "SR2000RScanTime";
+            this.sr2000RScanTime.Name = "sr2000RScanTime";
+            // 
+            // sr2000RMapX
+            // 
+            this.sr2000RMapX.HeaderText = "SR2000RMapX";
+            this.sr2000RMapX.Name = "sr2000RMapX";
+            // 
+            // sr2000RMapY
+            // 
+            this.sr2000RMapY.HeaderText = "SR2000RMapY";
+            this.sr2000RMapY.Name = "sr2000RMapY";
+            // 
+            // sr2000RMapTheta
+            // 
+            this.sr2000RMapTheta.HeaderText = "SR2000RMapTheta";
+            this.sr2000RMapTheta.Name = "sr2000RMapTheta";
+            // 
+            // sr2000RBarcodeAngle
+            // 
+            this.sr2000RBarcodeAngle.HeaderText = "SR2000RAngle";
+            this.sr2000RBarcodeAngle.Name = "sr2000RBarcodeAngle";
+            // 
+            // sr2000RDelta
+            // 
+            this.sr2000RDelta.HeaderText = "SR2000RDelta";
+            this.sr2000RDelta.Name = "sr2000RDelta";
+            // 
+            // sr2000RTheta
+            // 
+            this.sr2000RTheta.HeaderText = "SR2000RTheta";
+            this.sr2000RTheta.Name = "sr2000RTheta";
+            // 
+            // sr2000RBarcode1ID
+            // 
+            this.sr2000RBarcode1ID.HeaderText = "SR2000RID1";
+            this.sr2000RBarcode1ID.Name = "sr2000RBarcode1ID";
+            // 
+            // sr2000RBarcode2ID
+            // 
+            this.sr2000RBarcode2ID.HeaderText = "SR2000RID2";
+            this.sr2000RBarcode2ID.Name = "sr2000RBarcode2ID";
+            // 
+            // button_DebugCSV
+            // 
+            this.button_DebugCSV.Location = new System.Drawing.Point(1020, 11);
+            this.button_DebugCSV.Name = "button_DebugCSV";
+            this.button_DebugCSV.Size = new System.Drawing.Size(85, 27);
+            this.button_DebugCSV.TabIndex = 44;
+            this.button_DebugCSV.Text = "開啟";
+            this.button_DebugCSV.UseVisualStyleBackColor = true;
+            this.button_DebugCSV.Click += new System.EventHandler(this.button_DebugCSV_Click);
             // 
             // button_DebugCSVClear
             // 
@@ -556,27 +827,15 @@ namespace Mirle.Agv.View
             this.label_DebugCSVList.TabIndex = 42;
             this.label_DebugCSVList.Text = "DebugCSV List :";
             // 
-            // DebugCSVList
+            // button_CSVListShowAll
             // 
-            this.DebugCSVList.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.DebugCSVList.FormattingEnabled = true;
-            this.DebugCSVList.HorizontalScrollbar = true;
-            this.DebugCSVList.ItemHeight = 16;
-            this.DebugCSVList.Location = new System.Drawing.Point(6, 78);
-            this.DebugCSVList.Name = "DebugCSVList";
-            this.DebugCSVList.ScrollAlwaysVisible = true;
-            this.DebugCSVList.Size = new System.Drawing.Size(1271, 516);
-            this.DebugCSVList.TabIndex = 38;
-            // 
-            // button_DebugCSV
-            // 
-            this.button_DebugCSV.Location = new System.Drawing.Point(1020, 11);
-            this.button_DebugCSV.Name = "button_DebugCSV";
-            this.button_DebugCSV.Size = new System.Drawing.Size(85, 27);
-            this.button_DebugCSV.TabIndex = 44;
-            this.button_DebugCSV.Text = "開啟";
-            this.button_DebugCSV.UseVisualStyleBackColor = true;
-            this.button_DebugCSV.Click += new System.EventHandler(this.button_DebugCSV_Click);
+            this.button_CSVListShowAll.Location = new System.Drawing.Point(858, 11);
+            this.button_CSVListShowAll.Name = "button_CSVListShowAll";
+            this.button_CSVListShowAll.Size = new System.Drawing.Size(85, 27);
+            this.button_CSVListShowAll.TabIndex = 47;
+            this.button_CSVListShowAll.Text = "顯示全部";
+            this.button_CSVListShowAll.UseVisualStyleBackColor = true;
+            this.button_CSVListShowAll.Click += new System.EventHandler(this.button_CSVListShowAll_Click);
             // 
             // ucLabelTB_CreateCommandState
             // 
@@ -658,17 +917,17 @@ namespace Mirle.Agv.View
             this.ucLabelTextBox1.UcName = "label1";
             this.ucLabelTextBox1.UcValue = "";
             // 
-            // label2
+            // button_CSVListDisViewRang
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label2.Location = new System.Drawing.Point(8, 51);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(53, 19);
-            this.label2.TabIndex = 45;
-            this.label2.Text = "label2";
+            this.button_CSVListDisViewRang.Location = new System.Drawing.Point(702, 11);
+            this.button_CSVListDisViewRang.Name = "button_CSVListDisViewRang";
+            this.button_CSVListDisViewRang.Size = new System.Drawing.Size(96, 27);
+            this.button_CSVListDisViewRang.TabIndex = 48;
+            this.button_CSVListDisViewRang.Text = "隱藏區域開啟";
+            this.button_CSVListDisViewRang.UseVisualStyleBackColor = true;
+            this.button_CSVListDisViewRang.Click += new System.EventHandler(this.button_CSVListDisViewRang_Click);
             // 
-            // MoveCommandDebugMode
+            // MoveCommandDebugModeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -677,7 +936,7 @@ namespace Mirle.Agv.View
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "MoveCommandDebugMode";
+            this.Name = "MoveCommandDebugModeForm";
             this.Text = "MoveCommandMonitor";
             this.Load += new System.EventHandler(this.MoveCommandMonitor_Load);
             this.Leave += new System.EventHandler(this.MoveCommandDebugMode_Leave);
@@ -690,6 +949,7 @@ namespace Mirle.Agv.View
             this.tbP_Debug.PerformLayout();
             this.tbP_DebugCSV.ResumeLayout(false);
             this.tbP_DebugCSV.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_CSVList)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -741,12 +1001,47 @@ namespace Mirle.Agv.View
         private UcLabelTextBox ucLabelTtB_CommandListState;
         private System.Windows.Forms.ListBox DebugList;
         private System.Windows.Forms.TabPage tbP_DebugCSV;
-        private System.Windows.Forms.ListBox DebugCSVList;
         private System.Windows.Forms.Button button_DebugListClear;
         private System.Windows.Forms.Label label_DebugList;
         private System.Windows.Forms.Button button_DebugCSVClear;
         private System.Windows.Forms.Label label_DebugCSVList;
         private System.Windows.Forms.Button button_DebugCSV;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button button_TurnOutSafetyDistance;
+        private System.Windows.Forms.DataGridView dataGridView_CSVList;
+        private System.Windows.Forms.DataGridViewTextBoxColumn time;
+        private System.Windows.Forms.DataGridViewTextBoxColumn moveState;
+        private System.Windows.Forms.DataGridViewTextBoxColumn realEncoder;
+        private System.Windows.Forms.DataGridViewTextBoxColumn nextCommand;
+        private System.Windows.Forms.DataGridViewTextBoxColumn triggerEncoder;
+        private System.Windows.Forms.DataGridViewTextBoxColumn delta;
+        private System.Windows.Forms.DataGridViewTextBoxColumn offset;
+        private System.Windows.Forms.DataGridViewTextBoxColumn realX;
+        private System.Windows.Forms.DataGridViewTextBoxColumn realY;
+        private System.Windows.Forms.DataGridViewTextBoxColumn barcodeX;
+        private System.Windows.Forms.DataGridViewTextBoxColumn barcodeY;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LCount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LGetDataTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LScanTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LMapX;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LMapY;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LMapTheta;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LBarcodeAngle;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LDelta;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LTheta;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LBarcode1ID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LBarcode2ID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RCount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RGetDataTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RScanTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RMapX;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RMapY;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RMapTheta;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcodeAngle;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RDelta;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RTheta;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcode1ID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcode2ID;
+        private System.Windows.Forms.Button button_CSVListShowAll;
+        private System.Windows.Forms.Button button_CSVListDisViewRang;
     }
 }

@@ -97,7 +97,6 @@
     <Compile Include="Controller\Handler\TransfereCmdSteps\Move.cs" />
     <Compile Include="Controller\Handler\TransfereCmdSteps\Unload.cs" />
     <Compile Include="Controller\IComplete.cs" />
-    <Compile Include="Controller\Agent\BmsAgent.cs" />
     <Compile Include="Controller\MoveControl\MoveControlHandler.cs" />
     <Compile Include="Controller\Agent\PlcAgent.cs" />
     <Compile Include="Controller\InitialEventArgs.cs" />
@@ -126,12 +125,14 @@
     <Compile Include="Model\MoveModel\Configs\Sr2000Config.cs" />
     <Compile Include="Model\MoveModel\Elmo\AxisInfo.cs" />
     <Compile Include="Model\MoveModel\Elmo\ElmoAxisFeedbackData.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\AddToCommandListData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\AGVTurnParameter.cs" />
     <Compile Include="Model\MoveModel\MoveControl\AxisData.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\BreakDownMoveCommandData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\Command.cs" />
     <Compile Include="Model\MoveModel\MoveControl\MoveControlParameter.cs" />
     <Compile Include="Model\MoveModel\MoveControl\OneMoveCommand.cs" />
-    <Compile Include="Model\MoveModel\MoveControl\Position.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\Location.cs" />
     <Compile Include="Model\MoveModel\MoveControl\ReserveData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\SectionLine.cs" />
     <Compile Include="Model\MoveModel\SR2000\AGVPosition.cs" />

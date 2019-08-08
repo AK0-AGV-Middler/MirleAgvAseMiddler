@@ -110,38 +110,11 @@ namespace Mirle.Agv.Controller
 
         private bool HorizontalRevise(ref double[] wheelTheta, double theta, double sectionDeviation, int wheelAngle)
         {
-            if ((reviseParameter.ReviseType == EnumLineReviseType.Theta || theta > reviseParameter.ModifyTheta || -theta < -reviseParameter.ModifyTheta) &&
-                sectionDeviation < reviseParameter.ModifySectionDeviation * ontimeReviseConfig.Return0ThetaPriority.SectionDeviation &&
-                sectionDeviation > -reviseParameter.ModifySectionDeviation * ontimeReviseConfig.Return0ThetaPriority.SectionDeviation)
-            {
-                if ((theta < reviseParameter.ModifyTheta / ontimeReviseConfig.Return0ThetaPriority.Theta &&
-                    -theta > -reviseParameter.ModifyTheta / ontimeReviseConfig.Return0ThetaPriority.Theta))
-                {
-                    reviseParameter.ReviseType = EnumLineReviseType.None;
-                    wheelTheta = new double[4] { wheelAngle, wheelAngle, wheelAngle, wheelAngle };
-                    return true;
-                }
-                else
-                {
-                    reviseParameter.ReviseType = EnumLineReviseType.Theta;
-                    reviseParameter.ReviseValue = theta;
-                    double turnTheta = theta / reviseParameter.ModifyTheta / ontimeReviseConfig.LinePriority.Theta * reviseParameter.MaxTheta;
-
-                    if (turnTheta > reviseParameter.MaxTheta)
-                        turnTheta = reviseParameter.MaxTheta;
-                    else if (turnTheta < -reviseParameter.MaxTheta)
-                        turnTheta = -reviseParameter.MaxTheta;
-
-                    turnTheta = reviseParameter.DirFlag ? -turnTheta : turnTheta;
-                    wheelTheta = new double[4] { wheelAngle - turnTheta, wheelAngle + turnTheta, wheelAngle - turnTheta, wheelAngle + turnTheta };
-                    return true;
-                }
-            }
-            else if (reviseParameter.ReviseType == EnumLineReviseType.SectionDeviation || sectionDeviation > reviseParameter.ModifySectionDeviation
-                                                                                   || -sectionDeviation < -reviseParameter.ModifySectionDeviation)
+            if (reviseParameter.ReviseType == EnumLineReviseType.SectionDeviation || sectionDeviation > reviseParameter.ModifySectionDeviation
+                                                                                  || sectionDeviation < -reviseParameter.ModifySectionDeviation)
             {
                 if (sectionDeviation < reviseParameter.ModifySectionDeviation / ontimeReviseConfig.Return0ThetaPriority.SectionDeviation &&
-                    -sectionDeviation > -reviseParameter.ModifySectionDeviation / ontimeReviseConfig.Return0ThetaPriority.SectionDeviation)
+                    sectionDeviation > -reviseParameter.ModifySectionDeviation / ontimeReviseConfig.Return0ThetaPriority.SectionDeviation)
                 {
                     reviseParameter.ReviseType = EnumLineReviseType.None;
                     wheelTheta = new double[4] { wheelAngle, wheelAngle, wheelAngle, wheelAngle };
@@ -161,6 +134,31 @@ namespace Mirle.Agv.Controller
                     turnTheta = reviseParameter.DirFlag ? turnTheta : -turnTheta;
                     turnTheta = (wheelAngle == -90) ? -turnTheta : turnTheta;
                     wheelTheta = new double[4] { wheelAngle + turnTheta, wheelAngle + turnTheta, wheelAngle + turnTheta, wheelAngle + turnTheta };
+                    return true;
+                }
+            }
+            else if ((reviseParameter.ReviseType == EnumLineReviseType.Theta || theta > reviseParameter.ModifyTheta || theta < -reviseParameter.ModifyTheta))
+            {
+                if ((theta < reviseParameter.ModifyTheta / ontimeReviseConfig.Return0ThetaPriority.Theta &&
+                     theta > -reviseParameter.ModifyTheta / ontimeReviseConfig.Return0ThetaPriority.Theta))
+                {
+                    reviseParameter.ReviseType = EnumLineReviseType.None;
+                    wheelTheta = new double[4] { wheelAngle, wheelAngle, wheelAngle, wheelAngle };
+                    return true;
+                }
+                else
+                {
+                    reviseParameter.ReviseType = EnumLineReviseType.Theta;
+                    reviseParameter.ReviseValue = theta;
+                    double turnTheta = theta / reviseParameter.ModifyTheta / ontimeReviseConfig.LinePriority.Theta * reviseParameter.MaxTheta;
+
+                    if (turnTheta > reviseParameter.MaxTheta)
+                        turnTheta = reviseParameter.MaxTheta;
+                    else if (turnTheta < -reviseParameter.MaxTheta)
+                        turnTheta = -reviseParameter.MaxTheta;
+
+                    turnTheta = reviseParameter.DirFlag ? -turnTheta : turnTheta;
+                    wheelTheta = new double[4] { wheelAngle - turnTheta, wheelAngle + turnTheta, wheelAngle - turnTheta, wheelAngle + turnTheta };
                     return true;
                 }
             }

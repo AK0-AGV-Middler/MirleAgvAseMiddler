@@ -339,7 +339,7 @@ namespace Mirle.Agv
         Moving,
         TR,
         R2000,
-        MoveComplete,
+        Error,
         WaitForReserve,
         WaitForResume
     }

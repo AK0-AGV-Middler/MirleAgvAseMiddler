@@ -208,18 +208,19 @@ namespace Mirle.Agv.Controller
                 #endregion
                 sw.Start();
 
-                if (AutoApplyReserve)
-                {
-                    askResult = true;
-                    AutoApplyReserve = false;
-                    OnMessageShowEvent?.Invoke(this, $"Middler : Auto Apply Reserve = {AutoApplyReserve}");
-                }
-                else
-                {
-                    askResult = false;                    
-                }
+                //if (AutoApplyReserve)
+                //{
+                //    askResult = true;
+                //    AutoApplyReserve = false;
+                //    OnMessageShowEvent?.Invoke(this, $"Middler : Auto Apply Reserve = {AutoApplyReserve}");
+                //}
+                //else
+                //{
+                //    askResult = false;                    
+                //}
 
                 //askResult = Send_Cmd136_AskReserve();
+                askResult = true;
 
                 //OnMessageShowEvent?.Invoke(this, $"Ask Reserve : [Result = {askResult}][ReserveId = {needReserveSection.Id}]");
 

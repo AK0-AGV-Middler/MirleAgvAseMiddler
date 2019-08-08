@@ -41,6 +41,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     //mainFlowHandler.PauseTrackingPosition();
                     //mainFlowHandler.SetTransCmdsStep(new Idle());
                     //mainFlowHandler.DoTransfer();
+                    mainFlowHandler.IdleVisitNext();
                     break;
             }
 

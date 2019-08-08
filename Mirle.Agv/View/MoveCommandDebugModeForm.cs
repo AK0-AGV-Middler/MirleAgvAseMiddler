@@ -18,7 +18,6 @@ namespace Mirle.Agv.View
     public partial class MoveCommandDebugModeForm : Form
     {
         private MoveControlHandler moveControl;
-        private CreateMoveControlList createMoveControlList;
         private List<Command> moveCmdList = null;
         private List<SectionLine> sectionLineList = null;
         private List<ReserveData> reserveDataList = null;
@@ -30,7 +29,14 @@ namespace Mirle.Agv.View
         private int reserveIndex;
         private int commandIndex;
         private AGVPosition tempReal = null;
-        private string debugCSVHeader = "";
+        private int firstSelect;
+        private int secondSelect;
+
+        private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
+                                                EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
+                                                EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
+                                                EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
+                                                EnumAxis.GX, EnumAxis.GT};
 
         #region Initail
         public MoveCommandDebugModeForm(MoveControlHandler moveControl, MapInfo theMapInfo)
@@ -38,7 +44,6 @@ namespace Mirle.Agv.View
             InitializeComponent();
             this.moveControl = moveControl;
             this.theMapInfo = theMapInfo;
-            createMoveControlList = new CreateMoveControlList(moveControl.DriverSr2000List, moveControl.moveControlConfig);
         }
 
         private void MoveCommandMonitor_Load(object sender, EventArgs e)
@@ -54,6 +59,67 @@ namespace Mirle.Agv.View
             AddListMapAddressPositions();
             AddListMapAddressActions();
             AddListMapSpeedLimits();
+            AddDataGridViewColumn();
+        }
+
+        private void AddDataGridViewColumn()
+        {
+            System.Windows.Forms.DataGridViewTextBoxColumn[][] AxisColumn = new DataGridViewTextBoxColumn[18][];
+
+            for (int i = 0; i < 8; i++)
+            {
+                AxisColumn[i] = new DataGridViewTextBoxColumn[7];
+                for (int j = 0; j < 7; j++)
+                    AxisColumn[i][j] = new DataGridViewTextBoxColumn();
+                //  count   position	velocity	toc	disable	moveComplete	error
+                AxisColumn[i][0].HeaderText = AxisList[i].ToString();
+                AxisColumn[i][0].Name = AxisList[i].ToString();
+                AxisColumn[i][1].HeaderText = "Position";
+                AxisColumn[i][1].Name = AxisList[i].ToString() + "Position";
+                AxisColumn[i][2].HeaderText = "Velocity";
+                AxisColumn[i][2].Name = AxisList[i].ToString() + "Velocity";
+                AxisColumn[i][3].HeaderText = "toc";
+                AxisColumn[i][3].Name = AxisList[i].ToString() + "toc";
+                AxisColumn[i][4].HeaderText = "Disable";
+                AxisColumn[i][4].Name = AxisList[i].ToString() + "Disable";
+                AxisColumn[i][5].HeaderText = "Complete";
+                AxisColumn[i][5].Name = AxisList[i].ToString() + "Complete";
+                AxisColumn[i][6].HeaderText = "Error";
+                AxisColumn[i][6].Name = AxisList[i].ToString() + "Error";
+            }
+
+            for (int i = 8; i < 16; i++)
+            {
+                AxisColumn[i] = new DataGridViewTextBoxColumn[5];
+                for (int j = 0; j < 5; j++)
+                    AxisColumn[i][j] = new DataGridViewTextBoxColumn();
+                //  count   position		disable	moveComplete	error
+                AxisColumn[i][0].HeaderText = AxisList[i].ToString();
+                AxisColumn[i][0].Name = AxisList[i].ToString();
+                AxisColumn[i][1].HeaderText = "Position";
+                AxisColumn[i][1].Name = AxisList[i].ToString() + "Position";
+                AxisColumn[i][2].HeaderText = "Disable";
+                AxisColumn[i][2].Name = AxisList[i].ToString() + "Disable";
+                AxisColumn[i][3].HeaderText = "Complete";
+                AxisColumn[i][3].Name = AxisList[i].ToString() + "Complete";
+                AxisColumn[i][4].HeaderText = "Error";
+                AxisColumn[i][4].Name = AxisList[i].ToString() + "Error";
+            }
+
+            for (int i = 16; i < 18; i++)
+            {
+                AxisColumn[i] = new DataGridViewTextBoxColumn[1];
+                // 		disable	moveComplete
+                AxisColumn[i][0] = new DataGridViewTextBoxColumn();
+                AxisColumn[i][0].HeaderText = AxisList[i].ToString() + "Complete";
+                AxisColumn[i][0].Name = AxisList[i].ToString() + "Complete";
+            }
+
+            for (int i = 0; i < 18; i++)
+            {
+                for (int j = 0; j < AxisColumn[i].Count(); j++)
+                    this.dataGridView_CSVList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { AxisColumn[i][j] });
+            }
         }
 
         private void AddListMapAddressPositions()
@@ -102,7 +168,7 @@ namespace Mirle.Agv.View
         #region timer Update
         private void Timer_Update_CreateCommand()
         {
-            AGVPosition tempBarcodePosition = moveControl.position.Barcode;
+            AGVPosition tempBarcodePosition = moveControl.location.Barcode;
 
             if (tempBarcodePosition != null)
             {
@@ -114,14 +180,25 @@ namespace Mirle.Agv.View
 
             ucLabelTB_CreateCommandState.UcValue = moveControl.MoveState.ToString();
             if (moveControl.MoveState != EnumMoveState.Idle)
+            {
                 button_DebugModeSend.Enabled = false;
+                button_TurnOutSafetyDistance.Enabled = false;
+            }
             else
+            {
                 button_DebugModeSend.Enabled = true;
+                button_TurnOutSafetyDistance.Enabled = true;
+            }
+
+            if (moveControl.TurnOutSafetyDistance)
+                button_TurnOutSafetyDistance.Text = "出彎Safety關";
+            else
+                button_TurnOutSafetyDistance.Text = "出彎Safety開";
         }
 
         private void Timer_Update_CommandList()
         {
-            AGVPosition tempBarcodePosition = moveControl.position.Barcode;
+            AGVPosition tempBarcodePosition = moveControl.location.Barcode;
 
             int tempResserveIndex = moveControl.GetReserveIndex();
             int tempCommandIndex = moveControl.GetCommandIndex();
@@ -142,10 +219,10 @@ namespace Mirle.Agv.View
                 commandIndex = tempCommandIndex;
             }
 
-            ucLabelTB_RealEncoder.UcValue = moveControl.position.RealEncoder.ToString("0.0");
-            ucLabelTB_Delta.UcValue = moveControl.position.Delta.ToString("0.0");
+            ucLabelTB_RealEncoder.UcValue = moveControl.location.RealEncoder.ToString("0.0");
+            ucLabelTB_Delta.UcValue = moveControl.location.Delta.ToString("0.0");
 
-            tempReal = moveControl.position.Real;
+            tempReal = moveControl.location.Real;
 
             if (tempReal != null)
                 ucLabelTB_RealPosition.UcValue = "( " + tempReal.Position.X.ToString("0") + ", " + tempReal.Position.Y.ToString("0") + " )";
@@ -170,14 +247,19 @@ namespace Mirle.Agv.View
 
         private void Timer_Update_DebugCSV()
         {
-            List<string> buffer = moveControl.debugCsvLogList;
-            moveControl.debugCsvLogList = new List<string>();
+            List<string[]> bufferList;
 
-            for (int i = 0; i < buffer.Count; i++)
-                DebugCSVList.Items.Add(buffer[i]);
+            lock (moveControl.deubgCsvLogList)
+            {
+                bufferList = moveControl.deubgCsvLogList;
+                moveControl.deubgCsvLogList = new List<string[]>();
+            }
 
-            for (int i = 3000; i < DebugCSVList.Items.Count; i++)
-                DebugCSVList.Items.RemoveAt(0);
+            for (int i = 0; i < bufferList.Count; i++)
+                dataGridView_CSVList.Rows.Add(bufferList[i].ToArray());
+
+            while (bufferList.Count > 3000)
+                dataGridView_CSVList.Rows.RemoveAt(0);
         }
 
         private void timer_UpdateData_Tick(object sender, EventArgs e)
@@ -341,8 +423,8 @@ namespace Mirle.Agv.View
             {
                 string positionPair = (string)listCmdAddressPositions.Items[i];
                 string[] posXY = positionPair.Split(',');
-                var posX = double.Parse(posXY[0]);
-                var posY = double.Parse(posXY[1]);
+                var posX = float.Parse(posXY[0]);
+                var posY = float.Parse(posXY[1]);
                 moveCmdInfo.AddressPositions.Add(new MapPosition(posX, posY));
             }
         }
@@ -369,8 +451,8 @@ namespace Mirle.Agv.View
                 return;
             }
 
-            if (createMoveControlList.CreatMoveControlListSectionListReserveList(moveCmdInfo,
-                         ref moveCmdList, ref sectionLineList, ref reserveDataList, moveControl.position.Real, ref errorMessage))
+            if (moveControl.CreatMoveControlListSectionListReserveList(moveCmdInfo,
+                         ref moveCmdList, ref sectionLineList, ref reserveDataList, moveControl.location.Real, ref errorMessage))
             {
                 moveCmdInfo = null;
                 button_SendList.Enabled = true;
@@ -406,7 +488,7 @@ namespace Mirle.Agv.View
             CommandList.Items.Clear();
             commandStringList = new List<string>();
 
-            createMoveControlList.GetMoveCommandListInfo(moveCmdList, ref commandStringList);
+            moveControl.GetMoveCommandListInfo(moveCmdList, ref commandStringList);
             for (int i = 0; i < commandStringList.Count; i++)
                 CommandList.Items.Add("▷ " + commandStringList[i]);
         }
@@ -471,6 +553,7 @@ namespace Mirle.Agv.View
         }
         #endregion
 
+
         #region Page Debug CSV
         private void button_DebugCSV_Click(object sender, EventArgs e)
         {
@@ -491,9 +574,88 @@ namespace Mirle.Agv.View
 
         private void button_DebugCSVClear_Click(object sender, EventArgs e)
         {
-            DebugCSVList.Items.Clear();
+            dataGridView_CSVList.Rows.Clear();
         }
         #endregion
 
+        private void button_TurnOutSafetyDistance_Click(object sender, EventArgs e)
+        {
+            button_TurnOutSafetyDistance.Enabled = false;
+            if (button_TurnOutSafetyDistance.Text == "出彎Safety開")
+            {
+                moveControl.TurnOutSafetyDistance = true;
+                button_TurnOutSafetyDistance.Text = "出彎Safety關";
+            }
+            else
+            {
+                moveControl.TurnOutSafetyDistance = false;
+                button_TurnOutSafetyDistance.Text = "出彎Safety開";
+            }
+
+            button_TurnOutSafetyDistance.Enabled = true;
+        }
+
+        private void dataGridView_CSVList_ColumnHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int index = e.ColumnIndex;
+
+            if (index < dataGridView_CSVList.ColumnCount)
+            {
+                dataGridView_CSVList.Columns[index].Visible = false;
+            }
+        }
+
+        private void button_CSVListShowAll_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < dataGridView_CSVList.ColumnCount; i++)
+                dataGridView_CSVList.Columns[i].Visible = true;
+        }
+
+        private void dataGridView_CSVList_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (button_CSVListDisViewRang.Text == "隱藏區域關閉")
+            {
+                int index = e.ColumnIndex;
+                if (firstSelect == -1)
+                {
+                    firstSelect = index;
+                }
+                else if (secondSelect == -1)
+                {
+                    if (index < firstSelect)
+                    {
+                        secondSelect = firstSelect;
+                        firstSelect = index;
+                    }
+                    else
+                        secondSelect = index;
+
+                    for (int i = firstSelect; i <= secondSelect; i++)
+                    {
+                        if (i < dataGridView_CSVList.ColumnCount)
+                            dataGridView_CSVList.Columns[i].Visible = false;
+                    }
+
+                    firstSelect = -1;
+                    secondSelect = -1;
+                }
+            }
+        }
+
+        private void button_CSVListDisViewRang_Click(object sender, EventArgs e)
+        {
+            button_CSVListDisViewRang.Enabled = false;
+
+            if (button_CSVListDisViewRang.Text == "隱藏區域開啟")
+            {
+                firstSelect = -1;
+                secondSelect = -1;
+                button_CSVListDisViewRang.Text = "隱藏區域關閉";
+            }
+            else
+                button_CSVListDisViewRang.Text = "隱藏區域開啟";
+
+            button_CSVListDisViewRang.Enabled = true;
+        }
     }
 }

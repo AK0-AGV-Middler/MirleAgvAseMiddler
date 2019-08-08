@@ -28,6 +28,7 @@ namespace Mirle.Agv.Model.Configs
         public int TurnTimeoutValue { get; set; }
         public int SlowStopTimeoutValue { get; set; }
         public int CSVLogInterval { get; set; }
+        public int SecondCorrectionX { get; set; }
 
         public Dictionary<EnumAddressAction, AGVTurnParameter> TR { get; set; } = new Dictionary<EnumAddressAction, AGVTurnParameter>();
 
@@ -36,7 +37,7 @@ namespace Mirle.Agv.Model.Configs
             AGVTurnParameter temp = new AGVTurnParameter();
             temp.Velocity = 300;
             temp.R = 350;
-            temp.VChangeDistance = 200;
+            temp.VChangeSafetyDistance = 200;
             temp.CloseReviseDistance = 200;
             temp.AxisParameter = new AxisData(165, 165, 990, 75);
             TR.Add(EnumAddressAction.TR350, temp);
@@ -44,15 +45,16 @@ namespace Mirle.Agv.Model.Configs
             temp = new AGVTurnParameter();
             temp.Velocity = 50;
             temp.R = 50;
-            temp.VChangeDistance = 100;
+            temp.VChangeSafetyDistance = 100;
             temp.CloseReviseDistance = 150;
             temp.AxisParameter = new AxisData(165, 165, 990, 75);
             TR.Add(EnumAddressAction.TR50, temp);
+            SecondCorrectionX = 5;
 
             TurnTimeoutValue = 5000;
             SlowStopTimeoutValue = 2000;
 
-            Sr2000ConfigPath = "SR2000Config.xml";
+            Sr2000ConfigPath = @"D:\SR2000Parameter\SR2000Config.xml";
             OnTimeReviseConfigPath = "OntimeReviseConfig.xml";
             ElmoConfigPath = "MotionParameter.xml";
             SleepTime = 5;
@@ -70,7 +72,7 @@ namespace Mirle.Agv.Model.Configs
             SlowStopDistance = EQVelocity * EQVelocity / 2 / Move.Deceleration;
 
             ElmoDataInterval_half = 20;
-            TurnSpeedSafetyRange = 5 / 100;
+            TurnSpeedSafetyRange = 0.05;
 
             SafteyDistance.Add(EnumCommandType.Vchange, 200);
             SafteyDistance.Add(EnumCommandType.Stop, 50);

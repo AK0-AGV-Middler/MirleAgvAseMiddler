@@ -39,6 +39,36 @@ namespace Mirle.Agv.View
             InitializeComponent();
             ChangeMode(EnumJogPitchMode.Normal);
             agvRevise = new AGVMoveRevise(moveControl.ontimeReviseConfig, moveControl.elmoDriver, moveControl.DriverSr2000List);
+
+            this.allAxis = new Mirle.Agv.JogPitchAxis[AxisList.Count()];
+
+            for (int i = 0; i < AxisList.Count(); i++)
+            {
+                this.allAxis[i] = new Mirle.Agv.JogPitchAxis(AxisList[i].ToString());
+
+                this.allAxis[i].BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+
+                if (i < 4)
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * i, 30);
+                else if (i < 8)
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 4), 30 + 110 * 1);
+                else if (i < 12)
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 8), 30 + 110 * 2);
+                else if (i < 16)
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 12), 30 + 110 * 3);
+                else
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * 4, 30 + 110 * (i - 16));
+
+                this.allAxis[i].Name = AxisList[i].ToString();
+                this.allAxis[i].Size = new System.Drawing.Size(92, 95);
+                this.allAxis[i].TabIndex = 133;
+
+                this.Controls.Add(this.allAxis[i]);
+                cB_JogPitch_SelectAxis.Items.Add(AxisList[i].ToString());
+            }
+
+            cB_JogPitch_SelectAxis.SelectedIndex = AxisList.Count() - 2;
+            lastState = moveControl.MoveState;
         }
 
         private MoveControlHandler moveControl = null;
@@ -132,8 +162,10 @@ namespace Mirle.Agv.View
 
                     if (AxisList[i] == EnumAxis.GX || AxisList[i] == EnumAxis.GT)
                         standStill = moveControl.elmoDriver.MoveCompelete(AxisList[i]);
+                    else
+                        standStill = tempData.StandStill;
 
-                    allAxis[i].Update(position, tempData.Disable, tempData.StandStill, tempData.ErrorStop);
+                    allAxis[i].Update(position, tempData.Disable, standStill, tempData.ErrorStop);
                 }
             }
             #endregion
@@ -311,7 +343,7 @@ namespace Mirle.Agv.View
         private void button_JogPitch_Turn_MouseUp(object sender, MouseEventArgs e)
         {
             moveControl.elmoDriver.ElmoStop(EnumAxis.GT, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
-            moveControl.position.Real = null;
+            moveControl.location.Real = null;
         }
 
         private void Turn_MouseDown(double angle)
@@ -353,25 +385,15 @@ namespace Mirle.Agv.View
         private void rB_JogPitch_MoveVelocity_CheckedChanged(object sender, EventArgs e)
         {
             if (rB_JogPitch_MoveVelocity_10.Checked)
-            {
                 tB_JogPitch_Velocity.Text = "10";
-            }
             else if (rB_JogPitch_MoveVelocity_50.Checked)
-            {
                 tB_JogPitch_Velocity.Text = "50";
-            }
             else if (rB_JogPitch_MoveVelocity_100.Checked)
-            {
                 tB_JogPitch_Velocity.Text = "100";
-            }
             else if (rB_JogPitch_MoveVelocity_300.Checked)
-            {
                 tB_JogPitch_Velocity.Text = "300";
-            }
             else
-            {
                 tB_JogPitch_Velocity.Text = "100";
-            }
         }
 
         private bool GetVelocityAndDistance(ref double velocity, ref double distance)
@@ -439,7 +461,7 @@ namespace Mirle.Agv.View
         private void button_JogPitch_Move_MouseUp(object sender, MouseEventArgs e)
         {
             moveControl.elmoDriver.ElmoStop(EnumAxis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
-            moveControl.position.Real = null;
+            moveControl.location.Real = null;
         }
 
         private void button_JogPitch_ElmoEnable_Click(object sender, EventArgs e)
@@ -457,39 +479,6 @@ namespace Mirle.Agv.View
             Task.Factory.StartNew(() => { moveControl.elmoDriver.ResetErrorAll(); });
         }
 
-        private void JogPitch_Load(object sender, EventArgs e)
-        {
-            this.allAxis = new JogPitchAxis[AxisList.Count()];
-
-            for (int i = 0; i < AxisList.Count(); i++)
-            {
-                this.allAxis[i] = new JogPitchAxis(AxisList[i].ToString());
-
-                this.allAxis[i].BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-
-                if (i < 4)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * i, 30);
-                else if (i < 8)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 4), 30 + 110 * 1);
-                else if (i < 12)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 8), 30 + 110 * 2);
-                else if (i < 16)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 12), 30 + 110 * 3);
-                else
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * 4, 30 + 110 * (i - 16));
-
-                this.allAxis[i].Name = AxisList[i].ToString();
-                this.allAxis[i].Size = new System.Drawing.Size(92, 95);
-                this.allAxis[i].TabIndex = 133;
-
-                this.Controls.Add(this.allAxis[i]);
-                cB_JogPitch_SelectAxis.Items.Add(AxisList[i].ToString());
-            }
-
-            cB_JogPitch_SelectAxis.SelectedIndex = AxisList.Count() - 2;
-            lastState = moveControl.MoveState;
-            timerUpdate.Enabled = true;
-        }
 
         private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)
         {
@@ -671,7 +660,7 @@ namespace Mirle.Agv.View
                     homing = false;
                     return;
                 }
-                
+
                 homing = false;
             }
         }
@@ -686,6 +675,11 @@ namespace Mirle.Agv.View
                 homeThread = new Thread(HomeThread);
                 homeThread.Start();
             }
+        }
+
+        private void JogPitchForm_Shown(object sender, EventArgs e)
+        {
+            timerUpdate.Enabled = true;
         }
 
         private void button_JogPitch_ChangeFormSize_Click(object sender, EventArgs e)

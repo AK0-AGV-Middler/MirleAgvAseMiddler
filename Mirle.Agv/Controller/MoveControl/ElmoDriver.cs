@@ -714,9 +714,6 @@ namespace Mirle.Agv.Controller
 
             try
             {
-                if (allAxis[axis].FeedbackData.Disable)
-                    return;
-
                 msg = axis.ToString() + " reset error ";
 
                 if (allAxis[axis].Config.IsGroup)
@@ -1169,8 +1166,8 @@ namespace Mirle.Agv.Controller
                     //    position,
                     //    10 * eq.Param.MOTION[EnumAxis].MOTOR_RES,
                     //    100 * eq.Param.MOTION[EnumAxis].MOTOR_RES,
-                    //    (double)eq.Param.MOTION[EnumAxis].HOME_VELOCITY_HIGH,
-                    //    (double)eq.Param.MOTION[EnumAxis].HOME_VELOCITY_LOW,
+                    //    (float)eq.Param.MOTION[EnumAxis].HOME_VELOCITY_HIGH,
+                    //    (float)eq.Param.MOTION[EnumAxis].HOME_VELOCITY_LOW,
                     //    0,
                     //    0,
                     //    MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE,

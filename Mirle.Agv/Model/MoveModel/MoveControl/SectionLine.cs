@@ -13,9 +13,11 @@ namespace Mirle.Agv.Model
         public double Distance { get; set; }
         public double EncoderStart { get; set; }
         public double EncoderEnd { get; set; }
+        public double TransferPositionStart { get; set; }
+        public double TransferPositionEnd { get; set; }
         public bool DirFlag { get; set; }
-
-        public SectionLine(MapPosition start, MapPosition end, double encoderStart, bool dirFlag)
+        
+        public SectionLine(MapPosition start, MapPosition end, double encoderStart, bool dirFlag, double startByPassDistance = 0, double endByPassDistance = 0)
         {
             Start = start;
             End = end;
@@ -23,6 +25,8 @@ namespace Mirle.Agv.Model
             DirFlag = dirFlag;
             EncoderStart = encoderStart;
             EncoderEnd = encoderStart + (DirFlag ? Distance : -Distance);
+            TransferPositionStart = EncoderStart + (DirFlag ? startByPassDistance : -startByPassDistance);
+            TransferPositionEnd = EncoderEnd - (DirFlag ? endByPassDistance : -endByPassDistance);
         }
     }
 }

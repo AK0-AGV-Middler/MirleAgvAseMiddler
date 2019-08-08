@@ -32,9 +32,9 @@ namespace Mirle.Agv
                 pB_StandStill.BackColor = System.Drawing.Color.LightGray;
 
             if (error)
-                pB_Error.BackColor = System.Drawing.Color.LightGray;
-            else
                 pB_Error.BackColor = System.Drawing.Color.DarkRed;
+            else
+                pB_Error.BackColor = System.Drawing.Color.LightGray;
         }
     }
 }
