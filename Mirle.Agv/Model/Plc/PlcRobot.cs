@@ -12,6 +12,7 @@ namespace Mirle.Agv.Model
         public bool ForkReady { get; set; }
         public bool ForkBusy { get; set; }
         public bool ForkFinish { get; set; }
+        public bool ForkHome { get; set;}//20190807_Rudy 新增ForkHome
 
         private ushort currentCommandNo = 0;
         public ushort CurrentCommandNo

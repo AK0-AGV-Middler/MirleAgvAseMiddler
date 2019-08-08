@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-
+using Mirle.Agv.View;
 
 
 
@@ -46,6 +46,18 @@ namespace Mirle.Agv.Controller
         private UInt16 beforeBatteryPercentageInteger = 0;
         private UInt32 alarmReadIndex = 0;
 
+        private JogPitchForm jogPitchForm = null;//20190806_Rudy 新增jogPitchForm
+        //private struct JogPlcStatus
+        //{
+        //    private ushort Jog_Operation_Authority;
+        //    private ushort Jog_Operation_Authority;
+        //    private ushort Jog_Operation_Authority;
+        //    private ushort Jog_Operation_Authority;
+        //    private ushort Jog_Operation_Authority;
+        //    private ushort Jog_Operation_Authority;
+        //}
+
+
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
@@ -65,6 +77,13 @@ namespace Mirle.Agv.Controller
         }
 
         private AlarmHandler aAlarmHandler = null;
+
+        public void SetOutSideObj(ref JogPitchForm jogPitchForm) //20190806_Rudy 新增jogPitchForm
+        {
+            this.jogPitchForm = jogPitchForm;
+
+            //this.APLCVehicle.Hmi.beforeFromPlcWord = this.APLCVehicle.Hmi.FromPlcWord.DeepClone();
+        }
 
         public PlcAgent(MCProtocol objMCProtocol, AlarmHandler objAlarmHandler)
         {
@@ -351,6 +370,9 @@ namespace Mirle.Agv.Controller
 
                                     }
 
+                                    break;
+                                case "HomeStatus"://20190807_Rudy 新增ForkHome
+                                    this.APLCVehicle.Robot.ForkHome = aMCProtocol.get_ItemByTag("HomeStatus").AsBoolean;
                                     break;
                                 case "ChargeStatus":
                                     this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
@@ -725,7 +747,7 @@ namespace Mirle.Agv.Controller
                 }
                 System.Threading.Thread.Sleep(1);
             }
-        }           
+        }
 
         private EnumVehicleSafetyAction decideSafetyActionBySideBeamSensor(EnumVehicleSafetyAction initAction, List<PlcBeamSensor> listBeamSensor, Boolean SideBeamSensorDisable)
         {
@@ -1954,7 +1976,7 @@ namespace Mirle.Agv.Controller
                 result = true;
             }
             else
-            {               
+            {
                 LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge On = " + Convert.ToString(true) + " fail"));
             }
             return result;
@@ -1966,7 +1988,7 @@ namespace Mirle.Agv.Controller
 
             this.aMCProtocol.get_ItemByTag("VehicleCharge").AsBoolean = false;
             if (this.aMCProtocol.WritePLC())
-            {                
+            {
                 LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge Off = " + Convert.ToString(false) + " success"));
                 result = true;
             }
