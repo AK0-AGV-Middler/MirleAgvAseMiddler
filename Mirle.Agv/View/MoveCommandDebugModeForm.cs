@@ -31,6 +31,8 @@ namespace Mirle.Agv.View
         private AGVPosition tempReal = null;
         private int firstSelect;
         private int secondSelect;
+        private string commandID = "";
+        private Dictionary<EnumMoveControlSafetyType, SafetyInformation> safetyUserControl = new Dictionary<EnumMoveControlSafetyType, SafetyInformation>();
 
         private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
                                                 EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
@@ -56,10 +58,56 @@ namespace Mirle.Agv.View
             ucLabelTB_CreateCommand_BarcodePosition.UcName = "Barcode Position : ";
             ucLabelTtB_CommandListState.UcName = "AGV Move State : ";
             ucLabelTB_CreateCommandState.UcName = "AGV Move State : ";
+            ucLabelTB_Velocity.UcName = "Velocity : ";
+            ucLabelTB_ElmoEncoder.UcName = "Elmo encoder : ";
+            ucLabelTB_EncoderOffset.UcName = "Offset : ";
             AddListMapAddressPositions();
             AddListMapAddressActions();
             AddListMapSpeedLimits();
             AddDataGridViewColumn();
+            AddAdminSafetyUserControl();
+        }
+
+        private void AddAdminSafetyUserControl()
+        {
+            SafetyInformation temp;
+            int x = 30;
+            int y = 80;
+
+            foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
+            {
+                temp = new SafetyInformation(moveControl, item);
+                temp.Location = new System.Drawing.Point(x, y);
+                y += 40;
+                temp.Name = item.ToString();
+                temp.Size = new System.Drawing.Size(647, 30);
+
+                switch (item)
+                {
+                    case EnumMoveControlSafetyType.TurnOut:
+                        temp.SetLabelString("出彎保護 : ", "出彎多久內必須讀到Barcode :");
+                        break;
+                    case EnumMoveControlSafetyType.LineBarcodeInterval:
+                        temp.SetLabelString("直線保護 : ", "直線Barcode最大間隔 :");
+                        break;
+                    case EnumMoveControlSafetyType.OntimeReviseTheta:
+                        temp.SetLabelString("角度偏差 : ", "容許Theta偏差量 :");
+                        break;
+                    case EnumMoveControlSafetyType.OntimeReviseSectionDeviation:
+                        temp.SetLabelString("軌道偏差 : ", "容許軌道偏差量 :");
+                        break;
+                    case EnumMoveControlSafetyType.UpdateDeltaPositionRange:
+                        temp.SetLabelString("更新偏差 : ", "容許Barcode和目前位置偏差 :");
+                        break;
+                    default:
+                        break;
+                }
+
+                temp.UpdateEnableRange();
+                this.tP_Admin.Controls.Add(temp);
+                safetyUserControl.Add(item, temp);
+            }
+
         }
 
         private void AddDataGridViewColumn()
@@ -196,48 +244,73 @@ namespace Mirle.Agv.View
                 button_TurnOutSafetyDistance.Text = "出彎Safety開";
         }
 
+        private void UpdateList()
+        {
+            reserveDataList = moveControl.ReserveList;
+            moveCmdList = moveControl.CommandList;
+            ShowList();
+            reserveDataList = null;
+            moveCmdList = null;
+        }
+
         private void Timer_Update_CommandList()
         {
+            string nowCommandID = moveControl.MoveCommandID;
+            if (nowCommandID != commandID)
+            {
+                UpdateList();
+                commandID = nowCommandID;
+                label_MoveCommandID.Text = commandID;
+            }
+
             AGVPosition tempBarcodePosition = moveControl.location.Barcode;
 
-            int tempResserveIndex = moveControl.GetReserveIndex();
-            int tempCommandIndex = moveControl.GetCommandIndex();
-
-            if (tempResserveIndex != -1 && tempResserveIndex > reserveIndex)
-            {
-                for (int i = reserveIndex + 1; i <= tempResserveIndex; i++)
-                    ReserveList.Items[i] = "▶ " + reserveStringList[i];
-
-                reserveIndex = tempResserveIndex;
-            }
-
-            if (tempCommandIndex != -1 && tempCommandIndex > commandIndex)
-            {
-                for (int i = commandIndex; i < tempCommandIndex; i++)
-                    CommandList.Items[i] = "▶ " + commandStringList[i];
-
-                commandIndex = tempCommandIndex;
-            }
+            label_AlarmMessage.Text = moveControl.AGVStopResult;
 
             ucLabelTB_RealEncoder.UcValue = moveControl.location.RealEncoder.ToString("0.0");
             ucLabelTB_Delta.UcValue = moveControl.location.Delta.ToString("0.0");
+            ucLabelTB_Velocity.UcValue = moveControl.location.XFLVelocity.ToString("0");
+            ucLabelTB_ElmoEncoder.UcValue = moveControl.location.ElmoEncoder.ToString("0");
+            ucLabelTB_EncoderOffset.UcValue = moveControl.location.Offset.ToString("0");
 
             tempReal = moveControl.location.Real;
 
-            if (tempReal != null)
-                ucLabelTB_RealPosition.UcValue = "( " + tempReal.Position.X.ToString("0") + ", " + tempReal.Position.Y.ToString("0") + " )";
-            else
-                ucLabelTB_RealPosition.UcValue = "( ---, --- )";
+            ucLabelTB_RealPosition.UcValue = (tempReal != null) ?
+                "( " + tempReal.Position.X.ToString("0") + ", " + tempReal.Position.Y.ToString("0") + " )" : "( ---, --- )";
 
-            if (tempBarcodePosition != null)
-            {
-                ucLabelTB_BarcodePosition.UcValue = "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
-                                                                         tempBarcodePosition.Position.Y.ToString("0") + " )";
-            }
-            else
-                ucLabelTB_BarcodePosition.UcValue = "( ---, --- )";
+            ucLabelTB_BarcodePosition.UcValue = (tempBarcodePosition != null) ?
+                 "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
+                 tempBarcodePosition.Position.Y.ToString("0") + " )" : "( ---, --- )";
+
 
             ucLabelTtB_CommandListState.UcValue = moveControl.MoveState.ToString();
+
+
+            try
+            {
+                int tempResserveIndex = moveControl.GetReserveIndex();
+                int tempCommandIndex = moveControl.GetCommandIndex();
+
+                if (tempResserveIndex != -1 && tempResserveIndex > reserveIndex)
+                {
+                    for (int i = reserveIndex + 1; i <= tempResserveIndex; i++)
+                        ReserveList.Items[i] = "▶ " + reserveStringList[i];
+
+                    reserveIndex = tempResserveIndex;
+                }
+
+                if (tempCommandIndex != -1 && tempCommandIndex > commandIndex)
+                {
+                    for (int i = commandIndex; i < tempCommandIndex; i++)
+                        CommandList.Items[i] = "▶ " + commandStringList[i];
+
+                    commandIndex = tempCommandIndex;
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         private void Timer_Update_Debug()
@@ -262,6 +335,22 @@ namespace Mirle.Agv.View
                 dataGridView_CSVList.Rows.RemoveAt(0);
         }
 
+        private void Timer_Update_Admin()
+        {
+            button_SimulationModeChange.Text = moveControl.SimulationMode ? "關閉" : "開啟";
+            button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
+
+            foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
+            {
+                try
+                {
+                    safetyUserControl[item].UpdateEnable();
+                }
+                catch { }
+            }
+
+        }
+
         private void timer_UpdateData_Tick(object sender, EventArgs e)
         {//"▷▶"
             if (tbC_Debug.SelectedIndex == 0)
@@ -272,6 +361,8 @@ namespace Mirle.Agv.View
                 Timer_Update_Debug();
             else if (tbC_Debug.SelectedIndex == 3)
                 Timer_Update_DebugCSV();
+            else if (tbC_Debug.SelectedIndex == 4)
+                Timer_Update_Admin();
         }
         #endregion
 
@@ -506,6 +597,9 @@ namespace Mirle.Agv.View
             sectionLineList = null;
             reserveDataList = null;
             button_SendList.Enabled = false;
+
+            if (cB_GetAllReserve.Checked)
+                moveControl.AddReservedIndexForDebugModeTest(ReserveList.Items.Count - 1);
         }
 
         private void button_StopMove_Click(object sender, EventArgs e)
@@ -576,7 +670,6 @@ namespace Mirle.Agv.View
         {
             dataGridView_CSVList.Rows.Clear();
         }
-        #endregion
 
         private void button_TurnOutSafetyDistance_Click(object sender, EventArgs e)
         {
@@ -657,5 +750,19 @@ namespace Mirle.Agv.View
 
             button_CSVListDisViewRang.Enabled = true;
         }
+        #endregion
+
+        #region tabPage Admin
+        private void button_SimulationMode_Click(object sender, EventArgs e)
+        {
+            button_SimulationModeChange.Enabled = false;
+            moveControl.SimulationMode = (button_SimulationModeChange.Text == "開啟");
+            button_SimulationModeChange.Text = (button_SimulationModeChange.Text == "開啟") ? "關閉" : "開啟";
+            button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
+
+            button_SimulationModeChange.Enabled = true;
+        }
+        #endregion
+
     }
 }

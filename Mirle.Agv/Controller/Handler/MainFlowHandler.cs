@@ -625,7 +625,7 @@ namespace Mirle.Agv.Controller
 
         public void SetTestTransferCmd()
         {
-            transferSteps.Clear();
+            transferSteps = new List<TransferStep>();
 
             AgvcTransCmd transCmd = new AgvcTransCmd();
             transCmd.CommandId = "test001";
@@ -669,7 +669,7 @@ namespace Mirle.Agv.Controller
 
         private void SetupTransferSteps()
         {
-            transferSteps.Clear();
+            transferSteps = new List<TransferStep>();
 
             switch (agvcTransCmd.EnumCommandType)
             {
@@ -1004,7 +1004,7 @@ namespace Mirle.Agv.Controller
             lastAgvcTransCmd = agvcTransCmd;
             agvcTransCmd = null;
             theVehicle.SetAgvcTransCmd(new AgvcTransCmd());
-            transferSteps.Clear();
+            transferSteps = new List<TransferStep>();
             TransferStepsIndex = 0;
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());

@@ -19,7 +19,7 @@ namespace Mirle.Agv.View
         private Thread ontimeRevise;
         private Thread homeThread;
         private EnumJogPitchMode mode;
-        private AGVMoveRevise agvRevise;
+        private AgvMoveRevise agvRevise;
         private bool changingMode = false;
         private int wheelAngle = 0;
         private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
@@ -38,7 +38,8 @@ namespace Mirle.Agv.View
             this.moveControl = moveControl;
             InitializeComponent();
             ChangeMode(EnumJogPitchMode.Normal);
-            agvRevise = new AGVMoveRevise(moveControl.ontimeReviseConfig, moveControl.elmoDriver, moveControl.DriverSr2000List);
+            agvRevise = new AgvMoveRevise(moveControl.ontimeReviseConfig, moveControl.elmoDriver,
+                                          moveControl.DriverSr2000List, null);
 
             this.allAxis = new Mirle.Agv.JogPitchAxis[AxisList.Count()];
 
@@ -267,10 +268,11 @@ namespace Mirle.Agv.View
         {
             double[] reviseWheelAngle = new double[4];
             Thread.Sleep(20);
+            string str = "";
 
             while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
             {
-                if (agvRevise.OntimeRevise(ref reviseWheelAngle, wheelAngle))
+                if (agvRevise.OntimeRevise(ref reviseWheelAngle, wheelAngle, ref str))
                 {
                     moveControl.elmoDriver.ElmoMove(EnumAxis.GT, reviseWheelAngle[0], reviseWheelAngle[1], reviseWheelAngle[2], reviseWheelAngle[3],
                         moveControl.ontimeReviseConfig.ThetaSpeed, EnumMoveType.Absolute,
@@ -697,6 +699,50 @@ namespace Mirle.Agv.View
             }
 
             button_JogPitch_ChangeFormSize.Enabled = true;
+        }
+        
+        private void TestThread()
+        {
+            try
+            {
+                testOut = false;
+                double test = double.Parse(textBox1.Text);
+                double nowEncoder = moveControl.elmoDriver.ElmoGetPosition(EnumAxis.XFL);
+                double endEncoder = nowEncoder + 300;
+                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, 5000, 138, EnumMoveType.Relative);
+
+                while (nowEncoder < endEncoder)
+                {
+                    nowEncoder = moveControl.elmoDriver.ElmoGetPosition(EnumAxis.XFL);
+                    if (testOut)
+                    {
+                        return;
+                    }
+
+                    Thread.Sleep(5);
+                }
+
+                moveControl.R2000Control(-1, test);
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Thread thread = new Thread(TestThread);
+            thread.Start();
+        }
+
+        bool testOut;
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            testOut = true;
+            moveControl.StopFlagOn();
+            moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
         }
     }
 }

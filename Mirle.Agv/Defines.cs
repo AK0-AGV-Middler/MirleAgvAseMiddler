@@ -355,6 +355,23 @@ namespace Mirle.Agv
         Success,
         Fail
     }
+
+    public enum EnumR2000Parameter
+    {
+        InnerWheelTurn,
+        OuterWheelTurn,
+        InnerWheelMove,
+        OuterWheelMove
+    }
+
+    public enum EnumMoveControlSafetyType
+    {
+        TurnOut,
+        LineBarcodeInterval,
+        OntimeReviseTheta,
+        OntimeReviseSectionDeviation,
+        UpdateDeltaPositionRange
+    }
     #endregion
 
     public static class ExtensionMethods

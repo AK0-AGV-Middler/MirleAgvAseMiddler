@@ -1225,5 +1225,10 @@ namespace Mirle.Agv.View
             if (((CheckBox)sender).Checked) ((CheckBox)sender).Text = "TRUE";
             else ((CheckBox)sender).Text = "FALSE";
         }
+
+        private void btnFormHide_Click(object sender, EventArgs e)
+        {
+            Hide();
+        }
     }
 }

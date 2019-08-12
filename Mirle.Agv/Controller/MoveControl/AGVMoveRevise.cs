@@ -8,19 +8,21 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.Controller
 {
-    public class AGVMoveRevise
+    public class AgvMoveRevise
     {
         private ReviseParameter reviseParameter;
         private OntimeReviseConfig ontimeReviseConfig = null;
         private ElmoDriver elmoDriver = null;
         private List<Sr2000Driver> DriverSr2000List = null;
         private const int AllowableTheta = 10;
+        Dictionary<EnumMoveControlSafetyType, SafetyData> safety;
 
-        public AGVMoveRevise(OntimeReviseConfig ontimeReviseConfig, ElmoDriver elmoDriver, List<Sr2000Driver> DriverSr2000List)
+        public AgvMoveRevise(OntimeReviseConfig ontimeReviseConfig, ElmoDriver elmoDriver, List<Sr2000Driver> DriverSr2000List, Dictionary<EnumMoveControlSafetyType, SafetyData> Safety)
         {
             this.ontimeReviseConfig = ontimeReviseConfig;
             this.elmoDriver = elmoDriver;
             this.DriverSr2000List = DriverSr2000List;
+            safety = Safety;
             SettingReviseData(100, true);
         }
 
@@ -170,12 +172,9 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool OntimeRevise(ref double[] wheelTheta, int wheelAngle = 0)
+        public bool OntimeRevise(ref double[] wheelTheta, int wheelAngle, ref string safetyMessage)
         {
             ThetaSectionDeviation reviseData = null;
-
-            if (!elmoDriver.MoveCompelete(EnumAxis.GT))
-                return false;
 
             for (int i = 0; i < DriverSr2000List.Count; i++)
             {
@@ -188,6 +187,39 @@ namespace Mirle.Agv.Controller
                         reviseData = null;
                 }
             }
+
+            if (safety != null && reviseData != null)
+            {
+                if (safety[EnumMoveControlSafetyType.OntimeReviseTheta].Enable)
+                {
+                    if (Math.Abs(reviseData.Theta) > safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range)
+                    {
+                        safetyMessage = "角度偏差" + reviseData.Theta.ToString("0.0") +
+                            "度,已超過安全設置的" +
+                            safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0") +
+                            "度,因此啟動EMS!";
+
+                        return true;
+                    }
+                }
+
+                if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Enable)
+                {
+                    if (Math.Abs(reviseData.SectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range)
+                    {
+                        safetyMessage = "軌道偏差" + reviseData.SectionDeviation.ToString("0") +
+                            "mm,已超過安全設置的" +
+                            safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range.ToString("0") +
+                            "mm,因此啟動EMS!";
+
+                        return true;
+                    }
+                }
+            }
+
+
+            if (!elmoDriver.MoveCompelete(EnumAxis.GT))
+                return false;
 
             if (reviseData == null)
             {

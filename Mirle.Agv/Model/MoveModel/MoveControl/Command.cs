@@ -13,7 +13,7 @@ namespace Mirle.Agv.Model
         public double TriggerEncoder { get; set; }
         public double SafetyDistance { get; set; }
         public EnumCommandType CmdType { get; set; }
-        public EnumAddressAction TRType { get; set; }
+        public EnumAddressAction TurnType { get; set; }
         public double Velocity { get; set; }
         public double Distance { get; set; }
         public MapPosition EndPosition { get; set; }

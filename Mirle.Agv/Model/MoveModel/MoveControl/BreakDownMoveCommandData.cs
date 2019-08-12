@@ -21,6 +21,8 @@ namespace Mirle.Agv.Model
         public double TurnInOutDistance { get; set; } = 0;
         public double StartByPassDistance { get; set; } = 0;
         public double EndByPassDistance { get; set; } = 0;
+        public int AGVAngleInMap { get; set; } = 0;
+        public int NowAGVAngleInMap { get; set; } = 0;
         public MapPosition StartNode { get; set; }
         public MapPosition EndNode { get; set; }
         public MapPosition TempNode { get; set; }

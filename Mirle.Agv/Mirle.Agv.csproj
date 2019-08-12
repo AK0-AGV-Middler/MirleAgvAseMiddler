@@ -85,7 +85,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller\MoveControl\AGVMoveRevise.cs" />
+    <Compile Include="Controller\MoveControl\AgvMoveRevise.cs" />
     <Compile Include="Controller\MoveControl\CreateMoveControlList.cs" />
     <Compile Include="Controller\MoveControl\Sr2000Driver.cs" />
     <Compile Include="Controller\MoveControl\ElmoDriver.cs" />
@@ -131,9 +131,11 @@
     <Compile Include="Model\MoveModel\MoveControl\BreakDownMoveCommandData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\Command.cs" />
     <Compile Include="Model\MoveModel\MoveControl\MoveControlParameter.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\MoveControlSafetyData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\OneMoveCommand.cs" />
     <Compile Include="Model\MoveModel\MoveControl\Location.cs" />
     <Compile Include="Model\MoveModel\MoveControl\ReserveData.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\SafetyData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\SectionLine.cs" />
     <Compile Include="Model\MoveModel\SR2000\AGVPosition.cs" />
     <Compile Include="Model\MoveModel\SR2000\BarcodeData.cs" />
@@ -171,6 +173,12 @@
     </Compile>
     <Compile Include="View\MoveCommandDebugModeForm.designer.cs">
       <DependentUpon>MoveCommandDebugModeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\SafetyInformation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\UserControls\SafetyInformation.Designer.cs">
+      <DependentUpon>SafetyInformation.cs</DependentUpon>
     </Compile>
     <Compile Include="View\UserControls\UcAddressImage.cs">
       <SubType>UserControl</SubType>
@@ -276,6 +284,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\JogPitchAxis.resx">
       <DependentUpon>JogPitchAxis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\UserControls\SafetyInformation.resx">
+      <DependentUpon>SafetyInformation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\ucAddressImage.resx">
       <DependentUpon>UcAddressImage.cs</DependentUpon>

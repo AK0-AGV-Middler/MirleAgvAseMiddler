@@ -24,5 +24,6 @@ namespace Mirle.Agv.Model
         public double STDistance { get; set; }
         public double NowVelocity { get; set; }
         public double TurnOutDistance { get; set; }
+        public int AGVAngleInMap { get; set; }
     }
 }

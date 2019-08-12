@@ -115,6 +115,7 @@
             this.panel5 = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.label59 = new System.Windows.Forms.Label();
             this.label58 = new System.Windows.Forms.Label();
             this.txtAutoChargeLowSOC_SV = new System.Windows.Forms.TextBox();
             this.tbxResetAHTimeout_PV = new System.Windows.Forms.TextBox();
@@ -136,6 +137,8 @@
             this.tbxBatLoggerInterval_SV = new System.Windows.Forms.TextBox();
             this.tbxBatterysChargingTimeOut_PV = new System.Windows.Forms.TextBox();
             this.tbxBatterysChargingTimeOut_SV = new System.Windows.Forms.TextBox();
+            this.tbxChargingOffDelay_PV = new System.Windows.Forms.TextBox();
+            this.tbxChargingOffDelay_SV = new System.Windows.Forms.TextBox();
             this.btnBatteryParamSet = new System.Windows.Forms.Button();
             this.txtSOCSet = new System.Windows.Forms.TextBox();
             this.btnSOCSet = new System.Windows.Forms.Button();
@@ -256,9 +259,7 @@
             this.timCycle = new System.Windows.Forms.Timer(this.components);
             this.tbxLogView = new System.Windows.Forms.TextBox();
             this.label29 = new System.Windows.Forms.Label();
-            this.label59 = new System.Windows.Forms.Label();
-            this.tbxChargingOffDelay_PV = new System.Windows.Forms.TextBox();
-            this.tbxChargingOffDelay_SV = new System.Windows.Forms.TextBox();
+            this.btnFormHide = new System.Windows.Forms.Button();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -1318,6 +1319,17 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(316, 217);
             this.tableLayoutPanel1.TabIndex = 73;
             // 
+            // label59
+            // 
+            this.label59.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label59.AutoSize = true;
+            this.label59.Location = new System.Drawing.Point(4, 262);
+            this.label59.Name = "label59";
+            this.label59.Size = new System.Drawing.Size(124, 13);
+            this.label59.TabIndex = 80;
+            this.label59.Text = "Charging Off Delay";
+            this.label59.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // label58
             // 
             this.label58.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -1518,6 +1530,23 @@
             this.tbxBatterysChargingTimeOut_SV.Name = "tbxBatterysChargingTimeOut_SV";
             this.tbxBatterysChargingTimeOut_SV.Size = new System.Drawing.Size(77, 23);
             this.tbxBatterysChargingTimeOut_SV.TabIndex = 78;
+            // 
+            // tbxChargingOffDelay_PV
+            // 
+            this.tbxChargingOffDelay_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxChargingOffDelay_PV.Location = new System.Drawing.Point(135, 257);
+            this.tbxChargingOffDelay_PV.Name = "tbxChargingOffDelay_PV";
+            this.tbxChargingOffDelay_PV.ReadOnly = true;
+            this.tbxChargingOffDelay_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxChargingOffDelay_PV.TabIndex = 77;
+            // 
+            // tbxChargingOffDelay_SV
+            // 
+            this.tbxChargingOffDelay_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxChargingOffDelay_SV.Location = new System.Drawing.Point(218, 257);
+            this.tbxChargingOffDelay_SV.Name = "tbxChargingOffDelay_SV";
+            this.tbxChargingOffDelay_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxChargingOffDelay_SV.TabIndex = 78;
             // 
             // btnBatteryParamSet
             // 
@@ -2874,39 +2903,25 @@
             this.label29.TabIndex = 42;
             this.label29.Text = "PLC Log Msg";
             // 
-            // label59
+            // btnFormHide
             // 
-            this.label59.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label59.AutoSize = true;
-            this.label59.Location = new System.Drawing.Point(4, 262);
-            this.label59.Name = "label59";
-            this.label59.Size = new System.Drawing.Size(124, 13);
-            this.label59.TabIndex = 80;
-            this.label59.Text = "Charging Off Delay";
-            this.label59.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // tbxChargingOffDelay_PV
-            // 
-            this.tbxChargingOffDelay_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxChargingOffDelay_PV.Location = new System.Drawing.Point(135, 257);
-            this.tbxChargingOffDelay_PV.Name = "tbxChargingOffDelay_PV";
-            this.tbxChargingOffDelay_PV.ReadOnly = true;
-            this.tbxChargingOffDelay_PV.Size = new System.Drawing.Size(76, 23);
-            this.tbxChargingOffDelay_PV.TabIndex = 77;
-            // 
-            // tbxChargingOffDelay_SV
-            // 
-            this.tbxChargingOffDelay_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxChargingOffDelay_SV.Location = new System.Drawing.Point(218, 257);
-            this.tbxChargingOffDelay_SV.Name = "tbxChargingOffDelay_SV";
-            this.tbxChargingOffDelay_SV.Size = new System.Drawing.Size(77, 23);
-            this.tbxChargingOffDelay_SV.TabIndex = 78;
+            this.btnFormHide.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnFormHide.ForeColor = System.Drawing.Color.Red;
+            this.btnFormHide.Location = new System.Drawing.Point(1196, 6);
+            this.btnFormHide.Name = "btnFormHide";
+            this.btnFormHide.Size = new System.Drawing.Size(113, 35);
+            this.btnFormHide.TabIndex = 43;
+            this.btnFormHide.Text = "Hide";
+            this.btnFormHide.UseVisualStyleBackColor = true;
+            this.btnFormHide.Click += new System.EventHandler(this.btnFormHide_Click);
             // 
             // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1321, 876);
+            this.ControlBox = false;
+            this.Controls.Add(this.btnFormHide);
             this.Controls.Add(this.label29);
             this.Controls.Add(this.tbxLogView);
             this.Controls.Add(this.btnBuzzerStop);
@@ -3186,5 +3201,6 @@
         private System.Windows.Forms.Label label59;
         private System.Windows.Forms.TextBox tbxChargingOffDelay_PV;
         private System.Windows.Forms.TextBox tbxChargingOffDelay_SV;
+        private System.Windows.Forms.Button btnFormHide;
     }
 }

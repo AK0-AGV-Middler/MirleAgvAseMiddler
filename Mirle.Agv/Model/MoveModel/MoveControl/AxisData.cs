@@ -14,6 +14,7 @@ namespace Mirle.Agv.Model
         public double Velocity { get; set; }
         public double MotorResolution { get; set; }
         public double PulseUnit { get; set; }
+        public double Distance { get; set; }
 
         public AxisData()
         {
@@ -28,6 +29,16 @@ namespace Mirle.Agv.Model
             Deceleration = dec;
             Jerk = jerk;
             Velocity = velocity;
+        }
+
+
+        public AxisData(double acc, double dec, double jerk, double velocity, double distance)
+        {
+            Acceleration = acc;
+            Deceleration = dec;
+            Jerk = jerk;
+            Velocity = velocity;
+            Distance = distance;
         }
     }
 }

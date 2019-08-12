@@ -89,6 +89,9 @@
             this.gB_JogPitch_JogPitch = new System.Windows.Forms.GroupBox();
             this.button_JogPitch_Home = new System.Windows.Forms.Button();
             this.button_JogPitch_ChangeFormSize = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -746,12 +749,45 @@
             this.button_JogPitch_ChangeFormSize.UseVisualStyleBackColor = true;
             this.button_JogPitch_ChangeFormSize.Click += new System.EventHandler(this.button_JogPitch_ChangeFormSize_Click);
             // 
+            // button1
+            // 
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.Location = new System.Drawing.Point(1133, 356);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(90, 33);
+            this.button1.TabIndex = 134;
+            this.button1.Text = "開始";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button3
+            // 
+            this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button3.Location = new System.Drawing.Point(1133, 446);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(90, 33);
+            this.button3.TabIndex = 136;
+            this.button3.Text = "STOP";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(1133, 294);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(74, 22);
+            this.textBox1.TabIndex = 117;
+            this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // JogPitchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(724, 481);
+            this.ClientSize = new System.Drawing.Size(1340, 481);
             this.ControlBox = false;
+            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.button_JogPitch_ChangeFormSize);
             this.Controls.Add(this.gB_JogPitch_ElmoFunction);
             this.Controls.Add(this.gB_JogPitch_Sr2000);
@@ -759,7 +795,6 @@
             this.Controls.Add(this.gB_JogPitch_JogPitch);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "JogPitchForm";
@@ -777,6 +812,7 @@
             this.gB_JogPitch_JogPitch.ResumeLayout(false);
             this.gB_JogPitch_JogPitch.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -842,5 +878,8 @@
         private JogPitchAxis[] allAxis;
         private System.Windows.Forms.Button button_JogPitch_Home;
         private System.Windows.Forms.Button button_JogPitch_ChangeFormSize;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }

@@ -87,26 +87,5 @@ namespace Mirle.Agv.Model.Tests
             Assert.AreEqual(str001, list01[0]);
         }
 
-        [Test()]
-        public void StringReferenceTest()
-        {
-            string msg = "PQR";
-            Assert.AreEqual("PQR", msg);
-
-            Alarm alarm = new Alarm();
-            alarm.TestChangeStrToABC(msg);
-
-            Assert.AreEqual("ABC", msg);
-        }
-
-        //[Test()]
-        //public void GetterSetterTest()
-        //{
-        //    Vehicle vehicle = Vehicle.Instance;
-        //    vehicle.someTestVeh.Loading = false;
-        //    vehicle.someTestVeh.Loading = true;
-        //    vehicle.someTestVeh.Loading = false;
-        //    Assert.IsTrue(true);
-        //}
     }
 }

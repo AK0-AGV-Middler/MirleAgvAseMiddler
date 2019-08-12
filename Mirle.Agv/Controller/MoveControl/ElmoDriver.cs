@@ -41,6 +41,8 @@ namespace Mirle.Agv.Controller
         private System.Diagnostics.Stopwatch scanTimeTimer = new System.Diagnostics.Stopwatch();
         private volatile double[] getPosFbk = new double[8];
         private Dictionary<EnumAxisType, AxisData> allType = new Dictionary<EnumAxisType, AxisData>();
+        private Dictionary<EnumAxis, int> overflowOffset = new Dictionary<EnumAxis, int>();
+        private double offsetValue = 0;
 
         public ElmoDriver(string elmoConfigPath)
         {
@@ -55,6 +57,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ReadMotionParameter(elmoConfigPath);
+
                 if (Connect())
                 {
                     connected = true;
@@ -62,7 +65,6 @@ namespace Mirle.Agv.Controller
                     Thread.Sleep(100);
                     DisableAllAxis();
                     EnableAllAxis();
-
                 }
             }
             catch
@@ -297,7 +299,7 @@ namespace Mirle.Agv.Controller
                 elmoLogger.SavePureLog(this.GetType().FullName + " 連線失敗!");
                 return false;
             }
-            
+
             elmoLogger.SavePureLog(this.GetType().FullName + " 連線成功!");
             return true;
         }
@@ -378,6 +380,14 @@ namespace Mirle.Agv.Controller
             ncBulkRead = bulkRead.Preset_5;
             #endregion
 
+            offsetValue = allType[EnumAxisType.Move].PulseUnit * Math.Pow(2, 32);
+
+            for (int i = 0; i < MAX_AXIS; i++)
+            {
+                if (allAxisList[i].Config.Type == EnumAxisType.Move)
+                    overflowOffset.Add(allAxisList[i].Config.ID, 0);
+            }
+
             for (int i = 0; i < MAX_AXIS; i++)
             {
                 if (allAxisList[i].Config.IsGroup)
@@ -394,6 +404,25 @@ namespace Mirle.Agv.Controller
             Read_BulkRead.Start();
 
             elmoLogger.SavePureLog(this.GetType().FullName + " end!");
+        }
+
+        private void GetOffsetIndex(EnumAxis axis, ref ElmoAxisFeedbackData newData, double oldPosition)
+        {
+            newData.Feedback_Position = newData.Feedback_Position + overflowOffset[axis] * offsetValue;
+
+            if (Math.Abs(newData.Feedback_Position - oldPosition) > offsetValue / 2)
+            {
+                if (oldPosition > newData.Feedback_Position)
+                {
+                    overflowOffset[axis]++;
+                    newData.Feedback_Position += offsetValue;
+                }
+                else
+                {
+                    overflowOffset[axis]--;
+                    newData.Feedback_Position -= offsetValue;
+                }
+            }
         }
 
         private void BulkReadThread()
@@ -424,7 +453,9 @@ namespace Mirle.Agv.Controller
                         tempFeedbackData.Feedback_Torque = ncBulkRead[i].aTorque / 10;//扭力值
                         tempFeedbackData.Feedback_Now_Mode = ncBulkRead[i].eOpMode.ToString();//當下模式
                         tempFeedbackData.Feedback_Position = ncBulkRead[i].aPos * allAxisList[i].Config.PulseUnit;//位置
-                        
+
+                        if (allAxisList[i].Config.Type == EnumAxisType.Move)
+                            GetOffsetIndex(allAxisList[i].Config.ID, ref tempFeedbackData, allAxisList[i].FeedbackData.Feedback_Position);
 
                         tempFeedbackData.StandStill = ((ncBulkRead[i].ulAxisStatus & (Int32)(MC_STATE_SINGLE.STAND_STILL)) != 0);
                         tempFeedbackData.Inmotion = ((ncBulkRead[i].ulAxisStatus & (Int32)(MC_STATE_SINGLE.DISCRETE_MOTION)) != 0);
@@ -442,7 +473,7 @@ namespace Mirle.Agv.Controller
                 count++;
                 scanTimeTimer.Stop();//碼錶停止
                 double result1 = scanTimeTimer.Elapsed.TotalMilliseconds;
-                
+
                 Thread.Sleep(readSleepTime);
             }
 
@@ -556,15 +587,18 @@ namespace Mirle.Agv.Controller
                     {
                         for (int i = 0; i < allAxis[axis].Config.GroupOrder.Count(); i++)
                         {
-                            EnableAxis(allAxis[axis].Config.GroupOrder[0]);
-                            servoOnTimer.Reset();
-                            servoOnTimer.Start();
+                            if (allAxis[allAxis[axis].Config.GroupOrder[0]].FeedbackData.Disable)
+                            {
+                                EnableAxis(allAxis[axis].Config.GroupOrder[0]);
+                                servoOnTimer.Reset();
+                                servoOnTimer.Start();
 
-                            while (allAxis[axis].FeedbackData.Disable && servoOnTimer.ElapsedMilliseconds < ServoOnTimeOut)
-                                Thread.Sleep(10);
+                                while (allAxis[axis].FeedbackData.Disable && servoOnTimer.ElapsedMilliseconds < ServoOnTimeOut)
+                                    Thread.Sleep(10);
 
-                            if (allAxis[axis].FeedbackData.Disable)
-                                ;//log...
+                                if (allAxis[axis].FeedbackData.Disable)
+                                    ;//log...
+                            }
                         }
 
                         allAxis[axis].GroupAxis.GroupEnable();
@@ -663,7 +697,7 @@ namespace Mirle.Agv.Controller
                 if (!allAxisList[i].Config.IsVirtualDevice && !allAxisList[i].Config.IsGroup)
                 {
                     EnableAxis(allAxisList[i].Config.ID);
-                    
+
                     servoOnTimer.Reset();
                     servoOnTimer.Start();
 
@@ -692,17 +726,65 @@ namespace Mirle.Agv.Controller
             elmoLogger.SavePureLog(this.GetType().FullName + " end!");
         }
 
-        public void DisableMoveAxis(EnumAxis axis)
+        public void DisableMoveAxis()
         {
             elmoLogger.SavePureLog(this.GetType().FullName + " start!");
-            // 0.0
+
+            System.Diagnostics.Stopwatch servoOnTimer = new System.Diagnostics.Stopwatch();
+
+            // Disable group
+            for (int i = 0; i < MAX_AXIS; i++)
+            {
+                if (allAxisList[i].Config.IsGroup && allAxisList[i].Config.Type == EnumAxisType.Move)
+                {
+                    DisableAxis(allAxisList[i].Config.ID);
+                    Thread.Sleep(200);
+                }
+            }
+
+            for (int i = 0; i < MAX_AXIS; i++)
+            {
+                if (!allAxisList[i].Config.IsGroup && !allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Move)
+                {
+                    DisableAxis(allAxisList[i].Config.ID);
+                    Thread.Sleep(200);
+                }
+            }
+
             elmoLogger.SavePureLog(this.GetType().FullName + " end!");
         }
 
-        public void EnableMoveAxis(EnumAxis axis)
+        public void EnableMoveAxis()
         {
             elmoLogger.SavePureLog(this.GetType().FullName + " start!");
-            // 0.0
+
+            System.Diagnostics.Stopwatch servoOnTimer = new System.Diagnostics.Stopwatch();
+
+            // Servo on real EnumAxis
+            for (int i = 0; i < MAX_AXIS; i++)
+            {
+                if (!allAxisList[i].Config.IsVirtualDevice && !allAxisList[i].Config.IsGroup && allAxisList[i].Config.Type == EnumAxisType.Move)
+                {
+                    EnableAxis(allAxisList[i].Config.ID);
+
+                    servoOnTimer.Reset();
+                    servoOnTimer.Start();
+
+                    while (allAxisList[i].FeedbackData.Disable && servoOnTimer.ElapsedMilliseconds < ServoOnTimeOut)
+                        Thread.Sleep(10);
+
+                    if (allAxisList[i].FeedbackData.Disable)
+                        ;//log...
+                }
+            }
+
+            // Servo on group EnumAxis
+            for (int i = 0; i < MAX_AXIS; i++)
+            {
+                if (allAxisList[i].Config.IsGroup && allAxisList[i].Config.Type == EnumAxisType.Move)
+                    EnableAxis(allAxisList[i].Config.ID);
+            }
+
             elmoLogger.SavePureLog(this.GetType().FullName + " end!");
         }
 
@@ -772,6 +854,36 @@ namespace Mirle.Agv.Controller
             }
         }
 
+        private bool PositionComare(EnumAxis axis, double position)
+        {
+            string msg = "";
+
+            try
+            {
+                if (!connected)
+                    return true;
+
+                if (allAxis[axis].Config.IsGroup)
+                    return true;
+                else if (allAxis[axis].Config.IsVirtualDevice)
+                    return false;
+
+                double range;
+
+                if (allAxis[axis].Config.Type == EnumAxisType.Move)
+                    range = 1;
+                else
+                    range = 0.1;
+
+                return Math.Abs(allAxis[axis].FeedbackData.Feedback_Position - position) < range;
+            }
+            catch (MMCException ex)
+            {
+                msg = this.GetType().FullName + msg + " : Fail, " + (ex.MMCError).ToString();
+                return true;
+            }
+        }
+
         public bool WheelAngleCompare(double angle_ALL, double range)
         {
             return WheelAngleCompare(angle_ALL, angle_ALL, angle_ALL, angle_ALL, range);
@@ -812,12 +924,12 @@ namespace Mirle.Agv.Controller
                 allAxis[axis].GroupAxis.GroupSetOverride(1, 1, 1, 0);//Speed 100%
 
                 allAxis[axis].GroupAxis.MoveLinearAbsolute(
-                          (float)velocity, (float)acceleration, (float)deceleration, (float)jerk,
-                          realArray,
-                          MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE,
-                          MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
-                          NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
-                          Transition, 1, 1);
+                              (float)velocity, (float)acceleration, (float)deceleration, (float)jerk,
+                              realArray,
+                              MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE,
+                              MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
+                              NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
+                              Transition, 1, 1);
             }
             catch (MMCException ex)
             {
@@ -854,12 +966,12 @@ namespace Mirle.Agv.Controller
                 allAxis[axis].GroupAxis.GroupSetOverride(1, 1, 1, 0);//Speed 100%
 
                 allAxis[axis].GroupAxis.MoveLinearRelative(
-                          (float)velocity, (float)acceleration, (float)deceleration, (float)jerk,
-                          realArray,
-                          MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE,
-                          MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
-                          NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
-                          Transition, 1, 1);
+                              (float)velocity, (float)acceleration, (float)deceleration, (float)jerk,
+                              realArray,
+                              MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE,
+                              MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
+                              NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
+                              Transition, 1, 1);
             }
             catch (MMCException ex)
             {
@@ -877,9 +989,18 @@ namespace Mirle.Agv.Controller
                 if (allAxis[axis].FeedbackData.Disable)
                     return;
 
+                if (distance == 0)
+                    return;
+
                 msg = axis.ToString() + " Move ";
-                // 卡同position
-                //0.0
+
+                allAxis[axis].SingleAxis.MoveRelative(
+                              distance, (float)velocity,
+                              (float)acceleration,
+                              (float)deceleration,
+                              (float)jerk,
+                              MC_DIRECTION_ENUM.MC_POSITIVE_DIRECTION,
+                              MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
             }
             catch (MMCException ex)
             {
@@ -898,9 +1019,18 @@ namespace Mirle.Agv.Controller
                 if (allAxis[axis].FeedbackData.Disable)
                     return;
 
+                if (PositionComare(axis, distance))
+                    return;
+
                 msg = axis.ToString() + " Move ";
-                // 卡同position
-                //0.0
+
+                allAxis[axis].SingleAxis.MoveAbsolute(
+                              distance, (float)velocity,
+                              (float)acceleration,
+                              (float)deceleration,
+                              (float)jerk,
+                              MC_DIRECTION_ENUM.MC_POSITIVE_DIRECTION,
+                              MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE);
             }
             catch (MMCException ex)
             {
@@ -1048,7 +1178,7 @@ namespace Mirle.Agv.Controller
         }
 
         // 對外開放 讀取position, 只能轉向4實體和 走行"前左","後右"
-        public double ElmoGetPosition(EnumAxis axis)
+        public double ElmoGetPosition(EnumAxis axis, bool hasTimeOffset = false)
         {
             string msg = "";
 
@@ -1061,7 +1191,13 @@ namespace Mirle.Agv.Controller
                     axis != EnumAxis.TFL && axis != EnumAxis.TFR && axis != EnumAxis.TRL && axis != EnumAxis.TRR)
                     return -1;
 
-                return allAxis[axis].FeedbackData.Feedback_Position;
+                if (hasTimeOffset)
+                {
+                    return allAxis[axis].FeedbackData.Feedback_Position +
+             (DateTime.Now - allAxis[axis].FeedbackData.GetDataTime).TotalMilliseconds / 1000 * allAxis[axis].FeedbackData.Feedback_Velocity;
+                }
+                else
+                    return allAxis[axis].FeedbackData.Feedback_Position;
             }
             catch (MMCException ex)
             {
@@ -1091,6 +1227,25 @@ namespace Mirle.Agv.Controller
                 msg = this.GetType().FullName + msg + " : Fail, " + (ex.MMCError).ToString();
                 elmoLogger.SavePureLog(msg);
                 return -1;
+            }
+        }
+
+        public bool ElmoGetDisable(EnumAxis axis)
+        {
+            string msg = "";
+
+            try
+            {
+                if (!connected)
+                    return true;
+
+                return allAxis[axis].FeedbackData.Disable;
+            }
+            catch (MMCException ex)
+            {
+                msg = this.GetType().FullName + msg + " : Fail, " + (ex.MMCError).ToString();
+                elmoLogger.SavePureLog(msg);
+                return true;
             }
         }
 
