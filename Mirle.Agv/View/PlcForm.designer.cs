@@ -32,13 +32,14 @@
             this.tabContol1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.panel4 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tbxCommBusyTimeout_SV = new System.Windows.Forms.TextBox();
+            this.chbCassetteID_SV = new System.Windows.Forms.CheckBox();
             this.tbxCommMovingTimeout_PV = new System.Windows.Forms.TextBox();
             this.tbxCommMovingTimeout_SV = new System.Windows.Forms.TextBox();
             this.tbxCommReadTimeout_PV = new System.Windows.Forms.TextBox();
-            this.btnForkCommParamSet = new System.Windows.Forms.Button();
             this.tbxCommReadTimeout_SV = new System.Windows.Forms.TextBox();
             this.tbxReadCassetteID_PV = new System.Windows.Forms.TextBox();
             this.label30 = new System.Windows.Forms.Label();
@@ -49,6 +50,25 @@
             this.label38 = new System.Windows.Forms.Label();
             this.label39 = new System.Windows.Forms.Label();
             this.label40 = new System.Windows.Forms.Label();
+            this.btnForkCommParamSet = new System.Windows.Forms.Button();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.tbxReason_PV = new System.Windows.Forms.TextBox();
+            this.tbxForkSpeed_PV = new System.Windows.Forms.TextBox();
+            this.tbxIsEqPio_PV = new System.Windows.Forms.TextBox();
+            this.tbxStageNo_PV = new System.Windows.Forms.TextBox();
+            this.tbxDirection_PV = new System.Windows.Forms.TextBox();
+            this.tbxForkCommandType_PV = new System.Windows.Forms.TextBox();
+            this.label46 = new System.Windows.Forms.Label();
+            this.label42 = new System.Windows.Forms.Label();
+            this.label43 = new System.Windows.Forms.Label();
+            this.label45 = new System.Windows.Forms.Label();
+            this.tbxCommandNo_PV = new System.Windows.Forms.TextBox();
+            this.label44 = new System.Windows.Forms.Label();
+            this.label48 = new System.Windows.Forms.Label();
+            this.label47 = new System.Windows.Forms.Label();
+            this.label49 = new System.Windows.Forms.Label();
+            this.label57 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label23 = new System.Windows.Forms.Label();
             this.btnCycle = new System.Windows.Forms.Button();
@@ -65,6 +85,7 @@
             this.label22 = new System.Windows.Forms.Label();
             this.txtCassetteID = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.lblForkHome = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.lblLoading = new System.Windows.Forms.Label();
             this.btnForkCommandExecute = new System.Windows.Forms.Button();
@@ -91,13 +112,14 @@
             this.label20 = new System.Windows.Forms.Label();
             this.txtErrorReason = new System.Windows.Forms.TextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.panel5 = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.label58 = new System.Windows.Forms.Label();
             this.txtAutoChargeLowSOC_SV = new System.Windows.Forms.TextBox();
             this.tbxResetAHTimeout_PV = new System.Windows.Forms.TextBox();
             this.tbxResetAHTimeout_SV = new System.Windows.Forms.TextBox();
             this.tbxMaxCCModeCounter_PV = new System.Windows.Forms.TextBox();
-            this.btnBatteryParamSet = new System.Windows.Forms.Button();
             this.tbxMaxCCModeCounter_SV = new System.Windows.Forms.TextBox();
             this.tbxAHWorkingRange_PV = new System.Windows.Forms.TextBox();
             this.tbxAHWorkingRange_SV = new System.Windows.Forms.TextBox();
@@ -109,6 +131,12 @@
             this.label50 = new System.Windows.Forms.Label();
             this.label55 = new System.Windows.Forms.Label();
             this.label56 = new System.Windows.Forms.Label();
+            this.label41 = new System.Windows.Forms.Label();
+            this.tbxBatLoggerInterval_PV = new System.Windows.Forms.TextBox();
+            this.tbxBatLoggerInterval_SV = new System.Windows.Forms.TextBox();
+            this.tbxBatterysChargingTimeOut_PV = new System.Windows.Forms.TextBox();
+            this.tbxBatterysChargingTimeOut_SV = new System.Windows.Forms.TextBox();
+            this.btnBatteryParamSet = new System.Windows.Forms.Button();
             this.txtSOCSet = new System.Windows.Forms.TextBox();
             this.btnSOCSet = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
@@ -228,15 +256,21 @@
             this.timCycle = new System.Windows.Forms.Timer(this.components);
             this.tbxLogView = new System.Windows.Forms.TextBox();
             this.label29 = new System.Windows.Forms.Label();
-            this.chbCassetteID_SV = new System.Windows.Forms.CheckBox();
+            this.label59 = new System.Windows.Forms.Label();
+            this.tbxChargingOffDelay_PV = new System.Windows.Forms.TextBox();
+            this.tbxChargingOffDelay_SV = new System.Windows.Forms.TextBox();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.panel4.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
+            this.panel3.SuspendLayout();
+            this.tableLayoutPanel3.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.panel5.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabSafety.SuspendLayout();
@@ -273,7 +307,8 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.panel2);
+            this.tabPage2.Controls.Add(this.panel4);
+            this.tabPage2.Controls.Add(this.panel3);
             this.tabPage2.Controls.Add(this.groupBox3);
             this.tabPage2.Controls.Add(this.groupBox2);
             this.tabPage2.Controls.Add(this.groupBox1);
@@ -285,16 +320,28 @@
             this.tabPage2.Text = "Fork";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // panel4
+            // 
+            this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel4.Controls.Add(this.panel2);
+            this.panel4.Controls.Add(this.btnForkCommParamSet);
+            this.panel4.Location = new System.Drawing.Point(967, 6);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(318, 257);
+            this.panel4.TabIndex = 70;
+            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.tableLayoutPanel2);
-            this.panel2.Location = new System.Drawing.Point(994, 6);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(292, 218);
+            this.panel2.Size = new System.Drawing.Size(316, 217);
             this.panel2.TabIndex = 68;
             // 
             // tableLayoutPanel2
             // 
+            this.tableLayoutPanel2.AutoScroll = true;
             this.tableLayoutPanel2.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
             this.tableLayoutPanel2.ColumnCount = 3;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
@@ -305,7 +352,6 @@
             this.tableLayoutPanel2.Controls.Add(this.tbxCommMovingTimeout_PV, 1, 4);
             this.tableLayoutPanel2.Controls.Add(this.tbxCommMovingTimeout_SV, 2, 4);
             this.tableLayoutPanel2.Controls.Add(this.tbxCommReadTimeout_PV, 1, 2);
-            this.tableLayoutPanel2.Controls.Add(this.btnForkCommParamSet, 1, 5);
             this.tableLayoutPanel2.Controls.Add(this.tbxCommReadTimeout_SV, 2, 2);
             this.tableLayoutPanel2.Controls.Add(this.tbxReadCassetteID_PV, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.label30, 0, 0);
@@ -319,23 +365,38 @@
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 6;
+            this.tableLayoutPanel2.RowCount = 7;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(292, 218);
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(316, 217);
             this.tableLayoutPanel2.TabIndex = 73;
             // 
             // tbxCommBusyTimeout_SV
             // 
             this.tbxCommBusyTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxCommBusyTimeout_SV.Location = new System.Drawing.Point(215, 113);
+            this.tbxCommBusyTimeout_SV.Location = new System.Drawing.Point(218, 113);
             this.tbxCommBusyTimeout_SV.Name = "tbxCommBusyTimeout_SV";
-            this.tbxCommBusyTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommBusyTimeout_SV.Size = new System.Drawing.Size(77, 23);
             this.tbxCommBusyTimeout_SV.TabIndex = 61;
+            // 
+            // chbCassetteID_SV
+            // 
+            this.chbCassetteID_SV.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chbCassetteID_SV.AutoSize = true;
+            this.chbCassetteID_SV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.chbCassetteID_SV.Location = new System.Drawing.Point(218, 38);
+            this.chbCassetteID_SV.Name = "chbCassetteID_SV";
+            this.chbCassetteID_SV.Size = new System.Drawing.Size(77, 29);
+            this.chbCassetteID_SV.TabIndex = 69;
+            this.chbCassetteID_SV.Text = "checkBox1";
+            this.chbCassetteID_SV.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chbCassetteID_SV.UseVisualStyleBackColor = true;
+            this.chbCassetteID_SV.CheckedChanged += new System.EventHandler(this.chbCassetteID_SV_CheckedChanged);
             // 
             // tbxCommMovingTimeout_PV
             // 
@@ -343,15 +404,15 @@
             this.tbxCommMovingTimeout_PV.Location = new System.Drawing.Point(135, 149);
             this.tbxCommMovingTimeout_PV.Name = "tbxCommMovingTimeout_PV";
             this.tbxCommMovingTimeout_PV.ReadOnly = true;
-            this.tbxCommMovingTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommMovingTimeout_PV.Size = new System.Drawing.Size(76, 23);
             this.tbxCommMovingTimeout_PV.TabIndex = 64;
             // 
             // tbxCommMovingTimeout_SV
             // 
             this.tbxCommMovingTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxCommMovingTimeout_SV.Location = new System.Drawing.Point(215, 149);
+            this.tbxCommMovingTimeout_SV.Location = new System.Drawing.Point(218, 149);
             this.tbxCommMovingTimeout_SV.Name = "tbxCommMovingTimeout_SV";
-            this.tbxCommMovingTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommMovingTimeout_SV.Size = new System.Drawing.Size(77, 23);
             this.tbxCommMovingTimeout_SV.TabIndex = 61;
             // 
             // tbxCommReadTimeout_PV
@@ -360,27 +421,15 @@
             this.tbxCommReadTimeout_PV.Location = new System.Drawing.Point(135, 77);
             this.tbxCommReadTimeout_PV.Name = "tbxCommReadTimeout_PV";
             this.tbxCommReadTimeout_PV.ReadOnly = true;
-            this.tbxCommReadTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommReadTimeout_PV.Size = new System.Drawing.Size(76, 23);
             this.tbxCommReadTimeout_PV.TabIndex = 64;
-            // 
-            // btnForkCommParamSet
-            // 
-            this.tableLayoutPanel2.SetColumnSpan(this.btnForkCommParamSet, 2);
-            this.btnForkCommParamSet.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnForkCommParamSet.Location = new System.Drawing.Point(135, 182);
-            this.btnForkCommParamSet.Name = "btnForkCommParamSet";
-            this.btnForkCommParamSet.Size = new System.Drawing.Size(153, 32);
-            this.btnForkCommParamSet.TabIndex = 63;
-            this.btnForkCommParamSet.Text = "Set";
-            this.btnForkCommParamSet.UseVisualStyleBackColor = true;
-            this.btnForkCommParamSet.Click += new System.EventHandler(this.btnForkCommParamSet_Click);
             // 
             // tbxCommReadTimeout_SV
             // 
             this.tbxCommReadTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxCommReadTimeout_SV.Location = new System.Drawing.Point(215, 77);
+            this.tbxCommReadTimeout_SV.Location = new System.Drawing.Point(218, 77);
             this.tbxCommReadTimeout_SV.Name = "tbxCommReadTimeout_SV";
-            this.tbxCommReadTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommReadTimeout_SV.Size = new System.Drawing.Size(77, 23);
             this.tbxCommReadTimeout_SV.TabIndex = 61;
             // 
             // tbxReadCassetteID_PV
@@ -389,7 +438,7 @@
             this.tbxReadCassetteID_PV.Location = new System.Drawing.Point(135, 41);
             this.tbxReadCassetteID_PV.Name = "tbxReadCassetteID_PV";
             this.tbxReadCassetteID_PV.ReadOnly = true;
-            this.tbxReadCassetteID_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxReadCassetteID_PV.Size = new System.Drawing.Size(76, 23);
             this.tbxReadCassetteID_PV.TabIndex = 64;
             this.tbxReadCassetteID_PV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -410,7 +459,7 @@
             this.tbxCommBusyTimeout_PV.Location = new System.Drawing.Point(135, 113);
             this.tbxCommBusyTimeout_PV.Name = "tbxCommBusyTimeout_PV";
             this.tbxCommBusyTimeout_PV.ReadOnly = true;
-            this.tbxCommBusyTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxCommBusyTimeout_PV.Size = new System.Drawing.Size(76, 23);
             this.tbxCommBusyTimeout_PV.TabIndex = 64;
             // 
             // label31
@@ -419,7 +468,7 @@
             this.label31.AutoSize = true;
             this.label31.Location = new System.Drawing.Point(135, 11);
             this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(73, 13);
+            this.label31.Size = new System.Drawing.Size(76, 13);
             this.label31.TabIndex = 70;
             this.label31.Text = "Present Value";
             this.label31.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -439,9 +488,9 @@
             // 
             this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(215, 11);
+            this.label37.Location = new System.Drawing.Point(218, 11);
             this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(73, 13);
+            this.label37.Size = new System.Drawing.Size(77, 13);
             this.label37.TabIndex = 71;
             this.label37.Text = "Set Value";
             this.label37.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -478,6 +527,232 @@
             this.label40.TabIndex = 75;
             this.label40.Text = "Fork Command Moving Timeout";
             this.label40.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // btnForkCommParamSet
+            // 
+            this.btnForkCommParamSet.Location = new System.Drawing.Point(136, 221);
+            this.btnForkCommParamSet.Name = "btnForkCommParamSet";
+            this.btnForkCommParamSet.Size = new System.Drawing.Size(153, 29);
+            this.btnForkCommParamSet.TabIndex = 63;
+            this.btnForkCommParamSet.Text = "Set";
+            this.btnForkCommParamSet.UseVisualStyleBackColor = true;
+            this.btnForkCommParamSet.Click += new System.EventHandler(this.btnForkCommParamSet_Click);
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.tableLayoutPanel3);
+            this.panel3.Location = new System.Drawing.Point(408, 336);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(521, 257);
+            this.panel3.TabIndex = 69;
+            // 
+            // tableLayoutPanel3
+            // 
+            this.tableLayoutPanel3.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.tableLayoutPanel3.ColumnCount = 2;
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 71F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel3.Controls.Add(this.tbxReason_PV, 1, 7);
+            this.tableLayoutPanel3.Controls.Add(this.tbxForkSpeed_PV, 1, 6);
+            this.tableLayoutPanel3.Controls.Add(this.tbxIsEqPio_PV, 1, 5);
+            this.tableLayoutPanel3.Controls.Add(this.tbxStageNo_PV, 1, 4);
+            this.tableLayoutPanel3.Controls.Add(this.tbxDirection_PV, 1, 3);
+            this.tableLayoutPanel3.Controls.Add(this.tbxForkCommandType_PV, 1, 2);
+            this.tableLayoutPanel3.Controls.Add(this.label46, 0, 2);
+            this.tableLayoutPanel3.Controls.Add(this.label42, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.label43, 0, 3);
+            this.tableLayoutPanel3.Controls.Add(this.label45, 0, 4);
+            this.tableLayoutPanel3.Controls.Add(this.tbxCommandNo_PV, 1, 1);
+            this.tableLayoutPanel3.Controls.Add(this.label44, 0, 5);
+            this.tableLayoutPanel3.Controls.Add(this.label48, 0, 7);
+            this.tableLayoutPanel3.Controls.Add(this.label47, 0, 6);
+            this.tableLayoutPanel3.Controls.Add(this.label49, 0, 0);
+            this.tableLayoutPanel3.Controls.Add(this.label57, 1, 0);
+            this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            this.tableLayoutPanel3.RowCount = 8;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(521, 257);
+            this.tableLayoutPanel3.TabIndex = 0;
+            // 
+            // tbxReason_PV
+            // 
+            this.tbxReason_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxReason_PV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxReason_PV.Location = new System.Drawing.Point(76, 228);
+            this.tbxReason_PV.Name = "tbxReason_PV";
+            this.tbxReason_PV.ReadOnly = true;
+            this.tbxReason_PV.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxReason_PV.Size = new System.Drawing.Size(441, 27);
+            this.tbxReason_PV.TabIndex = 87;
+            // 
+            // tbxForkSpeed_PV
+            // 
+            this.tbxForkSpeed_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxForkSpeed_PV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxForkSpeed_PV.Location = new System.Drawing.Point(76, 196);
+            this.tbxForkSpeed_PV.Name = "tbxForkSpeed_PV";
+            this.tbxForkSpeed_PV.ReadOnly = true;
+            this.tbxForkSpeed_PV.Size = new System.Drawing.Size(441, 27);
+            this.tbxForkSpeed_PV.TabIndex = 86;
+            // 
+            // tbxIsEqPio_PV
+            // 
+            this.tbxIsEqPio_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxIsEqPio_PV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxIsEqPio_PV.Location = new System.Drawing.Point(76, 164);
+            this.tbxIsEqPio_PV.Name = "tbxIsEqPio_PV";
+            this.tbxIsEqPio_PV.ReadOnly = true;
+            this.tbxIsEqPio_PV.Size = new System.Drawing.Size(441, 27);
+            this.tbxIsEqPio_PV.TabIndex = 85;
+            // 
+            // tbxStageNo_PV
+            // 
+            this.tbxStageNo_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxStageNo_PV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxStageNo_PV.Location = new System.Drawing.Point(76, 132);
+            this.tbxStageNo_PV.Name = "tbxStageNo_PV";
+            this.tbxStageNo_PV.ReadOnly = true;
+            this.tbxStageNo_PV.Size = new System.Drawing.Size(441, 27);
+            this.tbxStageNo_PV.TabIndex = 84;
+            // 
+            // tbxDirection_PV
+            // 
+            this.tbxDirection_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxDirection_PV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxDirection_PV.Location = new System.Drawing.Point(76, 100);
+            this.tbxDirection_PV.Name = "tbxDirection_PV";
+            this.tbxDirection_PV.ReadOnly = true;
+            this.tbxDirection_PV.Size = new System.Drawing.Size(441, 27);
+            this.tbxDirection_PV.TabIndex = 83;
+            // 
+            // tbxForkCommandType_PV
+            // 
+            this.tbxForkCommandType_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxForkCommandType_PV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxForkCommandType_PV.Location = new System.Drawing.Point(76, 68);
+            this.tbxForkCommandType_PV.Name = "tbxForkCommandType_PV";
+            this.tbxForkCommandType_PV.ReadOnly = true;
+            this.tbxForkCommandType_PV.Size = new System.Drawing.Size(441, 27);
+            this.tbxForkCommandType_PV.TabIndex = 82;
+            // 
+            // label46
+            // 
+            this.label46.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label46.AutoSize = true;
+            this.label46.Location = new System.Drawing.Point(4, 74);
+            this.label46.Name = "label46";
+            this.label46.Size = new System.Drawing.Size(65, 13);
+            this.label46.TabIndex = 81;
+            this.label46.Text = "Comd Type";
+            this.label46.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label42
+            // 
+            this.label42.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label42.AutoSize = true;
+            this.label42.Location = new System.Drawing.Point(4, 42);
+            this.label42.Name = "label42";
+            this.label42.Size = new System.Drawing.Size(65, 13);
+            this.label42.TabIndex = 73;
+            this.label42.Text = "Comd No";
+            this.label42.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label43
+            // 
+            this.label43.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label43.AutoSize = true;
+            this.label43.Location = new System.Drawing.Point(4, 106);
+            this.label43.Name = "label43";
+            this.label43.Size = new System.Drawing.Size(65, 13);
+            this.label43.TabIndex = 74;
+            this.label43.Text = "Direction";
+            this.label43.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label45
+            // 
+            this.label45.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label45.AutoSize = true;
+            this.label45.Location = new System.Drawing.Point(4, 138);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(65, 13);
+            this.label45.TabIndex = 76;
+            this.label45.Text = "Stage No";
+            this.label45.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tbxCommandNo_PV
+            // 
+            this.tbxCommandNo_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCommandNo_PV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxCommandNo_PV.Location = new System.Drawing.Point(76, 36);
+            this.tbxCommandNo_PV.Name = "tbxCommandNo_PV";
+            this.tbxCommandNo_PV.ReadOnly = true;
+            this.tbxCommandNo_PV.Size = new System.Drawing.Size(441, 27);
+            this.tbxCommandNo_PV.TabIndex = 80;
+            // 
+            // label44
+            // 
+            this.label44.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label44.AutoSize = true;
+            this.label44.Location = new System.Drawing.Point(4, 170);
+            this.label44.Name = "label44";
+            this.label44.Size = new System.Drawing.Size(65, 13);
+            this.label44.TabIndex = 75;
+            this.label44.Text = "Is Eq Pio";
+            this.label44.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label48
+            // 
+            this.label48.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label48.AutoSize = true;
+            this.label48.Location = new System.Drawing.Point(4, 234);
+            this.label48.Name = "label48";
+            this.label48.Size = new System.Drawing.Size(65, 13);
+            this.label48.TabIndex = 79;
+            this.label48.Text = "Reason";
+            this.label48.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label47
+            // 
+            this.label47.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label47.AutoSize = true;
+            this.label47.Location = new System.Drawing.Point(4, 202);
+            this.label47.Name = "label47";
+            this.label47.Size = new System.Drawing.Size(65, 13);
+            this.label47.TabIndex = 78;
+            this.label47.Text = "Speed";
+            this.label47.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label49
+            // 
+            this.label49.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label49.AutoSize = true;
+            this.label49.Location = new System.Drawing.Point(4, 10);
+            this.label49.Name = "label49";
+            this.label49.Size = new System.Drawing.Size(65, 13);
+            this.label49.TabIndex = 73;
+            this.label49.Text = "Name";
+            this.label49.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label57
+            // 
+            this.label57.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label57.AutoSize = true;
+            this.label57.Location = new System.Drawing.Point(76, 10);
+            this.label57.Name = "label57";
+            this.label57.Size = new System.Drawing.Size(441, 13);
+            this.label57.TabIndex = 73;
+            this.label57.Text = "Present Value";
+            this.label57.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBox3
             // 
@@ -632,6 +907,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.lblForkHome);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.lblLoading);
             this.groupBox1.Controls.Add(this.btnForkCommandExecute);
@@ -663,6 +939,18 @@
             this.groupBox1.TabIndex = 65;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Fork Command and Status";
+            // 
+            // lblForkHome
+            // 
+            this.lblForkHome.BackColor = System.Drawing.Color.Silver;
+            this.lblForkHome.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblForkHome.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblForkHome.Location = new System.Drawing.Point(287, 204);
+            this.lblForkHome.Name = "lblForkHome";
+            this.lblForkHome.Size = new System.Drawing.Size(132, 34);
+            this.lblForkHome.TabIndex = 69;
+            this.lblForkHome.Text = "Home";
+            this.lblForkHome.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label1
             // 
@@ -919,7 +1207,7 @@
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.panel1);
+            this.tabPage3.Controls.Add(this.panel5);
             this.tabPage3.Controls.Add(this.txtSOCSet);
             this.tabPage3.Controls.Add(this.btnSOCSet);
             this.tabPage3.Controls.Add(this.label21);
@@ -964,26 +1252,39 @@
             this.tabPage3.UseVisualStyleBackColor = true;
             this.tabPage3.Click += new System.EventHandler(this.btnBuzzerStop_Click);
             // 
+            // panel5
+            // 
+            this.panel5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel5.Controls.Add(this.panel1);
+            this.panel5.Controls.Add(this.btnBatteryParamSet);
+            this.panel5.Location = new System.Drawing.Point(967, 6);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(318, 257);
+            this.panel5.TabIndex = 66;
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.tableLayoutPanel1);
-            this.panel1.Location = new System.Drawing.Point(992, 6);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(292, 217);
+            this.panel1.Size = new System.Drawing.Size(316, 217);
             this.panel1.TabIndex = 65;
             // 
             // tableLayoutPanel1
             // 
+            this.tableLayoutPanel1.AutoScroll = true;
             this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
             this.tableLayoutPanel1.ColumnCount = 3;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.Controls.Add(this.label59, 0, 7);
+            this.tableLayoutPanel1.Controls.Add(this.label58, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.txtAutoChargeLowSOC_SV, 2, 3);
             this.tableLayoutPanel1.Controls.Add(this.tbxResetAHTimeout_PV, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.tbxResetAHTimeout_SV, 2, 4);
             this.tableLayoutPanel1.Controls.Add(this.tbxMaxCCModeCounter_PV, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.btnBatteryParamSet, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.tbxMaxCCModeCounter_SV, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.tbxAHWorkingRange_PV, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.tbxAHWorkingRange_SV, 2, 1);
@@ -995,25 +1296,45 @@
             this.tableLayoutPanel1.Controls.Add(this.label50, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.label55, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.label56, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.label41, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.tbxBatLoggerInterval_PV, 1, 5);
+            this.tableLayoutPanel1.Controls.Add(this.tbxBatLoggerInterval_SV, 2, 5);
+            this.tableLayoutPanel1.Controls.Add(this.tbxBatterysChargingTimeOut_PV, 1, 6);
+            this.tableLayoutPanel1.Controls.Add(this.tbxBatterysChargingTimeOut_SV, 2, 6);
+            this.tableLayoutPanel1.Controls.Add(this.tbxChargingOffDelay_PV, 1, 7);
+            this.tableLayoutPanel1.Controls.Add(this.tbxChargingOffDelay_SV, 2, 7);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 6;
+            this.tableLayoutPanel1.RowCount = 8;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(292, 217);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(316, 217);
             this.tableLayoutPanel1.TabIndex = 73;
+            // 
+            // label58
+            // 
+            this.label58.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label58.AutoSize = true;
+            this.label58.Location = new System.Drawing.Point(4, 219);
+            this.label58.Name = "label58";
+            this.label58.Size = new System.Drawing.Size(124, 26);
+            this.label58.TabIndex = 79;
+            this.label58.Text = "Batterys Charging\r\nTime Out";
+            this.label58.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // txtAutoChargeLowSOC_SV
             // 
             this.txtAutoChargeLowSOC_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtAutoChargeLowSOC_SV.Location = new System.Drawing.Point(215, 113);
+            this.txtAutoChargeLowSOC_SV.Location = new System.Drawing.Point(218, 113);
             this.txtAutoChargeLowSOC_SV.Name = "txtAutoChargeLowSOC_SV";
-            this.txtAutoChargeLowSOC_SV.Size = new System.Drawing.Size(73, 23);
+            this.txtAutoChargeLowSOC_SV.Size = new System.Drawing.Size(77, 23);
             this.txtAutoChargeLowSOC_SV.TabIndex = 61;
             // 
             // tbxResetAHTimeout_PV
@@ -1022,15 +1343,15 @@
             this.tbxResetAHTimeout_PV.Location = new System.Drawing.Point(135, 149);
             this.tbxResetAHTimeout_PV.Name = "tbxResetAHTimeout_PV";
             this.tbxResetAHTimeout_PV.ReadOnly = true;
-            this.tbxResetAHTimeout_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxResetAHTimeout_PV.Size = new System.Drawing.Size(76, 23);
             this.tbxResetAHTimeout_PV.TabIndex = 64;
             // 
             // tbxResetAHTimeout_SV
             // 
             this.tbxResetAHTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxResetAHTimeout_SV.Location = new System.Drawing.Point(215, 149);
+            this.tbxResetAHTimeout_SV.Location = new System.Drawing.Point(218, 149);
             this.tbxResetAHTimeout_SV.Name = "tbxResetAHTimeout_SV";
-            this.tbxResetAHTimeout_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxResetAHTimeout_SV.Size = new System.Drawing.Size(77, 23);
             this.tbxResetAHTimeout_SV.TabIndex = 61;
             // 
             // tbxMaxCCModeCounter_PV
@@ -1039,27 +1360,15 @@
             this.tbxMaxCCModeCounter_PV.Location = new System.Drawing.Point(135, 77);
             this.tbxMaxCCModeCounter_PV.Name = "tbxMaxCCModeCounter_PV";
             this.tbxMaxCCModeCounter_PV.ReadOnly = true;
-            this.tbxMaxCCModeCounter_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxMaxCCModeCounter_PV.Size = new System.Drawing.Size(76, 23);
             this.tbxMaxCCModeCounter_PV.TabIndex = 64;
-            // 
-            // btnBatteryParamSet
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnBatteryParamSet, 2);
-            this.btnBatteryParamSet.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnBatteryParamSet.Location = new System.Drawing.Point(135, 182);
-            this.btnBatteryParamSet.Name = "btnBatteryParamSet";
-            this.btnBatteryParamSet.Size = new System.Drawing.Size(153, 31);
-            this.btnBatteryParamSet.TabIndex = 63;
-            this.btnBatteryParamSet.Text = "Set";
-            this.btnBatteryParamSet.UseVisualStyleBackColor = true;
-            this.btnBatteryParamSet.Click += new System.EventHandler(this.btnBatteryParamSet_Click);
             // 
             // tbxMaxCCModeCounter_SV
             // 
             this.tbxMaxCCModeCounter_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxMaxCCModeCounter_SV.Location = new System.Drawing.Point(215, 77);
+            this.tbxMaxCCModeCounter_SV.Location = new System.Drawing.Point(218, 77);
             this.tbxMaxCCModeCounter_SV.Name = "tbxMaxCCModeCounter_SV";
-            this.tbxMaxCCModeCounter_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxMaxCCModeCounter_SV.Size = new System.Drawing.Size(77, 23);
             this.tbxMaxCCModeCounter_SV.TabIndex = 61;
             // 
             // tbxAHWorkingRange_PV
@@ -1068,15 +1377,15 @@
             this.tbxAHWorkingRange_PV.Location = new System.Drawing.Point(135, 41);
             this.tbxAHWorkingRange_PV.Name = "tbxAHWorkingRange_PV";
             this.tbxAHWorkingRange_PV.ReadOnly = true;
-            this.tbxAHWorkingRange_PV.Size = new System.Drawing.Size(73, 23);
+            this.tbxAHWorkingRange_PV.Size = new System.Drawing.Size(76, 23);
             this.tbxAHWorkingRange_PV.TabIndex = 64;
             // 
             // tbxAHWorkingRange_SV
             // 
             this.tbxAHWorkingRange_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAHWorkingRange_SV.Location = new System.Drawing.Point(215, 41);
+            this.tbxAHWorkingRange_SV.Location = new System.Drawing.Point(218, 41);
             this.tbxAHWorkingRange_SV.Name = "tbxAHWorkingRange_SV";
-            this.tbxAHWorkingRange_SV.Size = new System.Drawing.Size(73, 23);
+            this.tbxAHWorkingRange_SV.Size = new System.Drawing.Size(77, 23);
             this.tbxAHWorkingRange_SV.TabIndex = 61;
             // 
             // label51
@@ -1096,7 +1405,7 @@
             this.txtAutoChargeLowSOC_PV.Location = new System.Drawing.Point(135, 113);
             this.txtAutoChargeLowSOC_PV.Name = "txtAutoChargeLowSOC_PV";
             this.txtAutoChargeLowSOC_PV.ReadOnly = true;
-            this.txtAutoChargeLowSOC_PV.Size = new System.Drawing.Size(73, 23);
+            this.txtAutoChargeLowSOC_PV.Size = new System.Drawing.Size(76, 23);
             this.txtAutoChargeLowSOC_PV.TabIndex = 64;
             // 
             // label52
@@ -1105,7 +1414,7 @@
             this.label52.AutoSize = true;
             this.label52.Location = new System.Drawing.Point(135, 11);
             this.label52.Name = "label52";
-            this.label52.Size = new System.Drawing.Size(73, 13);
+            this.label52.Size = new System.Drawing.Size(76, 13);
             this.label52.TabIndex = 70;
             this.label52.Text = "Present Value";
             this.label52.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1125,9 +1434,9 @@
             // 
             this.label53.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label53.AutoSize = true;
-            this.label53.Location = new System.Drawing.Point(215, 11);
+            this.label53.Location = new System.Drawing.Point(218, 11);
             this.label53.Name = "label53";
-            this.label53.Size = new System.Drawing.Size(73, 13);
+            this.label53.Size = new System.Drawing.Size(77, 13);
             this.label53.TabIndex = 71;
             this.label53.Text = "Set Value";
             this.label53.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1164,6 +1473,61 @@
             this.label56.TabIndex = 75;
             this.label56.Text = "Reset AH Timeout";
             this.label56.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label41
+            // 
+            this.label41.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label41.AutoSize = true;
+            this.label41.Location = new System.Drawing.Point(4, 190);
+            this.label41.Name = "label41";
+            this.label41.Size = new System.Drawing.Size(124, 13);
+            this.label41.TabIndex = 76;
+            this.label41.Text = "Battery Logger Interval";
+            this.label41.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tbxBatLoggerInterval_PV
+            // 
+            this.tbxBatLoggerInterval_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxBatLoggerInterval_PV.Location = new System.Drawing.Point(135, 185);
+            this.tbxBatLoggerInterval_PV.Name = "tbxBatLoggerInterval_PV";
+            this.tbxBatLoggerInterval_PV.ReadOnly = true;
+            this.tbxBatLoggerInterval_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxBatLoggerInterval_PV.TabIndex = 77;
+            // 
+            // tbxBatLoggerInterval_SV
+            // 
+            this.tbxBatLoggerInterval_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxBatLoggerInterval_SV.Location = new System.Drawing.Point(218, 185);
+            this.tbxBatLoggerInterval_SV.Name = "tbxBatLoggerInterval_SV";
+            this.tbxBatLoggerInterval_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxBatLoggerInterval_SV.TabIndex = 78;
+            // 
+            // tbxBatterysChargingTimeOut_PV
+            // 
+            this.tbxBatterysChargingTimeOut_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxBatterysChargingTimeOut_PV.Location = new System.Drawing.Point(135, 221);
+            this.tbxBatterysChargingTimeOut_PV.Name = "tbxBatterysChargingTimeOut_PV";
+            this.tbxBatterysChargingTimeOut_PV.ReadOnly = true;
+            this.tbxBatterysChargingTimeOut_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxBatterysChargingTimeOut_PV.TabIndex = 77;
+            // 
+            // tbxBatterysChargingTimeOut_SV
+            // 
+            this.tbxBatterysChargingTimeOut_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxBatterysChargingTimeOut_SV.Location = new System.Drawing.Point(218, 221);
+            this.tbxBatterysChargingTimeOut_SV.Name = "tbxBatterysChargingTimeOut_SV";
+            this.tbxBatterysChargingTimeOut_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxBatterysChargingTimeOut_SV.TabIndex = 78;
+            // 
+            // btnBatteryParamSet
+            // 
+            this.btnBatteryParamSet.Location = new System.Drawing.Point(138, 223);
+            this.btnBatteryParamSet.Name = "btnBatteryParamSet";
+            this.btnBatteryParamSet.Size = new System.Drawing.Size(153, 29);
+            this.btnBatteryParamSet.TabIndex = 63;
+            this.btnBatteryParamSet.Text = "Set";
+            this.btnBatteryParamSet.UseVisualStyleBackColor = true;
+            this.btnBatteryParamSet.Click += new System.EventHandler(this.btnBatteryParamSet_Click);
             // 
             // txtSOCSet
             // 
@@ -2510,19 +2874,33 @@
             this.label29.TabIndex = 42;
             this.label29.Text = "PLC Log Msg";
             // 
-            // chbCassetteID_SV
+            // label59
             // 
-            this.chbCassetteID_SV.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chbCassetteID_SV.AutoSize = true;
-            this.chbCassetteID_SV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chbCassetteID_SV.Location = new System.Drawing.Point(215, 38);
-            this.chbCassetteID_SV.Name = "chbCassetteID_SV";
-            this.chbCassetteID_SV.Size = new System.Drawing.Size(73, 29);
-            this.chbCassetteID_SV.TabIndex = 69;
-            this.chbCassetteID_SV.Text = "checkBox1";
-            this.chbCassetteID_SV.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.chbCassetteID_SV.UseVisualStyleBackColor = true;
-            this.chbCassetteID_SV.CheckedChanged += new System.EventHandler(this.chbCassetteID_SV_CheckedChanged);
+            this.label59.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label59.AutoSize = true;
+            this.label59.Location = new System.Drawing.Point(4, 262);
+            this.label59.Name = "label59";
+            this.label59.Size = new System.Drawing.Size(124, 13);
+            this.label59.TabIndex = 80;
+            this.label59.Text = "Charging Off Delay";
+            this.label59.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tbxChargingOffDelay_PV
+            // 
+            this.tbxChargingOffDelay_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxChargingOffDelay_PV.Location = new System.Drawing.Point(135, 257);
+            this.tbxChargingOffDelay_PV.Name = "tbxChargingOffDelay_PV";
+            this.tbxChargingOffDelay_PV.ReadOnly = true;
+            this.tbxChargingOffDelay_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxChargingOffDelay_PV.TabIndex = 77;
+            // 
+            // tbxChargingOffDelay_SV
+            // 
+            this.tbxChargingOffDelay_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxChargingOffDelay_SV.Location = new System.Drawing.Point(218, 257);
+            this.tbxChargingOffDelay_SV.Name = "tbxChargingOffDelay_SV";
+            this.tbxChargingOffDelay_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxChargingOffDelay_SV.TabIndex = 78;
             // 
             // PlcForm
             // 
@@ -2542,9 +2920,13 @@
             this.Load += new System.EventHandler(this.frmPLCAgent_Load);
             this.tabContol1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
+            this.panel4.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
+            this.panel3.ResumeLayout(false);
+            this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -2553,6 +2935,7 @@
             this.groupBox1.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.panel5.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
@@ -2773,5 +3156,35 @@
         private System.Windows.Forms.Label label39;
         private System.Windows.Forms.Label label40;
         private System.Windows.Forms.CheckBox chbCassetteID_SV;
+        private System.Windows.Forms.Label label41;
+        private System.Windows.Forms.TextBox tbxBatLoggerInterval_PV;
+        private System.Windows.Forms.TextBox tbxBatLoggerInterval_SV;
+        private System.Windows.Forms.Label lblForkHome;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+        private System.Windows.Forms.Label label48;
+        private System.Windows.Forms.Label label42;
+        private System.Windows.Forms.Label label44;
+        private System.Windows.Forms.Label label43;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.Label label47;
+        private System.Windows.Forms.TextBox tbxCommandNo_PV;
+        private System.Windows.Forms.Label label46;
+        private System.Windows.Forms.TextBox tbxReason_PV;
+        private System.Windows.Forms.TextBox tbxForkSpeed_PV;
+        private System.Windows.Forms.TextBox tbxIsEqPio_PV;
+        private System.Windows.Forms.TextBox tbxStageNo_PV;
+        private System.Windows.Forms.TextBox tbxDirection_PV;
+        private System.Windows.Forms.TextBox tbxForkCommandType_PV;
+        private System.Windows.Forms.Label label49;
+        private System.Windows.Forms.Label label57;
+        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Label label58;
+        private System.Windows.Forms.TextBox tbxBatterysChargingTimeOut_PV;
+        private System.Windows.Forms.TextBox tbxBatterysChargingTimeOut_SV;
+        private System.Windows.Forms.Label label59;
+        private System.Windows.Forms.TextBox tbxChargingOffDelay_PV;
+        private System.Windows.Forms.TextBox tbxChargingOffDelay_SV;
     }
 }

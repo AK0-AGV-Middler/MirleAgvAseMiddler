@@ -90,7 +90,7 @@ namespace Mirle.Agv.Controller
                     oneRow.AlarmText = getThisRow[dicAlarmIndexes["AlarmText"]];
                     oneRow.PlcAddress = getThisRow[dicAlarmIndexes["PlcAddress"]];
                     oneRow.PlcBitNumber = getThisRow[dicAlarmIndexes["PlcBitNumber"]];
-                    oneRow.Level = int.Parse(getThisRow[dicAlarmIndexes["Level"]]);
+                    oneRow.Level = EnumAlarmLevelParse(getThisRow[dicAlarmIndexes["Level"]]);
                     oneRow.Description = getThisRow[dicAlarmIndexes["Description"]];
 
                     allAlarms.Add(oneRow.Id, oneRow);
@@ -113,7 +113,7 @@ namespace Mirle.Agv.Controller
             if (!allAlarms.ContainsKey(id))
             {
                 alarm = new Alarm();
-                alarm.Id = id;                
+                alarm.Id = id;
             }
             else
             {
@@ -148,7 +148,7 @@ namespace Mirle.Agv.Controller
             DateTime resetTime = DateTime.Now;
             dicHappeningAlarms.TryRemove(id, out Alarm alarm);
             alarm.ResetTime = resetTime;
-            loggerAgent.LogAlarmHistory(alarm);          
+            loggerAgent.LogAlarmHistory(alarm);
         }
 
         public void ResetAllAlarms()
@@ -161,7 +161,22 @@ namespace Mirle.Agv.Controller
             {
                 Alarm alarm = item.Value;
                 alarm.ResetTime = resetTime;
-                loggerAgent.LogAlarmHistory(alarm);                
+                loggerAgent.LogAlarmHistory(alarm);
+            }
+        }
+
+        private EnumAlarmLevel EnumAlarmLevelParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (EnumAlarmLevel)Enum.Parse(typeof(EnumAlarmLevel), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return EnumAlarmLevel.Warn;
             }
         }
     }

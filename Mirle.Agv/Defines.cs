@@ -168,6 +168,12 @@ namespace Mirle.Agv
         End,
         SlowStop
     }
+
+    public enum EnumAlarmLevel
+    {
+        Warn,
+        Alarm
+    }
     #endregion
 
     #region PlcEnums

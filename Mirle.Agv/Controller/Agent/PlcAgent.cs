@@ -1,4 +1,7 @@
-﻿using ClsMCProtocol;
+﻿//#define  DebugTestThread 
+//#define  DebugTest 
+
+using ClsMCProtocol;
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model;
 using System;
@@ -35,6 +38,8 @@ namespace Mirle.Agv.Controller
         private Logger portPIOLogger;
         private Logger chargerPIOLogger;
 
+        private Logger BatteryLogger; //20190807_Rudy 新增 BatteryLogger
+
         public PlcVehicle APLCVehicle;
 
         private PlcForkCommand eventForkCommand; //發event前 先把executing commnad reference先放過來, 避免外部exevnt處理時發生null問題
@@ -43,20 +48,14 @@ namespace Mirle.Agv.Controller
         private Thread plcOtherControlThread = null;//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New 
         private Thread plcForkCommandControlThread = null;//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New
 
+        private Thread TestThread = null;
+
+
+
         private UInt16 beforeBatteryPercentageInteger = 0;
         private UInt32 alarmReadIndex = 0;
 
-        private JogPitchForm jogPitchForm = null;//20190806_Rudy 新增jogPitchForm
-        //private struct JogPlcStatus
-        //{
-        //    private ushort Jog_Operation_Authority;
-        //    private ushort Jog_Operation_Authority;
-        //    private ushort Jog_Operation_Authority;
-        //    private ushort Jog_Operation_Authority;
-        //    private ushort Jog_Operation_Authority;
-        //    private ushort Jog_Operation_Authority;
-        //}
-
+        private JogPitchForm jogPitchForm = null;//20190806_Rudy 新增jogPitchForm      
 
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
@@ -85,8 +84,136 @@ namespace Mirle.Agv.Controller
             //this.APLCVehicle.Hmi.beforeFromPlcWord = this.APLCVehicle.Hmi.FromPlcWord.DeepClone();
         }
 
+        [Conditional("DebugTestThread")]
+        private void OpenTestThread()
+        {
+            if (TestThread == null)
+            {
+                TestThread = new Thread(TestThreadRun);
+                TestThread.Name = "TestThread";
+                TestThread.IsBackground = true;
+                TestThread.Start();
+            }
+
+        }
+        private void TestThreadRun()
+        {
+            Stopwatch sw1secClock = new Stopwatch();
+            bool b500msHigh = false, b500msLow = true, Clock1secWrite = false;
+            uint ClockCount_1sec = 0;
+            uint ClockCount_3sec = 0;
+            uint ClockCount_10sec = 0;
+            uint ClockCount_60sec = 0;
+            while (true)
+            {
+                sw1secClock.Start();
+                if (sw1secClock.ElapsedMilliseconds > 500)
+                {
+                    b500msHigh ^= b500msLow;
+                    b500msLow ^= b500msHigh;
+                    b500msHigh ^= b500msLow;
+
+                    Clock1secWrite = true;
+                    sw1secClock.Stop();
+                    sw1secClock.Reset();
+                }
+
+                if (b500msHigh && Clock1secWrite == true)
+                {
+                    Clock1secWrite = false;
+                    ClockCount_1sec++;
+                    ClockCount_3sec++;
+                    ClockCount_10sec++;
+                    ClockCount_60sec++;
+                    Debug.WriteLine("10Sec => " + ClockCount_10sec.ToString());
+                    Debug.WriteLine("60Sec => " + ClockCount_60sec.ToString());
+                }
+                if (ClockCount_1sec >= 1)
+                {
+                    ClockCount_1sec = 0;
+                    //Debug.WriteLine(ClockCount_3sec.ToString());
+                }
+                if (ClockCount_3sec >= 3)
+                {
+                    ClockCount_3sec = 0;
+                    //Debug.WriteLine(ClockCount_3sec.ToString());
+                }
+                if (ClockCount_10sec >= 10)
+                {
+                    ClockCount_10sec = 0;
+                    Debug.WriteLine("ClockCount_10sec Working");
+                }
+                if (ClockCount_60sec >= 60)
+                {
+                    ClockCount_60sec = 0;
+                    Debug.WriteLine("ClockCount_60sec Working");
+                }
+            }
+        }
+        [Conditional("DebugTest")]
+        private void TestFun()
+        {
+
+
+            //PlcVehicle mAPLCVehicle = new PlcVehicle();
+
+
+            //uint muint = mAPLCVehicle.Hmi.doubleTobit32SymbolTrans(-474836.47);
+
+            //double mdouble= mAPLCVehicle.Hmi.bit32SymbolTodoubleTrans(muint);
+
+            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Elmo_Function = 123;
+            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Move_Velocity = 456;
+
+            //mAPLCVehicle.Hmi.beforeFromPlcWord = mAPLCVehicle.Hmi.FromPlcWord;
+
+            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Elmo_Function = 888;
+            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Move_Velocity = 666;
+        }
+
+        private Stopwatch swBatteryLogger = new Stopwatch();//20190807_Rudy 新增 BatteryLogger
+        private void WriteBatLoggerCsv(ref Stopwatch sw, long ms)//20190807_Rudy 新增 BatteryLogger
+        {
+            sw.Start();
+            if (sw.ElapsedMilliseconds > ms)
+            {
+                string csvLog = "", Separator = ",";
+                DateTime now;
+
+                now = DateTime.Now;
+                csvLog = now.ToString("HH:mm:ss");
+
+
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterCurrent.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterVoltage.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterWatt.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterAh.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Percentage.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.CcModeAh.ToString();
+
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.CcModeCounter.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.FullChargeIndex.ToString();
+
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.FBatteryTemperature.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BBatteryTemperature.ToString();
+
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Charging.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryType.ToString();
+
+                BatteryLogger.SavePureLog(csvLog);
+
+
+                sw.Stop();
+                sw.Reset();
+            }
+        }
         public PlcAgent(MCProtocol objMCProtocol, AlarmHandler objAlarmHandler)
         {
+            OpenTestThread();
+            TestFun();
+
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
             APLCVehicle = Vehicle.Instance.GetPlcVehicle();
@@ -120,6 +247,9 @@ namespace Mirle.Agv.Controller
             errLogger = loggerAgent.GetLooger("Error");
             portPIOLogger = loggerAgent.GetLooger("PortPIO");
             chargerPIOLogger = loggerAgent.GetLooger("ChargerPIO");
+
+            BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");//20190807_Rudy 新增 BatteryLogger
+
         }
 
         //讀取XML
@@ -189,7 +319,16 @@ namespace Mirle.Agv.Controller
                             this.APLCVehicle.Batterys.PortAutoChargeLowSoc = Convert.ToDouble(childItem.InnerText);
                             break;
 
+                        case "Battery_Logger_Interval":
+                            this.APLCVehicle.Batterys.Battery_Logger_Interval = Convert.ToUInt32(childItem.InnerText) * 1000;
+                            break;
 
+                        case "Batterys_Charging_Time_Out":// min
+                            this.APLCVehicle.Batterys.Batterys_Charging_Time_Out = Convert.ToUInt32(childItem.InnerText) * 60000;
+                            break;
+                        case "Charging_Off_Delay":// min
+                            this.APLCVehicle.Batterys.Charging_Off_Delay = Convert.ToUInt32(childItem.InnerText) * 60000;
+                            break;
                     }
 
                 }
@@ -375,11 +514,21 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ForkHome = aMCProtocol.get_ItemByTag("HomeStatus").AsBoolean;
                                     break;
                                 case "ChargeStatus":
-                                    this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
-                                    if (!this.APLCVehicle.Batterys.Charging)
+                                    if (aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean)
                                     {
+                                        this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
+                                        ChgStasOffDelayFlag = false;
+                                    }
+                                    else
+                                    {
+                                        ChgStasOffDelayFlag = true;
                                         ccModeAHSet();
                                     }
+                                    //this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
+                                    //if (!this.APLCVehicle.Batterys.Charging)
+                                    //{
+                                    //    ccModeAHSet();
+                                    //}
                                     break;
 
                                 case "FBatteryTemperature":
@@ -473,7 +622,42 @@ namespace Mirle.Agv.Controller
                 LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
             }
         }
-
+        //private bool ChgStasOffDelayIsRunning = false;//Rudy_20190808 ChargeStatusChange       
+        //private void ChargeStatusChange()//Rudy_20190808 ChargeStatusChange  Charge Status OffDelay ; On不Delay
+        //{
+        //    bool status = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
+        //    if (status)
+        //    {
+        //        ChgStasOffDelayIsRunning = false;
+        //        this.APLCVehicle.Batterys.Charging = status;
+        //        return;
+        //    }
+        //    else if (!status && !ChgStasOffDelayIsRunning)
+        //    {
+        //        ChgStasOffDelayIsRunning = true;
+        //    }
+        //    else if (ChgStasOffDelayIsRunning) return;
+        //    else
+        //    {
+        //        this.APLCVehicle.Batterys.Charging = status;
+        //        return;
+        //    }
+        //    Task.Factory.StartNew(() =>
+        //    {
+        //        int count = 0;
+        //        while (ChgStasOffDelayIsRunning)
+        //        {
+        //            SpinWait.SpinUntil(() => false, 1000);
+        //            count++;
+        //            if (count >= 5) //TODO ===> 修改成參數
+        //            {
+        //                ChgStasOffDelayIsRunning = false;
+        //                this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
+        //                ccModeAHSet();
+        //            }
+        //        }
+        //    });
+        //}
         private void ccModeAHSet()
         {
 
@@ -568,6 +752,8 @@ namespace Mirle.Agv.Controller
 
         private int beforeDay = DateTime.Now.Day;
         private bool beforeEMOStatus;//201907301_Rudy
+        private Stopwatch swChargingTimeOut = new Stopwatch();//20190808_Rudy 新增ChargingTimeOut
+        private bool ChgStasOffDelayFlag = false;
 
         //處理非Fork command需要即時的邏輯
         public void plcOtherControlRun()
@@ -575,10 +761,92 @@ namespace Mirle.Agv.Controller
             //20190730_Rudy 新增try catch
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
+            Stopwatch sw500msClock = new Stopwatch();
+            bool Clock1secWrite = false, b500msHigh = false, b500msLow = true;
+            uint WriteBatterySOCCount = 0;
+            uint ChgStasOffDelayCount = 0;
+            //uint ChargingTimeOutSetInterval = 0;
+            //bool ChargingTimeOutFirstSet = false;
             while (true)
             {
                 try //20190730_Rudy 新增try catch
                 {
+                    //========Clock Working========
+                    sw500msClock.Start();
+                    if (sw500msClock.ElapsedMilliseconds >= 500)
+                    {
+                        b500msHigh ^= b500msLow;
+                        b500msLow ^= b500msHigh;
+                        b500msHigh ^= b500msLow;
+                        Clock1secWrite = true;
+                        sw500msClock.Stop();
+                        sw500msClock.Reset();
+                    }
+                    if (b500msHigh && Clock1secWrite == true)
+                    {
+                        Clock1secWrite = false;
+                        WriteBatterySOCCount++;
+                        ChgStasOffDelayCount++;
+                    }
+                    //========Clock Working========
+
+                    //Write Battery SOC 
+                    if (WriteBatterySOCCount >= 1)
+                    {
+                        WriteBatterySOCCount = 0;
+                        WriteBatterySOC();
+                    }
+
+                    //Charging Off Delay
+                    if (ChgStasOffDelayFlag)
+                    {
+                        if (ChgStasOffDelayCount >= this.APLCVehicle.Batterys.Charging_Off_Delay && this.APLCVehicle.Batterys.Charging)
+                        {
+                            ChgStasOffDelayCount = 0;
+                            this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;//false
+                        }
+                    }
+                    else
+                    {
+                        ChgStasOffDelayCount = 0;
+                    }
+
+
+                    if (this.APLCVehicle.Batterys.Charging)//20190808_Rudy 新增ChargingTimeOut
+                    {
+                        swChargingTimeOut.Start();
+                        if (swChargingTimeOut.ElapsedMilliseconds > this.APLCVehicle.Batterys.Batterys_Charging_Time_Out)
+                        {
+                            this.setAlarm(270005);
+                            //if (!ChargingTimeOutFirstSet)
+                            //{
+                            //    this.setAlarm(270005);
+                            //    Thread.Sleep(2);
+                            //    this.setAlarm(270005);
+                            //    ChargingTimeOutFirstSet = true;
+                            //}                           
+                            //if (ChargingTimeOutSetInterval >= 60)
+                            //{
+                            //    ChargingTimeOutSetInterval = 0;
+                            //    this.setAlarm(270005);
+                            //}
+                        }
+                        //else
+                        //{
+                        //    ChargingTimeOutSetInterval = 0;
+                        //    ChargingTimeOutFirstSet = false;
+                        //}
+                    }
+                    else
+                    {
+                        swChargingTimeOut.Stop();
+                        swChargingTimeOut.Reset();
+                    }
+
+
+                    //20190807_Rudy 新增 BatteryLogger
+                    WriteBatLoggerCsv(ref swBatteryLogger, this.APLCVehicle.Batterys.Battery_Logger_Interval);
+
                     //EMO
                     APLCVehicle.PlcEmoStatus = DetectEMO();
                     if (APLCVehicle.PlcEmoStatus && (beforeEMOStatus != APLCVehicle.PlcEmoStatus))
@@ -1495,14 +1763,36 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
+        private void WriteBatterySOC()
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            this.aMCProtocol.get_ItemByTag("BatterySOC").AsUInt16 = Convert.ToUInt16(this.APLCVehicle.Batterys.Percentage);
+
+            if (this.aMCProtocol.WritePLC())
+            { }
+            else
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write Battery SOC = " + Convert.ToString(this.APLCVehicle.Batterys.Percentage) + " fail"));
+            }
+        }
 
         private UInt16 IPCAliveCounter = 1;
         public void WriteIPCAlive()
         {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
             //heart beat量大不記log
             this.aMCProtocol.get_ItemByTag("IPCAlive").AsUInt16 = IPCAliveCounter;
 
-            this.aMCProtocol.WritePLC();
+            //this.aMCProtocol.WritePLC();
+            if (this.aMCProtocol.WritePLC())
+            {
+            }
+            else
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlive = " + Convert.ToString(IPCAliveCounter) + " fail"));
+            }
+
             IPCAliveCounter++;
             IPCAliveCounter = Convert.ToUInt16(Convert.ToInt32(IPCAliveCounter) % 65536);
             //System.Threading.Thread.Sleep(1000);
@@ -1587,11 +1877,30 @@ namespace Mirle.Agv.Controller
             //this.this.APLCVehicle.PLCBatterys.SetMeterAHToZeroAH = this.this.APLCVehicle.PLCBatterys.MeterAH;
             Task.Run(() =>
             {
+                string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
                 this.aMCProtocol.get_ItemByTag("MeterAHToZero").AsBoolean = true;
-                this.aMCProtocol.WritePLC();
+                //this.aMCProtocol.WritePLC();
+                if (this.aMCProtocol.WritePLC())
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Meter AH To Zero Success, "));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Meter AH To Zero fail, "));
+                }
+
+
                 System.Threading.Thread.Sleep(1000);
                 this.aMCProtocol.get_ItemByTag("MeterAHToZero").AsBoolean = false;
-                this.aMCProtocol.WritePLC();
+                //this.aMCProtocol.WritePLC();
+                if (this.aMCProtocol.WritePLC())
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Meter AH To Zero Success, "));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Meter AH To Zero fail, "));
+                }
             });
         }
 

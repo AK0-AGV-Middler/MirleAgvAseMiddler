@@ -34,8 +34,6 @@ namespace Mirle.Agv.Controller
         private List<TransferStep> transferSteps = new List<TransferStep>();
         private List<TransferStep> lastTransferSteps = new List<TransferStep>();
 
-
-
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
 
@@ -1090,7 +1088,7 @@ namespace Mirle.Agv.Controller
                 #endregion
 
                 var position = theVehicle.GetVehLoacation().RealPosition;
-               // theMapInfo.allMapAddresses["adr011"].IsCharger;
+                // theMapInfo.allMapAddresses["adr011"].IsCharger;
                 if (transferSteps.Count > 0)
                 {
                     //有搬送命令時，比對當前Position與搬送路徑Sections確定section-distance
@@ -1783,6 +1781,28 @@ namespace Mirle.Agv.Controller
         public void CleanAgvcTransCmd()
         {
             this.agvcTransCmd = null;
+        }
+
+        public EnumTransCmdType GetCurrentEnumTransCmdType()
+        {
+            try
+            {
+                if (transferSteps.Count > 0)
+                {
+                    if (TransferStepsIndex < transferSteps.Count)
+                    {
+                        return transferSteps[TransferStepsIndex].GetCommandType();
+                    }
+                }
+
+                return EnumTransCmdType.Empty;
+            }
+            catch (Exception ex)
+            {
+                //Log Error
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : GetCurrentEnumTransCmdType, [ex={ex.StackTrace}]");
+                return EnumTransCmdType.Empty;
+            }
         }
     }
 }

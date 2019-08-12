@@ -204,7 +204,7 @@ namespace Mirle.Agv.View
             timGUIRefresh.Enabled = true;
 
             //20190802_Rudy 新增XML Param 可修改                
-            FillSVToBatteryParamTbx();           
+            FillSVToBatteryParamTbx();
             FillPVToBatteryParamTbx();
 
             FillSVToForkCommParamTbx();
@@ -283,6 +283,35 @@ namespace Mirle.Agv.View
 
         private void timGUIRefresh_Tick(object sender, EventArgs e)
         {
+            //20190808_Rudy 新增Robot Command 顯示
+            PlcForkCommand plcForkCommand = plcAgent.APLCVehicle.Robot.ExecutingCommand;
+            if (plcForkCommand != null)
+            {
+                tbxCommandNo_PV.Text = plcForkCommand.CommandNo.ToString();
+                tbxForkCommandType_PV.Text = plcForkCommand.ForkCommandType.ToString();
+                tbxDirection_PV.Text = plcForkCommand.Direction.ToString();
+                tbxStageNo_PV.Text = plcForkCommand.StageNo.ToString();
+                tbxIsEqPio_PV.Text = plcForkCommand.IsEqPio.ToString();
+                tbxForkSpeed_PV.Text = plcForkCommand.ForkSpeed.ToString();
+                tbxReason_PV.Text = plcForkCommand.Reason.ToString();
+            }
+            else
+            {
+                tbxCommandNo_PV.Text = "Null";
+                tbxForkCommandType_PV.Text = "Null";
+                tbxDirection_PV.Text = "Null";
+                tbxStageNo_PV.Text = "Null";
+                tbxIsEqPio_PV.Text = "Null";
+                tbxForkSpeed_PV.Text = "Null";
+                tbxReason_PV.Text = "Null";
+            }
+
+
+            if (this.plcAgent.APLCVehicle.Robot.ForkHome)//20190807_Rudy 新增ForkHome
+                lblForkHome.BackColor = Color.LightGreen;
+            else
+                lblForkHome.BackColor = Color.Silver;
+
             tbxLogView.Text = plcAgent.logMsg;
 
             txtTriggerEvent.Text = triggerEvent;
@@ -874,12 +903,18 @@ namespace Mirle.Agv.View
             switch (TbxType)
             {
                 case ParamtTbxType.BatteryPV:
+                    tboxes.Add(tbxChargingOffDelay_PV);
+                    tboxes.Add(tbxBatterysChargingTimeOut_PV);
+                    tboxes.Add(tbxBatLoggerInterval_PV);
                     tboxes.Add(tbxAHWorkingRange_PV);
                     tboxes.Add(tbxMaxCCModeCounter_PV);
                     tboxes.Add(txtAutoChargeLowSOC_PV);
                     tboxes.Add(tbxResetAHTimeout_PV);
                     break;
                 case ParamtTbxType.BatterySV:
+                    tboxes.Add(tbxChargingOffDelay_SV);
+                    tboxes.Add(tbxBatterysChargingTimeOut_SV);
+                    tboxes.Add(tbxBatLoggerInterval_SV);
                     tboxes.Add(tbxAHWorkingRange_SV);
                     tboxes.Add(tbxMaxCCModeCounter_SV);
                     tboxes.Add(txtAutoChargeLowSOC_SV);
@@ -908,6 +943,15 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxChargingOffDelay_PV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay / 60000).ToString();
+                        break;
+                    case "tbxBatterysChargingTimeOut_PV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
+                        break;
+                    case "tbxBatLoggerInterval_PV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval / 1000).ToString();
+                        break;
                     case "tbxAHWorkingRange_PV":
                         box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
                         break;
@@ -933,6 +977,15 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxChargingOffDelay_SV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay / 60000).ToString();
+                        break;
+                    case "tbxBatterysChargingTimeOut_SV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
+                        break;
+                    case "tbxBatLoggerInterval_SV":
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval / 1000).ToString();
+                        break;
                     case "tbxAHWorkingRange_SV":
                         box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
                         break;
@@ -1020,6 +1073,34 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxChargingOffDelay_SV":
+                        {
+                            if (!uint.TryParse(box.Text, out uint value))
+                            {
+                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay / 60000).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+
+                    case "tbxBatterysChargingTimeOut_SV":
+                        {
+                            if (!uint.TryParse(box.Text, out uint value))
+                            {
+                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
+                    case "tbxBatLoggerInterval_SV":
+                        {
+                            if (!ushort.TryParse(box.Text, out ushort value))
+                            {
+                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval / 1000).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
                     case "tbxAHWorkingRange_SV":
                         {
                             if (!double.TryParse(box.Text, out double value))
@@ -1107,6 +1188,9 @@ namespace Mirle.Agv.View
             if (!CheckBatteryParamSVInput()) return;
             Dictionary<string, string> dicSetValue = new Dictionary<string, string>()
                 {
+                    {"Charging_Off_Delay",tbxChargingOffDelay_SV.Text},
+                    {"Batterys_Charging_Time_Out",tbxBatterysChargingTimeOut_SV.Text},
+                    {"Battery_Logger_Interval",tbxBatLoggerInterval_SV.Text },
                     {"SOC_AH",tbxAHWorkingRange_SV.Text },
                     {"Ah_Reset_CCmode_Counter", tbxMaxCCModeCounter_SV.Text},
                     {"Port_AutoCharge_Low_SOC",txtAutoChargeLowSOC_SV.Text},
