@@ -1074,7 +1074,7 @@ namespace Mirle.Agv.Controller
             // 判斷當前是否可移動 若否 則發送報告
             var result = theVehicle.GetPlcVehicle().Robot.ForkHome;
             var msg = $"MainFlow : CanVehMove, [RobotHome={theVehicle.GetPlcVehicle().Robot.ForkHome}]";
-            OnMessageShowEvent?.Invoke(this, msg);
+            //OnMessageShowEvent?.Invoke(this, msg);
 
             if (result)
             {

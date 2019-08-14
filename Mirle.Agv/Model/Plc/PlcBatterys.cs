@@ -27,7 +27,7 @@ namespace Mirle.Agv.Model
         //Port_AutoCharge_Low_SOC
         public double PortAutoChargeLowSoc { get; set; } = 50.00;
 
-        public uint Battery_Logger_Interval { get; set; } = 30;
+        public uint Battery_Logger_Interval { get; set; } = 3;
         public uint Batterys_Charging_Time_Out { get; set; } = 7;
 
         public uint Charging_Off_Delay { get; set; } = 2;

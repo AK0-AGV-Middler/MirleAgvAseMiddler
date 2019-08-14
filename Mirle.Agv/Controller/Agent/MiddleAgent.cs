@@ -1050,8 +1050,6 @@ namespace Mirle.Agv.Controller
                 }
 
                 SendCommandWrapper(wrappers);  //似乎是SendFunction底層會咬住等待回應所以開THD去發  
-
-                OnCmdSend?.Invoke(this, msgShow);
             }
             catch (Exception ex)
             {
@@ -1072,7 +1070,7 @@ namespace Mirle.Agv.Controller
 
         private void SendCommandWrapper(WrapperMessage wrapper)
         {
-            string msg = $"[{wrapper.ID}]"+ wrapper.ToString();             
+            string msg = $"[SEND] [{wrapper.ID}]"+ wrapper.ToString();             
             OnCmdSend?.Invoke(this, msg);
             loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                  , msg));
@@ -1082,7 +1080,7 @@ namespace Mirle.Agv.Controller
 
         private void RecieveCmdShowOnCommunicationForm(object sender, TcpIpEventArgs e)
         {
-            string msg = $"[{e.iPacketID}][e.iSeqNum = {e.iSeqNum}][e.objPacket = {e.objPacket}]";
+            string msg = $"[RECEIVE] [{e.iPacketID}][e.iSeqNum = {e.iSeqNum}][e.objPacket = {e.objPacket}]";
             OnCmdReceive?.Invoke(this, msg);
             loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                  , msg));
@@ -1771,7 +1769,7 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                string msg = $"[{wrappers.ID}]" + wrappers.ToString();
+                string msg = $"[SEND] [{wrappers.ID}]" + wrappers.ToString();
                 OnCmdSend?.Invoke(this, msg);
                 loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));

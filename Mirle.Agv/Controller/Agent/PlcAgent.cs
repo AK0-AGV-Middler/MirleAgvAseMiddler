@@ -12,8 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Mirle.Agv.View;
-
-
+using System.Runtime.CompilerServices;
 
 namespace Mirle.Agv.Controller
 {
@@ -98,41 +97,146 @@ namespace Mirle.Agv.Controller
         }
         private void TestThreadRun()
         {
-          
+            while (true)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "","123Test"));
+                Thread.Sleep(2000);
+            }
         }
         [Conditional("DebugTest")]
         private void TestFun()
         {
+            //string str=  GetFunName();
+        }
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private string GetFunName([CallerMemberName] string memberName = "")
+        {
+            return GetType().Name + ":" + memberName;
+        }
+        private Stopwatch swBatteryLogger = new Stopwatch();//20190807_Rudy 新增 BatteryLogger
+        private bool BatteryMaxMinIni = true;
+        private double MaxMeterCurrent, MinMeterCurrent;
+        private double MaxMeterVoltage, MinMeterVoltage;
+        private double MaxMeterWatt, MinMeterWatt;
+        private double MaxMeterAh, MinMeterAh;
+        private double MaxCcModeAh, MinCcModeAh;
+        private ushort MaxCcModeCounter, MinCcModeCounter;
+        private ushort MaxFullChargeIndex, MinFullChargeIndex;
+        private double MaxFBatteryTemperature, MinFBatteryTemperature;
+        private double MaxBBatteryTemperature, MinBBatteryTemperature;
 
+        private void ValueCompare<T>(T Source, ref T Distance, int type = 0) where T : System.IComparable<T>
+        {
+            switch (type)
+            {
+                case 0:
+                    if (Source.CompareTo(Distance) > 0) Distance = Source;
+                    break;
+                case 1:
+                    if (Source.CompareTo(Distance) < 0) Distance = Source;
+                    break;
+                default:
+                    Distance = Source;
+                    break;
+            }
         }
 
-        private Stopwatch swBatteryLogger = new Stopwatch();//20190807_Rudy 新增 BatteryLogger
         private void WriteBatLoggerCsv(ref Stopwatch sw, long ms)//20190807_Rudy 新增 BatteryLogger
         {
             sw.Start();
+            if (BatteryMaxMinIni)
+            {
+                MaxMeterCurrent = this.APLCVehicle.Batterys.MeterCurrent;
+                MaxMeterVoltage = this.APLCVehicle.Batterys.MeterVoltage;
+                MaxMeterWatt = this.APLCVehicle.Batterys.MeterWatt;
+                MaxMeterAh = this.APLCVehicle.Batterys.MeterAh;
+                MaxCcModeAh = this.APLCVehicle.Batterys.CcModeAh;
+                //MaxCcModeCounter = this.APLCVehicle.Batterys.CcModeCounter;
+                //MaxFullChargeIndex = this.APLCVehicle.Batterys.FullChargeIndex;
+                MaxFBatteryTemperature = this.APLCVehicle.Batterys.FBatteryTemperature;
+                MaxBBatteryTemperature = this.APLCVehicle.Batterys.BBatteryTemperature;
+
+                MinMeterCurrent = this.APLCVehicle.Batterys.MeterCurrent;
+                MinMeterVoltage = this.APLCVehicle.Batterys.MeterVoltage;
+                MinMeterWatt = this.APLCVehicle.Batterys.MeterWatt;
+                MinMeterAh = this.APLCVehicle.Batterys.MeterAh;
+                MinCcModeAh = this.APLCVehicle.Batterys.CcModeAh;
+                //MinCcModeCounter = this.APLCVehicle.Batterys.CcModeCounter;
+                //MinFullChargeIndex = this.APLCVehicle.Batterys.FullChargeIndex;
+                MinFBatteryTemperature = this.APLCVehicle.Batterys.FBatteryTemperature;
+                MinBBatteryTemperature = this.APLCVehicle.Batterys.BBatteryTemperature;
+
+                BatteryMaxMinIni = false;
+            }
+
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterCurrent, ref MaxMeterCurrent);
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterVoltage, ref MaxMeterVoltage);
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterWatt, ref MaxMeterWatt);
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterAh, ref MaxMeterAh);
+            ValueCompare<double>(this.APLCVehicle.Batterys.CcModeAh, ref MaxCcModeAh);
+            //ValueCompare<ushort>(this.APLCVehicle.Batterys.CcModeCounter, ref MaxCcModeCounter);
+            //ValueCompare<ushort>(this.APLCVehicle.Batterys.FullChargeIndex, ref MaxFullChargeIndex);
+            ValueCompare<double>(this.APLCVehicle.Batterys.FBatteryTemperature, ref MaxFBatteryTemperature);
+            ValueCompare<double>(this.APLCVehicle.Batterys.BBatteryTemperature, ref MaxBBatteryTemperature);
+
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterCurrent, ref MinMeterCurrent, 1);
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterVoltage, ref MinMeterVoltage, 1);
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterWatt, ref MinMeterWatt, 1);
+            ValueCompare<double>(this.APLCVehicle.Batterys.MeterAh, ref MinMeterAh, 1);
+            ValueCompare<double>(this.APLCVehicle.Batterys.CcModeAh, ref MinCcModeAh, 1);
+            //ValueCompare<ushort>(this.APLCVehicle.Batterys.CcModeCounter, ref MinCcModeCounter, 1);
+            //ValueCompare<ushort>(this.APLCVehicle.Batterys.FullChargeIndex, ref MinFullChargeIndex, 1);
+            ValueCompare<double>(this.APLCVehicle.Batterys.FBatteryTemperature, ref MinFBatteryTemperature, 1);
+            ValueCompare<double>(this.APLCVehicle.Batterys.BBatteryTemperature, ref MinBBatteryTemperature, 1);
+
             if (sw.ElapsedMilliseconds > ms)
             {
                 string csvLog = "", Separator = ",";
                 DateTime now;
+                BatteryMaxMinIni = true;
 
                 now = DateTime.Now;
-                csvLog = now.ToString("HH:mm:ss");
+                csvLog = now.ToString("HH:mm:ss.ff");
 
 
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterCurrent.ToString();
+                csvLog = csvLog + Separator + this.MaxMeterCurrent.ToString();
+                csvLog = csvLog + Separator + this.MinMeterCurrent.ToString();
+
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterVoltage.ToString();
+                csvLog = csvLog + Separator + this.MaxMeterVoltage.ToString();
+                csvLog = csvLog + Separator + this.MinMeterVoltage.ToString();
+
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterWatt.ToString();
+                csvLog = csvLog + Separator + this.MaxMeterWatt.ToString();
+                csvLog = csvLog + Separator + this.MinMeterWatt.ToString();
+
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterAh.ToString();
-                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Percentage.ToString();
-                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                csvLog = csvLog + Separator + this.MaxMeterAh.ToString();
+                csvLog = csvLog + Separator + this.MinMeterAh.ToString();
+
+                //csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Percentage.ToString();
+                //csvLog = csvLog + Separator + this.APLCVehicle.Batterys.AhWorkingRange.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.CcModeAh.ToString();
+                csvLog = csvLog + Separator + this.MaxCcModeAh.ToString();
+                csvLog = csvLog + Separator + this.MinCcModeAh.ToString();
 
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.CcModeCounter.ToString();
-                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                //csvLog = csvLog + Separator + this.MaxCcModeCounter.ToString();
+                //csvLog = csvLog + Separator + this.MinCcModeCounter.ToString();
+
+                //csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.FullChargeIndex.ToString();
+                //csvLog = csvLog + Separator + this.MaxFullChargeIndex.ToString();
+                //csvLog = csvLog + Separator + this.MinFullChargeIndex.ToString();
 
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.FBatteryTemperature.ToString();
+                csvLog = csvLog + Separator + this.MaxFBatteryTemperature.ToString();
+                csvLog = csvLog + Separator + this.MinFBatteryTemperature.ToString();
+
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BBatteryTemperature.ToString();
+                csvLog = csvLog + Separator + this.MaxBBatteryTemperature.ToString();
+                csvLog = csvLog + Separator + this.MinBBatteryTemperature.ToString();
 
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Charging.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryType.ToString();
@@ -255,7 +359,7 @@ namespace Mirle.Agv.Controller
                             break;
 
                         case "Battery_Logger_Interval":
-                            this.APLCVehicle.Batterys.Battery_Logger_Interval = Convert.ToUInt32(childItem.InnerText) * 1000;
+                            this.APLCVehicle.Batterys.Battery_Logger_Interval = Convert.ToUInt32(Convert.ToDouble(childItem.InnerText) * 1000);
                             break;
 
                         case "Batterys_Charging_Time_Out":// min
@@ -467,10 +571,24 @@ namespace Mirle.Agv.Controller
                                     break;
 
                                 case "FBatteryTemperature":
-                                    this.APLCVehicle.Batterys.FBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    //this.APLCVehicle.Batterys.FBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    {
+                                        Int64 value = oColParam.Item(i).AsUInt16;
+                                        if (value >= 32768)
+                                            this.APLCVehicle.Batterys.FBatteryTemperature = Convert.ToDouble(value - 65536);
+                                        else
+                                            this.APLCVehicle.Batterys.FBatteryTemperature = Convert.ToDouble(value);
+                                    }
                                     break;
                                 case "BBatteryTemperature":
-                                    this.APLCVehicle.Batterys.BBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    //this.APLCVehicle.Batterys.BBatteryTemperature = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
+                                    {
+                                        Int64 value = oColParam.Item(i).AsUInt16;
+                                        if (value >= 32768)
+                                            this.APLCVehicle.Batterys.FBatteryTemperature = Convert.ToDouble(value - 65536);
+                                        else
+                                            this.APLCVehicle.Batterys.FBatteryTemperature = Convert.ToDouble(value);
+                                    }
                                     break;
                                 case "PLCAlarmIndex":
                                     //7個alarm set/reset
@@ -556,7 +674,7 @@ namespace Mirle.Agv.Controller
                 //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
                 LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
             }
-        }       
+        }
         private void ccModeAHSet()
         {
 
@@ -724,8 +842,8 @@ namespace Mirle.Agv.Controller
                                     ChgStopCommandCount = 0;
                                     this.ChargeStopCommand();
                                 }
-                            }                                
-                        }                       
+                            }
+                        }
                     }
                     else
                     {
@@ -2233,22 +2351,23 @@ namespace Mirle.Agv.Controller
             return result;
         }
         private string strlogMsg = "";//201907301_Rudy LogView
+        private const int LogMsgMaxLength = 65535;//65535
         public string logMsg//201907301_Rudy
         {
             get
             {
-                if (strlogMsg == "")
-                    return "";
-                if (strlogMsg.Length > 65535)
-                    return strlogMsg.Substring(0, 65535);
-                else
+                //if (strlogMsg == "")
+                //    return "";
+                //if (strlogMsg.Length > logMsgLength)
+                //    return strlogMsg.Substring(0, logMsgLength);
+                //else
                     return strlogMsg;
             }
         }
         private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)//201907301_Rudy LogView
         {
             strlogMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
-
+            if (strlogMsg.Length > LogMsgMaxLength) strlogMsg = strlogMsg.Substring(0, LogMsgMaxLength);
             clsLoggerAgent.LogMsg(clsLogFormat.Category, clsLogFormat);
         }
         //20190802_Rudy 新增XML Param 可修改   

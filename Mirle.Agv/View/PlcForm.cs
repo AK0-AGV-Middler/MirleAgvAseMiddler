@@ -950,7 +950,7 @@ namespace Mirle.Agv.View
                         box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
                         break;
                     case "tbxBatLoggerInterval_PV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval / 1000).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval) / 1000).ToString();
                         break;
                     case "tbxAHWorkingRange_PV":
                         box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
@@ -978,13 +978,13 @@ namespace Mirle.Agv.View
                 switch (box.Name)
                 {
                     case "tbxChargingOffDelay_SV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay ).ToString();
+                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay).ToString();
                         break;
                     case "tbxBatterysChargingTimeOut_SV":
                         box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
                         break;
                     case "tbxBatLoggerInterval_SV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval / 1000).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval) / 1000).ToString();
                         break;
                     case "tbxAHWorkingRange_SV":
                         box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
@@ -1077,7 +1077,7 @@ namespace Mirle.Agv.View
                         {
                             if (!uint.TryParse(box.Text, out uint value))
                             {
-                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay ).ToString();
+                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay).ToString();
                                 result = false;
                             }
                         }
@@ -1094,9 +1094,9 @@ namespace Mirle.Agv.View
                         break;
                     case "tbxBatLoggerInterval_SV":
                         {
-                            if (!ushort.TryParse(box.Text, out ushort value))
+                            if (!double.TryParse(box.Text, out double value))
                             {
-                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval / 1000).ToString();
+                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval) / 1000).ToString();
                                 result = false;
                             }
                         }
