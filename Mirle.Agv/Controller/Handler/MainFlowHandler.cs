@@ -265,6 +265,7 @@ namespace Mirle.Agv.Controller
         public void StopVehicle()
         {
             moveControlHandler.StopFlagOn();
+            //Should I clean transfer cmd and stop asking reserve?
         }
 
         private void LoggersInitial()
@@ -310,7 +311,7 @@ namespace Mirle.Agv.Controller
                 moveControlHandler = new MoveControlHandler("", theMapInfo);
                 alarmHandler = new AlarmHandler(alarmConfig);
 
-                middleAgent = new MiddleAgent(middlerConfig, alarmHandler);
+                middleAgent = new MiddleAgent(middlerConfig, alarmHandler, loggerAgent);
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
                 plcAgent = new PlcAgent(mcProtocol, alarmHandler);
@@ -496,11 +497,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                string className = GetType().Name;
-                string methodName = MethodBase.GetCurrentMethod().Name;
-                string classMethodName = className + ":" + methodName;
-                LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", ex.StackTrace);
-                loggerAgent.LogMsg("Error", logFormat);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , ex.StackTrace));
             }
         }
 
@@ -1027,7 +1025,23 @@ namespace Mirle.Agv.Controller
             // 判斷當前是否可載貨 若否 則發送報告
             MapPosition position = theVehicle.GetVehLoacation().RealPosition;
             MapAddress unloadAddress = theMapInfo.allMapAddresses[agvcTransCmd.UnloadAddress];
-            return mapHandler.IsPositionInThisAddress(position, unloadAddress);
+            var result = mapHandler.IsPositionInThisAddress(position, unloadAddress);
+            var msg = $"MainFlow : CanVehUnload, [result={result}][position=({(int)position.X},{(int)position.Y})][loadAddress=({(int)unloadAddress.Position.X},{(int)unloadAddress.Position.Y})]";
+            OnMessageShowEvent?.Invoke(this, msg);
+
+            if (result)
+            {
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , msg));
+
+            }
+            else
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , msg));
+            }
+
+            return result;
         }
 
         private bool CanVehLoad()
@@ -1035,15 +1049,45 @@ namespace Mirle.Agv.Controller
             // 判斷當前是否可卸貨 若否 則發送報告
             MapPosition position = theVehicle.GetVehLoacation().RealPosition;
             MapAddress loadAddress = theMapInfo.allMapAddresses[agvcTransCmd.LoadAddress];
-            return mapHandler.IsPositionInThisAddress(position, loadAddress);
+            var result = mapHandler.IsPositionInThisAddress(position, loadAddress);
+            var msg = $"MainFlow : CanVehLoad, [result={result}][position=({(int)position.X},{(int)position.Y})][loadAddress=({(int)loadAddress.Position.X},{(int)loadAddress.Position.Y})]";
+            OnMessageShowEvent?.Invoke(this, msg);
+
+            if (result)
+            {
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , msg));
+
+            }
+            else
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , msg));
+            }
+
+            return result;
         }
 
         private bool CanVehMove()
         {
             //battery/emo/beam/etc/reserve
             // 判斷當前是否可移動 若否 則發送報告
-            //throw new NotImplementedException();
-            return true;
+            var result = theVehicle.GetPlcVehicle().Robot.ForkHome;
+            var msg = $"MainFlow : CanVehMove, [RobotHome={theVehicle.GetPlcVehicle().Robot.ForkHome}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+
+            if (result)
+            {
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , msg));
+            }
+            else
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , msg));
+            }
+
+            return result;
         }
 
         private bool CanCassetteIdRead()
@@ -1244,7 +1288,7 @@ namespace Mirle.Agv.Controller
 
         private bool IsMoveStep()
         {
-            return GetCurTransCmd().GetCommandType() == EnumTransCmdType.Move;
+            return GetCurrentEnumTransCmdType() == EnumTransCmdType.Move;
         }
 
         private bool IsQueNeedReserveSectionsNotEmpty()
@@ -1256,18 +1300,14 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (transferSteps.Count == 0)
-                {
-                    return;
-                }
-
-                middleAgent.PauseAskingReserve();
+                middleAgent.ClearReserve();
                 queGotReserveOkSections = new ConcurrentQueue<MapSection>();
                 queNeedReserveSections = new ConcurrentQueue<MapSection>();
 
                 if (status == EnumMoveComplete.Fail)
                 {
                     //TODO: Alarm
+
                     StopVisitTransCmds();
                     AfterVisitTransCmds();
                     return;
@@ -1275,24 +1315,32 @@ namespace Mirle.Agv.Controller
 
                 StartCharge();
 
+                if (transferSteps.Count > 0)
+                {
 
-                if (NextTransCmdIsLoad())
-                {
-                    middleAgent.ReportLoadArrivals();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [LoadArrival]");
-                }
-                else if (NextTransCmdIsUnload())
-                {
-                    middleAgent.UnloadArrivals();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [UnloadArrival]");
+                    if (NextTransCmdIsLoad())
+                    {
+                        middleAgent.ReportLoadArrivals();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [LoadArrival]");
+                    }
+                    else if (NextTransCmdIsUnload())
+                    {
+                        middleAgent.UnloadArrivals();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [UnloadArrival]");
+                    }
+                    else
+                    {
+                        middleAgent.MoveComplete();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [MoveComplete]");
+                    }
+
+                    VisitNextTransCmd();
                 }
                 else
                 {
                     middleAgent.MoveComplete();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [MoveComplete]");
                 }
 
-                VisitNextTransCmd();
 
             }
             catch (Exception ex)
@@ -1758,6 +1806,7 @@ namespace Mirle.Agv.Controller
 
         public void StopCharge()
         {
+            var isStopChargeOk = true;
             plcAgent.ChargeStopCommand();
             Stopwatch sw = new Stopwatch();
             while (theVehicle.GetPlcVehicle().Batterys.Charging)
@@ -1768,6 +1817,7 @@ namespace Mirle.Agv.Controller
                 if (sw.ElapsedMilliseconds > StopChargeTimeout)
                 {
                     //Alarm
+                    isStopChargeOk = false;
                     break;
                 }
             }
@@ -1776,6 +1826,11 @@ namespace Mirle.Agv.Controller
             middleAgent.Send_Cmd144_StatusChangeReport();
 
             OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.GetPlcVehicle().Batterys.Charging}]");
+
+            if (!isStopChargeOk)
+            {
+                StopVehicle();
+            }
         }
 
         public void CleanAgvcTransCmd()

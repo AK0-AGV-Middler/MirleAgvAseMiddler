@@ -9,12 +9,12 @@ namespace Mirle.Agv.Controller.Tools
     [Serializable]
     public class LogFormat
     {
-        public string Category { get; set; }
-        public string LogLevel { get; set; }
-        public string ClassFunctionName { get; set; }
-        public string Device { get; set; }
-        public string CarrierId { get; set; }
-        public string Message { get; set; }
+        public string Category { get; set; } = "Category";
+        public string LogLevel { get; set; } = "9";
+        public string ClassFunctionName { get; set; } = "ClassFunctionName";
+        public string Device { get; set; } = "Device";
+        public string CarrierId { get; set; } = "CarrierId";
+        public string Message { get; set; } = "Message";
 
         public LogFormat(string Category, string LogLevel, string ClassFunctionName, string Device, string CarrierId, string Message)
         {
@@ -26,7 +26,7 @@ namespace Mirle.Agv.Controller.Tools
             this.Message = Message;
         }
 
-        public LogFormat(string Message) : this("Category", "LogLevel", "ClassFunctionName", "Device", "CarrierId", Message) { }
+        public LogFormat(string Message) : this("Category", "9", "ClassFunctionName", "Device", "CarrierId", Message) { }
     }
 
 }

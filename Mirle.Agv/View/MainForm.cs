@@ -66,7 +66,7 @@ namespace Mirle.Agv.View
         private Dictionary<MapAddress, UcAddressImage> allUcAddressImages = new Dictionary<MapAddress, UcAddressImage>();
         private double coefficient = 0.05f;
         private double deltaOrigion = 25;
-        private double addressRadius = 6;
+        //private double addressRadius = 6;
         private double triangleCoefficient = (double)(1 / Math.Sqrt(3.0));
         #endregion
 
@@ -136,7 +136,7 @@ namespace Mirle.Agv.View
             middleAgent.OnCmdReceive += ShowMsgOnMainForm;
             middleAgent.OnCmdSend += ShowMsgOnMainForm;
             middleAgent.OnMessageShowEvent += ShowMsgOnMainForm;
-            //middleAgent.OnDisConnected += ShowMsgOnMainForm;
+            alarmHandler.OnMessageShowEvent += ShowMsgOnMainForm;
         }
 
         private void ShowMsgOnMainForm(object sender, string e)
@@ -150,15 +150,15 @@ namespace Mirle.Agv.View
             //MapAddress curAddress = curSection.HeadAddress;
             //MapPosition curPosition = curAddress.Position.DeepClone();
 
-            ucMapSection.UcName = "Last Section";
-            //ucMapSection.UcValue = curSection.Id;
-            ucMapAddress.UcName = "Last Address";
-            //ucMapAddress.UcValue = curAddress.Id;
+            ucMapSection.TagName = "Last Section";
+            //ucMapSection.TagValue = curSection.Id;
+            ucMapAddress.TagName = "Last Address";
+            //ucMapAddress.TagValue = curAddress.Id;
 
-            ucBarcodePosition.UcName = "BarcodePosition";
-            //ucBarcodePosition.UcValue = $"({curPosition.X},{curPosition.Y})";
-            ucRealPosition.UcName = "RealPosition";
-            //ucRealPosition.UcValue = $"({curPosition.X},{curPosition.Y})";
+            ucBarcodePosition.TagName = "BarcodePosition";
+            //ucBarcodePosition.TagValue = $"({curPosition.X},{curPosition.Y})";
+            ucRealPosition.TagName = "RealPosition";
+            //ucRealPosition.TagValue = $"({curPosition.X},{curPosition.Y})";
         }
 
         public void DrawBasicMap()
@@ -590,22 +590,22 @@ namespace Mirle.Agv.View
             var location = mainFlowHandler.theVehicle.GetVehLoacation();
 
             var realPos = location.RealPosition;
-            ucRealPosition.UcValue = $"({(int)realPos.X},{(int)realPos.Y})";
+            ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
 
             var barPos = location.BarcodePosition;
-            ucBarcodePosition.UcValue = $"({(int)barPos.X},{(int)barPos.Y})";
+            ucBarcodePosition.TagValue = $"({(int)barPos.X},{(int)barPos.Y})";
 
             var curAddress = location.Address;
-            ucMapAddress.UcValue = curAddress.Id;
+            ucMapAddress.TagValue = curAddress.Id;
 
             var curSection = location.Section;
-            ucMapSection.UcValue = curSection.Id;           
+            ucMapSection.TagValue = curSection.Id;           
         }
 
         private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
         {
             double value = performanceCounter.NextValue();
-            ucLabelTextBox.UcValue = string.Format("{0:0.0}%", value);
+            ucLabelTextBox.TagValue = string.Format("{0:0.0}%", value);
         }
 
         private void UpdateListBoxSections(ListBox aListBox, List<MapSection> aListOfSections)
@@ -653,13 +653,13 @@ namespace Mirle.Agv.View
 
         private void btnMoveFinish_Click(object sender, EventArgs e)
         {
-            if(mainFlowHandler.GetCurTransCmd().GetCommandType() == EnumTransCmdType.Move)
+            if(mainFlowHandler.GetCurrentEnumTransCmdType() == EnumTransCmdType.Move)
             {
                 moveControlHandler.MoveFinished(EnumMoveComplete.Success);
             }
             else
             {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurTransCmd().GetCommandType()}");
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentEnumTransCmdType()}");
             }
         }
 
@@ -722,7 +722,7 @@ namespace Mirle.Agv.View
 
         private void btnLoadFinish_Click(object sender, EventArgs e)
         {        
-            if (mainFlowHandler.GetCurTransCmd().GetCommandType() == EnumTransCmdType.Load)
+            if (mainFlowHandler.GetCurrentEnumTransCmdType() == EnumTransCmdType.Load)
             {
                 var plcVeh = mainFlowHandler.theVehicle.GetPlcVehicle();
                 plcVeh.Loading = true;
@@ -734,13 +734,13 @@ namespace Mirle.Agv.View
             }
             else
             {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurTransCmd().GetCommandType()}");
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentEnumTransCmdType()}");
             }
         }
 
         private void btnUnloadFinish_Click(object sender, EventArgs e)
         {
-            if (mainFlowHandler.GetCurTransCmd().GetCommandType() == EnumTransCmdType.Unload)
+            if (mainFlowHandler.GetCurrentEnumTransCmdType() == EnumTransCmdType.Unload)
             {
                 var plcVeh = mainFlowHandler.theVehicle.GetPlcVehicle();
                 plcVeh.Loading = false;
@@ -751,8 +751,18 @@ namespace Mirle.Agv.View
             }
             else
             {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurTransCmd().GetCommandType()}");
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentEnumTransCmdType()}");
             }
+        }
+
+        private void btnAlarmReset_Click(object sender, EventArgs e)
+        {
+            alarmHandler.ResetAllAlarms();
+        }
+
+        private void btnTransferComplete_Click(object sender, EventArgs e)
+        {           
+            middleAgent.LoadUnloadComplete();
         }
     }
 }

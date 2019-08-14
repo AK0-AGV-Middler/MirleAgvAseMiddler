@@ -12,7 +12,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
             TransferStep curTransCmd = mainFlowHandler.GetCurTransCmd();
-            var type = curTransCmd.GetCommandType();
+            EnumTransCmdType type = curTransCmd.GetCommandType();
 
             switch (type)
             {
@@ -21,12 +21,6 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     mainFlowHandler.DoTransfer();
                     break;
                 case EnumTransCmdType.Load:
-                    //TODO:
-                    //resume tracking position
-                    //-> get position
-                    //-> send "InPosition" to Plc
-                    //-> pause tracking position
-                    //-> send "load" to plc
                     LoadCmdInfo loadCmdInfo = (LoadCmdInfo)curTransCmd;
                     mainFlowHandler.Load(loadCmdInfo);
                     break;

@@ -12,7 +12,7 @@ namespace Mirle.Agv
 {
     public partial class UcLabelTextBox : UserControl
     {
-        public string UcName
+        public string TagName
         {
             get
             {
@@ -24,7 +24,7 @@ namespace Mirle.Agv
             }
         }
 
-        public string UcValue
+        public string TagValue
         {
             get
             {

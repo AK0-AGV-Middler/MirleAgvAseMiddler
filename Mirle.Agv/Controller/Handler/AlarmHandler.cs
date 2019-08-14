@@ -8,6 +8,7 @@ using Mirle.Agv.Model;
 using Mirle.Agv.Model.Configs;
 using Mirle.Agv.Controller.Tools;
 using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace Mirle.Agv.Controller
 {
@@ -19,6 +20,7 @@ namespace Mirle.Agv.Controller
         public List<Alarm> alarms = new List<Alarm>();
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
         public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
+        public event EventHandler<string> OnMessageShowEvent;
 
         #endregion
 
@@ -40,12 +42,8 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrEmpty(alarmConfig.AlarmFileName))
                 {
-                    string className = GetType().Name;
-                    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-                    string classMethodName = className + ":" + methodName;
-                    LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", $"string.IsNullOrEmpty(alarmConfig.AlarmFileName)={string.IsNullOrEmpty(alarmConfig.AlarmFileName)}");
-                    loggerAgent.LogMsg("Error", logFormat);
-
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        , $"string.IsNullOrEmpty(alarmConfig.AlarmFileName)={string.IsNullOrEmpty(alarmConfig.AlarmFileName)}"));
                     return;
                 }
 
@@ -57,12 +55,8 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(alarmFullPath);
                 if (allRows == null || allRows.Length < 2)
                 {
-                    string className = GetType().Name;
-                    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-                    string classMethodName = className + ":" + methodName;
-                    LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", "There are no alarms in file");
-                    loggerAgent.LogMsg("Error", logFormat);
-
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        , "There are no alarms in file"));
                     return;
                 }
 
@@ -96,14 +90,14 @@ namespace Mirle.Agv.Controller
                     allAlarms.Add(oneRow.Id, oneRow);
                     alarms.Add(oneRow);
                 }
+
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , "Load Alarm File Ok"));
             }
             catch (Exception ex)
             {
-                string className = GetType().Name;
-                string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-                string classMethodName = className + ":" + methodName;
-                LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", ex.StackTrace);
-                loggerAgent.LogMsg("Error", logFormat);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
 
@@ -118,6 +112,9 @@ namespace Mirle.Agv.Controller
             else
             {
                 alarm = allAlarms[id].DeepClone();
+
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , $"[Id={id}]"));
             }
 
             return alarm;
@@ -127,7 +124,12 @@ namespace Mirle.Agv.Controller
         {
             if (dicHappeningAlarms.ContainsKey(id))
             {
-                //Already have this alarm in happening list
+                var ngMsg = $"AlarmHandler : Set alarm fail, [Id={id}][Already in HappeningAlarms]";
+                OnMessageShowEvent?.Invoke(this, ngMsg);
+
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ngMsg));
+
                 return;
             }
 
@@ -136,12 +138,23 @@ namespace Mirle.Agv.Controller
             alarm.SetTime = timeStamp;
             dicHappeningAlarms.TryAdd(id, alarm);
             loggerAgent.LogAlarmHistory(alarm);
+
+            var okMsg = $"AlarmHandler : Set alarm ok, [Id={id}]";
+            OnMessageShowEvent?.Invoke(this, okMsg);
+
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , okMsg));
         }
 
         public void ResetAlarm(int id)
         {
             if (!dicHappeningAlarms.ContainsKey(id))
             {
+                var ngMsg = $"AlarmHandler : Reset alarm fail, [Id={id}][Not in HappeningAlarms]";
+                OnMessageShowEvent?.Invoke(this, ngMsg);
+
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ngMsg));
                 return;
             }
 
@@ -149,19 +162,40 @@ namespace Mirle.Agv.Controller
             dicHappeningAlarms.TryRemove(id, out Alarm alarm);
             alarm.ResetTime = resetTime;
             loggerAgent.LogAlarmHistory(alarm);
+
+            var okMsg = $"AlarmHandler : Reset alarm ok, [Id={id}]";
+            OnMessageShowEvent?.Invoke(this, okMsg);
+
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , okMsg));
         }
 
         public void ResetAllAlarms()
         {
-            var tempHappeningAlarms = dicHappeningAlarms;
-            dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
-            DateTime resetTime = DateTime.Now;
-
-            foreach (KeyValuePair<int, Alarm> item in tempHappeningAlarms)
+            try
             {
-                Alarm alarm = item.Value;
-                alarm.ResetTime = resetTime;
-                loggerAgent.LogAlarmHistory(alarm);
+                var tempHappeningAlarms = dicHappeningAlarms;
+                dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
+                DateTime resetTime = DateTime.Now;
+
+                foreach (KeyValuePair<int, Alarm> item in tempHappeningAlarms)
+                {
+                    Alarm alarm = item.Value;
+                    alarm.ResetTime = resetTime;
+                    loggerAgent.LogAlarmHistory(alarm);
+                }
+
+                var okMsg = $"AlarmHandler : Reset all alarm ok";
+                OnMessageShowEvent?.Invoke(this, okMsg);
+
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , okMsg));
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
 
@@ -175,7 +209,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , ex.StackTrace));
                 return EnumAlarmLevel.Warn;
             }
         }

@@ -380,9 +380,9 @@
             // tbxCommBusyTimeout_SV
             // 
             this.tbxCommBusyTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxCommBusyTimeout_SV.Location = new System.Drawing.Point(218, 113);
+            this.tbxCommBusyTimeout_SV.Location = new System.Drawing.Point(220, 113);
             this.tbxCommBusyTimeout_SV.Name = "tbxCommBusyTimeout_SV";
-            this.tbxCommBusyTimeout_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxCommBusyTimeout_SV.Size = new System.Drawing.Size(79, 23);
             this.tbxCommBusyTimeout_SV.TabIndex = 61;
             // 
             // chbCassetteID_SV
@@ -390,9 +390,9 @@
             this.chbCassetteID_SV.Appearance = System.Windows.Forms.Appearance.Button;
             this.chbCassetteID_SV.AutoSize = true;
             this.chbCassetteID_SV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chbCassetteID_SV.Location = new System.Drawing.Point(218, 38);
+            this.chbCassetteID_SV.Location = new System.Drawing.Point(220, 38);
             this.chbCassetteID_SV.Name = "chbCassetteID_SV";
-            this.chbCassetteID_SV.Size = new System.Drawing.Size(77, 29);
+            this.chbCassetteID_SV.Size = new System.Drawing.Size(79, 29);
             this.chbCassetteID_SV.TabIndex = 69;
             this.chbCassetteID_SV.Text = "checkBox1";
             this.chbCassetteID_SV.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -405,15 +405,15 @@
             this.tbxCommMovingTimeout_PV.Location = new System.Drawing.Point(135, 149);
             this.tbxCommMovingTimeout_PV.Name = "tbxCommMovingTimeout_PV";
             this.tbxCommMovingTimeout_PV.ReadOnly = true;
-            this.tbxCommMovingTimeout_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxCommMovingTimeout_PV.Size = new System.Drawing.Size(78, 23);
             this.tbxCommMovingTimeout_PV.TabIndex = 64;
             // 
             // tbxCommMovingTimeout_SV
             // 
             this.tbxCommMovingTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxCommMovingTimeout_SV.Location = new System.Drawing.Point(218, 149);
+            this.tbxCommMovingTimeout_SV.Location = new System.Drawing.Point(220, 149);
             this.tbxCommMovingTimeout_SV.Name = "tbxCommMovingTimeout_SV";
-            this.tbxCommMovingTimeout_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxCommMovingTimeout_SV.Size = new System.Drawing.Size(79, 23);
             this.tbxCommMovingTimeout_SV.TabIndex = 61;
             // 
             // tbxCommReadTimeout_PV
@@ -422,15 +422,15 @@
             this.tbxCommReadTimeout_PV.Location = new System.Drawing.Point(135, 77);
             this.tbxCommReadTimeout_PV.Name = "tbxCommReadTimeout_PV";
             this.tbxCommReadTimeout_PV.ReadOnly = true;
-            this.tbxCommReadTimeout_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxCommReadTimeout_PV.Size = new System.Drawing.Size(78, 23);
             this.tbxCommReadTimeout_PV.TabIndex = 64;
             // 
             // tbxCommReadTimeout_SV
             // 
             this.tbxCommReadTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxCommReadTimeout_SV.Location = new System.Drawing.Point(218, 77);
+            this.tbxCommReadTimeout_SV.Location = new System.Drawing.Point(220, 77);
             this.tbxCommReadTimeout_SV.Name = "tbxCommReadTimeout_SV";
-            this.tbxCommReadTimeout_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxCommReadTimeout_SV.Size = new System.Drawing.Size(79, 23);
             this.tbxCommReadTimeout_SV.TabIndex = 61;
             // 
             // tbxReadCassetteID_PV
@@ -439,7 +439,7 @@
             this.tbxReadCassetteID_PV.Location = new System.Drawing.Point(135, 41);
             this.tbxReadCassetteID_PV.Name = "tbxReadCassetteID_PV";
             this.tbxReadCassetteID_PV.ReadOnly = true;
-            this.tbxReadCassetteID_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxReadCassetteID_PV.Size = new System.Drawing.Size(78, 23);
             this.tbxReadCassetteID_PV.TabIndex = 64;
             this.tbxReadCassetteID_PV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -460,7 +460,7 @@
             this.tbxCommBusyTimeout_PV.Location = new System.Drawing.Point(135, 113);
             this.tbxCommBusyTimeout_PV.Name = "tbxCommBusyTimeout_PV";
             this.tbxCommBusyTimeout_PV.ReadOnly = true;
-            this.tbxCommBusyTimeout_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxCommBusyTimeout_PV.Size = new System.Drawing.Size(78, 23);
             this.tbxCommBusyTimeout_PV.TabIndex = 64;
             // 
             // label31
@@ -469,7 +469,7 @@
             this.label31.AutoSize = true;
             this.label31.Location = new System.Drawing.Point(135, 11);
             this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(76, 13);
+            this.label31.Size = new System.Drawing.Size(78, 13);
             this.label31.TabIndex = 70;
             this.label31.Text = "Present Value";
             this.label31.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -489,9 +489,9 @@
             // 
             this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(218, 11);
+            this.label37.Location = new System.Drawing.Point(220, 11);
             this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(77, 13);
+            this.label37.Size = new System.Drawing.Size(79, 13);
             this.label37.TabIndex = 71;
             this.label37.Text = "Set Value";
             this.label37.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1338,15 +1338,15 @@
             this.label58.Name = "label58";
             this.label58.Size = new System.Drawing.Size(124, 26);
             this.label58.TabIndex = 79;
-            this.label58.Text = "Batterys Charging\r\nTime Out";
+            this.label58.Text = "Batterys Charging\r\nTime Out (min)";
             this.label58.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // txtAutoChargeLowSOC_SV
             // 
             this.txtAutoChargeLowSOC_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtAutoChargeLowSOC_SV.Location = new System.Drawing.Point(218, 113);
+            this.txtAutoChargeLowSOC_SV.Location = new System.Drawing.Point(219, 113);
             this.txtAutoChargeLowSOC_SV.Name = "txtAutoChargeLowSOC_SV";
-            this.txtAutoChargeLowSOC_SV.Size = new System.Drawing.Size(77, 23);
+            this.txtAutoChargeLowSOC_SV.Size = new System.Drawing.Size(78, 23);
             this.txtAutoChargeLowSOC_SV.TabIndex = 61;
             // 
             // tbxResetAHTimeout_PV
@@ -1355,15 +1355,15 @@
             this.tbxResetAHTimeout_PV.Location = new System.Drawing.Point(135, 149);
             this.tbxResetAHTimeout_PV.Name = "tbxResetAHTimeout_PV";
             this.tbxResetAHTimeout_PV.ReadOnly = true;
-            this.tbxResetAHTimeout_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxResetAHTimeout_PV.Size = new System.Drawing.Size(77, 23);
             this.tbxResetAHTimeout_PV.TabIndex = 64;
             // 
             // tbxResetAHTimeout_SV
             // 
             this.tbxResetAHTimeout_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxResetAHTimeout_SV.Location = new System.Drawing.Point(218, 149);
+            this.tbxResetAHTimeout_SV.Location = new System.Drawing.Point(219, 149);
             this.tbxResetAHTimeout_SV.Name = "tbxResetAHTimeout_SV";
-            this.tbxResetAHTimeout_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxResetAHTimeout_SV.Size = new System.Drawing.Size(78, 23);
             this.tbxResetAHTimeout_SV.TabIndex = 61;
             // 
             // tbxMaxCCModeCounter_PV
@@ -1372,15 +1372,15 @@
             this.tbxMaxCCModeCounter_PV.Location = new System.Drawing.Point(135, 77);
             this.tbxMaxCCModeCounter_PV.Name = "tbxMaxCCModeCounter_PV";
             this.tbxMaxCCModeCounter_PV.ReadOnly = true;
-            this.tbxMaxCCModeCounter_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxMaxCCModeCounter_PV.Size = new System.Drawing.Size(77, 23);
             this.tbxMaxCCModeCounter_PV.TabIndex = 64;
             // 
             // tbxMaxCCModeCounter_SV
             // 
             this.tbxMaxCCModeCounter_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxMaxCCModeCounter_SV.Location = new System.Drawing.Point(218, 77);
+            this.tbxMaxCCModeCounter_SV.Location = new System.Drawing.Point(219, 77);
             this.tbxMaxCCModeCounter_SV.Name = "tbxMaxCCModeCounter_SV";
-            this.tbxMaxCCModeCounter_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxMaxCCModeCounter_SV.Size = new System.Drawing.Size(78, 23);
             this.tbxMaxCCModeCounter_SV.TabIndex = 61;
             // 
             // tbxAHWorkingRange_PV
@@ -1389,15 +1389,15 @@
             this.tbxAHWorkingRange_PV.Location = new System.Drawing.Point(135, 41);
             this.tbxAHWorkingRange_PV.Name = "tbxAHWorkingRange_PV";
             this.tbxAHWorkingRange_PV.ReadOnly = true;
-            this.tbxAHWorkingRange_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxAHWorkingRange_PV.Size = new System.Drawing.Size(77, 23);
             this.tbxAHWorkingRange_PV.TabIndex = 64;
             // 
             // tbxAHWorkingRange_SV
             // 
             this.tbxAHWorkingRange_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAHWorkingRange_SV.Location = new System.Drawing.Point(218, 41);
+            this.tbxAHWorkingRange_SV.Location = new System.Drawing.Point(219, 41);
             this.tbxAHWorkingRange_SV.Name = "tbxAHWorkingRange_SV";
-            this.tbxAHWorkingRange_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxAHWorkingRange_SV.Size = new System.Drawing.Size(78, 23);
             this.tbxAHWorkingRange_SV.TabIndex = 61;
             // 
             // label51
@@ -1417,7 +1417,7 @@
             this.txtAutoChargeLowSOC_PV.Location = new System.Drawing.Point(135, 113);
             this.txtAutoChargeLowSOC_PV.Name = "txtAutoChargeLowSOC_PV";
             this.txtAutoChargeLowSOC_PV.ReadOnly = true;
-            this.txtAutoChargeLowSOC_PV.Size = new System.Drawing.Size(76, 23);
+            this.txtAutoChargeLowSOC_PV.Size = new System.Drawing.Size(77, 23);
             this.txtAutoChargeLowSOC_PV.TabIndex = 64;
             // 
             // label52
@@ -1426,7 +1426,7 @@
             this.label52.AutoSize = true;
             this.label52.Location = new System.Drawing.Point(135, 11);
             this.label52.Name = "label52";
-            this.label52.Size = new System.Drawing.Size(76, 13);
+            this.label52.Size = new System.Drawing.Size(77, 13);
             this.label52.TabIndex = 70;
             this.label52.Text = "Present Value";
             this.label52.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1446,9 +1446,9 @@
             // 
             this.label53.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label53.AutoSize = true;
-            this.label53.Location = new System.Drawing.Point(218, 11);
+            this.label53.Location = new System.Drawing.Point(219, 11);
             this.label53.Name = "label53";
-            this.label53.Size = new System.Drawing.Size(77, 13);
+            this.label53.Size = new System.Drawing.Size(78, 13);
             this.label53.TabIndex = 71;
             this.label53.Text = "Set Value";
             this.label53.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1503,15 +1503,15 @@
             this.tbxBatLoggerInterval_PV.Location = new System.Drawing.Point(135, 185);
             this.tbxBatLoggerInterval_PV.Name = "tbxBatLoggerInterval_PV";
             this.tbxBatLoggerInterval_PV.ReadOnly = true;
-            this.tbxBatLoggerInterval_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxBatLoggerInterval_PV.Size = new System.Drawing.Size(77, 23);
             this.tbxBatLoggerInterval_PV.TabIndex = 77;
             // 
             // tbxBatLoggerInterval_SV
             // 
             this.tbxBatLoggerInterval_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxBatLoggerInterval_SV.Location = new System.Drawing.Point(218, 185);
+            this.tbxBatLoggerInterval_SV.Location = new System.Drawing.Point(219, 185);
             this.tbxBatLoggerInterval_SV.Name = "tbxBatLoggerInterval_SV";
-            this.tbxBatLoggerInterval_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxBatLoggerInterval_SV.Size = new System.Drawing.Size(78, 23);
             this.tbxBatLoggerInterval_SV.TabIndex = 78;
             // 
             // tbxBatterysChargingTimeOut_PV
@@ -1520,15 +1520,15 @@
             this.tbxBatterysChargingTimeOut_PV.Location = new System.Drawing.Point(135, 221);
             this.tbxBatterysChargingTimeOut_PV.Name = "tbxBatterysChargingTimeOut_PV";
             this.tbxBatterysChargingTimeOut_PV.ReadOnly = true;
-            this.tbxBatterysChargingTimeOut_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxBatterysChargingTimeOut_PV.Size = new System.Drawing.Size(77, 23);
             this.tbxBatterysChargingTimeOut_PV.TabIndex = 77;
             // 
             // tbxBatterysChargingTimeOut_SV
             // 
             this.tbxBatterysChargingTimeOut_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxBatterysChargingTimeOut_SV.Location = new System.Drawing.Point(218, 221);
+            this.tbxBatterysChargingTimeOut_SV.Location = new System.Drawing.Point(219, 221);
             this.tbxBatterysChargingTimeOut_SV.Name = "tbxBatterysChargingTimeOut_SV";
-            this.tbxBatterysChargingTimeOut_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxBatterysChargingTimeOut_SV.Size = new System.Drawing.Size(78, 23);
             this.tbxBatterysChargingTimeOut_SV.TabIndex = 78;
             // 
             // tbxChargingOffDelay_PV
@@ -1537,15 +1537,15 @@
             this.tbxChargingOffDelay_PV.Location = new System.Drawing.Point(135, 257);
             this.tbxChargingOffDelay_PV.Name = "tbxChargingOffDelay_PV";
             this.tbxChargingOffDelay_PV.ReadOnly = true;
-            this.tbxChargingOffDelay_PV.Size = new System.Drawing.Size(76, 23);
+            this.tbxChargingOffDelay_PV.Size = new System.Drawing.Size(77, 23);
             this.tbxChargingOffDelay_PV.TabIndex = 77;
             // 
             // tbxChargingOffDelay_SV
             // 
             this.tbxChargingOffDelay_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxChargingOffDelay_SV.Location = new System.Drawing.Point(218, 257);
+            this.tbxChargingOffDelay_SV.Location = new System.Drawing.Point(219, 257);
             this.tbxChargingOffDelay_SV.Name = "tbxChargingOffDelay_SV";
-            this.tbxChargingOffDelay_SV.Size = new System.Drawing.Size(77, 23);
+            this.tbxChargingOffDelay_SV.Size = new System.Drawing.Size(78, 23);
             this.tbxChargingOffDelay_SV.TabIndex = 78;
             // 
             // btnBatteryParamSet

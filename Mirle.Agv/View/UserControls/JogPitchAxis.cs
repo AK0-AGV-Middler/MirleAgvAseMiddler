@@ -18,23 +18,14 @@ namespace Mirle.Agv
             label_AxisName.Text = axisName;
         }
 
-        public void Update(string position, bool disable, bool standStill, bool error)
+        public void Update(string position, bool disable, bool standStill, bool error, bool link)
         {
             tB_Position.Text = position;
-            if (disable)
-                pB_Disable.BackColor = System.Drawing.Color.DarkRed;
-            else
-                pB_Disable.BackColor = System.Drawing.Color.LightGray;
 
-            if (standStill)
-                pB_StandStill.BackColor = System.Drawing.Color.Green;
-            else
-                pB_StandStill.BackColor = System.Drawing.Color.LightGray;
-
-            if (error)
-                pB_Error.BackColor = System.Drawing.Color.DarkRed;
-            else
-                pB_Error.BackColor = System.Drawing.Color.LightGray;
+            pB_Disable.BackColor = disable ? System.Drawing.Color.DarkRed : System.Drawing.Color.LightGray;
+            pB_StandStill.BackColor = standStill ? System.Drawing.Color.Green : System.Drawing.Color.LightGray;
+            pB_Error.BackColor = error ? System.Drawing.Color.DarkRed : System.Drawing.Color.LightGray;
+            pB_Link.BackColor = link ? System.Drawing.Color.Green : System.Drawing.Color.LightGray;
         }
     }
 }

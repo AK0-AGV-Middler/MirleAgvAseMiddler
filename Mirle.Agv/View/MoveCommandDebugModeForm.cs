@@ -51,16 +51,16 @@ namespace Mirle.Agv.View
         private void MoveCommandMonitor_Load(object sender, EventArgs e)
         {
             button_SendList.Enabled = false;
-            ucLabelTB_RealEncoder.UcName = "Real Encoder : ";
-            ucLabelTB_RealPosition.UcName = "Real Position : ";
-            ucLabelTB_BarcodePosition.UcName = "Barcode Position : ";
-            ucLabelTB_Delta.UcName = "Encoder Delta : ";
-            ucLabelTB_CreateCommand_BarcodePosition.UcName = "Barcode Position : ";
-            ucLabelTtB_CommandListState.UcName = "AGV Move State : ";
-            ucLabelTB_CreateCommandState.UcName = "AGV Move State : ";
-            ucLabelTB_Velocity.UcName = "Velocity : ";
-            ucLabelTB_ElmoEncoder.UcName = "Elmo encoder : ";
-            ucLabelTB_EncoderOffset.UcName = "Offset : ";
+            ucLabelTB_RealEncoder.TagName = "Real Encoder : ";
+            ucLabelTB_RealPosition.TagName = "Real Position : ";
+            ucLabelTB_BarcodePosition.TagName = "Barcode Position : ";
+            ucLabelTB_Delta.TagName = "Encoder Delta : ";
+            ucLabelTB_CreateCommand_BarcodePosition.TagName = "Barcode Position : ";
+            ucLabelTtB_CommandListState.TagName = "AGV Move State : ";
+            ucLabelTB_CreateCommandState.TagName = "AGV Move State : ";
+            ucLabelTB_Velocity.TagName = "Velocity : ";
+            ucLabelTB_ElmoEncoder.TagName = "Elmo encoder : ";
+            ucLabelTB_EncoderOffset.TagName = "Offset : ";
             AddListMapAddressPositions();
             AddListMapAddressActions();
             AddListMapSpeedLimits();
@@ -209,7 +209,7 @@ namespace Mirle.Agv.View
 
         private void MoveCommandDebugMode_Leave(object sender, EventArgs e)
         {
-            moveControl.DebugLog = false;
+            moveControl.DebugCSVMode = false;
         }
         #endregion
 
@@ -220,13 +220,13 @@ namespace Mirle.Agv.View
 
             if (tempBarcodePosition != null)
             {
-                ucLabelTB_CreateCommand_BarcodePosition.UcValue = "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
+                ucLabelTB_CreateCommand_BarcodePosition.TagValue = "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
                                                                          tempBarcodePosition.Position.Y.ToString("0") + " )";
             }
             else
-                ucLabelTB_CreateCommand_BarcodePosition.UcValue = "( ---, --- )";
+                ucLabelTB_CreateCommand_BarcodePosition.TagValue = "( ---, --- )";
 
-            ucLabelTB_CreateCommandState.UcValue = moveControl.MoveState.ToString();
+            ucLabelTB_CreateCommandState.TagValue = moveControl.MoveState.ToString();
             if (moveControl.MoveState != EnumMoveState.Idle)
             {
                 button_DebugModeSend.Enabled = false;
@@ -267,23 +267,23 @@ namespace Mirle.Agv.View
 
             label_AlarmMessage.Text = moveControl.AGVStopResult;
 
-            ucLabelTB_RealEncoder.UcValue = moveControl.location.RealEncoder.ToString("0.0");
-            ucLabelTB_Delta.UcValue = moveControl.location.Delta.ToString("0.0");
-            ucLabelTB_Velocity.UcValue = moveControl.location.XFLVelocity.ToString("0");
-            ucLabelTB_ElmoEncoder.UcValue = moveControl.location.ElmoEncoder.ToString("0");
-            ucLabelTB_EncoderOffset.UcValue = moveControl.location.Offset.ToString("0");
+            ucLabelTB_RealEncoder.TagValue = moveControl.location.RealEncoder.ToString("0.0");
+            ucLabelTB_Delta.TagValue = moveControl.location.Delta.ToString("0.0");
+            ucLabelTB_Velocity.TagValue = moveControl.location.XFLVelocity.ToString("0");
+            ucLabelTB_ElmoEncoder.TagValue = moveControl.location.ElmoEncoder.ToString("0");
+            ucLabelTB_EncoderOffset.TagValue = moveControl.location.Offset.ToString("0");
 
             tempReal = moveControl.location.Real;
 
-            ucLabelTB_RealPosition.UcValue = (tempReal != null) ?
+            ucLabelTB_RealPosition.TagValue = (tempReal != null) ?
                 "( " + tempReal.Position.X.ToString("0") + ", " + tempReal.Position.Y.ToString("0") + " )" : "( ---, --- )";
 
-            ucLabelTB_BarcodePosition.UcValue = (tempBarcodePosition != null) ?
+            ucLabelTB_BarcodePosition.TagValue = (tempBarcodePosition != null) ?
                  "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
                  tempBarcodePosition.Position.Y.ToString("0") + " )" : "( ---, --- )";
 
 
-            ucLabelTtB_CommandListState.UcValue = moveControl.MoveState.ToString();
+            ucLabelTtB_CommandListState.TagValue = moveControl.MoveState.ToString();
 
 
             try
@@ -557,6 +557,9 @@ namespace Mirle.Agv.View
         #region Page Command List
         private void ShowReserveList()
         {
+            if (reserveDataList == null)
+                return;
+
             reserveIndex = -1;
             ReserveList.Items.Clear();
             reserveStringList = new List<string>();
@@ -655,12 +658,12 @@ namespace Mirle.Agv.View
             if (button_DebugCSV.Text == "開啟")
             {
                 button_DebugCSV.Text = "關閉";
-                moveControl.DebugLog = true;
+                moveControl.DebugCSVMode = true;
             }
             else
             {
                 button_DebugCSV.Text = "開啟";
-                moveControl.DebugLog = false;
+                moveControl.DebugCSVMode = false;
             }
 
             button_DebugCSV.Enabled = true;
@@ -763,6 +766,6 @@ namespace Mirle.Agv.View
             button_SimulationModeChange.Enabled = true;
         }
         #endregion
-
+        
     }
 }

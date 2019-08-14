@@ -154,19 +154,21 @@ namespace Mirle.Agv.View
             ElmoAxisFeedbackData tempData;
             bool standStill;
             string position;
+            bool link;
             for (int i = 0; i < AxisList.Count(); i++)
             {
                 tempData = moveControl.elmoDriver.ElmoGetFeedbackData(AxisList[i]);
                 if (tempData != null)
                 {
                     position = tempData.Feedback_Position.ToString("0");
+                    link = moveControl.elmoDriver.GetLink(AxisList[i]);
 
                     if (AxisList[i] == EnumAxis.GX || AxisList[i] == EnumAxis.GT)
                         standStill = moveControl.elmoDriver.MoveCompelete(AxisList[i]);
                     else
                         standStill = tempData.StandStill;
 
-                    allAxis[i].Update(position, tempData.Disable, standStill, tempData.ErrorStop);
+                    allAxis[i].Update(position, tempData.Disable, standStill, tempData.ErrorStop, link);
                 }
             }
             #endregion
@@ -296,6 +298,20 @@ namespace Mirle.Agv.View
                 homing = false;
             }
 
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VTFL);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VTFR);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VTRL);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VTRR);
+
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VXFL);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VXFR);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VXRL);
+            moveControl.elmoDriver.ElmoStop(EnumAxis.VXRR);
+
+            moveControl.elmoDriver.ElmoMove(EnumAxis.VTFL, 0, 10, EnumMoveType.Absolute);
+            moveControl.elmoDriver.ElmoMove(EnumAxis.VTFR, 0, 10, EnumMoveType.Absolute);
+            moveControl.elmoDriver.ElmoMove(EnumAxis.VTRL, 0, 10, EnumMoveType.Absolute);
+            moveControl.elmoDriver.ElmoMove(EnumAxis.VTRR, 0, 10, EnumMoveType.Absolute);
             ChangeMode(EnumJogPitchMode.Normal);
         }
 
@@ -484,7 +500,7 @@ namespace Mirle.Agv.View
 
         private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)
         {
-            if (double.TryParse(tB_JogPitch_AxisMove_Disance.Text, out distance) && distance > 0 &&
+            if (double.TryParse(tB_JogPitch_AxisMove_Disance.Text, out distance) && distance >= 0 &&
                 double.TryParse(tB_JogPitch_AxisMove_Velocity.Text, out velocity) && velocity > 0)
             {
                 axis = AxisList[cB_JogPitch_SelectAxis.SelectedIndex];
@@ -699,50 +715,6 @@ namespace Mirle.Agv.View
             }
 
             button_JogPitch_ChangeFormSize.Enabled = true;
-        }
-        
-        private void TestThread()
-        {
-            try
-            {
-                testOut = false;
-                double test = double.Parse(textBox1.Text);
-                double nowEncoder = moveControl.elmoDriver.ElmoGetPosition(EnumAxis.XFL);
-                double endEncoder = nowEncoder + 300;
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, 5000, 138, EnumMoveType.Relative);
-
-                while (nowEncoder < endEncoder)
-                {
-                    nowEncoder = moveControl.elmoDriver.ElmoGetPosition(EnumAxis.XFL);
-                    if (testOut)
-                    {
-                        return;
-                    }
-
-                    Thread.Sleep(5);
-                }
-
-                moveControl.R2000Control(-1, test);
-            }
-            catch
-            {
-
-            }
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Thread thread = new Thread(TestThread);
-            thread.Start();
-        }
-
-        bool testOut;
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            testOut = true;
-            moveControl.StopFlagOn();
-            moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
         }
     }
 }

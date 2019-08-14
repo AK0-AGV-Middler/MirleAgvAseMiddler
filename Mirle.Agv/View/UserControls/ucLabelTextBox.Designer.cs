@@ -62,7 +62,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(120, 30);
             this.label1.TabIndex = 0;
-            this.label1.Text = "label1";
+            this.label1.Text = "TagName";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // textBox1
@@ -74,6 +74,7 @@
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(116, 27);
             this.textBox1.TabIndex = 0;
+            this.textBox1.Text = "TagValue";
             this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // UcLabelTextBox

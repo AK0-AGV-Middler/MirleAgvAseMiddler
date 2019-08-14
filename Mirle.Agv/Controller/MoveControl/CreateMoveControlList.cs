@@ -15,7 +15,8 @@ namespace Mirle.Agv.Controller
     public class CreateMoveControlList
     {
         private MoveControlConfig moveControlConfig;
-        private Logger flow = LoggerAgent.Instance.GetLooger("MoveControl");
+        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private string device = "MoveControl";
 
         private const int AllowableTheta = 10;
         public bool TurnOutSafetyDistance { get; set; } = false;
@@ -23,6 +24,15 @@ namespace Mirle.Agv.Controller
         public CreateMoveControlList(List<Sr2000Driver> driverSr2000List, MoveControlConfig moveControlConfig)
         {
             this.moveControlConfig = moveControlConfig;
+        }
+
+        private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
+                             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            string classMethodName = GetType().Name + ":" + memberName;
+            LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
+
+            loggerAgent.LogMsg(logFormat.Category, logFormat);
         }
 
         #region NewCommand function
@@ -155,8 +165,7 @@ namespace Mirle.Agv.Controller
         #region Write list log 
         private void WriteAGVMCommand(MoveCmdInfo moveCmd)
         {
-            flow.SavePureLog("AGVM command資料 :");
-            string logMessage;
+            string logMessage = "AGVM command資料 : ";
 
             try
             {
@@ -164,7 +173,7 @@ namespace Mirle.Agv.Controller
                 {
                     for (int i = 1; i < moveCmd.AddressPositions.Count; i++)
                     {
-                        logMessage = "AGVM 路線第 " + i.ToString() + " 條";
+                        logMessage = logMessage + "\nAGVM 路線第 " + i.ToString() + " 條";
 
                         if (moveCmd.SectionIds != null && moveCmd.SectionIds.Count > i)
                             logMessage = logMessage + ", Section : " + moveCmd.SectionIds[i - 1];
@@ -184,56 +193,53 @@ namespace Mirle.Agv.Controller
                                                           moveCmd.AddressPositions[i].Y.ToString("0") +
                                                   " ), velocity : " + moveCmd.SectionSpeedLimits[i - 1].ToString("0");
 
-                        flow.SavePureLog(logMessage);
                     }
-
-                    flow.SavePureLog("AGVM command資料 end~\n");
+                    
+                    WriteLog("MoveControl", "7", device, "", logMessage);
                 }
                 else
                 {
-                    flow.SavePureLog("AGVM command資料有問題(為null或address count <=1)\n");
+                    WriteLog("MoveControl", "4", device, "", "AGVM command資料有問題(為null或address count <=1)");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                flow.SavePureLog("AGVM command資料 異常end (Excption) ~\n");
+                WriteLog("MoveControl", "3", device, "", "AGVM command資料 異常end (Excption) ~ " + ex.ToString() );
             }
         }
 
         private void WriteBreakDownMoveCommandList(List<OneceMoveCommand> oneceMoveCommandList)
         {
-            flow.SavePureLog("BreakDownMoveCommandList :");
+            string logMessage = "BreakDownMoveCommandList :";
 
             for (int j = 0; j < oneceMoveCommandList.Count; j++)
             {
                 for (int i = 1; i < oneceMoveCommandList[j].AddressPositions.Count; i++)
                 {
-                    flow.SavePureLog("第 " + (j + 1).ToString() + " 次動令,第 " + i.ToString() +
+                    logMessage = logMessage + "\n第 " + (j + 1).ToString() + " 次動令,第 " + i.ToString() +
                                      " 條路線 Action : " + oneceMoveCommandList[j].AddressActions[i - 1].ToString() + " -> " +
                                      oneceMoveCommandList[j].AddressActions[i].ToString() + ", from :  ( " +
                                      oneceMoveCommandList[j].AddressPositions[i - 1].X.ToString("0") + ", " +
                                      oneceMoveCommandList[j].AddressPositions[i - 1].Y.ToString("0") + " ), to :  ( " +
                                      oneceMoveCommandList[j].AddressPositions[i].X.ToString("0") + ", " +
                                      oneceMoveCommandList[j].AddressPositions[i].Y.ToString("0") + " ), velocity : " +
-                                     oneceMoveCommandList[j].SectionSpeedLimits[i - 1].ToString("0"));
+                                     oneceMoveCommandList[j].SectionSpeedLimits[i - 1].ToString("0");
                 }
-
-                flow.SavePureLog("");
             }
 
-            flow.SavePureLog("BreakDownMoveCommandList end~\n");
+            WriteLog("MoveControl", "7", device, "", logMessage);
         }
 
         private void WriteReserveListLog(List<ReserveData> reserveDataList)
         {
-            flow.SavePureLog("ReserveList :");
+            string logMessage = "ReserveList :";
 
             for (int i = 0; i < reserveDataList.Count; i++)
-                flow.SavePureLog("reserve node " + i.ToString() + " : ( " +
+                logMessage = logMessage + "\nreserve node " + i.ToString() + " : ( " +
                                  reserveDataList[i].Position.X.ToString("0") + ", " +
-                                 reserveDataList[i].Position.Y.ToString("0") + " )");
+                                 reserveDataList[i].Position.Y.ToString("0") + " )";
 
-            flow.SavePureLog("ReserveList end~\n");
+            WriteLog("MoveControl", "7", device, "", logMessage);
         }
 
         private void TriggerLog(Command cmd, ref string logMessage)
@@ -253,19 +259,19 @@ namespace Mirle.Agv.Controller
 
         private void WritSectionLineListLog(List<SectionLine> sectionLineList)
         {
-            flow.SavePureLog("SectionLineList :");
+            string logMessage = "SectionLineList :";
 
             for (int i = 0; i < sectionLineList.Count; i++)
             {
-                flow.SavePureLog("sectionLineList 第 " + (i + 1).ToString() + " 條為 from : (" +
+                logMessage = logMessage + "\nsectionLineList 第 " + (i + 1).ToString() + " 條為 from : (" +
                                  sectionLineList[i].Start.X.ToString("0") + ", " + sectionLineList[i].Start.Y.ToString("0") + " ), to : (" +
                                  sectionLineList[i].End.X.ToString("0") + ", " + sectionLineList[i].End.Y.ToString("0") + " ), DirFlag : " +
                                  (sectionLineList[i].DirFlag ? "前進" : "後退") + ", Distance : " + sectionLineList[i].Distance.ToString("0") +
                                  ", EncoderStart : " + sectionLineList[i].EncoderStart.ToString("0") +
-                                 ", EncoderEnd : " + sectionLineList[i].EncoderEnd.ToString("0"));
+                                 ", EncoderEnd : " + sectionLineList[i].EncoderEnd.ToString("0");
             }
 
-            flow.SavePureLog("SectionLineList end~\n");
+            WriteLog("MoveControl", "7", device, "", logMessage);
         }
 
         private void WriteMoveCommandListLogTypeMove(Command cmd, ref string logMessage)
@@ -418,13 +424,13 @@ namespace Mirle.Agv.Controller
 
         private void WriteMoveCommandListLog(List<Command> moveCmdList)
         {
-            flow.SavePureLog("MoveCommandList :");
+            string totalLogMessage = "MoveCommandList :";
             List<string> logMessage = new List<string>();
             GetMoveCommandListInfo(moveCmdList, ref logMessage);
             for (int i = 0; i < logMessage.Count; i++)
-                flow.SavePureLog(logMessage[i]);
+                totalLogMessage = totalLogMessage + "\n" + logMessage[i];
 
-            flow.SavePureLog("MoveCommandList end~\n");
+            WriteLog("MoveControl", "7", device, "", totalLogMessage);
         }
 
         private void WriteListLog(List<Command> moveCmdList, List<SectionLine> sectionLineList, List<ReserveData> reserveDataList)
@@ -477,7 +483,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算Section起始方向) 失敗!" + ex.ToString());
+                WriteLog("Elmo", "3", device, "", "Excption : " + ex.ToString());
                 return returnAngle;
             }
         }
@@ -495,7 +501,6 @@ namespace Mirle.Agv.Controller
             else
             {
                 errorMessage = "Real position為null!";
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算AGV在地圖上的角度) 失敗! Real position為null (剛開機或進過JogPitch模式)且讀取不到Barcode值!");
                 return -1;
             }
 
@@ -512,33 +517,26 @@ namespace Mirle.Agv.Controller
                 errorMessage = "Real position角度偏差過大(超過10度)!";
                 returnInt = -1;
             }
-
-            if (returnInt != -1)
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算AGV在地圖上的角度) 成功! 角度為" + returnInt.ToString("0") + "(+-10度內).");
-            else
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算AGV在地圖上的角度) 失敗! 角度為" + nowAngle.ToString("0.0") + "(差超過+-10度)");
-
+            
             return returnInt;
         }
 
         private bool CheckDirFlag(MapPosition start, MapPosition end, EnumAddressAction action, ref BreakDownMoveCommandData data,
                                   AGVPosition nowAGV, ref string errorMessage)
         {
-            flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算起始舵輪角度、走行方向) 開始~");
             int sectionAngle = 0, deltaAngle = 0;
 
             int agvAngle = GetAGVAngle(nowAGV, ref errorMessage);
 
             if (agvAngle == -1)
             {
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算起始舵輪角度、走行方向) 失敗!");
                 return false;
             }
 
             data.AGVAngleInMap = agvAngle;
             data.NowAGVAngleInMap = agvAngle;
 
-            if (action == EnumAddressAction.ST || action == EnumAddressAction.R2000)
+            if (action == EnumAddressAction.ST )
             {
                 sectionAngle = (int)ComputeAngle(start, end);
                 deltaAngle = sectionAngle - agvAngle;
@@ -561,28 +559,24 @@ namespace Mirle.Agv.Controller
                 else if (deltaAngle == 90)
                 {
                     // 暫時by pass
-                    flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算起始舵輪角度、走行方向) 失敗! 暫時by pass 90度.");
                     errorMessage = "暫時by pass 舵輪角度為90度.";
                     return false;
                 }
                 else if (deltaAngle == -90)
                 {
                     // 暫時by pass
-                    flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算起始舵輪角度、走行方向) 失敗! 暫時by pass -90度.");
                     errorMessage = "暫時by pass 舵輪角度為-90度.";
                     return false;
                 }
                 else
                 {
                     errorMessage = "車姿和Section的角度差不該有0 90 -90 180以外的角度.";
-                    flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算起始舵輪角度、走行方向) 失敗! 車姿和Section的角度差不該有0 90 -90 180以外的角度.");
                     return false;
                 }
             }
             else
             {
                 errorMessage = "起點不該有除了ST, R2000的起點動作.";
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(計算起始舵輪角度、走行方向) 失敗! 不該有除了ST, R2000的起點動作");
                 return false;
             }
 
@@ -690,7 +684,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                if (data.NowVelocity != velocityCommand)
+                if (data.NowVelocityCommand != velocityCommand)
                 {  // VChange.
                    // 先不考慮ST ST 間的V不同.
                     errorMessage = "// 先不考慮ST ST 間的V不同.";
@@ -1098,7 +1092,6 @@ namespace Mirle.Agv.Controller
             if (oneceMoveCommandList.Count == 0)
             {
                 errorMessage = "第一步命令拆解資料為空.";
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(拆解命令第二步) 失敗! 第一步命令拆解資料為空.");
                 return false;
             }
 
@@ -1765,8 +1758,6 @@ namespace Mirle.Agv.Controller
         public bool CreatMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
                                                                ref List<ReserveData> reserveDataList, AGVPosition nowAGV, ref string errorMessage)
         {
-            flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(分解命令) 開始~");
-
             try
             {
                 if (moveCmd.SectionSpeedLimits == null || moveCmd.AddressActions == null || moveCmd.AddressPositions == null ||
@@ -1793,20 +1784,17 @@ namespace Mirle.Agv.Controller
 
                 if (!BreakDownMoveCmd(moveCmd, ref moveCmdList, ref sectionLineList, reserveDataList, nowAGV, ref errorMessage))
                 {
-                    flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(分解命令) 失敗!\n");
                     return false;
                 }
                 else
                 {
-                    flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(分解命令) 成功!\n");
                     WriteListLog(moveCmdList, sectionLineList, reserveDataList);
                     return true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                errorMessage = "Excption!";
-                flow.SavePureLog(System.Reflection.MethodBase.GetCurrentMethod().Name + "(分解命令) 失敗! (Excption)\n");
+                errorMessage = "Excption! " + ex.ToString();
                 return false;
             }
         }

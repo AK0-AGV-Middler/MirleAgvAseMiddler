@@ -98,77 +98,12 @@ namespace Mirle.Agv.Controller
         }
         private void TestThreadRun()
         {
-            Stopwatch sw1secClock = new Stopwatch();
-            bool b500msHigh = false, b500msLow = true, Clock1secWrite = false;
-            uint ClockCount_1sec = 0;
-            uint ClockCount_3sec = 0;
-            uint ClockCount_10sec = 0;
-            uint ClockCount_60sec = 0;
-            while (true)
-            {
-                sw1secClock.Start();
-                if (sw1secClock.ElapsedMilliseconds > 500)
-                {
-                    b500msHigh ^= b500msLow;
-                    b500msLow ^= b500msHigh;
-                    b500msHigh ^= b500msLow;
-
-                    Clock1secWrite = true;
-                    sw1secClock.Stop();
-                    sw1secClock.Reset();
-                }
-
-                if (b500msHigh && Clock1secWrite == true)
-                {
-                    Clock1secWrite = false;
-                    ClockCount_1sec++;
-                    ClockCount_3sec++;
-                    ClockCount_10sec++;
-                    ClockCount_60sec++;
-                    Debug.WriteLine("10Sec => " + ClockCount_10sec.ToString());
-                    Debug.WriteLine("60Sec => " + ClockCount_60sec.ToString());
-                }
-                if (ClockCount_1sec >= 1)
-                {
-                    ClockCount_1sec = 0;
-                    //Debug.WriteLine(ClockCount_3sec.ToString());
-                }
-                if (ClockCount_3sec >= 3)
-                {
-                    ClockCount_3sec = 0;
-                    //Debug.WriteLine(ClockCount_3sec.ToString());
-                }
-                if (ClockCount_10sec >= 10)
-                {
-                    ClockCount_10sec = 0;
-                    Debug.WriteLine("ClockCount_10sec Working");
-                }
-                if (ClockCount_60sec >= 60)
-                {
-                    ClockCount_60sec = 0;
-                    Debug.WriteLine("ClockCount_60sec Working");
-                }
-            }
+          
         }
         [Conditional("DebugTest")]
         private void TestFun()
         {
 
-
-            //PlcVehicle mAPLCVehicle = new PlcVehicle();
-
-
-            //uint muint = mAPLCVehicle.Hmi.doubleTobit32SymbolTrans(-474836.47);
-
-            //double mdouble= mAPLCVehicle.Hmi.bit32SymbolTodoubleTrans(muint);
-
-            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Elmo_Function = 123;
-            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Move_Velocity = 456;
-
-            //mAPLCVehicle.Hmi.beforeFromPlcWord = mAPLCVehicle.Hmi.FromPlcWord;
-
-            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Elmo_Function = 888;
-            //mAPLCVehicle.Hmi.FromPlcWord.Jog_Move_Velocity = 666;
         }
 
         private Stopwatch swBatteryLogger = new Stopwatch();//20190807_Rudy 新增 BatteryLogger
@@ -326,8 +261,8 @@ namespace Mirle.Agv.Controller
                         case "Batterys_Charging_Time_Out":// min
                             this.APLCVehicle.Batterys.Batterys_Charging_Time_Out = Convert.ToUInt32(childItem.InnerText) * 60000;
                             break;
-                        case "Charging_Off_Delay":// min
-                            this.APLCVehicle.Batterys.Charging_Off_Delay = Convert.ToUInt32(childItem.InnerText) * 60000;
+                        case "Charging_Off_Delay":
+                            this.APLCVehicle.Batterys.Charging_Off_Delay = Convert.ToUInt32(childItem.InnerText);
                             break;
                     }
 
@@ -621,43 +556,7 @@ namespace Mirle.Agv.Controller
                 //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
                 LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
             }
-        }
-        //private bool ChgStasOffDelayIsRunning = false;//Rudy_20190808 ChargeStatusChange       
-        //private void ChargeStatusChange()//Rudy_20190808 ChargeStatusChange  Charge Status OffDelay ; On不Delay
-        //{
-        //    bool status = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
-        //    if (status)
-        //    {
-        //        ChgStasOffDelayIsRunning = false;
-        //        this.APLCVehicle.Batterys.Charging = status;
-        //        return;
-        //    }
-        //    else if (!status && !ChgStasOffDelayIsRunning)
-        //    {
-        //        ChgStasOffDelayIsRunning = true;
-        //    }
-        //    else if (ChgStasOffDelayIsRunning) return;
-        //    else
-        //    {
-        //        this.APLCVehicle.Batterys.Charging = status;
-        //        return;
-        //    }
-        //    Task.Factory.StartNew(() =>
-        //    {
-        //        int count = 0;
-        //        while (ChgStasOffDelayIsRunning)
-        //        {
-        //            SpinWait.SpinUntil(() => false, 1000);
-        //            count++;
-        //            if (count >= 5) //TODO ===> 修改成參數
-        //            {
-        //                ChgStasOffDelayIsRunning = false;
-        //                this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
-        //                ccModeAHSet();
-        //            }
-        //        }
-        //    });
-        //}
+        }       
         private void ccModeAHSet()
         {
 
@@ -765,8 +664,7 @@ namespace Mirle.Agv.Controller
             bool Clock1secWrite = false, b500msHigh = false, b500msLow = true;
             uint WriteBatterySOCCount = 0;
             uint ChgStasOffDelayCount = 0;
-            //uint ChargingTimeOutSetInterval = 0;
-            //bool ChargingTimeOutFirstSet = false;
+            uint ChgStopCommandCount = 0;
             while (true)
             {
                 try //20190730_Rudy 新增try catch
@@ -787,6 +685,7 @@ namespace Mirle.Agv.Controller
                         Clock1secWrite = false;
                         WriteBatterySOCCount++;
                         ChgStasOffDelayCount++;
+                        ChgStopCommandCount++;
                     }
                     //========Clock Working========
 
@@ -818,24 +717,15 @@ namespace Mirle.Agv.Controller
                         if (swChargingTimeOut.ElapsedMilliseconds > this.APLCVehicle.Batterys.Batterys_Charging_Time_Out)
                         {
                             this.setAlarm(270005);
-                            //if (!ChargingTimeOutFirstSet)
-                            //{
-                            //    this.setAlarm(270005);
-                            //    Thread.Sleep(2);
-                            //    this.setAlarm(270005);
-                            //    ChargingTimeOutFirstSet = true;
-                            //}                           
-                            //if (ChargingTimeOutSetInterval >= 60)
-                            //{
-                            //    ChargingTimeOutSetInterval = 0;
-                            //    this.setAlarm(270005);
-                            //}
-                        }
-                        //else
-                        //{
-                        //    ChargingTimeOutSetInterval = 0;
-                        //    ChargingTimeOutFirstSet = false;
-                        //}
+                            if (aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean)
+                            {
+                                if (ChgStopCommandCount >= 3)
+                                {
+                                    ChgStopCommandCount = 0;
+                                    this.ChargeStopCommand();
+                                }
+                            }                                
+                        }                       
                     }
                     else
                     {

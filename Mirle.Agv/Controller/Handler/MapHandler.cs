@@ -6,6 +6,7 @@ using System.IO;
 using Mirle.Agv.Model.Configs;
 using System.Linq;
 using Mirle.Agv.Controller.Tools;
+using System.Reflection;
 
 namespace Mirle.Agv.Controller
 {
@@ -170,6 +171,8 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrWhiteSpace(BarcodePath))
                 {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        , $"BarcodePath={string.IsNullOrWhiteSpace(BarcodePath)}"));
                     return;
                 }
                 var mapBarcodeLines = theMapInfo.mapBarcodeLines;
@@ -181,12 +184,8 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(BarcodePath);
                 if (allRows == null || allRows.Length < 2)
                 {
-                    string className = GetType().Name;
-                    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-                    string classMethodName = className + ":" + methodName;
-                    LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", "There are no barcodes in file");
-                    loggerAgent.LogMsg("Error", logFormat);
-
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        , "There are no barcodes in file"));
                     return;
                 }
 
@@ -275,10 +274,14 @@ namespace Mirle.Agv.Controller
 
                     mapBarcodeLines.Add(oneRow);
                 }
+
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , "Load Barcode File Ok"));
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
 
@@ -294,7 +297,7 @@ namespace Mirle.Agv.Controller
             MapAddress tailAdr = mapSection.TailAddress;
 
             VehLocation location = theVehicle.GetVehLoacation();
-           
+
 
             if (IsPositionInThisAddress(aPosition, headAdr))
             {

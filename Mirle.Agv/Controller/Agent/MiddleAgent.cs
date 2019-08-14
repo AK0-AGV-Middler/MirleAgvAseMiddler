@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TcpIpClientSample;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Mirle.Agv.Controller
 {
@@ -36,6 +37,7 @@ namespace Mirle.Agv.Controller
         private Vehicle theVehicle = Vehicle.Instance;
         private MiddlerConfig middlerConfig;
         private AlarmHandler alarmHandler;
+        private LoggerAgent loggerAgent;
 
         private Thread thdAskReserve;
         private ManualResetEvent askReserveShutdownEvent = new ManualResetEvent(false);
@@ -49,10 +51,11 @@ namespace Mirle.Agv.Controller
         public int AskReserveLoopTimeout { get; set; } = 10000;
         public bool AutoApplyReserve { get; set; } = false;
 
-        public MiddleAgent(MiddlerConfig middlerConfig, AlarmHandler alarmHandler)
+        public MiddleAgent(MiddlerConfig middlerConfig, AlarmHandler alarmHandler,LoggerAgent loggerAgent)
         {
             this.middlerConfig = middlerConfig;
             this.alarmHandler = alarmHandler;
+            this.loggerAgent = loggerAgent;
 
             CreatTcpIpClientAgent();
             StartAskingReserve();
@@ -131,7 +134,6 @@ namespace Mirle.Agv.Controller
             TcpIpAgent agent = sender as TcpIpAgent;
             var msg = $"Vh ID:{agent.Name}, connection.";
             Console.WriteLine(msg);
-            OnCmdReceive?.Invoke(this, msg);
             OnMessageShowEvent?.Invoke(this, "Middler : Connected");
         }
         protected void DoDisconnection(object sender, TcpIpEventArgs e)
@@ -139,7 +141,6 @@ namespace Mirle.Agv.Controller
             TcpIpAgent agent = sender as TcpIpAgent;
             var msg = $"Vh ID:{agent.Name}, disconnection.";
             Console.WriteLine(msg);
-            OnCmdReceive?.Invoke(this, msg);
             OnMessageShowEvent?.Invoke(this, "Middler : Dis-Connect");
         }
         private void EventInitial()
@@ -163,10 +164,11 @@ namespace Mirle.Agv.Controller
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AddressTeachRespFieldNumber, Receive_Cmd74_AddressTeachResponse);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmResetReqFieldNumber, Receive_Cmd91_AlarmResetRequest);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, Receive_Cmd94_AlarmResponse);
-            //
-            for (int i = 0; i < 200; i++)
+            //            
+
+            foreach (var item in Enum.GetValues(typeof(EnumCmdNums)))
             {
-                ClientAgent.addTcpIpReceivedHandler(i, RecieveCmdShowOnCommunicationForm);
+                ClientAgent.addTcpIpReceivedHandler((int)item, RecieveCmdShowOnCommunicationForm);
             }
             //Here need to be careful for the TCPIP
             //
@@ -174,8 +176,16 @@ namespace Mirle.Agv.Controller
             ClientAgent.addTcpIpConnectedHandler(DoConnection);       //連線時的通知
             ClientAgent.addTcpIpDisconnectedHandler(DoDisconnection); //斷線時的通知
 
-            //OnCmdReceive += MiddleAgent_OnMsgFromAgvcEvent;
+            OnCmdReceive += MiddleAgent_OnCmdReceiveOrSend;
+            OnCmdSend += MiddleAgent_OnCmdReceiveOrSend;
         }
+
+        private void MiddleAgent_OnCmdReceiveOrSend(object sender, string msg)
+        {
+            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                      , msg));
+        }
+
         #endregion
 
         #region AskReserve
@@ -194,7 +204,7 @@ namespace Mirle.Agv.Controller
             bool askResult = false;
             Stopwatch sw = new Stopwatch();
             long total = 0;
-           
+
             while (!askResult)
             {
                 #region Pause And Stop Check
@@ -240,10 +250,10 @@ namespace Mirle.Agv.Controller
                 //OnMessageShowEvent?.Invoke(this, $"Ask Reserve : [StopWatch = {sw.ElapsedMilliseconds}][Total = {total}]");
 
                 sw.Reset();
-              
+
 
                 if (!askResult)
-                {                    
+                {
                     SpinWait.SpinUntil(() => false, middlerConfig.AskReserveInterval);
                 }
             }
@@ -274,7 +284,7 @@ namespace Mirle.Agv.Controller
         }
 
         public void ResumeAskingReserve()
-        {           
+        {
             askReservePauseEvent.Set();
             IsPauseAskReserve = false;
             OnMessageShowEvent?.Invoke(this, $"Middler : Resume Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
@@ -659,7 +669,7 @@ namespace Mirle.Agv.Controller
                     case EnumCmdNums.Cmd41_ModeChange:
                         {
                             ID_41_MODE_CHANGE_REQ aCmd = new ID_41_MODE_CHANGE_REQ();
-                            aCmd.OperatingVHMode = OperatingVHModeParse(pairs["EventType"]);
+                            aCmd.OperatingVHMode = OperatingVHModeParse(pairs["OperatingVHMode"]);
 
                             wrappers.ID = WrapperMessage.ModeChangeReqFieldNumber;
                             wrappers.ModeChangeReq = aCmd;
@@ -1062,23 +1072,20 @@ namespace Mirle.Agv.Controller
 
         private void SendCommandWrapper(WrapperMessage wrapper)
         {
+            string msg = $"[{wrapper.ID}]"+ wrapper.ToString();             
+            OnCmdSend?.Invoke(this, msg);
+            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
+
             Task.Run(() => ClientAgent.TrxTcpIp.SendGoogleMsg(wrapper));
         }
 
         private void RecieveCmdShowOnCommunicationForm(object sender, TcpIpEventArgs e)
         {
-            var cmdName = (EnumCmdNums)int.Parse(e.iPacketID);
-            string msg = $"[{cmdName}][e.iSeqNum = {e.iSeqNum}][e.objPacket = {e.objPacket}]";
+            string msg = $"[{e.iPacketID}][e.iSeqNum = {e.iSeqNum}][e.objPacket = {e.objPacket}]";
             OnCmdReceive?.Invoke(this, msg);
-        }
-
-        private void MiddleAgent_OnMsgFromAgvcEvent(object sender, string e)
-        {
-            string className = GetType().Name;
-            string methodName = sender.ToString(); //System.Reflection.MethodBase.GetCurrentMethod().Name;
-            string classMethodName = className + ":" + methodName;
-            LogFormat logFormat = new LogFormat("Debug", "3", classMethodName, "Device", "CarrierID", e);
-            theLoggerAgent.LogMsg("Debug", logFormat);
+            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
         }
 
         public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort e)
@@ -1177,6 +1184,11 @@ namespace Mirle.Agv.Controller
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
             Send_Cmd132_TransferCompleteReport();
         }
+        public void ClearReserve()
+        {
+            PauseAskingReserve();
+            needReserveSection = new MapSection();
+        }
 
         #region Send_Or_Receive_CmdNum
         public void Receive_Cmd94_AlarmResponse(object sender, TcpIpEventArgs e)
@@ -1198,8 +1210,6 @@ namespace Mirle.Agv.Controller
                 wrappers.AlarmRep = iD_194_ALARM_REPORT;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd194]" + iD_194_ALARM_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -1229,8 +1239,6 @@ namespace Mirle.Agv.Controller
                 wrappers.AlarmResetResp = iD_191_ALARM_RESET_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd191]" + iD_191_ALARM_RESET_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1260,8 +1268,6 @@ namespace Mirle.Agv.Controller
                 wrappers.AddressTeachRep = iD_174_ADDRESS_TEACH_REPORT;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd174]" + iD_174_ADDRESS_TEACH_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -1295,14 +1301,14 @@ namespace Mirle.Agv.Controller
                 wrappers.RangeTeachingCmpRep = iD_172_RANGE_TEACHING_COMPLETE_REPORT;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd172]" + iD_172_RANGE_TEACHING_COMPLETE_REPORT.ToString());
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
             }
         }
+
+        
 
         public void Receive_Cmd71_RangeTeachRequest(object sender, TcpIpEventArgs e)
         {
@@ -1327,8 +1333,6 @@ namespace Mirle.Agv.Controller
                 wrappers.RangeTeachingResp = iD_171_RANGE_TEACHING_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd171]" + iD_171_RANGE_TEACHING_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1339,17 +1343,15 @@ namespace Mirle.Agv.Controller
         public void Receive_Cmd52_AvoidCompleteResponse(object sender, TcpIpEventArgs e)
         {
             ID_52_AVOID_COMPLETE_RESPONSE receive = (ID_52_AVOID_COMPLETE_RESPONSE)e.objPacket;
-
-
-
-            int completeStatus = 0;
+            if (receive.ReplyCode != 0)
+            {
+                //Alarm and Log
+            }
         }
         public void Send_Cmd152_AvoidCompleteReport(int completeStatus)
         {
             try
             {
-                //TODO: Avoid
-
                 ID_152_AVOID_COMPLETE_REPORT iD_152_AVOID_COMPLETE_REPORT = new ID_152_AVOID_COMPLETE_REPORT();
                 iD_152_AVOID_COMPLETE_REPORT.CmpStatus = completeStatus;
 
@@ -1358,8 +1360,6 @@ namespace Mirle.Agv.Controller
                 wrappers.AvoidCompleteRep = iD_152_AVOID_COMPLETE_REPORT;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd152]" + iD_152_AVOID_COMPLETE_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -1392,8 +1392,6 @@ namespace Mirle.Agv.Controller
                 wrappers.AvoidResp = iD_151_AVOID_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd151]" + iD_151_AVOID_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1424,8 +1422,6 @@ namespace Mirle.Agv.Controller
                 wrappers.PowerOpeResp = iD_145_POWER_OPE_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd145]" + iD_145_POWER_OPE_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1475,8 +1471,6 @@ namespace Mirle.Agv.Controller
                 wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
 
                 var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_44_STATUS_CHANGE_RESPONSE receive, out string rtnMsg);
-
-                OnCmdSend?.Invoke(this, "[Cmd144]" + iD_144_STATUS_CHANGE_REP.ToString());
             }
             catch (Exception ex)
             {
@@ -1530,8 +1524,6 @@ namespace Mirle.Agv.Controller
                 wrappers.StatusReqResp = iD_143_STATUS_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd143]" + iD_143_STATUS_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1575,8 +1567,6 @@ namespace Mirle.Agv.Controller
                 wrappers.ModeChangeResp = iD_141_MODE_CHANGE_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd141]" + iD_141_MODE_CHANGE_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1608,8 +1598,6 @@ namespace Mirle.Agv.Controller
                 wrappers.PauseResp = iD_139_PAUSE_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd139]" + iD_139_PAUSE_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1661,8 +1649,6 @@ namespace Mirle.Agv.Controller
                 wrappers.TransCancelResp = iD_137_TRANS_CANCEL_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd137]" + iD_137_TRANS_CANCEL_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1710,8 +1696,6 @@ namespace Mirle.Agv.Controller
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd136]" + iD_136_TRANS_EVENT_REP.ToString());
             }
             catch (Exception ex)
             {
@@ -1738,8 +1722,6 @@ namespace Mirle.Agv.Controller
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd136]" + iD_136_TRANS_EVENT_REP.ToString());
             }
             catch (Exception ex)
             {
@@ -1765,8 +1747,6 @@ namespace Mirle.Agv.Controller
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd136]" + iD_136_TRANS_EVENT_REP.ToString());
             }
             catch (Exception ex)
             {
@@ -1791,8 +1771,11 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                OnCmdSend?.Invoke(this, "[Cmd136]" + iD_136_TRANS_EVENT_REP.ToString());
-                // SendCommandWrapper(wrappers);
+                string msg = $"[{wrappers.ID}]" + wrappers.ToString();
+                OnCmdSend?.Invoke(this, msg);
+                loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
+
                 ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE resultObj, out string resultMsg);
                 if (string.IsNullOrEmpty(resultMsg))
                 {
@@ -1859,8 +1842,6 @@ namespace Mirle.Agv.Controller
                 wrappers.CSTIDRenameResp = iD_135_CST_ID_RENAME_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd135]" + iD_135_CST_ID_RENAME_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1885,9 +1866,7 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                 wrappers.TransEventRep = iD_134_TRANS_EVENT_REP;
 
-                var resp = ClientAgent.TrxTcpIp.SendGoogleMsg(wrappers, false);
-
-                OnCmdSend?.Invoke(this, "[Cmd134]" + iD_134_TRANS_EVENT_REP.ToString());
+                SendCommandWrapper(wrappers);
             }
             catch (Exception ex)
             {
@@ -1931,8 +1910,6 @@ namespace Mirle.Agv.Controller
                 wrappers.ControlZoneResp = iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd133]" + iD_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -1968,8 +1945,6 @@ namespace Mirle.Agv.Controller
                 wrappers.TranCmpRep = iD_132_TRANS_COMPLETE_REPORT;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd132]" + iD_132_TRANS_COMPLETE_REPORT.ToString());
             }
             catch (Exception ex)
             {
@@ -2002,8 +1977,6 @@ namespace Mirle.Agv.Controller
                 wrappers.TransResp = iD_131_TRANS_RESPONSE;
 
                 SendCommandWrapper(wrappers);
-
-                OnCmdSend?.Invoke(this, "[Cmd131]" + iD_131_TRANS_RESPONSE.ToString());
             }
             catch (Exception ex)
             {
@@ -2011,7 +1984,7 @@ namespace Mirle.Agv.Controller
             }
         }
         #endregion
-        
+
         private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
         {
             //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd 

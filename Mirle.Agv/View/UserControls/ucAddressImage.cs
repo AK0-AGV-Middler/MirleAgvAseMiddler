@@ -27,7 +27,7 @@ namespace Mirle.Agv
         private Pen redPen = new Pen(Color.Red, 1);
         private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private SolidBrush redBrush = new SolidBrush(Color.Red);
-        private double addressRadius = 6;
+        //private double addressRadius = 6;
         private double triangleCoefficient = (double)(Math.Sqrt(3.0));
 
         private ToolTip toolTip = new ToolTip();

@@ -67,6 +67,8 @@ namespace Mirle.Agv.View
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.tbP_List = new System.Windows.Forms.TabPage();
+            this.label_AlarmMessage = new System.Windows.Forms.Label();
+            this.label_AlarmMessageName = new System.Windows.Forms.Label();
             this.label_MoveCommandID = new System.Windows.Forms.Label();
             this.label_MoveCommandIDLabel = new System.Windows.Forms.Label();
             this.cB_GetAllReserve = new System.Windows.Forms.CheckBox();
@@ -87,6 +89,12 @@ namespace Mirle.Agv.View
             this.button_CSVListDisViewRang = new System.Windows.Forms.Button();
             this.button_CSVListShowAll = new System.Windows.Forms.Button();
             this.dataGridView_CSVList = new System.Windows.Forms.DataGridView();
+            this.button_DebugCSV = new System.Windows.Forms.Button();
+            this.button_DebugCSVClear = new System.Windows.Forms.Button();
+            this.label_DebugCSVList = new System.Windows.Forms.Label();
+            this.tP_Admin = new System.Windows.Forms.TabPage();
+            this.button_SimulationModeChange = new System.Windows.Forms.Button();
+            this.label_SimulationMode = new System.Windows.Forms.Label();
             this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.moveState = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.realEncoder = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -98,6 +106,8 @@ namespace Mirle.Agv.View
             this.realY = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.barcodeX = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.barcodeY = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.encoderPositionX = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.encoderPositionY = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sr2000LCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sr2000LGetDataTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sr2000LScanTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -120,14 +130,6 @@ namespace Mirle.Agv.View
             this.sr2000RTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sr2000RBarcode1ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sr2000RBarcode2ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.button_DebugCSV = new System.Windows.Forms.Button();
-            this.button_DebugCSVClear = new System.Windows.Forms.Button();
-            this.label_DebugCSVList = new System.Windows.Forms.Label();
-            this.tP_Admin = new System.Windows.Forms.TabPage();
-            this.button_SimulationModeChange = new System.Windows.Forms.Button();
-            this.label_SimulationMode = new System.Windows.Forms.Label();
-            this.label_AlarmMessage = new System.Windows.Forms.Label();
-            this.label_AlarmMessageName = new System.Windows.Forms.Label();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -286,8 +288,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
             this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_CreateCommandState.TabIndex = 78;
-            this.ucLabelTB_CreateCommandState.UcName = "label1";
-            this.ucLabelTB_CreateCommandState.UcValue = "";
+            this.ucLabelTB_CreateCommandState.TagName = "label1";
+            this.ucLabelTB_CreateCommandState.TagValue = "";
             // 
             // ucLabelTB_CreateCommand_BarcodePosition
             // 
@@ -296,8 +298,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_CreateCommand_BarcodePosition.Name = "ucLabelTB_CreateCommand_BarcodePosition";
             this.ucLabelTB_CreateCommand_BarcodePosition.Size = new System.Drawing.Size(332, 27);
             this.ucLabelTB_CreateCommand_BarcodePosition.TabIndex = 77;
-            this.ucLabelTB_CreateCommand_BarcodePosition.UcName = "label1";
-            this.ucLabelTB_CreateCommand_BarcodePosition.UcValue = "";
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagName = "label1";
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagValue = "";
             // 
             // tB_PositionY
             // 
@@ -567,11 +569,31 @@ namespace Mirle.Agv.View
             this.tbP_List.Text = "CommandList資料";
             this.tbP_List.UseVisualStyleBackColor = true;
             // 
+            // label_AlarmMessage
+            // 
+            this.label_AlarmMessage.AutoSize = true;
+            this.label_AlarmMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_AlarmMessage.ForeColor = System.Drawing.Color.Red;
+            this.label_AlarmMessage.Location = new System.Drawing.Point(188, 459);
+            this.label_AlarmMessage.Name = "label_AlarmMessage";
+            this.label_AlarmMessage.Size = new System.Drawing.Size(0, 19);
+            this.label_AlarmMessage.TabIndex = 87;
+            // 
+            // label_AlarmMessageName
+            // 
+            this.label_AlarmMessageName.AutoSize = true;
+            this.label_AlarmMessageName.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_AlarmMessageName.Location = new System.Drawing.Point(17, 460);
+            this.label_AlarmMessageName.Name = "label_AlarmMessageName";
+            this.label_AlarmMessageName.Size = new System.Drawing.Size(133, 19);
+            this.label_AlarmMessageName.TabIndex = 86;
+            this.label_AlarmMessageName.Text = "Alarm Message :";
+            // 
             // label_MoveCommandID
             // 
             this.label_MoveCommandID.AutoSize = true;
             this.label_MoveCommandID.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_MoveCommandID.Location = new System.Drawing.Point(914, 3);
+            this.label_MoveCommandID.Location = new System.Drawing.Point(847, 3);
             this.label_MoveCommandID.Name = "label_MoveCommandID";
             this.label_MoveCommandID.Size = new System.Drawing.Size(57, 19);
             this.label_MoveCommandID.TabIndex = 85;
@@ -581,7 +603,7 @@ namespace Mirle.Agv.View
             // 
             this.label_MoveCommandIDLabel.AutoSize = true;
             this.label_MoveCommandIDLabel.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_MoveCommandIDLabel.Location = new System.Drawing.Point(743, 4);
+            this.label_MoveCommandIDLabel.Location = new System.Drawing.Point(676, 4);
             this.label_MoveCommandIDLabel.Name = "label_MoveCommandIDLabel";
             this.label_MoveCommandIDLabel.Size = new System.Drawing.Size(165, 19);
             this.label_MoveCommandIDLabel.TabIndex = 84;
@@ -604,8 +626,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_Velocity.Name = "ucLabelTB_Velocity";
             this.ucLabelTB_Velocity.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_Velocity.TabIndex = 83;
-            this.ucLabelTB_Velocity.UcName = "label1";
-            this.ucLabelTB_Velocity.UcValue = "";
+            this.ucLabelTB_Velocity.TagName = "label1";
+            this.ucLabelTB_Velocity.TagValue = "";
             // 
             // ucLabelTB_EncoderOffset
             // 
@@ -614,8 +636,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_EncoderOffset.Name = "ucLabelTB_EncoderOffset";
             this.ucLabelTB_EncoderOffset.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_EncoderOffset.TabIndex = 82;
-            this.ucLabelTB_EncoderOffset.UcName = "label1";
-            this.ucLabelTB_EncoderOffset.UcValue = "";
+            this.ucLabelTB_EncoderOffset.TagName = "label1";
+            this.ucLabelTB_EncoderOffset.TagValue = "";
             // 
             // ucLabelTB_ElmoEncoder
             // 
@@ -624,8 +646,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_ElmoEncoder.Name = "ucLabelTB_ElmoEncoder";
             this.ucLabelTB_ElmoEncoder.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_ElmoEncoder.TabIndex = 81;
-            this.ucLabelTB_ElmoEncoder.UcName = "label1";
-            this.ucLabelTB_ElmoEncoder.UcValue = "";
+            this.ucLabelTB_ElmoEncoder.TagName = "label1";
+            this.ucLabelTB_ElmoEncoder.TagValue = "";
             // 
             // ucLabelTtB_CommandListState
             // 
@@ -634,8 +656,8 @@ namespace Mirle.Agv.View
             this.ucLabelTtB_CommandListState.Name = "ucLabelTtB_CommandListState";
             this.ucLabelTtB_CommandListState.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTtB_CommandListState.TabIndex = 79;
-            this.ucLabelTtB_CommandListState.UcName = "label1";
-            this.ucLabelTtB_CommandListState.UcValue = "";
+            this.ucLabelTtB_CommandListState.TagName = "label1";
+            this.ucLabelTtB_CommandListState.TagValue = "";
             // 
             // ucLabelTB_BarcodePosition
             // 
@@ -644,8 +666,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_BarcodePosition.Name = "ucLabelTB_BarcodePosition";
             this.ucLabelTB_BarcodePosition.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_BarcodePosition.TabIndex = 50;
-            this.ucLabelTB_BarcodePosition.UcName = "label1";
-            this.ucLabelTB_BarcodePosition.UcValue = "";
+            this.ucLabelTB_BarcodePosition.TagName = "label1";
+            this.ucLabelTB_BarcodePosition.TagValue = "";
             // 
             // ucLabelTB_RealPosition
             // 
@@ -654,8 +676,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_RealPosition.Name = "ucLabelTB_RealPosition";
             this.ucLabelTB_RealPosition.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_RealPosition.TabIndex = 49;
-            this.ucLabelTB_RealPosition.UcName = "label1";
-            this.ucLabelTB_RealPosition.UcValue = "";
+            this.ucLabelTB_RealPosition.TagName = "label1";
+            this.ucLabelTB_RealPosition.TagValue = "";
             // 
             // ucLabelTB_Delta
             // 
@@ -664,8 +686,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_Delta.Name = "ucLabelTB_Delta";
             this.ucLabelTB_Delta.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_Delta.TabIndex = 48;
-            this.ucLabelTB_Delta.UcName = "label1";
-            this.ucLabelTB_Delta.UcValue = "";
+            this.ucLabelTB_Delta.TagName = "label1";
+            this.ucLabelTB_Delta.TagValue = "";
             // 
             // ucLabelTB_RealEncoder
             // 
@@ -674,8 +696,8 @@ namespace Mirle.Agv.View
             this.ucLabelTB_RealEncoder.Name = "ucLabelTB_RealEncoder";
             this.ucLabelTB_RealEncoder.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_RealEncoder.TabIndex = 47;
-            this.ucLabelTB_RealEncoder.UcName = "label1";
-            this.ucLabelTB_RealEncoder.UcValue = "";
+            this.ucLabelTB_RealEncoder.TagName = "label1";
+            this.ucLabelTB_RealEncoder.TagValue = "";
             // 
             // ucLabelTextBox1
             // 
@@ -684,8 +706,8 @@ namespace Mirle.Agv.View
             this.ucLabelTextBox1.Name = "ucLabelTextBox1";
             this.ucLabelTextBox1.Size = new System.Drawing.Size(13, 13);
             this.ucLabelTextBox1.TabIndex = 37;
-            this.ucLabelTextBox1.UcName = "label1";
-            this.ucLabelTextBox1.UcValue = "";
+            this.ucLabelTextBox1.TagName = "label1";
+            this.ucLabelTextBox1.TagValue = "";
             // 
             // tbP_Debug
             // 
@@ -781,6 +803,8 @@ namespace Mirle.Agv.View
             this.realY,
             this.barcodeX,
             this.barcodeY,
+            this.encoderPositionX,
+            this.encoderPositionY,
             this.sr2000LCount,
             this.sr2000LGetDataTime,
             this.sr2000LScanTime,
@@ -811,6 +835,68 @@ namespace Mirle.Agv.View
             this.dataGridView_CSVList.TabIndex = 46;
             this.dataGridView_CSVList.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_CSVList_ColumnHeaderMouseClick);
             this.dataGridView_CSVList.ColumnHeaderMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_CSVList_ColumnHeaderMouseDoubleClick);
+            // 
+            // button_DebugCSV
+            // 
+            this.button_DebugCSV.Location = new System.Drawing.Point(1020, 11);
+            this.button_DebugCSV.Name = "button_DebugCSV";
+            this.button_DebugCSV.Size = new System.Drawing.Size(85, 27);
+            this.button_DebugCSV.TabIndex = 44;
+            this.button_DebugCSV.Text = "開啟";
+            this.button_DebugCSV.UseVisualStyleBackColor = true;
+            this.button_DebugCSV.Click += new System.EventHandler(this.button_DebugCSV_Click);
+            // 
+            // button_DebugCSVClear
+            // 
+            this.button_DebugCSVClear.Location = new System.Drawing.Point(1192, 11);
+            this.button_DebugCSVClear.Name = "button_DebugCSVClear";
+            this.button_DebugCSVClear.Size = new System.Drawing.Size(85, 27);
+            this.button_DebugCSVClear.TabIndex = 43;
+            this.button_DebugCSVClear.Text = "清除";
+            this.button_DebugCSVClear.UseVisualStyleBackColor = true;
+            this.button_DebugCSVClear.Click += new System.EventHandler(this.button_DebugCSVClear_Click);
+            // 
+            // label_DebugCSVList
+            // 
+            this.label_DebugCSVList.AutoSize = true;
+            this.label_DebugCSVList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_DebugCSVList.Location = new System.Drawing.Point(6, 13);
+            this.label_DebugCSVList.Name = "label_DebugCSVList";
+            this.label_DebugCSVList.Size = new System.Drawing.Size(135, 19);
+            this.label_DebugCSVList.TabIndex = 42;
+            this.label_DebugCSVList.Text = "DebugCSV List :";
+            // 
+            // tP_Admin
+            // 
+            this.tP_Admin.Controls.Add(this.button_SimulationModeChange);
+            this.tP_Admin.Controls.Add(this.label_SimulationMode);
+            this.tP_Admin.Location = new System.Drawing.Point(4, 22);
+            this.tP_Admin.Name = "tP_Admin";
+            this.tP_Admin.Size = new System.Drawing.Size(1283, 601);
+            this.tP_Admin.TabIndex = 4;
+            this.tP_Admin.Text = "Admin";
+            this.tP_Admin.UseVisualStyleBackColor = true;
+            // 
+            // button_SimulationModeChange
+            // 
+            this.button_SimulationModeChange.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_SimulationModeChange.Location = new System.Drawing.Point(136, 23);
+            this.button_SimulationModeChange.Name = "button_SimulationModeChange";
+            this.button_SimulationModeChange.Size = new System.Drawing.Size(79, 30);
+            this.button_SimulationModeChange.TabIndex = 1;
+            this.button_SimulationModeChange.Text = "開啟";
+            this.button_SimulationModeChange.UseVisualStyleBackColor = true;
+            this.button_SimulationModeChange.Click += new System.EventHandler(this.button_SimulationMode_Click);
+            // 
+            // label_SimulationMode
+            // 
+            this.label_SimulationMode.AutoSize = true;
+            this.label_SimulationMode.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_SimulationMode.Location = new System.Drawing.Point(30, 29);
+            this.label_SimulationMode.Name = "label_SimulationMode";
+            this.label_SimulationMode.Size = new System.Drawing.Size(100, 19);
+            this.label_SimulationMode.TabIndex = 0;
+            this.label_SimulationMode.Text = "模擬模式 : ";
             // 
             // time
             // 
@@ -868,6 +954,16 @@ namespace Mirle.Agv.View
             // 
             this.barcodeY.HeaderText = "BarcodeY";
             this.barcodeY.Name = "barcodeY";
+            // 
+            // encoderPositionX
+            // 
+            this.encoderPositionX.HeaderText = "EncoderX";
+            this.encoderPositionX.Name = "encoderPositionX";
+            // 
+            // encoderPositionY
+            // 
+            this.encoderPositionY.HeaderText = "EncoderY";
+            this.encoderPositionY.Name = "encoderPositionY";
             // 
             // sr2000LCount
             // 
@@ -979,88 +1075,6 @@ namespace Mirle.Agv.View
             this.sr2000RBarcode2ID.HeaderText = "SR2000RID2";
             this.sr2000RBarcode2ID.Name = "sr2000RBarcode2ID";
             // 
-            // button_DebugCSV
-            // 
-            this.button_DebugCSV.Location = new System.Drawing.Point(1020, 11);
-            this.button_DebugCSV.Name = "button_DebugCSV";
-            this.button_DebugCSV.Size = new System.Drawing.Size(85, 27);
-            this.button_DebugCSV.TabIndex = 44;
-            this.button_DebugCSV.Text = "開啟";
-            this.button_DebugCSV.UseVisualStyleBackColor = true;
-            this.button_DebugCSV.Click += new System.EventHandler(this.button_DebugCSV_Click);
-            // 
-            // button_DebugCSVClear
-            // 
-            this.button_DebugCSVClear.Location = new System.Drawing.Point(1192, 11);
-            this.button_DebugCSVClear.Name = "button_DebugCSVClear";
-            this.button_DebugCSVClear.Size = new System.Drawing.Size(85, 27);
-            this.button_DebugCSVClear.TabIndex = 43;
-            this.button_DebugCSVClear.Text = "清除";
-            this.button_DebugCSVClear.UseVisualStyleBackColor = true;
-            this.button_DebugCSVClear.Click += new System.EventHandler(this.button_DebugCSVClear_Click);
-            // 
-            // label_DebugCSVList
-            // 
-            this.label_DebugCSVList.AutoSize = true;
-            this.label_DebugCSVList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_DebugCSVList.Location = new System.Drawing.Point(6, 13);
-            this.label_DebugCSVList.Name = "label_DebugCSVList";
-            this.label_DebugCSVList.Size = new System.Drawing.Size(135, 19);
-            this.label_DebugCSVList.TabIndex = 42;
-            this.label_DebugCSVList.Text = "DebugCSV List :";
-            // 
-            // tP_Admin
-            // 
-            this.tP_Admin.Controls.Add(this.button_SimulationModeChange);
-            this.tP_Admin.Controls.Add(this.label_SimulationMode);
-            this.tP_Admin.Location = new System.Drawing.Point(4, 22);
-            this.tP_Admin.Name = "tP_Admin";
-            this.tP_Admin.Size = new System.Drawing.Size(1283, 601);
-            this.tP_Admin.TabIndex = 4;
-            this.tP_Admin.Text = "Admin";
-            this.tP_Admin.UseVisualStyleBackColor = true;
-            // 
-            // button_SimulationModeChange
-            // 
-            this.button_SimulationModeChange.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button_SimulationModeChange.Location = new System.Drawing.Point(136, 23);
-            this.button_SimulationModeChange.Name = "button_SimulationModeChange";
-            this.button_SimulationModeChange.Size = new System.Drawing.Size(79, 30);
-            this.button_SimulationModeChange.TabIndex = 1;
-            this.button_SimulationModeChange.Text = "開啟";
-            this.button_SimulationModeChange.UseVisualStyleBackColor = true;
-            this.button_SimulationModeChange.Click += new System.EventHandler(this.button_SimulationMode_Click);
-            // 
-            // label_SimulationMode
-            // 
-            this.label_SimulationMode.AutoSize = true;
-            this.label_SimulationMode.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_SimulationMode.Location = new System.Drawing.Point(30, 29);
-            this.label_SimulationMode.Name = "label_SimulationMode";
-            this.label_SimulationMode.Size = new System.Drawing.Size(100, 19);
-            this.label_SimulationMode.TabIndex = 0;
-            this.label_SimulationMode.Text = "模擬模式 : ";
-            // 
-            // label_AlarmMessage
-            // 
-            this.label_AlarmMessage.AutoSize = true;
-            this.label_AlarmMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_AlarmMessage.ForeColor = System.Drawing.Color.Red;
-            this.label_AlarmMessage.Location = new System.Drawing.Point(501, 4);
-            this.label_AlarmMessage.Name = "label_AlarmMessage";
-            this.label_AlarmMessage.Size = new System.Drawing.Size(0, 19);
-            this.label_AlarmMessage.TabIndex = 87;
-            // 
-            // label_AlarmMessageName
-            // 
-            this.label_AlarmMessageName.AutoSize = true;
-            this.label_AlarmMessageName.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_AlarmMessageName.Location = new System.Drawing.Point(330, 5);
-            this.label_AlarmMessageName.Name = "label_AlarmMessageName";
-            this.label_AlarmMessageName.Size = new System.Drawing.Size(133, 19);
-            this.label_AlarmMessageName.TabIndex = 86;
-            this.label_AlarmMessageName.Text = "Alarm Message :";
-            // 
             // MoveCommandDebugModeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1144,6 +1158,19 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Button button_DebugCSV;
         private System.Windows.Forms.Button button_TurnOutSafetyDistance;
         private System.Windows.Forms.DataGridView dataGridView_CSVList;
+        private System.Windows.Forms.Button button_CSVListShowAll;
+        private System.Windows.Forms.Button button_CSVListDisViewRang;
+        private System.Windows.Forms.TabPage tP_Admin;
+        private System.Windows.Forms.Button button_SimulationModeChange;
+        private System.Windows.Forms.Label label_SimulationMode;
+        private System.Windows.Forms.CheckBox cB_GetAllReserve;
+        private UcLabelTextBox ucLabelTB_Velocity;
+        private UcLabelTextBox ucLabelTB_EncoderOffset;
+        private UcLabelTextBox ucLabelTB_ElmoEncoder;
+        private System.Windows.Forms.Label label_MoveCommandID;
+        private System.Windows.Forms.Label label_MoveCommandIDLabel;
+        private System.Windows.Forms.Label label_AlarmMessage;
+        private System.Windows.Forms.Label label_AlarmMessageName;
         private System.Windows.Forms.DataGridViewTextBoxColumn time;
         private System.Windows.Forms.DataGridViewTextBoxColumn moveState;
         private System.Windows.Forms.DataGridViewTextBoxColumn realEncoder;
@@ -1155,6 +1182,8 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.DataGridViewTextBoxColumn realY;
         private System.Windows.Forms.DataGridViewTextBoxColumn barcodeX;
         private System.Windows.Forms.DataGridViewTextBoxColumn barcodeY;
+        private System.Windows.Forms.DataGridViewTextBoxColumn encoderPositionX;
+        private System.Windows.Forms.DataGridViewTextBoxColumn encoderPositionY;
         private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LCount;
         private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LGetDataTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LScanTime;
@@ -1177,18 +1206,5 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RTheta;
         private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcode1ID;
         private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcode2ID;
-        private System.Windows.Forms.Button button_CSVListShowAll;
-        private System.Windows.Forms.Button button_CSVListDisViewRang;
-        private System.Windows.Forms.TabPage tP_Admin;
-        private System.Windows.Forms.Button button_SimulationModeChange;
-        private System.Windows.Forms.Label label_SimulationMode;
-        private System.Windows.Forms.CheckBox cB_GetAllReserve;
-        private UcLabelTextBox ucLabelTB_Velocity;
-        private UcLabelTextBox ucLabelTB_EncoderOffset;
-        private UcLabelTextBox ucLabelTB_ElmoEncoder;
-        private System.Windows.Forms.Label label_MoveCommandID;
-        private System.Windows.Forms.Label label_MoveCommandIDLabel;
-        private System.Windows.Forms.Label label_AlarmMessage;
-        private System.Windows.Forms.Label label_AlarmMessageName;
     }
 }
