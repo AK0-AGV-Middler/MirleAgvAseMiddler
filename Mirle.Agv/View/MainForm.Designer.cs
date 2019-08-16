@@ -60,8 +60,7 @@
             this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.btnTestSomething = new System.Windows.Forms.Button();
-            this.btnTestStartAskReserve = new System.Windows.Forms.Button();
+            this.btnAutoManual = new System.Windows.Forms.Button();
             this.btnTransferComplete = new System.Windows.Forms.Button();
             this.txtLastAlarm = new System.Windows.Forms.Label();
             this.btnUnloadFinish = new System.Windows.Forms.Button();
@@ -110,7 +109,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.btnAutoManual = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -431,8 +429,6 @@
             // 
             this.splitContainer2.Panel1.AutoScroll = true;
             this.splitContainer2.Panel1.Controls.Add(this.btnAutoManual);
-            this.splitContainer2.Panel1.Controls.Add(this.btnTestSomething);
-            this.splitContainer2.Panel1.Controls.Add(this.btnTestStartAskReserve);
             this.splitContainer2.Panel1.Controls.Add(this.btnTransferComplete);
             this.splitContainer2.Panel1.Controls.Add(this.txtLastAlarm);
             this.splitContainer2.Panel1.Controls.Add(this.btnUnloadFinish);
@@ -466,25 +462,16 @@
             this.splitContainer2.SplitterDistance = 677;
             this.splitContainer2.TabIndex = 0;
             // 
-            // btnTestSomething
+            // btnAutoManual
             // 
-            this.btnTestSomething.Location = new System.Drawing.Point(222, 185);
-            this.btnTestSomething.Name = "btnTestSomething";
-            this.btnTestSomething.Size = new System.Drawing.Size(125, 54);
-            this.btnTestSomething.TabIndex = 52;
-            this.btnTestSomething.Text = "Test Button";
-            this.btnTestSomething.UseVisualStyleBackColor = true;
-            this.btnTestSomething.Click += new System.EventHandler(this.btnTestSomething_Click);
-            // 
-            // btnTestStartAskReserve
-            // 
-            this.btnTestStartAskReserve.Location = new System.Drawing.Point(179, 632);
-            this.btnTestStartAskReserve.Name = "btnTestStartAskReserve";
-            this.btnTestStartAskReserve.Size = new System.Drawing.Size(144, 23);
-            this.btnTestStartAskReserve.TabIndex = 52;
-            this.btnTestStartAskReserve.Text = "Test Start Ask Reserve";
-            this.btnTestStartAskReserve.UseVisualStyleBackColor = true;
-            this.btnTestStartAskReserve.Click += new System.EventHandler(this.btnTestStartAskReserve_Click);
+            this.btnAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnAutoManual.Location = new System.Drawing.Point(218, 14);
+            this.btnAutoManual.Name = "btnAutoManual";
+            this.btnAutoManual.Size = new System.Drawing.Size(129, 54);
+            this.btnAutoManual.TabIndex = 53;
+            this.btnAutoManual.Text = "Auto/Manual";
+            this.btnAutoManual.UseVisualStyleBackColor = true;
+            this.btnAutoManual.Click += new System.EventHandler(this.btnAutoManual_Click);
             // 
             // btnTransferComplete
             // 
@@ -975,17 +962,6 @@
             this.timer1.Interval = 250;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // btnAutoManual
-            // 
-            this.btnAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnAutoManual.Location = new System.Drawing.Point(218, 14);
-            this.btnAutoManual.Name = "btnAutoManual";
-            this.btnAutoManual.Size = new System.Drawing.Size(129, 54);
-            this.btnAutoManual.TabIndex = 53;
-            this.btnAutoManual.Text = "Auto/Manual";
-            this.btnAutoManual.UseVisualStyleBackColor = true;
-            this.btnAutoManual.Click += new System.EventHandler(this.btnAutoManual_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1108,10 +1084,8 @@
         private System.Windows.Forms.Button btnUnloadFinish;
         private System.Windows.Forms.Label txtLastAlarm;
         private System.Windows.Forms.Button btnTransferComplete;
-        private System.Windows.Forms.Button btnTestStartAskReserve;
         private UcLabelTextBox ucSoc;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button btnTestSomething;
         private UcLabelTextBox ucLoading;
         private System.Windows.Forms.Button btnAutoManual;
     }
