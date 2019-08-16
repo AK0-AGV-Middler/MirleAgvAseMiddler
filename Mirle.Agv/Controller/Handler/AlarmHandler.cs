@@ -20,6 +20,7 @@ namespace Mirle.Agv.Controller
         public List<Alarm> alarms = new List<Alarm>();
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
         public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
+        public ConcurrentStack<Alarm> stkHappeningAlarms = new ConcurrentStack<Alarm>();
         public event EventHandler<string> OnMessageShowEvent;
 
         #endregion

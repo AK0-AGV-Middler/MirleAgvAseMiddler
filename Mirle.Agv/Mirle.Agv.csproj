@@ -151,16 +151,22 @@
     <Compile Include="Model\Plc\PlcForkCommand.cs" />
     <Compile Include="Model\Plc\PlcRobot.cs" />
     <Compile Include="Model\Plc\PlcVehicle.cs" />
-    <Compile Include="Model\AgvcTransferCmds\EmptyTransCmd.cs" />
-    <Compile Include="Model\AgvcTransferCmds\LoadCmdInfo.cs" />
-    <Compile Include="Model\AgvcTransferCmds\MoveCmdInfo.cs" />
-    <Compile Include="Model\AgvcTransferCmds\TransCmd.cs" />
-    <Compile Include="Model\AgvcTransferCmds\UnloadCmdInfo.cs" />
+    <Compile Include="Model\TransferCmds\EmptyTransCmd.cs" />
+    <Compile Include="Model\TransferCmds\LoadCmdInfo.cs" />
+    <Compile Include="Model\TransferCmds\MoveCmdInfo.cs" />
+    <Compile Include="Model\TransferCmds\TransCmd.cs" />
+    <Compile Include="Model\TransferCmds\UnloadCmdInfo.cs" />
     <Compile Include="UcThreadPad.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="UcThreadPad.Designer.cs">
       <DependentUpon>UcThreadPad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\UcVehicleImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\UserControls\UcVehicleImage.Designer.cs">
+      <DependentUpon>UcVehicleImage.cs</DependentUpon>
     </Compile>
     <Compile Include="View\JogPitchForm.cs">
       <SubType>Form</SubType>
@@ -223,10 +229,10 @@
       <DependentUpon>MiddlerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Controller\Handler\MainFlowHandler.cs" />
-    <Compile Include="Model\VehLocation.cs" />
+    <Compile Include="Model\VehiclePosition.cs" />
     <Compile Include="Model\Vehicle.cs" />
     <Compile Include="Controller\Agent\MiddleAgent.cs" />
-    <Compile Include="Model\AgvcTransferCmds\AgvcTransCmd.cs" />
+    <Compile Include="Model\TransferCmds\AgvcTransCmd.cs" />
     <Compile Include="Model\Map\MapBarcodeReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -269,6 +275,9 @@
     </Compile>
     <EmbeddedResource Include="UcThreadPad.resx">
       <DependentUpon>UcThreadPad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\UserControls\UcVehicleImage.resx">
+      <DependentUpon>UcVehicleImage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\AlarmForm.resx">
       <DependentUpon>AlarmForm.cs</DependentUpon>
@@ -320,6 +329,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Resource\Close_32x32.png" />
+    <None Include="Resource\Mirle_Home.JPG" />
+    <None Include="Resource\Mirle_LOGO.jpg" />
+    <None Include="Resource\Mirle_口號.JPG" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -334,24 +347,14 @@
     <Content Include="OutsideDll\Stateless.xml" />
     <Content Include="OutsideDll\TCPIPTrxControl.dll" />
     <Content Include="OutsideDll\TCPIPTrxControl.pdb" />
-    <Content Include="Resource\Auto_16x16.png" />
-    <Content Include="Resource\Bulb_Blue_32x32.png" />
-    <Content Include="Resource\Bulb_Green_32x32.png" />
-    <Content Include="Resource\Bulb_Red_32x32.png" />
-    <Content Include="Resource\CrossHair_16x16.png" />
-    <Content Include="Resource\Idle_16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resource\Close_32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resource\Mirle_Home.JPG" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resource\Mirle_LOGO.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resource\Mirle_口號.JPG" />
+    <None Include="Resource\VehHasNoCarrier.jpg" />
+    <None Include="Resource\VehHasCarrier.jpg" />
+    <None Include="Resource\Idle_16x16.png" />
+    <None Include="Resource\CrossHair_16x16.png" />
+    <None Include="Resource\Bulb_Red_32x32.png" />
+    <None Include="Resource\Bulb_Green_32x32.png" />
+    <None Include="Resource\Bulb_Blue_32x32.png" />
+    <None Include="Resource\Auto_16x16.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

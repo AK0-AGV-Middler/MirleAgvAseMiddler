@@ -45,7 +45,7 @@ namespace Mirle.Agv
         Vertical
     }
 
-    public enum EnumTransCmdType
+    public enum EnumTransferCommandType
     {
         Move,
         Load,
@@ -73,8 +73,8 @@ namespace Mirle.Agv
 
     public enum EnumAutoState
     {
-        Manual, //when OnlineRemote set Manual -> OnlineLoacl+Manual
-        Auto//when offline set Auto -> OnlineRemote+Auto
+        Manual,
+        Auto
     }
 
     public enum EnumLoginLevel

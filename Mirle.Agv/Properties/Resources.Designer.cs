@@ -63,9 +63,69 @@ namespace Mirle.Agv.Properties {
         /// <summary>
         ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
         /// </summary>
+        internal static System.Drawing.Bitmap Auto_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Auto_16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap Bulb_Blue_32x32 {
+            get {
+                object obj = ResourceManager.GetObject("Bulb_Blue_32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap Bulb_Green_32x32 {
+            get {
+                object obj = ResourceManager.GetObject("Bulb_Green_32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap Bulb_Red_32x32 {
+            get {
+                object obj = ResourceManager.GetObject("Bulb_Red_32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
         internal static System.Drawing.Bitmap Close_32x32 {
             get {
                 object obj = ResourceManager.GetObject("Close_32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap CrossHair_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("CrossHair_16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap Idle_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Idle_16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -96,6 +156,26 @@ namespace Mirle.Agv.Properties {
         internal static System.Drawing.Bitmap Mirle_口號 {
             get {
                 object obj = ResourceManager.GetObject("Mirle_口號", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap VehHasCarrier {
+            get {
+                object obj = ResourceManager.GetObject("VehHasCarrier", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查詢類型 System.Drawing.Bitmap 的當地語系化資源。
+        /// </summary>
+        internal static System.Drawing.Bitmap VehHasNoCarrier {
+            get {
+                object obj = ResourceManager.GetObject("VehHasNoCarrier", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

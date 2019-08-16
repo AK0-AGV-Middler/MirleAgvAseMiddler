@@ -16,14 +16,14 @@ namespace Mirle.Agv.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
 
-        private VehLocation vehLoacation;
         private TransferStep transCmd = new EmptyTransCmd();
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
         private MapInfo theMapInfo = new MapInfo();
         private PlcVehicle plcVehicle = new PlcVehicle();
         private AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
 
-        public PlcVehicle someTestVeh { get; private set; }
+        public VehiclePosition AVehLocation { get; set; }
+        public EnumAutoState AutoState { get; set; }
 
         #region Comm Property
 
@@ -54,15 +54,11 @@ namespace Mirle.Agv.Model
 
         private Vehicle()
         {
-            vehLoacation = new VehLocation(theMapInfo);
+            AVehLocation = new VehiclePosition(theMapInfo);
         }
 
-        #region Setter       
-
-        public void UpdateStatus(VehLocation vehLoacation) { this.vehLoacation = vehLoacation; }
-
-        public void UpdateStatus(TransferStep transCmd) { this.transCmd = transCmd; }
-
+        #region Setter     
+        
         public void SetVehicleStop() { }
 
         public void SetMapInfo(MapInfo theMapInfo) { this.theMapInfo = theMapInfo; }
@@ -73,9 +69,7 @@ namespace Mirle.Agv.Model
 
         #endregion
 
-        #region Getter       
-
-        public VehLocation GetVehLoacation() { return vehLoacation; }
+        #region Getter
 
         public TransferStep GetTransCmd() { return transCmd; }
 

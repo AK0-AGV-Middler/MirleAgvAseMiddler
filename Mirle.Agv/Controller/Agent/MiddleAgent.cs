@@ -207,53 +207,52 @@ namespace Mirle.Agv.Controller
 
             while (!askResult)
             {
-                #region Pause And Stop Check
-
-                askReservePauseEvent.WaitOne(Timeout.Infinite);
-                if (askReserveShutdownEvent.WaitOne(0))
+                try
                 {
-                    break;
+                    #region Pause And Stop Check
+
+                    askReservePauseEvent.WaitOne(Timeout.Infinite);
+                    if (askReserveShutdownEvent.WaitOne(0))
+                    {
+                        break;
+                    }
+
+                    #endregion
+                    sw.Start();
+
+                    askResult = true;
+
+                    //askResult = Send_Cmd136_AskReserve();
+
+                    //OnCmdReceive?.Invoke(this, $"+++++Middler : Ask Reserve [askResult = {askResult}]");
+
+                    sw.Stop();
+                    total += sw.ElapsedMilliseconds;
+                    if (sw.ElapsedMilliseconds > AskReserveTimeout)
+                    {
+                        //Alarm 
+                        break;
+                    }
+                    if (total > AskReserveLoopTimeout)
+                    {
+                        //Alarm
+                        break;
+                    }
+                    //OnMessageShowEvent?.Invoke(this, $"Ask Reserve : [StopWatch = {sw.ElapsedMilliseconds}][Total = {total}]");
+
+                    sw.Reset();
+
+
+                    if (!askResult)
+                    {
+                        SpinWait.SpinUntil(() => false, middlerConfig.AskReserveInterval);
+                    }
+
                 }
-
-                #endregion
-                sw.Start();
-
-                //if (AutoApplyReserve)
-                //{
-                //    askResult = true;
-                //    AutoApplyReserve = false;
-                //    OnMessageShowEvent?.Invoke(this, $"Middler : Auto Apply Reserve = {AutoApplyReserve}");
-                //}
-                //else
-                //{
-                //    askResult = false;                    
-                //}
-
-                //askResult = Send_Cmd136_AskReserve();
-                askResult = true;
-
-                //OnMessageShowEvent?.Invoke(this, $"Ask Reserve : [Result = {askResult}][ReserveId = {needReserveSection.Id}]");
-
-
-                sw.Stop();
-                total += sw.ElapsedMilliseconds;
-                if (sw.ElapsedMilliseconds > AskReserveTimeout)
+                catch (Exception ex)
                 {
-                    //Alarm 
-                    break;
-                }
-                if (total > AskReserveLoopTimeout)
-                {
-                    //Alarm
-                    break;
-                }
-                //OnMessageShowEvent?.Invoke(this, $"Ask Reserve : [StopWatch = {sw.ElapsedMilliseconds}][Total = {total}]");
-
-                sw.Reset();
-
-
-                if (!askResult)
-                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                      , ex.StackTrace));
                     SpinWait.SpinUntil(() => false, middlerConfig.AskReserveInterval);
                 }
             }
@@ -569,7 +568,6 @@ namespace Mirle.Agv.Controller
             try
             {
                 WrapperMessage wrappers = new WrapperMessage();
-                string msgShow = "";
 
                 var cmdType = (EnumCmdNums)cmdNum;
                 switch (cmdType)
@@ -591,7 +589,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.TransReqFieldNumber;
                             wrappers.TransReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd32_TransferCompleteResponse:
@@ -602,7 +600,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.TranCmpRespFieldNumber;
                             wrappers.TranCmpResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd33_ControlZoneCancelRequest:
@@ -614,7 +612,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.ControlZoneReqFieldNumber;
                             wrappers.ControlZoneReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd35_CarrierIdRenameRequest:
@@ -626,7 +624,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.CSTIDRenameReqFieldNumber;
                             wrappers.CSTIDRenameReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd36_TransferEventResponse:
@@ -639,7 +637,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.ImpTransEventRespFieldNumber;
                             wrappers.ImpTransEventResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd37_TransferCancelRequest:
@@ -651,7 +649,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.TransCancelReqFieldNumber;
                             wrappers.TransCancelReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd39_PauseRequest:
@@ -663,7 +661,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.PauseReqFieldNumber;
                             wrappers.PauseReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd41_ModeChange:
@@ -674,7 +672,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.ModeChangeReqFieldNumber;
                             wrappers.ModeChangeReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd43_StatusRequest:
@@ -684,7 +682,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.StatusReqFieldNumber;
                             wrappers.StatusReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd44_StatusRequest:
@@ -695,7 +693,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.StatusChangeRespFieldNumber;
                             wrappers.StatusChangeResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd45_PowerOnoffRequest:
@@ -706,7 +704,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.PowerOpeReqFieldNumber;
                             wrappers.PowerOpeReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd51_AvoidRequest:
@@ -718,7 +716,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AvoidReqFieldNumber;
                             wrappers.AvoidReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd52_AvoidCompleteResponse:
@@ -729,7 +727,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AvoidCompleteRespFieldNumber;
                             wrappers.AvoidCompleteResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd71_RangeTeachRequest:
@@ -741,7 +739,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.RangeTeachingReqFieldNumber;
                             wrappers.RangeTeachingReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd72_RangeTeachCompleteResponse:
@@ -752,7 +750,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.RangeTeachingCmpRespFieldNumber;
                             wrappers.RangeTeachingCmpResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd74_AddressTeachResponse:
@@ -763,7 +761,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AddressTeachRespFieldNumber;
                             wrappers.AddressTeachResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd91_AlarmResetRequest:
@@ -773,7 +771,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AlarmResetReqFieldNumber;
                             wrappers.AlarmResetReq = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd94_AlarmResponse:
@@ -781,7 +779,7 @@ namespace Mirle.Agv.Controller
                             ID_94_ALARM_RESPONSE aCmd = new ID_94_ALARM_RESPONSE();
                             aCmd.ReplyCode = int.Parse(pairs["ReplyCode"]);
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd131_TransferResponse:
@@ -795,7 +793,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.TransRespFieldNumber;
                             wrappers.TransResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd132_TransferCompleteReport:
@@ -812,7 +810,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;
                             wrappers.TranCmpRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd133_ControlZoneCancelResponse:
@@ -825,7 +823,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.ControlZoneRespFieldNumber;
                             wrappers.ControlZoneResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd134_TransferEventReport:
@@ -839,7 +837,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                             wrappers.TransEventRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd135_CarrierIdRenameResponse:
@@ -850,7 +848,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.CSTIDRenameRespFieldNumber;
                             wrappers.CSTIDRenameResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd136_TransferEventReport:
@@ -864,7 +862,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                             wrappers.ImpTransEventRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd137_TransferCancelResponse:
@@ -877,7 +875,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.TransCancelRespFieldNumber;
                             wrappers.TransCancelResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd139_PauseResponse:
@@ -889,7 +887,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.PauseRespFieldNumber;
                             wrappers.PauseResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd141_ModeChangeResponse:
@@ -900,7 +898,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.ModeChangeRespFieldNumber;
                             wrappers.ModeChangeResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd143_StatusResponse:
@@ -919,7 +917,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.StatusReqRespFieldNumber;
                             wrappers.StatusReqResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd144_StatusReport:
@@ -938,7 +936,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                             wrappers.StatueChangeRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd145_PowerOnoffResponse:
@@ -949,7 +947,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.PowerOpeRespFieldNumber;
                             wrappers.PowerOpeResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd151_AvoidResponse:
@@ -961,7 +959,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AvoidRespFieldNumber;
                             wrappers.AvoidResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd152_AvoidCompleteReport:
@@ -972,7 +970,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AvoidCompleteRepFieldNumber;
                             wrappers.AvoidCompleteRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd171_RangeTeachResponse:
@@ -983,7 +981,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.RangeTeachingRespFieldNumber;
                             wrappers.RangeTeachingResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd172_RangeTeachCompleteReport:
@@ -997,7 +995,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.RangeTeachingCmpRepFieldNumber;
                             wrappers.RangeTeachingCmpRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd174_AddressTeachReport:
@@ -1009,7 +1007,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AddressTeachRepFieldNumber;
                             wrappers.AddressTeachRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd191_AlarmResetResponse:
@@ -1020,7 +1018,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AlarmResetRespFieldNumber;
                             wrappers.AlarmResetResp = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd194_AlarmReport:
@@ -1033,7 +1031,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
                             wrappers.AlarmRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                     case EnumCmdNums.Cmd000_EmptyCommand:
@@ -1044,7 +1042,7 @@ namespace Mirle.Agv.Controller
                             wrappers.ID = WrapperMessage.HostBasicInfoRepFieldNumber;
                             wrappers.HostBasicInfoRep = aCmd;
 
-                            msgShow = $"[{cmdType}] [{aCmd}]";
+                            
                             break;
                         }
                 }
@@ -1282,7 +1280,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd172_RangeTeachCompleteReport(int completeCode)
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             try
             {
@@ -1292,7 +1290,7 @@ namespace Mirle.Agv.Controller
                 iD_172_RANGE_TEACHING_COMPLETE_REPORT.CompleteCode = completeCode;
                 iD_172_RANGE_TEACHING_COMPLETE_REPORT.FromAdr = theVehicle.TeachingFromAddress;
                 iD_172_RANGE_TEACHING_COMPLETE_REPORT.ToAdr = theVehicle.TeachingToAddress;
-                iD_172_RANGE_TEACHING_COMPLETE_REPORT.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_172_RANGE_TEACHING_COMPLETE_REPORT.SecDistance = (uint)vehLocation.LastSection.Distance;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.RangeTeachingCmpRepFieldNumber;
@@ -1439,14 +1437,14 @@ namespace Mirle.Agv.Controller
         {
             PlcBatterys batterys = theVehicle.GetPlcVehicle().Batterys;
 
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             try
             {
                 ID_144_STATUS_CHANGE_REP iD_144_STATUS_CHANGE_REP = new ID_144_STATUS_CHANGE_REP();
-                iD_144_STATUS_CHANGE_REP.CurrentAdrID = vehLocation.Address.Id;
-                iD_144_STATUS_CHANGE_REP.CurrentSecID = vehLocation.Section.Id;
-                iD_144_STATUS_CHANGE_REP.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_144_STATUS_CHANGE_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_144_STATUS_CHANGE_REP.CurrentSecID = vehLocation.LastSection.Id;
+                iD_144_STATUS_CHANGE_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
                 iD_144_STATUS_CHANGE_REP.ModeStatus = theVehicle.ModeStatus;
                 iD_144_STATUS_CHANGE_REP.ActionStatus = theVehicle.ActionStatus;
                 iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
@@ -1487,7 +1485,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             PlcBatterys batterys = theVehicle.GetPlcVehicle().Batterys;
 
@@ -1501,8 +1499,8 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.ChargeStatus = theVehicle.ChargeStatus;
                 iD_143_STATUS_RESPONSE.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
                 iD_143_STATUS_RESPONSE.CSTID = theVehicle.GetPlcVehicle().CassetteId;
-                iD_143_STATUS_RESPONSE.CurrentAdrID = vehLocation.Address.Id;
-                iD_143_STATUS_RESPONSE.CurrentSecID = vehLocation.Section.Id;
+                iD_143_STATUS_RESPONSE.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_143_STATUS_RESPONSE.CurrentSecID = vehLocation.LastSection.Id;
                 iD_143_STATUS_RESPONSE.DrivingDirection = theVehicle.DrivingDirection;
                 iD_143_STATUS_RESPONSE.ErrorStatus = theVehicle.ErrorStatus;
                 iD_143_STATUS_RESPONSE.HasCST = VhLoadCSTStatusParse(theVehicle.GetPlcVehicle().Loading);
@@ -1513,7 +1511,7 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.PauseStatus = theVehicle.PauseStatus;
                 iD_143_STATUS_RESPONSE.PowerStatus = theVehicle.PowerStatus;
                 iD_143_STATUS_RESPONSE.ReserveStatus = theVehicle.ReserveStatus;
-                iD_143_STATUS_RESPONSE.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_143_STATUS_RESPONSE.SecDistance = (uint)vehLocation.LastSection.Distance;
                 iD_143_STATUS_RESPONSE.StoppedBlockID = theVehicle.StoppedBlockID;
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -1679,15 +1677,15 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = eventType;
                 iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrEmpty(theVehicle.GetPlcVehicle().CassetteId) ? "Empty" : theVehicle.GetPlcVehicle().CassetteId;
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -1703,7 +1701,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_RequestBlock(string requestBlockID)
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             try
             {
@@ -1711,9 +1709,9 @@ namespace Mirle.Agv.Controller
                 iD_136_TRANS_EVENT_REP.EventType = EventType.BlockReq;
                 iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -1728,7 +1726,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_ReleaseBlock(string releaseBlockAdrID)
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             try
             {
@@ -1736,9 +1734,9 @@ namespace Mirle.Agv.Controller
                 iD_136_TRANS_EVENT_REP.EventType = EventType.BlockRelease;
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -1753,7 +1751,7 @@ namespace Mirle.Agv.Controller
         }
         public bool Send_Cmd136_AskReserve()
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             try
             {
@@ -1761,9 +1759,9 @@ namespace Mirle.Agv.Controller
                 iD_136_TRANS_EVENT_REP.EventType = EventType.ReserveReq;
                 FitReserveInfos(iD_136_TRANS_EVENT_REP.ReserveInfos);
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.GetPlcVehicle().CassetteId;
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -1849,15 +1847,15 @@ namespace Mirle.Agv.Controller
 
         public void Send_Cmd134_TransferEventReport()
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             try
             {
                 ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
                 iD_134_TRANS_EVENT_REP.EventType = theVehicle.Cmd134EventType;
-                iD_134_TRANS_EVENT_REP.CurrentAdrID = vehLocation.Address.Id;
-                iD_134_TRANS_EVENT_REP.CurrentSecID = vehLocation.Section.Id;
-                iD_134_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_134_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_134_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
+                iD_134_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
                 iD_134_TRANS_EVENT_REP.DrivingDirection = theVehicle.DrivingDirection;
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -1924,7 +1922,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd132_TransferCompleteReport()
         {
-            VehLocation vehLocation = theVehicle.GetVehLoacation();
+            VehiclePosition vehLocation = theVehicle.AVehLocation;
 
             try
             {
@@ -1932,9 +1930,9 @@ namespace Mirle.Agv.Controller
                 iD_132_TRANS_COMPLETE_REPORT.CmdID = theVehicle.GetAgvcTransCmd().CommandId;
                 iD_132_TRANS_COMPLETE_REPORT.CSTID = theVehicle.GetPlcVehicle().CassetteId;
                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = theVehicle.CompleteStatus;
-                iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = vehLocation.Address.Id;
-                iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = vehLocation.Section.Id;
-                iD_132_TRANS_COMPLETE_REPORT.SecDistance = (uint)vehLocation.Section.Distance;
+                iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = vehLocation.LastSection.Id;
+                iD_132_TRANS_COMPLETE_REPORT.SecDistance = (uint)vehLocation.LastSection.Distance;
                 iD_132_TRANS_COMPLETE_REPORT.CmdPowerConsume = theVehicle.CmdPowerConsume;
                 iD_132_TRANS_COMPLETE_REPORT.CmdDistance = theVehicle.CmdDistance;
 

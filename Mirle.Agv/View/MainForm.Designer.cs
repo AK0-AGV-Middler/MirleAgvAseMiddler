@@ -60,6 +60,9 @@
             this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.btnTestSomething = new System.Windows.Forms.Button();
+            this.btnTestStartAskReserve = new System.Windows.Forms.Button();
+            this.btnTransferComplete = new System.Windows.Forms.Button();
             this.txtLastAlarm = new System.Windows.Forms.Label();
             this.btnUnloadFinish = new System.Windows.Forms.Button();
             this.btnLoadFinish = new System.Windows.Forms.Button();
@@ -79,6 +82,7 @@
             this.btnCleanAgvcTransCmd = new System.Windows.Forms.Button();
             this.btnMoveFinish = new System.Windows.Forms.Button();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
+            this.ucSoc = new Mirle.Agv.UcLabelTextBox();
             this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
             this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
             this.gbTrackingPosition = new System.Windows.Forms.GroupBox();
@@ -93,6 +97,7 @@
             this.numPositionY = new System.Windows.Forms.NumericUpDown();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
+            this.ucLoading = new Mirle.Agv.UcLabelTextBox();
             this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
@@ -105,7 +110,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.btnTransferComplete = new System.Windows.Forms.Button();
+            this.btnAutoManual = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -309,9 +314,10 @@
             // pictureBox1
             // 
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Top;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1920, 1024);
+            this.pictureBox1.Size = new System.Drawing.Size(1161, 1024);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
@@ -424,6 +430,9 @@
             // splitContainer2.Panel1
             // 
             this.splitContainer2.Panel1.AutoScroll = true;
+            this.splitContainer2.Panel1.Controls.Add(this.btnAutoManual);
+            this.splitContainer2.Panel1.Controls.Add(this.btnTestSomething);
+            this.splitContainer2.Panel1.Controls.Add(this.btnTestStartAskReserve);
             this.splitContainer2.Panel1.Controls.Add(this.btnTransferComplete);
             this.splitContainer2.Panel1.Controls.Add(this.txtLastAlarm);
             this.splitContainer2.Panel1.Controls.Add(this.btnUnloadFinish);
@@ -456,6 +465,36 @@
             this.splitContainer2.Size = new System.Drawing.Size(722, 1017);
             this.splitContainer2.SplitterDistance = 677;
             this.splitContainer2.TabIndex = 0;
+            // 
+            // btnTestSomething
+            // 
+            this.btnTestSomething.Location = new System.Drawing.Point(222, 185);
+            this.btnTestSomething.Name = "btnTestSomething";
+            this.btnTestSomething.Size = new System.Drawing.Size(125, 54);
+            this.btnTestSomething.TabIndex = 52;
+            this.btnTestSomething.Text = "Test Button";
+            this.btnTestSomething.UseVisualStyleBackColor = true;
+            this.btnTestSomething.Click += new System.EventHandler(this.btnTestSomething_Click);
+            // 
+            // btnTestStartAskReserve
+            // 
+            this.btnTestStartAskReserve.Location = new System.Drawing.Point(179, 632);
+            this.btnTestStartAskReserve.Name = "btnTestStartAskReserve";
+            this.btnTestStartAskReserve.Size = new System.Drawing.Size(144, 23);
+            this.btnTestStartAskReserve.TabIndex = 52;
+            this.btnTestStartAskReserve.Text = "Test Start Ask Reserve";
+            this.btnTestStartAskReserve.UseVisualStyleBackColor = true;
+            this.btnTestStartAskReserve.Click += new System.EventHandler(this.btnTestStartAskReserve_Click);
+            // 
+            // btnTransferComplete
+            // 
+            this.btnTransferComplete.Location = new System.Drawing.Point(619, 609);
+            this.btnTransferComplete.Name = "btnTransferComplete";
+            this.btnTransferComplete.Size = new System.Drawing.Size(91, 45);
+            this.btnTransferComplete.TabIndex = 51;
+            this.btnTransferComplete.Text = "Transfer Complete";
+            this.btnTransferComplete.UseVisualStyleBackColor = true;
+            this.btnTransferComplete.Click += new System.EventHandler(this.btnTransferComplete_Click);
             // 
             // txtLastAlarm
             // 
@@ -624,6 +663,7 @@
             // 
             // btnCleanAgvcTransCmd
             // 
+            this.btnCleanAgvcTransCmd.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnCleanAgvcTransCmd.Location = new System.Drawing.Point(8, 631);
             this.btnCleanAgvcTransCmd.Name = "btnCleanAgvcTransCmd";
             this.btnCleanAgvcTransCmd.Size = new System.Drawing.Size(165, 23);
@@ -644,14 +684,24 @@
             // 
             // gbPerformanceCounter
             // 
+            this.gbPerformanceCounter.Controls.Add(this.ucSoc);
             this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterRam);
             this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterCpu);
-            this.gbPerformanceCounter.Location = new System.Drawing.Point(12, 296);
+            this.gbPerformanceCounter.Location = new System.Drawing.Point(12, 268);
             this.gbPerformanceCounter.Name = "gbPerformanceCounter";
-            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 100);
+            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 128);
             this.gbPerformanceCounter.TabIndex = 10;
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
+            // 
+            // ucSoc
+            // 
+            this.ucSoc.Location = new System.Drawing.Point(7, 91);
+            this.ucSoc.Name = "ucSoc";
+            this.ucSoc.Size = new System.Drawing.Size(187, 30);
+            this.ucSoc.TabIndex = 2;
+            this.ucSoc.TagName = "SOC";
+            this.ucSoc.TagValue = "";
             // 
             // ucPerformanceCounterRam
             // 
@@ -726,9 +776,11 @@
             // 
             // btnStopVehicle
             // 
-            this.btnStopVehicle.Location = new System.Drawing.Point(12, 233);
+            this.btnStopVehicle.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnStopVehicle.ForeColor = System.Drawing.Color.Red;
+            this.btnStopVehicle.Location = new System.Drawing.Point(411, 5);
             this.btnStopVehicle.Name = "btnStopVehicle";
-            this.btnStopVehicle.Size = new System.Drawing.Size(200, 29);
+            this.btnStopVehicle.Size = new System.Drawing.Size(151, 122);
             this.btnStopVehicle.TabIndex = 4;
             this.btnStopVehicle.Text = "StopVehicle";
             this.btnStopVehicle.UseVisualStyleBackColor = true;
@@ -755,14 +807,15 @@
             // 
             // btnBuzzOff
             // 
-            this.btnBuzzOff.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnBuzzOff.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnBuzzOff.ForeColor = System.Drawing.Color.Brown;
             this.btnBuzzOff.Location = new System.Drawing.Point(568, 131);
             this.btnBuzzOff.Name = "btnBuzzOff";
             this.btnBuzzOff.Size = new System.Drawing.Size(151, 33);
             this.btnBuzzOff.TabIndex = 3;
-            this.btnBuzzOff.Text = "BuzzOff";
+            this.btnBuzzOff.Text = "Buzz Off";
             this.btnBuzzOff.UseVisualStyleBackColor = true;
+            this.btnBuzzOff.Click += new System.EventHandler(this.btnBuzzOff_Click);
             // 
             // numPositionY
             // 
@@ -778,28 +831,38 @@
             // 
             // btnAlarmReset
             // 
-            this.btnAlarmReset.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnAlarmReset.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnAlarmReset.ForeColor = System.Drawing.Color.Red;
             this.btnAlarmReset.Location = new System.Drawing.Point(568, 3);
             this.btnAlarmReset.Name = "btnAlarmReset";
             this.btnAlarmReset.Size = new System.Drawing.Size(151, 122);
             this.btnAlarmReset.TabIndex = 2;
-            this.btnAlarmReset.Text = "AlarmReset";
+            this.btnAlarmReset.Text = "Alarm Reset";
             this.btnAlarmReset.UseVisualStyleBackColor = true;
             this.btnAlarmReset.Click += new System.EventHandler(this.btnAlarmReset_Click);
             // 
             // gbVehicleLocation
             // 
+            this.gbVehicleLocation.Controls.Add(this.ucLoading);
             this.gbVehicleLocation.Controls.Add(this.ucRealPosition);
             this.gbVehicleLocation.Controls.Add(this.ucBarcodePosition);
             this.gbVehicleLocation.Controls.Add(this.ucMapAddress);
             this.gbVehicleLocation.Controls.Add(this.ucMapSection);
             this.gbVehicleLocation.Location = new System.Drawing.Point(12, 68);
             this.gbVehicleLocation.Name = "gbVehicleLocation";
-            this.gbVehicleLocation.Size = new System.Drawing.Size(200, 159);
+            this.gbVehicleLocation.Size = new System.Drawing.Size(200, 177);
             this.gbVehicleLocation.TabIndex = 1;
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "VehicleLocation";
+            // 
+            // ucLoading
+            // 
+            this.ucLoading.Location = new System.Drawing.Point(0, 145);
+            this.ucLoading.Name = "ucLoading";
+            this.ucLoading.Size = new System.Drawing.Size(194, 26);
+            this.ucLoading.TabIndex = 5;
+            this.ucLoading.TagName = "Loading";
+            this.ucLoading.TagValue = "";
             // 
             // ucRealPosition
             // 
@@ -807,7 +870,7 @@
             this.ucRealPosition.Name = "ucRealPosition";
             this.ucRealPosition.Size = new System.Drawing.Size(194, 26);
             this.ucRealPosition.TabIndex = 5;
-            this.ucRealPosition.TagName = "label1";
+            this.ucRealPosition.TagName = "Real Pos";
             this.ucRealPosition.TagValue = "";
             // 
             // ucBarcodePosition
@@ -816,7 +879,7 @@
             this.ucBarcodePosition.Name = "ucBarcodePosition";
             this.ucBarcodePosition.Size = new System.Drawing.Size(194, 26);
             this.ucBarcodePosition.TabIndex = 3;
-            this.ucBarcodePosition.TagName = "label1";
+            this.ucBarcodePosition.TagName = "Barcode Pos";
             this.ucBarcodePosition.TagValue = "";
             // 
             // ucMapAddress
@@ -825,7 +888,7 @@
             this.ucMapAddress.Name = "ucMapAddress";
             this.ucMapAddress.Size = new System.Drawing.Size(194, 26);
             this.ucMapAddress.TabIndex = 1;
-            this.ucMapAddress.TagName = "label1";
+            this.ucMapAddress.TagName = "Last Address";
             this.ucMapAddress.TagValue = "";
             // 
             // ucMapSection
@@ -834,7 +897,7 @@
             this.ucMapSection.Name = "ucMapSection";
             this.ucMapSection.Size = new System.Drawing.Size(194, 26);
             this.ucMapSection.TabIndex = 0;
-            this.ucMapSection.TagName = "label1";
+            this.ucMapSection.TagName = "Last Section";
             this.ucMapSection.TagValue = "";
             // 
             // numPositionX
@@ -912,15 +975,16 @@
             this.timer1.Interval = 250;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // btnTransferComplete
+            // btnAutoManual
             // 
-            this.btnTransferComplete.Location = new System.Drawing.Point(619, 609);
-            this.btnTransferComplete.Name = "btnTransferComplete";
-            this.btnTransferComplete.Size = new System.Drawing.Size(91, 45);
-            this.btnTransferComplete.TabIndex = 51;
-            this.btnTransferComplete.Text = "Transfer Complete";
-            this.btnTransferComplete.UseVisualStyleBackColor = true;
-            this.btnTransferComplete.Click += new System.EventHandler(this.btnTransferComplete_Click);
+            this.btnAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnAutoManual.Location = new System.Drawing.Point(218, 14);
+            this.btnAutoManual.Name = "btnAutoManual";
+            this.btnAutoManual.Size = new System.Drawing.Size(129, 54);
+            this.btnAutoManual.TabIndex = 53;
+            this.btnAutoManual.Text = "Auto/Manual";
+            this.btnAutoManual.UseVisualStyleBackColor = true;
+            this.btnAutoManual.Click += new System.EventHandler(this.btnAutoManual_Click);
             // 
             // MainForm
             // 
@@ -989,7 +1053,6 @@
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnSwitchBarcodeLine;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnSaveImage;
@@ -1045,5 +1108,11 @@
         private System.Windows.Forms.Button btnUnloadFinish;
         private System.Windows.Forms.Label txtLastAlarm;
         private System.Windows.Forms.Button btnTransferComplete;
+        private System.Windows.Forms.Button btnTestStartAskReserve;
+        private UcLabelTextBox ucSoc;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button btnTestSomething;
+        private UcLabelTextBox ucLoading;
+        private System.Windows.Forms.Button btnAutoManual;
     }
 }

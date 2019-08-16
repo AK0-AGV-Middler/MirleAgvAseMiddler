@@ -296,7 +296,7 @@ namespace Mirle.Agv.Controller
             MapAddress headAdr = mapSection.HeadAddress;
             MapAddress tailAdr = mapSection.TailAddress;
 
-            VehLocation location = theVehicle.GetVehLoacation();
+            VehiclePosition location = theVehicle.AVehLocation;
 
 
             if (IsPositionInThisAddress(aPosition, headAdr))
@@ -305,8 +305,8 @@ namespace Mirle.Agv.Controller
                 {
                     mapSection.Distance = 0;
                 }
-                location.Section = mapSection;
-                location.Address = headAdr;
+                location.LastSection = mapSection;
+                location.LastAddress = headAdr;
                 return true;
             }
 
@@ -316,8 +316,8 @@ namespace Mirle.Agv.Controller
                 {
                     mapSection.Distance = 0;
                 }
-                location.Section = mapSection;
-                location.Address = tailAdr;
+                location.LastSection = mapSection;
+                location.LastAddress = tailAdr;
                 return true;
             }
 
@@ -342,7 +342,7 @@ namespace Mirle.Agv.Controller
                                 {
                                     mapSection.Distance = Math.Abs(tailAdr.Position.X - aPosition.X);
                                 }
-                                location.Section = mapSection;
+                                location.LastSection = mapSection;
                                 return true;
                             }
                         }
@@ -370,7 +370,7 @@ namespace Mirle.Agv.Controller
                                 {
                                     mapSection.Distance = Math.Abs(tailAdr.Position.Y - aPosition.Y);
                                 }
-                                location.Section = mapSection;
+                                location.LastSection = mapSection;
                                 return true;
                             }
                         }

@@ -23,20 +23,20 @@ namespace Mirle.Agv.Model.TransferCmds
         public MoveCmdInfo() : this(new MapInfo()) { }
         public MoveCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
-            type = EnumTransCmdType.Move;
+            type = EnumTransferCommandType.Move;
         }
 
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-            var firstPosition = Vehicle.Instance.GetVehLoacation().RealPosition;
+            var firstPosition = Vehicle.Instance.AVehLocation.RealPosition;
             AddressPositions.Add(firstPosition);
 
             try
             {
                 for (int i = 1; i < AddressIds.Count; i++)
                 {
-                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]].DeepClone();                   
+                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]].DeepClone();
                     AddressPositions.Add(mapAddress.Position);
                 }
             }
@@ -84,7 +84,8 @@ namespace Mirle.Agv.Model.TransferCmds
 
         public void SetAddressActions()
         {
-            PredictVehicleAngle = 0;
+            PredictVehicleAngle = theVehicle.AVehLocation.PredictVehicleAngle;
+
             AddressActions = new List<EnumAddressAction>();
             try
             {
@@ -111,6 +112,8 @@ namespace Mirle.Agv.Model.TransferCmds
                 var msg = ex.StackTrace;
             }
             AddressActions.Add(EnumAddressAction.End);
+
+            theVehicle.AVehLocation.PredictVehicleAngle = PredictVehicleAngle;
         }
 
         public void SetMovingSections()
@@ -179,78 +182,77 @@ namespace Mirle.Agv.Model.TransferCmds
 
         private bool IsTurnRight(MapSection currentSection, MapSection nextSection)
         {
-            MapAddress mapAddressA = currentSection.HeadAddress;
-            MapAddress mapAddressB = currentSection.TailAddress;
-            MapAddress mapAddressC = nextSection.TailAddress;
+            MapPosition curSectionMid = new MapPosition((currentSection.HeadAddress.Position.X + currentSection.TailAddress.Position.X) / 2,
+                (currentSection.HeadAddress.Position.Y + currentSection.TailAddress.Position.Y) / 2);
+            MapPosition nextSectionMid = new MapPosition((nextSection.HeadAddress.Position.X + nextSection.TailAddress.Position.X) / 2,
+                (nextSection.HeadAddress.Position.Y + nextSection.TailAddress.Position.Y) / 2);
 
-            MapPosition positionA = mapAddressA.Position.DeepClone();
-            MapPosition positionB = mapAddressB.Position.DeepClone();
-            MapPosition positionC = mapAddressC.Position.DeepClone();
-
-            if (positionA.X == positionB.X)
+            if (currentSection.Type == EnumSectionType.Horizontal)
             {
-                //垂直接水平
-                if (positionA.Y < positionB.Y)
+                //水平接垂直
+                if (curSectionMid.X < nextSectionMid.X)
                 {
-                    //北往南
-                    if (positionB.X < positionC.X)
+                    //W > XXX
+                    if (curSectionMid.Y < nextSectionMid.Y)
                     {
-                        //北往南 接著 西往東 = 左轉
-                        return false;
+                        //W > S
+                        return true;
                     }
                     else
                     {
-                        //北往南 接著 東往西 = 右轉
-                        return true;
+                        //W > N
+                        return false;
                     }
                 }
                 else
                 {
-                    //南往北
-                    if (positionB.X < positionC.X)
+                    //E > XXX
+                    if (curSectionMid.Y < nextSectionMid.Y)
                     {
-                        //南往北 接著 西往東 = 右轉
-                        return true;
+                        //E > S
+                        return false;
                     }
                     else
                     {
-                        //南往北 接著 東往西 = 左轉
-                        return false;
+                        //E > N
+                        return true;
                     }
                 }
             }
             else
             {
-                //水平接垂直
-                if (positionA.X < positionB.X)
+                //垂直接水平
+                if (curSectionMid.X < nextSectionMid.X)
                 {
-                    //西往東
-                    if (positionB.Y < positionC.Y)
+                    //XX > E
+                    if (curSectionMid.Y < nextSectionMid.Y)
                     {
-                        //西往東 接 北往南 = 右轉
-                        return true;
+                        //N > E
+                        return false;
                     }
                     else
                     {
-                        //西往東 接 南往北 = 左轉
-                        return false;
+                        //S > E
+                        return true;
                     }
                 }
                 else
                 {
-                    //東往西
-                    if (positionB.Y < positionC.Y)
+                    //XX > W
+                    if (curSectionMid.Y < nextSectionMid.Y)
                     {
-                        //東往西 接 北往南 = 左轉
-                        return false;
+                        //N > W
+                        return true;
                     }
                     else
                     {
-                        //東往西 接 南往北 = 右轉
-                        return true;
+                        //S > W
+                        return false;
                     }
                 }
             }
+
         }
+
     }
 }

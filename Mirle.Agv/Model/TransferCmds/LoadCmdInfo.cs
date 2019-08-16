@@ -8,18 +8,18 @@ using Mirle.Agv.Controller;
 namespace Mirle.Agv.Model.TransferCmds
 {
     [Serializable]
-    public class UnloadCmdInfo : TransferStep
+    public class LoadCmdInfo : TransferStep
     {
-        public string UnloadAddress { get; set; } = "Empty";
+        public string LoadAddress { get; set; } = "Empty";
         public int StageNum { get; set; }
         public EnumStageDirection StageDirection { get; set; } = EnumStageDirection.None;
         public bool IsEqPio { get; set; }
         public ushort ForkSpeed { get; set; } = 100;
 
-        public UnloadCmdInfo():this(new MapInfo()) { }
-        public UnloadCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
+        public LoadCmdInfo():this(new MapInfo()) { }
+        public LoadCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
-            type = EnumTransCmdType.Unload;
+            type = EnumTransferCommandType.Load;
         }
     }
 }

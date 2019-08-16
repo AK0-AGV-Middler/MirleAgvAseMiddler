@@ -12,20 +12,20 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
-            TransferStep curTransCmd = mainFlowHandler.GetCurTransCmd();
-            var type = curTransCmd.GetCommandType();
+            TransferStep curTransCmd = mainFlowHandler.GetCurTransferStep();
+            var type = curTransCmd.GetEnumTransferCommandType();
 
             switch (type)
             {
-                case EnumTransCmdType.Move:
+                case EnumTransferCommandType.Move:
                     mainFlowHandler.SetTransCmdsStep(new Move());
                     mainFlowHandler.DoTransfer();
                     break;
-                case EnumTransCmdType.Load:
+                case EnumTransferCommandType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());
                     mainFlowHandler.DoTransfer();
                     break;
-                case EnumTransCmdType.Unload:
+                case EnumTransferCommandType.Unload:
                     //TODO:
                     //resume tracking position
                     //-> get position
@@ -35,7 +35,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     UnloadCmdInfo unloadCmd = (UnloadCmdInfo)curTransCmd;
                     mainFlowHandler.Unload(unloadCmd);
                     break;
-                case EnumTransCmdType.Empty:
+                case EnumTransferCommandType.Empty:
                 default:
                     mainFlowHandler.SetTransCmdsStep(new Idle());
                     mainFlowHandler.DoTransfer();

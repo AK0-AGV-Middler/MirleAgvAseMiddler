@@ -691,7 +691,7 @@ namespace Mirle.Agv.Controller
 
                 location.Real.Position = GetMapPosition(SectionLineList[indexOflisSectionLine], realElmoEncode);
                 location.Encoder = GetMapPosition(SectionLineList[indexOflisSectionLine], location.RealEncoder);
-                Vehicle.Instance.GetVehLoacation().RealPosition = location.Real.Position;
+                Vehicle.Instance.AVehLocation.RealPosition = location.Real.Position;
             }
         }
 
@@ -910,6 +910,10 @@ namespace Mirle.Agv.Controller
         {
             UpdateElmo();
             bool newBarcodeData = UpdateSR2000();
+            if (location.Barcode != null)
+            {
+                Vehicle.Instance.AVehLocation.BarcodePosition = location.Barcode.Position;
+            }          
 
             if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error)
             {
@@ -924,7 +928,7 @@ namespace Mirle.Agv.Controller
                 if (location.Real == null && newBarcodeData)
                 {
                     location.Real = location.Barcode;
-                    Vehicle.Instance.GetVehLoacation().RealPosition = location.Real.Position;
+                    Vehicle.Instance.AVehLocation.RealPosition = location.Real.Position;
                 }
             }
         }

@@ -92,5 +92,10 @@ namespace Mirle.Agv
         {
             DrawAddressImage(redPen);
         }
+
+        public void FixToCenter()
+        {
+            Location = new Point(Location.X - (Radius + Delta), Location.Y - (label1.Height + 3 + Radius));
+        }
     }
 }
