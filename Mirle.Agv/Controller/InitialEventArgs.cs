@@ -14,5 +14,11 @@ namespace Mirle.Agv.Controller
         public InitialEventArgs()
         {
         }
+
+        public InitialEventArgs(bool isOk, string itemName)
+        {
+            IsOk = isOk;
+            ItemName = itemName;
+        }
     }
 }

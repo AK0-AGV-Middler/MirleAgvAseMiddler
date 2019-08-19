@@ -29,7 +29,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-            var firstPosition = Vehicle.Instance.AVehLocation.RealPosition;
+            var firstPosition = Vehicle.Instance.AVehiclePosition.RealPosition;
             AddressPositions.Add(firstPosition);
 
             try
@@ -84,7 +84,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
         public void SetAddressActions()
         {
-            PredictVehicleAngle = theVehicle.AVehLocation.PredictVehicleAngle;
+            PredictVehicleAngle = theVehicle.AVehiclePosition.PredictVehicleAngle;
 
             AddressActions = new List<EnumAddressAction>();
             try
@@ -113,7 +113,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             AddressActions.Add(EnumAddressAction.End);
 
-            theVehicle.AVehLocation.PredictVehicleAngle = PredictVehicleAngle;
+            theVehicle.AVehiclePosition.PredictVehicleAngle = PredictVehicleAngle;
         }
 
         public void SetMovingSections()

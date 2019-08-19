@@ -130,6 +130,7 @@
     <Compile Include="Model\MoveModel\MoveControl\AxisData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\BreakDownMoveCommandData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\Command.cs" />
+    <Compile Include="Model\MoveModel\MoveControl\EncoderPositionData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\MoveControlParameter.cs" />
     <Compile Include="Model\MoveModel\MoveControl\MoveControlSafetyData.cs" />
     <Compile Include="Model\MoveModel\MoveControl\OneMoveCommand.cs" />

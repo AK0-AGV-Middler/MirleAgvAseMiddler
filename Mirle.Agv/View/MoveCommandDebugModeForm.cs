@@ -61,11 +61,18 @@ namespace Mirle.Agv.View
             ucLabelTB_Velocity.TagName = "Velocity : ";
             ucLabelTB_ElmoEncoder.TagName = "Elmo encoder : ";
             ucLabelTB_EncoderOffset.TagName = "Offset : ";
+            ucLabelTB_EncoderPosition.TagName = "Encoder Position : ";
             AddListMapAddressPositions();
             AddListMapAddressActions();
             AddListMapSpeedLimits();
             AddDataGridViewColumn();
             AddAdminSafetyUserControl();
+            moveControl.DebugFlowMode = true;
+        }
+
+        private void MoveCommandDebugModeForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            moveControl.DebugFlowMode = false;
         }
 
         private void AddAdminSafetyUserControl()
@@ -116,8 +123,8 @@ namespace Mirle.Agv.View
 
             for (int i = 0; i < 8; i++)
             {
-                AxisColumn[i] = new DataGridViewTextBoxColumn[7];
-                for (int j = 0; j < 7; j++)
+                AxisColumn[i] = new DataGridViewTextBoxColumn[8];
+                for (int j = 0; j < 8; j++)
                     AxisColumn[i][j] = new DataGridViewTextBoxColumn();
                 //  count   position	velocity	toc	disable	moveComplete	error
                 AxisColumn[i][0].HeaderText = AxisList[i].ToString();
@@ -126,14 +133,16 @@ namespace Mirle.Agv.View
                 AxisColumn[i][1].Name = AxisList[i].ToString() + "Position";
                 AxisColumn[i][2].HeaderText = "Velocity";
                 AxisColumn[i][2].Name = AxisList[i].ToString() + "Velocity";
-                AxisColumn[i][3].HeaderText = "toc";
-                AxisColumn[i][3].Name = AxisList[i].ToString() + "toc";
-                AxisColumn[i][4].HeaderText = "Disable";
-                AxisColumn[i][4].Name = AxisList[i].ToString() + "Disable";
-                AxisColumn[i][5].HeaderText = "Complete";
-                AxisColumn[i][5].Name = AxisList[i].ToString() + "Complete";
-                AxisColumn[i][6].HeaderText = "Error";
-                AxisColumn[i][6].Name = AxisList[i].ToString() + "Error";
+                AxisColumn[i][3].HeaderText = "ErrorPosition";
+                AxisColumn[i][3].Name = AxisList[i].ToString() + "ErrorPosition";
+                AxisColumn[i][4].HeaderText = "toc";
+                AxisColumn[i][4].Name = AxisList[i].ToString() + "toc";
+                AxisColumn[i][5].HeaderText = "Disable";
+                AxisColumn[i][5].Name = AxisList[i].ToString() + "Disable";
+                AxisColumn[i][6].HeaderText = "Complete";
+                AxisColumn[i][6].Name = AxisList[i].ToString() + "Complete";
+                AxisColumn[i][7].HeaderText = "Error";
+                AxisColumn[i][7].Name = AxisList[i].ToString() + "Error";
             }
 
             for (int i = 8; i < 16; i++)
@@ -282,6 +291,13 @@ namespace Mirle.Agv.View
                  "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
                  tempBarcodePosition.Position.Y.ToString("0") + " )" : "( ---, --- )";
 
+            tempBarcodePosition = moveControl.location.Encoder;
+            if (tempBarcodePosition != null && tempBarcodePosition.Position != null)
+                ucLabelTB_EncoderPosition.TagValue = "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
+                     tempBarcodePosition.Position.Y.ToString("0") + " )";
+            else
+                ucLabelTB_EncoderPosition.TagValue = "( ---, --- )";
+
 
             ucLabelTtB_CommandListState.TagValue = moveControl.MoveState.ToString();
 
@@ -363,6 +379,8 @@ namespace Mirle.Agv.View
                 Timer_Update_DebugCSV();
             else if (tbC_Debug.SelectedIndex == 4)
                 Timer_Update_Admin();
+
+            tbxLogView_MoveControlDebugMessage.Text = moveControl.DebugFlowLog;
         }
         #endregion
 
@@ -766,6 +784,6 @@ namespace Mirle.Agv.View
             button_SimulationModeChange.Enabled = true;
         }
         #endregion
-        
+
     }
 }

@@ -583,6 +583,15 @@ namespace Mirle.Agv.View
             UpdateAutoManual();
             UpdateVehLocationAndLoading();
             DrawReserveSections();
+            UpdateThreadPicture();
+        }
+
+        private void UpdateThreadPicture()
+        {
+            bool isVisitTransCmdAlive = mainFlowHandler.IsVisitTransCmdsAlive();
+            picVisitTransferCmd.BackColor = mainFlowHandler.IsVisitTransCmdsAlive() ? Color.Green : Color.Red;
+            picTrackingPosition.BackColor = mainFlowHandler.IsTrackingPositionAlive() ? Color.Green : Color.Red;
+            middleAgent.IsAskReserveAlive();
         }
 
         private void UpdateAutoManual()
@@ -633,7 +642,7 @@ namespace Mirle.Agv.View
 
         private void UpdateVehLocationAndLoading()
         {
-            var location = mainFlowHandler.theVehicle.AVehLocation;
+            var location = mainFlowHandler.theVehicle.AVehiclePosition;
 
             var realPos = location.RealPosition;
             ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
@@ -677,7 +686,7 @@ namespace Mirle.Agv.View
 
         private void btnSetPosition_Click_1(object sender, EventArgs e)
         {
-            Vehicle.Instance.AVehLocation.RealPosition = new MapPosition((double)numPositionX.Value, (double)numPositionY.Value);
+            Vehicle.Instance.AVehiclePosition.RealPosition = new MapPosition((double)numPositionX.Value, (double)numPositionY.Value);
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
@@ -720,7 +729,7 @@ namespace Mirle.Agv.View
 
         private void btnCleanAgvcTransCmd_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.CleanAgvcTransCmd();
+            mainFlowHandler.ClearAgvcTransferCmd();
         }
 
         private void btnStartVisitTransCmds_Click(object sender, EventArgs e)
@@ -826,28 +835,6 @@ namespace Mirle.Agv.View
             middleAgent.LoadUnloadComplete();
         }
 
-        private void btnTestStartAskReserve_Click(object sender, EventArgs e)
-        {
-            IsAskingReserve = !IsAskingReserve;
-
-            if (IsAskingReserve)
-            {
-                Task.Run(() => LoopAskReserveSec001());
-            }
-        }
-
-        private void LoopAskReserveSec001()
-        {
-            while (IsAskingReserve)
-            {
-                var needReserveSection = theMapInfo.allMapSections["sec001"];
-                middleAgent.SetupNeedReserveSections(needReserveSection);
-                middleAgent.RestartAskingReserve();
-
-                Thread.Sleep(2000);
-            }
-        }
-
         private void btnAutoManual_Click(object sender, EventArgs e)
         {           
             switch (Vehicle.Instance.AutoState)
@@ -862,13 +849,9 @@ namespace Mirle.Agv.View
             }
         }
 
-
-        private void btnTestSomething_Click(object sender, EventArgs e)
+        private void btnClearAgvcTransferCmd_Click(object sender, EventArgs e)
         {
-            var xx1 = mainFlowHandler.GetNeedReserveSections();
-            mainFlowHandler.AddNeedReserveSections(theMapInfo.allMapSections["sec005"]);
-            var xx2 = mainFlowHandler.GetNeedReserveSections();
+            mainFlowHandler.ClearAgvcTransferCmd();
         }
-
     }
 }

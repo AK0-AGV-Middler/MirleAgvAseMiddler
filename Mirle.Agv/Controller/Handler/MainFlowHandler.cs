@@ -113,32 +113,25 @@ namespace Mirle.Agv.Controller
             LoadAllAlarms();
             EventInitial();
             SetTransCmdsStep(new Idle());
-            VehicleLocationInitial();
 
+            VehicleLocationInitial();
 
             if (isIniOk)
             {
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = true,
-                        ItemName = "全部"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "全部"));
             }
         }
 
         private void VehicleLocationInitial()
         {
-            if (theVehicle.AVehLocation.RealPosition == null)
+            if (theVehicle.AVehiclePosition.RealPosition == null)
             {
-                theVehicle.AVehLocation.RealPosition = theMapInfo.allMapAddresses["adr001"].Position.DeepClone();
+                theVehicle.AVehiclePosition.RealPosition = theMapInfo.allMapAddresses["adr001"].Position.DeepClone();
             }
             StartTrackingPosition();
         }
 
+        #region ConfigInitial
         //private void ConfigsInitial()
         //{
         //    try
@@ -188,8 +181,8 @@ namespace Mirle.Agv.Controller
         //        //middlerConfig.SleepTime = tempSleepTime;
         //        //int.TryParse(configHandler.GetString("Middler", "RichTextBoxMaxLines ", "10"), out int tempRichTextBoxMaxLines);
         //        //middlerConfig.RichTextBoxMaxLines = tempRichTextBoxMaxLines;
-        //        //int.TryParse(configHandler.GetString("Middler", "AskReserveInterval ", "1000"), out int tempAskReserveInterval);
-        //        //middlerConfig.AskReserveInterval = tempAskReserveInterval;
+        //        //int.TryParse(configHandler.GetString("Middler", "AskReserveIntervalMs ", "1000"), out int tempAskReserveInterval);
+        //        //middlerConfig.AskReserveIntervalMs = tempAskReserveInterval;
 
         //        //mapConfig = new MapConfig();
         //        //mapConfig.SectionFileName = configHandler.GetString("Map", "SectionFileName", "ASECTION.csv");
@@ -224,6 +217,7 @@ namespace Mirle.Agv.Controller
         //        }
         //    }
         //}
+        #endregion
 
         private void XmlInitial()
         {
@@ -237,36 +231,15 @@ namespace Mirle.Agv.Controller
                 middlerConfig = xmlHandler.ReadXml<MiddlerConfig>("Middler.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>("Alarm.xml");
 
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = true,
-                        ItemName = "讀寫設定檔"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
             }
             catch (Exception)
             {
                 isIniOk = false;
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = false,
-                        ItemName = "讀寫設定檔"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "讀寫設定檔"));
             }
         }
 
-        public void StopVehicle()
-        {
-            moveControlHandler.StopFlagOn();
-            //Should I clean transfer cmd and stop asking reserve?
-        }
 
         private void LoggersInitial()
         {
@@ -274,30 +247,12 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent = LoggerAgent.Instance;
 
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = true,
-                        ItemName = "Logger"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
-
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "紀錄器"));
             }
             catch (Exception)
             {
                 isIniOk = false;
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = false,
-                        ItemName = "Logger"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
-
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "紀錄器"));
             }
         }
 
@@ -316,30 +271,12 @@ namespace Mirle.Agv.Controller
                 mcProtocol.Name = "MCProtocol";
                 plcAgent = new PlcAgent(mcProtocol, alarmHandler);
 
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = true,
-                        ItemName = "Controller"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
-
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                var temp = ex.StackTrace;
                 isIniOk = false;
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = false,
-                        ItemName = "Controller"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "控制層"));
             }
         }
 
@@ -350,30 +287,13 @@ namespace Mirle.Agv.Controller
                 theVehicle = Vehicle.Instance;
                 theVehicle.SetMapInfo(theMapInfo);
 
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = true,
-                        ItemName = "Vehicle"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "台車"));
             }
             catch (Exception)
             {
                 isIniOk = false;
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = false,
-                        ItemName = "Vehicle"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "台車"));
             }
-
         }
 
         private void EventInitial()
@@ -407,30 +327,13 @@ namespace Mirle.Agv.Controller
                 //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
                 plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
 
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = true,
-                        ItemName = "事件"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
-
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
             }
             catch (Exception)
             {
                 isIniOk = false;
 
-                if (OnComponentIntialDoneEvent != null)
-                {
-                    var args = new InitialEventArgs
-                    {
-                        IsOk = false,
-                        ItemName = "事件"
-                    };
-                    OnComponentIntialDoneEvent(this, args);
-                }
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "事件"));
             }
         }
 
@@ -466,7 +369,6 @@ namespace Mirle.Agv.Controller
 
         private void MiddleAgent_OnInstallTransferCommandEvent(object sender, AgvcTransCmd agvcTransCmd)
         {
-            //TODO:
             if (this.agvcTransCmd != null)
             {
                 middleAgent.Send_Cmd131_TransferResponse(agvcTransCmd.SeqNum, 1, "Agv already have transfer command.");
@@ -620,6 +522,8 @@ namespace Mirle.Agv.Controller
             }
             return true;
         }
+
+       
 
         public void SetTestTransferCmd()
         {
@@ -1031,7 +935,7 @@ namespace Mirle.Agv.Controller
         private bool CanVehUnload()
         {
             // 判斷當前是否可載貨 若否 則發送報告
-            MapPosition position = theVehicle.AVehLocation.RealPosition;
+            MapPosition position = theVehicle.AVehiclePosition.RealPosition;
             MapAddress unloadAddress = theMapInfo.allMapAddresses[agvcTransCmd.UnloadAddress];
             var result = mapHandler.IsPositionInThisAddress(position, unloadAddress);
             var msg = $"MainFlow : CanVehUnload, [result={result}][position=({(int)position.X},{(int)position.Y})][loadAddress=({(int)unloadAddress.Position.X},{(int)unloadAddress.Position.Y})]";
@@ -1055,7 +959,7 @@ namespace Mirle.Agv.Controller
         private bool CanVehLoad()
         {
             // 判斷當前是否可卸貨 若否 則發送報告
-            MapPosition position = theVehicle.AVehLocation.RealPosition;
+            MapPosition position = theVehicle.AVehiclePosition.RealPosition;
             MapAddress loadAddress = theMapInfo.allMapAddresses[agvcTransCmd.LoadAddress];
             var result = mapHandler.IsPositionInThisAddress(position, loadAddress);
             var msg = $"MainFlow : CanVehLoad, [result={result}][position=({(int)position.X},{(int)position.Y})][loadAddress=({(int)loadAddress.Position.X},{(int)loadAddress.Position.Y})]";
@@ -1126,6 +1030,7 @@ namespace Mirle.Agv.Controller
         private void TrackingPosition()
         {
             Stopwatch sw = new Stopwatch();
+
             while (true)
             {
                 try
@@ -1141,7 +1046,7 @@ namespace Mirle.Agv.Controller
 
                     #endregion
 
-                    var position = theVehicle.AVehLocation.RealPosition;
+                    var position = theVehicle.AVehiclePosition.RealPosition;
                     if (transferSteps.Count > 0)
                     {
                         //有搬送命令時，比對當前Position與搬送路徑Sections確定section-distance
@@ -1157,9 +1062,6 @@ namespace Mirle.Agv.Controller
                         //無搬送命令時，比對當前Position與全地圖Sections確定section-distance
                         MoveCmdInfoUpdatePosition(position);
                     }
-
-                    sw.Stop();
-                    sw.Reset();
                 }
                 catch (Exception ex)
                 {
@@ -1169,6 +1071,13 @@ namespace Mirle.Agv.Controller
                 }
 
                 SpinWait.SpinUntil(() => false, mainFlowConfig.TrackingPositionInterval);
+
+                sw.Stop();
+                if (sw.ElapsedMilliseconds > mainFlowConfig.ReportPositionInterval)
+                {
+                    middleAgent.ReportAddressPass();
+                    sw.Reset();
+                }
             }
 
         }
@@ -1179,6 +1088,7 @@ namespace Mirle.Agv.Controller
             trackingPositionShutdownEvent.Reset();
             thdTrackingPosition = new Thread(TrackingPosition);
             thdTrackingPosition.IsBackground = true;
+
             thdTrackingPosition.Start();
         }
 
@@ -1221,14 +1131,9 @@ namespace Mirle.Agv.Controller
 
         }
 
-        public void MiddleAgent_ResumeAskingReserve()
+        public void MiddleAgent_StartAskingReserve()
         {
-            middleAgent.ResumeAskingReserve();
-        }
-
-        public void MiddleAgent_RestartAskingReserve()
-        {
-            middleAgent.RestartAskingReserve();
+            middleAgent.StartAskingReserve();
         }
 
         private void PublishReserveOkEvent()
@@ -1311,10 +1216,10 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                middleAgent.ClearReserve();
+                middleAgent.StopAskingReserve();
                 queGotReserveOkSections = new ConcurrentQueue<MapSection>();
                 queNeedReserveSections = new ConcurrentQueue<MapSection>();
-                theVehicle.AVehLocation.PredictVehicleAngle = (int)theVehicle.AVehLocation.VehicleAngle;
+                theVehicle.AVehiclePosition.PredictVehicleAngle = (int)theVehicle.AVehiclePosition.VehicleAngle;
 
                 if (status == EnumMoveComplete.Fail)
                 {
@@ -1711,15 +1616,15 @@ namespace Mirle.Agv.Controller
                 mapSection.CmdDirection = EnumPermitDirection.Forward;
                 if (mapHandler.IsPositionInThisSection(gxPosition, mapSection))
                 {
-                    TrackingSection = theVehicle.AVehLocation.LastSection;
+                    TrackingSection = theVehicle.AVehiclePosition.LastSection;
                     isInMap = true;
                     if (mapSection.Type == EnumSectionType.Horizontal)
                     {
-                        theVehicle.AVehLocation.RealPosition.Y = mapSection.HeadAddress.Position.Y;
+                        theVehicle.AVehiclePosition.RealPosition.Y = mapSection.HeadAddress.Position.Y;
                     }
                     else if (mapSection.Type == EnumSectionType.Vertical)
                     {
-                        theVehicle.AVehLocation.RealPosition.X = mapSection.HeadAddress.Position.X;
+                        theVehicle.AVehiclePosition.RealPosition.X = mapSection.HeadAddress.Position.X;
                     }
                     //middleAgent.Send_Cmd134_TransferEventReport();
                     break;
@@ -1769,7 +1674,7 @@ namespace Mirle.Agv.Controller
 
         private void StartCharge()
         {
-            MapAddress address = theVehicle.AVehLocation.LastAddress;
+            MapAddress address = theVehicle.AVehiclePosition.LastAddress;
             if (address.IsCharger)
             {
                 EnumChargeDirection chargeDirection;
@@ -1846,9 +1751,17 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void CleanAgvcTransCmd()
+        public void ClearAgvcTransferCmd()
         {
+            StopVehicle();
+            StopVisitTransCmds();
+            middleAgent.StopAskingReserve();
             this.agvcTransCmd = null;
+            lastTransferSteps = transferSteps;
+            transferSteps = new List<TransferStep>();
+            TransferStepsIndex = 0;
+            queNeedReserveSections = new ConcurrentQueue<MapSection>();
+            queGotReserveOkSections = new ConcurrentQueue<MapSection>();
         }
 
         public EnumTransferCommandType GetCurrentEnumTransferCommandType()
@@ -1876,6 +1789,22 @@ namespace Mirle.Agv.Controller
         public int GetTransferStepCount()
         {
             return transferSteps.Count;
+        }
+
+        public void StopVehicle()
+        {
+            moveControlHandler.StopFlagOn();
+            //Should I clean transfer cmd and stop asking reserve?
+        }
+
+        public bool IsVisitTransCmdsAlive()
+        {
+            return (thdVisitTransCmds != null) && (thdVisitTransCmds.IsAlive);
+        }
+
+        public bool IsTrackingPositionAlive()
+        {
+            return (thdTrackingPosition != null) && (thdTrackingPosition.IsAlive);
         }
     }
 }

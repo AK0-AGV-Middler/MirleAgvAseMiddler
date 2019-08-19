@@ -496,8 +496,7 @@ namespace Mirle.Agv.View
         {
             Task.Factory.StartNew(() => { moveControl.elmoDriver.ResetErrorAll(); });
         }
-
-
+        
         private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)
         {
             if (double.TryParse(tB_JogPitch_AxisMove_Disance.Text, out distance) && distance >= 0 &&
@@ -699,7 +698,7 @@ namespace Mirle.Agv.View
         {
             timerUpdate.Enabled = true;
         }
-
+        
         private void button_JogPitch_ChangeFormSize_Click(object sender, EventArgs e)
         {
             button_JogPitch_ChangeFormSize.Enabled = false;

@@ -470,7 +470,7 @@ namespace Mirle.Agv.Controller
                     {
                         tempFeedbackData = new ElmoAxisFeedbackData();
                         tempFeedbackData.Feedback_Velocity = Convert.ToInt32(ncBulkRead[i].aVel * allAxisList[i].Config.PulseUnit);//速度
-                        tempFeedbackData.Feedback_Position_Error = ncBulkRead[i].iPosFollowingErr;//位置誤差
+                        tempFeedbackData.Feedback_Position_Error = ncBulkRead[i].iPosFollowingErr * allAxisList[i].Config.PulseUnit;//位置誤差
                         tempFeedbackData.Feedback_Torque = ncBulkRead[i].aTorque / 10;//扭力值
                         tempFeedbackData.Feedback_Now_Mode = ncBulkRead[i].eOpMode.ToString();//當下模式
                         tempFeedbackData.Feedback_Position = ncBulkRead[i].aPos * allAxisList[i].Config.PulseUnit;//位置
@@ -771,19 +771,10 @@ namespace Mirle.Agv.Controller
 
             for (int i = 0; i < MAX_AXIS; i++)
             {
-                if (allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Move)
-                {
-                    DisableAxis(allAxisList[i].Config.ID, memberName);
-                }
-            }
-
-            for (int i = 0; i < MAX_AXIS; i++)
-            {
                 if (!allAxisList[i].Config.IsGroup && !allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Move)
                 {
-                    SetPositionSingleAxis(allAxisList[i].Config.ID, 0);
-                    Thread.Sleep(100);
                     DisableAxis(allAxisList[i].Config.ID, memberName);
+                    Thread.Sleep(200);
                 }
             }
 
@@ -1179,7 +1170,7 @@ namespace Mirle.Agv.Controller
         public void ElmoStop(EnumAxis axis, double deceleration = -1, double jerk = -1,
                             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            if (!connected || !allAxis[axis].Config.IsGroup)
+            if (!connected)
                 return;
 
             if (deceleration == -1)
@@ -1401,14 +1392,28 @@ namespace Mirle.Agv.Controller
                     1,
                     array);
                 Thread.Sleep(200);
-                allAxis[axis].SingleAxis.SetOpMode(OPM402.OPM402_CYCLIC_SYNC_POSITION_MODE);
+                if (!allAxis[allAxis[axis].Config.VirtualDev4ID].FeedbackData.Disable)
+                    allAxis[allAxis[axis].Config.VirtualDev4ID].SingleAxis.SetParameter(0, MMC_PARAMETER_LIST_ENUM.MMC_ACTUAL_POS_UU_PARAM, 1);
 
+                Thread.Sleep(200);
                 overflowOffset[axis] = 0;
+                allAxis[axis].SingleAxis.SetOpMode(OPM402.OPM402_CYCLIC_SYNC_POSITION_MODE);
+                Thread.Sleep(200);
             }
             catch (MMCException ex)
             {
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
+        }
+
+        public void SetMoveAxisPosition()
+        {
+            DisableAxis(EnumAxis.GX);
+            SetPositionSingleAxis(EnumAxis.XFL, 0);
+            SetPositionSingleAxis(EnumAxis.XFR, 0);
+            SetPositionSingleAxis(EnumAxis.XRL, 0);
+            SetPositionSingleAxis(EnumAxis.XRR, 0);
+            EnableAxis(EnumAxis.GX);
         }
     }
 }

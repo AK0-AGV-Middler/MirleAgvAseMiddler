@@ -194,7 +194,7 @@ namespace Mirle.Agv.Controller
                                                   " ), velocity : " + moveCmd.SectionSpeedLimits[i - 1].ToString("0");
 
                     }
-                    
+
                     WriteLog("MoveControl", "7", device, "", logMessage);
                 }
                 else
@@ -204,7 +204,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                WriteLog("MoveControl", "3", device, "", "AGVM command資料 異常end (Excption) ~ " + ex.ToString() );
+                WriteLog("MoveControl", "3", device, "", "AGVM command資料 異常end (Excption) ~ " + ex.ToString());
             }
         }
 
@@ -496,7 +496,7 @@ namespace Mirle.Agv.Controller
 
             if (nowAGV != null)
             {
-                nowAngle = nowAGV.AGVAngle;
+                nowAngle = (int)nowAGV.AGVAngle;
             }
             else
             {
@@ -517,13 +517,64 @@ namespace Mirle.Agv.Controller
                 errorMessage = "Real position角度偏差過大(超過10度)!";
                 returnInt = -1;
             }
-            
+
             return returnInt;
         }
 
-        private bool CheckDirFlag(MapPosition start, MapPosition end, EnumAddressAction action, ref BreakDownMoveCommandData data,
-                                  AGVPosition nowAGV, ref string errorMessage)
+        private bool GetDirFlagWheelAngleStartInHorizontal(MoveCmdInfo moveCmd, ref BreakDownMoveCommandData data,
+            int wheelAngle, ref string errorMessage)
         {
+            int trIndex = -1;
+            bool hasR2000 = false;
+
+            for (int i = 0; i < moveCmd.AddressActions.Count; i++)
+            {
+                if (moveCmd.AddressActions[i] == EnumAddressAction.TR50 || moveCmd.AddressActions[i] == EnumAddressAction.TR350 ||
+                    moveCmd.AddressActions[i] == EnumAddressAction.BTR50 || moveCmd.AddressActions[i] == EnumAddressAction.BTR350)
+                {
+                    trIndex = i;
+                    break;
+                }
+                else if (moveCmd.AddressActions[i] == EnumAddressAction.R2000 || moveCmd.AddressActions[i] == EnumAddressAction.BR2000 ||
+                         moveCmd.AddressActions[i] == EnumAddressAction.BST)
+                    hasR2000 = true;
+            }
+
+            if (trIndex == -1)
+            {
+                if (hasR2000)
+                {
+                    errorMessage = "不該有橫移接續R2000的動作..";
+                    return false;
+                }
+
+                if (wheelAngle == 90 || wheelAngle == -90)
+                    data.WheelAngle = wheelAngle;
+
+                return true;
+            }
+            else
+            {
+                int startSectionAngle = (int)ComputeAngle(moveCmd.AddressPositions[trIndex - 1], moveCmd.AddressPositions[trIndex]);
+                int endSectionAngle = (int)ComputeAngle(moveCmd.AddressPositions[trIndex], moveCmd.AddressPositions[trIndex + 1]);
+                int deltaAngle = endSectionAngle - startSectionAngle;
+
+                if (moveCmd.AddressActions[trIndex] == EnumAddressAction.TR350 || moveCmd.AddressActions[trIndex] == EnumAddressAction.TR50)
+                    data.WheelAngle = -deltaAngle;
+                else
+                    data.WheelAngle = deltaAngle;
+
+                return Math.Abs(deltaAngle) == 90;
+            }
+        }
+
+        private bool GetDirFlagWheelAngle(MoveCmdInfo moveCmd, ref BreakDownMoveCommandData data,
+                                  AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
+        {
+            MapPosition start = moveCmd.AddressPositions[0];
+            MapPosition end = moveCmd.AddressPositions[1];
+            EnumAddressAction action = moveCmd.AddressActions[0];
+
             int sectionAngle = 0, deltaAngle = 0;
 
             int agvAngle = GetAGVAngle(nowAGV, ref errorMessage);
@@ -536,43 +587,43 @@ namespace Mirle.Agv.Controller
             data.AGVAngleInMap = agvAngle;
             data.NowAGVAngleInMap = agvAngle;
 
-            if (action == EnumAddressAction.ST )
+            sectionAngle = (int)ComputeAngle(start, end);
+            deltaAngle = sectionAngle - agvAngle;
+
+            if (deltaAngle > 180)
+                deltaAngle -= 360;
+            else if (deltaAngle <= -180)
+                deltaAngle += 360;
+
+            if (action == EnumAddressAction.ST)
             {
-                sectionAngle = (int)ComputeAngle(start, end);
-                deltaAngle = sectionAngle - agvAngle;
+                switch (deltaAngle)
+                {
+                    case 0:
+                        data.WheelAngle = 0;
+                        data.DirFlag = true;
+                        break;
+                    case 180:
+                        data.WheelAngle = 0;
+                        data.DirFlag = false;
+                        break;
+                    case 90:
+                    case -90:
+                        data.WheelAngle = deltaAngle;
+                        if (!GetDirFlagWheelAngleStartInHorizontal(moveCmd, ref data, wheelAngle, ref errorMessage))
+                            return false;
 
-                if (deltaAngle > 180)
-                    deltaAngle -= 360;
-                else if (deltaAngle <= -180)
-                    deltaAngle += 360;
-
-                if (deltaAngle == 0)
-                {
-                    data.WheelAngle = 0;
-                    data.DirFlag = true;
+                        data.DirFlag = (deltaAngle == data.WheelAngle);
+                        break;
+                    default:
+                        errorMessage = "車姿和Section的角度差不該有0 90 -90 180以外的角度.";
+                        return false;
                 }
-                else if (deltaAngle == 180)
-                {
-                    data.WheelAngle = 0;
-                    data.DirFlag = false;
-                }
-                else if (deltaAngle == 90)
-                {
-                    // 暫時by pass
-                    errorMessage = "暫時by pass 舵輪角度為90度.";
-                    return false;
-                }
-                else if (deltaAngle == -90)
-                {
-                    // 暫時by pass
-                    errorMessage = "暫時by pass 舵輪角度為-90度.";
-                    return false;
-                }
-                else
-                {
-                    errorMessage = "車姿和Section的角度差不該有0 90 -90 180以外的角度.";
-                    return false;
-                }
+            }
+            else if (action == EnumAddressAction.R2000)
+            {
+                data.WheelAngle = 0;
+                data.DirFlag = (Math.Abs(deltaAngle) == 45);
             }
             else
             {
@@ -729,7 +780,7 @@ namespace Mirle.Agv.Controller
             }
             else
             { // 距離不會太短之情況.
-                // 算出直接減速距離是否足夠.
+              // 算出直接減速距離是否足夠.
                 distance = GetAccDecDistance(data.NowVelocity, 0, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
 
                 // 需要直接減速.
@@ -746,7 +797,7 @@ namespace Mirle.Agv.Controller
                 {
                     if (data.NowVelocityCommand > moveControlConfig.EQVelocity)
                     { // 需要降速.
-                        // 算出減速距離跟減速座標.
+                      // 算出減速距離跟減速座標.
                         distance = GetVChangeDistance(data.NowVelocity, moveControlConfig.EQVelocity, data.NowVelocityCommand,
                                                       data.STDistance - moveControlConfig.EQVelocityDistance - data.TurnOutDistance);
 
@@ -994,6 +1045,7 @@ namespace Mirle.Agv.Controller
         {
             double tempDistance;
             data.StartWheelAngle = oneceMoveCommand.WheelAngle;
+            data.NowWheelAngle = oneceMoveCommand.WheelAngle;
             data.DirFlag = oneceMoveCommand.DirFlag;
             data.CommandDistance = 0;
             data.NowVelocity = 0;
@@ -1152,9 +1204,6 @@ namespace Mirle.Agv.Controller
                     oldAGVAngle -= 180;
             }
 
-            //if (oldAGVAngle < 0)
-            //    oldAGVAngle += 360;
-
             int r2000SectionAngle = (int)ComputeAngle(start, end);
 
             if (r2000SectionAngle != 45 && r2000SectionAngle != -45 && r2000SectionAngle != 135 && r2000SectionAngle != -135)
@@ -1168,33 +1217,14 @@ namespace Mirle.Agv.Controller
                 delta += 360;
             else if (delta > 45)
                 delta -= 360;
-            
+
             if (Math.Abs(delta) != 45)
             {
                 errorMessage = "GetAGVAngleAfterR2000 r2000SectionAngle 和 oldAGVAngle出現奇怪夾角..";
                 return -1;
             }
 
-            //if (Math.Abs(oldAGVAngle - r2000SectionAngle) != 45)
-            //{
-            //    errorMessage = "GetAGVAngleAfterR2000 r2000SectionAngle 和 oldAGVAngle出現奇怪夾角..";
-            //    return -1;
-            //}
-
-            //if (r2000SectionAngle < 0)
-            //    r2000SectionAngle += 360;
-
-
             newAGVAngle = oldAGVAngle + 2 * delta;
-            //newAGVAngle = oldAGVAngle + 2 * (r2000SectionAngle - oldAGVAngle);
-
-            //while (newAGVAngle > 180 || newAGVAngle <= -180)
-            //{
-            //    if (newAGVAngle > 180)
-            //        newAGVAngle -= 360;
-            //    else
-            //        newAGVAngle += 360;
-            //}
 
             if (!dirFlag)
             {
@@ -1303,6 +1333,7 @@ namespace Mirle.Agv.Controller
 
                         tempDouble = GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
                                                           moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                        tempDouble = tempDouble + 100;
                         if (TurnOutSafetyDistance)
                             tempDouble = tempDouble + moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
 
@@ -1484,7 +1515,7 @@ namespace Mirle.Agv.Controller
 
         // 應該沒人看得懂.
         private bool BreakDownMoveCmd(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
-                                      List<ReserveData> reserveDataList, AGVPosition nowAGV, ref string errorMessage)
+                                      List<ReserveData> reserveDataList, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
             List<OneceMoveCommand> oneceMoveCommandList = new List<OneceMoveCommand>();
             sectionLineList = new List<SectionLine>();
@@ -1494,8 +1525,7 @@ namespace Mirle.Agv.Controller
 
             // 確認啟動時的舵輪角度應該為多少、前進方向 retrun false表示不知道目前位置或者是角度偏差過大(10度).
             // 取得所有入彎、出彎所需要的距離(可能會含保護距離(可以設定)).
-            if (!CheckDirFlag(moveCmd.AddressPositions[0], moveCmd.AddressPositions[1], moveCmd.AddressActions[0],
-                              ref data, nowAGV, ref errorMessage) ||
+            if (!GetDirFlagWheelAngle(moveCmd, ref data, nowAGV, wheelAngle, ref errorMessage) ||
                 !GetTurnInOutSafetyDistance(ref data, ref errorMessage))
             {
                 return false;
@@ -1623,7 +1653,7 @@ namespace Mirle.Agv.Controller
                     {
                         if (moveCmd.AddressActions[data.Index] == EnumAddressAction.ST)
                         { //
-                            // 先加入R2000終點BST->ST. 和SectionLineList
+                          // 先加入R2000終點BST->ST. 和SectionLineList
                             AddMoveCmdToOneceMoveCommand(moveCmd, ref tempOnceMoveCmd, ref data);
                             if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.EndNode, data.StartMoveEncoder,
                                                    data.DirFlag, ref errorMessage))
@@ -1756,7 +1786,7 @@ namespace Mirle.Agv.Controller
         }
 
         public bool CreatMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
-                                                               ref List<ReserveData> reserveDataList, AGVPosition nowAGV, ref string errorMessage)
+                                     ref List<ReserveData> reserveDataList, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
             try
             {
@@ -1782,7 +1812,7 @@ namespace Mirle.Agv.Controller
                         moveCmd.SectionSpeedLimits[i] = moveControlConfig.Move.Velocity;
                 }
 
-                if (!BreakDownMoveCmd(moveCmd, ref moveCmdList, ref sectionLineList, reserveDataList, nowAGV, ref errorMessage))
+                if (!BreakDownMoveCmd(moveCmd, ref moveCmdList, ref sectionLineList, reserveDataList, nowAGV, wheelAngle, ref errorMessage))
                 {
                     return false;
                 }

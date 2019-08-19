@@ -16,6 +16,7 @@ namespace Mirle.Agv.Model
         public double VelocityCommand { get; set; }
         public Thread MoveControlThread { get; set; }
         public bool OntimeReviseFlag { get; set; }
+        public double TrigetEndEncoder { get; set; }
 
         public MoveControlParameter()
         {

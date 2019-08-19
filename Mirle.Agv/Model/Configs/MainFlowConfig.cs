@@ -14,6 +14,7 @@ namespace Mirle.Agv.Model.Configs
         public int DoTransCmdsInterval { get; set; }
         public int ReserveLength { get; set; }
         public int TrackingPositionInterval { get; set; }
+        public int ReportPositionInterval { get; set; }
         public int StartChargeInterval { get; set; }
         public int StopChargeInterval { get; set; }
     }

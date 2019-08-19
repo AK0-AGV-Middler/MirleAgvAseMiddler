@@ -8,7 +8,7 @@ namespace Mirle.Agv.Model
 {
     public class Location
     {
-        public MapPosition Encoder { get; set; }
+        public AGVPosition Encoder { get; set; }
         public AGVPosition Barcode { get; set; }
         public double Delta { get; set; }
         public double Offset { get; set; }
