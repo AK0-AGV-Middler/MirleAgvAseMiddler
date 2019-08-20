@@ -19,14 +19,12 @@ namespace Mirle.Agv.Controller
     public class MainFlowHandler
     {
         #region Configs
-
         //private string configPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
         //private ConfigHandler configHandler;
         private MiddlerConfig middlerConfig;
         private MainFlowConfig mainFlowConfig;
         private MapConfig mapConfig;
         private AlarmConfig alarmConfig;
-
         #endregion
 
         #region TransCmds
