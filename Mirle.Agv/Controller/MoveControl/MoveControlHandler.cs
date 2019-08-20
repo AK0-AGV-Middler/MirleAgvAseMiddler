@@ -1792,8 +1792,9 @@ namespace Mirle.Agv.Controller
         /// </summary>
         public void MoveFinished(EnumMoveComplete status)
         {
-            if (isAGVMCommand)
+            //if (isAGVMCommand)
                 OnMoveFinished?.Invoke(this, status);
+
         }
 
         private void ResetEncoder(MapPosition start, MapPosition end, bool dirFlag)
@@ -1897,8 +1898,8 @@ namespace Mirle.Agv.Controller
             r2000SlowStop = false;
 
             // 暫時直接取得所有Reserve
-            for (int i = 0; i < reserveDataList.Count; i++)
-                reserveDataList[i].GetReserve = true;
+            //for (int i = 0; i < reserveDataList.Count; i++)
+            //    reserveDataList[i].GetReserve = true;
 
             if (!CheckListAllOK())
             {

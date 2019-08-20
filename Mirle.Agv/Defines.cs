@@ -62,7 +62,7 @@ namespace Mirle.Agv
         Home,
         Override,
         Else
-    }   
+    }
 
     public enum EnumConnectState
     {
@@ -173,6 +173,15 @@ namespace Mirle.Agv
     {
         Warn,
         Alarm
+    }
+
+    public enum EnumThreadStatus
+    {
+        None,
+        Start,
+        Pause,
+        Working,
+        Stop
     }
     #endregion
 

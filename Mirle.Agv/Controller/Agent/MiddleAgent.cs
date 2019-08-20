@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using TcpIpClientSample;
 using System.Diagnostics;
 using System.Reflection;
+using System.Collections.Concurrent;
 
 namespace Mirle.Agv.Controller
 {
@@ -38,31 +39,40 @@ namespace Mirle.Agv.Controller
         private MiddlerConfig middlerConfig;
         private AlarmHandler alarmHandler;
         private LoggerAgent loggerAgent;
+        private MainFlowHandler mainFlowHandler;
 
         private Thread thdAskReserve;
         private ManualResetEvent askReserveShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent askReservePauseEvent = new ManualResetEvent(true);
-        private MapSection needReserveSection = new MapSection();
-        public bool IsPauseAskReserve { get; private set; } = false;
+        public EnumThreadStatus AskReserveStatus { get; private set; } = new EnumThreadStatus();
+        public EnumThreadStatus PreAskReserveStatus { get; private set; } = new EnumThreadStatus();
+
+        private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
+        private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
+        private MapSection askingReserveSection = new MapSection();
+        //public bool IsPauseAskReserve { get; private set; } = false;
 
         public TcpIpAgent ClientAgent { get; private set; }
 
         public int AskReserveTimeout { get; set; } = 10000;
         public int AskReserveLoopTimeout { get; set; } = 10000;
         public bool AutoApplyReserve { get; set; } = false;
+        public int SeqNum { get; set; }
 
         private MapSection lastReportSection = new MapSection();
 
-        public MiddleAgent(MiddlerConfig middlerConfig, AlarmHandler alarmHandler, LoggerAgent loggerAgent)
+        public MiddleAgent(MainFlowHandler mainFlowHandler)
         {
-            this.middlerConfig = middlerConfig;
-            this.alarmHandler = alarmHandler;
-            this.loggerAgent = loggerAgent;
+            this.mainFlowHandler = mainFlowHandler;
+            middlerConfig = mainFlowHandler.GetMiddlerConfig();
+            alarmHandler = mainFlowHandler.GetAlarmHandler();
+            loggerAgent = LoggerAgent.Instance;
 
             CreatTcpIpClientAgent();
         }
 
         #region Initial
+
         private void CreatTcpIpClientAgent()
         {
 
@@ -100,6 +110,24 @@ namespace Mirle.Agv.Controller
                 var temp = ex.StackTrace;
             }
         }
+        private static Google.Protobuf.IMessage unPackWrapperMsg(byte[] raw_data)
+        {
+            WrapperMessage WarpperMsg = ToObject<WrapperMessage>(raw_data);
+            return WarpperMsg;
+        }
+        private static T ToObject<T>(byte[] buf) where T : Google.Protobuf.IMessage<T>, new()
+        {
+            if (buf == null)
+                return default(T);
+
+            Google.Protobuf.MessageParser<T> parser = new Google.Protobuf.MessageParser<T>(() => new T());
+            return parser.ParseFrom(buf);
+        }
+        public MiddlerConfig GetMiddlerConfig()
+        {
+            return middlerConfig;
+        }
+
         public void ReConnect()
         {
             try
@@ -169,45 +197,41 @@ namespace Mirle.Agv.Controller
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.RangeTeachingCmpRespFieldNumber, Receive_Cmd72_RangeTeachCompleteResponse);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AddressTeachRespFieldNumber, Receive_Cmd74_AddressTeachResponse);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmResetReqFieldNumber, Receive_Cmd91_AlarmResetRequest);
-            ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, Receive_Cmd94_AlarmResponse);
-
-            ClientAgent.addTcpIpReceivedHandler(141, Receive_Cmd141_ModeChange);
-            //            
-
-
+            ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, Receive_Cmd94_AlarmResponse);           //            
             //Here need to be careful for the TCPIP
             //
 
             ClientAgent.addTcpIpConnectedHandler(DoConnection);       //連線時的通知
             ClientAgent.addTcpIpDisconnectedHandler(DoDisconnection); //斷線時的通知
 
-            OnCmdReceive += MiddleAgent_OnCmdReceiveOrSend;
-            OnCmdSend += MiddleAgent_OnCmdReceiveOrSend;
         }
-        private void MiddleAgent_OnCmdReceiveOrSend(object sender, string msg)
+        private void SendCommandWrapper(WrapperMessage wrapper)
         {
+            string msg = $"[SEND] [{wrapper.ID}][SeqNum = {wrapper.SeqNum}] " + wrapper.ToString();
+            OnCmdSend?.Invoke(this, msg);
             loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , msg));
+                 , msg));
+
+            Task.Run(() => ClientAgent.TrxTcpIp.SendGoogleMsg(wrapper));
         }
+        private void RecieveCmdShowOnCommunicationForm(object sender, TcpIpEventArgs e)
+        {
+            string msg = $"[RECEIVE] [PacketID = {e.iPacketID}][SeqNum = {e.iSeqNum}][Pt = {e.iPt}][ObjPacket = {e.objPacket}]";
+            OnCmdReceive?.Invoke(this, msg);
+            theLoggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , msg));
+        }
+
         #endregion
 
         #region AskReserve
-
-        public void SetupNeedReserveSection(MapSection needReserveSection)
-        {
-            this.needReserveSection = needReserveSection.DeepClone();
-        }
-        public string GetNeedReserveSectionId()
-        {
-            return needReserveSection.Id;
-        }
-
         private void AskReserve()
         {
-            bool askResult = false;
-
-            while (!askResult)
+            PreAskReserve();
+            Stopwatch sw = new Stopwatch();
+            while (!queNeedReserveSections.IsEmpty)
             {
+                sw.Start();
                 try
                 {
                     #region Pause And Stop Check
@@ -218,77 +242,141 @@ namespace Mirle.Agv.Controller
                     }
                     #endregion
 
-                    askResult = true;
+                    AskReserveStatus = EnumThreadStatus.Working;
 
-                    //askResult = Send_Cmd136_AskReserve();
 
-                    //OnCmdReceive?.Invoke(this, $"+++++Middler : Ask Reserve [askResult = {askResult}]");
-                    if (!askResult)
+                    if (CanAskReserve())
                     {
-                        SpinWait.SpinUntil(() => false, middlerConfig.AskReserveIntervalMs);
-                    }
-
+                        queNeedReserveSections.TryPeek(out MapSection needReserveSection);
+                        askingReserveSection = needReserveSection == null ? new MapSection() : needReserveSection;
+                        Send_Cmd136_AskReserve();
+                    }                   
                 }
                 catch (Exception ex)
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , ex.StackTrace));
-                    SpinWait.SpinUntil(() => false, middlerConfig.AskReserveIntervalMs);
+                        , ex.StackTrace));                    
                 }
-            }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, middlerConfig.AskReserveIntervalMs);
+                }               
 
-            if (askResult)
-            {
-                OnGetReserveOkEvent?.Invoke(this, needReserveSection.DeepClone());
+                sw.Stop();
+                //var xx1 = sw.ElapsedMilliseconds;
+                sw.Reset();
             }
-
-            needReserveSection = new MapSection();
+            sw.Stop();
+            AfterAskReserve();
         }
-
         public void RestartAskingReserve()
         {
             StopAskingReserve();
             StartAskingReserve();
         }
-
-        public void PauseAskingReserve()
-        {
-            if (!IsPauseAskReserve)
-            {
-                askReservePauseEvent.Reset();
-                IsPauseAskReserve = true;
-                OnMessageShowEvent?.Invoke(this, $"Middler : Pause Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
-            }
-        }
-
-        public void ResumeAskingReserve()
-        {
-            askReservePauseEvent.Set();
-            IsPauseAskReserve = false;
-            OnMessageShowEvent?.Invoke(this, $"Middler : Resume Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
-        }
-
         public void StartAskingReserve()
         {
             askReservePauseEvent.Set();
-            IsPauseAskReserve = false;
+            askReserveShutdownEvent.Reset();
             thdAskReserve = new Thread(new ThreadStart(AskReserve));
             thdAskReserve.IsBackground = true;
-            askReserveShutdownEvent.Reset();
             thdAskReserve.Start();
-
-            OnMessageShowEvent?.Invoke(this, $"Middler : Start Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
+            AskReserveStatus = EnumThreadStatus.Start;
+            string needReserveSectionIds = "[";
+            foreach (var item in queNeedReserveSections) needReserveSectionIds += $"({item.Id})";
+            needReserveSectionIds += "]";
+            OnMessageShowEvent?.Invoke(this, $"Middler : Start Asking Reserve, [NeedReserveSectionIds={needReserveSectionIds}]");
         }
-
+        public void PauseAskingReserve()
+        {
+            askReservePauseEvent.Reset();
+            PreAskReserveStatus = AskReserveStatus;
+            AskReserveStatus = EnumThreadStatus.Pause;
+            OnMessageShowEvent?.Invoke(this, $"Middler : Pause Asking Reserve, [AskingReserveSectionId={askingReserveSection.Id}]");
+        }
+        public void ResumeAskingReserve()
+        {
+            askReservePauseEvent.Set();
+            var tempStatus = AskReserveStatus;
+            AskReserveStatus = PreAskReserveStatus;
+            PreAskReserveStatus = tempStatus;
+            OnMessageShowEvent?.Invoke(this, $"Middler : Resume Asking Reserve, [AskingReserveSectionId={askingReserveSection.Id}]");
+        }
         public void StopAskingReserve()
         {
             askReserveShutdownEvent.Set();
             askReservePauseEvent.Set();
+            AskReserveStatus = EnumThreadStatus.Stop;
             if (thdAskReserve != null && thdAskReserve.IsAlive)
             {
                 thdAskReserve.Join();
             }
-            OnMessageShowEvent?.Invoke(this, $"Middler : Stop Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
+            OnMessageShowEvent?.Invoke(this, $"Middler : Stop Asking Reserve, [AskingReserveSectionId={askingReserveSection.Id}]");
+        }
+        private void PreAskReserve()
+        {
+            queGotReserveOkSections = new ConcurrentQueue<MapSection>();
+            askingReserveSection = new MapSection();
+            if (queNeedReserveSections.IsEmpty)
+            {
+                return;
+            }
+        }
+        private void AfterAskReserve()
+        {
+            queNeedReserveSections = new ConcurrentQueue<MapSection>();
+            askingReserveSection = new MapSection();
+            //queGotReserveOkSections = new ConcurrentQueue<MapSection>();           
+        }
+        private bool CanAskReserve()
+        {
+            //var xx1 = mainFlowHandler.IsMoveStep();
+            //var xx2 = mainFlowHandler.CanVehMove();
+            //var xx3 = !IsGotReserveOkSectionsFull();
+
+            return mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !IsGotReserveOkSectionsFull();
+        }
+        private bool IsGotReserveOkSectionsFull()
+        {
+            //TODO: Reserve Length 從段數改成長度判斷
+            return queGotReserveOkSections.Count >= middlerConfig.ReserveLength;
+        }
+        public void ClearGotReserveOkSections()
+        {
+            queGotReserveOkSections = new ConcurrentQueue<MapSection>();
+        }
+        public void SetupAskingReserveSection(MapSection askingReserveSection)
+        {
+            this.askingReserveSection = askingReserveSection.DeepClone();
+        }
+        public MapSection GetAskingReserveSection()
+        {
+            return askingReserveSection.DeepClone();
+        }
+        public void SetupNeedReserveSections(MoveCmdInfo moveCmd)
+        {
+            queNeedReserveSections = new ConcurrentQueue<MapSection>(moveCmd.MovingSections.DeepClone());
+        }
+        public void SetupNeedReserveSections(List<MapSection> mapSections)
+        {
+            queNeedReserveSections = new ConcurrentQueue<MapSection>(mapSections.DeepClone());
+        }
+        public List<MapSection> GetNeedReserveSections()
+        {
+            return new List<MapSection>(queNeedReserveSections);
+        }
+        public List<MapSection> GetReserveOkSections()
+        {
+            return new List<MapSection>(queGotReserveOkSections);
+        }
+        public void DequeueGotReserveOkSections()
+        {
+            queGotReserveOkSections.TryDequeue(out MapSection passSection);
+        }
+        public MapSection GetPeekOfGotReserveOkSections()
+        {
+            queGotReserveOkSections.TryPeek(out MapSection result);
+            return result;
         }
 
         #endregion
@@ -308,7 +396,6 @@ namespace Mirle.Agv.Controller
                 return VhChargeStatus.ChargeStatusCharging;
             }
         }
-
         private VhStopSingle VhStopSingleParse(string v)
         {
             try
@@ -323,7 +410,6 @@ namespace Mirle.Agv.Controller
                 return VhStopSingle.StopSingleOff;
             }
         }
-
         private VHActionStatus VHActionStatusParse(string v)
         {
             try
@@ -338,7 +424,6 @@ namespace Mirle.Agv.Controller
                 return VHActionStatus.Commanding;
             }
         }
-
         private DriveDirction DriveDirctionParse(string v)
         {
             try
@@ -353,7 +438,6 @@ namespace Mirle.Agv.Controller
                 return DriveDirction.DriveDirForward;
             }
         }
-
         private EventType EventTypeParse(string v)
         {
             try
@@ -368,7 +452,6 @@ namespace Mirle.Agv.Controller
                 return EventType.AdrOrMoveArrivals;
             }
         }
-
         private CompleteStatus CompleteStatusParse(string v)
         {
             try
@@ -383,7 +466,6 @@ namespace Mirle.Agv.Controller
                 return CompleteStatus.CmpStatusAbort;
             }
         }
-
         private OperatingPowerMode OperatingPowerModeParse(string v)
         {
             try
@@ -398,7 +480,6 @@ namespace Mirle.Agv.Controller
                 return OperatingPowerMode.OperatingPowerOff;
             }
         }
-
         private OperatingVHMode OperatingVHModeParse(string v)
         {
             try
@@ -413,7 +494,6 @@ namespace Mirle.Agv.Controller
                 return OperatingVHMode.OperatingAuto;
             }
         }
-
         private PauseType PauseTypeParse(string v)
         {
             try
@@ -428,7 +508,6 @@ namespace Mirle.Agv.Controller
                 return PauseType.None;
             }
         }
-
         private PauseEvent PauseEventParse(string v)
         {
             try
@@ -443,7 +522,6 @@ namespace Mirle.Agv.Controller
                 return PauseEvent.Pause;
             }
         }
-
         private CMDCancelType CMDCancelTypeParse(string v)
         {
             try
@@ -458,7 +536,6 @@ namespace Mirle.Agv.Controller
                 return CMDCancelType.CmdAbout;
             }
         }
-
         private ReserveResult ReserveResultParse(string v)
         {
             try
@@ -473,7 +550,6 @@ namespace Mirle.Agv.Controller
                 return ReserveResult.Success;
             }
         }
-
         private PassType PassTypeParse(string v)
         {
             try
@@ -488,7 +564,6 @@ namespace Mirle.Agv.Controller
                 return PassType.Pass;
             }
         }
-
         private ErrorStatus ErrorStatusParse(string v)
         {
             try
@@ -503,7 +578,6 @@ namespace Mirle.Agv.Controller
                 return ErrorStatus.ErrReset;
             }
         }
-
         private ActiveType ActiveTypeParse(string v)
         {
             try
@@ -518,7 +592,6 @@ namespace Mirle.Agv.Controller
                 return ActiveType.Home;
             }
         }
-
         private ControlType ControlTypeParse(string v)
         {
             try
@@ -533,15 +606,20 @@ namespace Mirle.Agv.Controller
                 return ControlType.Nothing;
             }
         }
-
-        public void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string e)
+        private VhLoadCSTStatus VhLoadCSTStatusParse(bool loading)
         {
-            Send_Cmd144_StatusChangeReport();
+            if (loading)
+            {
+                return VhLoadCSTStatus.Exist;
+            }
+            else
+            {
+                return VhLoadCSTStatus.NotExist;
+            }
         }
-
         #endregion
 
-        public void SendMiddlerFormConfigCommand(int cmdNum, Dictionary<string, string> pairs)
+        public void SendMiddlerFormCommands(int cmdNum, Dictionary<string, string> pairs)
         {
             try
             {
@@ -1044,29 +1122,14 @@ namespace Mirle.Agv.Controller
             return v.Split(',');
         }
 
-        private void SendCommandWrapper(WrapperMessage wrapper)
-        {
-            string msg = $"[All Msg SEND] [{wrapper.ID}][SeqNum = {wrapper.SeqNum}] " + wrapper.ToString();
-            OnCmdSend?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
-
-            Task.Run(() => ClientAgent.TrxTcpIp.SendGoogleMsg(wrapper));
-        }
-
-        private void RecieveCmdShowOnCommunicationForm(object sender, TcpIpEventArgs e)
-        {
-            string msg = $"[All Msg RECEIVE] [PacketID = {e.iPacketID}][SeqNum = {e.iSeqNum}][Pt = {e.iPt}][ObjPacket = {e.objPacket}]";
-            OnCmdReceive?.Invoke(this, msg);
-            theLoggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
-        }
-
         public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort e)
         {
             Send_Cmd144_StatusChangeReport();
         }
-
+        public void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string e)
+        {
+            Send_Cmd144_StatusChangeReport();
+        }
 
         public void ReportAddressPass()
         {
@@ -1463,7 +1526,7 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                 wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
 
-                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_44_STATUS_CHANGE_RESPONSE receive, out string rtnMsg);
+                SendCommandWrapper(wrappers);
             }
             catch (Exception ex)
             {
@@ -1525,18 +1588,6 @@ namespace Mirle.Agv.Controller
 
         }
 
-        private VhLoadCSTStatus VhLoadCSTStatusParse(bool loading)
-        {
-            if (loading)
-            {
-                return VhLoadCSTStatus.Exist;
-            }
-            else
-            {
-                return VhLoadCSTStatus.NotExist;
-            }
-        }
-
         public void Receive_Cmd41_ModeChange(object sender, TcpIpEventArgs e)
         {
             ID_41_MODE_CHANGE_REQ receive = (ID_41_MODE_CHANGE_REQ)e.objPacket;
@@ -1565,35 +1616,7 @@ namespace Mirle.Agv.Controller
             {
                 var msg = ex.StackTrace;
             }
-        }
-        public void Send_Cmd141_ModeChangeResponse()
-        {
-            try
-            {
-                ID_141_MODE_CHANGE_RESPONSE iD_141_MODE_CHANGE_RESPONSE = new ID_141_MODE_CHANGE_RESPONSE();
-                iD_141_MODE_CHANGE_RESPONSE.ReplyCode = 0;
-
-                WrapperMessage wrappers = new WrapperMessage();
-                wrappers.ID = WrapperMessage.ModeChangeRespFieldNumber;
-                wrappers.ModeChangeResp = iD_141_MODE_CHANGE_RESPONSE;
-
-                SendCommandWrapper(wrappers);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-            }
-        }
-        public void Receive_Cmd141_ModeChange(object sender, TcpIpEventArgs e)
-        {
-            string msg = $"[Cmd_141_RECEIVE] [PacketID = {e.iPacketID}][SeqNum = {e.iSeqNum}][Pt = {e.iPt}][ObjPacket = {e.objPacket}]";
-            OnCmdReceive?.Invoke(this, msg);
-            theLoggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
-           
-           
-        }
-
+        }       
 
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
@@ -1654,7 +1677,8 @@ namespace Mirle.Agv.Controller
 
             int replyCode = result ? 0 : 1;
             Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode);
-        }
+        }       
+
         public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode)
         {
             try
@@ -1693,13 +1717,33 @@ namespace Mirle.Agv.Controller
 
             if (receive.IsReserveSuccess == ReserveResult.Success)
             {
-                OnGetReserveOkEvent?.Invoke(this, needReserveSection);
+                OnGetReserveOkEvent?.Invoke(this, askingReserveSection);
+
+                if (queNeedReserveSections.Count == 0)
+                {
+                    OnMessageShowEvent?.Invoke(this, $"Middler : queNeedReserveSections is Empty, [AskingReserveId = {askingReserveSection.Id}][Need Sections Count = {queNeedReserveSections.Count}]");
+                    return;
+                }
+
+                queNeedReserveSections.TryPeek(out MapSection needReserveSection);
+                if (needReserveSection.Id == askingReserveSection.Id)
+                {
+                    queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
+                    queGotReserveOkSections.Enqueue(aReserveOkSection);
+                    mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
+                    OnMessageShowEvent?.Invoke(this, $"Middler :GetReserveOk, [AskingReserveId = {askingReserveSection.Id}]");
+                }
+                else
+                {
+                    OnMessageShowEvent?.Invoke(this, $"Middler : Reserve ok ID unmatch, [AskingReserveId = {askingReserveSection.Id}][NeedReserveId = {needReserveSection.Id}]");
+                }
+
             }
 
-            if (receive.IsBlockPass == PassType.Pass)
-            {
-                OnGetBlockPassEvent?.Invoke(this, true);
-            }
+            //if (receive.IsBlockPass == PassType.Pass)
+            //{
+            //    OnGetBlockPassEvent?.Invoke(this, true);
+            //}
         }
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
@@ -1775,7 +1819,7 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
         }
-        public bool Send_Cmd136_AskReserve()
+        public void Send_Cmd136_AskReserve()
         {
             VehiclePosition vehLocation = theVehicle.AVehiclePosition;
 
@@ -1793,29 +1837,11 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                string msg = $"[SEND] [ID = {wrappers.ID}][SeqNum = {wrappers.SeqNum}] " + wrappers.ToString();
-                OnCmdSend?.Invoke(this, msg);
-                loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
-
-                ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE resultObj, out string resultMsg);
-
-                string msg2 = $"[Ask Reserve RECEIVE] [SeqNum = {wrappers.SeqNum}][IsBlockPass = {resultObj.IsBlockPass}][IsReserveSuccess = { resultObj.IsReserveSuccess}][ReplyCode = { resultObj.ReplyCode}][ResultMsg = {resultMsg}]";
-                OnCmdReceive?.Invoke(this, msg2);
-                loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg2));
-                if (resultObj.IsReserveSuccess == ReserveResult.Success)
-                {
-                    return true;
-                }
-
-                return false;
-
+                SendCommandWrapper(wrappers);
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
-                return false;
             }
         }
         private void FitReserveInfos(RepeatedField<ReserveInfo> reserveInfos)
@@ -1823,12 +1849,12 @@ namespace Mirle.Agv.Controller
             reserveInfos.Clear();
 
             ReserveInfo reserveInfo = new ReserveInfo();
-            reserveInfo.ReserveSectionID = needReserveSection.Id;
-            if (needReserveSection.CmdDirection == EnumPermitDirection.Backward)
+            reserveInfo.ReserveSectionID = askingReserveSection.Id;
+            if (askingReserveSection.CmdDirection == EnumPermitDirection.Backward)
             {
                 reserveInfo.DriveDirction = DriveDirction.DriveDirReverse;
             }
-            else if (needReserveSection.CmdDirection == EnumPermitDirection.None)
+            else if (askingReserveSection.CmdDirection == EnumPermitDirection.None)
             {
                 reserveInfo.DriveDirction = DriveDirction.DriveDirNone;
             }
@@ -2007,8 +2033,6 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
         }
-        #endregion
-
         private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
         {
             //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd 
@@ -2037,38 +2061,9 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void OnMapBarcodeValuesChangedEvent(object sender, MapBarcodeReader mapBarcodeValues)
-        {
-            //vehLocation.SetMapBarcodeValues(mapBarcodeValues);
-            //TODO: Make a Position change report from mapBarcode and send to AGVC
-        }
+        #endregion
 
-        public void OnTransCmdsFinishedEvent(object sender, EnumCompleteStatus status)
-        {
-            //Send Transfer Command Complete Report to Agvc
-            theVehicle.CompleteStatus = (CompleteStatus)(int)status;
-            Send_Cmd132_TransferCompleteReport();
-        }
 
-        public static Google.Protobuf.IMessage unPackWrapperMsg(byte[] raw_data)
-        {
-            WrapperMessage WarpperMsg = ToObject<WrapperMessage>(raw_data);
-            return WarpperMsg;
-        }
-
-        public static T ToObject<T>(byte[] buf) where T : Google.Protobuf.IMessage<T>, new()
-        {
-            if (buf == null)
-                return default(T);
-
-            Google.Protobuf.MessageParser<T> parser = new Google.Protobuf.MessageParser<T>(() => new T());
-            return parser.ParseFrom(buf);
-        }
-
-        public MiddlerConfig GetMiddlerConfig()
-        {
-            return middlerConfig;
-        }
 
     }
 

@@ -34,9 +34,6 @@ namespace Mirle.Agv.Controller
         private List<TransferStep> transferSteps = new List<TransferStep>();
         private List<TransferStep> lastTransferSteps = new List<TransferStep>();
 
-        private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
-        private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
-
         public bool GoNextTransferStep { get; set; }
         public int TransferStepsIndex { get; set; }
         public bool IsReportingPosition { get; set; }
@@ -44,7 +41,7 @@ namespace Mirle.Agv.Controller
         private ITransferStatus transferStatus;
         private AgvcTransCmd agvcTransCmd;
         private AgvcTransCmd lastAgvcTransCmd;
-        public MapSection TrackingSection { get; set; } = new MapSection();
+        public MapSection SectionHasFoundPosition { get; set; } = new MapSection();
         public long DoTransferTimeout { get; private set; } = 99999999;
         public long SetupReserveTimeout { get; private set; } = 99999999;
         public long DoTransferLoopTimeout { get; private set; } = 99999999;
@@ -76,10 +73,14 @@ namespace Mirle.Agv.Controller
         private Thread thdVisitTransCmds;
         private ManualResetEvent visitTransCmdsShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent visitTransCmdsPauseEvent = new ManualResetEvent(true);
+        public EnumThreadStatus VisitTransCmdsStatus { get; private set; } = new EnumThreadStatus();
+        public EnumThreadStatus PreVisitTransCmdsStatus { get; private set; } = new EnumThreadStatus();
 
         private Thread thdTrackingPosition;
         private ManualResetEvent trackingPositionShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent trackingPositionPauseEvent = new ManualResetEvent(true);
+        public EnumThreadStatus TrackingPositionStatus { get; private set; } = new EnumThreadStatus();
+        public EnumThreadStatus PreTrackingPositionStatus { get; private set; } = new EnumThreadStatus();
         #endregion
 
         #region Events
@@ -240,7 +241,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
         private void LoggersInitial()
         {
             try
@@ -266,7 +266,7 @@ namespace Mirle.Agv.Controller
                 moveControlHandler = new MoveControlHandler("", theMapInfo);
                 alarmHandler = new AlarmHandler(alarmConfig);
 
-                middleAgent = new MiddleAgent(middlerConfig, alarmHandler, loggerAgent);
+                middleAgent = new MiddleAgent(this);
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
                 plcAgent = new PlcAgent(mcProtocol, alarmHandler);
@@ -312,7 +312,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.OnTransferAbortEvent += OnMiddlerGetsAbortEvent;
 
                 //來自MiddleAgent的取得Reserve/BlockZone訊息，通知MainFlow(this)
-                middleAgent.OnGetReserveOkEvent += MiddleAgent_OnGetReserveOkEvent;
                 middleAgent.OnGetBlockPassEvent += MiddleAgent_OnGetBlockPassEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
@@ -523,8 +522,6 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-
-
         public void SetTestTransferCmd()
         {
             transferSteps = new List<TransferStep>();
@@ -676,17 +673,7 @@ namespace Mirle.Agv.Controller
 
             LoadCmdInfo loadCmd = GetLoadCmdInfo(agvcTransCmd);
             transferSteps.Add(loadCmd);
-        }
-
-        public void AddNeedReserveSections(MapSection mapSection)
-        {
-            if (queNeedReserveSections == null)
-            {
-                queNeedReserveSections = new ConcurrentQueue<MapSection>();
-            }
-
-            queNeedReserveSections.Enqueue(mapSection);
-        }
+        }        
 
         private MoveCmdInfo GetMoveToUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
@@ -818,46 +805,27 @@ namespace Mirle.Agv.Controller
                     }
                     #endregion
 
+                    VisitTransCmdsStatus = EnumThreadStatus.Working;
                     sw.Start();
 
                     if (GoNextTransferStep)
                     {
                         GoNextTransferStep = false;
                         DoTransfer();
-                    }
-
-                    if (CanAskNextReserveSection())
-                    {
-                        queNeedReserveSections.TryPeek(out MapSection needReserveSection);
-                        if (middleAgent.GetNeedReserveSectionId() != needReserveSection.Id)
-                        {
-                            middleAgent.SetupNeedReserveSection(needReserveSection);
-                            middleAgent.RestartAskingReserve();
-
-                            OnMessageShowEvent?.Invoke(this, $"MainFlow : Visit TransCmds : [Middler.NeedReserveId.New = {needReserveSection.Id}]");
-                        }
-                    }
-                    else
-                    {
-                        if (!middleAgent.IsPauseAskReserve)
-                        {
-                            middleAgent.PauseAskingReserve();
-                            OnMessageShowEvent?.Invoke(this, $"MainFlow : Visit TransCmds : [PauseAskingReserve]");
-                        }
-                    }
+                    }                                       
 
                     sw.Stop();
                     total += sw.ElapsedMilliseconds;
 
                     sw.Reset();
-                    SpinWait.SpinUntil(() => false, mainFlowConfig.DoTransCmdsInterval);
-
                 }
                 catch (Exception ex)
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , ex.StackTrace));
-
+                }
+                finally
+                {
                     SpinWait.SpinUntil(() => false, mainFlowConfig.DoTransCmdsInterval);
                 }
             }
@@ -865,13 +833,11 @@ namespace Mirle.Agv.Controller
             //OnTransCmdsFinishedEvent(this, EnumCompleteStatus.TransferComplete);
             AfterVisitTransCmds();
         }
-
         public void RestartVisitTransCmds()
         {
             StopVisitTransCmds();
             StartVisitTransCmds();
         }
-
         public void StartVisitTransCmds()
         {
             visitTransCmdsPauseEvent.Set();
@@ -879,36 +845,45 @@ namespace Mirle.Agv.Controller
             thdVisitTransCmds = new Thread(VisitTransCmds);
             thdVisitTransCmds.IsBackground = true;
             thdVisitTransCmds.Start();
+            VisitTransCmdsStatus = EnumThreadStatus.Start;
             OnMessageShowEvent?.Invoke(this, $"MainFlow : Start Visit TransCmds, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]");
         }
-
         public void PauseVisitTransCmds()
         {
             visitTransCmdsPauseEvent.Reset();
-            SetTransCmdsStep(new Idle());
+            PreVisitTransCmdsStatus = VisitTransCmdsStatus;
+            VisitTransCmdsStatus = EnumThreadStatus.Pause;
             OnMessageShowEvent?.Invoke(this, $"MainFlow : Pause Visit TransCmds, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]");
         }
-
         public void ResumeVisitTransCmds()
         {
             visitTransCmdsPauseEvent.Set();
+            var tempStatus = VisitTransCmdsStatus;
+            VisitTransCmdsStatus = PreVisitTransCmdsStatus;
+            PreVisitTransCmdsStatus = tempStatus;
             OnMessageShowEvent?.Invoke(this, $"MainFlow : Resume Visit TransCmds, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]");
         }
-
         public void StopVisitTransCmds()
         {
+            VisitTransCmdsStatus = EnumThreadStatus.Stop;
+            OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Visit TransCmds, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]");
+
             visitTransCmdsShutdownEvent.Set();
             visitTransCmdsPauseEvent.Set();
-
             theVehicle.SetVehicleStop();
             if (thdVisitTransCmds != null && thdVisitTransCmds.IsAlive)
             {
                 thdVisitTransCmds.Join();
             }
 
-            OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Visit TransCmds, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]");
         }
-
+        private void PreVisitTransCmds()
+        {
+            TransferStepsIndex = 0;
+            GoNextTransferStep = true;
+            theVehicle.ActionStatus = VHActionStatus.Commanding;
+            middleAgent.Send_Cmd144_StatusChangeReport();
+        }
         private void AfterVisitTransCmds()
         {
             lastAgvcTransCmd = agvcTransCmd;
@@ -919,16 +894,7 @@ namespace Mirle.Agv.Controller
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
             theVehicle.ActionStatus = VHActionStatus.NoCommand;
-            middleAgent.Send_Cmd144_StatusChangeReport();
-        }
-
-        private void PreVisitTransCmds()
-        {
-            TransferStepsIndex = 0;
-            GoNextTransferStep = true;
-            visitTransCmdsPauseEvent.Set();
-            visitTransCmdsShutdownEvent.Reset();
-            theVehicle.ActionStatus = VHActionStatus.Commanding;
+            VisitTransCmdsStatus = EnumThreadStatus.None;
             middleAgent.Send_Cmd144_StatusChangeReport();
         }
 
@@ -955,7 +921,6 @@ namespace Mirle.Agv.Controller
 
             return result;
         }
-
         private bool CanVehLoad()
         {
             // 判斷當前是否可卸貨 若否 則發送報告
@@ -979,29 +944,22 @@ namespace Mirle.Agv.Controller
 
             return result;
         }
-
-        private bool CanVehMove()
+        public bool CanVehMove()
         {
             //battery/emo/beam/etc/reserve
             // 判斷當前是否可移動 若否 則發送報告
-            var result = theVehicle.GetPlcVehicle().Robot.ForkHome;
-            var msg = $"MainFlow : CanVehMove, [RobotHome={theVehicle.GetPlcVehicle().Robot.ForkHome}]";
-            //OnMessageShowEvent?.Invoke(this, msg);
+            var plcVeh = theVehicle.GetPlcVehicle();
+            var result = plcVeh.Robot.ForkHome && !plcVeh.Batterys.Charging;
 
-            if (result)
+            if (!result)
             {
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                  , msg));
-            }
-            else
-            {
+                var msg = $"MainFlow : CanVehMove, [RobotHome={plcVeh.Robot.ForkHome}][Charging={plcVeh.Batterys.Charging}]";
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 , msg));
             }
 
             return result;
         }
-
         private bool CanCassetteIdRead()
         {
             var plcVeh = theVehicle.GetPlcVehicle();
@@ -1045,7 +1003,7 @@ namespace Mirle.Agv.Controller
                     }
 
                     #endregion
-
+                    TrackingPositionStatus = EnumThreadStatus.Working;
                     var position = theVehicle.AVehiclePosition.RealPosition;
                     if (transferSteps.Count > 0)
                     {
@@ -1067,10 +1025,11 @@ namespace Mirle.Agv.Controller
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , ex.StackTrace));
+                }
+                finally
+                {
                     SpinWait.SpinUntil(() => false, mainFlowConfig.TrackingPositionInterval);
                 }
-
-                SpinWait.SpinUntil(() => false, mainFlowConfig.TrackingPositionInterval);
 
                 sw.Stop();
                 if (sw.ElapsedMilliseconds > mainFlowConfig.ReportPositionInterval)
@@ -1081,66 +1040,44 @@ namespace Mirle.Agv.Controller
             }
 
         }
-
         public void StartTrackingPosition()
         {
             trackingPositionPauseEvent.Set();
             trackingPositionShutdownEvent.Reset();
             thdTrackingPosition = new Thread(TrackingPosition);
             thdTrackingPosition.IsBackground = true;
-
             thdTrackingPosition.Start();
+            TrackingPositionStatus = EnumThreadStatus.Start;
+            OnMessageShowEvent?.Invoke(this, $"MainFlow : Start Tracking Position, [TrackingPositionStatus={TrackingPositionStatus}][PreTrackingPositionStatus={PreTrackingPositionStatus}]");
         }
-
         public void PauseTrackingPosition()
         {
             trackingPositionPauseEvent.Reset();
+            PreTrackingPositionStatus = TrackingPositionStatus;
+            TrackingPositionStatus = EnumThreadStatus.Pause;
+            OnMessageShowEvent?.Invoke(this, $"MainFlow : Pause Tracking Position, [TrackingPositionStatus={TrackingPositionStatus}][PreTrackingPositionStatus={PreTrackingPositionStatus}]");
         }
-
         public void ResumeTrackingPosition()
         {
             trackingPositionPauseEvent.Set();
+            var tempStatus = TrackingPositionStatus;
+            TrackingPositionStatus = PreTrackingPositionStatus;
+            PreTrackingPositionStatus = tempStatus;
+            OnMessageShowEvent?.Invoke(this, $"MainFlow : Resume Tracking Position, [TrackingPositionStatus={TrackingPositionStatus}][PreTrackingPositionStatus={PreTrackingPositionStatus}]");
         }
-
         public void StopTrackingPosition()
         {
             trackingPositionShutdownEvent.Set();
             trackingPositionPauseEvent.Set();
+            TrackingPositionStatus = EnumThreadStatus.Stop;
 
             if (thdTrackingPosition.IsAlive)
             {
                 thdTrackingPosition.Join();
             }
-        }
+            TrackingPositionStatus = EnumThreadStatus.None;
 
-        private void MiddleAgent_OnGetReserveOkEvent(object sender, MapSection reserveOkSection)
-        {
-            if (queNeedReserveSections.Count == 0)
-            {
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : queNeedReserveSections is Empty, [OK ID = {reserveOkSection.Id}][Need Sections Count = {queNeedReserveSections.Count}]");
-                return;
-            }
-
-            //queNeedReserveSections.TryPeek(out MapSection needReserveSection);
-            //if (needReserveSection.Id == reserveOkSection.Id)
-            //{
-            //    queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
-            //    queGotReserveOkSections.Enqueue(aReserveOkSection);
-            //    middleAgent.SetupNeedReserveSection(new MapSection());
-            //    PublishReserveOkEvent();
-            //    OnMessageShowEvent?.Invoke(this, $"MainFlow :GetReserveOk, [OK ID = {reserveOkSection.Id}]");
-            //}
-            //else
-            //{
-            //    OnMessageShowEvent?.Invoke(this, $"MainFlow : Reserve ok ID unmatch, [OK ID = {reserveOkSection.Id}][Need ID = {needReserveSection.Id}]");
-            //}
-
-            queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
-            queGotReserveOkSections.Enqueue(aReserveOkSection);
-            middleAgent.SetupNeedReserveSection(new MapSection());
-            PublishReserveOkEvent();
-            OnMessageShowEvent?.Invoke(this, $"MainFlow :GetReserveOk, [OK ID = {reserveOkSection.Id}]");
-
+            OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Tracking Position, [TrackingPositionStatus={TrackingPositionStatus}][PreTrackingPositionStatus={PreTrackingPositionStatus}]");
         }
 
         public void MiddleAgent_StartAskingReserve()
@@ -1148,89 +1085,36 @@ namespace Mirle.Agv.Controller
             middleAgent.StartAskingReserve();
         }
 
-        private void PublishReserveOkEvent()
-        {
-            //if (gotReserveOkSections.Count < 1)
-            //{
-            //    return;
-            //}
-            //List<MapPosition> reserveOkPositions = new List<MapPosition>();
-            //for (int i = 0; i < gotReserveOkSections.Count; i++)
-            //{
-            //    MapSection mapSection = gotReserveOkSections[i];
-            //    MapAddress mapAddress = new MapAddress();
-            //    if (mapSection.CmdDirection == EnumPermitDirection.Backward)
-            //    {
-            //        mapAddress = mapSection.TailAddress.DeepClone();
-            //    }
-            //    else
-            //    {
-            //        mapAddress = mapSection.HeadAddress.DeepClone();
-            //    }
-            //    MapPosition mapPosition = new MapPosition(mapAddress.Position.X, mapAddress.Position.Y);
-            //    reserveOkPositions.Add(mapPosition);
-            //}
+        public void UpdateMoveControlReserveOkPositions(MapSection aReserveOkSection)
+        {            
+            MapPosition pos = aReserveOkSection.CmdDirection == EnumPermitDirection.Forward
+                ? aReserveOkSection.TailAddress.Position.DeepClone()
+                : aReserveOkSection.HeadAddress.Position.DeepClone();
 
-            //OnReserveOkEvent?.Invoke(this, reserveOkPositions);
-
-            if (queGotReserveOkSections.Count < 1)
-            {
-                return;
-            }
-            List<MapPosition> reserveOkPositions = new List<MapPosition>();
-            List<MapSection> reserveOkSections = queGotReserveOkSections.ToList();
-            for (int i = 0; i < reserveOkSections.Count; i++)
-            {
-                MapSection mapSection = reserveOkSections[i];
-                MapAddress mapAddress = new MapAddress();
-                if (mapSection.CmdDirection == EnumPermitDirection.Backward)
-                {
-                    mapAddress = mapSection.TailAddress.DeepClone();
-                }
-                else
-                {
-                    mapAddress = mapSection.HeadAddress.DeepClone();
-                }
-                MapPosition mapPosition = new MapPosition(mapAddress.Position.X, mapAddress.Position.Y);
-                reserveOkPositions.Add(mapPosition);
-            }
-
-            OnReserveOkEvent?.Invoke(this, reserveOkPositions);
-
+            bool updateResult = moveControlHandler.AddReservedMapPosition(pos);
+            OnMessageShowEvent?.Invoke(this, $"MainFlow :Update MoveControl ReserveOk Position, [UpdateResult={updateResult}][Pos={pos}]");            
         }
 
-        private bool CanAskNextReserveSection()
-        {
-            return IsMoveStep() && CanVehMove() && !IsGotReserveOkSectionsFull() && IsQueNeedReserveSectionsNotEmpty();
-        }
-
-        private bool IsQueGotReserveOkSectionsFull()
-        {
-            return queGotReserveOkSections.Count >= mainFlowConfig.ReserveLength;
-        }
-
-        private bool IsGotReserveOkSectionsFull()
-        {
-            return queGotReserveOkSections.Count >= mainFlowConfig.ReserveLength;
-        }
-
-        private bool IsMoveStep()
+        public bool IsMoveStep()
         {
             return GetCurrentEnumTransferCommandType() == EnumTransferCommandType.Move;
         }
-
-        private bool IsQueNeedReserveSectionsNotEmpty()
+        public void SetupTestMoveCmd(List<MapSection> mapSections)
         {
-            return !queNeedReserveSections.IsEmpty;
-        }
+            transferSteps = new List<TransferStep>();
+            MoveCmdInfo moveCmd = new MoveCmdInfo();
+            moveCmd.MovingSections = mapSections.DeepClone();
+            transferSteps.Add(moveCmd);
+            transferSteps.Add(new EmptyTransCmd());
+            TransferStepsIndex = 0;
+        }       
 
         public void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete status)
         {
             try
             {
                 middleAgent.StopAskingReserve();
-                queGotReserveOkSections = new ConcurrentQueue<MapSection>();
-                queNeedReserveSections = new ConcurrentQueue<MapSection>();
+                middleAgent.ClearGotReserveOkSections();
                 theVehicle.AVehiclePosition.PredictVehicleAngle = (int)theVehicle.AVehiclePosition.VehicleAngle;
 
                 if (status == EnumMoveComplete.Fail)
@@ -1242,7 +1126,7 @@ namespace Mirle.Agv.Controller
                     return;
                 }
 
-                StartCharge();
+                //StartCharge();
 
                 if (transferSteps.Count > 0)
                 {
@@ -1498,6 +1382,10 @@ namespace Mirle.Agv.Controller
         {
             return middleAgent;
         }
+        public MiddlerConfig GetMiddlerConfig()
+        {
+            return middlerConfig;
+        }
 
         public MapHandler GetMapHandler()
         {
@@ -1530,83 +1418,61 @@ namespace Mirle.Agv.Controller
             msg += "]";
             OnMessageShowEvent?.Invoke(this, msg);
 
-            moveControlHandler.TransferMove(moveCmd);
+            if (moveControlHandler.TransferMove(moveCmd))
+            {
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : Call Move Control Work, [TransferMove = true]");
+            }
+            else
+            {
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : Call Move Control Work, [TransferMove = false]");
+            }
         }
 
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
-            SetupNeedReserveSections(moveCmd);
-        }
-
-        private void SetupNeedReserveSections(MoveCmdInfo moveCmd)
-        {
-            queNeedReserveSections = new ConcurrentQueue<MapSection>();
-            for (int i = 0; i < moveCmd.MovingSections.Count; i++)
-            {
-                MapSection section = moveCmd.MovingSections[i].DeepClone();
-                queNeedReserveSections.Enqueue(section);
-            }
-        }
+            middleAgent.StopAskingReserve();
+            middleAgent.SetupNeedReserveSections(moveCmd);
+            middleAgent.StartAskingReserve();
+            //SetupNeedReserveSections(moveCmd);
+        }        
 
         private void MoveCmdInfoUpdatePosition(MoveCmdInfo curTransCmd, MapPosition gxPosition)
         {
             List<MapSection> movingSections = curTransCmd.MovingSections;
             int searchingSectionIndex = curTransCmd.MovingSectionsIndex;
-            Stopwatch sw1 = new Stopwatch();
-            Stopwatch sw2 = new Stopwatch();
-            long total = 0;
 
             while (searchingSectionIndex < movingSections.Count)
             {
-                sw1.Start();
-                if (mapHandler.IsPositionInThisSection(gxPosition, movingSections[searchingSectionIndex]))
+                try
                 {
-                    TrackingSection = movingSections[searchingSectionIndex];
-
-                    //Middler send vehicle location to agvc
-                    //middleAgent.Send_Cmd134_TransferEventReport();
-                    while (searchingSectionIndex > curTransCmd.MovingSectionsIndex)
+                    if (mapHandler.IsPositionInThisSection(gxPosition, movingSections[searchingSectionIndex]))
                     {
-                        sw2.Start();
-                        var peek = queGotReserveOkSections.TryPeek(out MapSection mapSection);
-                        var curSection = movingSections[curTransCmd.MovingSectionsIndex];
-                        if (mapSection.Id == curSection.Id)
-                        {
-                            //Remove passed section in ReserveOkSection
-                            queGotReserveOkSections.TryDequeue(out MapSection passSection);
-                        }
-                        else
-                        {
-                            //TODO : SetAlarm : reserveOkSection and curSection unmatch
-                        }
-                        curTransCmd.MovingSectionsIndex++;
-                        sw2.Stop();
-                        //if (sw2.ElapsedMilliseconds > SetupReserveTimeout)
-                        //{
-                        //    //Alarm
-                        //    break;
-                        //}
-                        sw2.Reset();
-                        SpinWait.SpinUntil(() => false, 1);
-                    }
-                    break;
-                }
+                        //Middler send vehicle location to agvc
+                        //middleAgent.Send_Cmd134_TransferEventReport();
+                        SectionHasFoundPosition = movingSections[searchingSectionIndex];
 
-                sw1.Stop();
-                total += sw1.ElapsedMilliseconds;
-                //if (sw1.ElapsedMilliseconds > SearchSectionTimeout)
-                //{
-                //    //Alarm
-                //    break;
-                //}
-                //if (total > SearchSectionLoopTimeout)
-                //{
-                //    //Alarm
-                //    break;
-                //}
-                searchingSectionIndex++;
-                sw1.Reset();
-                SpinWait.SpinUntil(() => false, 1);
+                        curTransCmd.MovingSectionsIndex = searchingSectionIndex;
+
+                        UpdateMiddlerGotReserveOkSections(SectionHasFoundPosition.Id);
+
+                        UpdatePlcVehicleBeamSensor(SectionHasFoundPosition);
+
+                        break;
+                    }
+                    else
+                    {
+                        searchingSectionIndex++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                      , ex.StackTrace));
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, 1);
+                }
             }
 
             if (searchingSectionIndex == movingSections.Count)
@@ -1614,7 +1480,27 @@ namespace Mirle.Agv.Controller
                 //gxPosition is not in curTransCmd.MovingSections
                 //TODO: PublishAlarm and log
             }
+        }
 
+        private void UpdatePlcVehicleBeamSensor(MapSection mapSection)
+        {
+            var plcVeh = theVehicle.GetPlcVehicle();
+            plcVeh.FrontBeamSensorDisable = mapSection.FowardBeamSensorDisable;
+            plcVeh.BackBeamSensorDisable = mapSection.BackwardBeamSensorDisable;
+            plcVeh.LeftBeamSensorDisable = mapSection.LeftBeamSensorDisable;
+            plcVeh.RightBeamSensorDisable = mapSection.RightBeamSensorDisable;
+        }
+
+        private void UpdateMiddlerGotReserveOkSections(string id)
+        {
+            var getReserveOkSections = middleAgent.GetReserveOkSections();
+            int getReserveOkSectionIndex = getReserveOkSections.FindIndex(x => x.Id == id);
+            if (getReserveOkSectionIndex < 0) return;
+            for (int i = 0; i < getReserveOkSectionIndex; i++)
+            {
+                //Remove passed section in ReserveOkSection
+                middleAgent.DequeueGotReserveOkSections();
+            }
         }
 
         private void MoveCmdInfoUpdatePosition(MapPosition gxPosition)
@@ -1628,7 +1514,7 @@ namespace Mirle.Agv.Controller
                 mapSection.CmdDirection = EnumPermitDirection.Forward;
                 if (mapHandler.IsPositionInThisSection(gxPosition, mapSection))
                 {
-                    TrackingSection = theVehicle.AVehiclePosition.LastSection;
+                    SectionHasFoundPosition = theVehicle.AVehiclePosition.LastSection;
                     isInMap = true;
                     if (mapSection.Type == EnumSectionType.Horizontal)
                     {
@@ -1661,17 +1547,7 @@ namespace Mirle.Agv.Controller
             {
                 return null;
             }
-        }
-
-        public List<MapSection> GetNeedReserveSections()
-        {
-            return queNeedReserveSections.ToList().DeepClone();
-        }
-
-        public List<MapSection> GetReserveOkSections()
-        {
-            return queGotReserveOkSections.ToList().DeepClone();
-        }
+        }       
 
         public MCProtocol GetMcProtocol()
         {
@@ -1738,18 +1614,34 @@ namespace Mirle.Agv.Controller
             var isStopChargeOk = true;
             plcAgent.ChargeStopCommand();
             Stopwatch sw = new Stopwatch();
+            sw.Start();
             while (theVehicle.GetPlcVehicle().Batterys.Charging)
             {
-                sw.Start();
-                SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeInterval);
-                sw.Stop();
-                if (sw.ElapsedMilliseconds > StopChargeTimeout)
+                try
                 {
-                    //Alarm
-                    isStopChargeOk = false;
-                    break;
+                    sw.Stop();
+                    if (sw.ElapsedMilliseconds > StopChargeTimeout)
+                    {
+                        //Alarm
+                        isStopChargeOk = false;
+                        break;
+                    }
+                    else
+                    {
+                        sw.Start();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                      , ex.StackTrace));
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeInterval);
                 }
             }
+            sw.Stop();
 
             theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
             middleAgent.Send_Cmd144_StatusChangeReport();
@@ -1767,12 +1659,11 @@ namespace Mirle.Agv.Controller
             StopVehicle();
             StopVisitTransCmds();
             middleAgent.StopAskingReserve();
+            middleAgent.ClearGotReserveOkSections();
             this.agvcTransCmd = null;
             lastTransferSteps = transferSteps;
             transferSteps = new List<TransferStep>();
             TransferStepsIndex = 0;
-            queNeedReserveSections = new ConcurrentQueue<MapSection>();
-            queGotReserveOkSections = new ConcurrentQueue<MapSection>();
         }
 
         public EnumTransferCommandType GetCurrentEnumTransferCommandType()
@@ -1806,16 +1697,6 @@ namespace Mirle.Agv.Controller
         {
             moveControlHandler.StopFlagOn();
             //Should I clean transfer cmd and stop asking reserve?
-        }
-
-        public bool IsVisitTransCmdsAlive()
-        {
-            return (thdVisitTransCmds != null) && (thdVisitTransCmds.IsAlive);
-        }
-
-        public bool IsTrackingPositionAlive()
-        {
-            return (thdTrackingPosition != null) && (thdTrackingPosition.IsAlive);
         }
     }
 }

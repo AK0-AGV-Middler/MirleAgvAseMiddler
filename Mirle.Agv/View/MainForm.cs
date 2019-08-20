@@ -43,7 +43,7 @@ namespace Mirle.Agv.View
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
         private bool IsAskingReserve { get; set; }
-
+        private string lastAskingReserveSectionId { get; set; } = "Empty";
 
         #region MouseDownCalculus
 
@@ -577,10 +577,14 @@ namespace Mirle.Agv.View
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
             ucSoc.TagValue = Vehicle.Instance.GetPlcVehicle().Batterys.Percentage.ToString("F2");
-            lbxAskReserveSection.Items.Clear();
-            lbxAskReserveSection.Items.Add(middleAgent.GetNeedReserveSectionId());
-            UpdateListBoxSections(lbxNeedReserveSections, mainFlowHandler.GetNeedReserveSections());
-            UpdateListBoxSections(lbxReserveOkSections, mainFlowHandler.GetReserveOkSections());
+            if (middleAgent.GetAskingReserveSection().Id != lastAskingReserveSectionId)
+            {
+                lastAskingReserveSectionId = middleAgent.GetAskingReserveSection().Id;
+                lbxAskReserveSection.Items.Clear();
+                lbxAskReserveSection.Items.Add(lastAskingReserveSectionId);
+            }            
+            UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
+            UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
 
             UpdateAutoManual();
             UpdateVehLocationAndLoading();
@@ -590,11 +594,28 @@ namespace Mirle.Agv.View
 
         private void UpdateThreadPicture()
         {
-            picVisitTransferCmd.BackColor = mainFlowHandler.IsVisitTransCmdsAlive() ? Color.Green : Color.Red;
-            picTrackingPosition.BackColor = mainFlowHandler.IsTrackingPositionAlive() ? Color.Green : Color.Red;
-            picAskReserve.BackColor = middleAgent.IsAskReserveAlive() ? Color.Green : Color.Red;            
+            picVisitTransferCmd.BackColor = GetThreadStatusColor(mainFlowHandler.VisitTransCmdsStatus);
+            picTrackingPosition.BackColor = GetThreadStatusColor(mainFlowHandler.TrackingPositionStatus);
+            picAskReserve.BackColor = GetThreadStatusColor(middleAgent.AskReserveStatus);
         }
+        private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
+        {
+            switch (threadStatus)
+            {
 
+                case EnumThreadStatus.Start:
+                    return Color.GreenYellow;
+                case EnumThreadStatus.Pause:
+                    return Color.Orange;
+                case EnumThreadStatus.Working:
+                    return Color.Green;
+                case EnumThreadStatus.Stop:
+                    return Color.Red;
+                case EnumThreadStatus.None:
+                default:
+                    return Color.Black;
+            }
+        }
         private void UpdateAutoManual()
         {
             switch (Vehicle.Instance.AutoState)
@@ -610,7 +631,6 @@ namespace Mirle.Agv.View
 
             btnAutoManual.Text = Vehicle.Instance.AutoState.ToString();
         }
-
         private void DrawReserveSections()
         {
             var transferStepCount = mainFlowHandler.GetTransferStepCount();
@@ -625,14 +645,14 @@ namespace Mirle.Agv.View
                 return;
             }
 
-            var needReserveSections = mainFlowHandler.GetNeedReserveSections();           
+            var needReserveSections = middleAgent.GetNeedReserveSections();
             UpdateListBoxSections(lbxNeedReserveSections, needReserveSections);
             foreach (var section in needReserveSections)
             {
                 allUcSectionImages[section.Id].DrawSectionImage(allPens["YellowGreen2"]);
             }
 
-            var reserveOkSections = mainFlowHandler.GetReserveOkSections();
+            var reserveOkSections = middleAgent.GetReserveOkSections();
             UpdateListBoxSections(lbxReserveOkSections, reserveOkSections);
             foreach (var section in reserveOkSections)
             {
@@ -640,7 +660,6 @@ namespace Mirle.Agv.View
             }
 
         }
-
         private void UpdateVehLocationAndLoading()
         {
             var location = mainFlowHandler.theVehicle.AVehiclePosition;
@@ -666,13 +685,11 @@ namespace Mirle.Agv.View
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
         }
-
         private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
         {
             double value = performanceCounter.NextValue();
             ucLabelTextBox.TagValue = string.Format("{0:0.0}%", value);
         }
-
         private void UpdateListBoxSections(ListBox aListBox, List<MapSection> aListOfSections)
         {
             aListBox.Items.Clear();
@@ -687,7 +704,9 @@ namespace Mirle.Agv.View
 
         private void btnSetPosition_Click_1(object sender, EventArgs e)
         {
-            Vehicle.Instance.AVehiclePosition.RealPosition = new MapPosition((double)numPositionX.Value, (double)numPositionY.Value);
+            var posX = (int)numPositionX.Value;
+            var posY = (int)numPositionY.Value;
+            Vehicle.Instance.AVehiclePosition.RealPosition = new MapPosition(posX, posY);
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
@@ -837,13 +856,13 @@ namespace Mirle.Agv.View
         }
 
         private void btnAutoManual_Click(object sender, EventArgs e)
-        {           
+        {
             switch (Vehicle.Instance.AutoState)
             {
                 case EnumAutoState.Manual:
                     Vehicle.Instance.AutoState = EnumAutoState.Auto;
                     break;
-                case EnumAutoState.Auto:                   
+                case EnumAutoState.Auto:
                 default:
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
@@ -858,21 +877,30 @@ namespace Mirle.Agv.View
         private void btnTestSomething_Click(object sender, EventArgs e)
         {
             //MapSection mapSection = theMapInfo.allMapSections["sec003"];
-            //middleAgent.SetupNeedReserveSection(mapSection);
+            //middleAgent.SetupAskingReserveSection(mapSection);
+
             //middleAgent.Send_Cmd136_AskReserve();
 
             //middleAgent.Send_Cmd141_ModeChangeResponse();
+
+
+            List<MapSection> mapSections = new List<MapSection>();
             MapSection mapSection;
             mapSection = theMapInfo.allMapSections["sec001"];
-            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSections.Add(mapSection);
             mapSection = theMapInfo.allMapSections["sec002"];
-            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSections.Add(mapSection);
             mapSection = theMapInfo.allMapSections["sec003"];
-            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSections.Add(mapSection);
             mapSection = theMapInfo.allMapSections["sec004"];
-            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSections.Add(mapSection);
             mapSection = theMapInfo.allMapSections["sec005"];
-            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSections.Add(mapSection);
+
+            mainFlowHandler.SetupTestMoveCmd(mapSections);
+            middleAgent.StopAskingReserve();
+            middleAgent.SetupNeedReserveSections(mapSections);
+            middleAgent.StartAskingReserve();
 
         }
     }

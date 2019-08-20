@@ -18,9 +18,9 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
             {
                 case EnumTransferCommandType.Move:
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
-                    mainFlowHandler.StopCharge();
-                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
+                    mainFlowHandler.StopCharge();                    
                     mainFlowHandler.CallMoveControlWork(moveCmd);
+                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
                     //mainFlowHandler.MiddleAgent_StartAskingReserve();
                     break;
                 case EnumTransferCommandType.Load:

@@ -118,7 +118,7 @@ namespace Mirle.Agv.View
             }
             //RichTextBoxAppendHead(richTextBox1, msg);
 
-            middleAgent.SendMiddlerFormConfigCommand(cmdNum, pairs);
+            middleAgent.SendMiddlerFormCommands(cmdNum, pairs);
         }
 
         private void cbSend_SelectedValueChanged(object sender, EventArgs e)
