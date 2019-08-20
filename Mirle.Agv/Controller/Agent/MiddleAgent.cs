@@ -60,7 +60,7 @@ namespace Mirle.Agv.Controller
             this.loggerAgent = loggerAgent;
 
             CreatTcpIpClientAgent();
-        }       
+        }
 
         #region Initial
         private void CreatTcpIpClientAgent()
@@ -145,6 +145,12 @@ namespace Mirle.Agv.Controller
         }
         private void EventInitial()
         {
+
+            foreach (var item in Enum.GetValues(typeof(EnumCmdNums)))
+            {
+                ClientAgent.addTcpIpReceivedHandler((int)item, RecieveCmdShowOnCommunicationForm);
+            }
+
             // Add Event Handlers for all the recieved messages
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.TransReqFieldNumber, Receive_Cmd31_TransferRequest);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.TranCmpRespFieldNumber, Receive_Cmd32_TransferCompleteResponse);
@@ -164,12 +170,11 @@ namespace Mirle.Agv.Controller
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AddressTeachRespFieldNumber, Receive_Cmd74_AddressTeachResponse);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmResetReqFieldNumber, Receive_Cmd91_AlarmResetRequest);
             ClientAgent.addTcpIpReceivedHandler(WrapperMessage.AlarmRespFieldNumber, Receive_Cmd94_AlarmResponse);
+
+            ClientAgent.addTcpIpReceivedHandler(141, Receive_Cmd141_ModeChange);
             //            
 
-            foreach (var item in Enum.GetValues(typeof(EnumCmdNums)))
-            {
-                ClientAgent.addTcpIpReceivedHandler((int)item, RecieveCmdShowOnCommunicationForm);
-            }
+
             //Here need to be careful for the TCPIP
             //
 
@@ -187,11 +192,11 @@ namespace Mirle.Agv.Controller
         #endregion
 
         #region AskReserve
-        public void SetupNeedReserveSections(MapSection needReserveSection)
+
+        public void SetupNeedReserveSection(MapSection needReserveSection)
         {
             this.needReserveSection = needReserveSection.DeepClone();
         }
-
         public string GetNeedReserveSectionId()
         {
             return needReserveSection.Id;
@@ -264,7 +269,7 @@ namespace Mirle.Agv.Controller
         }
 
         public void StartAskingReserve()
-        {           
+        {
             askReservePauseEvent.Set();
             IsPauseAskReserve = false;
             thdAskReserve = new Thread(new ThreadStart(AskReserve));
@@ -282,14 +287,10 @@ namespace Mirle.Agv.Controller
             if (thdAskReserve != null && thdAskReserve.IsAlive)
             {
                 thdAskReserve.Join();
-            }            
+            }
             OnMessageShowEvent?.Invoke(this, $"Middler : Stop Asking Reserve, [NeedReserveSection={needReserveSection.Id}]");
         }
 
-        //public bool IsThdAskReservePause()
-        //{
-        //    askReservePauseEvent.
-        //}
         #endregion
 
         #region EnumParse
@@ -1031,7 +1032,7 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
 
-        }       
+        }
 
         private string[] StringSpilter(string v)
         {
@@ -1045,7 +1046,7 @@ namespace Mirle.Agv.Controller
 
         private void SendCommandWrapper(WrapperMessage wrapper)
         {
-            string msg = $"[SEND] [{wrapper.ID}]" + wrapper.ToString();
+            string msg = $"[All Msg SEND] [{wrapper.ID}][SeqNum = {wrapper.SeqNum}] " + wrapper.ToString();
             OnCmdSend?.Invoke(this, msg);
             loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                  , msg));
@@ -1055,10 +1056,10 @@ namespace Mirle.Agv.Controller
 
         private void RecieveCmdShowOnCommunicationForm(object sender, TcpIpEventArgs e)
         {
-            string msg = $"[RECEIVE] [{e.iPacketID}][e.iSeqNum = {e.iSeqNum}][e.objPacket = {e.objPacket}]";
+            string msg = $"[All Msg RECEIVE] [PacketID = {e.iPacketID}][SeqNum = {e.iSeqNum}][Pt = {e.iPt}][ObjPacket = {e.objPacket}]";
             OnCmdReceive?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            theLoggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , msg));
         }
 
         public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort e)
@@ -1301,8 +1302,6 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
         }
-
-
 
         public void Receive_Cmd71_RangeTeachRequest(object sender, TcpIpEventArgs e)
         {
@@ -1567,6 +1566,34 @@ namespace Mirle.Agv.Controller
                 var msg = ex.StackTrace;
             }
         }
+        public void Send_Cmd141_ModeChangeResponse()
+        {
+            try
+            {
+                ID_141_MODE_CHANGE_RESPONSE iD_141_MODE_CHANGE_RESPONSE = new ID_141_MODE_CHANGE_RESPONSE();
+                iD_141_MODE_CHANGE_RESPONSE.ReplyCode = 0;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.ModeChangeRespFieldNumber;
+                wrappers.ModeChangeResp = iD_141_MODE_CHANGE_RESPONSE;
+
+                SendCommandWrapper(wrappers);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+        public void Receive_Cmd141_ModeChange(object sender, TcpIpEventArgs e)
+        {
+            string msg = $"[Cmd_141_RECEIVE] [PacketID = {e.iPacketID}][SeqNum = {e.iSeqNum}][Pt = {e.iPt}][ObjPacket = {e.objPacket}]";
+            OnCmdReceive?.Invoke(this, msg);
+            theLoggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                , msg));
+           
+           
+        }
+
 
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
@@ -1664,10 +1691,10 @@ namespace Mirle.Agv.Controller
             ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
             //Get reserve, block, 
 
-            //if (receive.IsReserveSuccess == ReserveResult.Success)
-            //{
-            //    OnGetReserveOkEvent?.Invoke(this, true);
-            //}
+            if (receive.IsReserveSuccess == ReserveResult.Success)
+            {
+                OnGetReserveOkEvent?.Invoke(this, needReserveSection);
+            }
 
             if (receive.IsBlockPass == PassType.Pass)
             {
@@ -1766,18 +1793,20 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                string msg = $"[SEND] [{wrappers.ID}]" + wrappers.ToString();
+                string msg = $"[SEND] [ID = {wrappers.ID}][SeqNum = {wrappers.SeqNum}] " + wrappers.ToString();
                 OnCmdSend?.Invoke(this, msg);
                 loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
 
                 ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out ID_36_TRANS_EVENT_RESPONSE resultObj, out string resultMsg);
-                if (string.IsNullOrEmpty(resultMsg))
+
+                string msg2 = $"[Ask Reserve RECEIVE] [SeqNum = {wrappers.SeqNum}][IsBlockPass = {resultObj.IsBlockPass}][IsReserveSuccess = { resultObj.IsReserveSuccess}][ReplyCode = { resultObj.ReplyCode}][ResultMsg = {resultMsg}]";
+                OnCmdReceive?.Invoke(this, msg2);
+                loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg2));
+                if (resultObj.IsReserveSuccess == ReserveResult.Success)
                 {
-                    if (resultObj.IsReserveSuccess == ReserveResult.Success)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
 
                 return false;

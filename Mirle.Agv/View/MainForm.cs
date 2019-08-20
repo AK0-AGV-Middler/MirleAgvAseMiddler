@@ -579,19 +579,20 @@ namespace Mirle.Agv.View
             ucSoc.TagValue = Vehicle.Instance.GetPlcVehicle().Batterys.Percentage.ToString("F2");
             lbxAskReserveSection.Items.Clear();
             lbxAskReserveSection.Items.Add(middleAgent.GetNeedReserveSectionId());
+            UpdateListBoxSections(lbxNeedReserveSections, mainFlowHandler.GetNeedReserveSections());
+            UpdateListBoxSections(lbxReserveOkSections, mainFlowHandler.GetReserveOkSections());
 
             UpdateAutoManual();
             UpdateVehLocationAndLoading();
-            DrawReserveSections();
+            //DrawReserveSections();
             UpdateThreadPicture();
         }
 
         private void UpdateThreadPicture()
         {
-            bool isVisitTransCmdAlive = mainFlowHandler.IsVisitTransCmdsAlive();
             picVisitTransferCmd.BackColor = mainFlowHandler.IsVisitTransCmdsAlive() ? Color.Green : Color.Red;
             picTrackingPosition.BackColor = mainFlowHandler.IsTrackingPositionAlive() ? Color.Green : Color.Red;
-            middleAgent.IsAskReserveAlive();
+            picAskReserve.BackColor = middleAgent.IsAskReserveAlive() ? Color.Green : Color.Red;            
         }
 
         private void UpdateAutoManual()
@@ -852,6 +853,27 @@ namespace Mirle.Agv.View
         private void btnClearAgvcTransferCmd_Click(object sender, EventArgs e)
         {
             mainFlowHandler.ClearAgvcTransferCmd();
+        }
+
+        private void btnTestSomething_Click(object sender, EventArgs e)
+        {
+            //MapSection mapSection = theMapInfo.allMapSections["sec003"];
+            //middleAgent.SetupNeedReserveSection(mapSection);
+            //middleAgent.Send_Cmd136_AskReserve();
+
+            //middleAgent.Send_Cmd141_ModeChangeResponse();
+            MapSection mapSection;
+            mapSection = theMapInfo.allMapSections["sec001"];
+            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSection = theMapInfo.allMapSections["sec002"];
+            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSection = theMapInfo.allMapSections["sec003"];
+            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSection = theMapInfo.allMapSections["sec004"];
+            mainFlowHandler.AddNeedReserveSections(mapSection);
+            mapSection = theMapInfo.allMapSections["sec005"];
+            mainFlowHandler.AddNeedReserveSections(mapSection);
+
         }
     }
 }

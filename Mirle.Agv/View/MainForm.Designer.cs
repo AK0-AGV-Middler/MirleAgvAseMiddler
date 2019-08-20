@@ -60,6 +60,7 @@
             this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.btnClearAgvcTransferCmd = new System.Windows.Forms.Button();
             this.btnAutoManual = new System.Windows.Forms.Button();
             this.btnTransferComplete = new System.Windows.Forms.Button();
             this.txtLastAlarm = new System.Windows.Forms.Label();
@@ -68,12 +69,14 @@
             this.lbxAskReserveSection = new System.Windows.Forms.ListBox();
             this.btnAutoApplyReserve = new System.Windows.Forms.Button();
             this.gbAskReserve = new System.Windows.Forms.GroupBox();
+            this.picAskReserve = new System.Windows.Forms.PictureBox();
             this.btnStartAskingReserve = new System.Windows.Forms.Button();
             this.btnResumeAskingReserve = new System.Windows.Forms.Button();
             this.btnStopAskingReserve = new System.Windows.Forms.Button();
             this.btnPauseAskingReserve = new System.Windows.Forms.Button();
             this.btnSetTestTransferCmd = new System.Windows.Forms.Button();
             this.gbVisitTransCmds = new System.Windows.Forms.GroupBox();
+            this.picVisitTransferCmd = new System.Windows.Forms.PictureBox();
             this.btnStartVisitTransCmds = new System.Windows.Forms.Button();
             this.btnResumeVisitTransCmds = new System.Windows.Forms.Button();
             this.btnStopVisitTransCmds = new System.Windows.Forms.Button();
@@ -81,6 +84,7 @@
             this.btnMoveFinish = new System.Windows.Forms.Button();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
             this.gbTrackingPosition = new System.Windows.Forms.GroupBox();
+            this.picTrackingPosition = new System.Windows.Forms.PictureBox();
             this.btnStartTrackingPosition = new System.Windows.Forms.Button();
             this.btnResumeTrackingPostiion = new System.Windows.Forms.Button();
             this.btnStopTrackingPosition = new System.Windows.Forms.Button();
@@ -108,10 +112,7 @@
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
             this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
-            this.btnClearAgvcTransferCmd = new System.Windows.Forms.Button();
-            this.picVisitTransferCmd = new System.Windows.Forms.PictureBox();
-            this.picTrackingPosition = new System.Windows.Forms.PictureBox();
-            this.picAskReserve = new System.Windows.Forms.PictureBox();
+            this.btnTestSomething = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -124,18 +125,19 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.gbAskReserve.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picAskReserve)).BeginInit();
             this.gbVisitTransCmds.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picVisitTransferCmd)).BeginInit();
             this.gbPerformanceCounter.SuspendLayout();
             this.gbTrackingPosition.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picTrackingPosition)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
             this.gbVehicleLocation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
             this.gbConnection.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.picVisitTransferCmd)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picTrackingPosition)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picAskReserve)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -464,9 +466,22 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
+            this.splitContainer2.Panel2.Controls.Add(this.btnTestSomething);
             this.splitContainer2.Size = new System.Drawing.Size(722, 1017);
             this.splitContainer2.SplitterDistance = 677;
             this.splitContainer2.TabIndex = 0;
+            // 
+            // btnClearAgvcTransferCmd
+            // 
+            this.btnClearAgvcTransferCmd.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnClearAgvcTransferCmd.ForeColor = System.Drawing.Color.Red;
+            this.btnClearAgvcTransferCmd.Location = new System.Drawing.Point(411, 131);
+            this.btnClearAgvcTransferCmd.Name = "btnClearAgvcTransferCmd";
+            this.btnClearAgvcTransferCmd.Size = new System.Drawing.Size(151, 105);
+            this.btnClearAgvcTransferCmd.TabIndex = 54;
+            this.btnClearAgvcTransferCmd.Text = "Clear Transfer Command";
+            this.btnClearAgvcTransferCmd.UseVisualStyleBackColor = true;
+            this.btnClearAgvcTransferCmd.Click += new System.EventHandler(this.btnClearAgvcTransferCmd_Click);
             // 
             // btnAutoManual
             // 
@@ -552,6 +567,14 @@
             this.gbAskReserve.TabStop = false;
             this.gbAskReserve.Text = "Ask Reserve";
             // 
+            // picAskReserve
+            // 
+            this.picAskReserve.Location = new System.Drawing.Point(6, 135);
+            this.picAskReserve.Name = "picAskReserve";
+            this.picAskReserve.Size = new System.Drawing.Size(150, 16);
+            this.picAskReserve.TabIndex = 56;
+            this.picAskReserve.TabStop = false;
+            // 
             // btnStartAskingReserve
             // 
             this.btnStartAskingReserve.Location = new System.Drawing.Point(6, 21);
@@ -594,9 +617,11 @@
             // 
             // btnSetTestTransferCmd
             // 
-            this.btnSetTestTransferCmd.Location = new System.Drawing.Point(222, 213);
+            this.btnSetTestTransferCmd.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSetTestTransferCmd.ForeColor = System.Drawing.Color.Green;
+            this.btnSetTestTransferCmd.Location = new System.Drawing.Point(574, 339);
             this.btnSetTestTransferCmd.Name = "btnSetTestTransferCmd";
-            this.btnSetTestTransferCmd.Size = new System.Drawing.Size(165, 23);
+            this.btnSetTestTransferCmd.Size = new System.Drawing.Size(136, 108);
             this.btnSetTestTransferCmd.TabIndex = 45;
             this.btnSetTestTransferCmd.Text = "Set Test Transfer Cmd";
             this.btnSetTestTransferCmd.UseVisualStyleBackColor = true;
@@ -615,6 +640,14 @@
             this.gbVisitTransCmds.TabIndex = 43;
             this.gbVisitTransCmds.TabStop = false;
             this.gbVisitTransCmds.Text = "Visit Trans Cmds";
+            // 
+            // picVisitTransferCmd
+            // 
+            this.picVisitTransferCmd.Location = new System.Drawing.Point(6, 137);
+            this.picVisitTransferCmd.Name = "picVisitTransferCmd";
+            this.picVisitTransferCmd.Size = new System.Drawing.Size(150, 16);
+            this.picVisitTransferCmd.TabIndex = 55;
+            this.picVisitTransferCmd.TabStop = false;
             // 
             // btnStartVisitTransCmds
             // 
@@ -691,6 +724,14 @@
             this.gbTrackingPosition.TabIndex = 42;
             this.gbTrackingPosition.TabStop = false;
             this.gbTrackingPosition.Text = "Tracking Position";
+            // 
+            // picTrackingPosition
+            // 
+            this.picTrackingPosition.Location = new System.Drawing.Point(6, 135);
+            this.picTrackingPosition.Name = "picTrackingPosition";
+            this.picTrackingPosition.Size = new System.Drawing.Size(150, 16);
+            this.picTrackingPosition.TabIndex = 56;
+            this.picTrackingPosition.TabStop = false;
             // 
             // btnStartTrackingPosition
             // 
@@ -960,41 +1001,17 @@
             this.ucMapSection.TagName = "Last Section";
             this.ucMapSection.TagValue = "";
             // 
-            // btnClearAgvcTransferCmd
+            // btnTestSomething
             // 
-            this.btnClearAgvcTransferCmd.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnClearAgvcTransferCmd.ForeColor = System.Drawing.Color.Red;
-            this.btnClearAgvcTransferCmd.Location = new System.Drawing.Point(411, 131);
-            this.btnClearAgvcTransferCmd.Name = "btnClearAgvcTransferCmd";
-            this.btnClearAgvcTransferCmd.Size = new System.Drawing.Size(151, 105);
-            this.btnClearAgvcTransferCmd.TabIndex = 54;
-            this.btnClearAgvcTransferCmd.Text = "Clear Transfer Command";
-            this.btnClearAgvcTransferCmd.UseVisualStyleBackColor = true;
-            this.btnClearAgvcTransferCmd.Click += new System.EventHandler(this.btnClearAgvcTransferCmd_Click);
-            // 
-            // picVisitTransferCmd
-            // 
-            this.picVisitTransferCmd.Location = new System.Drawing.Point(6, 137);
-            this.picVisitTransferCmd.Name = "picVisitTransferCmd";
-            this.picVisitTransferCmd.Size = new System.Drawing.Size(150, 16);
-            this.picVisitTransferCmd.TabIndex = 55;
-            this.picVisitTransferCmd.TabStop = false;
-            // 
-            // picTrackingPosition
-            // 
-            this.picTrackingPosition.Location = new System.Drawing.Point(6, 135);
-            this.picTrackingPosition.Name = "picTrackingPosition";
-            this.picTrackingPosition.Size = new System.Drawing.Size(150, 16);
-            this.picTrackingPosition.TabIndex = 56;
-            this.picTrackingPosition.TabStop = false;
-            // 
-            // picAskReserve
-            // 
-            this.picAskReserve.Location = new System.Drawing.Point(6, 135);
-            this.picAskReserve.Name = "picAskReserve";
-            this.picAskReserve.Size = new System.Drawing.Size(150, 16);
-            this.picAskReserve.TabIndex = 56;
-            this.picAskReserve.TabStop = false;
+            this.btnTestSomething.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnTestSomething.ForeColor = System.Drawing.Color.Green;
+            this.btnTestSomething.Location = new System.Drawing.Point(8, 11);
+            this.btnTestSomething.Name = "btnTestSomething";
+            this.btnTestSomething.Size = new System.Drawing.Size(187, 73);
+            this.btnTestSomething.TabIndex = 55;
+            this.btnTestSomething.Text = "Test Button";
+            this.btnTestSomething.UseVisualStyleBackColor = true;
+            this.btnTestSomething.Click += new System.EventHandler(this.btnTestSomething_Click);
             // 
             // MainForm
             // 
@@ -1024,20 +1041,21 @@
             this.splitContainer3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.gbAskReserve.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.picAskReserve)).EndInit();
             this.gbVisitTransCmds.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.picVisitTransferCmd)).EndInit();
             this.gbPerformanceCounter.ResumeLayout(false);
             this.gbTrackingPosition.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.picTrackingPosition)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
             this.gbVehicleLocation.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.picVisitTransferCmd)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picTrackingPosition)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picAskReserve)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1128,5 +1146,6 @@
         private System.Windows.Forms.PictureBox picAskReserve;
         private System.Windows.Forms.PictureBox picVisitTransferCmd;
         private System.Windows.Forms.PictureBox picTrackingPosition;
+        private System.Windows.Forms.Button btnTestSomething;
     }
 }

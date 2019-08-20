@@ -523,7 +523,7 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-       
+
 
         public void SetTestTransferCmd()
         {
@@ -831,7 +831,7 @@ namespace Mirle.Agv.Controller
                         queNeedReserveSections.TryPeek(out MapSection needReserveSection);
                         if (middleAgent.GetNeedReserveSectionId() != needReserveSection.Id)
                         {
-                            middleAgent.SetupNeedReserveSections(needReserveSection);
+                            middleAgent.SetupNeedReserveSection(needReserveSection);
                             middleAgent.RestartAskingReserve();
 
                             OnMessageShowEvent?.Invoke(this, $"MainFlow : Visit TransCmds : [Middler.NeedReserveId.New = {needReserveSection.Id}]");
@@ -1115,19 +1115,31 @@ namespace Mirle.Agv.Controller
 
         private void MiddleAgent_OnGetReserveOkEvent(object sender, MapSection reserveOkSection)
         {
-            queNeedReserveSections.TryPeek(out MapSection needReserveSection);
-            if (needReserveSection.Id == reserveOkSection.Id)
+            if (queNeedReserveSections.Count == 0)
             {
-                queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
-                queGotReserveOkSections.Enqueue(aReserveOkSection);
-                middleAgent.SetupNeedReserveSections(new MapSection());
-                PublishReserveOkEvent();
-                OnMessageShowEvent?.Invoke(this, $"MainFlow :GetReserveOk, [OK ID = {reserveOkSection.Id}]");
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : queNeedReserveSections is Empty, [OK ID = {reserveOkSection.Id}][Need Sections Count = {queNeedReserveSections.Count}]");
+                return;
             }
-            else
-            {
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : Reserve ok ID unmatch, [OK ID = {reserveOkSection.Id}][Need ID = {needReserveSection.Id}]");
-            }
+
+            //queNeedReserveSections.TryPeek(out MapSection needReserveSection);
+            //if (needReserveSection.Id == reserveOkSection.Id)
+            //{
+            //    queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
+            //    queGotReserveOkSections.Enqueue(aReserveOkSection);
+            //    middleAgent.SetupNeedReserveSection(new MapSection());
+            //    PublishReserveOkEvent();
+            //    OnMessageShowEvent?.Invoke(this, $"MainFlow :GetReserveOk, [OK ID = {reserveOkSection.Id}]");
+            //}
+            //else
+            //{
+            //    OnMessageShowEvent?.Invoke(this, $"MainFlow : Reserve ok ID unmatch, [OK ID = {reserveOkSection.Id}][Need ID = {needReserveSection.Id}]");
+            //}
+
+            queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
+            queGotReserveOkSections.Enqueue(aReserveOkSection);
+            middleAgent.SetupNeedReserveSection(new MapSection());
+            PublishReserveOkEvent();
+            OnMessageShowEvent?.Invoke(this, $"MainFlow :GetReserveOk, [OK ID = {reserveOkSection.Id}]");
 
         }
 
@@ -1626,7 +1638,6 @@ namespace Mirle.Agv.Controller
                     {
                         theVehicle.AVehiclePosition.RealPosition.X = mapSection.HeadAddress.Position.X;
                     }
-                    //middleAgent.Send_Cmd134_TransferEventReport();
                     break;
                 }
             }

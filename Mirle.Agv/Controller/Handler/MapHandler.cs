@@ -301,10 +301,6 @@ namespace Mirle.Agv.Controller
 
             if (IsPositionInThisAddress(aPosition, headAdr))
             {
-                if (mapSection.CmdDirection == EnumPermitDirection.Forward)
-                {
-                    mapSection.Distance = 0;
-                }
                 location.LastAddress = headAdr;
                 location.LastSection = mapSection;
                 location.LastSection.Distance = 0;
@@ -313,10 +309,6 @@ namespace Mirle.Agv.Controller
 
             if (IsPositionInThisAddress(aPosition, tailAdr))
             {
-                if (mapSection.CmdDirection != EnumPermitDirection.Forward)
-                {
-                    mapSection.Distance = 0;
-                }
                 location.LastAddress = tailAdr;
                 location.LastSection = mapSection;
                 location.LastSection.Distance = aSection.Distance;
@@ -336,16 +328,8 @@ namespace Mirle.Agv.Controller
                             }
                             else
                             {
-                                if (mapSection.CmdDirection == EnumPermitDirection.Forward)
-                                {
-                                    mapSection.Distance = Math.Abs(aPosition.X - headAdr.Position.X);
-                                }
-                                else
-                                {
-                                    mapSection.Distance = Math.Abs(tailAdr.Position.X - aPosition.X);
-                                }
+                                mapSection.Distance = Math.Abs(aPosition.X - headAdr.Position.X);
                                 location.LastSection = mapSection;
-
                                 return true;
                             }
                         }
@@ -365,14 +349,7 @@ namespace Mirle.Agv.Controller
                             }
                             else
                             {
-                                if (mapSection.CmdDirection == EnumPermitDirection.Forward)
-                                {
-                                    mapSection.Distance = Math.Abs(aPosition.Y - headAdr.Position.Y);
-                                }
-                                else
-                                {
-                                    mapSection.Distance = Math.Abs(tailAdr.Position.Y - aPosition.Y);
-                                }
+                                mapSection.Distance = Math.Abs(aPosition.Y - headAdr.Position.Y);
                                 location.LastSection = mapSection;
                                 return true;
                             }
@@ -385,20 +362,46 @@ namespace Mirle.Agv.Controller
                 case EnumSectionType.R2000:
                     //TODO: Analysis diff <= SectionWidth?
                     //TODO: Analysis position is in the R2000 rectangle(sin45/cos45)
-                    break;
+                    if (IsInR2000Section(aPosition, mapSection))
+                    {
+                        mapSection.Distance = GetDistance(aPosition, headAdr.Position);
+                        location.LastSection = mapSection;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 case EnumSectionType.None:
                 default:
-                    break;
+                    return false;
             }
+        }
 
-            return true;
+        private bool IsInR2000Section(MapPosition aPosition, MapSection mapSection)
+        {
+            return GetVectorRatio(aPosition, mapSection) <= AddressArea;
+        }
+
+        private double GetVectorRatio(MapPosition aPosition, MapSection mapSection)
+        {
+            var headPosition = mapSection.HeadAddress.Position;
+            var tailPosition = mapSection.TailAddress.Position;
+            var num1 = (tailPosition.X - headPosition.X) * (aPosition.Y - headPosition.Y);
+            var num2 = (tailPosition.Y - headPosition.Y) * (aPosition.X - headPosition.X);
+            return Math.Abs(num1 - num2);
         }
 
         public bool IsPositionInThisAddress(MapPosition aPosition, MapAddress anAddress)
         {
-            var diffX = Math.Abs(aPosition.X - anAddress.Position.X);
-            var diffY = Math.Abs(aPosition.Y - anAddress.Position.Y);
-            return diffX * diffX + diffY * diffY <= AddressArea * AddressArea;
+            return GetDistance(aPosition, anAddress.Position) <= AddressArea * AddressArea;
+        }
+
+        private double GetDistance(MapPosition aPosition, MapPosition bPosition)
+        {
+            var diffX = Math.Abs(aPosition.X - bPosition.X);
+            var diffY = Math.Abs(aPosition.Y - bPosition.Y);
+            return diffX * diffX + diffY * diffY;
         }
 
     }

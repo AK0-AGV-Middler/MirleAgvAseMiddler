@@ -775,6 +775,8 @@ namespace Mirle.Agv.Controller
                     location.Barcode = agvPosition;
                     location.ScanTime = agvPosition.ScanTime;
                     location.BarcodeGetDataTime = agvPosition.GetDataTime;
+
+                    Vehicle.Instance.AVehiclePosition.BarcodePosition = location.Barcode.Position;
                     return true;
                 }
             }
@@ -1033,6 +1035,7 @@ namespace Mirle.Agv.Controller
                 {
                     location.Real = location.Barcode;
                     Vehicle.Instance.AVehiclePosition.RealPosition = location.Real.Position;
+                    Vehicle.Instance.AVehiclePosition.VehicleAngle = location.Real.AGVAngle;
                 }
             }
         }
@@ -1144,24 +1147,24 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                double stopEncoder = location.ElmoEncoder + (controlData.DirFlag ? 50 : -50);
+                //double stopEncoder = location.ElmoEncoder + (controlData.DirFlag ? 50 : -50);
 
-                while (true)
-                {
-                    UpdatePosition();
-                    if (controlData.DirFlag)
-                    {
-                        if (location.RealEncoder > stopEncoder)
-                            break;
-                    }
-                    else
-                    {
-                        if (location.RealEncoder < stopEncoder)
-                            break;
-                    }
+                //while (true)
+                //{
+                //    UpdatePosition();
+                //    if (controlData.DirFlag)
+                //    {
+                //        if (location.ElmoEncoder > stopEncoder)
+                //            break;
+                //    }
+                //    else
+                //    {
+                //        if (location.ElmoEncoder < stopEncoder)
+                //            break;
+                //    }
 
-                    Thread.Sleep(moveControlConfig.SleepTime);
-                }
+                //    Thread.Sleep(moveControlConfig.SleepTime);
+                //}
 
                 elmoDriver.ElmoStop(EnumAxis.GX);
                 while (!elmoDriver.MoveCompelete(EnumAxis.GX))
@@ -1307,6 +1310,8 @@ namespace Mirle.Agv.Controller
                 location.Real.AGVAngle -= 90;
             else
                 location.Real.AGVAngle += 90;
+
+            Vehicle.Instance.AVehiclePosition.VehicleAngle = location.Real.AGVAngle;
 
             MoveState = EnumMoveState.Moving;
             WriteLog("MoveControl", "7", device, "", " end.");
