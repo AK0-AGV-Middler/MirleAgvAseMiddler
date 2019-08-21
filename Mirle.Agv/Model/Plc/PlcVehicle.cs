@@ -17,16 +17,16 @@ namespace Mirle.Agv.Model
         public string CassetteId { get; set; } = "Empty";
 
         //以下屬性會影響方向燈,語音和Beam sensor sleep
-        public bool Forward { get; set; }
-        public bool Backward { get; set; }
-        public bool SpinTurnLeft { get; set; }//左旋轉
-        public bool SpinTurnRight { get; set; }//右旋轉
-        public bool TraverseLeft { get; set; }//左橫移
-        public bool TraverseRight { get; set; }//右橫移
-        public bool SteeringFL { get; set; }
-        public bool SteeringFR { get; set; }
-        public bool SteeringBL { get; set; }
-        public bool SteeringBR { get; set; }
+        //public bool Forward { get; set; }
+        //public bool Backward { get; set; }
+        //public bool SpinTurnLeft { get; set; }//左旋轉
+        //public bool SpinTurnRight { get; set; }//右旋轉
+        //public bool TraverseLeft { get; set; }//左橫移
+        //public bool TraverseRight { get; set; }//右橫移
+        //public bool SteeringFL { get; set; }
+        //public bool SteeringFR { get; set; }
+        //public bool SteeringBL { get; set; }
+        //public bool SteeringBR { get; set; }
 
         //dicBeamSensor key值為PLCNearSignalTagID and PLCFarSignalTagID, 兩個都會指到相同PLCBeamSensor物件
         public Dictionary<string, PlcBeamSensor> dicBeamSensor = new Dictionary<string, PlcBeamSensor>();
@@ -55,7 +55,9 @@ namespace Mirle.Agv.Model
         public List<PlcBumper> listBumper = new List<PlcBumper>();
 
         public bool BumperAlarmStatus { get; set; } = false;
-        public bool PlcEmoStatus { get; set; } = false; //201907301_Rudy 任何一個EMO ON -> ON
+        public bool PlcEmoStatus { get; set; } = false;
+
+        public ushort IPcStatus { get; set; } = 0;
 
         public Dictionary<string, PlcEmo> dicPlcEmo = new Dictionary<string, PlcEmo>();
         public List<PlcEmo> listPlcEmo = new List<PlcEmo>();
@@ -73,6 +75,7 @@ namespace Mirle.Agv.Model
         }
 
         #region HardCode PlcBeamSensors/PlcBumpers/PlcEmos will fix in config.xml
+   
         private void InitialPlcBumpers()
         {
             PlcBumper aPLCBumper;
@@ -136,7 +139,7 @@ namespace Mirle.Agv.Model
             dicBumper.Add(aPLCBumper.PlcSignalTagId, aPLCBumper);
 
         }
-
+       
         private void InitialPlcEmos()
         {
             PlcEmo aPlcEmo;
@@ -174,7 +177,7 @@ namespace Mirle.Agv.Model
             listPlcEmo.Add(aPlcEmo);
             dicPlcEmo.Add(aPlcEmo.PlcSignalTagId, aPlcEmo);
         }
-
+       
         private void InitialPLCBeamSensor()
         {
             PlcBeamSensor aPLCBeamSensor;

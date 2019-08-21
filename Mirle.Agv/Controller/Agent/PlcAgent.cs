@@ -18,6 +18,14 @@ namespace Mirle.Agv.Controller
 {
     public class PlcAgent
     {
+        #region "const"
+        private const int Fork_Command_Format_NG = 270001;
+        private const int Fork_Command_Read_timeout = 270002;
+        private const int Fork_Not_Busy_timeout = 270003;
+        private const int Fork_Command_Executing_timeout = 270004;
+        private const int Batterys_Charging_Time_Out = 270005;
+        #endregion
+
         private MCProtocol aMCProtocol;
         private CassetteIDReader aCassetteIDReader = new CassetteIDReader();
 
@@ -37,15 +45,15 @@ namespace Mirle.Agv.Controller
         private Logger portPIOLogger;
         private Logger chargerPIOLogger;
 
-        private Logger BatteryLogger; //20190807_Rudy 新增 BatteryLogger
+        private Logger BatteryLogger;
 
         public PlcVehicle APLCVehicle;
 
         private PlcForkCommand eventForkCommand; //發event前 先把executing commnad reference先放過來, 避免外部exevnt處理時發生null問題
         private bool clearExecutingForkCommandFlag = false;
 
-        private Thread plcOtherControlThread = null;//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New 
-        private Thread plcForkCommandControlThread = null;//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New
+        private Thread plcOtherControlThread = null;
+        private Thread plcForkCommandControlThread = null;
 
         private Thread TestThread = null;
 
@@ -54,13 +62,15 @@ namespace Mirle.Agv.Controller
         private UInt16 beforeBatteryPercentageInteger = 0;
         private UInt32 alarmReadIndex = 0;
 
-        private JogPitchForm jogPitchForm = null;//20190806_Rudy 新增jogPitchForm      
+        private JogPitchForm jogPitchForm = null;
 
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
         public event EventHandler<UInt16> OnBatteryPercentageChangeEvent;
         public event EventHandler<string> OnCassetteIDReadFinishEvent;
+
+        public event EventHandler<EnumAutoState> OnIpcAutoManualChangeEvent;
 
         public Boolean IsNeedReadCassetteID { get; set; } = true;
 
@@ -76,7 +86,7 @@ namespace Mirle.Agv.Controller
 
         private AlarmHandler aAlarmHandler = null;
 
-        public void SetOutSideObj(ref JogPitchForm jogPitchForm) //20190806_Rudy 新增jogPitchForm
+        public void SetOutSideObj(ref JogPitchForm jogPitchForm)
         {
             this.jogPitchForm = jogPitchForm;
 
@@ -97,23 +107,51 @@ namespace Mirle.Agv.Controller
         }
         private void TestThreadRun()
         {
+            EnumAutoState IpcStatus;
+            bool IpcStatusAutoIni = false;
+            bool IpcStatusManualIni = false;
             while (true)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "","123Test"));
-                Thread.Sleep(2000);
+                IpcStatus = Vehicle.Instance.AutoState;
+                if (IpcStatus == EnumAutoState.Auto)
+                {
+                    if (IpcStatusAutoIni)
+                    {
+                        IpcStatusAutoIni = false;
+                        IpcModeToAutoInitial();
+                        OnIpcAutoManualChangeEvent?.Invoke(this, EnumAutoState.Auto);
+                    }
+                    //IpcAutoModeDirectionalLightControl();
+                    IpcStatusManualIni = true;
+                }
+                else
+                {
+                    IpcStatusAutoIni = true;
+                    if (IpcStatusManualIni)
+                    {
+                        IpcStatusManualIni = false;
+                        APLCVehicle.MoveFront = false;
+                        APLCVehicle.MoveBack = false;
+                        APLCVehicle.MoveLeft = false;
+                        APLCVehicle.MoveRight = false;
+                        OnIpcAutoManualChangeEvent?.Invoke(this, EnumAutoState.Manual);
+                    }
+                    //WriteDirectionalLight(EnumVehicleSide.None);
+                }
             }
         }
         [Conditional("DebugTest")]
         private void TestFun()
         {
-            //string str=  GetFunName();
+
+
         }
         [MethodImpl(MethodImplOptions.NoInlining)]
         private string GetFunName([CallerMemberName] string memberName = "")
         {
             return GetType().Name + ":" + memberName;
         }
-        private Stopwatch swBatteryLogger = new Stopwatch();//20190807_Rudy 新增 BatteryLogger
+        private Stopwatch swBatteryLogger = new Stopwatch();
         private bool BatteryMaxMinIni = true;
         private double MaxMeterCurrent, MinMeterCurrent;
         private double MaxMeterVoltage, MinMeterVoltage;
@@ -141,7 +179,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void WriteBatLoggerCsv(ref Stopwatch sw, long ms)//20190807_Rudy 新增 BatteryLogger
+        private void WriteBatLoggerCsv(ref Stopwatch sw, long ms)
         {
             sw.Start();
             if (BatteryMaxMinIni)
@@ -287,7 +325,7 @@ namespace Mirle.Agv.Controller
             portPIOLogger = loggerAgent.GetLooger("PortPIO");
             chargerPIOLogger = loggerAgent.GetLooger("ChargerPIO");
 
-            BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");//20190807_Rudy 新增 BatteryLogger
+            BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");
 
         }
 
@@ -367,6 +405,9 @@ namespace Mirle.Agv.Controller
                             break;
                         case "Charging_Off_Delay":
                             this.APLCVehicle.Batterys.Charging_Off_Delay = Convert.ToUInt32(childItem.InnerText);
+                            break;
+                        case "CCMode_Stop_Voltage":
+                            this.APLCVehicle.Batterys.CCModeStopVoltage = Convert.ToDouble(childItem.InnerText);
                             break;
                     }
 
@@ -549,7 +590,7 @@ namespace Mirle.Agv.Controller
                                     }
 
                                     break;
-                                case "HomeStatus"://20190807_Rudy 新增ForkHome
+                                case "HomeStatus":
                                     this.APLCVehicle.Robot.ForkHome = aMCProtocol.get_ItemByTag("HomeStatus").AsBoolean;
                                     break;
                                 case "ChargeStatus":
@@ -745,12 +786,12 @@ namespace Mirle.Agv.Controller
             plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is connected");
             this.boolConnectionState = true;
 
-            if (plcOtherControlThread == null)//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New
+            if (plcOtherControlThread == null)
             {
                 plcOtherControlThread = new Thread(plcOtherControlRun);
                 plcOtherControlThread.Start();
             }
-            if (plcForkCommandControlThread == null)//20190730_Rudy 判斷Thread -> plcOtherControlThread,plcForkCommandControlThread為Null時才做New
+            if (plcForkCommandControlThread == null)
             {
                 plcForkCommandControlThread = new Thread(plcForkCommandControlRun);
                 plcForkCommandControlThread.Start();
@@ -768,21 +809,28 @@ namespace Mirle.Agv.Controller
         }
 
         private int beforeDay = DateTime.Now.Day;
-        private bool beforeEMOStatus;//201907301_Rudy
-        private Stopwatch swChargingTimeOut = new Stopwatch();//20190808_Rudy 新增ChargingTimeOut
+        private bool beforeEMOStatus;
+        private Stopwatch swChargingTimeOut = new Stopwatch();
         private bool ChgStasOffDelayFlag = false;
 
         //處理非Fork command需要即時的邏輯
         public void plcOtherControlRun()
         {
-            //20190730_Rudy 新增try catch
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
             Stopwatch sw500msClock = new Stopwatch();
             bool Clock1secWrite = false, b500msHigh = false, b500msLow = true;
+            bool BatterysChargingTimeOut = false;
+            bool CCModeStopVoltageChange = false;
+
+            EnumAutoState IpcStatus;
+            bool IpcStatusAutoIni = false;
+            bool IpcStatusManualIni = true;
+
             uint WriteBatterySOCCount = 0;
             uint ChgStasOffDelayCount = 0;
             uint ChgStopCommandCount = 0;
+
             while (true)
             {
                 try //20190730_Rudy 新增try catch
@@ -828,17 +876,18 @@ namespace Mirle.Agv.Controller
                         ChgStasOffDelayCount = 0;
                     }
 
-
-                    if (this.APLCVehicle.Batterys.Charging)//20190808_Rudy 新增ChargingTimeOut
+                    //Batterys Charging Time Out
+                    if (this.APLCVehicle.Batterys.Charging)
                     {
                         swChargingTimeOut.Start();
                         if (swChargingTimeOut.ElapsedMilliseconds > this.APLCVehicle.Batterys.Batterys_Charging_Time_Out)
                         {
-                            this.setAlarm(270005);
+                            BatterysChargingTimeOut = true;
                             if (aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean)
                             {
-                                if (ChgStopCommandCount >= 3)
+                                if (ChgStopCommandCount >= 10)
                                 {
+                                    this.setAlarm(Batterys_Charging_Time_Out);
                                     ChgStopCommandCount = 0;
                                     this.ChargeStopCommand();
                                 }
@@ -847,12 +896,28 @@ namespace Mirle.Agv.Controller
                     }
                     else
                     {
+                        ChgStopCommandCount = 10;
+                        BatterysChargingTimeOut = false;
                         swChargingTimeOut.Stop();
                         swChargingTimeOut.Reset();
                     }
 
+                    //CCModeStopVoltage
+                    if ((this.APLCVehicle.Batterys.MeterVoltage >= this.APLCVehicle.Batterys.CCModeStopVoltage))
+                    {
+                        if (!CCModeStopVoltageChange)
+                        {
+                            CCModeStopVoltageChange = true;
+                            this.APLCVehicle.Batterys.CcModeFlag = true;
+                            this.ChargeStopCommand();
+                        }
+                    }
+                    else
+                    {
+                        CCModeStopVoltageChange = false;
+                    }
 
-                    //20190807_Rudy 新增 BatteryLogger
+                    //Battery Logger
                     WriteBatLoggerCsv(ref swBatteryLogger, this.APLCVehicle.Batterys.Battery_Logger_Interval);
 
                     //EMO
@@ -913,10 +978,40 @@ namespace Mirle.Agv.Controller
                         OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
                     }
 
+                    //IPC Auto、Manual 初始化
+                    //方向燈控制
+                    IpcStatus = Vehicle.Instance.AutoState;
+                    if (IpcStatus == EnumAutoState.Auto)
+                    {
+                        if (IpcStatusAutoIni)
+                        {
+                            IpcStatusAutoIni = false;
+                            //IpcModeToAutoInitial();
+                            OnIpcAutoManualChangeEvent?.Invoke(this, EnumAutoState.Auto);
+                        }
+                        IpcAutoModeDirectionalLightControl();
+                        IpcStatusManualIni = true;
+                    }
+                    else
+                    {
+                        if (IpcStatusManualIni)
+                        {
+                            IpcStatusManualIni = false;
+                            //APLCVehicle.MoveFront = false;
+                            //APLCVehicle.MoveBack = false;
+                            //APLCVehicle.MoveLeft = false;
+                            //APLCVehicle.MoveRight = false;
+                            OnIpcAutoManualChangeEvent?.Invoke(this, EnumAutoState.Manual);
+                            WriteDirectionalLight(EnumVehicleSide.None);
+                        }
+                        IpcAutoModeDirectionalLightControl();
+                        IpcStatusAutoIni = true;
+                    }
+
                     //Safety Action 判斷
                     //決定safety action
                     //Bumper -> BeamSensor
-                    //EMO就算Safety Disable也要生效 => MoveControl會直接看EMO訊號,直接disable各軸                
+                    //EMO就算Safety Disable也要生效 => MoveControl會直接看EMO訊號,直接disable各軸    
                     if (APLCVehicle.SafetyDisable)
                     {
                         this.APLCVehicle.VehicleSafetyAction = EnumVehicleSafetyAction.Normal;
@@ -980,7 +1075,7 @@ namespace Mirle.Agv.Controller
                                     this.SetBeamSensorSleepOff(EnumVehicleSide.Right);
                                 }
                             }
-                            else//20190802_Rudy Auto Sleep  Disable 時,關閉 Beam Sensor Sleep 
+                            else
                             {
                                 this.SetBeamSensorSleepOff(EnumVehicleSide.Forward);
                                 this.SetBeamSensorSleepOff(EnumVehicleSide.Backward);
@@ -1015,10 +1110,12 @@ namespace Mirle.Agv.Controller
                             this.APLCVehicle.VehicleSafetyAction = result;
                         }
                     }
+
+
                 }
                 catch (Exception ex)
                 {
-                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());//20190730_Rudy 新增try catch
+                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
                     LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
                 }
                 System.Threading.Thread.Sleep(1);
@@ -1756,6 +1853,9 @@ namespace Mirle.Agv.Controller
             Boolean result = false;
 
             this.aMCProtocol.get_ItemByTag("IPCStatus").AsUInt16 = Convert.ToUInt16(aEnumIPCStatus);
+
+            this.APLCVehicle.IPcStatus = Convert.ToUInt16(aEnumIPCStatus);
+
             if (this.aMCProtocol.WritePLC())
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " success");
@@ -1816,7 +1916,7 @@ namespace Mirle.Agv.Controller
 
                 this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = 10;
 
-                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(10) + " Success"));
                 }
@@ -1832,7 +1932,7 @@ namespace Mirle.Agv.Controller
                 eqActionIndex = Convert.ToUInt16(Convert.ToInt32(eqActionIndex) % 65536);
                 this.aMCProtocol.get_ItemByTag("EquipementActionIndex").AsUInt16 = eqActionIndex;
 
-                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
                 }
@@ -1853,7 +1953,7 @@ namespace Mirle.Agv.Controller
                 string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
                 this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = 11;
 
-                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(11) + " Success"));
                 }
@@ -1868,7 +1968,7 @@ namespace Mirle.Agv.Controller
                 eqActionIndex = Convert.ToUInt16(Convert.ToInt32(eqActionIndex) % 65536);
                 this.aMCProtocol.get_ItemByTag("EquipementActionIndex").AsUInt16 = eqActionIndex;
 
-                if (this.aMCProtocol.WritePLC())//20190801_Rudy 新增Log Msg
+                if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
                 }
@@ -2048,7 +2148,7 @@ namespace Mirle.Agv.Controller
             CassetteID = strCassetteID;
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
 
-            //20190801_Rudy 新增Log Msg
+
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CassetteId) + " Success"));
 
@@ -2062,12 +2162,12 @@ namespace Mirle.Agv.Controller
 
         public void plcForkCommandControlRun()
         {
-            //20190730_Rudy 新增try catch
+
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
             while (true)
             {
-                try//20190730_Rudy 新增try catch
+                try
                 {
                     //Ready
                     this.APLCVehicle.Robot.ForkReady = this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
@@ -2111,7 +2211,8 @@ namespace Mirle.Agv.Controller
                                             this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
                                             //Raise Alarm
                                             //this.aAlarmHandler.SetAlarm(270001);
-                                            this.setAlarm(270001);
+                                            //this.setAlarm(270001);
+                                            this.setAlarm(Fork_Command_Format_NG);
                                             eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                             OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
 
@@ -2133,7 +2234,8 @@ namespace Mirle.Agv.Controller
                                                 this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
                                                 this.APLCVehicle.Robot.ExecutingCommand.Reason = "Fork Command Read timeout";
                                                 //this.aAlarmHandler.SetAlarm(270002);
-                                                this.setAlarm(270002);
+                                                //this.setAlarm(270002);
+                                                this.setAlarm(Fork_Command_Read_timeout);
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                                 //Raise Alarm
@@ -2168,7 +2270,8 @@ namespace Mirle.Agv.Controller
                                                 this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
                                                 this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkNotBusy timeout";
                                                 //this.aAlarmHandler.SetAlarm(270003);
-                                                this.setAlarm(270003);
+                                                //this.setAlarm(270003);
+                                                this.setAlarm(Fork_Not_Busy_timeout);
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                                 break;
@@ -2213,7 +2316,8 @@ namespace Mirle.Agv.Controller
                                         this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommand Moving Timeout";
                                         //Raise Alarm?Warning?   
                                         //this.aAlarmHandler.SetAlarm(270004);
-                                        this.setAlarm(270004);
+                                        //this.setAlarm(270004);
+                                        this.setAlarm(Fork_Command_Executing_timeout);
                                         eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                         OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                         break;
@@ -2271,7 +2375,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());//20190730_Rudy 新增try catch
+                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
 
                     //LogFormat logFormat = new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString());
                     LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
@@ -2281,7 +2385,7 @@ namespace Mirle.Agv.Controller
 
 
         }
-        public Boolean SetVehicleChargeOn()//20190730_Rudy
+        public Boolean SetVehicleChargeOn()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
@@ -2298,7 +2402,7 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
-        public Boolean SetVehicleChargeOff()//20190730_Rudy
+        public Boolean SetVehicleChargeOff()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
@@ -2316,7 +2420,7 @@ namespace Mirle.Agv.Controller
             return result;
         }
 
-        public Boolean SetVehicleInPositionOn()//20190730_Rudy
+        public Boolean SetVehicleInPositionOn()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
@@ -2333,7 +2437,7 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
-        public Boolean SetVehicleInPositionOff()//20190730_Rudy
+        public Boolean SetVehicleInPositionOff()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             Boolean result = false;
@@ -2350,27 +2454,22 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
-        private string strlogMsg = "";//201907301_Rudy LogView
+        private string strlogMsg = "";
         private const int LogMsgMaxLength = 65535;//65535
-        public string logMsg//201907301_Rudy
+        public string logMsg
         {
             get
             {
-                //if (strlogMsg == "")
-                //    return "";
-                //if (strlogMsg.Length > logMsgLength)
-                //    return strlogMsg.Substring(0, logMsgLength);
-                //else
-                    return strlogMsg;
+                return strlogMsg;
             }
         }
-        private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)//201907301_Rudy LogView
+        private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)
         {
             strlogMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
             if (strlogMsg.Length > LogMsgMaxLength) strlogMsg = strlogMsg.Substring(0, LogMsgMaxLength);
             clsLoggerAgent.LogMsg(clsLogFormat.Category, clsLogFormat);
         }
-        //20190802_Rudy 新增XML Param 可修改   
+
         public bool WritePlcConfigToXML(Dictionary<string, string> dicSetValue, string file_address = "PLC_Config.xml")
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
@@ -2411,5 +2510,173 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
+        private bool LogVehicleMove_Forward, LogVehicleMove_Backward;
+        private bool LogVehicleMove_Left, LogVehicleMove_Right;
+        private void WriteDirectionalLight(EnumVehicleSide aSide, bool status = false)
+        {
+            string VehicleMove = "VehicleMove", Forward = "Forward", Backward = "Backward";
+            string SteerFR = "Steering(FR)", SteerFL = "Steering(FL)", SteerBR = "Steering(BR)", SteerBL = "Steering(BL)";
+            bool bWriteStatus = false;
+            switch (aSide)
+            {
+                case EnumVehicleSide.None:
+                    if (LogVehicleMove_Forward != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(Forward).AsBoolean = status;
+                        LogVehicleMove_Forward = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_Backward != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(Backward).AsBoolean = status;
+                        LogVehicleMove_Backward = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_Left != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFL).AsBoolean = status;
+                        this.aMCProtocol.get_ItemByTag(SteerBL).AsBoolean = status;
+                        LogVehicleMove_Left = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_Right != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFR).AsBoolean = status;
+                        this.aMCProtocol.get_ItemByTag(SteerBR).AsBoolean = status;
+                        LogVehicleMove_Right = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumVehicleSide.Forward:
+                    if (LogVehicleMove_Forward != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(Forward).AsBoolean = status;
+                        LogVehicleMove_Forward = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumVehicleSide.Backward:
+                    if (LogVehicleMove_Backward != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(Backward).AsBoolean = status;
+                        LogVehicleMove_Backward = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumVehicleSide.Left:
+                    if (LogVehicleMove_Left != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFL).AsBoolean = status;
+                        this.aMCProtocol.get_ItemByTag(SteerBL).AsBoolean = status;
+                        LogVehicleMove_Left = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumVehicleSide.Right:
+                    if (LogVehicleMove_Right != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFR).AsBoolean = status;
+                        this.aMCProtocol.get_ItemByTag(SteerBR).AsBoolean = status;
+                        LogVehicleMove_Right = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if (bWriteStatus)
+            {
+                bool MoveFlag = LogVehicleMove_Forward ||
+                                LogVehicleMove_Backward ||
+                                LogVehicleMove_Left ||
+                                LogVehicleMove_Right;
+                if (MoveFlag)
+                    this.aMCProtocol.get_ItemByTag(VehicleMove).AsBoolean = true;
+                else
+                    this.aMCProtocol.get_ItemByTag(VehicleMove).AsBoolean = false;
+
+                if (this.aMCProtocol.WritePLC())
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + aSide.ToString() + ") = " + Convert.ToString(status) + " Success"));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + aSide.ToString() + ") = " + Convert.ToString(status) + " fail"));
+                }
+            }
+        }
+        private void IpcModeToAutoInitial()
+        {
+            APLCVehicle.SafetyDisable = false;
+            APLCVehicle.BeamSensorAutoSleep = false;
+
+            APLCVehicle.FrontBeamSensorDisable = false;
+            APLCVehicle.BackBeamSensorDisable = false;
+            APLCVehicle.LeftBeamSensorDisable = false;
+            APLCVehicle.RightBeamSensorDisable = false;
+
+            foreach (PlcBeamSensor beamSensor in APLCVehicle.listFrontBeamSensor)
+            {
+                beamSensor.Disable = false;
+            }
+            foreach (PlcBeamSensor beamSensor in APLCVehicle.listBackBeamSensor)
+            {
+                beamSensor.Disable = false;
+            }
+            foreach (PlcBeamSensor beamSensor in APLCVehicle.listLeftBeamSensor)
+            {
+                beamSensor.Disable = false;
+            }
+            foreach (PlcBeamSensor beamSensor in APLCVehicle.listRightBeamSensor)
+            {
+                beamSensor.Disable = false;
+            }
+
+            //Robot
+            clearExecutingForkCommand();
+            //WriteForkCommandInfo(0, EnumForkCommand.None, "0", EnumStageDirection.None, true, 100);
+        }
+        private void IpcAutoModeDirectionalLightControl()
+        {
+            //前方
+            if (APLCVehicle.MoveFront && !APLCVehicle.MoveLeft && !APLCVehicle.MoveRight)
+            {
+                WriteDirectionalLight(EnumVehicleSide.Forward, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumVehicleSide.Forward);
+            }
+            //後方
+            if (APLCVehicle.MoveBack && !APLCVehicle.MoveLeft && !APLCVehicle.MoveRight)
+            {
+                WriteDirectionalLight(EnumVehicleSide.Backward, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumVehicleSide.Backward);
+            }
+            //左方
+            if (APLCVehicle.MoveLeft)
+            {
+                WriteDirectionalLight(EnumVehicleSide.Left, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumVehicleSide.Left);
+            }
+            //右方
+            if (APLCVehicle.MoveRight)
+            {
+                WriteDirectionalLight(EnumVehicleSide.Right, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumVehicleSide.Right);
+            }
+
+        }
+
+
     }
 }

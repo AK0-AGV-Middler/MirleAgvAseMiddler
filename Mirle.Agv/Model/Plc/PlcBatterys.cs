@@ -116,7 +116,7 @@ namespace Mirle.Agv.Model
         public double SetMeterAhToZeroAh { get; set; } = 0.0;//執行AH Reset flag前的AH
 
         //改由毛哥卡CC mode停止,抓FullChargeIndex變化,代表達到CC mode
-        //public double CCModeStopVoltage { get; set; } = 61.5; //CC Mode充電停止電壓 (User config)
+        public double CCModeStopVoltage { get; set; } = 61.5; //CC Mode充電停止電壓 (User config)
         private void CountPercentage()
         {
             if (!boolSetMeterAhToZeroFlag)

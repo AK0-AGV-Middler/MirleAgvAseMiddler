@@ -13,6 +13,7 @@ namespace Mirle.Agv.View
     {
         private MCProtocol mcProtocol;
         private PlcAgent plcAgent;
+        private EnumAutoState IpcAutoState;
 
         public PlcForm(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
         {
@@ -57,6 +58,7 @@ namespace Mirle.Agv.View
             plcAgent.OnForkCommandFinishEvent += PlcAgent_OnForkCommandFinishEvent;
             plcAgent.OnForkCommandErrorEvent += PlcAgent_OnForkCommandErrorEvent;
             plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
+            plcAgent.OnIpcAutoManualChangeEvent += PlcAgent_OnIpcAutoManualChangeEvent;
         }
 
         private Control findControlByID(string strID)
@@ -203,7 +205,6 @@ namespace Mirle.Agv.View
             //this.WindowState = FormWindowState.Minimized;
             timGUIRefresh.Enabled = true;
 
-            //20190802_Rudy 新增XML Param 可修改                
             FillSVToBatteryParamTbx();
             FillPVToBatteryParamTbx();
 
@@ -276,14 +277,57 @@ namespace Mirle.Agv.View
                 this.plcAgent.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
 
             });
-
-
-
         }
-
+        private void PlcAgent_OnIpcAutoManualChangeEvent(Object sender, EnumAutoState state)
+        {
+            IpcAutoState = state;            
+        }
+        private void IpcModeObjEnabled(bool status)
+        {
+            grpForkCommdAndStat.Enabled = status;
+            grpCastIDReader.Enabled = status;
+            grpForkCycleRun.Enabled = status;
+            pnlCharg.Enabled = status;
+            grpB.Enabled = status;
+            grpL.Enabled = status;
+            grpR.Enabled = status;
+            grpF.Enabled = status;
+            grpSafety.Enabled = status;
+            grpAutoSleep.Enabled = status;
+            pnlMove.Enabled = status;
+            palForkParams.Enabled = status;
+            palChargParams.Enabled = status;
+            if (!status)
+            {
+                rdoSafetyEnable.Checked = true;
+                rdoBeamSensorAutoSleepEnable.Checked = true;
+                chkMoveFront.Checked = false;
+                chkMoveBack.Checked = false;
+                chkMoveLeft.Checked = false;
+                chkMoveRight.Checked = false;
+            }
+        }
+        private EnumAutoState beforeIpcAutoState;
         private void timGUIRefresh_Tick(object sender, EventArgs e)
         {
-            //20190808_Rudy 新增Robot Command 顯示
+            labIPcStatus.Text = Enum.GetName(typeof(EnumAutoState), Vehicle.Instance.AutoState);
+            //if (IpcAutoState == EnumAutoState.Auto)
+            //{
+            //    if (beforeIpcAutoState != IpcAutoState)
+            //    {
+            //        beforeIpcAutoState = IpcAutoState;
+            //        IpcModeObjEnabled(false);
+            //    }
+            //}
+            //else
+            //{
+            //    if (beforeIpcAutoState != IpcAutoState)
+            //    {
+            //        beforeIpcAutoState = IpcAutoState;
+            //        IpcModeObjEnabled(true);
+            //    }
+            //}
+
             PlcForkCommand plcForkCommand = plcAgent.APLCVehicle.Robot.ExecutingCommand;
             if (plcForkCommand != null)
             {
@@ -307,7 +351,7 @@ namespace Mirle.Agv.View
             }
 
 
-            if (this.plcAgent.APLCVehicle.Robot.ForkHome)//20190807_Rudy 新增ForkHome
+            if (this.plcAgent.APLCVehicle.Robot.ForkHome)
                 lblForkHome.BackColor = Color.LightGreen;
             else
                 lblForkHome.BackColor = Color.Silver;
@@ -425,7 +469,7 @@ namespace Mirle.Agv.View
                     aPLCBumper.FormLabel.BorderStyle = BorderStyle.FixedSingle;
                 }
 
-                if (!aPLCBumper.Signal) //20190730_Rudy 顯示改反向
+                if (!aPLCBumper.Signal)
                 {
                     aPLCBumper.FormLabel.BackColor = this.lblNoDetect.BackColor;
                 }
@@ -549,7 +593,7 @@ namespace Mirle.Agv.View
                 rdoBeamSensorAutoSleepDisable.BackColor = Color.LightGreen;
             }
 
-            if (plcAgent.APLCVehicle.BumperAlarmStatus)//20190730_Rudy 新增Bumper Alarm Status 顯示
+            if (plcAgent.APLCVehicle.BumperAlarmStatus)
             {
                 lblBumperAlarm.BackColor = Color.Pink;
             }
@@ -884,13 +928,13 @@ namespace Mirle.Agv.View
             plcAgent.APLCVehicle.Batterys.SetCcModeAh(plcAgent.APLCVehicle.Batterys.MeterAh + plcAgent.APLCVehicle.Batterys.AhWorkingRange * (100.0 - Convert.ToDouble(txtSOCSet.Text)) / 100.00, false);
         }
 
-        private void lblEMO_DoubleClick(object sender, EventArgs e)//20190801_Rudy 新增EMO DoubleClick
+        private void lblEMO_DoubleClick(object sender, EventArgs e)
         {
             PlcEmo aPlcEMOSensor = (PlcEmo)((Label)sender).Tag;
             aPlcEMOSensor.Disable = !aPlcEMOSensor.Disable;
         }
 
-        private enum ParamtTbxType//20190802_Rudy 新增XML Param 可修改   
+        private enum ParamtTbxType
         {
             BatteryPV,
             BatterySV,
@@ -903,6 +947,7 @@ namespace Mirle.Agv.View
             switch (TbxType)
             {
                 case ParamtTbxType.BatteryPV:
+                    tboxes.Add(tbxCCModeStopVoltage_PV);
                     tboxes.Add(tbxChargingOffDelay_PV);
                     tboxes.Add(tbxBatterysChargingTimeOut_PV);
                     tboxes.Add(tbxBatLoggerInterval_PV);
@@ -912,6 +957,7 @@ namespace Mirle.Agv.View
                     tboxes.Add(tbxResetAHTimeout_PV);
                     break;
                 case ParamtTbxType.BatterySV:
+                    tboxes.Add(tbxCCModeStopVoltage_SV);
                     tboxes.Add(tbxChargingOffDelay_SV);
                     tboxes.Add(tbxBatterysChargingTimeOut_SV);
                     tboxes.Add(tbxBatLoggerInterval_SV);
@@ -934,7 +980,7 @@ namespace Mirle.Agv.View
                     break;
             }
         }
-        private void FillPVToBatteryParamTbx()//20190802_Rudy 新增XML Param 可修改   
+        private void FillPVToBatteryParamTbx()
         {
             List<TextBox> liTextbox = new List<TextBox>();
             BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.BatteryPV);
@@ -943,6 +989,9 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxCCModeStopVoltage_PV":
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
+                        break;
                     case "tbxChargingOffDelay_PV":
                         box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay).ToString();
                         break;
@@ -968,7 +1017,7 @@ namespace Mirle.Agv.View
             }
             liTextbox.Clear();
         }
-        private void FillSVToBatteryParamTbx()//20190802_Rudy 新增XML Param 可修改   
+        private void FillSVToBatteryParamTbx()
         {
             List<TextBox> liTextbox = new List<TextBox>();
             BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.BatterySV);
@@ -977,6 +1026,9 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxCCModeStopVoltage_SV":
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
+                        break;
                     case "tbxChargingOffDelay_SV":
                         box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay).ToString();
                         break;
@@ -1002,7 +1054,7 @@ namespace Mirle.Agv.View
             }
             liTextbox.Clear();
         }
-        private void FillPVToForkCommParamTbx()//20190802_Rudy 新增XML Param 可修改   
+        private void FillPVToForkCommParamTbx()
         {
             List<TextBox> liTextbox = new List<TextBox>();
             BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.ForkCommPV);
@@ -1031,7 +1083,7 @@ namespace Mirle.Agv.View
             liTextbox.Clear();
         }
 
-        private void FillSVToForkCommParamTbx()//20190802_Rudy 新增XML Param 可修改   
+        private void FillSVToForkCommParamTbx()
         {
             List<TextBox> liTextbox = new List<TextBox>();
             BatteryParamTbxFillToList(ref liTextbox, ParamtTbxType.ForkCommSV);
@@ -1064,7 +1116,7 @@ namespace Mirle.Agv.View
             }
             liTextbox.Clear();
         }
-        private bool CheckBatteryParamSVInput()//20190802_Rudy 新增XML Param 可修改   
+        private bool CheckBatteryParamSVInput()
         {
             bool result = true;
             List<TextBox> liTextbox = new List<TextBox>();
@@ -1073,6 +1125,15 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxCCModeStopVoltage_SV":
+                        {
+                            if (!double.TryParse(box.Text, out double value))
+                            {
+                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
                     case "tbxChargingOffDelay_SV":
                         {
                             if (!uint.TryParse(box.Text, out uint value))
@@ -1142,7 +1203,7 @@ namespace Mirle.Agv.View
             liTextbox.Clear();
             return result;
         }
-        private bool CheckForkCommParamSVInput()//20190802_Rudy 新增XML Param 可修改   
+        private bool CheckForkCommParamSVInput()
         {
             bool result = true;
             List<TextBox> liTextbox = new List<TextBox>();
@@ -1183,44 +1244,45 @@ namespace Mirle.Agv.View
             liTextbox.Clear();
             return result;
         }
-        private void btnBatteryParamSet_Click(object sender, EventArgs e)//20190801_Rudy 新增Auto Charge Low SOC Set
+        private void btnBatteryParamSet_Click(object sender, EventArgs e)
         {
             if (!CheckBatteryParamSVInput()) return;
             Dictionary<string, string> dicSetValue = new Dictionary<string, string>()
-                {
-                    {"Charging_Off_Delay",tbxChargingOffDelay_SV.Text},
-                    {"Batterys_Charging_Time_Out",tbxBatterysChargingTimeOut_SV.Text},
-                    {"Battery_Logger_Interval",tbxBatLoggerInterval_SV.Text },
-                    {"SOC_AH",tbxAHWorkingRange_SV.Text },
-                    {"Ah_Reset_CCmode_Counter", tbxMaxCCModeCounter_SV.Text},
-                    {"Port_AutoCharge_Low_SOC",txtAutoChargeLowSOC_SV.Text},
-                    {"Ah_Reset_Timeout", tbxResetAHTimeout_SV.Text}
-                };
+            {
+                {"CCMode_Stop_Voltage",tbxCCModeStopVoltage_SV.Text},
+                {"Charging_Off_Delay",tbxChargingOffDelay_SV.Text},
+                {"Batterys_Charging_Time_Out",tbxBatterysChargingTimeOut_SV.Text},
+                {"Battery_Logger_Interval",tbxBatLoggerInterval_SV.Text },
+                {"SOC_AH",tbxAHWorkingRange_SV.Text },
+                {"Ah_Reset_CCmode_Counter", tbxMaxCCModeCounter_SV.Text},
+                {"Port_AutoCharge_Low_SOC",txtAutoChargeLowSOC_SV.Text},
+                {"Ah_Reset_Timeout", tbxResetAHTimeout_SV.Text}
+            };
             plcAgent.WritePlcConfigToXML(dicSetValue);
             FillPVToBatteryParamTbx();
             FillSVToBatteryParamTbx();
             dicSetValue.Clear();
         }
 
-        private void btnForkCommParamSet_Click(object sender, EventArgs e)//20190802_Rudy 新增XML Param 可修改   
+        private void btnForkCommParamSet_Click(object sender, EventArgs e)
         {
             if (!CheckForkCommParamSVInput()) return;
             string strReadCassetteID = "";
             if (chbCassetteID_SV.Checked) strReadCassetteID = "true"; else strReadCassetteID = "false";
 
             Dictionary<string, string> dicSetValue = new Dictionary<string, string>()
-                {
-                    {"IsNeedReadCassetteID", strReadCassetteID},
-                    {"Fork_Command_Read_Timeout", tbxCommReadTimeout_SV.Text},
-                    {"Fork_Command_Busy_Timeout",tbxCommBusyTimeout_SV.Text},
-                    {"Fork_Command_Moving_Timeout", tbxCommMovingTimeout_SV.Text}
-                };
+            {
+                {"IsNeedReadCassetteID", strReadCassetteID},
+                {"Fork_Command_Read_Timeout", tbxCommReadTimeout_SV.Text},
+                {"Fork_Command_Busy_Timeout",tbxCommBusyTimeout_SV.Text},
+                {"Fork_Command_Moving_Timeout", tbxCommMovingTimeout_SV.Text}
+            };
             plcAgent.WritePlcConfigToXML(dicSetValue);
             FillPVToForkCommParamTbx();
             FillSVToForkCommParamTbx();
             dicSetValue.Clear();
         }
-        private void chbCassetteID_SV_CheckedChanged(object sender, EventArgs e)//20190802_Rudy 新增XML Param 可修改   
+        private void chbCassetteID_SV_CheckedChanged(object sender, EventArgs e)
         {
             if (((CheckBox)sender).Checked) ((CheckBox)sender).Text = "TRUE";
             else ((CheckBox)sender).Text = "FALSE";
@@ -1229,6 +1291,15 @@ namespace Mirle.Agv.View
         private void btnFormHide_Click(object sender, EventArgs e)
         {
             Hide();
+        }
+        private bool bIPcStatusChange = false;
+        private void labIPcStatusManual_Click(object sender, EventArgs e)
+        {
+            bIPcStatusChange = !bIPcStatusChange;
+            if (bIPcStatusChange)
+                Vehicle.Instance.AutoState = EnumAutoState.Manual;
+            else
+                Vehicle.Instance.AutoState = EnumAutoState.Auto;
         }
     }
 }

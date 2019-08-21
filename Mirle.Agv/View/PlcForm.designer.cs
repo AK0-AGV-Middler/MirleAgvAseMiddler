@@ -32,7 +32,7 @@
             this.tabContol1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.panel4 = new System.Windows.Forms.Panel();
+            this.palForkParams = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tbxCommBusyTimeout_SV = new System.Windows.Forms.TextBox();
@@ -69,7 +69,7 @@
             this.label47 = new System.Windows.Forms.Label();
             this.label49 = new System.Windows.Forms.Label();
             this.label57 = new System.Windows.Forms.Label();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.grpForkCycleRun = new System.Windows.Forms.GroupBox();
             this.label23 = new System.Windows.Forms.Label();
             this.btnCycle = new System.Windows.Forms.Button();
             this.cmbChargeDirection = new System.Windows.Forms.ComboBox();
@@ -80,11 +80,11 @@
             this.txtCycleForkCommandCount = new System.Windows.Forms.TextBox();
             this.label25 = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.grpCastIDReader = new System.Windows.Forms.GroupBox();
             this.btnTriggerCassetteReader = new System.Windows.Forms.Button();
             this.label22 = new System.Windows.Forms.Label();
             this.txtCassetteID = new System.Windows.Forms.TextBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.grpForkCommdAndStat = new System.Windows.Forms.GroupBox();
             this.lblForkHome = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.lblLoading = new System.Windows.Forms.Label();
@@ -112,34 +112,7 @@
             this.label20 = new System.Windows.Forms.Label();
             this.txtErrorReason = new System.Windows.Forms.TextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.panel5 = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.label59 = new System.Windows.Forms.Label();
-            this.label58 = new System.Windows.Forms.Label();
-            this.txtAutoChargeLowSOC_SV = new System.Windows.Forms.TextBox();
-            this.tbxResetAHTimeout_PV = new System.Windows.Forms.TextBox();
-            this.tbxResetAHTimeout_SV = new System.Windows.Forms.TextBox();
-            this.tbxMaxCCModeCounter_PV = new System.Windows.Forms.TextBox();
-            this.tbxMaxCCModeCounter_SV = new System.Windows.Forms.TextBox();
-            this.tbxAHWorkingRange_PV = new System.Windows.Forms.TextBox();
-            this.tbxAHWorkingRange_SV = new System.Windows.Forms.TextBox();
-            this.label51 = new System.Windows.Forms.Label();
-            this.txtAutoChargeLowSOC_PV = new System.Windows.Forms.TextBox();
-            this.label52 = new System.Windows.Forms.Label();
-            this.label54 = new System.Windows.Forms.Label();
-            this.label53 = new System.Windows.Forms.Label();
-            this.label50 = new System.Windows.Forms.Label();
-            this.label55 = new System.Windows.Forms.Label();
-            this.label56 = new System.Windows.Forms.Label();
-            this.label41 = new System.Windows.Forms.Label();
-            this.tbxBatLoggerInterval_PV = new System.Windows.Forms.TextBox();
-            this.tbxBatLoggerInterval_SV = new System.Windows.Forms.TextBox();
-            this.tbxBatterysChargingTimeOut_PV = new System.Windows.Forms.TextBox();
-            this.tbxBatterysChargingTimeOut_SV = new System.Windows.Forms.TextBox();
-            this.tbxChargingOffDelay_PV = new System.Windows.Forms.TextBox();
-            this.tbxChargingOffDelay_SV = new System.Windows.Forms.TextBox();
-            this.btnBatteryParamSet = new System.Windows.Forms.Button();
+            this.pnlCharg = new System.Windows.Forms.Panel();
             this.txtSOCSet = new System.Windows.Forms.TextBox();
             this.btnSOCSet = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
@@ -175,17 +148,49 @@
             this.btnChargeStop = new System.Windows.Forms.Button();
             this.btnChargeRightStart = new System.Windows.Forms.Button();
             this.btnChargeLeftStart = new System.Windows.Forms.Button();
+            this.palChargParams = new System.Windows.Forms.Panel();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.label59 = new System.Windows.Forms.Label();
+            this.label58 = new System.Windows.Forms.Label();
+            this.txtAutoChargeLowSOC_SV = new System.Windows.Forms.TextBox();
+            this.tbxResetAHTimeout_PV = new System.Windows.Forms.TextBox();
+            this.tbxResetAHTimeout_SV = new System.Windows.Forms.TextBox();
+            this.tbxMaxCCModeCounter_PV = new System.Windows.Forms.TextBox();
+            this.tbxMaxCCModeCounter_SV = new System.Windows.Forms.TextBox();
+            this.tbxAHWorkingRange_PV = new System.Windows.Forms.TextBox();
+            this.tbxAHWorkingRange_SV = new System.Windows.Forms.TextBox();
+            this.label51 = new System.Windows.Forms.Label();
+            this.txtAutoChargeLowSOC_PV = new System.Windows.Forms.TextBox();
+            this.label52 = new System.Windows.Forms.Label();
+            this.label54 = new System.Windows.Forms.Label();
+            this.label53 = new System.Windows.Forms.Label();
+            this.label50 = new System.Windows.Forms.Label();
+            this.label55 = new System.Windows.Forms.Label();
+            this.label56 = new System.Windows.Forms.Label();
+            this.label41 = new System.Windows.Forms.Label();
+            this.tbxBatLoggerInterval_PV = new System.Windows.Forms.TextBox();
+            this.tbxBatLoggerInterval_SV = new System.Windows.Forms.TextBox();
+            this.tbxBatterysChargingTimeOut_PV = new System.Windows.Forms.TextBox();
+            this.tbxBatterysChargingTimeOut_SV = new System.Windows.Forms.TextBox();
+            this.tbxChargingOffDelay_PV = new System.Windows.Forms.TextBox();
+            this.tbxChargingOffDelay_SV = new System.Windows.Forms.TextBox();
+            this.label60 = new System.Windows.Forms.Label();
+            this.tbxCCModeStopVoltage_PV = new System.Windows.Forms.TextBox();
+            this.tbxCCModeStopVoltage_SV = new System.Windows.Forms.TextBox();
+            this.btnBatteryParamSet = new System.Windows.Forms.Button();
             this.tabSafety = new System.Windows.Forms.TabPage();
-            this.lblEMO = new System.Windows.Forms.Label();
-            this.lblBumperAlarm = new System.Windows.Forms.Label();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.btnBeamSensorAutoSleepSet = new System.Windows.Forms.Button();
-            this.rdoBeamSensorAutoSleepDisable = new System.Windows.Forms.RadioButton();
-            this.rdoBeamSensorAutoSleepEnable = new System.Windows.Forms.RadioButton();
+            this.pnlMove = new System.Windows.Forms.Panel();
             this.chkMoveRight = new System.Windows.Forms.CheckBox();
             this.chkMoveLeft = new System.Windows.Forms.CheckBox();
             this.chkMoveBack = new System.Windows.Forms.CheckBox();
             this.chkMoveFront = new System.Windows.Forms.CheckBox();
+            this.lblEMO = new System.Windows.Forms.Label();
+            this.lblBumperAlarm = new System.Windows.Forms.Label();
+            this.grpAutoSleep = new System.Windows.Forms.GroupBox();
+            this.btnBeamSensorAutoSleepSet = new System.Windows.Forms.Button();
+            this.rdoBeamSensorAutoSleepDisable = new System.Windows.Forms.RadioButton();
+            this.rdoBeamSensorAutoSleepEnable = new System.Windows.Forms.RadioButton();
             this.txtSafetyAction = new System.Windows.Forms.TextBox();
             this.label28 = new System.Windows.Forms.Label();
             this.grpSafety = new System.Windows.Forms.GroupBox();
@@ -260,22 +265,27 @@
             this.tbxLogView = new System.Windows.Forms.TextBox();
             this.label29 = new System.Windows.Forms.Label();
             this.btnFormHide = new System.Windows.Forms.Button();
+            this.labIPcStatus = new System.Windows.Forms.Label();
+            this.label62 = new System.Windows.Forms.Label();
+            this.labIPcStatusManual = new System.Windows.Forms.Label();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.panel4.SuspendLayout();
+            this.palForkParams.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
-            this.groupBox3.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.grpForkCycleRun.SuspendLayout();
+            this.grpCastIDReader.SuspendLayout();
+            this.grpForkCommdAndStat.SuspendLayout();
             this.tabPage3.SuspendLayout();
-            this.panel5.SuspendLayout();
+            this.pnlCharg.SuspendLayout();
+            this.palChargParams.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabSafety.SuspendLayout();
-            this.groupBox4.SuspendLayout();
+            this.pnlMove.SuspendLayout();
+            this.grpAutoSleep.SuspendLayout();
             this.grpSafety.SuspendLayout();
             this.grpR.SuspendLayout();
             this.grpL.SuspendLayout();
@@ -308,11 +318,11 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.panel4);
+            this.tabPage2.Controls.Add(this.palForkParams);
             this.tabPage2.Controls.Add(this.panel3);
-            this.tabPage2.Controls.Add(this.groupBox3);
-            this.tabPage2.Controls.Add(this.groupBox2);
-            this.tabPage2.Controls.Add(this.groupBox1);
+            this.tabPage2.Controls.Add(this.grpForkCycleRun);
+            this.tabPage2.Controls.Add(this.grpCastIDReader);
+            this.tabPage2.Controls.Add(this.grpForkCommdAndStat);
             this.tabPage2.Location = new System.Drawing.Point(4, 23);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
@@ -321,15 +331,15 @@
             this.tabPage2.Text = "Fork";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // panel4
+            // palForkParams
             // 
-            this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel4.Controls.Add(this.panel2);
-            this.panel4.Controls.Add(this.btnForkCommParamSet);
-            this.panel4.Location = new System.Drawing.Point(967, 6);
-            this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(318, 302);
-            this.panel4.TabIndex = 70;
+            this.palForkParams.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.palForkParams.Controls.Add(this.panel2);
+            this.palForkParams.Controls.Add(this.btnForkCommParamSet);
+            this.palForkParams.Location = new System.Drawing.Point(967, 6);
+            this.palForkParams.Name = "palForkParams";
+            this.palForkParams.Size = new System.Drawing.Size(318, 286);
+            this.palForkParams.TabIndex = 70;
             // 
             // panel2
             // 
@@ -531,9 +541,10 @@
             // 
             // btnForkCommParamSet
             // 
-            this.btnForkCommParamSet.Location = new System.Drawing.Point(159, 263);
+            this.btnForkCommParamSet.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.btnForkCommParamSet.Location = new System.Drawing.Point(0, 255);
             this.btnForkCommParamSet.Name = "btnForkCommParamSet";
-            this.btnForkCommParamSet.Size = new System.Drawing.Size(153, 29);
+            this.btnForkCommParamSet.Size = new System.Drawing.Size(316, 29);
             this.btnForkCommParamSet.TabIndex = 63;
             this.btnForkCommParamSet.Text = "Set";
             this.btnForkCommParamSet.UseVisualStyleBackColor = true;
@@ -755,24 +766,24 @@
             this.label57.Text = "Present Value";
             this.label57.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // groupBox3
+            // grpForkCycleRun
             // 
-            this.groupBox3.Controls.Add(this.label23);
-            this.groupBox3.Controls.Add(this.btnCycle);
-            this.groupBox3.Controls.Add(this.cmbChargeDirection);
-            this.groupBox3.Controls.Add(this.txtCycleChargeCommandCount);
-            this.groupBox3.Controls.Add(this.label24);
-            this.groupBox3.Controls.Add(this.label27);
-            this.groupBox3.Controls.Add(this.txtAutoChargeLowSOC);
-            this.groupBox3.Controls.Add(this.txtCycleForkCommandCount);
-            this.groupBox3.Controls.Add(this.label25);
-            this.groupBox3.Controls.Add(this.label26);
-            this.groupBox3.Location = new System.Drawing.Point(18, 336);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(374, 218);
-            this.groupBox3.TabIndex = 67;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Fork Cycle Run (with Auto Charge)";
+            this.grpForkCycleRun.Controls.Add(this.label23);
+            this.grpForkCycleRun.Controls.Add(this.btnCycle);
+            this.grpForkCycleRun.Controls.Add(this.cmbChargeDirection);
+            this.grpForkCycleRun.Controls.Add(this.txtCycleChargeCommandCount);
+            this.grpForkCycleRun.Controls.Add(this.label24);
+            this.grpForkCycleRun.Controls.Add(this.label27);
+            this.grpForkCycleRun.Controls.Add(this.txtAutoChargeLowSOC);
+            this.grpForkCycleRun.Controls.Add(this.txtCycleForkCommandCount);
+            this.grpForkCycleRun.Controls.Add(this.label25);
+            this.grpForkCycleRun.Controls.Add(this.label26);
+            this.grpForkCycleRun.Location = new System.Drawing.Point(18, 336);
+            this.grpForkCycleRun.Name = "grpForkCycleRun";
+            this.grpForkCycleRun.Size = new System.Drawing.Size(374, 218);
+            this.grpForkCycleRun.TabIndex = 67;
+            this.grpForkCycleRun.TabStop = false;
+            this.grpForkCycleRun.Text = "Fork Cycle Run (with Auto Charge)";
             // 
             // label23
             // 
@@ -868,17 +879,17 @@
             this.label26.TabIndex = 60;
             this.label26.Text = "Fork Command Count";
             // 
-            // groupBox2
+            // grpCastIDReader
             // 
-            this.groupBox2.Controls.Add(this.btnTriggerCassetteReader);
-            this.groupBox2.Controls.Add(this.label22);
-            this.groupBox2.Controls.Add(this.txtCassetteID);
-            this.groupBox2.Location = new System.Drawing.Point(643, 22);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(286, 286);
-            this.groupBox2.TabIndex = 66;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Cassette ID Reader";
+            this.grpCastIDReader.Controls.Add(this.btnTriggerCassetteReader);
+            this.grpCastIDReader.Controls.Add(this.label22);
+            this.grpCastIDReader.Controls.Add(this.txtCassetteID);
+            this.grpCastIDReader.Location = new System.Drawing.Point(643, 22);
+            this.grpCastIDReader.Name = "grpCastIDReader";
+            this.grpCastIDReader.Size = new System.Drawing.Size(286, 286);
+            this.grpCastIDReader.TabIndex = 66;
+            this.grpCastIDReader.TabStop = false;
+            this.grpCastIDReader.Text = "Cassette ID Reader";
             // 
             // btnTriggerCassetteReader
             // 
@@ -906,40 +917,40 @@
             this.txtCassetteID.Size = new System.Drawing.Size(173, 23);
             this.txtCassetteID.TabIndex = 52;
             // 
-            // groupBox1
+            // grpForkCommdAndStat
             // 
-            this.groupBox1.Controls.Add(this.lblForkHome);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.lblLoading);
-            this.groupBox1.Controls.Add(this.btnForkCommandExecute);
-            this.groupBox1.Controls.Add(this.txtCommandNo);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.cmbOperationType);
-            this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.txtStageNo);
-            this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.cmbDirection);
-            this.groupBox1.Controls.Add(this.label5);
-            this.groupBox1.Controls.Add(this.cmbEQPIO);
-            this.groupBox1.Controls.Add(this.label6);
-            this.groupBox1.Controls.Add(this.txtForkSpeed);
-            this.groupBox1.Controls.Add(this.btnForkCommandClear);
-            this.groupBox1.Controls.Add(this.btnForkCommandWrite);
-            this.groupBox1.Controls.Add(this.lblForkFinish);
-            this.groupBox1.Controls.Add(this.btnForkCommandReadRequest);
-            this.groupBox1.Controls.Add(this.lblForkReady);
-            this.groupBox1.Controls.Add(this.btnForkCommandFinishAck);
-            this.groupBox1.Controls.Add(this.lblForkBusy);
-            this.groupBox1.Controls.Add(this.btnForkCommandExecuteFlow);
-            this.groupBox1.Controls.Add(this.btnClearForkCommand);
-            this.groupBox1.Controls.Add(this.label20);
-            this.groupBox1.Controls.Add(this.txtErrorReason);
-            this.groupBox1.Location = new System.Drawing.Point(18, 22);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(590, 286);
-            this.groupBox1.TabIndex = 65;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Fork Command and Status";
+            this.grpForkCommdAndStat.Controls.Add(this.lblForkHome);
+            this.grpForkCommdAndStat.Controls.Add(this.label1);
+            this.grpForkCommdAndStat.Controls.Add(this.lblLoading);
+            this.grpForkCommdAndStat.Controls.Add(this.btnForkCommandExecute);
+            this.grpForkCommdAndStat.Controls.Add(this.txtCommandNo);
+            this.grpForkCommdAndStat.Controls.Add(this.label2);
+            this.grpForkCommdAndStat.Controls.Add(this.cmbOperationType);
+            this.grpForkCommdAndStat.Controls.Add(this.label3);
+            this.grpForkCommdAndStat.Controls.Add(this.txtStageNo);
+            this.grpForkCommdAndStat.Controls.Add(this.label4);
+            this.grpForkCommdAndStat.Controls.Add(this.cmbDirection);
+            this.grpForkCommdAndStat.Controls.Add(this.label5);
+            this.grpForkCommdAndStat.Controls.Add(this.cmbEQPIO);
+            this.grpForkCommdAndStat.Controls.Add(this.label6);
+            this.grpForkCommdAndStat.Controls.Add(this.txtForkSpeed);
+            this.grpForkCommdAndStat.Controls.Add(this.btnForkCommandClear);
+            this.grpForkCommdAndStat.Controls.Add(this.btnForkCommandWrite);
+            this.grpForkCommdAndStat.Controls.Add(this.lblForkFinish);
+            this.grpForkCommdAndStat.Controls.Add(this.btnForkCommandReadRequest);
+            this.grpForkCommdAndStat.Controls.Add(this.lblForkReady);
+            this.grpForkCommdAndStat.Controls.Add(this.btnForkCommandFinishAck);
+            this.grpForkCommdAndStat.Controls.Add(this.lblForkBusy);
+            this.grpForkCommdAndStat.Controls.Add(this.btnForkCommandExecuteFlow);
+            this.grpForkCommdAndStat.Controls.Add(this.btnClearForkCommand);
+            this.grpForkCommdAndStat.Controls.Add(this.label20);
+            this.grpForkCommdAndStat.Controls.Add(this.txtErrorReason);
+            this.grpForkCommdAndStat.Location = new System.Drawing.Point(18, 22);
+            this.grpForkCommdAndStat.Name = "grpForkCommdAndStat";
+            this.grpForkCommdAndStat.Size = new System.Drawing.Size(590, 286);
+            this.grpForkCommdAndStat.TabIndex = 65;
+            this.grpForkCommdAndStat.TabStop = false;
+            this.grpForkCommdAndStat.Text = "Fork Command and Status";
             // 
             // lblForkHome
             // 
@@ -1208,42 +1219,8 @@
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.panel5);
-            this.tabPage3.Controls.Add(this.txtSOCSet);
-            this.tabPage3.Controls.Add(this.btnSOCSet);
-            this.tabPage3.Controls.Add(this.label21);
-            this.tabPage3.Controls.Add(this.txtCCModeAH);
-            this.tabPage3.Controls.Add(this.label18);
-            this.tabPage3.Controls.Add(this.txtBBatteryTemp);
-            this.tabPage3.Controls.Add(this.label17);
-            this.tabPage3.Controls.Add(this.txtFBatteryTemp);
-            this.tabPage3.Controls.Add(this.lblCharging);
-            this.tabPage3.Controls.Add(this.label16);
-            this.tabPage3.Controls.Add(this.txtFullChargeIndex);
-            this.tabPage3.Controls.Add(this.label15);
-            this.tabPage3.Controls.Add(this.txtMaxCCmodeCounter);
-            this.tabPage3.Controls.Add(this.label14);
-            this.tabPage3.Controls.Add(this.txtCCModeCounter);
-            this.tabPage3.Controls.Add(this.label13);
-            this.tabPage3.Controls.Add(this.txtSOC);
-            this.tabPage3.Controls.Add(this.label12);
-            this.tabPage3.Controls.Add(this.btnMeterAHReset);
-            this.tabPage3.Controls.Add(this.txtAHWorkingRange);
-            this.tabPage3.Controls.Add(this.txtAH);
-            this.tabPage3.Controls.Add(this.label11);
-            this.tabPage3.Controls.Add(this.txtWattHour);
-            this.tabPage3.Controls.Add(this.txtWatt);
-            this.tabPage3.Controls.Add(this.txtVoltage);
-            this.tabPage3.Controls.Add(this.txtCurrent);
-            this.tabPage3.Controls.Add(this.label9);
-            this.tabPage3.Controls.Add(this.label10);
-            this.tabPage3.Controls.Add(this.label8);
-            this.tabPage3.Controls.Add(this.label7);
-            this.tabPage3.Controls.Add(this.lblYinda);
-            this.tabPage3.Controls.Add(this.lblGotech);
-            this.tabPage3.Controls.Add(this.btnChargeStop);
-            this.tabPage3.Controls.Add(this.btnChargeRightStart);
-            this.tabPage3.Controls.Add(this.btnChargeLeftStart);
+            this.tabPage3.Controls.Add(this.pnlCharg);
+            this.tabPage3.Controls.Add(this.palChargParams);
             this.tabPage3.Location = new System.Drawing.Point(4, 23);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
@@ -1253,15 +1230,372 @@
             this.tabPage3.UseVisualStyleBackColor = true;
             this.tabPage3.Click += new System.EventHandler(this.btnBuzzerStop_Click);
             // 
-            // panel5
+            // pnlCharg
             // 
-            this.panel5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel5.Controls.Add(this.panel1);
-            this.panel5.Controls.Add(this.btnBatteryParamSet);
-            this.panel5.Location = new System.Drawing.Point(967, 6);
-            this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(318, 329);
-            this.panel5.TabIndex = 66;
+            this.pnlCharg.Controls.Add(this.txtSOCSet);
+            this.pnlCharg.Controls.Add(this.btnSOCSet);
+            this.pnlCharg.Controls.Add(this.label21);
+            this.pnlCharg.Controls.Add(this.txtCCModeAH);
+            this.pnlCharg.Controls.Add(this.label18);
+            this.pnlCharg.Controls.Add(this.txtBBatteryTemp);
+            this.pnlCharg.Controls.Add(this.label17);
+            this.pnlCharg.Controls.Add(this.txtFBatteryTemp);
+            this.pnlCharg.Controls.Add(this.lblCharging);
+            this.pnlCharg.Controls.Add(this.label16);
+            this.pnlCharg.Controls.Add(this.txtFullChargeIndex);
+            this.pnlCharg.Controls.Add(this.label15);
+            this.pnlCharg.Controls.Add(this.txtMaxCCmodeCounter);
+            this.pnlCharg.Controls.Add(this.label14);
+            this.pnlCharg.Controls.Add(this.txtCCModeCounter);
+            this.pnlCharg.Controls.Add(this.label13);
+            this.pnlCharg.Controls.Add(this.txtSOC);
+            this.pnlCharg.Controls.Add(this.label12);
+            this.pnlCharg.Controls.Add(this.btnMeterAHReset);
+            this.pnlCharg.Controls.Add(this.txtAHWorkingRange);
+            this.pnlCharg.Controls.Add(this.txtAH);
+            this.pnlCharg.Controls.Add(this.label11);
+            this.pnlCharg.Controls.Add(this.txtWattHour);
+            this.pnlCharg.Controls.Add(this.txtWatt);
+            this.pnlCharg.Controls.Add(this.txtVoltage);
+            this.pnlCharg.Controls.Add(this.txtCurrent);
+            this.pnlCharg.Controls.Add(this.label9);
+            this.pnlCharg.Controls.Add(this.label10);
+            this.pnlCharg.Controls.Add(this.label8);
+            this.pnlCharg.Controls.Add(this.label7);
+            this.pnlCharg.Controls.Add(this.lblYinda);
+            this.pnlCharg.Controls.Add(this.lblGotech);
+            this.pnlCharg.Controls.Add(this.btnChargeStop);
+            this.pnlCharg.Controls.Add(this.btnChargeRightStart);
+            this.pnlCharg.Controls.Add(this.btnChargeLeftStart);
+            this.pnlCharg.Location = new System.Drawing.Point(12, 13);
+            this.pnlCharg.Name = "pnlCharg";
+            this.pnlCharg.Size = new System.Drawing.Size(715, 321);
+            this.pnlCharg.TabIndex = 67;
+            // 
+            // txtSOCSet
+            // 
+            this.txtSOCSet.Location = new System.Drawing.Point(138, 247);
+            this.txtSOCSet.Name = "txtSOCSet";
+            this.txtSOCSet.Size = new System.Drawing.Size(125, 23);
+            this.txtSOCSet.TabIndex = 55;
+            this.txtSOCSet.Text = "70.00";
+            // 
+            // btnSOCSet
+            // 
+            this.btnSOCSet.Location = new System.Drawing.Point(138, 276);
+            this.btnSOCSet.Name = "btnSOCSet";
+            this.btnSOCSet.Size = new System.Drawing.Size(125, 29);
+            this.btnSOCSet.TabIndex = 54;
+            this.btnSOCSet.Text = "SOC Set";
+            this.btnSOCSet.UseVisualStyleBackColor = true;
+            this.btnSOCSet.Click += new System.EventHandler(this.btnSOCSet_Click);
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(531, 190);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(72, 13);
+            this.label21.TabIndex = 53;
+            this.label21.Text = "CCMode AH";
+            // 
+            // txtCCModeAH
+            // 
+            this.txtCCModeAH.Enabled = false;
+            this.txtCCModeAH.Location = new System.Drawing.Point(608, 187);
+            this.txtCCModeAH.Name = "txtCCModeAH";
+            this.txtCCModeAH.Size = new System.Drawing.Size(91, 23);
+            this.txtCCModeAH.TabIndex = 52;
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(491, 162);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(112, 13);
+            this.label18.TabIndex = 51;
+            this.label18.Text = "BBattery Temperature";
+            // 
+            // txtBBatteryTemp
+            // 
+            this.txtBBatteryTemp.Enabled = false;
+            this.txtBBatteryTemp.Location = new System.Drawing.Point(608, 159);
+            this.txtBBatteryTemp.Name = "txtBBatteryTemp";
+            this.txtBBatteryTemp.Size = new System.Drawing.Size(91, 23);
+            this.txtBBatteryTemp.TabIndex = 50;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(491, 133);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(111, 13);
+            this.label17.TabIndex = 49;
+            this.label17.Text = "FBattery Temperature";
+            // 
+            // txtFBatteryTemp
+            // 
+            this.txtFBatteryTemp.Enabled = false;
+            this.txtFBatteryTemp.Location = new System.Drawing.Point(608, 130);
+            this.txtFBatteryTemp.Name = "txtFBatteryTemp";
+            this.txtFBatteryTemp.Size = new System.Drawing.Size(91, 23);
+            this.txtFBatteryTemp.TabIndex = 48;
+            // 
+            // lblCharging
+            // 
+            this.lblCharging.BackColor = System.Drawing.Color.Silver;
+            this.lblCharging.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblCharging.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblCharging.Location = new System.Drawing.Point(11, 12);
+            this.lblCharging.Name = "lblCharging";
+            this.lblCharging.Size = new System.Drawing.Size(250, 46);
+            this.lblCharging.TabIndex = 47;
+            this.lblCharging.Text = "Charging";
+            this.lblCharging.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(514, 105);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(87, 13);
+            this.label16.TabIndex = 46;
+            this.label16.Text = "FullChargeIndex";
+            // 
+            // txtFullChargeIndex
+            // 
+            this.txtFullChargeIndex.Enabled = false;
+            this.txtFullChargeIndex.Location = new System.Drawing.Point(608, 102);
+            this.txtFullChargeIndex.Name = "txtFullChargeIndex";
+            this.txtFullChargeIndex.Size = new System.Drawing.Size(91, 23);
+            this.txtFullChargeIndex.TabIndex = 45;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(482, 78);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(120, 13);
+            this.label15.TabIndex = 44;
+            this.label15.Text = "Max CC Mode Counter";
+            // 
+            // txtMaxCCmodeCounter
+            // 
+            this.txtMaxCCmodeCounter.Enabled = false;
+            this.txtMaxCCmodeCounter.Location = new System.Drawing.Point(608, 74);
+            this.txtMaxCCmodeCounter.Name = "txtMaxCCmodeCounter";
+            this.txtMaxCCmodeCounter.Size = new System.Drawing.Size(91, 23);
+            this.txtMaxCCmodeCounter.TabIndex = 43;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(509, 49);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(92, 13);
+            this.label14.TabIndex = 42;
+            this.label14.Text = "CCMode Counter";
+            // 
+            // txtCCModeCounter
+            // 
+            this.txtCCModeCounter.Enabled = false;
+            this.txtCCModeCounter.Location = new System.Drawing.Point(608, 46);
+            this.txtCCModeCounter.Name = "txtCCModeCounter";
+            this.txtCCModeCounter.Size = new System.Drawing.Size(91, 23);
+            this.txtCCModeCounter.TabIndex = 41;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(505, 19);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(98, 13);
+            this.label13.TabIndex = 40;
+            this.label13.Text = "AHWorkingRange";
+            // 
+            // txtSOC
+            // 
+            this.txtSOC.Enabled = false;
+            this.txtSOC.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtSOC.Location = new System.Drawing.Point(338, 187);
+            this.txtSOC.Name = "txtSOC";
+            this.txtSOC.Size = new System.Drawing.Size(125, 35);
+            this.txtSOC.TabIndex = 39;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label12.Location = new System.Drawing.Point(284, 193);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(55, 26);
+            this.label12.TabIndex = 38;
+            this.label12.Text = "SOC";
+            // 
+            // btnMeterAHReset
+            // 
+            this.btnMeterAHReset.Location = new System.Drawing.Point(9, 187);
+            this.btnMeterAHReset.Name = "btnMeterAHReset";
+            this.btnMeterAHReset.Size = new System.Drawing.Size(252, 37);
+            this.btnMeterAHReset.TabIndex = 36;
+            this.btnMeterAHReset.Text = "Meter AH Reset";
+            this.btnMeterAHReset.UseVisualStyleBackColor = true;
+            this.btnMeterAHReset.Click += new System.EventHandler(this.btnMeterAHReset_Click);
+            // 
+            // txtAHWorkingRange
+            // 
+            this.txtAHWorkingRange.Enabled = false;
+            this.txtAHWorkingRange.Location = new System.Drawing.Point(608, 19);
+            this.txtAHWorkingRange.Name = "txtAHWorkingRange";
+            this.txtAHWorkingRange.Size = new System.Drawing.Size(91, 23);
+            this.txtAHWorkingRange.TabIndex = 34;
+            // 
+            // txtAH
+            // 
+            this.txtAH.Enabled = false;
+            this.txtAH.Location = new System.Drawing.Point(338, 141);
+            this.txtAH.Name = "txtAH";
+            this.txtAH.Size = new System.Drawing.Size(126, 23);
+            this.txtAH.TabIndex = 33;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(303, 147);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(25, 13);
+            this.label11.TabIndex = 32;
+            this.label11.Text = "AH";
+            // 
+            // txtWattHour
+            // 
+            this.txtWattHour.Enabled = false;
+            this.txtWattHour.Location = new System.Drawing.Point(338, 116);
+            this.txtWattHour.Name = "txtWattHour";
+            this.txtWattHour.Size = new System.Drawing.Size(126, 23);
+            this.txtWattHour.TabIndex = 31;
+            // 
+            // txtWatt
+            // 
+            this.txtWatt.Enabled = false;
+            this.txtWatt.Location = new System.Drawing.Point(338, 91);
+            this.txtWatt.Name = "txtWatt";
+            this.txtWatt.Size = new System.Drawing.Size(126, 23);
+            this.txtWatt.TabIndex = 30;
+            // 
+            // txtVoltage
+            // 
+            this.txtVoltage.Enabled = false;
+            this.txtVoltage.Location = new System.Drawing.Point(338, 66);
+            this.txtVoltage.Name = "txtVoltage";
+            this.txtVoltage.Size = new System.Drawing.Size(126, 23);
+            this.txtVoltage.TabIndex = 29;
+            // 
+            // txtCurrent
+            // 
+            this.txtCurrent.Enabled = false;
+            this.txtCurrent.Location = new System.Drawing.Point(338, 41);
+            this.txtCurrent.Name = "txtCurrent";
+            this.txtCurrent.Size = new System.Drawing.Size(126, 23);
+            this.txtCurrent.TabIndex = 28;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(274, 120);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(55, 13);
+            this.label9.TabIndex = 27;
+            this.label9.Text = "WattHour";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(297, 95);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(33, 13);
+            this.label10.TabIndex = 26;
+            this.label10.Text = "Watt.";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(285, 70);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(44, 13);
+            this.label8.TabIndex = 25;
+            this.label8.Text = "Voltage";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(285, 46);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(43, 13);
+            this.label7.TabIndex = 24;
+            this.label7.Text = "Current";
+            // 
+            // lblYinda
+            // 
+            this.lblYinda.BackColor = System.Drawing.Color.Silver;
+            this.lblYinda.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblYinda.Location = new System.Drawing.Point(405, 16);
+            this.lblYinda.Name = "lblYinda";
+            this.lblYinda.Size = new System.Drawing.Size(58, 18);
+            this.lblYinda.TabIndex = 23;
+            this.lblYinda.Text = "Yinda";
+            this.lblYinda.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblGotech
+            // 
+            this.lblGotech.BackColor = System.Drawing.Color.Silver;
+            this.lblGotech.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblGotech.Location = new System.Drawing.Point(338, 16);
+            this.lblGotech.Name = "lblGotech";
+            this.lblGotech.Size = new System.Drawing.Size(58, 18);
+            this.lblGotech.TabIndex = 22;
+            this.lblGotech.Text = "Gotech";
+            this.lblGotech.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnChargeStop
+            // 
+            this.btnChargeStop.Location = new System.Drawing.Point(9, 144);
+            this.btnChargeStop.Name = "btnChargeStop";
+            this.btnChargeStop.Size = new System.Drawing.Size(252, 37);
+            this.btnChargeStop.TabIndex = 21;
+            this.btnChargeStop.Text = "Charge Stop";
+            this.btnChargeStop.UseVisualStyleBackColor = true;
+            this.btnChargeStop.Click += new System.EventHandler(this.btnChargeStop_Click);
+            // 
+            // btnChargeRightStart
+            // 
+            this.btnChargeRightStart.Location = new System.Drawing.Point(138, 101);
+            this.btnChargeRightStart.Name = "btnChargeRightStart";
+            this.btnChargeRightStart.Size = new System.Drawing.Size(123, 37);
+            this.btnChargeRightStart.TabIndex = 20;
+            this.btnChargeRightStart.Text = "Right Charge Start";
+            this.btnChargeRightStart.UseVisualStyleBackColor = true;
+            this.btnChargeRightStart.Click += new System.EventHandler(this.btnChargeRightStart_Click);
+            // 
+            // btnChargeLeftStart
+            // 
+            this.btnChargeLeftStart.Location = new System.Drawing.Point(9, 101);
+            this.btnChargeLeftStart.Name = "btnChargeLeftStart";
+            this.btnChargeLeftStart.Size = new System.Drawing.Size(123, 37);
+            this.btnChargeLeftStart.TabIndex = 19;
+            this.btnChargeLeftStart.Text = "Left Charge Start";
+            this.btnChargeLeftStart.UseVisualStyleBackColor = true;
+            this.btnChargeLeftStart.Click += new System.EventHandler(this.btnChargeLeftStart_Click);
+            // 
+            // palChargParams
+            // 
+            this.palChargParams.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.palChargParams.Controls.Add(this.panel1);
+            this.palChargParams.Controls.Add(this.btnBatteryParamSet);
+            this.palChargParams.Location = new System.Drawing.Point(967, 6);
+            this.palChargParams.Name = "palChargParams";
+            this.palChargParams.Size = new System.Drawing.Size(318, 358);
+            this.palChargParams.TabIndex = 66;
             // 
             // panel1
             // 
@@ -1269,7 +1603,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(316, 286);
+            this.panel1.Size = new System.Drawing.Size(316, 324);
             this.panel1.TabIndex = 65;
             // 
             // tableLayoutPanel1
@@ -1304,10 +1638,13 @@
             this.tableLayoutPanel1.Controls.Add(this.tbxBatterysChargingTimeOut_SV, 2, 6);
             this.tableLayoutPanel1.Controls.Add(this.tbxChargingOffDelay_PV, 1, 7);
             this.tableLayoutPanel1.Controls.Add(this.tbxChargingOffDelay_SV, 2, 7);
+            this.tableLayoutPanel1.Controls.Add(this.label60, 0, 8);
+            this.tableLayoutPanel1.Controls.Add(this.tbxCCModeStopVoltage_PV, 1, 8);
+            this.tableLayoutPanel1.Controls.Add(this.tbxCCModeStopVoltage_SV, 2, 8);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowCount = 9;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
@@ -1316,7 +1653,8 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(316, 286);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(316, 324);
             this.tableLayoutPanel1.TabIndex = 73;
             // 
             // label59
@@ -1548,340 +1886,51 @@
             this.tbxChargingOffDelay_SV.Size = new System.Drawing.Size(85, 23);
             this.tbxChargingOffDelay_SV.TabIndex = 78;
             // 
+            // label60
+            // 
+            this.label60.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label60.AutoSize = true;
+            this.label60.Location = new System.Drawing.Point(4, 298);
+            this.label60.Name = "label60";
+            this.label60.Size = new System.Drawing.Size(124, 13);
+            this.label60.TabIndex = 80;
+            this.label60.Text = "CCMode Stop Voltage";
+            this.label60.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tbxCCModeStopVoltage_PV
+            // 
+            this.tbxCCModeStopVoltage_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCCModeStopVoltage_PV.Location = new System.Drawing.Point(135, 293);
+            this.tbxCCModeStopVoltage_PV.Name = "tbxCCModeStopVoltage_PV";
+            this.tbxCCModeStopVoltage_PV.ReadOnly = true;
+            this.tbxCCModeStopVoltage_PV.Size = new System.Drawing.Size(85, 23);
+            this.tbxCCModeStopVoltage_PV.TabIndex = 77;
+            // 
+            // tbxCCModeStopVoltage_SV
+            // 
+            this.tbxCCModeStopVoltage_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxCCModeStopVoltage_SV.Location = new System.Drawing.Point(227, 293);
+            this.tbxCCModeStopVoltage_SV.Name = "tbxCCModeStopVoltage_SV";
+            this.tbxCCModeStopVoltage_SV.Size = new System.Drawing.Size(85, 23);
+            this.tbxCCModeStopVoltage_SV.TabIndex = 78;
+            // 
             // btnBatteryParamSet
             // 
-            this.btnBatteryParamSet.Location = new System.Drawing.Point(160, 292);
+            this.btnBatteryParamSet.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.btnBatteryParamSet.Location = new System.Drawing.Point(0, 327);
             this.btnBatteryParamSet.Name = "btnBatteryParamSet";
-            this.btnBatteryParamSet.Size = new System.Drawing.Size(153, 29);
+            this.btnBatteryParamSet.Size = new System.Drawing.Size(316, 29);
             this.btnBatteryParamSet.TabIndex = 63;
             this.btnBatteryParamSet.Text = "Set";
             this.btnBatteryParamSet.UseVisualStyleBackColor = true;
             this.btnBatteryParamSet.Click += new System.EventHandler(this.btnBatteryParamSet_Click);
             // 
-            // txtSOCSet
-            // 
-            this.txtSOCSet.Location = new System.Drawing.Point(154, 260);
-            this.txtSOCSet.Name = "txtSOCSet";
-            this.txtSOCSet.Size = new System.Drawing.Size(125, 23);
-            this.txtSOCSet.TabIndex = 55;
-            this.txtSOCSet.Text = "70.00";
-            // 
-            // btnSOCSet
-            // 
-            this.btnSOCSet.Location = new System.Drawing.Point(154, 289);
-            this.btnSOCSet.Name = "btnSOCSet";
-            this.btnSOCSet.Size = new System.Drawing.Size(125, 29);
-            this.btnSOCSet.TabIndex = 54;
-            this.btnSOCSet.Text = "SOC Set";
-            this.btnSOCSet.UseVisualStyleBackColor = true;
-            this.btnSOCSet.Click += new System.EventHandler(this.btnSOCSet_Click);
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(547, 203);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(72, 13);
-            this.label21.TabIndex = 53;
-            this.label21.Text = "CCMode AH";
-            // 
-            // txtCCModeAH
-            // 
-            this.txtCCModeAH.Enabled = false;
-            this.txtCCModeAH.Location = new System.Drawing.Point(624, 200);
-            this.txtCCModeAH.Name = "txtCCModeAH";
-            this.txtCCModeAH.Size = new System.Drawing.Size(91, 23);
-            this.txtCCModeAH.TabIndex = 52;
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(507, 175);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(112, 13);
-            this.label18.TabIndex = 51;
-            this.label18.Text = "BBattery Temperature";
-            // 
-            // txtBBatteryTemp
-            // 
-            this.txtBBatteryTemp.Enabled = false;
-            this.txtBBatteryTemp.Location = new System.Drawing.Point(624, 172);
-            this.txtBBatteryTemp.Name = "txtBBatteryTemp";
-            this.txtBBatteryTemp.Size = new System.Drawing.Size(91, 23);
-            this.txtBBatteryTemp.TabIndex = 50;
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(507, 146);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(111, 13);
-            this.label17.TabIndex = 49;
-            this.label17.Text = "FBattery Temperature";
-            // 
-            // txtFBatteryTemp
-            // 
-            this.txtFBatteryTemp.Enabled = false;
-            this.txtFBatteryTemp.Location = new System.Drawing.Point(624, 143);
-            this.txtFBatteryTemp.Name = "txtFBatteryTemp";
-            this.txtFBatteryTemp.Size = new System.Drawing.Size(91, 23);
-            this.txtFBatteryTemp.TabIndex = 48;
-            // 
-            // lblCharging
-            // 
-            this.lblCharging.BackColor = System.Drawing.Color.Silver;
-            this.lblCharging.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblCharging.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblCharging.Location = new System.Drawing.Point(27, 25);
-            this.lblCharging.Name = "lblCharging";
-            this.lblCharging.Size = new System.Drawing.Size(250, 46);
-            this.lblCharging.TabIndex = 47;
-            this.lblCharging.Text = "Charging";
-            this.lblCharging.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(530, 118);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(87, 13);
-            this.label16.TabIndex = 46;
-            this.label16.Text = "FullChargeIndex";
-            // 
-            // txtFullChargeIndex
-            // 
-            this.txtFullChargeIndex.Enabled = false;
-            this.txtFullChargeIndex.Location = new System.Drawing.Point(624, 115);
-            this.txtFullChargeIndex.Name = "txtFullChargeIndex";
-            this.txtFullChargeIndex.Size = new System.Drawing.Size(91, 23);
-            this.txtFullChargeIndex.TabIndex = 45;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(498, 91);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(120, 13);
-            this.label15.TabIndex = 44;
-            this.label15.Text = "Max CC Mode Counter";
-            // 
-            // txtMaxCCmodeCounter
-            // 
-            this.txtMaxCCmodeCounter.Enabled = false;
-            this.txtMaxCCmodeCounter.Location = new System.Drawing.Point(624, 87);
-            this.txtMaxCCmodeCounter.Name = "txtMaxCCmodeCounter";
-            this.txtMaxCCmodeCounter.Size = new System.Drawing.Size(91, 23);
-            this.txtMaxCCmodeCounter.TabIndex = 43;
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(525, 62);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(92, 13);
-            this.label14.TabIndex = 42;
-            this.label14.Text = "CCMode Counter";
-            // 
-            // txtCCModeCounter
-            // 
-            this.txtCCModeCounter.Enabled = false;
-            this.txtCCModeCounter.Location = new System.Drawing.Point(624, 59);
-            this.txtCCModeCounter.Name = "txtCCModeCounter";
-            this.txtCCModeCounter.Size = new System.Drawing.Size(91, 23);
-            this.txtCCModeCounter.TabIndex = 41;
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(521, 32);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(98, 13);
-            this.label13.TabIndex = 40;
-            this.label13.Text = "AHWorkingRange";
-            // 
-            // txtSOC
-            // 
-            this.txtSOC.Enabled = false;
-            this.txtSOC.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtSOC.Location = new System.Drawing.Point(354, 200);
-            this.txtSOC.Name = "txtSOC";
-            this.txtSOC.Size = new System.Drawing.Size(125, 35);
-            this.txtSOC.TabIndex = 39;
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label12.Location = new System.Drawing.Point(300, 206);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(55, 26);
-            this.label12.TabIndex = 38;
-            this.label12.Text = "SOC";
-            // 
-            // btnMeterAHReset
-            // 
-            this.btnMeterAHReset.Location = new System.Drawing.Point(25, 200);
-            this.btnMeterAHReset.Name = "btnMeterAHReset";
-            this.btnMeterAHReset.Size = new System.Drawing.Size(252, 37);
-            this.btnMeterAHReset.TabIndex = 36;
-            this.btnMeterAHReset.Text = "Meter AH Reset";
-            this.btnMeterAHReset.UseVisualStyleBackColor = true;
-            this.btnMeterAHReset.Click += new System.EventHandler(this.btnMeterAHReset_Click);
-            // 
-            // txtAHWorkingRange
-            // 
-            this.txtAHWorkingRange.Enabled = false;
-            this.txtAHWorkingRange.Location = new System.Drawing.Point(624, 32);
-            this.txtAHWorkingRange.Name = "txtAHWorkingRange";
-            this.txtAHWorkingRange.Size = new System.Drawing.Size(91, 23);
-            this.txtAHWorkingRange.TabIndex = 34;
-            // 
-            // txtAH
-            // 
-            this.txtAH.Enabled = false;
-            this.txtAH.Location = new System.Drawing.Point(354, 154);
-            this.txtAH.Name = "txtAH";
-            this.txtAH.Size = new System.Drawing.Size(126, 23);
-            this.txtAH.TabIndex = 33;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(319, 160);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(25, 13);
-            this.label11.TabIndex = 32;
-            this.label11.Text = "AH";
-            // 
-            // txtWattHour
-            // 
-            this.txtWattHour.Enabled = false;
-            this.txtWattHour.Location = new System.Drawing.Point(354, 129);
-            this.txtWattHour.Name = "txtWattHour";
-            this.txtWattHour.Size = new System.Drawing.Size(126, 23);
-            this.txtWattHour.TabIndex = 31;
-            // 
-            // txtWatt
-            // 
-            this.txtWatt.Enabled = false;
-            this.txtWatt.Location = new System.Drawing.Point(354, 104);
-            this.txtWatt.Name = "txtWatt";
-            this.txtWatt.Size = new System.Drawing.Size(126, 23);
-            this.txtWatt.TabIndex = 30;
-            // 
-            // txtVoltage
-            // 
-            this.txtVoltage.Enabled = false;
-            this.txtVoltage.Location = new System.Drawing.Point(354, 79);
-            this.txtVoltage.Name = "txtVoltage";
-            this.txtVoltage.Size = new System.Drawing.Size(126, 23);
-            this.txtVoltage.TabIndex = 29;
-            // 
-            // txtCurrent
-            // 
-            this.txtCurrent.Enabled = false;
-            this.txtCurrent.Location = new System.Drawing.Point(354, 54);
-            this.txtCurrent.Name = "txtCurrent";
-            this.txtCurrent.Size = new System.Drawing.Size(126, 23);
-            this.txtCurrent.TabIndex = 28;
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(290, 133);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(55, 13);
-            this.label9.TabIndex = 27;
-            this.label9.Text = "WattHour";
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(313, 108);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(33, 13);
-            this.label10.TabIndex = 26;
-            this.label10.Text = "Watt.";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(301, 83);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(44, 13);
-            this.label8.TabIndex = 25;
-            this.label8.Text = "Voltage";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(301, 59);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(43, 13);
-            this.label7.TabIndex = 24;
-            this.label7.Text = "Current";
-            // 
-            // lblYinda
-            // 
-            this.lblYinda.BackColor = System.Drawing.Color.Silver;
-            this.lblYinda.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblYinda.Location = new System.Drawing.Point(421, 29);
-            this.lblYinda.Name = "lblYinda";
-            this.lblYinda.Size = new System.Drawing.Size(58, 18);
-            this.lblYinda.TabIndex = 23;
-            this.lblYinda.Text = "Yinda";
-            this.lblYinda.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblGotech
-            // 
-            this.lblGotech.BackColor = System.Drawing.Color.Silver;
-            this.lblGotech.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblGotech.Location = new System.Drawing.Point(354, 29);
-            this.lblGotech.Name = "lblGotech";
-            this.lblGotech.Size = new System.Drawing.Size(58, 18);
-            this.lblGotech.TabIndex = 22;
-            this.lblGotech.Text = "Gotech";
-            this.lblGotech.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btnChargeStop
-            // 
-            this.btnChargeStop.Location = new System.Drawing.Point(25, 157);
-            this.btnChargeStop.Name = "btnChargeStop";
-            this.btnChargeStop.Size = new System.Drawing.Size(252, 37);
-            this.btnChargeStop.TabIndex = 21;
-            this.btnChargeStop.Text = "Charge Stop";
-            this.btnChargeStop.UseVisualStyleBackColor = true;
-            this.btnChargeStop.Click += new System.EventHandler(this.btnChargeStop_Click);
-            // 
-            // btnChargeRightStart
-            // 
-            this.btnChargeRightStart.Location = new System.Drawing.Point(154, 114);
-            this.btnChargeRightStart.Name = "btnChargeRightStart";
-            this.btnChargeRightStart.Size = new System.Drawing.Size(123, 37);
-            this.btnChargeRightStart.TabIndex = 20;
-            this.btnChargeRightStart.Text = "Right Charge Start";
-            this.btnChargeRightStart.UseVisualStyleBackColor = true;
-            this.btnChargeRightStart.Click += new System.EventHandler(this.btnChargeRightStart_Click);
-            // 
-            // btnChargeLeftStart
-            // 
-            this.btnChargeLeftStart.Location = new System.Drawing.Point(25, 114);
-            this.btnChargeLeftStart.Name = "btnChargeLeftStart";
-            this.btnChargeLeftStart.Size = new System.Drawing.Size(123, 37);
-            this.btnChargeLeftStart.TabIndex = 19;
-            this.btnChargeLeftStart.Text = "Left Charge Start";
-            this.btnChargeLeftStart.UseVisualStyleBackColor = true;
-            this.btnChargeLeftStart.Click += new System.EventHandler(this.btnChargeLeftStart_Click);
-            // 
             // tabSafety
             // 
+            this.tabSafety.Controls.Add(this.pnlMove);
             this.tabSafety.Controls.Add(this.lblEMO);
             this.tabSafety.Controls.Add(this.lblBumperAlarm);
-            this.tabSafety.Controls.Add(this.groupBox4);
-            this.tabSafety.Controls.Add(this.chkMoveRight);
-            this.tabSafety.Controls.Add(this.chkMoveLeft);
-            this.tabSafety.Controls.Add(this.chkMoveBack);
-            this.tabSafety.Controls.Add(this.chkMoveFront);
+            this.tabSafety.Controls.Add(this.grpAutoSleep);
             this.tabSafety.Controls.Add(this.txtSafetyAction);
             this.tabSafety.Controls.Add(this.label28);
             this.tabSafety.Controls.Add(this.grpSafety);
@@ -1904,6 +1953,61 @@
             this.tabSafety.TabIndex = 3;
             this.tabSafety.Text = "Safety";
             this.tabSafety.UseVisualStyleBackColor = true;
+            // 
+            // pnlMove
+            // 
+            this.pnlMove.Controls.Add(this.chkMoveRight);
+            this.pnlMove.Controls.Add(this.chkMoveLeft);
+            this.pnlMove.Controls.Add(this.chkMoveBack);
+            this.pnlMove.Controls.Add(this.chkMoveFront);
+            this.pnlMove.Location = new System.Drawing.Point(311, 457);
+            this.pnlMove.Name = "pnlMove";
+            this.pnlMove.Size = new System.Drawing.Size(112, 108);
+            this.pnlMove.TabIndex = 80;
+            // 
+            // chkMoveRight
+            // 
+            this.chkMoveRight.AutoSize = true;
+            this.chkMoveRight.Location = new System.Drawing.Point(14, 84);
+            this.chkMoveRight.Name = "chkMoveRight";
+            this.chkMoveRight.Size = new System.Drawing.Size(90, 20);
+            this.chkMoveRight.TabIndex = 76;
+            this.chkMoveRight.Text = "MoveRight";
+            this.chkMoveRight.UseVisualStyleBackColor = true;
+            this.chkMoveRight.CheckedChanged += new System.EventHandler(this.chkMoveRight_CheckedChanged);
+            // 
+            // chkMoveLeft
+            // 
+            this.chkMoveLeft.AutoSize = true;
+            this.chkMoveLeft.Location = new System.Drawing.Point(14, 58);
+            this.chkMoveLeft.Name = "chkMoveLeft";
+            this.chkMoveLeft.Size = new System.Drawing.Size(81, 20);
+            this.chkMoveLeft.TabIndex = 75;
+            this.chkMoveLeft.Text = "MoveLeft";
+            this.chkMoveLeft.UseVisualStyleBackColor = true;
+            this.chkMoveLeft.CheckedChanged += new System.EventHandler(this.chkMoveLeft_CheckedChanged);
+            // 
+            // chkMoveBack
+            // 
+            this.chkMoveBack.AutoSize = true;
+            this.chkMoveBack.Location = new System.Drawing.Point(14, 32);
+            this.chkMoveBack.Name = "chkMoveBack";
+            this.chkMoveBack.Size = new System.Drawing.Size(86, 20);
+            this.chkMoveBack.TabIndex = 74;
+            this.chkMoveBack.Text = "MoveBack";
+            this.chkMoveBack.UseVisualStyleBackColor = true;
+            this.chkMoveBack.CheckedChanged += new System.EventHandler(this.chkMoveBack_CheckedChanged);
+            // 
+            // chkMoveFront
+            // 
+            this.chkMoveFront.AutoSize = true;
+            this.chkMoveFront.Location = new System.Drawing.Point(14, 6);
+            this.chkMoveFront.Name = "chkMoveFront";
+            this.chkMoveFront.Size = new System.Drawing.Size(89, 20);
+            this.chkMoveFront.TabIndex = 73;
+            this.chkMoveFront.Text = "MoveFront";
+            this.chkMoveFront.UseVisualStyleBackColor = true;
+            this.chkMoveFront.CheckedChanged += new System.EventHandler(this.chkMoveFront_CheckedChanged);
             // 
             // lblEMO
             // 
@@ -1929,17 +2033,17 @@
             this.lblBumperAlarm.Text = "Bumper Alarm";
             this.lblBumperAlarm.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // groupBox4
+            // grpAutoSleep
             // 
-            this.groupBox4.Controls.Add(this.btnBeamSensorAutoSleepSet);
-            this.groupBox4.Controls.Add(this.rdoBeamSensorAutoSleepDisable);
-            this.groupBox4.Controls.Add(this.rdoBeamSensorAutoSleepEnable);
-            this.groupBox4.Location = new System.Drawing.Point(19, 543);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(265, 77);
-            this.groupBox4.TabIndex = 77;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Beam Sensor Auto Sleep";
+            this.grpAutoSleep.Controls.Add(this.btnBeamSensorAutoSleepSet);
+            this.grpAutoSleep.Controls.Add(this.rdoBeamSensorAutoSleepDisable);
+            this.grpAutoSleep.Controls.Add(this.rdoBeamSensorAutoSleepEnable);
+            this.grpAutoSleep.Location = new System.Drawing.Point(19, 543);
+            this.grpAutoSleep.Name = "grpAutoSleep";
+            this.grpAutoSleep.Size = new System.Drawing.Size(265, 77);
+            this.grpAutoSleep.TabIndex = 77;
+            this.grpAutoSleep.TabStop = false;
+            this.grpAutoSleep.Text = "Beam Sensor Auto Sleep";
             // 
             // btnBeamSensorAutoSleepSet
             // 
@@ -1972,50 +2076,6 @@
             this.rdoBeamSensorAutoSleepEnable.TabStop = true;
             this.rdoBeamSensorAutoSleepEnable.Text = "Auto Sleep Enable";
             this.rdoBeamSensorAutoSleepEnable.UseVisualStyleBackColor = true;
-            // 
-            // chkMoveRight
-            // 
-            this.chkMoveRight.AutoSize = true;
-            this.chkMoveRight.Location = new System.Drawing.Point(325, 541);
-            this.chkMoveRight.Name = "chkMoveRight";
-            this.chkMoveRight.Size = new System.Drawing.Size(90, 20);
-            this.chkMoveRight.TabIndex = 76;
-            this.chkMoveRight.Text = "MoveRight";
-            this.chkMoveRight.UseVisualStyleBackColor = true;
-            this.chkMoveRight.CheckedChanged += new System.EventHandler(this.chkMoveRight_CheckedChanged);
-            // 
-            // chkMoveLeft
-            // 
-            this.chkMoveLeft.AutoSize = true;
-            this.chkMoveLeft.Location = new System.Drawing.Point(325, 515);
-            this.chkMoveLeft.Name = "chkMoveLeft";
-            this.chkMoveLeft.Size = new System.Drawing.Size(81, 20);
-            this.chkMoveLeft.TabIndex = 75;
-            this.chkMoveLeft.Text = "MoveLeft";
-            this.chkMoveLeft.UseVisualStyleBackColor = true;
-            this.chkMoveLeft.CheckedChanged += new System.EventHandler(this.chkMoveLeft_CheckedChanged);
-            // 
-            // chkMoveBack
-            // 
-            this.chkMoveBack.AutoSize = true;
-            this.chkMoveBack.Location = new System.Drawing.Point(325, 489);
-            this.chkMoveBack.Name = "chkMoveBack";
-            this.chkMoveBack.Size = new System.Drawing.Size(86, 20);
-            this.chkMoveBack.TabIndex = 74;
-            this.chkMoveBack.Text = "MoveBack";
-            this.chkMoveBack.UseVisualStyleBackColor = true;
-            this.chkMoveBack.CheckedChanged += new System.EventHandler(this.chkMoveBack_CheckedChanged);
-            // 
-            // chkMoveFront
-            // 
-            this.chkMoveFront.AutoSize = true;
-            this.chkMoveFront.Location = new System.Drawing.Point(325, 463);
-            this.chkMoveFront.Name = "chkMoveFront";
-            this.chkMoveFront.Size = new System.Drawing.Size(89, 20);
-            this.chkMoveFront.TabIndex = 73;
-            this.chkMoveFront.Text = "MoveFront";
-            this.chkMoveFront.UseVisualStyleBackColor = true;
-            this.chkMoveFront.CheckedChanged += new System.EventHandler(this.chkMoveFront_CheckedChanged);
             // 
             // txtSafetyAction
             // 
@@ -2858,7 +2918,7 @@
             // btnAlarmReset
             // 
             this.btnAlarmReset.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnAlarmReset.Location = new System.Drawing.Point(828, 2);
+            this.btnAlarmReset.Location = new System.Drawing.Point(938, 4);
             this.btnAlarmReset.Name = "btnAlarmReset";
             this.btnAlarmReset.Size = new System.Drawing.Size(113, 35);
             this.btnAlarmReset.TabIndex = 38;
@@ -2869,7 +2929,7 @@
             // btnBuzzerStop
             // 
             this.btnBuzzerStop.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnBuzzerStop.Location = new System.Drawing.Point(947, 2);
+            this.btnBuzzerStop.Location = new System.Drawing.Point(1057, 4);
             this.btnBuzzerStop.Name = "btnBuzzerStop";
             this.btnBuzzerStop.Size = new System.Drawing.Size(113, 35);
             this.btnBuzzerStop.TabIndex = 39;
@@ -2907,7 +2967,7 @@
             // 
             this.btnFormHide.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnFormHide.ForeColor = System.Drawing.Color.Red;
-            this.btnFormHide.Location = new System.Drawing.Point(1196, 6);
+            this.btnFormHide.Location = new System.Drawing.Point(1196, 4);
             this.btnFormHide.Name = "btnFormHide";
             this.btnFormHide.Size = new System.Drawing.Size(113, 35);
             this.btnFormHide.TabIndex = 43;
@@ -2915,12 +2975,44 @@
             this.btnFormHide.UseVisualStyleBackColor = true;
             this.btnFormHide.Click += new System.EventHandler(this.btnFormHide_Click);
             // 
+            // labIPcStatus
+            // 
+            this.labIPcStatus.BackColor = System.Drawing.Color.Silver;
+            this.labIPcStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.labIPcStatus.Font = new System.Drawing.Font("新細明體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.labIPcStatus.Location = new System.Drawing.Point(778, 11);
+            this.labIPcStatus.Name = "labIPcStatus";
+            this.labIPcStatus.Size = new System.Drawing.Size(111, 24);
+            this.labIPcStatus.TabIndex = 70;
+            this.labIPcStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label62
+            // 
+            this.label62.AutoSize = true;
+            this.label62.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label62.Location = new System.Drawing.Point(704, 16);
+            this.label62.Name = "label62";
+            this.label62.Size = new System.Drawing.Size(67, 15);
+            this.label62.TabIndex = 71;
+            this.label62.Text = "IPC Status";
+            // 
+            // labIPcStatusManual
+            // 
+            this.labIPcStatusManual.Location = new System.Drawing.Point(1277, 704);
+            this.labIPcStatusManual.Name = "labIPcStatusManual";
+            this.labIPcStatusManual.Size = new System.Drawing.Size(32, 20);
+            this.labIPcStatusManual.TabIndex = 71;
+            this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
+            // 
             // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1321, 876);
             this.ControlBox = false;
+            this.Controls.Add(this.labIPcStatusManual);
+            this.Controls.Add(this.label62);
+            this.Controls.Add(this.labIPcStatus);
             this.Controls.Add(this.btnFormHide);
             this.Controls.Add(this.label29);
             this.Controls.Add(this.tbxLogView);
@@ -2935,29 +3027,32 @@
             this.Load += new System.EventHandler(this.frmPLCAgent_Load);
             this.tabContol1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
-            this.panel4.ResumeLayout(false);
+            this.palForkParams.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.panel3.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel3.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.grpForkCycleRun.ResumeLayout(false);
+            this.grpForkCycleRun.PerformLayout();
+            this.grpCastIDReader.ResumeLayout(false);
+            this.grpCastIDReader.PerformLayout();
+            this.grpForkCommdAndStat.ResumeLayout(false);
+            this.grpForkCommdAndStat.PerformLayout();
             this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
-            this.panel5.ResumeLayout(false);
+            this.pnlCharg.ResumeLayout(false);
+            this.pnlCharg.PerformLayout();
+            this.palChargParams.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tabSafety.ResumeLayout(false);
             this.tabSafety.PerformLayout();
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
+            this.pnlMove.ResumeLayout(false);
+            this.pnlMove.PerformLayout();
+            this.grpAutoSleep.ResumeLayout(false);
+            this.grpAutoSleep.PerformLayout();
             this.grpSafety.ResumeLayout(false);
             this.grpSafety.PerformLayout();
             this.grpR.ResumeLayout(false);
@@ -3052,9 +3147,9 @@
         private System.Windows.Forms.TextBox txtCycleForkCommandCount;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.Label lblLoading;
-        private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox grpForkCycleRun;
+        private System.Windows.Forms.GroupBox grpCastIDReader;
+        private System.Windows.Forms.GroupBox grpForkCommdAndStat;
         private System.Windows.Forms.TabPage tabSafety;
         private System.Windows.Forms.GroupBox grpB;
         private System.Windows.Forms.Label lblBumpBDL;
@@ -3125,7 +3220,7 @@
         private System.Windows.Forms.Panel pnlL;
         private System.Windows.Forms.Panel pnlB;
         private System.Windows.Forms.Panel pnlF;
-        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.GroupBox grpAutoSleep;
         private System.Windows.Forms.Button btnBeamSensorAutoSleepSet;
         private System.Windows.Forms.RadioButton rdoBeamSensorAutoSleepDisable;
         private System.Windows.Forms.RadioButton rdoBeamSensorAutoSleepEnable;
@@ -3193,8 +3288,8 @@
         private System.Windows.Forms.TextBox tbxForkCommandType_PV;
         private System.Windows.Forms.Label label49;
         private System.Windows.Forms.Label label57;
-        private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Panel palForkParams;
+        private System.Windows.Forms.Panel palChargParams;
         private System.Windows.Forms.Label label58;
         private System.Windows.Forms.TextBox tbxBatterysChargingTimeOut_PV;
         private System.Windows.Forms.TextBox tbxBatterysChargingTimeOut_SV;
@@ -3202,5 +3297,13 @@
         private System.Windows.Forms.TextBox tbxChargingOffDelay_PV;
         private System.Windows.Forms.TextBox tbxChargingOffDelay_SV;
         private System.Windows.Forms.Button btnFormHide;
+        private System.Windows.Forms.Label label60;
+        private System.Windows.Forms.TextBox tbxCCModeStopVoltage_PV;
+        private System.Windows.Forms.TextBox tbxCCModeStopVoltage_SV;
+        private System.Windows.Forms.Panel pnlCharg;
+        private System.Windows.Forms.Label labIPcStatus;
+        private System.Windows.Forms.Label label62;
+        private System.Windows.Forms.Label labIPcStatusManual;
+        private System.Windows.Forms.Panel pnlMove;
     }
 }
