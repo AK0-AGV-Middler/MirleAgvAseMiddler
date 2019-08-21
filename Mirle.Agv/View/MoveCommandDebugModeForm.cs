@@ -33,6 +33,7 @@ namespace Mirle.Agv.View
         private int secondSelect;
         private string commandID = "";
         private Dictionary<EnumMoveControlSafetyType, SafetyInformation> safetyUserControl = new Dictionary<EnumMoveControlSafetyType, SafetyInformation>();
+        private Dictionary<EnumSensorSafetyType, SensorByPassInformation> sensorByPassUserControl = new Dictionary<EnumSensorSafetyType, SensorByPassInformation>();
 
         private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
                                                 EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
@@ -115,6 +116,40 @@ namespace Mirle.Agv.View
                 safetyUserControl.Add(item, temp);
             }
 
+            x = 830;
+            y = 80;
+
+            SensorByPassInformation tempSensor;
+            foreach (EnumSensorSafetyType item in (EnumSensorSafetyType[])Enum.GetValues(typeof(EnumSensorSafetyType)))
+            {
+                tempSensor = new SensorByPassInformation(moveControl, item);
+                tempSensor.Location = new System.Drawing.Point(x, y);
+                y += 40;
+                tempSensor.Name = item.ToString();
+                tempSensor.Size = new System.Drawing.Size(222, 30);
+
+                switch (item)
+                {
+                    case EnumSensorSafetyType.Charging:
+                        tempSensor.SetLabelString("充電檢查 : ");
+                        break;
+                    case EnumSensorSafetyType.ForkHome:
+                        tempSensor.SetLabelString("Fork原點 : ");
+                        break;
+                    case EnumSensorSafetyType.BeamSensor:
+                        tempSensor.SetLabelString("BeamSensor : ");
+                        break;
+                    case EnumSensorSafetyType.Bumper:
+                        tempSensor.SetLabelString("Bumper : ");
+                        break;
+                    default:
+                        break;
+                }
+
+                tempSensor.UpdateEnable();
+                this.tP_Admin.Controls.Add(tempSensor);
+                sensorByPassUserControl.Add(item, tempSensor);
+            }
         }
 
         private void AddDataGridViewColumn()
@@ -265,7 +300,7 @@ namespace Mirle.Agv.View
         private void Timer_Update_CommandList()
         {
             string nowCommandID = moveControl.MoveCommandID;
-            if (nowCommandID != commandID)
+            if (nowCommandID != commandID || (moveControl.MoveState != EnumMoveState.Idle && moveControl.CommandList.Count != commandStringList.Count))
             {
                 UpdateList();
                 commandID = nowCommandID;
@@ -301,11 +336,12 @@ namespace Mirle.Agv.View
 
             ucLabelTtB_CommandListState.TagValue = moveControl.MoveState.ToString();
 
+            label_WaitReserve.Text = "Wait index : " + (moveControl.WaitReseveIndex == -1 ? "" : moveControl.WaitReseveIndex.ToString());
 
             try
             {
                 int tempResserveIndex = moveControl.GetReserveIndex();
-                int tempCommandIndex = moveControl.GetCommandIndex();
+                int tempCommandIndex = moveControl.IndexOfCmdList;
 
                 if (tempResserveIndex != -1 && tempResserveIndex > reserveIndex)
                 {
@@ -365,6 +401,14 @@ namespace Mirle.Agv.View
                 catch { }
             }
 
+            foreach (EnumSensorSafetyType item in (EnumSensorSafetyType[])Enum.GetValues(typeof(EnumSensorSafetyType)))
+            {
+                try
+                {
+                    sensorByPassUserControl[item].UpdateEnable();
+                }
+                catch { }
+            }
         }
 
         private void timer_UpdateData_Tick(object sender, EventArgs e)
@@ -391,7 +435,7 @@ namespace Mirle.Agv.View
                 return;
             if (listMapAddressPositions.SelectedIndex < 0)
                 listMapAddressPositions.SelectedIndex = 0;
-
+            
             listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
         }
 
@@ -668,7 +712,6 @@ namespace Mirle.Agv.View
         }
         #endregion
 
-
         #region Page Debug CSV
         private void button_DebugCSV_Click(object sender, EventArgs e)
         {
@@ -785,5 +828,46 @@ namespace Mirle.Agv.View
         }
         #endregion
 
+        private void listMapAddressPositions_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            int index = this.listMapAddressPositions.IndexFromPoint(e.Location);
+            if (index != System.Windows.Forms.ListBox.NoMatches)
+            {
+                if (listMapAddressPositions.Items.Count < 1)
+                    return;
+                if (listMapAddressPositions.SelectedIndex < 0)
+                    return;
+
+                listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
+            }
+        }
+
+        private void listMapAddressActions_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            int index = this.listMapAddressActions.IndexFromPoint(e.Location);
+            if (index != System.Windows.Forms.ListBox.NoMatches)
+            {
+                if (listMapAddressActions.Items.Count < 1)
+                    return;
+                if (listMapAddressActions.SelectedIndex < 0)
+                    return;
+
+                listCmdAddressActions.Items.Add(listMapAddressActions.SelectedItem);
+            }
+        }
+
+        private void listMapSpeedLimits_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            int index = this.listMapSpeedLimits.IndexFromPoint(e.Location);
+            if (index != System.Windows.Forms.ListBox.NoMatches)
+            {
+                if (listMapSpeedLimits.Items.Count < 1)
+                    return;
+                if (listMapSpeedLimits.SelectedIndex < 0)
+                    return;
+
+                listCmdSpeedLimits.Items.Add(listMapSpeedLimits.SelectedItem);
+            }
+        }
     }
 }

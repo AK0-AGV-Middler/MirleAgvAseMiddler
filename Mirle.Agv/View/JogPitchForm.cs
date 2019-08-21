@@ -27,8 +27,8 @@ namespace Mirle.Agv.View
                                                 EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
                                                 EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
                                                 EnumAxis.GX, EnumAxis.GT};
-        private EnumMoveState nowState, lastState;
         private bool homing = false;
+        private bool formEnable = true;
 
         public JogPitchForm(MoveControlHandler moveControl)
         {
@@ -69,13 +69,16 @@ namespace Mirle.Agv.View
             }
 
             cB_JogPitch_SelectAxis.SelectedIndex = AxisList.Count() - 2;
-            lastState = moveControl.MoveState;
         }
 
         private MoveControlHandler moveControl = null;
 
         private void EnableDisableForm(bool flag)
         {
+            if (formEnable == flag)
+                return;
+
+            formEnable = flag;
             foreach (Control control in this.Controls)
             {
                 control.Enabled = flag;
@@ -182,12 +185,8 @@ namespace Mirle.Agv.View
                 }
             }
 
-            nowState = moveControl.MoveState;
-            if (nowState != lastState)
-            {
-                EnableDisableForm(nowState == EnumMoveState.Idle);
-                lastState = nowState;
-            }
+            bool allResult = (moveControl.MoveState == EnumMoveState.Idle) && !moveControl.IsCharging() && !moveControl.ForkNotHome();
+            EnableDisableForm(allResult);
         }
 
         private void EnalbeDisableButton(bool flag)
@@ -366,6 +365,9 @@ namespace Mirle.Agv.View
 
         private void Turn_MouseDown(double angle)
         {
+            if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) || !moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
+                return;
+
             double vel = 0, acc = 0, dec = 0, jerk = 0;
             CheckTurnData(ref vel, ref acc, ref dec, ref jerk);
 
@@ -425,6 +427,9 @@ namespace Mirle.Agv.View
 
         private void Move_MouseDown(bool flag)
         {
+            if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) || !moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
+                return;
+
             double velocity = 0, distance = 0;
             if (!GetVelocityAndDistance(ref velocity, ref distance))
                 return;
@@ -496,7 +501,7 @@ namespace Mirle.Agv.View
         {
             Task.Factory.StartNew(() => { moveControl.elmoDriver.ResetErrorAll(); });
         }
-        
+
         private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)
         {
             if (double.TryParse(tB_JogPitch_AxisMove_Disance.Text, out distance) && distance >= 0 &&
@@ -698,7 +703,7 @@ namespace Mirle.Agv.View
         {
             timerUpdate.Enabled = true;
         }
-        
+
         private void button_JogPitch_ChangeFormSize_Click(object sender, EventArgs e)
         {
             button_JogPitch_ChangeFormSize.Enabled = false;

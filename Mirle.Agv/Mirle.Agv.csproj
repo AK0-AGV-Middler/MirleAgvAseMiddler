@@ -163,6 +163,12 @@
     <Compile Include="UcThreadPad.Designer.cs">
       <DependentUpon>UcThreadPad.cs</DependentUpon>
     </Compile>
+    <Compile Include="View\UserControls\SensorByPassInformation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\UserControls\SensorByPassInformation.Designer.cs">
+      <DependentUpon>SensorByPassInformation.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\UserControls\UcVehicleImage.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -276,6 +282,9 @@
     </Compile>
     <EmbeddedResource Include="UcThreadPad.resx">
       <DependentUpon>UcThreadPad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\UserControls\SensorByPassInformation.resx">
+      <DependentUpon>SensorByPassInformation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\UserControls\UcVehicleImage.resx">
       <DependentUpon>UcVehicleImage.cs</DependentUpon>

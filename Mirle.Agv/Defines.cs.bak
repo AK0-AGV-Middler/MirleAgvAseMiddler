@@ -381,21 +381,6 @@ namespace Mirle.Agv
         OntimeReviseSectionDeviation,
         UpdateDeltaPositionRange
     }
-
-    public enum EnumSensorSafetyType
-    {
-        Charging,
-        ForkHome,
-        BeamSensor,
-        Bumper
-    }
-
-    public enum EnumMoveStartType
-    {
-        FirstMove,
-        ChangeDirFlagMove,
-        ReserveStopMove
-    }
     #endregion
 
     public static class ExtensionMethods

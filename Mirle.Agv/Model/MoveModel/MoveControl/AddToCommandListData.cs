@@ -15,6 +15,7 @@ namespace Mirle.Agv.Model
         public int NowWheelAngle { get; set; }
         public int InsertIndex { get; set; } = 0;
         public int MoveCmdStartReserveNumber { get; set; } = 0;
+        public int NextMoveCmdStartReserveNumber { get; set; } = 0;
         public int IndexOfReserveList { get; set; } = 0;
         public MapPosition LastNode { get; set; }
         public EnumAddressAction LastAction { get; set; }

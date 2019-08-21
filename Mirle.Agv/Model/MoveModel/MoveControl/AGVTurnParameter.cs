@@ -12,6 +12,7 @@ namespace Mirle.Agv.Model
         public double R { get; set; }
         public double VChangeSafetyDistance { get; set; } //降速完到入彎點的距離.
         public double CloseReviseDistance { get; set; } //關閉即時修正的距離.
+        public double SafetyVelocityRange { get; set; }
         public AxisData AxisParameter { get; set; }
         public double Distance { get; set; }
 

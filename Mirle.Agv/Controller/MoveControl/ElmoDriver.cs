@@ -84,6 +84,10 @@ namespace Mirle.Agv.Controller
                     Thread.Sleep(100);
                     DisableAllAxis();
                     EnableAllAxis();
+                    
+                    Thread.Sleep(100);
+                    ElmoStop(EnumAxis.GX);
+                    ElmoMove(EnumAxis.GT, 0, 75, EnumMoveType.Absolute);
                 }
             }
             catch (Exception ex)

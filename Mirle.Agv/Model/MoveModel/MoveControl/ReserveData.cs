@@ -10,11 +10,13 @@ namespace Mirle.Agv.Model
     {
         public MapPosition Position { get; set; }
         public bool GetReserve { get; set; }
+        public EnumAddressAction Action { get; set; }
 
-        public ReserveData(MapPosition position)
+        public ReserveData(MapPosition position, EnumAddressAction action)
         {
             Position = position;
             GetReserve = false;
+            Action = action;
         }
     }
 }
