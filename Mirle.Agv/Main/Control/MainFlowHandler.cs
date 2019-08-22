@@ -300,7 +300,7 @@ namespace Mirle.Agv.Controller
             {
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
-
+               
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnTransferCancelEvent += OnMiddlerGetsCancelEvent;
                 middleAgent.OnTransferAbortEvent += OnMiddlerGetsAbortEvent;
@@ -667,7 +667,7 @@ namespace Mirle.Agv.Controller
 
             LoadCmdInfo loadCmd = GetLoadCmdInfo(agvcTransCmd);
             transferSteps.Add(loadCmd);
-        }
+        }        
 
         private MoveCmdInfo GetMoveToUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
@@ -680,7 +680,7 @@ namespace Mirle.Agv.Controller
             moveCmd.MovingSectionsIndex = 0;
             moveCmd.SetAddressPositions();
             moveCmd.SetAddressActions();
-            moveCmd.SetSectionSpeedLimits();
+            moveCmd.SetSectionSpeedLimits();           
             return moveCmd;
         }
 
@@ -695,7 +695,7 @@ namespace Mirle.Agv.Controller
             moveCmd.MovingSectionsIndex = 0;
             moveCmd.SetNextUnloadAddressPositions();
             moveCmd.SetAddressActions();
-            moveCmd.SetSectionSpeedLimits();
+            moveCmd.SetSectionSpeedLimits();          
             return moveCmd;
         }
 
@@ -765,7 +765,7 @@ namespace Mirle.Agv.Controller
             moveCmd.SetAddressPositions();
             moveCmd.SetAddressActions();
             moveCmd.SetSectionSpeedLimits();
-
+           
             return moveCmd;
         }
 
@@ -801,14 +801,13 @@ namespace Mirle.Agv.Controller
                     #endregion
 
                     VisitTransCmdsStatus = EnumThreadStatus.Working;
-                    sw.Start();                    
+                    sw.Start();
 
                     if (GoNextTransferStep)
                     {
-                        //var xx = GetCurrentEnumTransferCommandType();
                         GoNextTransferStep = false;
                         DoTransfer();
-                    }                    
+                    }                                       
 
                     sw.Stop();
                     total += sw.ElapsedMilliseconds;
@@ -1082,13 +1081,13 @@ namespace Mirle.Agv.Controller
         }
 
         public void UpdateMoveControlReserveOkPositions(MapSection aReserveOkSection)
-        {
+        {            
             MapPosition pos = aReserveOkSection.CmdDirection == EnumPermitDirection.Forward
                 ? aReserveOkSection.TailAddress.Position.DeepClone()
                 : aReserveOkSection.HeadAddress.Position.DeepClone();
 
             bool updateResult = moveControlHandler.AddReservedMapPosition(pos);
-            OnMessageShowEvent?.Invoke(this, $"MainFlow :Update MoveControl ReserveOk Position, [UpdateResult={updateResult}][Pos={pos}]");
+            OnMessageShowEvent?.Invoke(this, $"MainFlow :Update MoveControl ReserveOk Position, [UpdateResult={updateResult}][Pos={pos}]");            
         }
 
         public bool IsMoveStep()
@@ -1103,7 +1102,7 @@ namespace Mirle.Agv.Controller
             transferSteps.Add(moveCmd);
             transferSteps.Add(new EmptyTransCmd());
             TransferStepsIndex = 0;
-        }
+        }       
 
         public void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete status)
         {
@@ -1116,9 +1115,6 @@ namespace Mirle.Agv.Controller
                 if (status == EnumMoveComplete.Fail)
                 {
                     //TODO: Alarm
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish +++FAIL+++ Stop VisitTrans Cmds");
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , $"MainFlow : Move Finish +++FAIL+++ Stop VisitTrans Cmds"));
 
                     StopVisitTransCmds();
                     AfterVisitTransCmds();
@@ -1272,8 +1268,8 @@ namespace Mirle.Agv.Controller
             //    //Middler send transfer complete to agvc
             //}
 
+            TransferStepsIndex++;
             GoNextTransferStep = true;
-            TransferStepsIndex++;           
         }
 
         public TransferStep GetCurTransferStep()
@@ -1314,17 +1310,17 @@ namespace Mirle.Agv.Controller
             {
                 try
                 {
-                    if (!plcAgent.IsForkCommandExist())
+                    if (plcAgent.IsForkCommandExist())
+                    {
+                        //Alarm : 
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload, [plcAgent.IsForkCommandExist={plcAgent.IsForkCommandExist()}]");
+                    }
+                    else
                     {
                         middleAgent.Send_Cmd136_TransferEventReport(EventType.Vhunloading);
                         PlcForkUnloadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
                         plcAgent.AddForkComand(PlcForkUnloadCommand);
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload, [Type={PlcForkUnloadCommand.ForkCommandType}][StageNum={PlcForkUnloadCommand.StageNo}][IsEqPio={PlcForkUnloadCommand.IsEqPio}]");
-                    }
-                    else
-                    {
-                        //Alarm : 
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload, [plcAgent.IsForkCommandExist={plcAgent.IsForkCommandExist()}]");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload, [Type={PlcForkLoadCommand.ForkCommandType}][StageNum={PlcForkLoadCommand.StageNo}][IsEqPio={PlcForkLoadCommand.IsEqPio}]");
                     }
                 }
                 catch (Exception ex)
@@ -1433,7 +1429,7 @@ namespace Mirle.Agv.Controller
             middleAgent.SetupNeedReserveSections(moveCmd);
             middleAgent.StartAskingReserve();
             //SetupNeedReserveSections(moveCmd);
-        }
+        }        
 
         private void MoveCmdInfoUpdatePosition(MoveCmdInfo curTransCmd, MapPosition gxPosition)
         {
@@ -1546,7 +1542,7 @@ namespace Mirle.Agv.Controller
             {
                 return null;
             }
-        }
+        }       
 
         public MCProtocol GetMcProtocol()
         {
@@ -1592,8 +1588,8 @@ namespace Mirle.Agv.Controller
                 {
                     theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusCharging;
                     middleAgent.Send_Cmd144_StatusChangeReport();
-                }
-
+                }             
+               
 
                 OnMessageShowEvent?.Invoke(this, $"MainFlow : Start Charging, [Id={address.Id}][IsInCouple={address.IsCharger}][IsCharging={theVehicle.GetPlcVehicle().Batterys.Charging}]");
             }
@@ -1618,7 +1614,7 @@ namespace Mirle.Agv.Controller
             {
                 theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
                 middleAgent.Send_Cmd144_StatusChangeReport();
-            }
+            }            
 
             OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.GetPlcVehicle().Batterys.Charging}]");
 

@@ -89,8 +89,8 @@
     <Compile Include="MoveControl\Control\CreateMoveControlList.cs" />
     <Compile Include="MoveControl\Control\Sr2000Driver.cs" />
     <Compile Include="MoveControl\Control\ElmoDriver.cs" />
-    <Compile Include="Main\Control\Agent\LoggerAgent.cs" />
-    <Compile Include="Main\Control\Handler\AlarmHandler.cs" />
+    <Compile Include="Main\Control\LoggerAgent.cs" />
+    <Compile Include="Main\Control\AlarmHandler.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Idle.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\ITransferCmdStep.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Load.cs" />
@@ -237,17 +237,17 @@
     <Compile Include="Main\View\MiddlerForm.Designer.cs">
       <DependentUpon>MiddlerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Main\Control\Handler\MainFlowHandler.cs" />
+    <Compile Include="Main\Control\MainFlowHandler.cs" />
     <Compile Include="Main\Model\VehiclePosition.cs" />
     <Compile Include="Main\Model\Vehicle.cs" />
-    <Compile Include="Main\Control\Agent\MiddleAgent.cs" />
+    <Compile Include="Main\Control\MiddleAgent.cs" />
     <Compile Include="Main\Model\TransferCmds\AgvcTransCmd.cs" />
     <Compile Include="Main\Model\Map\MapBarcodeReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Main\Model\Map\MapAddress.cs" />
     <Compile Include="Main\Model\Map\MapSection.cs" />
-    <Compile Include="Main\Control\Handler\MapHandler.cs" />
+    <Compile Include="Main\Control\MapHandler.cs" />
     <Compile Include="Main\View\InitialForm.cs">
       <SubType>Form</SubType>
     </Compile>

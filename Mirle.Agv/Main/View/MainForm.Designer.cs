@@ -113,6 +113,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.btnTestSomething = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.txtTransferStep = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -486,9 +487,9 @@
             // btnAutoManual
             // 
             this.btnAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnAutoManual.Location = new System.Drawing.Point(218, 14);
+            this.btnAutoManual.Location = new System.Drawing.Point(218, 3);
             this.btnAutoManual.Name = "btnAutoManual";
-            this.btnAutoManual.Size = new System.Drawing.Size(187, 54);
+            this.btnAutoManual.Size = new System.Drawing.Size(187, 65);
             this.btnAutoManual.TabIndex = 53;
             this.btnAutoManual.Text = "Auto/Manual";
             this.btnAutoManual.UseVisualStyleBackColor = true;
@@ -631,6 +632,7 @@
             // 
             // gbVisitTransCmds
             // 
+            this.gbVisitTransCmds.Controls.Add(this.txtTransferStep);
             this.gbVisitTransCmds.Controls.Add(this.picVisitTransferCmd);
             this.gbVisitTransCmds.Controls.Add(this.btnStartVisitTransCmds);
             this.gbVisitTransCmds.Controls.Add(this.btnResumeVisitTransCmds);
@@ -638,7 +640,7 @@
             this.gbVisitTransCmds.Controls.Add(this.btnPauseVisitTransCmds);
             this.gbVisitTransCmds.Location = new System.Drawing.Point(8, 453);
             this.gbVisitTransCmds.Name = "gbVisitTransCmds";
-            this.gbVisitTransCmds.Size = new System.Drawing.Size(165, 159);
+            this.gbVisitTransCmds.Size = new System.Drawing.Size(165, 182);
             this.gbVisitTransCmds.TabIndex = 43;
             this.gbVisitTransCmds.TabStop = false;
             this.gbVisitTransCmds.Text = "Visit Trans Cmds";
@@ -1015,6 +1017,15 @@
             this.timer1.Interval = 250;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // txtTransferStep
+            // 
+            this.txtTransferStep.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.txtTransferStep.Location = new System.Drawing.Point(6, 156);
+            this.txtTransferStep.Name = "txtTransferStep";
+            this.txtTransferStep.Size = new System.Drawing.Size(150, 23);
+            this.txtTransferStep.TabIndex = 56;
+            this.txtTransferStep.Text = "TransferStep";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1149,5 +1160,6 @@
         private System.Windows.Forms.PictureBox picVisitTransferCmd;
         private System.Windows.Forms.PictureBox picTrackingPosition;
         private System.Windows.Forms.Button btnTestSomething;
+        private System.Windows.Forms.Label txtTransferStep;
     }
 }

@@ -62,7 +62,7 @@ namespace Mirle.Agv.View
             ucLabelTB_Velocity.TagName = "Velocity : ";
             ucLabelTB_ElmoEncoder.TagName = "Elmo encoder : ";
             ucLabelTB_EncoderOffset.TagName = "Offset : ";
-            ucLabelTB_EncoderPosition.TagName = "Encoder Position : ";
+            ucLabelTB_EncoderPosition.TagName = "VelocityCmd : ";
             AddListMapAddressPositions();
             AddListMapAddressActions();
             AddListMapSpeedLimits();
@@ -327,16 +327,12 @@ namespace Mirle.Agv.View
                  tempBarcodePosition.Position.Y.ToString("0") + " )" : "( ---, --- )";
 
             tempBarcodePosition = moveControl.location.Encoder;
-            if (tempBarcodePosition != null && tempBarcodePosition.Position != null)
-                ucLabelTB_EncoderPosition.TagValue = "( " + tempBarcodePosition.Position.X.ToString("0") + ", " +
-                     tempBarcodePosition.Position.Y.ToString("0") + " )";
-            else
-                ucLabelTB_EncoderPosition.TagValue = "( ---, --- )";
-
-
+            ucLabelTB_EncoderPosition.TagValue = moveControl.ControlData.VelocityCommand.ToString("0");
+            
             ucLabelTtB_CommandListState.TagValue = moveControl.MoveState.ToString();
 
             label_WaitReserve.Text = "Wait index : " + (moveControl.WaitReseveIndex == -1 ? "" : moveControl.WaitReseveIndex.ToString());
+            label_SensorState.Text = moveControl.SensorState.ToString();
 
             try
             {
@@ -435,7 +431,7 @@ namespace Mirle.Agv.View
                 return;
             if (listMapAddressPositions.SelectedIndex < 0)
                 listMapAddressPositions.SelectedIndex = 0;
-            
+
             listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
         }
 

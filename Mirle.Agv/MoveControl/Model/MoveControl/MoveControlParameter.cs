@@ -14,6 +14,7 @@ namespace Mirle.Agv.Model
         public int WheelAngle { get; set; }
         public bool MoveControlStop { get; set; }
         public double VelocityCommand { get; set; }
+        public double RealVelocity { get; set; }
         public Thread MoveControlThread { get; set; }
         public bool OntimeReviseFlag { get; set; }
         public double TrigetEndEncoder { get; set; }

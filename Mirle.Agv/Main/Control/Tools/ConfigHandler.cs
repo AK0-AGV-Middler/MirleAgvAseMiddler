@@ -9,7 +9,7 @@ namespace Mirle.Agv.Controller.Tools
     [Serializable]
     public class ConfigHandler
     {
-        private const int STRING_BUILDER_SIZE = 256;
+        private const int STRING_BUILDER_SIZE = 32767;
 
         public string FilePath { get; private set; }
         public string SectionName { get; private set; }

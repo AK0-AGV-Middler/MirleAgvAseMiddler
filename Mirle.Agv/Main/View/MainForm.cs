@@ -582,7 +582,7 @@ namespace Mirle.Agv.View
                 lastAskingReserveSectionId = middleAgent.GetAskingReserveSection().Id;
                 lbxAskReserveSection.Items.Clear();
                 lbxAskReserveSection.Items.Add(lastAskingReserveSectionId);
-            }            
+            }
             UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
             UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
 
@@ -595,6 +595,8 @@ namespace Mirle.Agv.View
         private void UpdateThreadPicture()
         {
             picVisitTransferCmd.BackColor = GetThreadStatusColor(mainFlowHandler.VisitTransCmdsStatus);
+            txtTransferStep.Text = mainFlowHandler.GetCurrentEnumTransferCommandType().ToString();
+
             picTrackingPosition.BackColor = GetThreadStatusColor(mainFlowHandler.TrackingPositionStatus);
             picAskReserve.BackColor = GetThreadStatusColor(middleAgent.AskReserveStatus);
         }
@@ -629,7 +631,7 @@ namespace Mirle.Agv.View
                     break;
             }
 
-            btnAutoManual.Text = Vehicle.Instance.AutoState.ToString();
+            btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
         }
         private void DrawReserveSections()
         {

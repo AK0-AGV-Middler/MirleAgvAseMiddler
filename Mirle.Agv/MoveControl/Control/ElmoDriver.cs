@@ -782,6 +782,15 @@ namespace Mirle.Agv.Controller
                 }
             }
 
+            for (int i = 0; i < MAX_AXIS; i++)
+            {
+                if (!allAxisList[i].Config.IsGroup && allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Move)
+                {
+                    DisableAxis(allAxisList[i].Config.ID, memberName);
+                    Thread.Sleep(200);
+                }
+            }
+
             WriteLog("Elmo", "7", device, memberName, "End.");
         }
 

@@ -24,7 +24,7 @@ namespace Mirle.Agv.Model
         public bool NextRserveCancel { get; set; } = false;
         public int NextReserveNumber { get; set; } = -1;
         public EnumMoveStartType MoveType { get; set; }
-        public bool IsTurnVChange { get; set; }
+        public EnumVChangeType VChangeType { get; set; }
 
         public Command()
         {

@@ -138,7 +138,15 @@ namespace Mirle.Agv
     {
         FirstMove,
         ChangeDirFlagMove,
-        ReserveStopMove
+        ReserveStopMove,
+        SensorStopMove
+    }
+    
+    public enum EnumVChangeType
+    {
+        Normal,
+        TRTurn,
+        SensorSlow
     }
     #endregion
 }

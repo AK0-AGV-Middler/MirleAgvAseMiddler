@@ -309,12 +309,12 @@ namespace Mirle.Agv.Controller
                 return false;
             }
             //Position 在 Head 北方過遠
-            if (aPosition.Y > headPosition.Y + AddressArea)
+            if (aPosition.Y < headPosition.Y - AddressArea)
             {
                 return false;
             }
             //Position 在 Tail 南方過遠
-            if (aPosition.Y + AddressArea < tailPosition.Y)
+            if (aPosition.Y - AddressArea > tailPosition.Y)
             {
                 return false;
             }

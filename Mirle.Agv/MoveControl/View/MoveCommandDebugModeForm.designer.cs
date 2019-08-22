@@ -67,6 +67,7 @@ namespace Mirle.Agv.View
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.tbP_List = new System.Windows.Forms.TabPage();
+            this.label_SensorState = new System.Windows.Forms.Label();
             this.label_WaitReserve = new System.Windows.Forms.Label();
             this.ucLabelTB_EncoderPosition = new Mirle.Agv.UcLabelTextBox();
             this.label_AlarmMessage = new System.Windows.Forms.Label();
@@ -545,6 +546,7 @@ namespace Mirle.Agv.View
             // 
             // tbP_List
             // 
+            this.tbP_List.Controls.Add(this.label_SensorState);
             this.tbP_List.Controls.Add(this.label_WaitReserve);
             this.tbP_List.Controls.Add(this.ucLabelTB_EncoderPosition);
             this.tbP_List.Controls.Add(this.label_AlarmMessage);
@@ -576,6 +578,17 @@ namespace Mirle.Agv.View
             this.tbP_List.TabIndex = 1;
             this.tbP_List.Text = "CommandList資料";
             this.tbP_List.UseVisualStyleBackColor = true;
+            // 
+            // label_SensorState
+            // 
+            this.label_SensorState.AutoSize = true;
+            this.label_SensorState.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_SensorState.ForeColor = System.Drawing.Color.Red;
+            this.label_SensorState.Location = new System.Drawing.Point(847, 460);
+            this.label_SensorState.Name = "label_SensorState";
+            this.label_SensorState.Size = new System.Drawing.Size(94, 19);
+            this.label_SensorState.TabIndex = 93;
+            this.label_SensorState.Text = "SensorState";
             // 
             // label_WaitReserve
             // 
@@ -1253,5 +1266,6 @@ namespace Mirle.Agv.View
         private UcLabelTextBox ucLabelTB_EncoderPosition;
         private System.Windows.Forms.TextBox tbxLogView_MoveControlDebugMessage;
         private System.Windows.Forms.Label label_WaitReserve;
+        private System.Windows.Forms.Label label_SensorState;
     }
 }

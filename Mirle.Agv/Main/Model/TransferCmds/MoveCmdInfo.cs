@@ -16,9 +16,9 @@ namespace Mirle.Agv.Model.TransferCmds
         public int PredictVehicleAngle { get; set; } = 0;
         public List<string> SectionIds { get; set; } = new List<string>();
         public List<string> AddressIds { get; set; } = new List<string>();
-
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
+        public int FirstPositionRangeMm { get; set; } = 10;
 
         public MoveCmdInfo() : this(new MapInfo()) { }
         public MoveCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
@@ -29,7 +29,25 @@ namespace Mirle.Agv.Model.TransferCmds
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-            var firstPosition = Vehicle.Instance.AVehiclePosition.RealPosition;
+            var firstPosition = Vehicle.Instance.AVehiclePosition.RealPosition.DeepClone();
+            //Break The MoveControl Protect
+            switch (MovingSections[0].Type)
+            {
+                case EnumSectionType.None:
+                    break;
+                case EnumSectionType.Horizontal:
+                    firstPosition.Y = MovingSections[0].HeadAddress.Position.Y;
+                    break;
+                case EnumSectionType.Vertical:
+                    firstPosition.X = MovingSections[0].HeadAddress.Position.X;
+                    break;
+                case EnumSectionType.R2000:
+                    firstPosition = theMapInfo.allMapAddresses[AddressIds[0]].Position;
+                    break;
+                default:
+                    break;
+            }          
+
             AddressPositions.Add(firstPosition);
 
             try
@@ -44,6 +62,11 @@ namespace Mirle.Agv.Model.TransferCmds
             {
                 var msg = ex.StackTrace;
             }
+        }
+
+        private bool IsPositionNear(MapPosition aPosition, MapPosition bPosition)
+        {
+            return Math.Abs(aPosition.X - bPosition.X) <= FirstPositionRangeMm && Math.Abs(aPosition.Y - bPosition.Y) <= FirstPositionRangeMm;
         }
 
         public void SetNextUnloadAddressPositions()
@@ -162,6 +185,7 @@ namespace Mirle.Agv.Model.TransferCmds
                     if (PredictVehicleAngle < -100)
                     {
                         PredictVehicleAngle = 0;
+
                         return EnumAddressAction.BTR350;
                     }
                     return EnumAddressAction.TR350;

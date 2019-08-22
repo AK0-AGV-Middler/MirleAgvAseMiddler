@@ -53,7 +53,7 @@ namespace Mirle.Agv.Controller
             return returnCommand;
         }
 
-        public Command NewVChangeCommand(MapPosition position, double realEncoder, double commandVelocity, bool dirFlag, bool isTurnVChange = false, int wheelAngle = 0)
+        public Command NewVChangeCommand(MapPosition position, double realEncoder, double commandVelocity, bool dirFlag, EnumVChangeType vChangeType = EnumVChangeType.Normal, int wheelAngle = 0)
         {
             Command returnCommand = new Command();
             returnCommand.TriggerEncoder = realEncoder;
@@ -62,7 +62,7 @@ namespace Mirle.Agv.Controller
             returnCommand.CmdType = EnumCommandType.Vchange;
             returnCommand.Velocity = commandVelocity;
             returnCommand.DirFlag = dirFlag;
-            returnCommand.IsTurnVChange = isTurnVChange;
+            returnCommand.VChangeType = vChangeType;
             returnCommand.WheelAngle = wheelAngle;
 
             return returnCommand;
@@ -98,7 +98,7 @@ namespace Mirle.Agv.Controller
             return returnCommand;
         }
 
-        private Command NewSlowStopCommand(MapPosition position, double realEncoder, bool dirFlag, int nextReserveNumber = -1)
+        public Command NewSlowStopCommand(MapPosition position, double realEncoder, bool dirFlag, int nextReserveNumber = -1)
         {
             Command returnCommand = new Command();
             returnCommand.TriggerEncoder = realEncoder;
@@ -329,7 +329,7 @@ namespace Mirle.Agv.Controller
 
             logMessage = logMessage + ", 方向 : " + (cmd.DirFlag ? "前進" : "後退") + ", 速度變更為 : " + cmd.Velocity.ToString("0");
 
-            if (cmd.IsTurnVChange)
+            if (cmd.VChangeType == EnumVChangeType.TRTurn)
                 logMessage = logMessage + ", 為TR前的 VChange, 舵輪將轉為 : " + cmd.WheelAngle.ToString("0");
 
             if (cmd.ReserveNumber != -1)
@@ -808,11 +808,12 @@ namespace Mirle.Agv.Controller
                     }
                     else
                     {
-                        distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand, data.STDistance - data.TurnOutDistance);
+                        distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand, data.STDistance - data.TurnOutDistance - moveControlConfig.ReserveSafetyDistance);
+                        distance += moveControlConfig.ReserveSafetyDistance;
 
                         if (distance < data.STDistance - data.TurnOutDistance)
                         {
-                            triggerPosition = GetPositionFormEndDistance(data.LastNode, position, data.Distance);
+                            triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
                             tempCommand = NewSlowStopCommand(triggerPosition, data.MoveStartEncoder +
                                            (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                                                                   data.DirFlag, reserveIndex + 1);
@@ -953,7 +954,7 @@ namespace Mirle.Agv.Controller
                 // 啟動且距離非常短
                 if (data.NowVelocity == 0 && distance + 2 * moveControlConfig.TurnParameter[action].VChangeSafetyDistance > data.STDistance - data.TurnOutDistance)
                 {
-                    tempCommand = NewVChangeCommand(null, 0, velocity, data.DirFlag, true, data.NowWheelAngle);
+                    tempCommand = NewVChangeCommand(null, 0, velocity, data.DirFlag, EnumVChangeType.TRTurn, data.NowWheelAngle);
                     moveCmdList.Add(tempCommand);
                 }
                 else
@@ -966,7 +967,7 @@ namespace Mirle.Agv.Controller
 
                     tempCommand = NewVChangeCommand(triggerPosition,
                         data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - trVChangeDistance : -(data.CommandDistance - trVChangeDistance)),
-                        velocity, data.DirFlag, true, data.NowWheelAngle);
+                        velocity, data.DirFlag, EnumVChangeType.TRTurn, data.NowWheelAngle);
                     moveCmdList.Add(tempCommand);
                 }
             }
