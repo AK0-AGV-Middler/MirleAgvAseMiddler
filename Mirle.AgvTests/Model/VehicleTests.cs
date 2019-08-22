@@ -16,9 +16,9 @@ namespace Mirle.Agv.Model.Tests
         public void UpdateStatusTest()
         {
             var theVehicle = Vehicle.Instance;
-            var location = theVehicle.AVehiclePosition;
+            var location = theVehicle.theVehiclePosition;
             location.LastSection.Distance = 123.45f;
-            var distance = Vehicle.Instance.AVehiclePosition.LastSection.Distance;
+            var distance = Vehicle.Instance.theVehiclePosition.LastSection.Distance;
 
             Assert.AreEqual(distance, 123.45f);
         }

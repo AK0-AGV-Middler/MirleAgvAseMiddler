@@ -1925,7 +1925,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool CreatMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
+        public bool CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
                                      ref List<ReserveData> reserveList, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
             try

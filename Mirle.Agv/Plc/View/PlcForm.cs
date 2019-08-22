@@ -680,7 +680,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                plcAgent.clearExecutingForkCommand();
+                plcAgent.ClearExecutingForkCommand();
             }
             catch (Exception ex)
             {

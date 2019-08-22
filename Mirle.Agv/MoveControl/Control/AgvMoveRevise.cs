@@ -16,6 +16,7 @@ namespace Mirle.Agv.Controller
         private List<Sr2000Driver> DriverSr2000List = null;
         private const int AllowableTheta = 10;
         Dictionary<EnumMoveControlSafetyType, SafetyData> safety;
+        private string velocityChange = "";
 
         public AgvMoveRevise(OntimeReviseConfig ontimeReviseConfig, ElmoDriver elmoDriver, List<Sr2000Driver> DriverSr2000List, Dictionary<EnumMoveControlSafetyType, SafetyData> Safety)
         {
@@ -228,6 +229,101 @@ namespace Mirle.Agv.Controller
             }
             else
             {
+                if (wheelAngle == 0)
+                    return LineRevise(ref wheelTheta, reviseData.Theta, reviseData.SectionDeviation);
+                else
+                    return HorizontalRevise(ref wheelTheta, reviseData.Theta, reviseData.SectionDeviation, wheelAngle);
+            }
+        }
+
+        private void UpdateParameter(double velocity)
+        {
+            if (velocity < 0)
+                velocity = -velocity;
+
+            if (reviseParameter.Velocity > velocity)
+                velocity = reviseParameter.Velocity;
+
+            reviseParameter.MaxTheta = 1;
+            for (int i = 0; i < ontimeReviseConfig.SpeedToMaxTheta.Count; i++)
+            {
+                if (velocity < ontimeReviseConfig.SpeedToMaxTheta[i].Speed)
+                {
+                    reviseParameter.MaxTheta = ontimeReviseConfig.SpeedToMaxTheta[i].MaxTheta;
+                    break;
+                }
+            }
+
+            if (velocity > ontimeReviseConfig.MaxVelocity)
+                velocity = ontimeReviseConfig.MaxVelocity;
+            else if (velocity < ontimeReviseConfig.MinVelocity)
+                velocity = ontimeReviseConfig.MinVelocity;
+
+            reviseParameter.ModifyTheta = velocity / ontimeReviseConfig.ModifyPriority.Theta;
+            reviseParameter.ModifySectionDeviation = velocity / ontimeReviseConfig.ModifyPriority.SectionDeviation;
+            reviseParameter.ReviseType = EnumLineReviseType.None;
+            reviseParameter.ReviseValue = 0;
+            reviseParameter.ThetaCommandSpeed = 10;
+        }
+
+        public bool OntimeReviseWithVelocity(ref double[] wheelTheta, int wheelAngle, double velocity, ref string safetyMessage)
+        {
+            ThetaSectionDeviation reviseData = null;
+
+            for (int i = 0; i < DriverSr2000List.Count; i++)
+            {
+                reviseData = DriverSr2000List[i].GetThetaSectionDeviation();
+                if (reviseData != null)
+                {
+                    if (IsSameAngle(reviseData.BarodeAngleInMap, reviseData.AGVAngleInMap, wheelAngle))
+                        break;
+                    else
+                        reviseData = null;
+                }
+            }
+
+            if (safety != null && reviseData != null)
+            {
+                if (safety[EnumMoveControlSafetyType.OntimeReviseTheta].Enable)
+                {
+                    if (Math.Abs(reviseData.Theta) > safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range)
+                    {
+                        safetyMessage = "角度偏差" + reviseData.Theta.ToString("0.0") +
+                            "度,已超過安全設置的" +
+                            safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0") +
+                            "度,因此啟動EMS!";
+
+                        return true;
+                    }
+                }
+
+                if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Enable)
+                {
+                    if (Math.Abs(reviseData.SectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range)
+                    {
+                        safetyMessage = "軌道偏差" + reviseData.SectionDeviation.ToString("0") +
+                            "mm,已超過安全設置的" +
+                            safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range.ToString("0") +
+                            "mm,因此啟動EMS!";
+
+                        return true;
+                    }
+                }
+            }
+
+
+            if (!elmoDriver.MoveCompelete(EnumAxis.GT))
+                return false;
+
+            if (reviseData == null)
+            {
+                wheelTheta = new double[4] { wheelAngle, wheelAngle, wheelAngle, wheelAngle };
+                return true;
+            }
+            else
+            {
+                UpdateParameter(velocity);
+
                 if (wheelAngle == 0)
                     return LineRevise(ref wheelTheta, reviseData.Theta, reviseData.SectionDeviation);
                 else

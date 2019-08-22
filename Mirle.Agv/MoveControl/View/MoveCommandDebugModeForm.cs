@@ -73,7 +73,7 @@ namespace Mirle.Agv.View
 
         private void MoveCommandDebugModeForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            moveControl.DebugFlowMode = false;
+            //moveControl.DebugFlowMode = false;
         }
 
         private void AddAdminSafetyUserControl()
@@ -286,6 +286,8 @@ namespace Mirle.Agv.View
                 button_TurnOutSafetyDistance.Text = "出彎Safety關";
             else
                 button_TurnOutSafetyDistance.Text = "出彎Safety開";
+
+            button_DebugModeSend.Enabled = Vehicle.Instance.AutoState == EnumAutoState.Manual;
         }
 
         private void UpdateList()
@@ -328,11 +330,11 @@ namespace Mirle.Agv.View
 
             tempBarcodePosition = moveControl.location.Encoder;
             ucLabelTB_EncoderPosition.TagValue = moveControl.ControlData.VelocityCommand.ToString("0");
-            
+
             ucLabelTtB_CommandListState.TagValue = moveControl.MoveState.ToString();
 
             label_WaitReserve.Text = "Wait index : " + (moveControl.WaitReseveIndex == -1 ? "" : moveControl.WaitReseveIndex.ToString());
-            label_SensorState.Text = moveControl.SensorState.ToString();
+            label_SensorState.Text = moveControl.ControlData.SensorState.ToString();
 
             try
             {
@@ -385,7 +387,7 @@ namespace Mirle.Agv.View
 
         private void Timer_Update_Admin()
         {
-            button_SimulationModeChange.Text = moveControl.SimulationMode ? "關閉" : "開啟";
+            button_SimulationModeChange.Text = moveControl.SimulationMode ? "開啟中" : "關閉中";
             button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
 
             foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
@@ -600,7 +602,7 @@ namespace Mirle.Agv.View
                 return;
             }
 
-            if (moveControl.CreatMoveControlListSectionListReserveList(moveCmdInfo,
+            if (moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo,
                          ref moveCmdList, ref sectionLineList, ref reserveDataList, moveControl.location.Real, ref errorMessage))
             {
                 moveCmdInfo = null;
@@ -670,7 +672,7 @@ namespace Mirle.Agv.View
 
         private void button_ClearCommand_Click(object sender, EventArgs e)
         {
-            moveControl.StatusChange();
+            moveControl.StopAndClear();
         }
 
         private MoveCmdInfo GetBackCmdInfo(MoveCmdInfo AGVMCommand)
@@ -816,8 +818,8 @@ namespace Mirle.Agv.View
         private void button_SimulationMode_Click(object sender, EventArgs e)
         {
             button_SimulationModeChange.Enabled = false;
-            moveControl.SimulationMode = (button_SimulationModeChange.Text == "開啟");
-            button_SimulationModeChange.Text = (button_SimulationModeChange.Text == "開啟") ? "關閉" : "開啟";
+            moveControl.SimulationMode = (button_SimulationModeChange.Text == "關閉中");
+            button_SimulationModeChange.Text = (button_SimulationModeChange.Text == "關閉中") ? "開啟中" : "關閉中";
             button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
 
             button_SimulationModeChange.Enabled = true;

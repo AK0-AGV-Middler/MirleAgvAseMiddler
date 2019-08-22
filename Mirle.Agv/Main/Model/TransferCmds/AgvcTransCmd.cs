@@ -64,7 +64,6 @@ namespace Mirle.Agv.Model.TransferCmds
                     EnumCommandType = EnumAgvcTransCommandType.Override;
                     break;
                 case ActiveType.Mtlhome:
-                case ActiveType.Movetomtl:
                 case ActiveType.Systemout:
                 case ActiveType.Systemin:
                 case ActiveType.Techingmove:

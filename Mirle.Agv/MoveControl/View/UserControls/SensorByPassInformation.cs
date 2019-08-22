@@ -32,7 +32,7 @@ namespace Mirle.Agv
         {
             try
             {
-                button_Change.Text = (moveControl.moveControlConfig.SensorByPass[SafetyType].Enable) ? "關閉" : "開啟";
+                button_Change.Text = (moveControl.moveControlConfig.SensorByPass[SafetyType].Enable) ? "開啟中" : "關閉中";
                 button_Change.BackColor = (moveControl.moveControlConfig.SensorByPass[SafetyType].Enable) ? Color.Transparent : Color.Red;
             }
             catch { }
@@ -44,7 +44,7 @@ namespace Mirle.Agv
 
             try
             {
-                moveControl.moveControlConfig.SensorByPass[SafetyType].Enable = (button_Change.Text == "開啟");
+                moveControl.moveControlConfig.SensorByPass[SafetyType].Enable = (button_Change.Text == "關閉中");
                 UpdateEnable();
             }
             catch { }

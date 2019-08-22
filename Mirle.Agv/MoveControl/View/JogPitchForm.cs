@@ -185,7 +185,7 @@ namespace Mirle.Agv.View
                 }
             }
 
-            bool allResult = (moveControl.MoveState == EnumMoveState.Idle) && !moveControl.IsCharging() && !moveControl.ForkNotHome();
+            bool allResult = (moveControl.MoveState == EnumMoveState.Idle) && !moveControl.IsCharging() && !moveControl.ForkNotHome() && Vehicle.Instance.AutoState == EnumAutoState.Manual;
             EnableDisableForm(allResult);
         }
 

@@ -182,7 +182,7 @@ namespace Mirle.Agv
         Pause,
         Working,
         Stop
-    }
+    }   
     #endregion  
 
     public static class ExtensionMethods
@@ -202,6 +202,21 @@ namespace Mirle.Agv
             }
 
             return default(T);
+        }
+
+        private static T EnumTypeParse<T>(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (T)Enum.Parse(typeof(T), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return (T)new object();
+            }
         }
     }
 }

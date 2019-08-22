@@ -182,7 +182,7 @@ namespace Mirle.Agv.View
                 case EnumCmdNums.Cmd37_TransferCancelRequest:
                     ID_37_TRANS_CANCEL_REQUEST cmd37 = new ID_37_TRANS_CANCEL_REQUEST();
                     cmd37.CmdID = "Cmd001";
-                    cmd37.ActType = CMDCancelType.CmdAbout;
+                    cmd37.ActType = CMDCancelType.CmdAbort;
                     infos = cmd37.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd37);
                     break;

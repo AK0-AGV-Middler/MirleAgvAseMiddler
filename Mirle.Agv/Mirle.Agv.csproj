@@ -77,8 +77,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="TCPIPTrxControl">
-      <HintPath>DLL\TCPIPTrxControl.dll</HintPath>
+    <Reference Include="TCPIPTrxControl, Version=1.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>OutsideDll\TCPIPTrxControl.dll</HintPath>
     </Reference>
     <Reference Include="VncClientControlCommon">
       <HintPath>OutsideDll\VncClientControlCommon.dll</HintPath>
@@ -330,6 +331,7 @@
     <EmbeddedResource Include="Main\View\WarningForm.resx">
       <DependentUpon>WarningForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="Main\Model\agvmessage.proto" />
     <None Include="OutsideDll\TCPIPTrxControl.dll.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

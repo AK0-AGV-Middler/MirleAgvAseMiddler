@@ -84,7 +84,7 @@ namespace Mirle.Agv.Controller
                     Thread.Sleep(100);
                     DisableAllAxis();
                     EnableAllAxis();
-                    
+
                     Thread.Sleep(100);
                     ElmoStop(EnumAxis.GX);
                     ElmoMove(EnumAxis.GT, 0, 75, EnumMoveType.Absolute);
@@ -491,6 +491,13 @@ namespace Mirle.Agv.Controller
 
                         tempFeedbackData.Count = count;
                         tempFeedbackData.GetDataTime = GetDataTime;
+
+                        if (allAxisList[i].NeedAssignLastCommandPosition && tempFeedbackData.StandStill)
+                        {
+                            allAxisList[i].LastCommandPosition = tempFeedbackData.Feedback_Position;
+                            allAxisList[i].NeedAssignLastCommandPosition = false;
+                        }
+
                         allAxisList[i].FeedbackData = tempFeedbackData;
                     }
                 }
@@ -845,7 +852,10 @@ namespace Mirle.Agv.Controller
                 if (allAxis[axis].Config.IsGroup)
                     allAxis[axis].GroupAxis.GroupReset();
                 else
-                    allAxis[axis].SingleAxis.Reset();
+                {
+                    if (allAxis[axis].FeedbackData.ErrorStop)
+                        allAxis[axis].SingleAxis.Reset();
+                }
             }
             catch (MMCException ex)
             {
@@ -942,8 +952,15 @@ namespace Mirle.Agv.Controller
 
                 if (axis == EnumAxis.GT)
                 {
-                    if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
+
+                    if (Math.Abs(distance_FL - allAxis[EnumAxis.TFL].LastCommandPosition) < 0.1 &&
+                        Math.Abs(distance_FR - allAxis[EnumAxis.TFR].LastCommandPosition) < 0.1 &&
+                        Math.Abs(distance_RL - allAxis[EnumAxis.TRL].LastCommandPosition) < 0.1 &&
+                        Math.Abs(distance_RR - allAxis[EnumAxis.TRR].LastCommandPosition) < 0.1)
                         return;
+
+                    //if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
+                    //    return;
                 }
 
                 double sqrt = Math.Sqrt(allAxis[axis].Config.GroupOrder.Count());
@@ -959,10 +976,10 @@ namespace Mirle.Agv.Controller
                 float[] Transition = { 0, 0, 0, 0 };
                 allAxis[axis].GroupAxis.GroupSetOverride(1, 1, 1, 0);//Speed 100%
 
-                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance_FL : " + distance_FL.ToString("0.0") +
-                            ", distance_FR : " + distance_FR.ToString("0.0") +
-                            ", distance_RL : " + distance_RL.ToString("0.0") +
-                            ", distance_R : " + distance_RR.ToString("0.0") +
+                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance_FL : " + distance_FL.ToString("0.00") +
+                            ", distance_FR : " + distance_FR.ToString("0.00") +
+                            ", distance_RL : " + distance_RL.ToString("0.00") +
+                            ", distance_RR : " + distance_RR.ToString("0.00") +
                             ", velocity : " + velocity.ToString("0") + ", acc : " + acceleration.ToString("0") +
                             ", dec : " + deceleration.ToString("0") + ", jerk : " + jerk.ToString("0"));
                 allAxis[axis].GroupAxis.MoveLinearAbsolute(
@@ -972,10 +989,20 @@ namespace Mirle.Agv.Controller
                               MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
                               NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
                               Transition, 1, 1);
+
+                allAxis[EnumAxis.TFL].LastCommandPosition = distance_FL;
+                allAxis[EnumAxis.TFR].LastCommandPosition = distance_FR;
+                allAxis[EnumAxis.TRL].LastCommandPosition = distance_RL;
+                allAxis[EnumAxis.TRR].LastCommandPosition = distance_RR;
             }
             catch (MMCException ex)
             {
-                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                WriteLog("Elmo", "3", device, memberName, "LastCommand ::" +
+                             "TFL : " + allAxis[EnumAxis.TFL].LastCommandPosition.ToString("0.00") +
+                            ",TFR : " + allAxis[EnumAxis.TFR].LastCommandPosition.ToString("0.00") +
+                            ",TRL : " + allAxis[EnumAxis.TRL].LastCommandPosition.ToString("0.00") +
+                            ",TRR : " + allAxis[EnumAxis.TRR].LastCommandPosition.ToString("0.00") + "\r\n" +
+                            ex.ToString());
             }
         }
 
@@ -1004,10 +1031,10 @@ namespace Mirle.Agv.Controller
                 float[] Transition = { 0, 0, 0, 0 };
                 allAxis[axis].GroupAxis.GroupSetOverride(1, 1, 1, 0);//Speed 100%
 
-                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance_FL : " + distance_FL.ToString("0.0") +
-                            ", distance_FR : " + distance_FR.ToString("0.0") +
-                            ", distance_RL : " + distance_RL.ToString("0.0") +
-                            ", distance_R : " + distance_RR.ToString("0.0") +
+                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance_FL : " + distance_FL.ToString("0.00") +
+                            ", distance_FR : " + distance_FR.ToString("0.00") +
+                            ", distance_RL : " + distance_RL.ToString("0.00") +
+                            ", distance_RR : " + distance_RR.ToString("0.00") +
                             ", velocity : " + velocity.ToString("0") + ", acc : " + acceleration.ToString("0") +
                             ", dec : " + deceleration.ToString("0") + ", jerk : " + jerk.ToString("0"));
                 allAxis[axis].GroupAxis.MoveLinearRelative(
@@ -1017,6 +1044,12 @@ namespace Mirle.Agv.Controller
                               MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
                               NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
                               Transition, 1, 1);
+
+
+                allAxis[allAxis[axis].Config.CommandOrder[0]].LastCommandPosition += distance_FL;
+                allAxis[allAxis[axis].Config.CommandOrder[1]].LastCommandPosition += distance_FR;
+                allAxis[allAxis[axis].Config.CommandOrder[2]].LastCommandPosition += distance_RL;
+                allAxis[allAxis[axis].Config.CommandOrder[3]].LastCommandPosition += distance_RR;
             }
             catch (MMCException ex)
             {
@@ -1036,7 +1069,7 @@ namespace Mirle.Agv.Controller
                 if (distance == 0)
                     return;
 
-                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance : " + distance.ToString("0.0") +
+                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance : " + distance.ToString("0.00") +
                             ", velocity : " + velocity.ToString("0") + ", acc : " + acceleration.ToString("0") +
                             ", dec : " + deceleration.ToString("0") + ", jerk : " + jerk.ToString("0"));
                 allAxis[axis].SingleAxis.MoveRelative(
@@ -1046,6 +1079,8 @@ namespace Mirle.Agv.Controller
                               (float)jerk,
                               MC_DIRECTION_ENUM.MC_POSITIVE_DIRECTION,
                               MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
+
+                allAxis[axis].LastCommandPosition += distance;
             }
             catch (MMCException ex)
             {
@@ -1063,10 +1098,15 @@ namespace Mirle.Agv.Controller
                 if (allAxis[axis].FeedbackData.Disable)
                     return;
 
-                if (PositionComare(axis, distance))
+                //if (PositionComare(axis, distance))
+                //    return;
+
+                if (!allAxis[axis].Config.IsVirtualDevice && Math.Abs(distance - allAxis[axis].LastCommandPosition) < 0.1)
                     return;
 
-                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance : " + distance.ToString("0.0") +
+                allAxis[axis].LastCommandPosition = distance;
+
+                WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance : " + distance.ToString("0.00") +
                             ", velocity : " + velocity.ToString("0") + ", acc : " + acceleration.ToString("0") +
                             ", dec : " + deceleration.ToString("0") + ", jerk : " + jerk.ToString("0"));
                 allAxis[axis].SingleAxis.MoveAbsolute(
@@ -1098,6 +1138,9 @@ namespace Mirle.Agv.Controller
                 WriteLog("Elmo", "5", device, memberName, axis.ToString() + " dec : " + deceleration.ToString("0.00") +
                                                                             ", jerk : " + jerk.ToString("0"));
                 allAxis[axis].GroupAxis.GroupStop((float)deceleration, (float)jerk, MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE);
+
+                for (int i = 0; i < allAxis[axis].Config.GroupOrder.Count; i++)
+                    allAxis[allAxis[axis].Config.GroupOrder[i]].NeedAssignLastCommandPosition = true;
             }
             catch (MMCException ex)
             {
@@ -1116,6 +1159,8 @@ namespace Mirle.Agv.Controller
                 WriteLog("Elmo", "5", device, memberName, axis.ToString() + " dec : " + deceleration.ToString("0.00") +
                                                                             ", jerk : " + jerk.ToString("0"));
                 allAxis[axis].SingleAxis.Stop((float)deceleration, (float)jerk, MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE);
+
+                allAxis[axis].NeedAssignLastCommandPosition = true;
             }
             catch (MMCException ex)
             {

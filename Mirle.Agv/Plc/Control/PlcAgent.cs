@@ -926,7 +926,7 @@ namespace Mirle.Agv.Controller
                     {
                         beforeEMOStatus = APLCVehicle.PlcEmoStatus;
                         WriteForkCommandInfo(0, EnumForkCommand.None, "0", EnumStageDirection.None, true, 100);//待測試(看需要麼)
-                        clearExecutingForkCommand();
+                        ClearExecutingForkCommand();
                     }
 
                     //heartbeat
@@ -2155,7 +2155,7 @@ namespace Mirle.Agv.Controller
         }
 
 
-        public void clearExecutingForkCommand()
+        public void ClearExecutingForkCommand()
         {
             clearExecutingForkCommandFlag = true;
         }
@@ -2633,7 +2633,7 @@ namespace Mirle.Agv.Controller
             }
 
             //Robot
-            clearExecutingForkCommand();
+            ClearExecutingForkCommand();
             //WriteForkCommandInfo(0, EnumForkCommand.None, "0", EnumStageDirection.None, true, 100);
         }
         private void IpcAutoModeDirectionalLightControl()

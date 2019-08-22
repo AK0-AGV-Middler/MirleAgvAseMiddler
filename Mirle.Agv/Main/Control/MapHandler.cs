@@ -295,7 +295,7 @@ namespace Mirle.Agv.Controller
             var headPosition = mapSection.HeadAddress.Position;
             var tailPosition = mapSection.TailAddress.Position;
 
-            VehiclePosition location = theVehicle.AVehiclePosition;
+            VehiclePosition location = theVehicle.theVehiclePosition;
 
             #region Not in Section
             //Position 在 Head 西方過遠

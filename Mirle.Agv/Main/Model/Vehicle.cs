@@ -22,8 +22,8 @@ namespace Mirle.Agv.Model
         private PlcVehicle plcVehicle = new PlcVehicle();
         private AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
 
-        public VehiclePosition AVehiclePosition { get; set; }
-        public EnumAutoState AutoState { get; set; }
+        public VehiclePosition theVehiclePosition { get; set; }
+        public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
 
         #region Comm Property
 
@@ -54,7 +54,7 @@ namespace Mirle.Agv.Model
 
         private Vehicle()
         {
-            AVehiclePosition = new VehiclePosition(theMapInfo);
+            theVehiclePosition = new VehiclePosition(theMapInfo);
         }
 
         #region Setter     

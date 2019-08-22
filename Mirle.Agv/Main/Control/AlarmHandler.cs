@@ -83,8 +83,8 @@ namespace Mirle.Agv.Controller
                     Alarm oneRow = new Alarm();
                     oneRow.Id = int.Parse(getThisRow[dicAlarmIndexes["Id"]]);
                     oneRow.AlarmText = getThisRow[dicAlarmIndexes["AlarmText"]];
-                    oneRow.PlcAddress = getThisRow[dicAlarmIndexes["PlcAddress"]];
-                    oneRow.PlcBitNumber = getThisRow[dicAlarmIndexes["PlcBitNumber"]];
+                    oneRow.PlcAddress = ushort.Parse(getThisRow[dicAlarmIndexes["PlcAddress"]]);
+                    oneRow.PlcBitNumber = ushort.Parse(getThisRow[dicAlarmIndexes["PlcBitNumber"]]);
                     oneRow.Level = EnumAlarmLevelParse(getThisRow[dicAlarmIndexes["Level"]]);
                     oneRow.Description = getThisRow[dicAlarmIndexes["Description"]];
 
@@ -102,7 +102,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public Alarm GetAlarm(int id)
+        public Alarm GetAlarmClone(int id)
         {
             Alarm alarm;
             if (!allAlarms.ContainsKey(id))
@@ -134,7 +134,7 @@ namespace Mirle.Agv.Controller
                 return;
             }
 
-            Alarm alarm = GetAlarm(id);
+            Alarm alarm = GetAlarmClone(id);
             DateTime timeStamp = DateTime.Now;
             alarm.SetTime = timeStamp;
             dicHappeningAlarms.TryAdd(id, alarm);

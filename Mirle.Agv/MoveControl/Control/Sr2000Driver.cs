@@ -91,7 +91,7 @@ namespace Mirle.Agv.Controller
         {
             return sr2000Info.Connect;
         }
-        
+
         public Sr2000ReadData GetReadData()
         {
             return returnData;
@@ -202,10 +202,10 @@ namespace Mirle.Agv.Controller
                         {
                             //if (CheckDistanceSafetyRange(sr2000ReadData))
                             //{
-                                ComputeMapPosition(sr2000ReadData);
-                                ComputeThetaSectionDeviation(sr2000ReadData);
-                                sr2000ReadData.ReviseData.BarodeAngleInMap = sr2000ReadData.AGV.BarcodeAngleInMap;
-                                sr2000ReadData.ReviseData.AGVAngleInMap = sr2000ReadData.AGV.AGVAngle;
+                            ComputeMapPosition(sr2000ReadData);
+                            ComputeThetaSectionDeviation(sr2000ReadData);
+                            sr2000ReadData.ReviseData.BarodeAngleInMap = sr2000ReadData.AGV.BarcodeAngleInMap;
+                            sr2000ReadData.ReviseData.AGVAngleInMap = sr2000ReadData.AGV.AGVAngle;
                             //}
                         }
                         // scanTime > timeoutvalue ??
@@ -378,9 +378,9 @@ namespace Mirle.Agv.Controller
 
             MapPosition agvPosition = new MapPosition(
                 sr2000ReadData.TargetCenter.X + (float)(sr2000Config.ReaderToCenterDistance *
-                Math.Cos((agvAngleInMap + sr2000Config.ReaderToCenterDegree) / 180 * Math.PI)),
+                Math.Cos(-(agvAngleInMap + sr2000Config.ReaderToCenterDegree + 180) / 180 * Math.PI)),
                 sr2000ReadData.TargetCenter.Y + (float)(sr2000Config.ReaderToCenterDistance *
-                Math.Sin((agvAngleInMap + sr2000Config.ReaderToCenterDegree) / 180 * Math.PI)));
+                Math.Sin(-(agvAngleInMap + sr2000Config.ReaderToCenterDegree + 180) / 180 * Math.PI)));
 
             sr2000ReadData.AGV = new AGVPosition(agvPosition, agvAngleInMap, barcodeAngleInView, sr2000ReadData.ScanTime,
                                                  sr2000ReadData.GetDataTime, sr2000ReadData.Count, barcodeAngleInMap);

@@ -250,17 +250,17 @@ namespace Mirle.Agv.Controller
                         queNeedReserveSections.TryPeek(out MapSection needReserveSection);
                         askingReserveSection = needReserveSection == null ? new MapSection() : needReserveSection;
                         Send_Cmd136_AskReserve();
-                    }                   
+                    }
                 }
                 catch (Exception ex)
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        , ex.StackTrace));                    
+                        , ex.StackTrace));
                 }
                 finally
                 {
                     SpinWait.SpinUntil(() => false, middlerConfig.AskReserveIntervalMs);
-                }               
+                }
 
                 sw.Stop();
                 //var xx1 = sw.ElapsedMilliseconds;
@@ -339,28 +339,72 @@ namespace Mirle.Agv.Controller
         }
         private bool IsGotReserveOkSectionsFull()
         {
-            //TODO: Reserve Length 從段數改成長度判斷
-            return queGotReserveOkSections.Count >= middlerConfig.ReserveLength;
+            int reserveOkSectionsTotalLength = GetReserveOkSectionsTotalLength();
+            return reserveOkSectionsTotalLength >= middlerConfig.ReserveLengthMeter * 1000;
+        }
+
+        private int GetReserveOkSectionsTotalLength()
+        {
+            double result = 0;
+            List<MapSection> reserveOkSections = new List<MapSection>(queGotReserveOkSections);
+            foreach (var item in reserveOkSections)
+            {
+                result += item.Distance;
+            }
+            return (int)result;
+        }
+
+        public void ClearNeedReserveSections()
+        {
+            queNeedReserveSections = new ConcurrentQueue<MapSection>();
+            var msg = $"Middler : ClearNeedReserveSections, [QueCount={queNeedReserveSections.Count}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
+        }
+        public void ClearAskingReserveSection()
+        {
+            askingReserveSection = new MapSection();
+            var msg = $"Middler : ClearAskingReserveSection, [QueCount={queNeedReserveSections.Count}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
         }
         public void ClearGotReserveOkSections()
         {
             queGotReserveOkSections = new ConcurrentQueue<MapSection>();
+            var msg = $"Middler : ClearGotReserveOkSections, [QueCount={queGotReserveOkSections.Count}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
         }
         public void SetupAskingReserveSection(MapSection askingReserveSection)
         {
             this.askingReserveSection = askingReserveSection.DeepClone();
+            var msg = $"Middler : SetupAskingReserveSection, [AskingReserveSectionID={askingReserveSection.Id}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
         }
-        public MapSection GetAskingReserveSection()
+        public MapSection GetAskingReserveSectionClone()
         {
             return askingReserveSection.DeepClone();
         }
         public void SetupNeedReserveSections(MoveCmdInfo moveCmd)
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>(moveCmd.MovingSections.DeepClone());
+            var msg = $"Middler : SetupNeedReserveSectionsByMoveCmd, [QueCount={queNeedReserveSections.Count}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
         }
         public void SetupNeedReserveSections(List<MapSection> mapSections)
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>(mapSections.DeepClone());
+            var msg = $"Middler : SetupNeedReserveSectionsByList, [QueCount={queNeedReserveSections.Count}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
         }
         public List<MapSection> GetNeedReserveSections()
         {
@@ -372,253 +416,73 @@ namespace Mirle.Agv.Controller
         }
         public void DequeueGotReserveOkSections()
         {
-            queGotReserveOkSections.TryDequeue(out MapSection passSection);
+            if (queGotReserveOkSections.Count == 0)
+            {
+                var msg = $"Middler : DequeueGotReserveOkSections +++FAIL+++, [QueCount={queGotReserveOkSections.Count}]";
+                OnMessageShowEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
+                return;
+            }
+            else
+            {
+                queGotReserveOkSections.TryDequeue(out MapSection passSection);
+                var msg = $"Middler : DequeueGotReserveOkSections +++Ok+++, [SectionId={passSection.Id}]";
+                OnMessageShowEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
+            }
         }
         public MapSection GetPeekOfGotReserveOkSections()
         {
             queGotReserveOkSections.TryPeek(out MapSection result);
             return result;
         }
-
-        #endregion
-
-        #region EnumParse
-        private VhChargeStatus VhChargeStatusParse(string v)
+        public void OnGetReserveOk()
         {
-            try
-            {
-                v = v.Trim();
+            OnGetReserveOkEvent?.Invoke(this, askingReserveSection);
 
-                return (VhChargeStatus)Enum.Parse(typeof(VhChargeStatus), v);
-            }
-            catch (Exception ex)
+            if (queNeedReserveSections.Count == 0)
             {
-                var msg = ex.StackTrace;
-                return VhChargeStatus.ChargeStatusCharging;
+                OnMessageShowEvent?.Invoke(this, $"Middler : queNeedReserveSections is Empty, [AskingReserveId = {askingReserveSection.Id}][Need Sections Count = {queNeedReserveSections.Count}]");
+                return;
             }
-        }
-        private VhStopSingle VhStopSingleParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
 
-                return (VhStopSingle)Enum.Parse(typeof(VhStopSingle), v);
-            }
-            catch (Exception ex)
+            queNeedReserveSections.TryPeek(out MapSection needReserveSection);
+            if (needReserveSection.Id == askingReserveSection.Id)
             {
-                var msg = ex.StackTrace;
-                return VhStopSingle.StopSingleOff;
-            }
-        }
-        private VHActionStatus VHActionStatusParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (VHActionStatus)Enum.Parse(typeof(VHActionStatus), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return VHActionStatus.Commanding;
-            }
-        }
-        private DriveDirction DriveDirctionParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (DriveDirction)Enum.Parse(typeof(DriveDirction), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return DriveDirction.DriveDirForward;
-            }
-        }
-        private EventType EventTypeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (EventType)Enum.Parse(typeof(EventType), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return EventType.AdrOrMoveArrivals;
-            }
-        }
-        private CompleteStatus CompleteStatusParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (CompleteStatus)Enum.Parse(typeof(CompleteStatus), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return CompleteStatus.CmpStatusAbort;
-            }
-        }
-        private OperatingPowerMode OperatingPowerModeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (OperatingPowerMode)Enum.Parse(typeof(OperatingPowerMode), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return OperatingPowerMode.OperatingPowerOff;
-            }
-        }
-        private OperatingVHMode OperatingVHModeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (OperatingVHMode)Enum.Parse(typeof(OperatingVHMode), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return OperatingVHMode.OperatingAuto;
-            }
-        }
-        private PauseType PauseTypeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (PauseType)Enum.Parse(typeof(PauseType), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return PauseType.None;
-            }
-        }
-        private PauseEvent PauseEventParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (PauseEvent)Enum.Parse(typeof(PauseEvent), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return PauseEvent.Pause;
-            }
-        }
-        private CMDCancelType CMDCancelTypeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (CMDCancelType)Enum.Parse(typeof(CMDCancelType), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return CMDCancelType.CmdAbout;
-            }
-        }
-        private ReserveResult ReserveResultParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (ReserveResult)Enum.Parse(typeof(ReserveResult), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return ReserveResult.Success;
-            }
-        }
-        private PassType PassTypeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (PassType)Enum.Parse(typeof(PassType), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return PassType.Pass;
-            }
-        }
-        private ErrorStatus ErrorStatusParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (ErrorStatus)Enum.Parse(typeof(ErrorStatus), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return ErrorStatus.ErrReset;
-            }
-        }
-        private ActiveType ActiveTypeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (ActiveType)Enum.Parse(typeof(ActiveType), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return ActiveType.Home;
-            }
-        }
-        private ControlType ControlTypeParse(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (ControlType)Enum.Parse(typeof(ControlType), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return ControlType.Nothing;
-            }
-        }
-        private VhLoadCSTStatus VhLoadCSTStatusParse(bool loading)
-        {
-            if (loading)
-            {
-                return VhLoadCSTStatus.Exist;
+                queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
+                queGotReserveOkSections.Enqueue(aReserveOkSection);
+                mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
+                OnMessageShowEvent?.Invoke(this, $"Middler :GetReserveOk, [AskingReserveId = {askingReserveSection.Id}]");
             }
             else
             {
-                return VhLoadCSTStatus.NotExist;
+                OnMessageShowEvent?.Invoke(this, $"Middler : Reserve ok ID unmatch, [AskingReserveId = {askingReserveSection.Id}][NeedReserveId = {needReserveSection.Id}]");
             }
         }
+        public void DequeueNeedReserveSections()
+        {
+            if (queNeedReserveSections.Count == 0)
+            {
+                var msg = $"Middler : DequeueNeedReserveSections +++FAIL+++, [QueCount={queNeedReserveSections.Count}]";
+                OnMessageShowEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
+            }
+            else
+            {
+                queNeedReserveSections.TryDequeue(out MapSection dequeueSection);
+                var msg = $"Middler : DequeueNeedReserveSections +++Ok+++, [SectionId={dequeueSection.Id}]";
+                OnMessageShowEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
+
+            }
+        }
+
         #endregion
+
 
         public void SendMiddlerFormCommands(int cmdNum, Dictionary<string, string> pairs)
         {
@@ -1113,6 +977,7 @@ namespace Mirle.Agv.Controller
 
         }
 
+
         private string[] StringSpilter(string v)
         {
             v = v.Trim(new char[] { ' ', '[', ']' });
@@ -1141,18 +1006,16 @@ namespace Mirle.Agv.Controller
             }
             if (!IsNeerlyNoMove())
             {
-                lastReportSection = theVehicle.AVehiclePosition.LastSection.DeepClone();
+                lastReportSection = theVehicle.theVehiclePosition.LastSection.DeepClone();
                 theVehicle.Cmd134EventType = EventType.AdrPass;
                 Send_Cmd134_TransferEventReport();
             }
         }
-
         private bool IsNeerlyNoMove()
         {
-            return (lastReportSection.Id == theVehicle.AVehiclePosition.LastSection.Id) &&
-                (Math.Abs(lastReportSection.Distance - theVehicle.AVehiclePosition.LastSection.Distance) < middlerConfig.NeerlyNoMoveRangeMm);
+            return (lastReportSection.Id == theVehicle.theVehiclePosition.LastSection.Id) &&
+                (Math.Abs(lastReportSection.Distance - theVehicle.theVehiclePosition.LastSection.Distance) < middlerConfig.NeerlyNoMoveRangeMm);
         }
-
         public void ReportLoadArrivals()
         {
             if (!ClientAgent.IsConnection)
@@ -1249,6 +1112,7 @@ namespace Mirle.Agv.Controller
             return (thdAskReserve != null) && (thdAskReserve.IsAlive);
         }
 
+
         #region Send_Or_Receive_CmdNum
         public void Receive_Cmd94_AlarmResponse(object sender, TcpIpEventArgs e)
         {
@@ -1343,7 +1207,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd172_RangeTeachCompleteReport(int completeCode)
         {
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
 
             try
             {
@@ -1498,7 +1362,7 @@ namespace Mirle.Agv.Controller
         {
             PlcBatterys batterys = theVehicle.GetPlcVehicle().Batterys;
 
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
 
             try
             {
@@ -1546,7 +1410,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
 
             PlcBatterys batterys = theVehicle.GetPlcVehicle().Batterys;
 
@@ -1617,7 +1481,7 @@ namespace Mirle.Agv.Controller
             {
                 var msg = ex.StackTrace;
             }
-        }       
+        }
 
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
@@ -1629,6 +1493,8 @@ namespace Mirle.Agv.Controller
             int replyCode = 0;
             Send_Cmd139_PauseResponse(e.iSeqNum, replyCode);
         }
+
+
         public void Send_Cmd139_PauseResponse(ushort seqNum, int replyCode)
         {
             try
@@ -1664,7 +1530,7 @@ namespace Mirle.Agv.Controller
                         OnTransferCancelEvent?.Invoke(this, receive.CmdID);
                     }
                     break;
-                case CMDCancelType.CmdAbout:
+                case CMDCancelType.CmdAbort:
                     if (CanVehAbort())
                     {
                         result = true;
@@ -1678,7 +1544,7 @@ namespace Mirle.Agv.Controller
 
             int replyCode = result ? 0 : 1;
             Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode);
-        }       
+        }
 
         public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode)
         {
@@ -1718,27 +1584,7 @@ namespace Mirle.Agv.Controller
 
             if (receive.IsReserveSuccess == ReserveResult.Success)
             {
-                OnGetReserveOkEvent?.Invoke(this, askingReserveSection);
-
-                if (queNeedReserveSections.Count == 0)
-                {
-                    OnMessageShowEvent?.Invoke(this, $"Middler : queNeedReserveSections is Empty, [AskingReserveId = {askingReserveSection.Id}][Need Sections Count = {queNeedReserveSections.Count}]");
-                    return;
-                }
-
-                queNeedReserveSections.TryPeek(out MapSection needReserveSection);
-                if (needReserveSection.Id == askingReserveSection.Id)
-                {
-                    queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
-                    queGotReserveOkSections.Enqueue(aReserveOkSection);
-                    mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
-                    OnMessageShowEvent?.Invoke(this, $"Middler :GetReserveOk, [AskingReserveId = {askingReserveSection.Id}]");
-                }
-                else
-                {
-                    OnMessageShowEvent?.Invoke(this, $"Middler : Reserve ok ID unmatch, [AskingReserveId = {askingReserveSection.Id}][NeedReserveId = {needReserveSection.Id}]");
-                }
-
+                OnGetReserveOk();
             }
 
             //if (receive.IsBlockPass == PassType.Pass)
@@ -1748,7 +1594,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
@@ -1772,7 +1618,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_RequestBlock(string requestBlockID)
         {
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
 
             try
             {
@@ -1797,7 +1643,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_ReleaseBlock(string releaseBlockAdrID)
         {
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
 
             try
             {
@@ -1822,7 +1668,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_AskReserve()
         {
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
 
             try
             {
@@ -1902,7 +1748,7 @@ namespace Mirle.Agv.Controller
 
         public void Send_Cmd134_TransferEventReport()
         {
-            VehiclePosition vehPosition = theVehicle.AVehiclePosition;
+            VehiclePosition vehPosition = theVehicle.theVehiclePosition;
 
             try
             {
@@ -1977,7 +1823,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd132_TransferCompleteReport()
         {
-            VehiclePosition vehLocation = theVehicle.AVehiclePosition;
+            VehiclePosition vehLocation = theVehicle.theVehiclePosition;
 
             try
             {
@@ -2052,7 +1898,6 @@ namespace Mirle.Agv.Controller
                 case ActiveType.Override:
                     return new AgvcOverrideCmd(transRequest, iSeqNum);
                 case ActiveType.Mtlhome:
-                case ActiveType.Movetomtl:
                 case ActiveType.Systemout:
                 case ActiveType.Systemin:
                 case ActiveType.Techingmove:
@@ -2064,8 +1909,243 @@ namespace Mirle.Agv.Controller
 
         #endregion
 
+        #region EnumParse
+        private VhChargeStatus VhChargeStatusParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
 
+                return (VhChargeStatus)Enum.Parse(typeof(VhChargeStatus), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return VhChargeStatus.ChargeStatusCharging;
+            }
+        }
+        private VhStopSingle VhStopSingleParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
 
+                return (VhStopSingle)Enum.Parse(typeof(VhStopSingle), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return VhStopSingle.StopSingleOff;
+            }
+        }
+        private VHActionStatus VHActionStatusParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (VHActionStatus)Enum.Parse(typeof(VHActionStatus), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return VHActionStatus.Commanding;
+            }
+        }
+        private DriveDirction DriveDirctionParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (DriveDirction)Enum.Parse(typeof(DriveDirction), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return DriveDirction.DriveDirForward;
+            }
+        }
+        private EventType EventTypeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (EventType)Enum.Parse(typeof(EventType), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return EventType.AdrOrMoveArrivals;
+            }
+        }
+        private CompleteStatus CompleteStatusParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (CompleteStatus)Enum.Parse(typeof(CompleteStatus), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return CompleteStatus.CmpStatusAbort;
+            }
+        }
+        private OperatingPowerMode OperatingPowerModeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (OperatingPowerMode)Enum.Parse(typeof(OperatingPowerMode), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return OperatingPowerMode.OperatingPowerOff;
+            }
+        }
+        private OperatingVHMode OperatingVHModeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (OperatingVHMode)Enum.Parse(typeof(OperatingVHMode), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return OperatingVHMode.OperatingAuto;
+            }
+        }
+        private PauseType PauseTypeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (PauseType)Enum.Parse(typeof(PauseType), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return PauseType.None;
+            }
+        }
+        private PauseEvent PauseEventParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (PauseEvent)Enum.Parse(typeof(PauseEvent), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return PauseEvent.Pause;
+            }
+        }
+        private CMDCancelType CMDCancelTypeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (CMDCancelType)Enum.Parse(typeof(CMDCancelType), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return CMDCancelType.CmdAbort;
+            }
+        }
+        private ReserveResult ReserveResultParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (ReserveResult)Enum.Parse(typeof(ReserveResult), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return ReserveResult.Success;
+            }
+        }
+        private PassType PassTypeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (PassType)Enum.Parse(typeof(PassType), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return PassType.Pass;
+            }
+        }
+        private ErrorStatus ErrorStatusParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (ErrorStatus)Enum.Parse(typeof(ErrorStatus), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return ErrorStatus.ErrReset;
+            }
+        }
+        private ActiveType ActiveTypeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (ActiveType)Enum.Parse(typeof(ActiveType), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return ActiveType.Home;
+            }
+        }
+        private ControlType ControlTypeParse(string v)
+        {
+            try
+            {
+                v = v.Trim();
+
+                return (ControlType)Enum.Parse(typeof(ControlType), v);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+                return ControlType.Nothing;
+            }
+        }
+        private VhLoadCSTStatus VhLoadCSTStatusParse(bool loading)
+        {
+            if (loading)
+            {
+                return VhLoadCSTStatus.Exist;
+            }
+            else
+            {
+                return VhLoadCSTStatus.NotExist;
+            }
+        }
+        #endregion
     }
 
 }

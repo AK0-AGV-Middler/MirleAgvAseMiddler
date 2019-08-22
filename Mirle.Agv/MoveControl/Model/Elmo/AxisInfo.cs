@@ -18,5 +18,7 @@ namespace Mirle.Agv.Model
         public ushort VirtualLink { get; set; }
         public ElmoAxisFeedbackData FeedbackData { get; set; } = new ElmoAxisFeedbackData();
         public bool Linking { get; set; } = false;
+        public double LastCommandPosition { get; set; }
+        public bool NeedAssignLastCommandPosition { get; set; } = true;
     }
 }

@@ -18,6 +18,12 @@ namespace Mirle.Agv.Model
         public Thread MoveControlThread { get; set; }
         public bool OntimeReviseFlag { get; set; }
         public double TrigetEndEncoder { get; set; }
+        public bool FlowStopRequeset { get; set; }
+        public bool FlowStop { get; set; }
+        public bool FlowClear { get; set; }
+        public bool SensorStop { get; set; }
+        public bool SensorSlow { get; set; }
+        public EnumVehicleSafetyAction SensorState { get; set; }
 
         public MoveControlParameter()
         {
@@ -27,6 +33,12 @@ namespace Mirle.Agv.Model
             MoveControlStop = false;
             VelocityCommand = 100;
             OntimeReviseFlag = false;
+            FlowStopRequeset = false;
+            FlowStop = false;
+            FlowClear = false;
+            SensorStop = false;
+            SensorSlow = false;
+            SensorState = EnumVehicleSafetyAction.Normal;
         }
     }
 }

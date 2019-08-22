@@ -29,7 +29,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-            var firstPosition = Vehicle.Instance.AVehiclePosition.RealPosition.DeepClone();
+            var firstPosition = Vehicle.Instance.theVehiclePosition.RealPosition.DeepClone();
             //Break The MoveControl Protect
             switch (MovingSections[0].Type)
             {
@@ -107,7 +107,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
         public void SetAddressActions()
         {
-            PredictVehicleAngle = theVehicle.AVehiclePosition.PredictVehicleAngle;
+            PredictVehicleAngle = theVehicle.theVehiclePosition.PredictVehicleAngle;
 
             AddressActions = new List<EnumAddressAction>();
             try
@@ -136,7 +136,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             AddressActions.Add(EnumAddressAction.End);
 
-            theVehicle.AVehiclePosition.PredictVehicleAngle = PredictVehicleAngle;
+            theVehicle.theVehiclePosition.PredictVehicleAngle = PredictVehicleAngle;
         }
 
         public void SetMovingSections()
