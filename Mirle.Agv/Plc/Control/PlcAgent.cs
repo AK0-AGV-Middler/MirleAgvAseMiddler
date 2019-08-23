@@ -103,47 +103,18 @@ namespace Mirle.Agv.Controller
                 TestThread.IsBackground = true;
                 TestThread.Start();
             }
-
         }
         private void TestThreadRun()
         {
-            EnumAutoState IpcStatus;
-            bool IpcStatusAutoIni = false;
-            bool IpcStatusManualIni = false;
+            bool firstFlag = false;
             while (true)
             {
-                IpcStatus = Vehicle.Instance.AutoState;
-                if (IpcStatus == EnumAutoState.Auto)
-                {
-                    if (IpcStatusAutoIni)
-                    {
-                        IpcStatusAutoIni = false;
-                        IpcModeToAutoInitial();
-                        OnIpcAutoManualChangeEvent?.Invoke(this, EnumAutoState.Auto);
-                    }
-                    //IpcAutoModeDirectionalLightControl();
-                    IpcStatusManualIni = true;
-                }
-                else
-                {
-                    IpcStatusAutoIni = true;
-                    if (IpcStatusManualIni)
-                    {
-                        IpcStatusManualIni = false;
-                        APLCVehicle.MoveFront = false;
-                        APLCVehicle.MoveBack = false;
-                        APLCVehicle.MoveLeft = false;
-                        APLCVehicle.MoveRight = false;
-                        OnIpcAutoManualChangeEvent?.Invoke(this, EnumAutoState.Manual);
-                    }
-                    //WriteDirectionalLight(EnumVehicleSide.None);
-                }
+
             }
         }
         [Conditional("DebugTest")]
         private void TestFun()
         {
-
 
         }
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -279,8 +250,21 @@ namespace Mirle.Agv.Controller
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Charging.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryType.ToString();
 
-                BatteryLogger.SavePureLog(csvLog);
+                for (int i = 1; i <= APLCVehicle.BatteryCellNum; i++)
+                {
+                    csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryCells[i].ToString();
+                }
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Temperature_sensor_number.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Temperature_1_MOSFET.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Temperature_2_Cell.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Temperature_3_MCU.ToString();
 
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryCurrent.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Packet_Voltage.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Remain_Capacity.ToString();
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Design_Capacity.ToString();
+
+                BatteryLogger.SavePureLog(csvLog);
 
                 sw.Stop();
                 sw.Reset();
@@ -409,6 +393,9 @@ namespace Mirle.Agv.Controller
                         case "CCMode_Stop_Voltage":
                             this.APLCVehicle.Batterys.CCModeStopVoltage = Convert.ToDouble(childItem.InnerText);
                             break;
+                        case "Battery_Cell_Low_Voltage":
+                            this.APLCVehicle.Batterys.Battery_Cell_Low_Voltage = Convert.ToDouble(childItem.InnerText);
+                            break;
                     }
 
                 }
@@ -533,6 +520,21 @@ namespace Mirle.Agv.Controller
                             {
                                 //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
                                 LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
+                            }
+                        }
+                        else if (oColParam.Item(i).DataName.ToString().StartsWith("Cell_"))
+                        {
+                            string[] strarry = oColParam.Item(i).DataName.ToString().Split('_');
+                            if (oColParam.Item(i).DataName.ToString() == "Cell_number")
+                            {
+                                this.APLCVehicle.Batterys.Cell_number = oColParam.Item(i).AsUInt16;
+                            }
+                            else
+                            {
+                                if (strarry[2] == "Voltage")
+                                {
+                                    this.APLCVehicle.Batterys.BatteryCells[Convert.ToInt16(strarry[1])].Voltage = this.DECToDouble(oColParam.Item(i).AsUInt16, 1, 3);
+                                }
                             }
                         }
                         else
@@ -698,6 +700,39 @@ namespace Mirle.Agv.Controller
                                 case "BumperAlarmStatus":
                                     this.APLCVehicle.BumperAlarmStatus = aMCProtocol.get_ItemByTag("BumperAlarmStatus").AsBoolean;
                                     break;
+
+                                case "Temperature_sensor_number":
+                                    this.APLCVehicle.Batterys.Temperature_sensor_number = aMCProtocol.get_ItemByTag("Temperature_sensor_number").AsUInt16;
+                                    break;
+                                case "Temperature_1_MOSFET":
+                                    this.APLCVehicle.Batterys.Temperature_1_MOSFET = this.DECToDouble(aMCProtocol.get_ItemByTag("Temperature_1_MOSFET").AsUInt16, 1, 1);
+                                    break;
+                                case "Temperature_2_Cell":
+                                    this.APLCVehicle.Batterys.Temperature_2_Cell = this.DECToDouble(aMCProtocol.get_ItemByTag("Temperature_2_Cell").AsUInt16, 1, 1);
+                                    break;
+                                case "Temperature_3_MCU":
+                                    this.APLCVehicle.Batterys.Temperature_3_MCU = this.DECToDouble(aMCProtocol.get_ItemByTag("Temperature_3_MCU").AsUInt16, 1, 1);
+                                    break;
+                                case "BatteryCurrent":
+                                    this.APLCVehicle.Batterys.BatteryCurrent = this.DECToDouble(aMCProtocol.get_ItemByTag("BatteryCurrent").AsUInt16, 1, 1);
+                                    break;
+                                case "Packet_Voltage":
+                                    this.APLCVehicle.Batterys.Packet_Voltage = this.DECToDouble(aMCProtocol.get_ItemByTag("Packet_Voltage").AsUInt16, 2, 3);
+                                    break;
+                                case "Remain_Capacity":
+                                    this.APLCVehicle.Batterys.Remain_Capacity = aMCProtocol.get_ItemByTag("Remain_Capacity").AsUInt16;
+                                    break;
+                                case "Design_Capacity":
+                                    this.APLCVehicle.Batterys.Design_Capacity = aMCProtocol.get_ItemByTag("Design_Capacity").AsUInt16;
+                                    break;
+
+                                case "BatterySOC_Form_Plc":
+                                    this.APLCVehicle.Batterys.BatterySOCFormPlc = aMCProtocol.get_ItemByTag("BatterySOC_Form_Plc").AsUInt16;
+                                    break;
+                                case "BatterySOH_Form_Plc":
+                                    this.APLCVehicle.Batterys.BatterySOHFormPlc = aMCProtocol.get_ItemByTag("BatterySOH_Form_Plc").AsUInt16;
+                                    break;
+
                             }
                         }
                     }
@@ -748,7 +783,51 @@ namespace Mirle.Agv.Controller
             }
 
         }
+        private double DECToDouble(Int64 inputNum, int Wordlength, int digit = 2)
+        {
+            double result = 0.00;
+            string str = "1";
+            if (digit <= 0)
+            {
+                str = "1";
+            }
+            else
+            {
+                for (int i = 0; i < digit; i++)
+                {
+                    str += "0";
+                }
+            }
+            double d = Convert.ToDouble(str);
+            switch (Wordlength)
+            {
+                case 1:
+                    if (inputNum >= 32768)
+                    {
+                        result = Convert.ToDouble(inputNum - 65536) / d;
+                    }
+                    else
+                    {
+                        result = Convert.ToDouble(inputNum) / d;
+                    }
+                    break;
+                case 2:
 
+                    if (inputNum >= 2147483648)
+                    {
+                        result = Convert.ToDouble(inputNum - 4294967296) / d;
+                    }
+                    else
+                    {
+                        result = Convert.ToDouble(inputNum) / d;
+                    }
+                    break;
+
+            }
+
+
+            return result;
+        }
         private double DECToDouble(Int64 inputNum, int length)
         {
             double returnValue = 0.0;
@@ -1801,7 +1880,44 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
+        //public bool WriteAlarmWarningReport(EnumAlarmLevel level, ushort word, ushort bit, bool status)
+        //{
 
+        //}
+        public bool WriteAlarmWarningReport(EnumAlarmLevel level, ushort word, ushort bit, bool status)
+        {
+            bool result = false;
+            string stLevelr = "";
+            switch (level)
+            {
+                case EnumAlarmLevel.Alarm:
+                    stLevelr = "Alarm";
+                    break;
+                case EnumAlarmLevel.Warn:
+                    stLevelr = "Warning";
+                    break;
+                default:
+                    stLevelr = "Warning";
+                    break;
+            }
+            string strItem = $"{stLevelr}_{word.ToString()}_{bit.ToString()}";
+            try
+            {
+                this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = status;
+                if (this.aMCProtocol.WritePLC())
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} Success"));
+                    result = true;
+                }
+                else
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} fail"));
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+            }
+            return result;
+        }
         public Boolean WriteAlarmWarningStatus(Boolean alarmStatus, Boolean warningStatus)
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;

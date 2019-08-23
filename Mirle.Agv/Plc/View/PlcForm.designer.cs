@@ -112,6 +112,66 @@
             this.label20 = new System.Windows.Forms.Label();
             this.txtErrorReason = new System.Windows.Forms.TextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
+            this.label61 = new System.Windows.Forms.Label();
+            this.txtCellNumber = new System.Windows.Forms.TextBox();
+            this.label63 = new System.Windows.Forms.Label();
+            this.label64 = new System.Windows.Forms.Label();
+            this.label65 = new System.Windows.Forms.Label();
+            this.label66 = new System.Windows.Forms.Label();
+            this.txtTempMOSFET = new System.Windows.Forms.TextBox();
+            this.txtTempCell = new System.Windows.Forms.TextBox();
+            this.txtTempMCU = new System.Windows.Forms.TextBox();
+            this.label67 = new System.Windows.Forms.Label();
+            this.label68 = new System.Windows.Forms.Label();
+            this.label69 = new System.Windows.Forms.Label();
+            this.label70 = new System.Windows.Forms.Label();
+            this.label71 = new System.Windows.Forms.Label();
+            this.label72 = new System.Windows.Forms.Label();
+            this.txtBatteryCurrent = new System.Windows.Forms.TextBox();
+            this.txtBatteryVoltage = new System.Windows.Forms.TextBox();
+            this.txtBatteryRC = new System.Windows.Forms.TextBox();
+            this.txtBatteryDC = new System.Windows.Forms.TextBox();
+            this.txtBatterySOCFromPLC = new System.Windows.Forms.TextBox();
+            this.txtBatterySOHFromPLC = new System.Windows.Forms.TextBox();
+            this.textBox12 = new System.Windows.Forms.TextBox();
+            this.txtTempNumber = new System.Windows.Forms.TextBox();
+            this.tlpCellVoltage = new System.Windows.Forms.TableLayoutPanel();
+            this.label73 = new System.Windows.Forms.Label();
+            this.label74 = new System.Windows.Forms.Label();
+            this.label75 = new System.Windows.Forms.Label();
+            this.txtCellVoltage_1 = new System.Windows.Forms.TextBox();
+            this.label76 = new System.Windows.Forms.Label();
+            this.label77 = new System.Windows.Forms.Label();
+            this.label79 = new System.Windows.Forms.Label();
+            this.label80 = new System.Windows.Forms.Label();
+            this.label78 = new System.Windows.Forms.Label();
+            this.label81 = new System.Windows.Forms.Label();
+            this.txtCellVoltage_2 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_3 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_4 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_5 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_6 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_7 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_8 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_9 = new System.Windows.Forms.TextBox();
+            this.label82 = new System.Windows.Forms.Label();
+            this.txtCellVoltage_10 = new System.Windows.Forms.TextBox();
+            this.label83 = new System.Windows.Forms.Label();
+            this.label84 = new System.Windows.Forms.Label();
+            this.label85 = new System.Windows.Forms.Label();
+            this.label86 = new System.Windows.Forms.Label();
+            this.label87 = new System.Windows.Forms.Label();
+            this.label88 = new System.Windows.Forms.Label();
+            this.label89 = new System.Windows.Forms.Label();
+            this.txtCellVoltage_11 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_12 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_13 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_14 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_15 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_16 = new System.Windows.Forms.TextBox();
+            this.txtCellVoltage_17 = new System.Windows.Forms.TextBox();
             this.pnlCharg = new System.Windows.Forms.Panel();
             this.txtSOCSet = new System.Windows.Forms.TextBox();
             this.btnSOCSet = new System.Windows.Forms.Button();
@@ -178,6 +238,9 @@
             this.label60 = new System.Windows.Forms.Label();
             this.tbxCCModeStopVoltage_PV = new System.Windows.Forms.TextBox();
             this.tbxCCModeStopVoltage_SV = new System.Windows.Forms.TextBox();
+            this.label90 = new System.Windows.Forms.Label();
+            this.tbxBatteryCellLowVoltage_PV = new System.Windows.Forms.TextBox();
+            this.tbxBatteryCellLowVoltage_SV = new System.Windows.Forms.TextBox();
             this.btnBatteryParamSet = new System.Windows.Forms.Button();
             this.tabSafety = new System.Windows.Forms.TabPage();
             this.pnlMove = new System.Windows.Forms.Panel();
@@ -279,6 +342,9 @@
             this.grpCastIDReader.SuspendLayout();
             this.grpForkCommdAndStat.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.panel4.SuspendLayout();
+            this.tableLayoutPanel5.SuspendLayout();
+            this.tlpCellVoltage.SuspendLayout();
             this.pnlCharg.SuspendLayout();
             this.palChargParams.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -1219,6 +1285,7 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.panel4);
             this.tabPage3.Controls.Add(this.pnlCharg);
             this.tabPage3.Controls.Add(this.palChargParams);
             this.tabPage3.Location = new System.Drawing.Point(4, 23);
@@ -1229,6 +1296,713 @@
             this.tabPage3.Text = "Charge&Battery";
             this.tabPage3.UseVisualStyleBackColor = true;
             this.tabPage3.Click += new System.EventHandler(this.btnBuzzerStop_Click);
+            // 
+            // panel4
+            // 
+            this.panel4.Controls.Add(this.tableLayoutPanel5);
+            this.panel4.Controls.Add(this.tlpCellVoltage);
+            this.panel4.Location = new System.Drawing.Point(13, 371);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(674, 269);
+            this.panel4.TabIndex = 68;
+            // 
+            // tableLayoutPanel5
+            // 
+            this.tableLayoutPanel5.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.tableLayoutPanel5.ColumnCount = 8;
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel5.Controls.Add(this.label61, 0, 1);
+            this.tableLayoutPanel5.Controls.Add(this.txtCellNumber, 0, 2);
+            this.tableLayoutPanel5.Controls.Add(this.label63, 0, 3);
+            this.tableLayoutPanel5.Controls.Add(this.label64, 1, 3);
+            this.tableLayoutPanel5.Controls.Add(this.label65, 2, 3);
+            this.tableLayoutPanel5.Controls.Add(this.label66, 3, 3);
+            this.tableLayoutPanel5.Controls.Add(this.txtTempMOSFET, 1, 4);
+            this.tableLayoutPanel5.Controls.Add(this.txtTempCell, 2, 4);
+            this.tableLayoutPanel5.Controls.Add(this.txtTempMCU, 3, 4);
+            this.tableLayoutPanel5.Controls.Add(this.label67, 4, 1);
+            this.tableLayoutPanel5.Controls.Add(this.label68, 5, 1);
+            this.tableLayoutPanel5.Controls.Add(this.label69, 4, 3);
+            this.tableLayoutPanel5.Controls.Add(this.label70, 5, 3);
+            this.tableLayoutPanel5.Controls.Add(this.label71, 6, 3);
+            this.tableLayoutPanel5.Controls.Add(this.label72, 7, 3);
+            this.tableLayoutPanel5.Controls.Add(this.txtBatteryCurrent, 4, 2);
+            this.tableLayoutPanel5.Controls.Add(this.txtBatteryVoltage, 5, 2);
+            this.tableLayoutPanel5.Controls.Add(this.txtBatteryRC, 4, 4);
+            this.tableLayoutPanel5.Controls.Add(this.txtBatteryDC, 5, 4);
+            this.tableLayoutPanel5.Controls.Add(this.txtBatterySOCFromPLC, 6, 4);
+            this.tableLayoutPanel5.Controls.Add(this.txtBatterySOHFromPLC, 7, 4);
+            this.tableLayoutPanel5.Controls.Add(this.textBox12, 0, 0);
+            this.tableLayoutPanel5.Controls.Add(this.txtTempNumber, 0, 4);
+            this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel5.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
+            this.tableLayoutPanel5.RowCount = 5;
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(674, 148);
+            this.tableLayoutPanel5.TabIndex = 1;
+            // 
+            // label61
+            // 
+            this.label61.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label61.AutoSize = true;
+            this.label61.Location = new System.Drawing.Point(4, 37);
+            this.label61.Name = "label61";
+            this.label61.Size = new System.Drawing.Size(77, 13);
+            this.label61.TabIndex = 70;
+            this.label61.Text = "Cell Number";
+            this.label61.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtCellNumber
+            // 
+            this.txtCellNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellNumber.Location = new System.Drawing.Point(4, 62);
+            this.txtCellNumber.Name = "txtCellNumber";
+            this.txtCellNumber.ReadOnly = true;
+            this.txtCellNumber.Size = new System.Drawing.Size(77, 23);
+            this.txtCellNumber.TabIndex = 71;
+            // 
+            // label63
+            // 
+            this.label63.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label63.AutoSize = true;
+            this.label63.Location = new System.Drawing.Point(4, 89);
+            this.label63.Name = "label63";
+            this.label63.Size = new System.Drawing.Size(77, 26);
+            this.label63.TabIndex = 72;
+            this.label63.Text = "Temp. Number";
+            this.label63.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label64
+            // 
+            this.label64.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label64.AutoSize = true;
+            this.label64.Location = new System.Drawing.Point(88, 95);
+            this.label64.Name = "label64";
+            this.label64.Size = new System.Drawing.Size(77, 13);
+            this.label64.TabIndex = 72;
+            this.label64.Text = "MOSFET(度)";
+            this.label64.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label65
+            // 
+            this.label65.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label65.AutoSize = true;
+            this.label65.Location = new System.Drawing.Point(172, 95);
+            this.label65.Name = "label65";
+            this.label65.Size = new System.Drawing.Size(77, 13);
+            this.label65.TabIndex = 72;
+            this.label65.Text = "Cell(度)";
+            this.label65.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label66
+            // 
+            this.label66.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label66.AutoSize = true;
+            this.label66.Location = new System.Drawing.Point(256, 95);
+            this.label66.Name = "label66";
+            this.label66.Size = new System.Drawing.Size(77, 13);
+            this.label66.TabIndex = 72;
+            this.label66.Text = "MCU(度)";
+            this.label66.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtTempMOSFET
+            // 
+            this.txtTempMOSFET.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtTempMOSFET.Location = new System.Drawing.Point(88, 120);
+            this.txtTempMOSFET.Name = "txtTempMOSFET";
+            this.txtTempMOSFET.ReadOnly = true;
+            this.txtTempMOSFET.Size = new System.Drawing.Size(77, 23);
+            this.txtTempMOSFET.TabIndex = 71;
+            // 
+            // txtTempCell
+            // 
+            this.txtTempCell.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtTempCell.Location = new System.Drawing.Point(172, 120);
+            this.txtTempCell.Name = "txtTempCell";
+            this.txtTempCell.ReadOnly = true;
+            this.txtTempCell.Size = new System.Drawing.Size(77, 23);
+            this.txtTempCell.TabIndex = 71;
+            // 
+            // txtTempMCU
+            // 
+            this.txtTempMCU.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtTempMCU.Location = new System.Drawing.Point(256, 120);
+            this.txtTempMCU.Name = "txtTempMCU";
+            this.txtTempMCU.ReadOnly = true;
+            this.txtTempMCU.Size = new System.Drawing.Size(77, 23);
+            this.txtTempMCU.TabIndex = 71;
+            // 
+            // label67
+            // 
+            this.label67.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label67.AutoSize = true;
+            this.label67.Location = new System.Drawing.Point(340, 37);
+            this.label67.Name = "label67";
+            this.label67.Size = new System.Drawing.Size(77, 13);
+            this.label67.TabIndex = 72;
+            this.label67.Text = "Current(A)";
+            this.label67.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label68
+            // 
+            this.label68.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label68.AutoSize = true;
+            this.label68.Location = new System.Drawing.Point(424, 37);
+            this.label68.Name = "label68";
+            this.label68.Size = new System.Drawing.Size(77, 13);
+            this.label68.TabIndex = 72;
+            this.label68.Text = "Voltage(V)";
+            this.label68.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label69
+            // 
+            this.label69.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label69.AutoSize = true;
+            this.label69.Location = new System.Drawing.Point(340, 95);
+            this.label69.Name = "label69";
+            this.label69.Size = new System.Drawing.Size(77, 13);
+            this.label69.TabIndex = 72;
+            this.label69.Text = "RC(AH)";
+            this.label69.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label70
+            // 
+            this.label70.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label70.AutoSize = true;
+            this.label70.Location = new System.Drawing.Point(424, 95);
+            this.label70.Name = "label70";
+            this.label70.Size = new System.Drawing.Size(77, 13);
+            this.label70.TabIndex = 72;
+            this.label70.Text = "DC(AH)";
+            this.label70.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label71
+            // 
+            this.label71.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label71.AutoSize = true;
+            this.label71.Location = new System.Drawing.Point(508, 95);
+            this.label71.Name = "label71";
+            this.label71.Size = new System.Drawing.Size(77, 13);
+            this.label71.TabIndex = 72;
+            this.label71.Text = "SOC(%)";
+            this.label71.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label72
+            // 
+            this.label72.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label72.AutoSize = true;
+            this.label72.Location = new System.Drawing.Point(592, 95);
+            this.label72.Name = "label72";
+            this.label72.Size = new System.Drawing.Size(78, 13);
+            this.label72.TabIndex = 72;
+            this.label72.Text = "SOH(%)";
+            this.label72.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtBatteryCurrent
+            // 
+            this.txtBatteryCurrent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtBatteryCurrent.Location = new System.Drawing.Point(340, 62);
+            this.txtBatteryCurrent.Name = "txtBatteryCurrent";
+            this.txtBatteryCurrent.ReadOnly = true;
+            this.txtBatteryCurrent.Size = new System.Drawing.Size(77, 23);
+            this.txtBatteryCurrent.TabIndex = 71;
+            // 
+            // txtBatteryVoltage
+            // 
+            this.txtBatteryVoltage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtBatteryVoltage.Location = new System.Drawing.Point(424, 62);
+            this.txtBatteryVoltage.Name = "txtBatteryVoltage";
+            this.txtBatteryVoltage.ReadOnly = true;
+            this.txtBatteryVoltage.Size = new System.Drawing.Size(77, 23);
+            this.txtBatteryVoltage.TabIndex = 71;
+            // 
+            // txtBatteryRC
+            // 
+            this.txtBatteryRC.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtBatteryRC.Location = new System.Drawing.Point(340, 120);
+            this.txtBatteryRC.Name = "txtBatteryRC";
+            this.txtBatteryRC.ReadOnly = true;
+            this.txtBatteryRC.Size = new System.Drawing.Size(77, 23);
+            this.txtBatteryRC.TabIndex = 71;
+            // 
+            // txtBatteryDC
+            // 
+            this.txtBatteryDC.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtBatteryDC.Location = new System.Drawing.Point(424, 120);
+            this.txtBatteryDC.Name = "txtBatteryDC";
+            this.txtBatteryDC.ReadOnly = true;
+            this.txtBatteryDC.Size = new System.Drawing.Size(77, 23);
+            this.txtBatteryDC.TabIndex = 71;
+            // 
+            // txtBatterySOCFromPLC
+            // 
+            this.txtBatterySOCFromPLC.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtBatterySOCFromPLC.Location = new System.Drawing.Point(508, 120);
+            this.txtBatterySOCFromPLC.Name = "txtBatterySOCFromPLC";
+            this.txtBatterySOCFromPLC.ReadOnly = true;
+            this.txtBatterySOCFromPLC.Size = new System.Drawing.Size(77, 23);
+            this.txtBatterySOCFromPLC.TabIndex = 71;
+            // 
+            // txtBatterySOHFromPLC
+            // 
+            this.txtBatterySOHFromPLC.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtBatterySOHFromPLC.Location = new System.Drawing.Point(592, 120);
+            this.txtBatterySOHFromPLC.Name = "txtBatterySOHFromPLC";
+            this.txtBatterySOHFromPLC.ReadOnly = true;
+            this.txtBatterySOHFromPLC.Size = new System.Drawing.Size(78, 23);
+            this.txtBatterySOHFromPLC.TabIndex = 71;
+            // 
+            // textBox12
+            // 
+            this.tableLayoutPanel5.SetColumnSpan(this.textBox12, 8);
+            this.textBox12.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBox12.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.textBox12.Location = new System.Drawing.Point(4, 4);
+            this.textBox12.Multiline = true;
+            this.textBox12.Name = "textBox12";
+            this.textBox12.ReadOnly = true;
+            this.textBox12.Size = new System.Drawing.Size(666, 22);
+            this.textBox12.TabIndex = 71;
+            this.textBox12.Text = "Battery Information";
+            this.textBox12.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // txtTempNumber
+            // 
+            this.txtTempNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtTempNumber.Location = new System.Drawing.Point(4, 120);
+            this.txtTempNumber.Name = "txtTempNumber";
+            this.txtTempNumber.ReadOnly = true;
+            this.txtTempNumber.Size = new System.Drawing.Size(77, 23);
+            this.txtTempNumber.TabIndex = 71;
+            // 
+            // tlpCellVoltage
+            // 
+            this.tlpCellVoltage.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.tlpCellVoltage.ColumnCount = 10;
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tlpCellVoltage.Controls.Add(this.label73, 0, 0);
+            this.tlpCellVoltage.Controls.Add(this.label74, 1, 0);
+            this.tlpCellVoltage.Controls.Add(this.label75, 2, 0);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_1, 0, 1);
+            this.tlpCellVoltage.Controls.Add(this.label76, 3, 0);
+            this.tlpCellVoltage.Controls.Add(this.label77, 4, 0);
+            this.tlpCellVoltage.Controls.Add(this.label79, 5, 0);
+            this.tlpCellVoltage.Controls.Add(this.label80, 8, 0);
+            this.tlpCellVoltage.Controls.Add(this.label78, 6, 0);
+            this.tlpCellVoltage.Controls.Add(this.label81, 7, 0);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_2, 1, 1);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_3, 2, 1);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_4, 3, 1);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_5, 4, 1);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_6, 5, 1);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_7, 6, 1);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_8, 7, 1);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_9, 8, 1);
+            this.tlpCellVoltage.Controls.Add(this.label82, 9, 0);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_10, 9, 1);
+            this.tlpCellVoltage.Controls.Add(this.label83, 0, 2);
+            this.tlpCellVoltage.Controls.Add(this.label84, 1, 2);
+            this.tlpCellVoltage.Controls.Add(this.label85, 2, 2);
+            this.tlpCellVoltage.Controls.Add(this.label86, 3, 2);
+            this.tlpCellVoltage.Controls.Add(this.label87, 4, 2);
+            this.tlpCellVoltage.Controls.Add(this.label88, 5, 2);
+            this.tlpCellVoltage.Controls.Add(this.label89, 6, 2);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_11, 0, 3);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_12, 1, 3);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_13, 2, 3);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_14, 3, 3);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_15, 4, 3);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_16, 5, 3);
+            this.tlpCellVoltage.Controls.Add(this.txtCellVoltage_17, 6, 3);
+            this.tlpCellVoltage.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.tlpCellVoltage.Location = new System.Drawing.Point(0, 148);
+            this.tlpCellVoltage.Name = "tlpCellVoltage";
+            this.tlpCellVoltage.RowCount = 4;
+            this.tlpCellVoltage.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tlpCellVoltage.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tlpCellVoltage.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tlpCellVoltage.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tlpCellVoltage.Size = new System.Drawing.Size(674, 121);
+            this.tlpCellVoltage.TabIndex = 0;
+            // 
+            // label73
+            // 
+            this.label73.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label73.AutoSize = true;
+            this.label73.Location = new System.Drawing.Point(4, 9);
+            this.label73.Name = "label73";
+            this.label73.Size = new System.Drawing.Size(60, 13);
+            this.label73.TabIndex = 70;
+            this.label73.Text = "Cell 1(V)";
+            this.label73.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label74
+            // 
+            this.label74.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label74.AutoSize = true;
+            this.label74.Location = new System.Drawing.Point(71, 9);
+            this.label74.Name = "label74";
+            this.label74.Size = new System.Drawing.Size(60, 13);
+            this.label74.TabIndex = 70;
+            this.label74.Text = "Cell 2(V)";
+            this.label74.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label75
+            // 
+            this.label75.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label75.AutoSize = true;
+            this.label75.Location = new System.Drawing.Point(138, 9);
+            this.label75.Name = "label75";
+            this.label75.Size = new System.Drawing.Size(60, 13);
+            this.label75.TabIndex = 70;
+            this.label75.Text = "Cell 3(V)";
+            this.label75.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtCellVoltage_1
+            // 
+            this.txtCellVoltage_1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_1.Location = new System.Drawing.Point(4, 34);
+            this.txtCellVoltage_1.Name = "txtCellVoltage_1";
+            this.txtCellVoltage_1.ReadOnly = true;
+            this.txtCellVoltage_1.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_1.TabIndex = 71;
+            this.txtCellVoltage_1.Tag = "1";
+            // 
+            // label76
+            // 
+            this.label76.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label76.AutoSize = true;
+            this.label76.Location = new System.Drawing.Point(205, 9);
+            this.label76.Name = "label76";
+            this.label76.Size = new System.Drawing.Size(60, 13);
+            this.label76.TabIndex = 70;
+            this.label76.Text = "Cell 4 (V)";
+            this.label76.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label77
+            // 
+            this.label77.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label77.AutoSize = true;
+            this.label77.Location = new System.Drawing.Point(272, 9);
+            this.label77.Name = "label77";
+            this.label77.Size = new System.Drawing.Size(60, 13);
+            this.label77.TabIndex = 70;
+            this.label77.Text = "Cell 5(V)";
+            this.label77.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label79
+            // 
+            this.label79.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label79.AutoSize = true;
+            this.label79.Location = new System.Drawing.Point(339, 9);
+            this.label79.Name = "label79";
+            this.label79.Size = new System.Drawing.Size(60, 13);
+            this.label79.TabIndex = 70;
+            this.label79.Text = "Cell 6(V)";
+            this.label79.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label80
+            // 
+            this.label80.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label80.AutoSize = true;
+            this.label80.Location = new System.Drawing.Point(540, 9);
+            this.label80.Name = "label80";
+            this.label80.Size = new System.Drawing.Size(60, 13);
+            this.label80.TabIndex = 70;
+            this.label80.Text = "Cell 9(V)";
+            this.label80.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label78
+            // 
+            this.label78.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label78.AutoSize = true;
+            this.label78.Location = new System.Drawing.Point(406, 9);
+            this.label78.Name = "label78";
+            this.label78.Size = new System.Drawing.Size(60, 13);
+            this.label78.TabIndex = 70;
+            this.label78.Text = "Cell 7(V)";
+            this.label78.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label81
+            // 
+            this.label81.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label81.AutoSize = true;
+            this.label81.Location = new System.Drawing.Point(473, 9);
+            this.label81.Name = "label81";
+            this.label81.Size = new System.Drawing.Size(60, 13);
+            this.label81.TabIndex = 70;
+            this.label81.Text = "Cell 8(V)";
+            this.label81.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtCellVoltage_2
+            // 
+            this.txtCellVoltage_2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_2.Location = new System.Drawing.Point(71, 34);
+            this.txtCellVoltage_2.Name = "txtCellVoltage_2";
+            this.txtCellVoltage_2.ReadOnly = true;
+            this.txtCellVoltage_2.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_2.TabIndex = 71;
+            this.txtCellVoltage_2.Tag = "2";
+            // 
+            // txtCellVoltage_3
+            // 
+            this.txtCellVoltage_3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_3.Location = new System.Drawing.Point(138, 34);
+            this.txtCellVoltage_3.Name = "txtCellVoltage_3";
+            this.txtCellVoltage_3.ReadOnly = true;
+            this.txtCellVoltage_3.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_3.TabIndex = 71;
+            this.txtCellVoltage_3.Tag = "3";
+            // 
+            // txtCellVoltage_4
+            // 
+            this.txtCellVoltage_4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_4.Location = new System.Drawing.Point(205, 34);
+            this.txtCellVoltage_4.Name = "txtCellVoltage_4";
+            this.txtCellVoltage_4.ReadOnly = true;
+            this.txtCellVoltage_4.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_4.TabIndex = 71;
+            this.txtCellVoltage_4.Tag = "4";
+            // 
+            // txtCellVoltage_5
+            // 
+            this.txtCellVoltage_5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_5.Location = new System.Drawing.Point(272, 34);
+            this.txtCellVoltage_5.Name = "txtCellVoltage_5";
+            this.txtCellVoltage_5.ReadOnly = true;
+            this.txtCellVoltage_5.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_5.TabIndex = 71;
+            this.txtCellVoltage_5.Tag = "5";
+            // 
+            // txtCellVoltage_6
+            // 
+            this.txtCellVoltage_6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_6.Location = new System.Drawing.Point(339, 34);
+            this.txtCellVoltage_6.Name = "txtCellVoltage_6";
+            this.txtCellVoltage_6.ReadOnly = true;
+            this.txtCellVoltage_6.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_6.TabIndex = 71;
+            this.txtCellVoltage_6.Tag = "6";
+            // 
+            // txtCellVoltage_7
+            // 
+            this.txtCellVoltage_7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_7.Location = new System.Drawing.Point(406, 34);
+            this.txtCellVoltage_7.Name = "txtCellVoltage_7";
+            this.txtCellVoltage_7.ReadOnly = true;
+            this.txtCellVoltage_7.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_7.TabIndex = 71;
+            this.txtCellVoltage_7.Tag = "7";
+            // 
+            // txtCellVoltage_8
+            // 
+            this.txtCellVoltage_8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_8.Location = new System.Drawing.Point(473, 34);
+            this.txtCellVoltage_8.Name = "txtCellVoltage_8";
+            this.txtCellVoltage_8.ReadOnly = true;
+            this.txtCellVoltage_8.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_8.TabIndex = 71;
+            this.txtCellVoltage_8.Tag = "8";
+            // 
+            // txtCellVoltage_9
+            // 
+            this.txtCellVoltage_9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_9.Location = new System.Drawing.Point(540, 34);
+            this.txtCellVoltage_9.Name = "txtCellVoltage_9";
+            this.txtCellVoltage_9.ReadOnly = true;
+            this.txtCellVoltage_9.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_9.TabIndex = 71;
+            this.txtCellVoltage_9.Tag = "9";
+            // 
+            // label82
+            // 
+            this.label82.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label82.AutoSize = true;
+            this.label82.Location = new System.Drawing.Point(607, 9);
+            this.label82.Name = "label82";
+            this.label82.Size = new System.Drawing.Size(63, 13);
+            this.label82.TabIndex = 70;
+            this.label82.Text = "Cell 10(V)";
+            this.label82.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtCellVoltage_10
+            // 
+            this.txtCellVoltage_10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_10.Location = new System.Drawing.Point(607, 34);
+            this.txtCellVoltage_10.Name = "txtCellVoltage_10";
+            this.txtCellVoltage_10.ReadOnly = true;
+            this.txtCellVoltage_10.Size = new System.Drawing.Size(63, 23);
+            this.txtCellVoltage_10.TabIndex = 71;
+            this.txtCellVoltage_10.Tag = "10";
+            // 
+            // label83
+            // 
+            this.label83.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label83.AutoSize = true;
+            this.label83.Location = new System.Drawing.Point(4, 69);
+            this.label83.Name = "label83";
+            this.label83.Size = new System.Drawing.Size(60, 13);
+            this.label83.TabIndex = 70;
+            this.label83.Text = "Cell 11(V)";
+            this.label83.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label84
+            // 
+            this.label84.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label84.AutoSize = true;
+            this.label84.Location = new System.Drawing.Point(71, 69);
+            this.label84.Name = "label84";
+            this.label84.Size = new System.Drawing.Size(60, 13);
+            this.label84.TabIndex = 70;
+            this.label84.Text = "Cell 12(V)";
+            this.label84.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label85
+            // 
+            this.label85.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label85.AutoSize = true;
+            this.label85.Location = new System.Drawing.Point(138, 69);
+            this.label85.Name = "label85";
+            this.label85.Size = new System.Drawing.Size(60, 13);
+            this.label85.TabIndex = 70;
+            this.label85.Text = "Cell 13(V)";
+            this.label85.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label86
+            // 
+            this.label86.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label86.AutoSize = true;
+            this.label86.Location = new System.Drawing.Point(205, 69);
+            this.label86.Name = "label86";
+            this.label86.Size = new System.Drawing.Size(60, 13);
+            this.label86.TabIndex = 70;
+            this.label86.Text = "Cell 14(V)";
+            this.label86.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label87
+            // 
+            this.label87.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label87.AutoSize = true;
+            this.label87.Location = new System.Drawing.Point(272, 69);
+            this.label87.Name = "label87";
+            this.label87.Size = new System.Drawing.Size(60, 13);
+            this.label87.TabIndex = 70;
+            this.label87.Text = "Cell 15(V)";
+            this.label87.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label88
+            // 
+            this.label88.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label88.AutoSize = true;
+            this.label88.Location = new System.Drawing.Point(339, 69);
+            this.label88.Name = "label88";
+            this.label88.Size = new System.Drawing.Size(60, 13);
+            this.label88.TabIndex = 70;
+            this.label88.Text = "Cell 16(V)";
+            this.label88.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label89
+            // 
+            this.label89.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label89.AutoSize = true;
+            this.label89.Location = new System.Drawing.Point(406, 69);
+            this.label89.Name = "label89";
+            this.label89.Size = new System.Drawing.Size(60, 13);
+            this.label89.TabIndex = 70;
+            this.label89.Text = "Cell 17(V)";
+            this.label89.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtCellVoltage_11
+            // 
+            this.txtCellVoltage_11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_11.Location = new System.Drawing.Point(4, 94);
+            this.txtCellVoltage_11.Name = "txtCellVoltage_11";
+            this.txtCellVoltage_11.ReadOnly = true;
+            this.txtCellVoltage_11.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_11.TabIndex = 71;
+            this.txtCellVoltage_11.Tag = "11";
+            // 
+            // txtCellVoltage_12
+            // 
+            this.txtCellVoltage_12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_12.Location = new System.Drawing.Point(71, 94);
+            this.txtCellVoltage_12.Name = "txtCellVoltage_12";
+            this.txtCellVoltage_12.ReadOnly = true;
+            this.txtCellVoltage_12.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_12.TabIndex = 71;
+            this.txtCellVoltage_12.Tag = "12";
+            // 
+            // txtCellVoltage_13
+            // 
+            this.txtCellVoltage_13.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_13.Location = new System.Drawing.Point(138, 94);
+            this.txtCellVoltage_13.Name = "txtCellVoltage_13";
+            this.txtCellVoltage_13.ReadOnly = true;
+            this.txtCellVoltage_13.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_13.TabIndex = 71;
+            this.txtCellVoltage_13.Tag = "13";
+            // 
+            // txtCellVoltage_14
+            // 
+            this.txtCellVoltage_14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_14.Location = new System.Drawing.Point(205, 94);
+            this.txtCellVoltage_14.Name = "txtCellVoltage_14";
+            this.txtCellVoltage_14.ReadOnly = true;
+            this.txtCellVoltage_14.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_14.TabIndex = 71;
+            this.txtCellVoltage_14.Tag = "14";
+            // 
+            // txtCellVoltage_15
+            // 
+            this.txtCellVoltage_15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_15.Location = new System.Drawing.Point(272, 94);
+            this.txtCellVoltage_15.Name = "txtCellVoltage_15";
+            this.txtCellVoltage_15.ReadOnly = true;
+            this.txtCellVoltage_15.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_15.TabIndex = 71;
+            this.txtCellVoltage_15.Tag = "15";
+            // 
+            // txtCellVoltage_16
+            // 
+            this.txtCellVoltage_16.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_16.Location = new System.Drawing.Point(339, 94);
+            this.txtCellVoltage_16.Name = "txtCellVoltage_16";
+            this.txtCellVoltage_16.ReadOnly = true;
+            this.txtCellVoltage_16.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_16.TabIndex = 71;
+            this.txtCellVoltage_16.Tag = "16";
+            // 
+            // txtCellVoltage_17
+            // 
+            this.txtCellVoltage_17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCellVoltage_17.BackColor = System.Drawing.SystemColors.Control;
+            this.txtCellVoltage_17.Location = new System.Drawing.Point(406, 94);
+            this.txtCellVoltage_17.Name = "txtCellVoltage_17";
+            this.txtCellVoltage_17.ReadOnly = true;
+            this.txtCellVoltage_17.Size = new System.Drawing.Size(60, 23);
+            this.txtCellVoltage_17.TabIndex = 71;
+            this.txtCellVoltage_17.Tag = "17";
             // 
             // pnlCharg
             // 
@@ -1594,7 +2368,7 @@
             this.palChargParams.Controls.Add(this.btnBatteryParamSet);
             this.palChargParams.Location = new System.Drawing.Point(967, 6);
             this.palChargParams.Name = "palChargParams";
-            this.palChargParams.Size = new System.Drawing.Size(318, 358);
+            this.palChargParams.Size = new System.Drawing.Size(318, 391);
             this.palChargParams.TabIndex = 66;
             // 
             // panel1
@@ -1603,7 +2377,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(316, 324);
+            this.panel1.Size = new System.Drawing.Size(316, 359);
             this.panel1.TabIndex = 65;
             // 
             // tableLayoutPanel1
@@ -1641,10 +2415,13 @@
             this.tableLayoutPanel1.Controls.Add(this.label60, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.tbxCCModeStopVoltage_PV, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.tbxCCModeStopVoltage_SV, 2, 8);
+            this.tableLayoutPanel1.Controls.Add(this.label90, 0, 9);
+            this.tableLayoutPanel1.Controls.Add(this.tbxBatteryCellLowVoltage_PV, 1, 9);
+            this.tableLayoutPanel1.Controls.Add(this.tbxBatteryCellLowVoltage_SV, 2, 9);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 9;
+            this.tableLayoutPanel1.RowCount = 10;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
@@ -1654,7 +2431,8 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(316, 324);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(316, 359);
             this.tableLayoutPanel1.TabIndex = 73;
             // 
             // label59
@@ -1914,10 +2692,38 @@
             this.tbxCCModeStopVoltage_SV.Size = new System.Drawing.Size(85, 23);
             this.tbxCCModeStopVoltage_SV.TabIndex = 78;
             // 
+            // label90
+            // 
+            this.label90.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label90.AutoSize = true;
+            this.label90.Location = new System.Drawing.Point(4, 334);
+            this.label90.Name = "label90";
+            this.label90.Size = new System.Drawing.Size(124, 13);
+            this.label90.TabIndex = 80;
+            this.label90.Text = "Cell Low Voltage";
+            this.label90.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tbxBatteryCellLowVoltage_PV
+            // 
+            this.tbxBatteryCellLowVoltage_PV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxBatteryCellLowVoltage_PV.Location = new System.Drawing.Point(135, 329);
+            this.tbxBatteryCellLowVoltage_PV.Name = "tbxBatteryCellLowVoltage_PV";
+            this.tbxBatteryCellLowVoltage_PV.ReadOnly = true;
+            this.tbxBatteryCellLowVoltage_PV.Size = new System.Drawing.Size(85, 23);
+            this.tbxBatteryCellLowVoltage_PV.TabIndex = 77;
+            // 
+            // tbxBatteryCellLowVoltage_SV
+            // 
+            this.tbxBatteryCellLowVoltage_SV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxBatteryCellLowVoltage_SV.Location = new System.Drawing.Point(227, 329);
+            this.tbxBatteryCellLowVoltage_SV.Name = "tbxBatteryCellLowVoltage_SV";
+            this.tbxBatteryCellLowVoltage_SV.Size = new System.Drawing.Size(85, 23);
+            this.tbxBatteryCellLowVoltage_SV.TabIndex = 78;
+            // 
             // btnBatteryParamSet
             // 
             this.btnBatteryParamSet.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnBatteryParamSet.Location = new System.Drawing.Point(0, 327);
+            this.btnBatteryParamSet.Location = new System.Drawing.Point(0, 360);
             this.btnBatteryParamSet.Name = "btnBatteryParamSet";
             this.btnBatteryParamSet.Size = new System.Drawing.Size(316, 29);
             this.btnBatteryParamSet.TabIndex = 63;
@@ -3041,6 +3847,11 @@
             this.grpForkCommdAndStat.ResumeLayout(false);
             this.grpForkCommdAndStat.PerformLayout();
             this.tabPage3.ResumeLayout(false);
+            this.panel4.ResumeLayout(false);
+            this.tableLayoutPanel5.ResumeLayout(false);
+            this.tableLayoutPanel5.PerformLayout();
+            this.tlpCellVoltage.ResumeLayout(false);
+            this.tlpCellVoltage.PerformLayout();
             this.pnlCharg.ResumeLayout(false);
             this.pnlCharg.PerformLayout();
             this.palChargParams.ResumeLayout(false);
@@ -3305,5 +4116,68 @@
         private System.Windows.Forms.Label label62;
         private System.Windows.Forms.Label labIPcStatusManual;
         private System.Windows.Forms.Panel pnlMove;
+        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
+        private System.Windows.Forms.TableLayoutPanel tlpCellVoltage;
+        private System.Windows.Forms.Label label61;
+        private System.Windows.Forms.TextBox txtCellNumber;
+        private System.Windows.Forms.Label label63;
+        private System.Windows.Forms.TextBox txtCellVoltage_1;
+        private System.Windows.Forms.Label label64;
+        private System.Windows.Forms.Label label65;
+        private System.Windows.Forms.Label label66;
+        private System.Windows.Forms.TextBox txtTempMOSFET;
+        private System.Windows.Forms.TextBox txtTempCell;
+        private System.Windows.Forms.TextBox txtTempMCU;
+        private System.Windows.Forms.Label label67;
+        private System.Windows.Forms.Label label68;
+        private System.Windows.Forms.Label label69;
+        private System.Windows.Forms.Label label70;
+        private System.Windows.Forms.Label label71;
+        private System.Windows.Forms.TextBox txtBatteryCurrent;
+        private System.Windows.Forms.TextBox txtBatteryVoltage;
+        private System.Windows.Forms.TextBox txtBatteryRC;
+        private System.Windows.Forms.TextBox txtBatteryDC;
+        private System.Windows.Forms.TextBox txtBatterySOCFromPLC;
+        private System.Windows.Forms.Label label72;
+        private System.Windows.Forms.TextBox txtBatterySOHFromPLC;
+        private System.Windows.Forms.TextBox textBox12;
+        private System.Windows.Forms.Label label73;
+        private System.Windows.Forms.Label label74;
+        private System.Windows.Forms.Label label75;
+        private System.Windows.Forms.Label label76;
+        private System.Windows.Forms.Label label77;
+        private System.Windows.Forms.Label label79;
+        private System.Windows.Forms.Label label80;
+        private System.Windows.Forms.Label label78;
+        private System.Windows.Forms.Label label81;
+        private System.Windows.Forms.TextBox txtCellVoltage_2;
+        private System.Windows.Forms.TextBox txtCellVoltage_3;
+        private System.Windows.Forms.TextBox txtCellVoltage_4;
+        private System.Windows.Forms.TextBox txtCellVoltage_5;
+        private System.Windows.Forms.TextBox txtCellVoltage_6;
+        private System.Windows.Forms.TextBox txtCellVoltage_7;
+        private System.Windows.Forms.TextBox txtCellVoltage_8;
+        private System.Windows.Forms.TextBox txtCellVoltage_9;
+        private System.Windows.Forms.Label label82;
+        private System.Windows.Forms.TextBox txtCellVoltage_10;
+        private System.Windows.Forms.TextBox txtTempNumber;
+        private System.Windows.Forms.Label label83;
+        private System.Windows.Forms.Label label84;
+        private System.Windows.Forms.Label label85;
+        private System.Windows.Forms.Label label86;
+        private System.Windows.Forms.Label label87;
+        private System.Windows.Forms.Label label88;
+        private System.Windows.Forms.Label label89;
+        private System.Windows.Forms.TextBox txtCellVoltage_11;
+        private System.Windows.Forms.TextBox txtCellVoltage_12;
+        private System.Windows.Forms.TextBox txtCellVoltage_13;
+        private System.Windows.Forms.TextBox txtCellVoltage_14;
+        private System.Windows.Forms.TextBox txtCellVoltage_15;
+        private System.Windows.Forms.TextBox txtCellVoltage_16;
+        private System.Windows.Forms.TextBox txtCellVoltage_17;
+        private System.Windows.Forms.Label label90;
+        private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_PV;
+        private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_SV;
     }
 }

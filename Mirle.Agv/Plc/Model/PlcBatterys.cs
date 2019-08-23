@@ -17,6 +17,23 @@ namespace Mirle.Agv.Model
         public double MeterWatt { get; set; }
         public double MeterWattHour { get; set; }
 
+        public ushort Cell_number { get; set; }     
+        public List<BatteryCell> BatteryCells = new List<BatteryCell>();     
+
+        public ushort Temperature_sensor_number { get; set; }  
+        public double Temperature_1_MOSFET { get; set; }       
+        public double Temperature_2_Cell { get; set; }         
+        public double Temperature_3_MCU { get; set; }          
+        public double BatteryCurrent { get; set; }             
+        public double Packet_Voltage { get; set; }             
+        public ushort Remain_Capacity { get; set; }            
+        public ushort Design_Capacity { get; set; }
+
+        public ushort BatterySOCFormPlc { get; set; }//PLC->IPC
+        public ushort BatterySOHFormPlc { get; set; }//PLC->IPC
+
+        public double Battery_Cell_Low_Voltage { get; set; } = 2.8;
+
         public double FBatteryTemperature { get; set; }
         public double BBatteryTemperature { get; set; }
 
@@ -28,7 +45,7 @@ namespace Mirle.Agv.Model
         public double PortAutoChargeLowSoc { get; set; } = 50.00;
 
         public uint Battery_Logger_Interval { get; set; } = 3;
-        public uint Batterys_Charging_Time_Out { get; set; } = 7;
+        public uint Batterys_Charging_Time_Out { get; set; } = 10;
 
         public uint Charging_Off_Delay { get; set; } = 2;
 
@@ -68,7 +85,7 @@ namespace Mirle.Agv.Model
             {
                 this.CountPercentage();
             }
-            
+
 
         }
 

@@ -280,53 +280,95 @@ namespace Mirle.Agv.View
         }
         private void PlcAgent_OnIpcAutoManualChangeEvent(Object sender, EnumAutoState state)
         {
-            IpcAutoState = state;            
+            IpcAutoState = state;
         }
         private void IpcModeObjEnabled(bool status)
         {
             grpForkCommdAndStat.Enabled = status;
             grpCastIDReader.Enabled = status;
             grpForkCycleRun.Enabled = status;
-            pnlCharg.Enabled = status;
-            grpB.Enabled = status;
-            grpL.Enabled = status;
-            grpR.Enabled = status;
-            grpF.Enabled = status;
-            grpSafety.Enabled = status;
-            grpAutoSleep.Enabled = status;
-            pnlMove.Enabled = status;
-            palForkParams.Enabled = status;
-            palChargParams.Enabled = status;
-            if (!status)
-            {
-                rdoSafetyEnable.Checked = true;
-                rdoBeamSensorAutoSleepEnable.Checked = true;
-                chkMoveFront.Checked = false;
-                chkMoveBack.Checked = false;
-                chkMoveLeft.Checked = false;
-                chkMoveRight.Checked = false;
-            }
+
+            //========================================================//
+            //鎖btnChargeLeftStart,btnChargeRightStart
+            //foreach( Control c in pnlCharg.Controls)
+            //{
+            //    if (c is Button)
+            //    {
+            //        if (c.Name == "btnChargeLeftStart" || c.Name == "btnChargeRightStart")
+            //        {
+            //            c.Enabled = status;
+            //        }                   
+            //    }
+            //}
+
+            //========================================================//
+
+            //pnlCharg.Enabled = status;
+            //grpB.Enabled = status;
+            //grpL.Enabled = status;
+            //grpR.Enabled = status;
+            //grpF.Enabled = status;
+            //grpSafety.Enabled = status;
+            //grpAutoSleep.Enabled = status;
+            //pnlMove.Enabled = status;
+            //palForkParams.Enabled = status;
+            //palChargParams.Enabled = status;
+            //if (!status)
+            //{
+            //    rdoSafetyEnable.Checked = true;
+            //    rdoBeamSensorAutoSleepEnable.Checked = true;
+            //    chkMoveFront.Checked = false;
+            //    chkMoveBack.Checked = false;
+            //    chkMoveLeft.Checked = false;
+            //    chkMoveRight.Checked = false;
+            //}
         }
         private EnumAutoState beforeIpcAutoState;
         private void timGUIRefresh_Tick(object sender, EventArgs e)
         {
             labIPcStatus.Text = Enum.GetName(typeof(EnumAutoState), Vehicle.Instance.AutoState);
-            //if (IpcAutoState == EnumAutoState.Auto)
-            //{
-            //    if (beforeIpcAutoState != IpcAutoState)
-            //    {
-            //        beforeIpcAutoState = IpcAutoState;
-            //        IpcModeObjEnabled(false);
-            //    }
-            //}
-            //else
-            //{
-            //    if (beforeIpcAutoState != IpcAutoState)
-            //    {
-            //        beforeIpcAutoState = IpcAutoState;
-            //        IpcModeObjEnabled(true);
-            //    }
-            //}
+            if (IpcAutoState == EnumAutoState.Auto)
+            {
+                if (beforeIpcAutoState != IpcAutoState)
+                {
+                    beforeIpcAutoState = IpcAutoState;
+                    IpcModeObjEnabled(false);
+                }
+            }
+            else
+            {
+                if (beforeIpcAutoState != IpcAutoState)
+                {
+                    beforeIpcAutoState = IpcAutoState;
+                    IpcModeObjEnabled(true);
+                }
+            }
+            //Battery Information
+            txtCellNumber.Text = plcAgent.APLCVehicle.Batterys.Cell_number.ToString();
+            txtTempNumber.Text = plcAgent.APLCVehicle.Batterys.Temperature_sensor_number.ToString();
+
+            txtTempMOSFET.Text = plcAgent.APLCVehicle.Batterys.Temperature_1_MOSFET.ToString();
+            txtTempCell.Text = plcAgent.APLCVehicle.Batterys.Temperature_2_Cell.ToString();
+            txtTempMCU.Text = plcAgent.APLCVehicle.Batterys.Temperature_3_MCU.ToString();
+            txtBatteryCurrent.Text = plcAgent.APLCVehicle.Batterys.BatteryCurrent.ToString();
+            txtBatteryVoltage.Text = plcAgent.APLCVehicle.Batterys.Packet_Voltage.ToString();
+
+            txtBatteryRC.Text = plcAgent.APLCVehicle.Batterys.Remain_Capacity.ToString();
+            txtBatteryDC.Text = plcAgent.APLCVehicle.Batterys.Design_Capacity.ToString();
+            txtBatterySOCFromPLC.Text = plcAgent.APLCVehicle.Batterys.BatterySOCFormPlc.ToString();
+            txtBatterySOHFromPLC.Text = plcAgent.APLCVehicle.Batterys.BatterySOHFormPlc.ToString();
+
+            foreach (Control c in tlpCellVoltage.Controls)
+            {
+                if (c is TextBox)
+                {
+                    double d = plcAgent.APLCVehicle.Batterys.BatteryCells[Convert.ToUInt16(c.Tag)].Voltage;
+                    c.Text = d.ToString();
+                    if (d <= plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)
+                        c.BackColor = Color.Pink;
+                    else c.BackColor = SystemColors.Control;
+                }
+            }
 
             PlcForkCommand plcForkCommand = plcAgent.APLCVehicle.Robot.ExecutingCommand;
             if (plcForkCommand != null)
@@ -947,6 +989,7 @@ namespace Mirle.Agv.View
             switch (TbxType)
             {
                 case ParamtTbxType.BatteryPV:
+                    tboxes.Add(tbxBatteryCellLowVoltage_PV);
                     tboxes.Add(tbxCCModeStopVoltage_PV);
                     tboxes.Add(tbxChargingOffDelay_PV);
                     tboxes.Add(tbxBatterysChargingTimeOut_PV);
@@ -957,6 +1000,7 @@ namespace Mirle.Agv.View
                     tboxes.Add(tbxResetAHTimeout_PV);
                     break;
                 case ParamtTbxType.BatterySV:
+                    tboxes.Add(tbxBatteryCellLowVoltage_SV);
                     tboxes.Add(tbxCCModeStopVoltage_SV);
                     tboxes.Add(tbxChargingOffDelay_SV);
                     tboxes.Add(tbxBatterysChargingTimeOut_SV);
@@ -989,6 +1033,9 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxBatteryCellLowVoltage_PV":
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)).ToString();
+                        break;
                     case "tbxCCModeStopVoltage_PV":
                         box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
                         break;
@@ -1026,6 +1073,9 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxBatteryCellLowVoltage_SV":
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)).ToString();
+                        break;
                     case "tbxCCModeStopVoltage_SV":
                         box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
                         break;
@@ -1125,6 +1175,15 @@ namespace Mirle.Agv.View
             {
                 switch (box.Name)
                 {
+                    case "tbxBatteryCellLowVoltage_SV":
+                        {
+                            if (!double.TryParse(box.Text, out double value))
+                            {
+                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)).ToString();
+                                result = false;
+                            }
+                        }
+                        break;
                     case "tbxCCModeStopVoltage_SV":
                         {
                             if (!double.TryParse(box.Text, out double value))
@@ -1249,6 +1308,7 @@ namespace Mirle.Agv.View
             if (!CheckBatteryParamSVInput()) return;
             Dictionary<string, string> dicSetValue = new Dictionary<string, string>()
             {
+                {"Battery_Cell_Low_Voltage",tbxBatteryCellLowVoltage_SV.Text},
                 {"CCMode_Stop_Voltage",tbxCCModeStopVoltage_SV.Text},
                 {"Charging_Off_Delay",tbxChargingOffDelay_SV.Text},
                 {"Batterys_Charging_Time_Out",tbxBatterysChargingTimeOut_SV.Text},

@@ -147,6 +147,7 @@
     <Compile Include="MoveControl\Model\SR2000\SpeedAndMaxTheta.cs" />
     <Compile Include="MoveControl\Model\SR2000\Sr2000Info.cs" />
     <Compile Include="MoveControl\Model\SR2000\Sr2000ReadData.cs" />
+    <Compile Include="Plc\Model\BatteryCell.cs" />
     <Compile Include="Plc\Model\PlcBatterys.cs" />
     <Compile Include="Plc\Model\PlcBeamSensor.cs" />
     <Compile Include="Plc\Model\PlcBumper.cs" />

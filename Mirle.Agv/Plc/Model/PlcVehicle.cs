@@ -65,17 +65,26 @@ namespace Mirle.Agv.Model
         public bool SafetyDisable { get; set; }
         public EnumVehicleSafetyAction VehicleSafetyAction { get; set; } = EnumVehicleSafetyAction.Normal;
 
-      
+        public  int BatteryCellNum = 17;
 
         public PlcVehicle()
         {
             InitialPLCBeamSensor();
             InitialPlcBumpers();
             InitialPlcEmos();
+            InitialBatteryCells();
         }
 
         #region HardCode PlcBeamSensors/PlcBumpers/PlcEmos will fix in config.xml
-   
+
+        private void InitialBatteryCells()
+        {
+            for (int i = 0; i <= BatteryCellNum; i++)
+            {
+                BatteryCell batteryCell = new BatteryCell(i);
+                this.Batterys.BatteryCells.Add(batteryCell);
+            }
+        }
         private void InitialPlcBumpers()
         {
             PlcBumper aPLCBumper;
@@ -139,7 +148,7 @@ namespace Mirle.Agv.Model
             dicBumper.Add(aPLCBumper.PlcSignalTagId, aPLCBumper);
 
         }
-       
+
         private void InitialPlcEmos()
         {
             PlcEmo aPlcEmo;
@@ -177,7 +186,7 @@ namespace Mirle.Agv.Model
             listPlcEmo.Add(aPlcEmo);
             dicPlcEmo.Add(aPlcEmo.PlcSignalTagId, aPlcEmo);
         }
-       
+
         private void InitialPLCBeamSensor()
         {
             PlcBeamSensor aPLCBeamSensor;
@@ -282,7 +291,7 @@ namespace Mirle.Agv.Model
             dicBeamSensor.Add(aPlcBeamSensor.PlcFarSignalTagId, aPlcBeamSensor);
             dicBeamSensor.Add(aPlcBeamSensor.PlcReadSleepTagId, aPlcBeamSensor);
             dicBeamSensor.Add(aPlcBeamSensor.PlcWriteSleepTagId, aPlcBeamSensor);
-        }       
+        }
 
     }
 }
