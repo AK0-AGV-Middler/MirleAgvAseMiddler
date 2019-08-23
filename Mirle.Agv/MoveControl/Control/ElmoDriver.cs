@@ -28,6 +28,7 @@ namespace Mirle.Agv.Controller
         private int elmoControlPort = 0;
         private int handler = 0;
 
+        private AlarmHandler alarmHandler;
         private Dictionary<EnumAxis, AxisInfo> allAxis = new Dictionary<EnumAxis, AxisInfo>();
         private List<AxisInfo> allAxisList = new List<AxisInfo>();
 
@@ -44,32 +45,29 @@ namespace Mirle.Agv.Controller
         private Dictionary<EnumAxisType, AxisData> allType = new Dictionary<EnumAxisType, AxisData>();
         private Dictionary<EnumAxis, int> overflowOffset = new Dictionary<EnumAxis, int>();
         private double offsetValue = 0;
-
         private string device = "Elmo driver";
-        public bool DebugMode { get; set; } = false;
-        private const int debugLogMaxLength = 10000;
-        public string DebugLog
+
+        private void SendAlarmCode(int alarmCode)
         {
-            get
+            try
             {
-                return DebugLog;
+                WriteLog("Elmo", "3", device, "", "SetAlarm, alarmCode : " + alarmCode.ToString());
+                alarmHandler.SetAlarm(alarmCode);
             }
-            set
+            catch (Exception ex)
             {
-                if (DebugMode)
-                {
-                    DebugLog = DateTime.Now.ToString("HH:mm:ss.fff") + "\t" + value + "\n" + DebugLog;
-                    if (DebugLog.Length > debugLogMaxLength)
-                        DebugLog = DebugLog.Substring(0, debugLogMaxLength);
-                }
+                WriteLog("Error", "3", device, "", "SetAlarm失敗, Excption : " + ex.ToString());
             }
         }
 
-        public ElmoDriver(string elmoConfigPath)
+        public ElmoDriver(string elmoConfigPath, AlarmHandler alarmHandler)
         {
+            this.alarmHandler = alarmHandler;
+
             if (elmoConfigPath == null || elmoConfigPath == "")
             {
                 WriteLog("Elmo", "3", device, "", "MotionParameter 路徑錯誤為null或空值,請檢查MoveControlConfig內的ElmoConfigPath");
+                SendAlarmCode(100002);
                 return;
             }
 
@@ -89,11 +87,16 @@ namespace Mirle.Agv.Controller
                     ElmoStop(EnumAxis.GX);
                     ElmoMove(EnumAxis.GT, 0, 75, EnumMoveType.Absolute);
                 }
+                else
+                {
+                    SendAlarmCode(100000);
+                }
             }
             catch (Exception ex)
             {
                 WriteLog("Elmo", "1", device, "", "Excption : " + ex.ToString());
                 WriteLog("Error", "1", device, "", "Elmo 連線失敗, Excption : " + ex.ToString());
+                SendAlarmCode(100000);
                 connected = false;
             }
         }
@@ -105,7 +108,6 @@ namespace Mirle.Agv.Controller
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
             loggerAgent.LogMsg(logFormat.Category, logFormat);
-            DebugLog = category + "\t" + message;
         }
 
         #region 讀取XML.
@@ -260,50 +262,58 @@ namespace Mirle.Agv.Controller
 
         private void ReadMotionParameter(string path)
         {
-            XmlDocument doc = new XmlDocument();
-
-            string xmlPath = Path.Combine(Environment.CurrentDirectory, path);
-
-            if (!File.Exists(xmlPath))
+            try
             {
-                WriteLog("Elmo", "3", device, "", "找不到MotionParameter.xml.");
-                return;
-            }
+                XmlDocument doc = new XmlDocument();
 
+                string xmlPath = Path.Combine(Environment.CurrentDirectory, path);
 
-            doc.Load(xmlPath);
-            var rootNode = doc.DocumentElement;
-            foreach (XmlNode item in rootNode.ChildNodes)
-            {
-                switch (item.Name)
+                if (!File.Exists(xmlPath))
                 {
-                    case "Params":
-                        ReadParams((XmlElement)item);
-                        break;
-                    case "Config":
-                        ReadIP((XmlElement)item);
-                        break;
-                    default:
-                        // log...
-                        break;
+                    WriteLog("Elmo", "3", device, "", "找不到MotionParameter.xml.");
+                    return;
+                }
+
+
+                doc.Load(xmlPath);
+                var rootNode = doc.DocumentElement;
+                foreach (XmlNode item in rootNode.ChildNodes)
+                {
+                    switch (item.Name)
+                    {
+                        case "Params":
+                            ReadParams((XmlElement)item);
+                            break;
+                        case "Config":
+                            ReadIP((XmlElement)item);
+                            break;
+                        default:
+                            // log...
+                            break;
+                    }
+                }
+
+                for (int i = 0; i < elmoAxisConfig.Count; i++)
+                {
+                    elmoAxisConfig[i].MotorResolution = allType[elmoAxisConfig[i].Type].MotorResolution;
+                    elmoAxisConfig[i].Acceleration = allType[elmoAxisConfig[i].Type].Acceleration;
+                    elmoAxisConfig[i].Deceleration = allType[elmoAxisConfig[i].Type].Deceleration;
+                    elmoAxisConfig[i].Jerk = allType[elmoAxisConfig[i].Type].Jerk;
+                    elmoAxisConfig[i].Velocity = allType[elmoAxisConfig[i].Type].Velocity;
+                    elmoAxisConfig[i].PulseUnit = allType[elmoAxisConfig[i].Type].PulseUnit;
+
+                    if (elmoAxisConfig[i].IsVirtualDevice)
+                    {
+                        for (int j = 0; j < elmoAxisConfig.Count; j++)
+                            if (elmoAxisConfig[i].VirtualDev4ID == elmoAxisConfig[j].ID)
+                                elmoAxisConfig[j].VirtualDev4ID = elmoAxisConfig[i].ID;
+                    }
                 }
             }
-
-            for (int i = 0; i < elmoAxisConfig.Count; i++)
+            catch (Exception ex)
             {
-                elmoAxisConfig[i].MotorResolution = allType[elmoAxisConfig[i].Type].MotorResolution;
-                elmoAxisConfig[i].Acceleration = allType[elmoAxisConfig[i].Type].Acceleration;
-                elmoAxisConfig[i].Deceleration = allType[elmoAxisConfig[i].Type].Deceleration;
-                elmoAxisConfig[i].Jerk = allType[elmoAxisConfig[i].Type].Jerk;
-                elmoAxisConfig[i].Velocity = allType[elmoAxisConfig[i].Type].Velocity;
-                elmoAxisConfig[i].PulseUnit = allType[elmoAxisConfig[i].Type].PulseUnit;
-
-                if (elmoAxisConfig[i].IsVirtualDevice)
-                {
-                    for (int j = 0; j < elmoAxisConfig.Count; j++)
-                        if (elmoAxisConfig[i].VirtualDev4ID == elmoAxisConfig[j].ID)
-                            elmoAxisConfig[j].VirtualDev4ID = elmoAxisConfig[i].ID;
-                }
+                WriteLog("Elmo", "3", device, "", "參數讀取失敗,Excption : " + ex.ToString());
+                SendAlarmCode(100001);
             }
         }
         #endregion
@@ -427,7 +437,6 @@ namespace Mirle.Agv.Controller
             }
 
             /////////////////////////////Bulkread Start////////////////////////////
-            //Total
             Read_BulkRead = new Thread(BulkReadThread);
             Read_BulkRead.Start();
         }
@@ -860,6 +869,7 @@ namespace Mirle.Agv.Controller
             catch (MMCException ex)
             {
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                SendAlarmCode(100003);
             }
         }
 
@@ -900,34 +910,8 @@ namespace Mirle.Agv.Controller
             catch (MMCException ex)
             {
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                SendAlarmCode(100003);
                 return false;
-            }
-        }
-
-        private bool PositionComare(EnumAxis axis, double position)
-        {
-            try
-            {
-                if (!connected)
-                    return true;
-
-                if (allAxis[axis].Config.IsGroup)
-                    return true;
-                else if (allAxis[axis].Config.IsVirtualDevice)
-                    return false;
-
-                double range;
-
-                if (allAxis[axis].Config.Type == EnumAxisType.Move)
-                    range = 1;
-                else
-                    range = 0.1;
-
-                return Math.Abs(allAxis[axis].FeedbackData.Feedback_Position - position) < range;
-            }
-            catch (MMCException ex)
-            {
-                return true;
             }
         }
 
@@ -952,15 +936,11 @@ namespace Mirle.Agv.Controller
 
                 if (axis == EnumAxis.GT)
                 {
-
                     if (Math.Abs(distance_FL - allAxis[EnumAxis.TFL].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_FR - allAxis[EnumAxis.TFR].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_RL - allAxis[EnumAxis.TRL].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_RR - allAxis[EnumAxis.TRR].LastCommandPosition) < 0.1)
                         return;
-
-                    //if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
-                    //    return;
                 }
 
                 double sqrt = Math.Sqrt(allAxis[axis].Config.GroupOrder.Count());
@@ -997,6 +977,7 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "LastCommand ::" +
                              "TFL : " + allAxis[EnumAxis.TFL].LastCommandPosition.ToString("0.00") +
                             ",TFR : " + allAxis[EnumAxis.TFR].LastCommandPosition.ToString("0.00") +
@@ -1053,6 +1034,7 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1084,10 +1066,10 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
-
 
         private void ElmoMoveSingleAxisAbsolute(EnumAxis axis, double distance, double velocity, double acceleration,
                                                 double deceleration, double jerk,
@@ -1097,9 +1079,6 @@ namespace Mirle.Agv.Controller
             {
                 if (allAxis[axis].FeedbackData.Disable)
                     return;
-
-                //if (PositionComare(axis, distance))
-                //    return;
 
                 if (!allAxis[axis].Config.IsVirtualDevice && Math.Abs(distance - allAxis[axis].LastCommandPosition) < 0.1)
                     return;
@@ -1119,6 +1098,7 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1144,6 +1124,7 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1164,6 +1145,7 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1261,6 +1243,7 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1270,8 +1253,6 @@ namespace Mirle.Agv.Controller
         public double ElmoGetPosition(EnumAxis axis, bool hasTimeOffset = false,
                                      [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            string msg = "";
-
             try
             {
                 if (!connected)
@@ -1291,6 +1272,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return -1;
             }
@@ -1299,8 +1281,6 @@ namespace Mirle.Agv.Controller
         // 對外開放 讀取velocity.
         public double ElmoGetVelocity(EnumAxis axis, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            string msg = "";
-
             try
             {
                 if (!connected)
@@ -1313,6 +1293,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return -1;
             }
@@ -1321,8 +1302,6 @@ namespace Mirle.Agv.Controller
 
         public bool ElmoGetDisable(EnumAxis axis, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            string msg = "";
-
             try
             {
                 if (!connected)
@@ -1332,6 +1311,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1339,8 +1319,6 @@ namespace Mirle.Agv.Controller
 
         public ElmoAxisFeedbackData ElmoGetFeedbackData(EnumAxis axis, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            string msg = "";
-
             try
             {
                 if (!connected)
@@ -1350,6 +1328,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return null;
             }
@@ -1357,8 +1336,6 @@ namespace Mirle.Agv.Controller
 
         public bool MoveCompelete(EnumAxis axis, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            string msg = "";
-
             try
             {
                 if (!connected)
@@ -1376,6 +1353,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1383,8 +1361,6 @@ namespace Mirle.Agv.Controller
 
         public bool MoveCompeleteVirtual(EnumAxisType type, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            string msg = "";
-
             try
             {
                 if (!connected)
@@ -1403,6 +1379,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1422,6 +1399,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return false;
             }
@@ -1460,6 +1438,7 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }

@@ -15,14 +15,16 @@ namespace Mirle.Agv.Controller
     public class CreateMoveControlList
     {
         private MoveControlConfig moveControlConfig;
+        private AlarmHandler alarmHandler;
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
         private string device = "MoveControl";
 
         private const int AllowableTheta = 10;
         public bool TurnOutSafetyDistance { get; set; } = false;
 
-        public CreateMoveControlList(List<Sr2000Driver> driverSr2000List, MoveControlConfig moveControlConfig)
+        public CreateMoveControlList(List<Sr2000Driver> driverSr2000List, MoveControlConfig moveControlConfig, AlarmHandler alarmHandler)
         {
+            this.alarmHandler = alarmHandler;
             this.moveControlConfig = moveControlConfig;
         }
 

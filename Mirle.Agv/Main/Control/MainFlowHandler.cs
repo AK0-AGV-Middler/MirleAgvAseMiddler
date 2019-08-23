@@ -276,7 +276,7 @@ namespace Mirle.Agv.Controller
                 mapHandler = new MapHandler(mapConfig);
                 theMapInfo = mapHandler.GetMapInfo();
 
-                moveControlHandler = new MoveControlHandler(theMapInfo);
+                moveControlHandler = new MoveControlHandler(theMapInfo,alarmHandler);
                 alarmHandler = new AlarmHandler(alarmConfig);
 
                 middleAgent = new MiddleAgent(this);

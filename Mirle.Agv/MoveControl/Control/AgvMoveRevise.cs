@@ -1,4 +1,5 @@
-﻿using Mirle.Agv.Model;
+﻿using Mirle.Agv.Controller.Tools;
+using Mirle.Agv.Model;
 using Mirle.Agv.Model.Configs;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,16 @@ namespace Mirle.Agv.Controller
         private OntimeReviseConfig ontimeReviseConfig = null;
         private ElmoDriver elmoDriver = null;
         private List<Sr2000Driver> DriverSr2000List = null;
+        private AlarmHandler alarmHandler;
         private const int AllowableTheta = 10;
         Dictionary<EnumMoveControlSafetyType, SafetyData> safety;
-        private string velocityChange = "";
+        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private string device = "AgvMoveRevise";
 
-        public AgvMoveRevise(OntimeReviseConfig ontimeReviseConfig, ElmoDriver elmoDriver, List<Sr2000Driver> DriverSr2000List, Dictionary<EnumMoveControlSafetyType, SafetyData> Safety)
+        public AgvMoveRevise(OntimeReviseConfig ontimeReviseConfig, ElmoDriver elmoDriver, List<Sr2000Driver> DriverSr2000List,
+                             Dictionary<EnumMoveControlSafetyType, SafetyData> Safety, AlarmHandler alarmHandler)
         {
+            this.alarmHandler = alarmHandler;
             this.ontimeReviseConfig = ontimeReviseConfig;
             this.elmoDriver = elmoDriver;
             this.DriverSr2000List = DriverSr2000List;
@@ -30,6 +35,31 @@ namespace Mirle.Agv.Controller
         public void SettingReviseData(double velocity, bool dirFlag)
         {
             reviseParameter = new ReviseParameter(ontimeReviseConfig, velocity, dirFlag);
+        }
+
+        private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
+                             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            string classMethodName = GetType().Name + ":" + memberName;
+            LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
+
+            loggerAgent.LogMsg(logFormat.Category, logFormat);
+        }
+
+        private void SendAlarmCode(int alarmCode)
+        {
+            if (alarmHandler == null)
+                return;
+
+            try
+            {
+                WriteLog("MoveControl", "3", device, "", "SetAlarm, alarmCode : " + alarmCode.ToString());
+                alarmHandler.SetAlarm(alarmCode);
+            }
+            catch (Exception ex)
+            {
+                WriteLog("Error", "3", device, "", "SetAlarm失敗, Excption : " + ex.ToString());
+            }
         }
 
         private bool IsSameAngle(double barcodeAngleInMap, double agvAngleInMap, int wheelAngle)
@@ -195,10 +225,11 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(reviseData.Theta) > safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range)
                     {
+                        SendAlarmCode(130002);
                         safetyMessage = "角度偏差" + reviseData.Theta.ToString("0.0") +
-                            "度,已超過安全設置的" +
-                            safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0") +
-                            "度,因此啟動EMS!";
+                         "度,已超過安全設置的" +
+                         safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0") +
+                         "度,因此啟動EMS!";
 
                         return true;
                     }
@@ -208,6 +239,7 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(reviseData.SectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range)
                     {
+                        SendAlarmCode(130003);
                         safetyMessage = "軌道偏差" + reviseData.SectionDeviation.ToString("0") +
                             "mm,已超過安全設置的" +
                             safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range.ToString("0") +
@@ -217,7 +249,6 @@ namespace Mirle.Agv.Controller
                     }
                 }
             }
-
 
             if (!elmoDriver.MoveCompelete(EnumAxis.GT))
                 return false;

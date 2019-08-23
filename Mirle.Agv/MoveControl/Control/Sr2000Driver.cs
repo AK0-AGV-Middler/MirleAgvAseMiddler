@@ -21,31 +21,77 @@ namespace Mirle.Agv.Controller
         private Sr2000Info sr2000Info;
         private LoggerAgent loggerAgent;
 
+        private AlarmHandler alarmHandler;
         private Sr2000ReadData returnData = null;
         private ConcurrentQueue<Sr2000ReadData> readDataQueue = new ConcurrentQueue<Sr2000ReadData>();
         private string LON = "LON", LOFF = "LOFF", ChangeMode = "BLOAD,3";
         private uint count = 0;
         private const int AllowableTheta = 10;
+        private int indexNumber;
+        private string device;
 
-        public Sr2000Driver(Sr2000Config sr2000Config, MapInfo theMapInfo)
+        public Sr2000Driver(Sr2000Config sr2000Config, MapInfo theMapInfo, int indexNumber, AlarmHandler alarmHandler)
         {
             try
             {
+                loggerAgent = LoggerAgent.Instance;
+                this.alarmHandler = alarmHandler;
                 this.theMapInfo = theMapInfo;
                 this.sr2000Config = sr2000Config;
+                this.indexNumber = indexNumber * 100;
+                device = sr2000Config.ID;
 
                 sr2000Info = new Sr2000Info(sr2000Config.IP);
-                Connect();
-
-                loggerAgent = LoggerAgent.Instance;
+                if (!Connect())
+                    SendAlarmCode(101000);
             }
             catch (Exception ex)
             {
                 //. 參考出問題,可能CPU x64 x86 anyCPU參考用錯,或sr2000Config = null. 或Connect Excpition.
+                WriteLog("Error", "1", device, "", "Initail Excption : " + ex.ToString());
+                SendAlarmCode(101000);
+            }
+        }
 
-                string classMethodName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
-                LogFormat logFormat = new LogFormat("Error", "1", classMethodName, "Device", "CarrierID", "There are no barcodes in file");
-                loggerAgent.LogMsg("Error", logFormat);
+        private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
+                             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            string classMethodName = GetType().Name + ":" + memberName;
+            LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
+
+            loggerAgent.LogMsg(logFormat.Category, logFormat);
+        }
+
+        private void WriteLog(Sr2000ReadData sr2000ReadData)
+        {
+            Sr2000ReadData deletaQueue;
+            readDataQueue.Enqueue(sr2000ReadData);
+            if (sr2000ReadData.Count > 3000)
+                readDataQueue.TryDequeue(out deletaQueue);
+
+            if (sr2000Config.LogMode)
+            {
+                if (sr2000ReadData == null)
+                {
+                }
+                else
+                {
+                }
+            }
+        }
+
+        private void SendAlarmCode(int alarmCode)
+        {
+            alarmCode += indexNumber;
+
+            try
+            {
+                WriteLog("Error", "3", device, "", "SetAlarm, alarmCode : " + alarmCode.ToString());
+                alarmHandler.SetAlarm(alarmCode);
+            }
+            catch (Exception ex)
+            {
+                WriteLog("Error", "3", device, "", "SetAlarm失敗, Excption : " + ex.ToString());
             }
         }
 
@@ -126,30 +172,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void WriteLog(Sr2000ReadData sr2000ReadData)
-        {
-            Sr2000ReadData deletaQueue;
-            readDataQueue.Enqueue(sr2000ReadData);
-            if (sr2000ReadData.Count > 3000)
-                readDataQueue.TryDequeue(out deletaQueue);
-
-            if (sr2000Config.LogMode)
-            {
-                if (sr2000ReadData == null)
-                {
-
-                }
-                else
-                {
-
-                }
-
-                // write log.
-
-            }
-        }
-
-
         private MapPosition XChangeTheta55Single(MapPosition barcode)
         {
             double mid = (sr2000Config.Up + sr2000Config.Down) / 2;
@@ -212,6 +234,7 @@ namespace Mirle.Agv.Controller
                     }
                     else
                     {
+                        SendAlarmCode(101001);
                         // SR200回傳資料有問題,設定跑掉.
                         sr2000ReadData = new Sr2000ReadData(LON, receivedData, count);
                     }

@@ -36,6 +36,7 @@ namespace Mirle.Agv.Controller
         private int indexOflisSectionLine = 0;
         public Location location = new Location();
         private EncoderPositionData encoderPositionData = new EncoderPositionData();
+        private AlarmHandler alarmHandler;
 
         public List<Command> CommandList { get; private set; } = new List<Command>();
         public int IndexOfCmdList { get; private set; } = 0;
@@ -75,18 +76,32 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public MoveControlHandler(MapInfo theMapInfo)
+        private void SendAlarmCode(int alarmCode)
         {
+            try
+            {
+                WriteLog("MoveControl", "3", device, "", "SetAlarm, alarmCode : " + alarmCode.ToString());
+                alarmHandler.SetAlarm(alarmCode);
+            }
+            catch (Exception ex)
+            {
+                WriteLog("Error", "3", device, "", "SetAlarm失敗, Excption : " + ex.ToString());
+            }
+        }
+
+        public MoveControlHandler(MapInfo theMapInfo, AlarmHandler alarmHandler)
+        {
+            this.alarmHandler = alarmHandler;
             this.theMapInfo = theMapInfo;
             ReadMoveControlConfigXML("MoveControlConfig.xml");
 
             InitailSr2000(moveControlConfig.Sr2000ConfigPath);
-            elmoDriver = new ElmoDriver(moveControlConfig.ElmoConfigPath);
+            elmoDriver = new ElmoDriver(moveControlConfig.ElmoConfigPath, this.alarmHandler);
 
             ReadOntimeReviseConfigXML(moveControlConfig.OnTimeReviseConfigPath);
-            createMoveControlList = new CreateMoveControlList(DriverSr2000List, moveControlConfig);
+            createMoveControlList = new CreateMoveControlList(DriverSr2000List, moveControlConfig, this.alarmHandler);
 
-            agvRevise = new AgvMoveRevise(ontimeReviseConfig, elmoDriver, DriverSr2000List, moveControlConfig.Safety);
+            agvRevise = new AgvMoveRevise(ontimeReviseConfig, elmoDriver, DriverSr2000List, moveControlConfig.Safety, this.alarmHandler);
 
             ControlData.MoveControlThread = new Thread(MoveControlThread);
             ControlData.MoveControlThread.Start();
@@ -440,21 +455,16 @@ namespace Mirle.Agv.Controller
             }
 
             doc.Load(xmlPath);
-            var rootNode = doc.DocumentElement;     // <Motion>               
-            bool sr2000InitialResult = true;
+            var rootNode = doc.DocumentElement;     // <Motion>         
+            int i = 0;
 
             foreach (XmlNode item in rootNode.ChildNodes)
             {
                 sr2000Config = ConvertXmlElementToSr2000Config((XmlElement)item);
-                driverSr2000 = new Sr2000Driver(sr2000Config, theMapInfo);
-                if (driverSr2000.GetConnect())
-                    DriverSr2000List.Add(driverSr2000);
-                else
-                    sr2000InitialResult = false;
+                driverSr2000 = new Sr2000Driver(sr2000Config, theMapInfo, i, alarmHandler);
+                DriverSr2000List.Add(driverSr2000);
+                i++;
             }
-
-            if (!sr2000InitialResult)
-                WriteLog("Error", "1", device, "", "SR2000 啟動失敗!");
         }
 
         private void ReadTrapezoidalCrrection(XmlElement element, Sr2000Config sr2000Config)
@@ -996,6 +1006,7 @@ namespace Mirle.Agv.Controller
                     if (Math.Abs(location.ElmoEncoder - safetyData.TurnOutElmoEncoder) >
                         moveControlConfig.Safety[EnumMoveControlSafetyType.TurnOut].Range)
                     {
+                        SendAlarmCode(130000);
                         EMSControl("出彎" + Math.Abs(location.ElmoEncoder - safetyData.TurnOutElmoEncoder).ToString("0") +
                             "mm未讀取到Barcode,已超過安全設置的" +
                             moveControlConfig.Safety[EnumMoveControlSafetyType.TurnOut].Range.ToString("0") +
@@ -1024,6 +1035,7 @@ namespace Mirle.Agv.Controller
                     if (Math.Abs(location.ElmoEncoder - safetyData.LastReadBarcodeElmoEncoder) >
                         moveControlConfig.Safety[EnumMoveControlSafetyType.LineBarcodeInterval].Range)
                     {
+                        SendAlarmCode(130001);
                         EMSControl("直線超過" + Math.Abs(location.ElmoEncoder - safetyData.LastReadBarcodeElmoEncoder).ToString("0") +
                             "mm未讀取到Barcode,已超過安全設置的" +
                             moveControlConfig.Safety[EnumMoveControlSafetyType.LineBarcodeInterval].Range.ToString("0") +
@@ -1054,7 +1066,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                if (location.Real == null && newBarcodeData)
+                if (/*location.Real == null && */newBarcodeData)
                 {
                     location.Real = location.Barcode;
                     location.Real.AGVAngle = GetAGVAngle(location.Real.AGVAngle);
@@ -2120,10 +2132,12 @@ namespace Mirle.Agv.Controller
 
             if (IsCharging())
             {
+                SendAlarmCode(141000);
                 EMSControl("走行中出現Charging訊號!");
             }
             else if (ForkNotHome())
             {
+                SendAlarmCode(140000);
                 EMSControl("走行中Fork不在Home點!");
             }
 
@@ -2326,14 +2340,14 @@ namespace Mirle.Agv.Controller
                 WriteLog("MoveControl", "7", device, "", "命令分解失敗~!, errorMessage : " + errorMessage);
                 return false;
             }
+            
+            ResetFlag();
 
             ReserveList = reserveDataList;
             SectionLineList = sectionLineList;
             CommandList = moveCmdList;
             MoveCommandID = moveCmd.CmdId;
             isAGVMCommand = true;
-
-            ResetFlag();
 
             MoveState = EnumMoveState.Moving;
             WriteLog("MoveControl", "7", device, "", "sucess! 開始執行動作~!");
@@ -2345,6 +2359,11 @@ namespace Mirle.Agv.Controller
             WriteLog("MoveControl", "7", device, "", "StopAndClear!");
             ControlData.FlowStopRequeset = true;
             ControlData.FlowClear = true;
+        }
+
+        public bool ChangeToAutoMode()
+        {
+            return MoveState == EnumMoveState.Idle && location.Real.Position != null;
         }
 
         public bool CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
@@ -2399,13 +2418,13 @@ namespace Mirle.Agv.Controller
                 return false;
 
             WriteLog("MoveControl", "7", device, "", "start");
+            ResetFlag();
             ReserveList = reserveDataList;
             SectionLineList = sectionLineList;
             CommandList = moveCmdList;
             MoveCommandID = "DebugForm" + DateTime.Now.ToString("HH:mm:ss");
             isAGVMCommand = false;
 
-            ResetFlag();
 
             MoveState = EnumMoveState.Moving;
             WriteLog("MoveControl", "7", device, "", "sucess! 開始執行動作~!");
