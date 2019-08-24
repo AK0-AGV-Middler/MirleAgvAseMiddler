@@ -23,13 +23,13 @@ namespace Mirle.Agv.Model.TransferCmds
         public MoveCmdInfo() : this(new MapInfo()) { }
         public MoveCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
-            type = EnumTransferCommandType.Move;
+            type = EnumTransferStepType.Move;
         }
 
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-            var firstPosition = Vehicle.Instance.theVehiclePosition.RealPosition.DeepClone();
+            var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition.DeepClone();
             //Break The MoveControl Protect
             switch (MovingSections[0].Type)
             {
@@ -107,7 +107,7 @@ namespace Mirle.Agv.Model.TransferCmds
 
         public void SetAddressActions()
         {
-            PredictVehicleAngle = theVehicle.theVehiclePosition.PredictVehicleAngle;
+            PredictVehicleAngle = theVehicle.CurVehiclePosition.PredictVehicleAngle;
 
             AddressActions = new List<EnumAddressAction>();
             try
@@ -136,7 +136,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             AddressActions.Add(EnumAddressAction.End);
 
-            theVehicle.theVehiclePosition.PredictVehicleAngle = PredictVehicleAngle;
+            theVehicle.CurVehiclePosition.PredictVehicleAngle = PredictVehicleAngle;
         }
 
         public void SetMovingSections()

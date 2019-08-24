@@ -287,7 +287,37 @@ namespace Mirle.Agv.View
             else
                 button_TurnOutSafetyDistance.Text = "出彎Safety開";
 
-            button_DebugModeSend.Enabled = Vehicle.Instance.AutoState == EnumAutoState.Manual;
+            bool buttonEnable = true;
+            string lockResult = "";
+
+            if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
+            {
+                buttonEnable = false;
+                lockResult = "Lock Result : AutoMode中!";
+            }
+            else if (moveControl.VisitTransferStepsStatus != EnumThreadStatus.None)
+            {
+                buttonEnable = false;
+                lockResult = "Lock Result : 主流程動作中!";
+            }
+            else if (moveControl.MoveState != EnumMoveState.Idle)
+            {
+                buttonEnable = false;
+                lockResult = "Lock Result : MoveState動作中!";
+            }
+            else if (moveControl.IsCharging())
+            {
+                buttonEnable = false;
+                lockResult = "Lock Result : Charging中!";
+            }
+            else if (moveControl.ForkNotHome())
+            {
+                buttonEnable = false;
+                lockResult = "Lock Result : Fork不在Home點!";
+            }
+
+            button_DebugModeSend.Enabled = buttonEnable;
+            label_LockResult.Text = lockResult;
         }
 
         private void UpdateList()

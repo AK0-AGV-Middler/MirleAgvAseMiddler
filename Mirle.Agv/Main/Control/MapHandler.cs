@@ -17,7 +17,7 @@ namespace Mirle.Agv.Controller
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
-        private MapInfo theMapInfo = new MapInfo();
+        public MapInfo TheMapInfo { get; private set; } = new MapInfo();
         private double AddressArea { get; set; } = 10;
         private Vehicle theVehicle = Vehicle.Instance;
 
@@ -42,8 +42,8 @@ namespace Mirle.Agv.Controller
                 {
                     return;
                 }
-                var mapSections = theMapInfo.mapSections;
-                var allMapSections = theMapInfo.allMapSections;
+                var mapSections = TheMapInfo.mapSections;
+                var allMapSections = TheMapInfo.allMapSections;
                 Dictionary<string, int> dicSectionIndexes = new Dictionary<string, int>(); //theMapInfo.dicSectionIndexes;
                 mapSections.Clear();
                 allMapSections.Clear();
@@ -75,8 +75,8 @@ namespace Mirle.Agv.Controller
                     string[] getThisRow = allRows[i].Split(',');
                     MapSection oneRow = new MapSection();
                     oneRow.Id = getThisRow[dicSectionIndexes["Id"]];
-                    oneRow.HeadAddress = theMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["FromAddress"]]];
-                    oneRow.TailAddress = theMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["ToAddress"]]];
+                    oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["FromAddress"]]];
+                    oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["ToAddress"]]];
                     oneRow.Distance = double.Parse(getThisRow[dicSectionIndexes["Distance"]]);
                     oneRow.Speed = double.Parse(getThisRow[dicSectionIndexes["Speed"]]);
                     oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicSectionIndexes["Type"]]);
@@ -104,8 +104,8 @@ namespace Mirle.Agv.Controller
                 {
                     return;
                 }
-                var mapAddresses = theMapInfo.mapAddresses;
-                var allMapAddresses = theMapInfo.allMapAddresses;
+                var mapAddresses = TheMapInfo.mapAddresses;
+                var allMapAddresses = TheMapInfo.allMapAddresses;
                 Dictionary<string, int> dicAddressIndexes = new Dictionary<string, int>(); // theMapInfo.dicAddressIndexes;
                 mapAddresses.Clear();
                 allMapAddresses.Clear();
@@ -174,9 +174,9 @@ namespace Mirle.Agv.Controller
                         , $"BarcodePath={string.IsNullOrWhiteSpace(BarcodePath)}"));
                     return;
                 }
-                var mapBarcodeLines = theMapInfo.mapBarcodeLines;
+                var mapBarcodeLines = TheMapInfo.mapBarcodeLines;
                 Dictionary<string, int> dicBarcodeIndexes = new Dictionary<string, int>(); // theMapInfo.dicBarcodeIndexes;
-                var allBarcodes = theMapInfo.allBarcodes;
+                var allBarcodes = TheMapInfo.allBarcodes;
                 mapBarcodeLines.Clear();
                 allBarcodes.Clear();
 
@@ -282,12 +282,7 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
-        }
-
-        public MapInfo GetMapInfo()
-        {
-            return theMapInfo;
-        }
+        }        
 
         public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection)
         {
@@ -295,7 +290,7 @@ namespace Mirle.Agv.Controller
             var headPosition = mapSection.HeadAddress.Position;
             var tailPosition = mapSection.TailAddress.Position;
 
-            VehiclePosition location = theVehicle.theVehiclePosition;
+            VehiclePosition location = theVehicle.CurVehiclePosition;
 
             #region Not in Section
             //Position 在 Head 西方過遠

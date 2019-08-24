@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace Mirle.Agv.Model.TransferCmds
 {
     [Serializable]
-    public class EmptyTransCmd : TransferStep
+    public class EmptyTransferStep : TransferStep
     {
-        public EmptyTransCmd() : this(new MapInfo()) { }     
-        public EmptyTransCmd(MapInfo theMapInfo) : base(theMapInfo)
+        public EmptyTransferStep() : this(new MapInfo()) { }     
+        public EmptyTransferStep(MapInfo theMapInfo) : base(theMapInfo)
         {
-            type = EnumTransferCommandType.Empty;
+            type = EnumTransferStepType.Empty;
         }
     }
 }

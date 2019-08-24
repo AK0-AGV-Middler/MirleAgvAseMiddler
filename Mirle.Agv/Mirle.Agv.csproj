@@ -37,6 +37,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>VehHasCarrier.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClsMCProtocol">
       <HintPath>OutsideDll\ClsMCProtocol.dll</HintPath>
@@ -362,6 +365,7 @@
     <Content Include="OutsideDll\Stateless.xml" />
     <Content Include="OutsideDll\TCPIPTrxControl.dll" />
     <Content Include="OutsideDll\TCPIPTrxControl.pdb" />
+    <Content Include="VehHasCarrier.ico" />
     <None Include="Resource\VehHasNoCarrier.jpg" />
     <None Include="Resource\VehHasCarrier.jpg" />
     <None Include="Resource\Idle_16x16.png" />

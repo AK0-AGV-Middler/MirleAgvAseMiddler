@@ -50,15 +50,15 @@ namespace Mirle.Agv.View
                 this.allAxis[i].BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
 
                 if (i < 4)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * i, 30);
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * i, 43);
                 else if (i < 8)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 4), 30 + 110 * 1);
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 4), 43 + 110 * 1);
                 else if (i < 12)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 8), 30 + 110 * 2);
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 8), 43 + 110 * 2);
                 else if (i < 16)
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 12), 30 + 110 * 3);
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * (i - 12), 43 + 110 * 3);
                 else
-                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * 4, 30 + 110 * (i - 16));
+                    this.allAxis[i].Location = new System.Drawing.Point(735 + 100 * 4, 43 + 110 * (i - 16));
 
                 this.allAxis[i].Name = AxisList[i].ToString();
                 this.allAxis[i].Size = new System.Drawing.Size(92, 95);
@@ -83,6 +83,8 @@ namespace Mirle.Agv.View
             {
                 control.Enabled = flag;
             }
+
+            label_LockResult.Enabled = true;
         }
 
         private void timerUpdate_Tick(object sender, EventArgs e)
@@ -185,8 +187,39 @@ namespace Mirle.Agv.View
                 }
             }
 
-            bool allResult = (moveControl.MoveState == EnumMoveState.Idle) && !moveControl.IsCharging() && !moveControl.ForkNotHome() && Vehicle.Instance.AutoState == EnumAutoState.Manual;
-            EnableDisableForm(allResult);
+            string lockResult = "";
+
+            bool notLock = true;
+
+            if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
+            {
+                notLock = false;
+                lockResult = "Lock Result : AutoMode中!";
+            }
+            else if (moveControl.VisitTransferStepsStatus != EnumThreadStatus.None)
+            {
+                notLock = false;
+                lockResult = "Lock Result : 主流程動作中!";
+            }
+            else if (moveControl.MoveState != EnumMoveState.Idle)
+            {
+                notLock = false;
+                lockResult = "Lock Result : MoveState動作中!";
+            }
+            else if (moveControl.IsCharging())
+            {
+                notLock = false;
+                lockResult = "Lock Result : Charging中!";
+            }
+            else if (moveControl.ForkNotHome())
+            {
+                notLock = false;
+                lockResult = "Lock Result : Fork不在Home點!";
+            }
+
+            label_LockResult.Text = lockResult;
+
+            EnableDisableForm(notLock);
         }
 
         private void EnalbeDisableButton(bool flag)
@@ -710,15 +743,22 @@ namespace Mirle.Agv.View
             if (button_JogPitch_ChangeFormSize.Text == "<\n<\n<")
             {
                 button_JogPitch_ChangeFormSize.Text = ">\n>\n>";
-                this.Size = new System.Drawing.Size(740, 520);
+                this.Size = new System.Drawing.Size(740, 533);
+                button_JogPitchHide.Location = new Point(688, 0);
             }
             else
             {
                 button_JogPitch_ChangeFormSize.Text = "<\n<\n<";
-                this.Size = new System.Drawing.Size(1251, 520);
+                this.Size = new System.Drawing.Size(1251, 533);
+                button_JogPitchHide.Location = new Point(1199, 0);
             }
 
             button_JogPitch_ChangeFormSize.Enabled = true;
+        }
+
+        private void button_JogPitchHide_Click(object sender, EventArgs e)
+        {
+            this.Hide();
         }
     }
 }

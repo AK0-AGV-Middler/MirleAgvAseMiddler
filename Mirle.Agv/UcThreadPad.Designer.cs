@@ -69,7 +69,7 @@
             this.gbThreadPad.Size = new System.Drawing.Size(165, 143);
             this.gbThreadPad.TabIndex = 43;
             this.gbThreadPad.TabStop = false;
-            this.gbThreadPad.Text = "Tracking Position";
+            this.gbThreadPad.Text = "Track Position";
             // 
             // btnStart
             // 

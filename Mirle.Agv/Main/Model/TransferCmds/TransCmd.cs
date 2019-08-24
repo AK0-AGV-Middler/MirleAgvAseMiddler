@@ -12,7 +12,7 @@ namespace Mirle.Agv.Model.TransferCmds
     {
         protected Vehicle theVehicle = Vehicle.Instance;
         protected MapInfo theMapInfo = new MapInfo();
-        protected EnumTransferCommandType type;
+        protected EnumTransferStepType type;
         public string CmdId { get; set; } = "Empty";
         public string CstId { get; set; } = "Empty";
 
@@ -22,9 +22,7 @@ namespace Mirle.Agv.Model.TransferCmds
             this.theMapInfo = theMapInfo;
         }
 
-        public EnumTransferCommandType GetEnumTransferCommandType()
-        {
-            return type;
-        }       
+        public EnumTransferStepType GetTransferStepType() { return type; }       
+
     }
 }

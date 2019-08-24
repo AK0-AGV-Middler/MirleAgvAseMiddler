@@ -122,6 +122,7 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
+            this.label_LockResult = new System.Windows.Forms.Label();
             this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_EncoderPosition = new Mirle.Agv.UcLabelTextBox();
@@ -240,6 +241,7 @@ namespace Mirle.Agv.View
             // 
             // tbP_CreateCommand
             // 
+            this.tbP_CreateCommand.Controls.Add(this.label_LockResult);
             this.tbP_CreateCommand.Controls.Add(this.button_TurnOutSafetyDistance);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommand_BarcodePosition);
@@ -302,7 +304,7 @@ namespace Mirle.Agv.View
             // button_DebugModeSend
             // 
             this.button_DebugModeSend.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button_DebugModeSend.Location = new System.Drawing.Point(968, 539);
+            this.button_DebugModeSend.Location = new System.Drawing.Point(968, 547);
             this.button_DebugModeSend.Name = "button_DebugModeSend";
             this.button_DebugModeSend.Size = new System.Drawing.Size(160, 40);
             this.button_DebugModeSend.TabIndex = 74;
@@ -420,7 +422,7 @@ namespace Mirle.Agv.View
             // btnClearMoveCmdInfo
             // 
             this.btnClearMoveCmdInfo.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnClearMoveCmdInfo.Location = new System.Drawing.Point(1145, 539);
+            this.btnClearMoveCmdInfo.Location = new System.Drawing.Point(1145, 547);
             this.btnClearMoveCmdInfo.Name = "btnClearMoveCmdInfo";
             this.btnClearMoveCmdInfo.Size = new System.Drawing.Size(95, 40);
             this.btnClearMoveCmdInfo.TabIndex = 54;
@@ -1009,9 +1011,19 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
+            // label_LockResult
+            // 
+            this.label_LockResult.AutoSize = true;
+            this.label_LockResult.ForeColor = System.Drawing.Color.Red;
+            this.label_LockResult.Location = new System.Drawing.Point(907, 522);
+            this.label_LockResult.Name = "label_LockResult";
+            this.label_LockResult.Size = new System.Drawing.Size(112, 19);
+            this.label_LockResult.TabIndex = 80;
+            this.label_LockResult.Text = "Lock Result : ";
+            // 
             // ucLabelTB_CreateCommandState
             // 
-            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(658, 544);
+            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(658, 554);
             this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8);
             this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
             this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
@@ -1267,5 +1279,6 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.TextBox tbxLogView_MoveControlDebugMessage;
         private System.Windows.Forms.Label label_WaitReserve;
         private System.Windows.Forms.Label label_SensorState;
+        private System.Windows.Forms.Label label_LockResult;
     }
 }

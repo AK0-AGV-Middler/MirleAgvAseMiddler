@@ -1,6 +1,5 @@
 ﻿using ClsMCProtocol;
 using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model;
 using System;
 using System.Collections.Generic;
@@ -10,11 +9,12 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Linq;
-using Mirle.Agv.Properties;
 using Mirle.Agv.Model.TransferCmds;
+using Mirle.Agv;
+using Mirle.Agv.Controller.Tools;
+using System.Reflection;
 
 namespace Mirle.Agv.View
 {
@@ -43,8 +43,10 @@ namespace Mirle.Agv.View
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
         private bool IsAskingReserve { get; set; }
-        private string lastAskingReserveSectionId { get; set; } = "Empty";
-        private string lastAgvcTransferCmdId { get; set; } = "Empty";
+        private string LastAskingReserveSectionId { get; set; } = "Empty";
+        private string LastAgvcTransferCommandId { get; set; } = "Empty";
+        private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
+        private int lastAlarmId = 0;
 
         #region MouseDownCalculus
 
@@ -74,7 +76,7 @@ namespace Mirle.Agv.View
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
-            theMapInfo = mainFlowHandler.GetMapInfo();
+            theMapInfo = mainFlowHandler.TheMapInfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             moveControlHandler = mainFlowHandler.GetMoveControlHandler();
             plcAgent = mainFlowHandler.GetPlcAgent();
@@ -99,7 +101,7 @@ namespace Mirle.Agv.View
             middlerForm = new MiddlerForm(middleAgent);
             middlerForm.WindowState = FormWindowState.Normal;
 
-            alarmForm = new AlarmForm(alarmHandler);
+            alarmForm = new AlarmForm(mainFlowHandler);
             middlerForm.WindowState = FormWindowState.Normal;
 
             plcForm = new PlcForm(mcProtocol, plcAgent);
@@ -152,12 +154,37 @@ namespace Mirle.Agv.View
             middleAgent.OnCmdReceive += ShowMsgOnMainForm;
             middleAgent.OnCmdSend += ShowMsgOnMainForm;
             middleAgent.OnMessageShowEvent += ShowMsgOnMainForm;
-            alarmHandler.OnMessageShowEvent += ShowMsgOnMainForm;
+            alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
+            alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
         }
 
-        private void ShowMsgOnMainForm(object sender, string e)
+        private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            RichTextBoxAppendHead(richTextBox1, e);
+            var msg = $"AlarmHandler : Set Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
+            RichTextBoxAppendHead(richTextBox1, msg);
+        }
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, int count)
+        {
+            btnAlarmReset.Enabled = false;
+            var msg = $"AlarmHandler : Reset All Alarms, [Count={count}]";
+            RichTextBoxAppendHead(richTextBox1, msg);
+
+            try
+            {
+                var xx = alarmHandler.allAlarms.First(x => x.Key != 0).Key;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , ex.StackTrace));
+            }
+
+            btnAlarmReset.Enabled = true;
+        }
+
+        private void ShowMsgOnMainForm(object sender, string msg)
+        {
+            RichTextBoxAppendHead(richTextBox1, msg);
         }
 
         public void DrawBasicMap()
@@ -355,7 +382,7 @@ namespace Mirle.Agv.View
         {
             if (alarmForm.IsDisposed)
             {
-                alarmForm = new AlarmForm(alarmHandler);
+                alarmForm = new AlarmForm(mainFlowHandler);
             }
             alarmForm.BringToFront();
             alarmForm.Show();
@@ -557,36 +584,16 @@ namespace Mirle.Agv.View
 
         #endregion
 
-        private void btnStartTrackingPosition_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StartTrackingPosition();
-        }
-
-        private void btnPauseTrackingPosition_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.PauseTrackingPosition();
-        }
-
-        private void btnResumeTrackingPostiion_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.ResumeTrackingPosition();
-        }
-
-        private void btnStopTrackingPosition_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StopTrackingPosition();
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
+        private void timeUpdateUI_Tick(object sender, EventArgs e)
         {
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
-            ucSoc.TagValue = Vehicle.Instance.GetPlcVehicle().Batterys.Percentage.ToString("F2");
-            if (middleAgent.GetAskingReserveSectionClone().Id != lastAskingReserveSectionId)
+            ucSoc.TagValue = Vehicle.Instance.ThePlcVehicle.Batterys.Percentage.ToString("F2");
+            if (middleAgent.GetAskingReserveSectionClone().Id != LastAskingReserveSectionId)
             {
-                lastAskingReserveSectionId = middleAgent.GetAskingReserveSectionClone().Id;
+                LastAskingReserveSectionId = middleAgent.GetAskingReserveSectionClone().Id;
                 lbxAskReserveSection.Items.Clear();
-                lbxAskReserveSection.Items.Add(lastAskingReserveSectionId);
+                lbxAskReserveSection.Items.Add(LastAskingReserveSectionId);
             }
             UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
             UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
@@ -595,10 +602,55 @@ namespace Mirle.Agv.View
             UpdateVehLocationAndLoading();
             //DrawReserveSections();
             UpdateThreadPicture();
-            UpdateRtbTransferCmd();
+            UpdateRtbAgvcTransCmd();
+            UpdateRtbTransferStep();
+            UpdateLastAlarm();
         }
 
-        private void UpdateRtbTransferCmd()
+        private void UpdateLastAlarm()
+        {
+            var alarm = alarmHandler.LastAlarm;
+            if (lastAlarmId != alarm.Id)
+            {
+                lastAlarmId = alarm.Id;
+                var msg = $"[{alarm.Id}]\n[{alarm.AlarmText}]";
+                txtLastAlarm.Text = msg;
+            }           
+        }
+
+        private void UpdateRtbTransferStep()
+        {
+            if (mainFlowHandler.GetTransferStepsCount() == 0)
+            {
+                return;
+            }
+
+            TransferStep transferStep = mainFlowHandler.GetCurTransferStep();
+
+            if (transferStep.GetTransferStepType() == LastTransferStepType && mainFlowHandler.GetAgvcTransCmd().CommandId == LastAgvcTransferCommandId)
+            {
+                return;
+            }
+            LastTransferStepType = transferStep.GetTransferStepType();
+
+            switch (transferStep.GetTransferStepType())
+            {
+                case EnumTransferStepType.Move:
+                    UpdateMoveCmdInfo(transferStep);
+                    break;
+                case EnumTransferStepType.Load:
+                    UpdateLoadCmdInfo(transferStep);
+                    break;
+                case EnumTransferStepType.Unload:
+                    UpdateUnloadCmdInfo(transferStep);
+                    break;
+                case EnumTransferStepType.Empty:
+                default:
+                    break;
+            }
+        }
+
+        private void UpdateRtbAgvcTransCmd()
         {
             if (mainFlowHandler.IsAgvcTransferCommandEmpty())
             {
@@ -607,35 +659,125 @@ namespace Mirle.Agv.View
 
             AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
-            if (agvcTransCmd.CommandId==lastAgvcTransferCmdId)
+            if (agvcTransCmd.CommandId == LastAgvcTransferCommandId)
             {
                 return;
             }
-            lastAgvcTransferCmdId = agvcTransCmd.CommandId;
+            LastAgvcTransferCommandId = agvcTransCmd.CommandId;
 
-            var cmdInfo = $"[{agvcTransCmd.SeqNum}][{agvcTransCmd.EnumCommandType}]\n" +
-                          $"[CmdId={agvcTransCmd.CommandId}][CstId={agvcTransCmd.CassetteId}]\n" +
-                          $"[LoadAdr={agvcTransCmd.LoadAddress}][UnloadAdr={agvcTransCmd.UnloadAddress}]\n" +
-                          $"[LoadAdrs={agvcTransCmd.ToLoadAddresses}]\n" +
-                          $"[LoadSecs={agvcTransCmd.ToLoadSections}]\n" +
-                          $"[UnloadAdrs={agvcTransCmd.ToUnloadAddresses}]\n" +
-                          $"[UnloadSecs={agvcTransCmd.ToUnloadSections}]";
+            var cmdInfo = $"\n" +
+                          $"[SeqNum={agvcTransCmd.SeqNum}] [Type={agvcTransCmd.EnumCommandType}]\n" +
+                          $"[CmdId={agvcTransCmd.CommandId}] [CstId={agvcTransCmd.CassetteId}]\n" +
+                          $"[LoadAdr={agvcTransCmd.LoadAddress}] [UnloadAdr={agvcTransCmd.UnloadAddress}]\n" +
+                          $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddresses)}]\n" +
+                          $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSections)}]\n" +
+                          $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddresses)}]\n" +
+                          $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSections)}]";
 
-            RichTextBoxAppendHead(rtbTransferCmd, cmdInfo);
+            RichTextBoxAppendHead(rtbAgvcTransCmd, cmdInfo);
+        }
+
+        private void UpdateUnloadCmdInfo(TransferStep transferStep)
+        {
+            UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
+
+            var cmdInfo = $"\n" +
+               $"[Type={transferStep.GetTransferStepType()}]\n" +
+               $"[CmdId={unloadCmdInfo.CmdId}] [CstId={unloadCmdInfo.CstId}]\n" +
+               $"[UnoadAdr={unloadCmdInfo.UnloadAddress}]\n" +
+               $"[StageDirection={unloadCmdInfo.StageDirection}]\n" +
+               $"[StageNum={unloadCmdInfo.StageNum}]\n" +
+               $"[IsEqPio={unloadCmdInfo.IsEqPio}]\n" +
+               $"[ForkSpeed={unloadCmdInfo.ForkSpeed}]";
+
+            RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
+        }
+
+        private void UpdateLoadCmdInfo(TransferStep transferStep)
+        {
+            LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
+
+            var cmdInfo = $"\n" +
+               $"[Type={transferStep.GetTransferStepType()}]\n" +
+               $"[CmdId={loadCmdInfo.CmdId}] [CstId={loadCmdInfo.CstId}]\n" +
+               $"[LoadAdr={loadCmdInfo.LoadAddress}]\n" +
+               $"[StageDirection={loadCmdInfo.StageDirection}]\n" +
+               $"[StageNum={loadCmdInfo.StageNum}]\n" +
+               $"[IsEqPio={loadCmdInfo.IsEqPio}]\n" +
+               $"[ForkSpeed={loadCmdInfo.ForkSpeed}]";
+
+            RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
+        }
+
+        private void UpdateMoveCmdInfo(TransferStep transferStep)
+        {
+            MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
+
+            var cmdInfo = $"\n" +
+                         $"[Type={transferStep.GetTransferStepType()}]\n" +
+                         $"[CmdId={moveCmdInfo.CmdId}] [CstId={moveCmdInfo.CstId}]\n" +
+                         $"[Adrs={GuideListToString(moveCmdInfo.AddressIds)}]\n" +
+                         $"[Secs={GuideListToString(moveCmdInfo.SectionIds)}]\n" +
+                         $"[Positions={GetListPositionsToString(moveCmdInfo.AddressPositions)}]\n" +
+                         $"[Actions={GetListActionsToString(moveCmdInfo.AddressActions)}]\n" +
+                         $"[Speeds={GetListSpeedsToString(moveCmdInfo.SectionSpeedLimits)}]";
+
+            RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
+        }
+
+        private object GetListSpeedsToString(List<double> speeds)
+        {
+            List<string> result = new List<string>();
+            foreach (var speed in speeds)
+            {
+                result.Add($"({(int)speed})");
+            }
+            return GuideListToString(result);
+        }
+
+        private string GetListActionsToString(List<EnumAddressAction> actions)
+        {
+            List<string> result = new List<string>();
+            foreach (var action in actions)
+            {
+                result.Add($"({action})");
+            }
+            return GuideListToString(result);
+        }
+
+        private string GuideListToString(List<string> aList)
+        {
+            return string.Join(", ", aList.ToArray());
+        }
+
+        private string GetListPositionsToString(List<MapPosition> positions)
+        {
+            List<string> result = new List<string>();
+            foreach (var position in positions)
+            {
+                result.Add($"({position.X},{position.Y})");
+            }
+            return GuideListToString(result);
         }
 
         private void UpdateThreadPicture()
         {
-            picVisitTransferCmd.BackColor = GetThreadStatusColor(mainFlowHandler.VisitTransferStepsStatus);
-            txtTransferStep.Text = "Step : " + mainFlowHandler.GetCurrentEnumTransferCommandType().ToString();
+            Vehicle theVehicle = Vehicle.Instance;
 
-            picTrackingPosition.BackColor = GetThreadStatusColor(mainFlowHandler.TrackingPositionStatus);
-            var realPos = Vehicle.Instance.theVehiclePosition.RealPosition;
+            picVisitTransferSteps.BackColor = GetThreadStatusColor(theVehicle.VisitTransferStepsStatus);
+            txtTransferStep.Text = "Step : " + mainFlowHandler.GetCurrentTransferStepType().ToString();
+
+            picTrackPosition.BackColor = GetThreadStatusColor(theVehicle.TrackPositionStatus);
+            var realPos = Vehicle.Instance.CurVehiclePosition.RealPosition;
             var posText = $"({(int)realPos.X},{(int)realPos.Y})";
-            txtTrackingPosition.Text = mainFlowHandler.GetTransferStepCount() > 0 ? "Cmd : " + posText : "NoCmd : " + posText;
+            txtTrackPosition.Text = mainFlowHandler.GetTransferStepsCount() > 0 ? "Cmd : " + posText : "NoCmd : " + posText;
 
-            picAskReserve.BackColor = GetThreadStatusColor(middleAgent.AskReserveStatus);
+            picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
             txtAskingReserve.Text = $"Asking : {middleAgent.GetAskingReserveSectionClone().Id}";
+
+            picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);
+            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            txtWatchLowPower.Text = $"Soc/Gap : {(int)batterys.Percentage}/{(int)batterys.PortAutoChargeLowSoc}";
         }
         private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
         {
@@ -671,14 +813,14 @@ namespace Mirle.Agv.View
         }
         private void DrawReserveSections()
         {
-            var transferStepCount = mainFlowHandler.GetTransferStepCount();
+            var transferStepCount = mainFlowHandler.GetTransferStepsCount();
             if (transferStepCount < 1)
             {
                 return;
             }
 
             var curTransferStep = mainFlowHandler.GetCurTransferStep();
-            if (curTransferStep.GetEnumTransferCommandType() != EnumTransferCommandType.Move)
+            if (curTransferStep.GetTransferStepType() != EnumTransferStepType.Move)
             {
                 return;
             }
@@ -700,7 +842,7 @@ namespace Mirle.Agv.View
         }
         private void UpdateVehLocationAndLoading()
         {
-            var location = mainFlowHandler.theVehicle.theVehiclePosition;
+            var location = mainFlowHandler.theVehicle.CurVehiclePosition;
 
             var realPos = location.RealPosition;
             ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
@@ -715,7 +857,7 @@ namespace Mirle.Agv.View
             ucMapSection.TagValue = curSection.Id;
 
             ucVehicleImage.Hide();
-            var loading = mainFlowHandler.theVehicle.GetPlcVehicle().Loading;
+            var loading = mainFlowHandler.theVehicle.ThePlcVehicle.Loading;
             ucLoading.TagValue = loading ? "Yes" : "No";
             ucVehicleImage.Loading = loading;
             ucVehicleImage.Location = new Point(MapPixelExchange(realPos.X), MapPixelExchange(realPos.Y));
@@ -740,11 +882,15 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void btnSetPosition_Click_1(object sender, EventArgs e)
+        private void btnKeyInPosition_Click(object sender, EventArgs e)
         {
+            var curVehPos = Vehicle.Instance.CurVehiclePosition;
             var posX = (int)numPositionX.Value;
             var posY = (int)numPositionY.Value;
-            Vehicle.Instance.theVehiclePosition.RealPosition = new MapPosition(posX, posY);
+            var tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
+            curVehPos.RealPositionRangeMm = 0;
+            curVehPos.RealPosition = new MapPosition(posX, posY);
+            curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
@@ -758,8 +904,8 @@ namespace Mirle.Agv.View
             else
             {
                 var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff] ");
-
-                richTextBox.Text = timeStamp + msg + Environment.NewLine + richTextBox.Text;
+                msg = msg + Environment.NewLine;
+                richTextBox.Text = string.Concat(timeStamp, msg, richTextBox.Text);
 
                 int RichTextBoxMaxLines = 10000;  // middlerConfig.RichTextBoxMaxLines;
 
@@ -773,79 +919,117 @@ namespace Mirle.Agv.View
         }
 
 
-        private void btnMoveFinish_Click(object sender, EventArgs e)
-        {
-            if (mainFlowHandler.GetCurrentEnumTransferCommandType() == EnumTransferCommandType.Move)
-            {
-                moveControlHandler.MoveFinished(EnumMoveComplete.Success);
-            }
-            else
-            {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentEnumTransferCommandType()}");
-            }
-        }
-
-        private void btnCleanAgvcTransCmd_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StopAndClear();
-        }
-
-        private void btnStartVisitTransCmds_Click(object sender, EventArgs e)
+        #region Thd Visit TransferSteps
+        private void btnStartVisitTransferSteps_Click(object sender, EventArgs e)
         {
             mainFlowHandler.StartVisitTransferSteps();
         }
 
-        private void btnPauseVisitTransCmds_Click(object sender, EventArgs e)
+        private void btnPauseVisitTransferSteps_Click(object sender, EventArgs e)
         {
             mainFlowHandler.PauseVisitTransferSteps();
         }
 
-        private void btnResumeVisitTransCmds_Click(object sender, EventArgs e)
+        private void btnResumeVisitTransferSteps_Click(object sender, EventArgs e)
         {
             mainFlowHandler.ResumeVisitTransferSteps();
         }
 
-        private void btnStopVisitTransCmds_Click(object sender, EventArgs e)
+        private void btnStopVisitTransferSteps_Click(object sender, EventArgs e)
         {
             mainFlowHandler.StopVisitTransferSteps();
         }
+        #endregion
 
-        private void btnSetTestTransferCmd_Click(object sender, EventArgs e)
+        #region Thd Track Position
+        private void btnStartTrackPosition_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.SetTestTransferCmd();
+            mainFlowHandler.StartTrackPosition();
         }
 
-        private void btnAutoApplyReserve_Click(object sender, EventArgs e)
+        private void btnPauseTrackPosition_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.PauseTrackPosition();
+        }
+
+        private void btnResumeTrackPostiion_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.ResumeTrackPosition();
+        }
+
+        private void btnStopTrackPosition_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StopTrackPosition();
+        }
+        #endregion
+
+        #region Thd Ask Reserve
+        private void btnAutoApplyReserveOnce_Click(object sender, EventArgs e)
         {
             middleAgent.OnGetReserveOk();
             RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve Once by MainForm");
         }
 
-        private void btnStartAskingReserve_Click(object sender, EventArgs e)
+        private void btnStartAskReserve_Click(object sender, EventArgs e)
         {
-            middleAgent.StartAskingReserve();
+            middleAgent.StartAskReserve();
         }
 
-        private void btnPauseAskingReserve_Click(object sender, EventArgs e)
+        private void btnPauseAskReserve_Click(object sender, EventArgs e)
         {
-            middleAgent.PauseAskingReserve();
+            middleAgent.PauseAskReserve();
         }
 
-        private void btnResumeAskingReserve_Click(object sender, EventArgs e)
+        private void btnResumeAskReserve_Click(object sender, EventArgs e)
         {
-            middleAgent.ResumeAskingReserve();
+            middleAgent.ResumeAskReserve();
         }
 
-        private void btnStopAskingReserve_Click(object sender, EventArgs e)
+        private void btnStopAskReserve_Click(object sender, EventArgs e)
         {
-            middleAgent.StopAskingReserve();
+            middleAgent.StopAskReserve();
+        }
+        #endregion
+
+        #region Thd Watch LowPower
+        private void btnStartWatchLowPower_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StartWatchLowPower();
         }
 
+        private void btnPauseWatchLowPower_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.PauseWatchLowPower();
+        }
+
+        private void btnResumeWatchLowPower_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.ResumeWatchLowPower();
+        }
+
+        private void btnStopWatchLowPower_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.StopWatchLowPower();
+        }
+        #endregion
+
+        #region Fake Finished
+        private void btnMoveFinish_Click(object sender, EventArgs e)
+        {
+            if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Move)
+            {
+                mainFlowHandler.MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Success);
+            }
+            else
+            {
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : btnMoveFinish_Click, [CurStepType={mainFlowHandler.GetCurrentTransferStepType()}");
+            }
+        }
         private void btnLoadFinish_Click(object sender, EventArgs e)
         {
-            if (mainFlowHandler.GetCurrentEnumTransferCommandType() == EnumTransferCommandType.Load)
+            if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Load)
             {
-                var plcVeh = mainFlowHandler.theVehicle.GetPlcVehicle();
+                var plcVeh = mainFlowHandler.theVehicle.ThePlcVehicle;
                 plcVeh.Loading = true;
                 plcVeh.CassetteId = "FakeCst001";
 
@@ -855,15 +1039,14 @@ namespace Mirle.Agv.View
             }
             else
             {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentEnumTransferCommandType()}");
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentTransferStepType()}");
             }
         }
-
         private void btnUnloadFinish_Click(object sender, EventArgs e)
         {
-            if (mainFlowHandler.GetCurrentEnumTransferCommandType() == EnumTransferCommandType.Unload)
+            if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Unload)
             {
-                var plcVeh = mainFlowHandler.theVehicle.GetPlcVehicle();
+                var plcVeh = mainFlowHandler.theVehicle.ThePlcVehicle;
                 plcVeh.Loading = false;
                 plcVeh.CassetteId = null;
 
@@ -872,24 +1055,26 @@ namespace Mirle.Agv.View
             }
             else
             {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentEnumTransferCommandType()}");
+                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentTransferStepType()}");
             }
         }
+        private void btnTransferComplete_Click(object sender, EventArgs e)
+        {
+            middleAgent.LoadUnloadComplete();
+        }
+        #endregion
+
 
         private void btnAlarmReset_Click(object sender, EventArgs e)
         {
-            alarmHandler.ResetAllAlarms();
-            plcAgent.WritePLCAlarmReset();
+            btnAlarmReset.Enabled = false;
+            mainFlowHandler.ResetAllarms();
+            btnAlarmReset.Enabled = true;
         }
 
         private void btnBuzzOff_Click(object sender, EventArgs e)
         {
             plcAgent.WritePLCBuzzserStop();
-        }
-
-        private void btnTransferComplete_Click(object sender, EventArgs e)
-        {
-            middleAgent.LoadUnloadComplete();
         }
 
         private void btnAutoManual_Click(object sender, EventArgs e)
@@ -899,14 +1084,14 @@ namespace Mirle.Agv.View
                 case EnumAutoState.Manual:
                     if (SetManualToAuto())
                     {
+                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        mainFlowHandler.SetupPlcAutoManualState(/*Some state*/);
                     }
                     break;
                 case EnumAutoState.Auto:
                 default:
                     mainFlowHandler.StopAndClear();
-                    mainFlowHandler.SetupPlcAutoManualState(/*Some state*/);
+                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
             }
@@ -954,22 +1139,32 @@ namespace Mirle.Agv.View
 
             List<MapSection> mapSections = new List<MapSection>();
             MapSection mapSection;
-            mapSection = theMapInfo.allMapSections["sec001"];
+            mapSection = theMapInfo.allMapSections["102"];
             mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["sec002"];
+            mapSection = theMapInfo.allMapSections["101"];
             mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["sec003"];
+            mapSection = theMapInfo.allMapSections["92"];
             mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["sec004"];
+            mapSection = theMapInfo.allMapSections["91"];
             mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["sec005"];
+            mapSection = theMapInfo.allMapSections["111"];
             mapSections.Add(mapSection);
 
             mainFlowHandler.SetupTestMoveCmd(mapSections);
-            middleAgent.StopAskingReserve();
+            middleAgent.StopAskReserve();
             middleAgent.SetupNeedReserveSections(mapSections);
-            middleAgent.StartAskingReserve();
+            middleAgent.StartAskReserve();
 
+        }
+
+        private void btnSetupTestAgvcTransferCmd_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.SetupTestAgvcTransferCmd();
+        }
+
+        private void btnKeyInSoc_Click(object sender, EventArgs e)
+        {
+            //Vehicle.Instance.ThePlcVehicle.Batterys.Percentage = 100;
         }
     }
 }

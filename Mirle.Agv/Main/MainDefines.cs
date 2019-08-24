@@ -45,7 +45,7 @@ namespace Mirle.Agv
         Vertical
     }
 
-    public enum EnumTransferCommandType
+    public enum EnumTransferStepType
     {
         Move,
         Load,
@@ -113,7 +113,7 @@ namespace Mirle.Agv
         Right
     }
 
-    public enum EnumCmdNums
+    public enum EnumCmdNum
     {
         Cmd000_EmptyCommand = 0,
         Cmd31_TransferRequest = 31,
@@ -182,8 +182,8 @@ namespace Mirle.Agv
         Pause,
         Working,
         Stop
-    }   
-    #endregion  
+    }
+    #endregion
 
     public static class ExtensionMethods
     {
@@ -202,21 +202,6 @@ namespace Mirle.Agv
             }
 
             return default(T);
-        }
-
-        private static T EnumTypeParse<T>(string v)
-        {
-            try
-            {
-                v = v.Trim();
-
-                return (T)Enum.Parse(typeof(T), v);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.StackTrace;
-                return (T)new object();
-            }
         }
     }
 }

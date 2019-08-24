@@ -17,7 +17,9 @@ namespace Mirle.Agv.Controller
 {
     public class MoveControlHandler
     {
+        public EnumThreadStatus VisitTransferStepsStatus { get; set; }
         private CreateMoveControlList createMoveControlList;
+        private EnumThreadStatus mainFlowStatus;
         public EnumMoveState MoveState { get; private set; } = EnumMoveState.Idle;
         public MoveControlConfig moveControlConfig;
         private MapInfo theMapInfo = new MapInfo();
@@ -728,7 +730,7 @@ namespace Mirle.Agv.Controller
                 }
 
                 location.Real.Position = GetMapPosition(SectionLineList[indexOflisSectionLine], realElmoEncode);
-                Vehicle.Instance.theVehiclePosition.RealPosition = location.Real.Position;
+                Vehicle.Instance.CurVehiclePosition.RealPosition = location.Real.Position;
             }
         }
 
@@ -819,7 +821,7 @@ namespace Mirle.Agv.Controller
                     location.ScanTime = agvPosition.ScanTime;
                     location.BarcodeGetDataTime = agvPosition.GetDataTime;
 
-                    Vehicle.Instance.theVehiclePosition.BarcodePosition = location.Barcode.Position;
+                    Vehicle.Instance.CurVehiclePosition.BarcodePosition = location.Barcode.Position;
                     return true;
                 }
             }
@@ -1070,8 +1072,8 @@ namespace Mirle.Agv.Controller
                 {
                     location.Real = location.Barcode;
                     location.Real.AGVAngle = GetAGVAngle(location.Real.AGVAngle);
-                    Vehicle.Instance.theVehiclePosition.RealPosition = location.Real.Position;
-                    Vehicle.Instance.theVehiclePosition.VehicleAngle = location.Real.AGVAngle;
+                    Vehicle.Instance.CurVehiclePosition.RealPosition = location.Real.Position;
+                    Vehicle.Instance.CurVehiclePosition.VehicleAngle = location.Real.AGVAngle;
                 }
             }
         }
@@ -1355,7 +1357,7 @@ namespace Mirle.Agv.Controller
             else
                 location.Real.AGVAngle += 90;
 
-            Vehicle.Instance.theVehiclePosition.VehicleAngle = location.Real.AGVAngle;
+            Vehicle.Instance.CurVehiclePosition.VehicleAngle = location.Real.AGVAngle;
 
             MoveState = EnumMoveState.Moving;
             WriteLog("MoveControl", "7", device, "", " end.");
@@ -1884,7 +1886,7 @@ namespace Mirle.Agv.Controller
                 return false;
 
             if (moveControlConfig.SensorByPass[EnumSensorSafetyType.Charging].Enable)
-                return Vehicle.Instance.GetPlcVehicle().Batterys.Charging;
+                return Vehicle.Instance.ThePlcVehicle.Batterys.Charging;
             else
                 return false;
         }
@@ -1895,7 +1897,7 @@ namespace Mirle.Agv.Controller
                 return false;
 
             if (moveControlConfig.SensorByPass[EnumSensorSafetyType.ForkHome].Enable)
-                return !Vehicle.Instance.GetPlcVehicle().Robot.ForkHome || Vehicle.Instance.GetPlcVehicle().Robot.ForkBusy;
+                return !Vehicle.Instance.ThePlcVehicle.Robot.ForkHome || Vehicle.Instance.ThePlcVehicle.Robot.ForkBusy;
             else
                 return false;
         }
@@ -1908,7 +1910,7 @@ namespace Mirle.Agv.Controller
             if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.Bumper].Enable)
                 return false;
 
-            return Vehicle.Instance.GetPlcVehicle().BumperAlarmStatus;
+            return Vehicle.Instance.ThePlcVehicle.BumperAlarmStatus;
         }
 
         private EnumVehicleSafetyAction GetBeamSensorState()
@@ -1919,7 +1921,7 @@ namespace Mirle.Agv.Controller
             if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensor].Enable)
                 return EnumVehicleSafetyAction.Normal;
 
-            return Vehicle.Instance.GetPlcVehicle().VehicleSafetyAction;
+            return Vehicle.Instance.ThePlcVehicle.VehicleSafetyAction;
         }
 
         private bool CheckNextCommandTrigger()
@@ -2164,16 +2166,16 @@ namespace Mirle.Agv.Controller
             switch (locate)
             {
                 case EnumBeamSensorLocate.Front:
-                    Vehicle.Instance.GetPlcVehicle().MoveFront = true;
+                    Vehicle.Instance.ThePlcVehicle.MoveFront = true;
                     break;
                 case EnumBeamSensorLocate.Back:
-                    Vehicle.Instance.GetPlcVehicle().MoveBack = true;
+                    Vehicle.Instance.ThePlcVehicle.MoveBack = true;
                     break;
                 case EnumBeamSensorLocate.Left:
-                    Vehicle.Instance.GetPlcVehicle().MoveLeft = true;
+                    Vehicle.Instance.ThePlcVehicle.MoveLeft = true;
                     break;
                 case EnumBeamSensorLocate.Right:
-                    Vehicle.Instance.GetPlcVehicle().MoveRight = true;
+                    Vehicle.Instance.ThePlcVehicle.MoveRight = true;
                     break;
                 default:
                     break;
@@ -2207,20 +2209,20 @@ namespace Mirle.Agv.Controller
                     break;
             }
 
-            Vehicle.Instance.GetPlcVehicle().MoveFront = front;
-            Vehicle.Instance.GetPlcVehicle().MoveBack = back;
-            Vehicle.Instance.GetPlcVehicle().MoveLeft = left;
-            Vehicle.Instance.GetPlcVehicle().MoveRight = right;
+            Vehicle.Instance.ThePlcVehicle.MoveFront = front;
+            Vehicle.Instance.ThePlcVehicle.MoveBack = back;
+            Vehicle.Instance.ThePlcVehicle.MoveLeft = left;
+            Vehicle.Instance.ThePlcVehicle.MoveRight = right;
 
             WriteLog("MoveControl", "7", device, "", "Beam sensor 切換 : 只剩 " + locate.ToString() + " On !");
         }
 
         private void BeamSensorCloseAll()
         {
-            Vehicle.Instance.GetPlcVehicle().MoveFront = false;
-            Vehicle.Instance.GetPlcVehicle().MoveBack = false;
-            Vehicle.Instance.GetPlcVehicle().MoveLeft = false;
-            Vehicle.Instance.GetPlcVehicle().MoveRight = false;
+            Vehicle.Instance.ThePlcVehicle.MoveFront = false;
+            Vehicle.Instance.ThePlcVehicle.MoveBack = false;
+            Vehicle.Instance.ThePlcVehicle.MoveLeft = false;
+            Vehicle.Instance.ThePlcVehicle.MoveRight = false;
 
             WriteLog("MoveControl", "7", device, "", "Beam sensor 切換 : 全部關掉!");
         }
@@ -2340,11 +2342,12 @@ namespace Mirle.Agv.Controller
                 WriteLog("MoveControl", "7", device, "", "命令分解失敗~!, errorMessage : " + errorMessage);
                 return false;
             }
-            
+
+            SectionLineList = sectionLineList;
+            ReserveList = reserveDataList;
+
             ResetFlag();
 
-            ReserveList = reserveDataList;
-            SectionLineList = sectionLineList;
             CommandList = moveCmdList;
             MoveCommandID = moveCmd.CmdId;
             isAGVMCommand = true;
@@ -2361,9 +2364,9 @@ namespace Mirle.Agv.Controller
             ControlData.FlowClear = true;
         }
 
-        public bool ChangeToAutoMode()
+        public bool IsLocationRealNotNull()
         {
-            return MoveState == EnumMoveState.Idle && location.Real.Position != null;
+            return location.Real!= null;
         }
 
         public bool CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
@@ -2418,9 +2421,11 @@ namespace Mirle.Agv.Controller
                 return false;
 
             WriteLog("MoveControl", "7", device, "", "start");
-            ResetFlag();
             ReserveList = reserveDataList;
             SectionLineList = sectionLineList;
+
+            ResetFlag();
+
             CommandList = moveCmdList;
             MoveCommandID = "DebugForm" + DateTime.Now.ToString("HH:mm:ss");
             isAGVMCommand = false;

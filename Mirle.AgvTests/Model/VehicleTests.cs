@@ -1,11 +1,9 @@
-﻿using NUnit.Framework;
-using Mirle.Agv.Model;
+﻿using Mirle.Agv.Model.TransferCmds;
+using NUnit.Framework;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 namespace Mirle.Agv.Model.Tests
 {
@@ -16,9 +14,9 @@ namespace Mirle.Agv.Model.Tests
         public void UpdateStatusTest()
         {
             var theVehicle = Vehicle.Instance;
-            var location = theVehicle.theVehiclePosition;
+            var location = theVehicle.CurVehiclePosition;
             location.LastSection.Distance = 123.45f;
-            var distance = Vehicle.Instance.theVehiclePosition.LastSection.Distance;
+            var distance = Vehicle.Instance.CurVehiclePosition.LastSection.Distance;
 
             Assert.AreEqual(distance, 123.45f);
         }
@@ -85,6 +83,45 @@ namespace Mirle.Agv.Model.Tests
             Assert.AreEqual(3, list01.Count);
 
             Assert.AreEqual(str001, list01[0]);
+        }
+
+        [Test()]
+        public void EnumCmdNumsTest()
+        {
+            EnumCmdNum cmdNum = (EnumCmdNum)int.Parse("31");
+            Console.WriteLine();
+        }
+
+        [Test()]
+        public void AgvcTransCmdCloneTest()
+        {
+            AgvcTransCmd transCmd = new AgvcTransCmd();
+            transCmd.CommandId = "ABCDE";
+            AgvcTransCmd bCmd = transCmd.DeepClone();
+            Assert.AreEqual(bCmd.CommandId, transCmd.CommandId);
+        }
+
+        [Test()]
+        public void NewListTest()
+        {
+            List<string> vs = new List<string>();
+            vs.Add("abc");
+            vs.Add("def");
+            string xx = vs[0];
+            Assert.AreEqual("abc", xx);
+
+            vs = new List<string>();
+            Assert.AreEqual("abc", xx);
+        }
+
+        [Test()]
+        public void EnumReferenceTest()
+        {
+            EnumThreadStatus status = EnumThreadStatus.None;
+            Vehicle.Instance.VisitTransferStepsStatus = status;
+            Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);
+            status = EnumThreadStatus.Working;
+            Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);           
         }
 
     }

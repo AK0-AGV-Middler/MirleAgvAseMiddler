@@ -11,89 +11,91 @@ using System.Windows.Forms;
 using System.IO;
 using Mirle.Agv.Model;
 using Mirle.Agv.Controller;
+using Mirle.Agv.Controller.Tools;
+using System.Reflection;
 
 namespace Mirle.Agv.View
 {
     public partial class AlarmForm : Form
     {
         private AlarmHandler alarmHandler;
-        private string historyAlarmsFilePath = Path.Combine(Environment.CurrentDirectory, "Log", "AlarmHistory", "AlarmHistory.log");
+        private MainFlowHandler mainFlowHandler;
+        //private string historyAlarmsFilePath = Path.Combine(Environment.CurrentDirectory, "Log", "AlarmHistory", "AlarmHistory.log");
 
-        public AlarmForm(AlarmHandler alarmHandler)
+        public AlarmForm(MainFlowHandler mainFlowHandler)
         {
             InitializeComponent();
-            this.alarmHandler = alarmHandler;
-            alarmHandler.SetAlarm(12345);
-            RefreshHappeningAlarms();
+            this.mainFlowHandler = mainFlowHandler;
+            alarmHandler = mainFlowHandler.GetAlarmHandler();
+            alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
+            alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
         }
 
-        private void RefreshHappeningAlarms()
+        private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            listHappeningAlarms.Items.Clear();
-            var tempHappeningAlarms = alarmHandler.dicHappeningAlarms.ToList();
-            foreach (var item in tempHappeningAlarms)
-            {
-                Alarm alarm = item.Value;
-                string txtAlarm = $"[{alarm.SetTime.ToString("yyyy/MM/dd_HH/mm/ss.fff")}] [{alarm.Id}] [{alarm.AlarmText}] [{alarm.Level}] [{alarm.Description}]";
-                listHappeningAlarms.Items.Add(txtAlarm);
-            }            
+            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][{alarm.SetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
+            RichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
+
+            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][{alarm.SetTime.ToString("yyyy/MM/dd_HH/mm")}]";
+            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
         }
 
-        private void btnResetSelectAlarm_Click(object sender, EventArgs e)
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, int count)
         {
-            if (listHappeningAlarms.Items.Count < 1)
+            btnAlarmReset.Enabled = false;
+            rtbHappeningAlarms.Clear();
+            btnAlarmReset.Enabled = true;
+        }
+
+        private void btnAlarmReset_Click(object sender, EventArgs e)
+        {
+            btnAlarmReset.Enabled = false;
+            mainFlowHandler.ResetAllarms();
+            btnAlarmReset.Enabled = true;
+        }
+
+        private void btnBuzzOff_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.GetPlcAgent().WritePLCBuzzserStop();
+        }
+
+        public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
+        public void RichTextBoxAppendHead(RichTextBox richTextBox, string msg)
+        {
+            if (richTextBox.InvokeRequired)
             {
-                return;
+                RichTextBoxAppendHeadCallback mydel = new RichTextBoxAppendHeadCallback(RichTextBoxAppendHead);
+                this.Invoke(mydel, new object[] { richTextBox, msg });
             }
-
-            if (listHappeningAlarms.SelectedIndex < 0)
+            else
             {
-                listHappeningAlarms.SelectedIndex = 0;
+                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff] ");
+                msg = msg + Environment.NewLine;
+                richTextBox.Text = string.Concat(timeStamp, msg, richTextBox.Text);
+
+                int RichTextBoxMaxLines = 10000;  // middlerConfig.RichTextBoxMaxLines;
+
+                if (richTextBox.Lines.Count() > RichTextBoxMaxLines)
+                {
+                    string[] sNewLines = new string[RichTextBoxMaxLines];
+                    Array.Copy(richTextBox.Lines, 0, sNewLines, 0, sNewLines.Length);
+                    richTextBox.Lines = sNewLines;
+                }
             }
-
-            int selectedAlarmId = GetSelectedAlarmId(listHappeningAlarms.SelectedItem);
-
-            alarmHandler.ResetAlarm(selectedAlarmId);
         }
 
-        private int GetSelectedAlarmId(object selectedItem)
+        private void btnTestSetAlarm_Click(object sender, EventArgs e)
         {
-            string textSelectedAlarm = (string)selectedItem;
-            return int.Parse(textSelectedAlarm.Split(' ')[1].Trim(new char[] { '[', ']' }));
-        }
-
-        private void btnResetIdAlarm_Click(object sender, EventArgs e)
-        {
-            int selectedAlarmId = (int)numSelectAlarmId.Value;
-            alarmHandler.ResetAlarm(selectedAlarmId);
-        }
-
-        private void listHappeningAlarms_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            int selectedAlarmId = GetSelectedAlarmId(listHappeningAlarms.SelectedItem);
-
-            numSelectAlarmId.Value = selectedAlarmId;
-        }
-
-        private void btnResetAllAlarms_Click(object sender, EventArgs e)
-        {
-            alarmHandler.ResetAllAlarms();
-        }
-
-        private void timerRefreshHappenAlarm_Tick(object sender, EventArgs e)
-        {
-            RefreshHappeningAlarms();
-        }
-
-        private void btnSetTestAlarm_Click(object sender, EventArgs e)
-        {
-            int selectedAlarmId = (int)numSelectAlarmId.Value;
-            alarmHandler.SetAlarm(selectedAlarmId);
-        }
-
-        private void timerRefreshHistoryAlarm_Tick(object sender, EventArgs e)
-        {
-          //TODO: Show historyAlarms in form
+            try
+            {
+                //Test Set a non-empty alarm
+                alarmHandler.SetAlarm(alarmHandler.allAlarms.First(x => x.Key != 0).Key);
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , ex.StackTrace));
+            }
         }
     }
 }

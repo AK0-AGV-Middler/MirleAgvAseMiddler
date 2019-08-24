@@ -13,22 +13,22 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
-            EnumTransferCommandType type = mainFlowHandler.GetCurrentEnumTransferCommandType();
+            EnumTransferStepType type = mainFlowHandler.GetCurrentTransferStepType();
             switch (type)
             {
-                case EnumTransferCommandType.Move:
+                case EnumTransferStepType.Move:
                     mainFlowHandler.SetTransCmdsStep(new Move());
                     mainFlowHandler.DoTransfer();
                     break;
-                case EnumTransferCommandType.Load:
+                case EnumTransferStepType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());
                     mainFlowHandler.DoTransfer();
                     break;
-                case EnumTransferCommandType.Unload:
+                case EnumTransferStepType.Unload:
                     mainFlowHandler.SetTransCmdsStep(new Unload());
                     mainFlowHandler.DoTransfer();
                     break;
-                case EnumTransferCommandType.Empty:
+                case EnumTransferStepType.Empty:
                 default:
                     mainFlowHandler.IdleVisitNext();
                     break;

@@ -89,6 +89,8 @@
             this.gB_JogPitch_JogPitch = new System.Windows.Forms.GroupBox();
             this.button_JogPitch_Home = new System.Windows.Forms.Button();
             this.button_JogPitch_ChangeFormSize = new System.Windows.Forms.Button();
+            this.button_JogPitchHide = new System.Windows.Forms.Button();
+            this.label_LockResult = new System.Windows.Forms.Label();
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -107,7 +109,7 @@
             this.groupBox_SingleAxis.Controls.Add(this.label_JogPitch_AxisMove_Disance);
             this.groupBox_SingleAxis.Controls.Add(this.tB_JogPitch_AxisMove_Disance);
             this.groupBox_SingleAxis.Controls.Add(this.button_JogPitch_AxisMove_Absolute);
-            this.groupBox_SingleAxis.Location = new System.Drawing.Point(8, 297);
+            this.groupBox_SingleAxis.Location = new System.Drawing.Point(8, 311);
             this.groupBox_SingleAxis.Name = "groupBox_SingleAxis";
             this.groupBox_SingleAxis.Size = new System.Drawing.Size(265, 175);
             this.groupBox_SingleAxis.TabIndex = 108;
@@ -240,7 +242,7 @@
             this.gB_JogPitch_Sr2000.Controls.Add(this.lable_JogPitch_MapY);
             this.gB_JogPitch_Sr2000.Controls.Add(this.label_JogPitch_Theta);
             this.gB_JogPitch_Sr2000.Controls.Add(this.lable_JogPitch_MapX);
-            this.gB_JogPitch_Sr2000.Location = new System.Drawing.Point(8, 104);
+            this.gB_JogPitch_Sr2000.Location = new System.Drawing.Point(8, 118);
             this.gB_JogPitch_Sr2000.Name = "gB_JogPitch_Sr2000";
             this.gB_JogPitch_Sr2000.Size = new System.Drawing.Size(265, 188);
             this.gB_JogPitch_Sr2000.TabIndex = 110;
@@ -690,7 +692,7 @@
             this.gB_JogPitch_ElmoFunction.Controls.Add(this.button_JogPitch_ElmoEnable);
             this.gB_JogPitch_ElmoFunction.Controls.Add(this.button_JogPitch_ElmoDisable);
             this.gB_JogPitch_ElmoFunction.Controls.Add(this.button_JogPitch_ElmoReset);
-            this.gB_JogPitch_ElmoFunction.Location = new System.Drawing.Point(8, 14);
+            this.gB_JogPitch_ElmoFunction.Location = new System.Drawing.Point(8, 28);
             this.gB_JogPitch_ElmoFunction.Name = "gB_JogPitch_ElmoFunction";
             this.gB_JogPitch_ElmoFunction.Size = new System.Drawing.Size(265, 87);
             this.gB_JogPitch_ElmoFunction.TabIndex = 131;
@@ -718,7 +720,7 @@
             this.gB_JogPitch_JogPitch.Controls.Add(this.label_JogPich_NowMode_label);
             this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_TurnLeft);
             this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_TurnRight);
-            this.gB_JogPitch_JogPitch.Location = new System.Drawing.Point(289, 14);
+            this.gB_JogPitch_JogPitch.Location = new System.Drawing.Point(289, 28);
             this.gB_JogPitch_JogPitch.Name = "gB_JogPitch_JogPitch";
             this.gB_JogPitch_JogPitch.Size = new System.Drawing.Size(417, 458);
             this.gB_JogPitch_JogPitch.TabIndex = 132;
@@ -738,7 +740,7 @@
             // 
             // button_JogPitch_ChangeFormSize
             // 
-            this.button_JogPitch_ChangeFormSize.Location = new System.Drawing.Point(708, 218);
+            this.button_JogPitch_ChangeFormSize.Location = new System.Drawing.Point(708, 236);
             this.button_JogPitch_ChangeFormSize.Name = "button_JogPitch_ChangeFormSize";
             this.button_JogPitch_ChangeFormSize.Size = new System.Drawing.Size(16, 48);
             this.button_JogPitch_ChangeFormSize.TabIndex = 133;
@@ -746,12 +748,37 @@
             this.button_JogPitch_ChangeFormSize.UseVisualStyleBackColor = true;
             this.button_JogPitch_ChangeFormSize.Click += new System.EventHandler(this.button_JogPitch_ChangeFormSize_Click);
             // 
+            // button_JogPitchHide
+            // 
+            this.button_JogPitchHide.Font = new System.Drawing.Font("標楷體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_JogPitchHide.Location = new System.Drawing.Point(688, 0);
+            this.button_JogPitchHide.Name = "button_JogPitchHide";
+            this.button_JogPitchHide.Size = new System.Drawing.Size(36, 23);
+            this.button_JogPitchHide.TabIndex = 134;
+            this.button_JogPitchHide.Text = "X";
+            this.button_JogPitchHide.UseVisualStyleBackColor = true;
+            this.button_JogPitchHide.Click += new System.EventHandler(this.button_JogPitchHide_Click);
+            // 
+            // label_LockResult
+            // 
+            this.label_LockResult.AutoSize = true;
+            this.label_LockResult.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_LockResult.ForeColor = System.Drawing.Color.Red;
+            this.label_LockResult.Location = new System.Drawing.Point(15, 6);
+            this.label_LockResult.Name = "label_LockResult";
+            this.label_LockResult.Size = new System.Drawing.Size(95, 16);
+            this.label_LockResult.TabIndex = 135;
+            this.label_LockResult.Text = "Lock Result : ";
+            // 
             // JogPitchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(724, 481);
+            this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
+            this.ClientSize = new System.Drawing.Size(724, 494);
             this.ControlBox = false;
+            this.Controls.Add(this.label_LockResult);
+            this.Controls.Add(this.button_JogPitchHide);
             this.Controls.Add(this.button_JogPitch_ChangeFormSize);
             this.Controls.Add(this.gB_JogPitch_ElmoFunction);
             this.Controls.Add(this.gB_JogPitch_Sr2000);
@@ -776,6 +803,7 @@
             this.gB_JogPitch_JogPitch.ResumeLayout(false);
             this.gB_JogPitch_JogPitch.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -841,5 +869,7 @@
         private JogPitchAxis[] allAxis;
         private System.Windows.Forms.Button button_JogPitch_Home;
         private System.Windows.Forms.Button button_JogPitch_ChangeFormSize;
+        private System.Windows.Forms.Button button_JogPitchHide;
+        private System.Windows.Forms.Label label_LockResult;
     }
 }

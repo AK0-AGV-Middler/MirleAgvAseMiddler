@@ -10,12 +10,13 @@ namespace Mirle.Agv.Model.Configs
     public class MainFlowConfig
     {
         public string LogConfigPath { get; set; }
-        public int TransCmdsCheckInterval { get; set; }
-        public int DoTransCmdsInterval { get; set; }
-        public int ReserveLength { get; set; }
-        public int TrackingPositionInterval { get; set; }
-        public int ReportPositionInterval { get; set; }
-        public int StartChargeInterval { get; set; }
-        public int StopChargeInterval { get; set; }
+        public int VisitTransferStepsSleepTimeMs { get; set; }
+        public int TrackPositionSleepTimeMs { get; set; }
+        public int WatchLowPowerSleepTimeMs { get; set; }
+        public int StopWatchLowPowerWaitingTimeMs { get; set; }
+        public int ReportPositionIntervalMs { get; set; }
+        public int StartChargeWaitingTimeMs { get; set; }
+        public int StopChargeWaitingTimeMs { get; set; }
+        public int RealPositionRangeMm { get; set; }
     }
 }

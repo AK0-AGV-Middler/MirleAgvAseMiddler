@@ -16,14 +16,35 @@ namespace Mirle.Agv.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
 
-        private TransferStep transCmd = new EmptyTransCmd();
-        private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
-        private MapInfo theMapInfo = new MapInfo();
-        private PlcVehicle plcVehicle = new PlcVehicle();
-        private AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
-
-        public VehiclePosition theVehiclePosition { get; set; }
+        public TransferStep CurTrasferStep { get; set; } = new EmptyTransferStep();
+        public MapInfo TheMapInfo { get; set; } = new MapInfo();
+        public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
+        private AgvcTransCmd curAgvcTransCmd;
+        public AgvcTransCmd CurAgvcTransCmd
+        {
+            get
+            {
+                if (curAgvcTransCmd == null)
+                {
+                    return new AgvcTransCmd();
+                }
+                else
+                {
+                    return curAgvcTransCmd;
+                }
+            }
+            set
+            {
+                curAgvcTransCmd = value;
+            }
+        }
+        public AgvcTransCmd LastCurAgvcTransCmd { get; set; } = new AgvcTransCmd();
+        public VehiclePosition CurVehiclePosition { get; set; } = new VehiclePosition();
         public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
+        public EnumThreadStatus VisitTransferStepsStatus { get; set; } = EnumThreadStatus.None;
+        public EnumThreadStatus TrackPositionStatus { get; set; } = EnumThreadStatus.None;
+        public EnumThreadStatus WatchLowPowerStatus { get; set; } = EnumThreadStatus.None;
+        public EnumThreadStatus AskReserveStatus { get; set; } = EnumThreadStatus.None;
 
         #region Comm Property
 
@@ -54,28 +75,11 @@ namespace Mirle.Agv.Model
 
         private Vehicle()
         {
-            theVehiclePosition = new VehiclePosition(theMapInfo);
         }
-
-        #region Setter     
-        
-        public void SetVehicleStop() { }
-
-        public void SetMapInfo(MapInfo theMapInfo) { this.theMapInfo = theMapInfo; }
-
-        public void SetPlcVehicle(PlcVehicle plcVehicle) { this.plcVehicle = plcVehicle; }
-
-        public void SetAgvcTransCmd(AgvcTransCmd agvcTransCmd) { this.agvcTransCmd = agvcTransCmd; }
-
-        #endregion
 
         #region Getter
 
-        public TransferStep GetTransCmd() { return transCmd; }
-
-        public PlcVehicle GetPlcVehicle() { return plcVehicle; }
-
-        public AgvcTransCmd GetAgvcTransCmd() { return agvcTransCmd; }
+        public PlcVehicle GetPlcVehicle() { return ThePlcVehicle; }
 
         #endregion
 

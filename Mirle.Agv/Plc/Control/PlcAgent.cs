@@ -277,7 +277,7 @@ namespace Mirle.Agv.Controller
 
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
-            APLCVehicle = Vehicle.Instance.GetPlcVehicle();
+            APLCVehicle = Vehicle.Instance.ThePlcVehicle;
             SetupLoggers();
 
             this.aAlarmHandler = objAlarmHandler;

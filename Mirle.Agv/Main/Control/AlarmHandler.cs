@@ -9,24 +9,25 @@ using Mirle.Agv.Model.Configs;
 using Mirle.Agv.Controller.Tools;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Mirle.Agv.Controller
 {
     [Serializable]
     public class AlarmHandler
     {
+        //TODO: 
+        //(未實作)將HistoryAlarms寫入檔案，請參考Logger中交替Que運作方式。
+        //(未實作)將檔案讀入到AlarmForm的History欄位，檢視或檢索。目前無想法。
         #region Containers
-
-        public List<Alarm> alarms = new List<Alarm>();
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
         public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
-        public ConcurrentStack<Alarm> stkHappeningAlarms = new ConcurrentStack<Alarm>();
-        public event EventHandler<string> OnMessageShowEvent;
-
+        public ConcurrentQueue<Alarm> queHistoryAlarm = new ConcurrentQueue<Alarm>();
+        public Alarm LastAlarm { get; set; } = new Alarm();
         #endregion
 
-        #region Events
-        #endregion
+        public event EventHandler<Alarm> OnSetAlarmEvent;
+        public event EventHandler<int> OnResetAllAlarmsEvent;
 
         private AlarmConfig alarmConfig;
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
@@ -50,7 +51,6 @@ namespace Mirle.Agv.Controller
 
                 string alarmFullPath = Path.Combine(Environment.CurrentDirectory, alarmConfig.AlarmFileName);
                 Dictionary<string, int> dicAlarmIndexes = new Dictionary<string, int>();
-                alarms.Clear();
                 allAlarms.Clear();
 
                 string[] allRows = File.ReadAllLines(alarmFullPath);
@@ -89,7 +89,6 @@ namespace Mirle.Agv.Controller
                     oneRow.Description = getThisRow[dicAlarmIndexes["Description"]];
 
                     allAlarms.Add(oneRow.Id, oneRow);
-                    alarms.Add(oneRow);
                 }
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -104,93 +103,99 @@ namespace Mirle.Agv.Controller
 
         public Alarm GetAlarmClone(int id)
         {
-            Alarm alarm;
-            if (!allAlarms.ContainsKey(id))
-            {
-                alarm = new Alarm();
-                alarm.Id = id;
-            }
-            else
-            {
-                alarm = allAlarms[id].DeepClone();
+            Alarm alarm = new Alarm { Id = id };            
 
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"[Id={id}]"));
+            try
+            {
+                if (allAlarms.ContainsKey(id))
+                {
+                    alarm = allAlarms[id].DeepClone();
+                }
             }
-
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , ex.StackTrace));
+            }
             return alarm;
         }
 
-        public void SetAlarm(int id)
+        public bool SetAlarm(int id)
         {
-            if (dicHappeningAlarms.ContainsKey(id))
+            try
             {
-                var ngMsg = $"AlarmHandler : Set alarm fail, [Id={id}][Already in HappeningAlarms]";
-                OnMessageShowEvent?.Invoke(this, ngMsg);
+                DateTime timeStamp = DateTime.Now;
+                Alarm alarm = GetAlarmClone(id);
+                alarm.SetTime = timeStamp;
 
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ngMsg));
+                if (dicHappeningAlarms.ContainsKey(id))
+                {
+                    //var msg = $"AlarmHandler : Set alarm +++FAIL+++, [Id={id}][Already in HappeningAlarms]";
+                    //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    //    , msg));
+                    return false;
+                }
+                else
+                {
+                    dicHappeningAlarms.TryAdd(id, alarm);
+                    queHistoryAlarm.Enqueue(alarm);
+                    LastAlarm = alarm.DeepClone();
 
-                return;
+                    //loggerAgent.LogAlarmHistory(alarm);
+                    OnSetAlarmEvent?.Invoke(this, alarm);
+                    return true;
+                }
             }
-
-            Alarm alarm = GetAlarmClone(id);
-            DateTime timeStamp = DateTime.Now;
-            alarm.SetTime = timeStamp;
-            dicHappeningAlarms.TryAdd(id, alarm);
-            loggerAgent.LogAlarmHistory(alarm);
-
-            var okMsg = $"AlarmHandler : Set alarm ok, [Id={id}]";
-            OnMessageShowEvent?.Invoke(this, okMsg);
-
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , okMsg));
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , ex.StackTrace));
+                return false;
+            }
         }
 
         public void ResetAlarm(int id)
         {
-            if (!dicHappeningAlarms.ContainsKey(id))
-            {
-                var ngMsg = $"AlarmHandler : Reset alarm fail, [Id={id}][Not in HappeningAlarms]";
-                OnMessageShowEvent?.Invoke(this, ngMsg);
+            //if (!dicHappeningAlarms.ContainsKey(id))
+            //{
+            //    var ngMsg = $"AlarmHandler : Reset alarm fail, [Id={id}][Not in HappeningAlarms]";
+            //    OnMessageShowEvent?.Invoke(this, ngMsg);
 
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ngMsg));
-                return;
-            }
+            //    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //        , ngMsg));
+            //    return;
+            //}
 
-            DateTime resetTime = DateTime.Now;
-            dicHappeningAlarms.TryRemove(id, out Alarm alarm);
-            alarm.ResetTime = resetTime;
-            loggerAgent.LogAlarmHistory(alarm);
+            //DateTime resetTime = DateTime.Now;
+            //dicHappeningAlarms.TryRemove(id, out Alarm alarm);
+            //alarm.ResetTime = resetTime;
+            //loggerAgent.LogAlarmHistory(alarm);
 
-            var okMsg = $"AlarmHandler : Reset alarm ok, [Id={id}]";
-            OnMessageShowEvent?.Invoke(this, okMsg);
+            //var okMsg = $"AlarmHandler : Reset alarm ok, [Id={id}]";
+            //OnMessageShowEvent?.Invoke(this, okMsg);
 
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , okMsg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //    , okMsg));
         }
 
         public void ResetAllAlarms()
         {
             try
             {
-                var tempHappeningAlarms = dicHappeningAlarms;
-                dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
-                DateTime resetTime = DateTime.Now;
-
-                foreach (KeyValuePair<int, Alarm> item in tempHappeningAlarms)
+                int dicHappeningAlarmsCount = 0;
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                lock (dicHappeningAlarms)
                 {
-                    Alarm alarm = item.Value;
-                    alarm.ResetTime = resetTime;
-                    loggerAgent.LogAlarmHistory(alarm);
+                    dicHappeningAlarmsCount = dicHappeningAlarms.Count;
+                    dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
+                    OnResetAllAlarmsEvent?.Invoke(this, dicHappeningAlarmsCount);
+                    LastAlarm = new Alarm();
                 }
-
-                var okMsg = $"AlarmHandler : Reset all alarm ok";
-                OnMessageShowEvent?.Invoke(this, okMsg);
-
+                sw.Stop();
+                var msg = $"AlarmHandler : Reset All Alarms, [Count={dicHappeningAlarmsCount}][TimeMs={sw.ElapsedMilliseconds}]";
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , okMsg));
+                    , msg));
 
             }
             catch (Exception ex)

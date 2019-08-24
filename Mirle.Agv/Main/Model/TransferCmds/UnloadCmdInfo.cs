@@ -19,7 +19,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public UnloadCmdInfo():this(new MapInfo()) { }
         public UnloadCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
         {
-            type = EnumTransferCommandType.Unload;
+            type = EnumTransferStepType.Unload;
         }
     }
 }

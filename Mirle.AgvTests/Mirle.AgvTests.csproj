@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Control\Agent\" />
+    <Folder Include="Main\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="DLLs\Google.Protobuf.dll" />

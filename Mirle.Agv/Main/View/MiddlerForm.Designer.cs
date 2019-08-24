@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MiddlerForm));
             this.btnDisConnect = new System.Windows.Forms.Button();
             this.btnConnect = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
@@ -231,7 +232,7 @@
             // 
             this.toolStripStatusLabel2.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(712, 17);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(707, 17);
             this.toolStripStatusLabel2.Spring = true;
             // 
             // toolStripStatusLabel3
@@ -259,6 +260,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtRemoteIp);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MiddlerForm";
