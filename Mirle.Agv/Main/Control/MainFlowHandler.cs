@@ -131,7 +131,6 @@ namespace Mirle.Agv.Controller
             LoggersInitial();
             ControllersInitial();
             VehicleInitial();
-            LoadAllAlarms();
             EventInitial();
             SetTransCmdsStep(new Idle());
 
@@ -248,6 +247,10 @@ namespace Mirle.Agv.Controller
                 //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
                 plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
 
+                //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
+                alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
+                alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
+
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
             }
             catch (Exception)
@@ -256,12 +259,6 @@ namespace Mirle.Agv.Controller
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "事件"));
             }
-        }
-
-        private void LoadAllAlarms()
-        {
-            //TODO: load all alarms
-            //throw new NotImplementedException();
         }
 
         private void VehicleLocationInitial()
@@ -628,7 +625,8 @@ namespace Mirle.Agv.Controller
 
             if (!IsAgvcTransferCommandEmpty())
             {
-                middleAgent.Send_Cmd131_TransferResponse(agvcTransCmd.SeqNum, 1, "Agv already have transfer command.");
+                alarmHandler.SetAlarm(000001);
+                middleAgent.Send_Cmd131_TransferResponse(agvcTransCmd.SeqNum, 1, "Agv already have a transfer command.");
                 return;
             }
 
@@ -637,11 +635,11 @@ namespace Mirle.Agv.Controller
                 this.agvcTransCmd = agvcTransCmd;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 StopWatchLowPower();
-                SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeWaitingTimeMs);
+                SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeWaitingTimeoutMs);
                 if (WatchLowPowerStatus != EnumThreadStatus.None)
                 {
-                    //Alarm
-                    middleAgent.Send_Cmd131_TransferResponse(agvcTransCmd.SeqNum, 1, "Low Power Chargin.");
+                    alarmHandler.SetAlarm(000002);
+                    middleAgent.Send_Cmd131_TransferResponse(agvcTransCmd.SeqNum, 1, "Low Power Charging.");
                     return;
                 }
 
@@ -692,36 +690,17 @@ namespace Mirle.Agv.Controller
         #region Convert AgvcTransferCommand to TransferSteps
         private void ConvertAgvcElseCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            throw new NotImplementedException();
+
         }
         private void ConvertAgvcOverrideCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
             //TODO: clone old transCmds
             //TODO: separate transCmds into MLMU
-            //TODO: override move part.
-
-            //var tempTransCmds = new List<TransCmd>();
-            //for (int i = 0; i < transCmds.Count; i++)
-            //{
-
-            //}
-
-            //var curSection = theVehicle.AVehLocation.Section.Id;
-            //if (agvcTransCmd.ToLoadSections.Length > 0) //curSection at to load sections
-            //{
-            //    for (int i = 0; i < agvcTransCmd.ToLoadSections.Length; i++)
-            //    {
-
-            //    }
-            //}
-            //else
-            //{
-
-            //}
+            //TODO: override move part.            
         }
         private void ConvertAgvcHomeCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
-            //throw new NotImplementedException();
+
         }
         private void ConvertAgvcLoadUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
@@ -895,48 +874,41 @@ namespace Mirle.Agv.Controller
         private bool CanVehUnload()
         {
             // 判斷當前是否可載貨 若否 則發送報告
-            MapPosition position = theVehicle.CurVehiclePosition.RealPosition;
-            MapAddress unloadAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddress];
-            var result = mapHandler.IsPositionInThisAddress(position, unloadAddress.Position);
-            var msg = $"MainFlow : CanVehUnload, [result={result}][position=({(int)position.X},{(int)position.Y})][loadAddress=({(int)unloadAddress.Position.X},{(int)unloadAddress.Position.Y})]";
-            OnMessageShowEvent?.Invoke(this, msg);
-
-            if (result)
+            MapPosition curPosition = theVehicle.CurVehiclePosition.RealPosition;
+            MapPosition unloadPosition = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddress].Position;
+            if (mapHandler.IsPositionInThisAddress(curPosition, unloadPosition))
             {
+                var msg = $"MainFlow : CanVehUnload, [result={true}][position=({(int)curPosition.X},{(int)curPosition.Y})][loadAddress=({(int)unloadPosition.X},{(int)unloadPosition.Y})]";
+                OnMessageShowEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                   , msg));
-
+                return true;
             }
             else
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
+                alarmHandler.SetAlarm(000009);
+                return false;
             }
-
-            return result;
         }
         private bool CanVehLoad()
         {
             // 判斷當前是否可卸貨 若否 則發送報告
-            MapPosition position = theVehicle.CurVehiclePosition.RealPosition;
-            MapAddress loadAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddress];
-            var result = mapHandler.IsPositionInThisAddress(position, loadAddress.Position);
-            var msg = $"MainFlow : CanVehLoad, [result={result}][position=({(int)position.X},{(int)position.Y})][loadAddress=({(int)loadAddress.Position.X},{(int)loadAddress.Position.Y})]";
-            OnMessageShowEvent?.Invoke(this, msg);
+            MapPosition curPosition = theVehicle.CurVehiclePosition.RealPosition;
+            MapPosition loadPosition = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddress].Position;
 
-            if (result)
+            if (mapHandler.IsPositionInThisAddress(curPosition, loadPosition))
             {
+                var msg = $"MainFlow : CanVehLoad, [result={true}][curPosition=({(int)curPosition.X},{(int)curPosition.Y})][loadPosition=({(int)loadPosition.X},{(int)loadPosition.Y})]";
+                OnMessageShowEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                   , msg));
-
+                return true;
             }
             else
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
+                alarmHandler.SetAlarm(000015);
+                return false;
             }
-
-            return result;
         }
         public bool CanVehMove()
         {
@@ -960,17 +932,19 @@ namespace Mirle.Agv.Controller
             // 判斷當前貨物的ID是否可正確讀取 若否 則發送報告
             if (!plcVeh.Loading)
             {
-                //Alarm plcVehicle is not Loading
+                alarmHandler.SetAlarm(000003);
                 return false;
             }
             else if (string.IsNullOrEmpty(plcVeh.CassetteId))
             {
                 //CassetteId is null or Empty
+                alarmHandler.SetAlarm(000004);
                 return false;
             }
             else if (plcVeh.CassetteId == "ERROR")
             {
                 //CassetteId is Error
+                alarmHandler.SetAlarm(000005);
                 return false;
             }
             else
@@ -1009,8 +983,7 @@ namespace Mirle.Agv.Controller
 
                 if (status == EnumMoveComplete.Fail)
                 {
-                    //TODO: Alarm
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [Status={status}]");
+                    alarmHandler.SetAlarm(000006);
                     StopVisitTransferSteps();
                     return;
                 }
@@ -1047,9 +1020,9 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [ex={ex.StackTrace}]");
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
-
         }
 
         public void PlcAgent_OnForkCommandFinishEvent(object sender, PlcForkCommand forkCommand)
@@ -1085,8 +1058,7 @@ namespace Mirle.Agv.Controller
                 {
                     if (theVehicle.ThePlcVehicle.Loading)
                     {
-                        //Alarm : loading is still on
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : ForkCommandFinish,[Type={forkCommand.ForkCommandType}] [Loading={theVehicle.ThePlcVehicle.Loading}]");
+                        alarmHandler.SetAlarm(000007);
                         return;
                     }
 
@@ -1100,8 +1072,6 @@ namespace Mirle.Agv.Controller
                         middleAgent.UnloadComplete();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : ForkCommandFinish,[Type={forkCommand.ForkCommandType}] [UnloadComplete]");
                     }
-
-
                 }
                 else if (forkCommand.ForkCommandType == EnumForkCommand.Home)
                 {
@@ -1113,7 +1083,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : ForkCommandFinish,[ex={ex.StackTrace}]");
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , ex.StackTrace));
             }
         }
 
@@ -1187,30 +1158,23 @@ namespace Mirle.Agv.Controller
             {
                 try
                 {
-                    if (plcAgent.IsForkCommandExist())
-                    {
-                        //Alarm : 
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload, [plcAgent.IsForkCommandExist={plcAgent.IsForkCommandExist()}]");
-                    }
-                    else
+                    if (!plcAgent.IsForkCommandExist())
                     {
                         middleAgent.Send_Cmd136_TransferEventReport(EventType.Vhunloading);
                         PlcForkUnloadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
                         plcAgent.AddForkComand(PlcForkUnloadCommand);
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload, [Type={PlcForkLoadCommand.ForkCommandType}][StageNum={PlcForkLoadCommand.StageNo}][IsEqPio={PlcForkLoadCommand.IsEqPio}]");
                     }
+                    else
+                    {
+                        alarmHandler.SetAlarm(000008);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    var msg = ex.ToString();
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        , ex.StackTrace));
                 }
-
-            }
-            else
-            {
-                //Alarm:
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload, [CanVehUnload={CanVehUnload()}]");
-
             }
         }
 
@@ -1230,12 +1194,13 @@ namespace Mirle.Agv.Controller
                     }
                     else
                     {
-                        //Alarm : 
+                        alarmHandler.SetAlarm(000010);
                     }
                 }
                 catch (Exception ex)
                 {
-                    var msg = ex.ToString();
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        , ex.StackTrace));
                 }
             }
         }
@@ -1305,7 +1270,6 @@ namespace Mirle.Agv.Controller
             middleAgent.StopAskReserve();
             middleAgent.SetupNeedReserveSections(moveCmd);
             middleAgent.StartAskReserve();
-            //SetupNeedReserveSections(moveCmd);
         }
 
         private void UpdateVehiclePositionWithMoveCmd(MoveCmdInfo curTransCmd, MapPosition gxPosition)
@@ -1349,18 +1313,17 @@ namespace Mirle.Agv.Controller
 
             if (searchingSectionIndex == movingSections.Count)
             {
-                //gxPosition is not in curTransCmd.MovingSections
-                //TODO: PublishAlarm and log
+                alarmHandler.SetAlarm(000011);
             }
         }
 
         private void UpdatePlcVehicleBeamSensor(MapSection mapSection)
         {
             var plcVeh = theVehicle.ThePlcVehicle;
-            plcVeh.FrontBeamSensorDisable = mapSection.FowardBeamSensorDisable;
-            plcVeh.BackBeamSensorDisable = mapSection.BackwardBeamSensorDisable;
-            plcVeh.LeftBeamSensorDisable = mapSection.LeftBeamSensorDisable;
-            plcVeh.RightBeamSensorDisable = mapSection.RightBeamSensorDisable;
+            //plcVeh.FrontBeamSensorDisable = mapSection.FowardBeamSensorDisable;
+            //plcVeh.BackBeamSensorDisable = mapSection.BackwardBeamSensorDisable;
+            //plcVeh.LeftBeamSensorDisable = mapSection.LeftBeamSensorDisable;
+            //plcVeh.RightBeamSensorDisable = mapSection.RightBeamSensorDisable;
         }
 
         private void UpdateMiddlerGotReserveOkSections(string id)
@@ -1374,7 +1337,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.DequeueGotReserveOkSections();
             }
         }
-
 
         private bool UpdateVehiclePositionWithoutMoveCmd(MapPosition gxPosition)
         {
@@ -1411,21 +1373,6 @@ namespace Mirle.Agv.Controller
             return isInMap;
         }
 
-        public MapBarcode GetMapBarcodeClone(int baracodeNum)
-        {
-            var dicBarcodes = TheMapInfo.allBarcodes;
-            if (dicBarcodes.ContainsKey(baracodeNum))
-            {
-                //先 Clone 一份避免被改掉內容
-                MapBarcode barcode = dicBarcodes[baracodeNum].DeepClone();
-                return barcode;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         public MCProtocol GetMcProtocol()
         {
             return mcProtocol;
@@ -1442,7 +1389,6 @@ namespace Mirle.Agv.Controller
             if (address.IsCharger)
             {
                 EnumChargeDirection chargeDirection;
-
                 switch (address.ChargeDirection)
                 {
                     case EnumChargeDirection.Left:
@@ -1453,56 +1399,91 @@ namespace Mirle.Agv.Controller
                         break;
                     case EnumChargeDirection.None:
                     default:
-                        //Alarm : charge direction error
+                        alarmHandler.SetAlarm(000012);
                         return;
                 }
-
                 theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusHandshaking;
                 middleAgent.Send_Cmd144_StatusChangeReport();
                 plcAgent.ChargeStartCommand(chargeDirection);
 
-                SpinWait.SpinUntil(() => false, mainFlowConfig.StartChargeWaitingTimeMs);
-                if (!theVehicle.ThePlcVehicle.Batterys.Charging)
+                Stopwatch sw = new Stopwatch();
+                bool isTimeout = false;
+                sw.Start();
+                while (true)
                 {
-                    //Alarm
+                    sw.Stop();
+                    if (sw.ElapsedMilliseconds> mainFlowConfig.StartChargeWaitingTimeoutMs)
+                    {
+                        isTimeout = true;
+                        break;
+                    }
+                    sw.Start();
+                    if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                    {
+                        break;
+                    }
+                    SpinWait.SpinUntil(() => false, 5);
                 }
-                else
+                
+                if (!isTimeout)
                 {
                     theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusCharging;
                     middleAgent.Send_Cmd144_StatusChangeReport();
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Start Charging, [Id={address.Id}][IsInCouple={address.IsCharger}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
                 }
-
-
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : Start Charging, [Id={address.Id}][IsInCouple={address.IsCharger}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                else
+                {
+                    alarmHandler.SetAlarm(000013);
+                }
             }
-            //else
-            //{
-            //    OnMessageShowEvent?.Invoke(this, $"MainFlow : Start Charging,[Id={address.Id}][IsInCouple={address.IsCharger}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
-            //}
         }
 
-        public void StopCharge()
+        public bool StopCharge()
         {
-            var isStopChargeOk = true;
-            plcAgent.ChargeStopCommand();
-            SpinWait.SpinUntil(() => false, mainFlowConfig.StopChargeWaitingTimeMs);
-
-            if (theVehicle.ThePlcVehicle.Batterys.Charging)
+            MapAddress address = theVehicle.CurVehiclePosition.LastAddress;
+            if (address.IsCharger)
             {
-                //Alarm
-                isStopChargeOk = false;
+                theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusHandshaking;
+                middleAgent.Send_Cmd144_StatusChangeReport();
+                plcAgent.ChargeStopCommand();
+
+                Stopwatch sw = new Stopwatch();               
+                bool isTimeOut = false;
+                sw.Start();
+                while (true)
+                {
+                    sw.Stop();                    
+                    if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
+                    {
+                        isTimeOut = true;
+                        break;
+                    }
+                    sw.Start();
+                    if (!theVehicle.ThePlcVehicle.Batterys.Charging)
+                    {
+                        break;
+                    }
+                    SpinWait.SpinUntil(() => false, 5);
+                }
+                sw.Stop();
+                
+                if (!isTimeOut)
+                {
+                    theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
+                    middleAgent.Send_Cmd144_StatusChangeReport();
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                    return true;
+                }
+                else
+                {
+                    alarmHandler.SetAlarm(000014);
+                    StopVehicle();
+                    return false;
+                }
             }
             else
             {
-                theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
-                middleAgent.Send_Cmd144_StatusChangeReport();
-            }
-
-            OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
-
-            if (!isStopChargeOk)
-            {
-                StopVehicle();
+                return true;
             }
         }
 
@@ -1517,11 +1498,11 @@ namespace Mirle.Agv.Controller
             lastTransferSteps = transferSteps;
             transferSteps = new List<TransferStep>();
             TransferStepsIndex = 0;
-            //var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlHandler.MoveState}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
-            //OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
 
+            var msg = $"MainFlow : Stop And Clear, [VisitTransferStepsStatus={VisitTransferStepsStatus}][WatchLowPowerStatus={WatchLowPowerStatus}][TrackPositionStatus={TrackPositionStatus}][AskReserveStatus={theVehicle.AskReserveStatus}]";
+            OnMessageShowEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
         }
 
         public EnumTransferStepType GetCurrentTransferStepType()
@@ -1540,8 +1521,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                //Log Error
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : GetCurrentEnumTransCmdType, [ex={ex.StackTrace}]");
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , ex.StackTrace));
                 return EnumTransferStepType.Empty;
             }
         }
@@ -1649,6 +1630,15 @@ namespace Mirle.Agv.Controller
             TransferStepsIndex = 0;
         }
 
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, int e)
+        {
+            plcAgent.SetAlarmWarningReportAllReset();
+        }
 
+        private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
+        {
+            plcAgent.WriteAlarmWarningReport(alarm.Level, alarm.PlcWord, alarm.PlcBit, true);
+            plcAgent.WriteAlarmWarningStatus(alarmHandler.HasAlarm, alarmHandler.HasWarn);
+        }
     }
 }

@@ -106,10 +106,9 @@ namespace Mirle.Agv.Controller
         }
         private void TestThreadRun()
         {
-            bool firstFlag = false;
+            Stopwatch swBatteryLogger = new Stopwatch();
             while (true)
             {
-
             }
         }
         [Conditional("DebugTest")]
@@ -249,10 +248,9 @@ namespace Mirle.Agv.Controller
 
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Charging.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryType.ToString();
-
                 for (int i = 1; i <= APLCVehicle.BatteryCellNum; i++)
                 {
-                    csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryCells[i].ToString();
+                    csvLog = csvLog + Separator + this.APLCVehicle.Batterys.BatteryCells[i].Voltage.ToString();
                 }
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Temperature_sensor_number.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Temperature_1_MOSFET.ToString();
@@ -277,7 +275,7 @@ namespace Mirle.Agv.Controller
 
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
-            APLCVehicle = Vehicle.Instance.ThePlcVehicle;
+            APLCVehicle = Vehicle.Instance.GetPlcVehicle();
             SetupLoggers();
 
             this.aAlarmHandler = objAlarmHandler;
@@ -948,6 +946,7 @@ namespace Mirle.Agv.Controller
                         {
                             ChgStasOffDelayCount = 0;
                             this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;//false
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", "ChargeStatus Set Off"));
                         }
                     }
                     else
@@ -1880,10 +1879,52 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
-        //public bool WriteAlarmWarningReport(EnumAlarmLevel level, ushort word, ushort bit, bool status)
-        //{
+        public bool SetAlarmWarningReportAllReset()
+        {
+            bool result = false;
+            List<string> liArrayWord = new List<string>() { "10" };
+            List<string> liWarningWord = new List<string>() { "20" };
+            string stLevelr = "";
+            try
+            {
+                string strItem = "";
 
-        //}
+                foreach (string word in liArrayWord)
+                {
+                    for (int i = 0; i < 16; i++)
+                    {
+                        strItem = $"Alarm_{word}_{i}";
+                        this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
+                    }
+                }
+
+                foreach (string word in liWarningWord)
+                {
+                    for (int i = 0; i < 16; i++)
+                    {
+                        strItem = $"Warning_{word}_{i}";
+                        this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
+                    }
+                }
+                if (this.aMCProtocol.WritePLC())
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset Success"));
+                }
+                else
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset fail"));
+
+                if (WriteAlarmWarningStatus(false, false))
+                    result = true;
+
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+            }
+            liArrayWord.Clear();
+            liWarningWord.Clear();
+            return result;
+        }
         public bool WriteAlarmWarningReport(EnumAlarmLevel level, ushort word, ushort bit, bool status)
         {
             bool result = false;
@@ -2301,6 +2342,34 @@ namespace Mirle.Agv.Controller
                         switch (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState)
                         {
                             case EnumForkCommandState.Queue:
+
+                                //System.Threading.Thread.Sleep(15000);
+                                //if(this.APLCVehicle.Batterys.Charging == true)
+                                //{
+                                //    System.Threading.Thread.Sleep(15000);
+                                //}
+
+                                //if(this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
+                                //{
+                                //    this.APLCVehicle.Loading = true;
+                                //    this.APLCVehicle.CassetteId = "CA0070";
+                                //}
+                                //else if(this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
+                                //{
+                                //    this.APLCVehicle.Loading = false;
+                                //    this.APLCVehicle.CassetteId = "";
+                                //}
+                                //else
+                                //{
+
+                                //}
+
+                                //eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                //OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                                //clearExecutingForkCommandFlag = true;
+
+                                //break;
+
                                 //送出指令                              
                                 if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
                                 {
@@ -2338,6 +2407,11 @@ namespace Mirle.Agv.Controller
                                         {
                                             if (sw.ElapsedMilliseconds < ForkCommandReadTimeout)
                                             {
+                                                if (clearExecutingForkCommandFlag)
+                                                {
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandReadTimeout clearExecutingForkCommandFlag = true"));
+                                                    break;
+                                                }
                                                 System.Threading.Thread.Sleep(20);
                                             }
                                             else
@@ -2378,6 +2452,11 @@ namespace Mirle.Agv.Controller
                                         {
                                             if (sw.ElapsedMilliseconds < this.ForkCommandBusyTimeout)
                                             {
+                                                if (clearExecutingForkCommandFlag)
+                                                {
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandBusyTimeout clearExecutingForkCommandFlag = true"));
+                                                    break;
+                                                }
                                                 System.Threading.Thread.Sleep(20);
                                             }
                                             else
@@ -2423,6 +2502,11 @@ namespace Mirle.Agv.Controller
                                 {
                                     if (sw.ElapsedMilliseconds < this.ForkCommandMovingTimeout)
                                     {
+                                        if (clearExecutingForkCommandFlag)
+                                        {
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandMovingTimeout clearExecutingForkCommandFlag = true"));
+                                            break;
+                                        }
                                         System.Threading.Thread.Sleep(500);
                                     }
                                     else
@@ -2440,7 +2524,7 @@ namespace Mirle.Agv.Controller
                                     }
                                 }
                                 sw.Stop();
-
+                                sw.Reset();
                                 if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean)
                                 {
                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
@@ -2486,7 +2570,26 @@ namespace Mirle.Agv.Controller
                                 clearExecutingForkCommandFlag = true;
                                 break;
                         }
-
+                        bComdIsNullReqForkComdOK = true;
+                        bComdIsNullReqComdFinishAck = true;
+                    }
+                    else
+                    {
+                        if (this.aMCProtocol.get_ItemByTag("ForkCommandOK").AsBoolean && bComdIsNullReqForkComdOK)
+                        {
+                            bComdIsNullReqForkComdOK = false;
+                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandOK ExecutingCommand Is NULL,Command_Read_Request False"));
+                        }
+                        if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean && bComdIsNullReqComdFinishAck)
+                        {
+                            bComdIsNullReqComdFinishAck = false;
+                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandFinish ExecutingCommand Is NULL,Command_Finish_Ack True"));
+                            System.Threading.Thread.Sleep(1000);
+                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandFinish ExecutingCommand Is NULL,Command_Finish_Ack False"));
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -2498,9 +2601,9 @@ namespace Mirle.Agv.Controller
                 }
                 System.Threading.Thread.Sleep(5);
             }
-
-
         }
+        private bool bComdIsNullReqForkComdOK = false, bComdIsNullReqComdFinishAck = false;
+
         public Boolean SetVehicleChargeOn()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
@@ -2581,7 +2684,7 @@ namespace Mirle.Agv.Controller
         }
         private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)
         {
-            strlogMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
+            strlogMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
             if (strlogMsg.Length > LogMsgMaxLength) strlogMsg = strlogMsg.Substring(0, LogMsgMaxLength);
             clsLoggerAgent.LogMsg(clsLogFormat.Category, clsLogFormat);
         }

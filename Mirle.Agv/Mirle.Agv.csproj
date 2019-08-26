@@ -247,7 +247,6 @@
     <Compile Include="Main\Model\Vehicle.cs" />
     <Compile Include="Main\Control\MiddleAgent.cs" />
     <Compile Include="Main\Model\TransferCmds\AgvcTransCmd.cs" />
-    <Compile Include="Main\Model\Map\MapBarcodeReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Main\Model\Map\MapAddress.cs" />

@@ -17,10 +17,6 @@ namespace Mirle.Agv.Model
         public double Speed { get; set; }
         public EnumSectionType Type { get; set; } = EnumSectionType.None;
         public EnumPermitDirection PermitDirection { get; set; } = EnumPermitDirection.None;
-        public bool FowardBeamSensorDisable { get; set; }
-        public bool BackwardBeamSensorDisable { get; set; }
-        public bool LeftBeamSensorDisable { get; set; }
-        public bool RightBeamSensorDisable { get; set; }
         public EnumPermitDirection CmdDirection { get; set; } = EnumPermitDirection.None;
 
         public EnumPermitDirection PermitDirectionParse(string v)

@@ -17,16 +17,42 @@ namespace Mirle.Agv.Controller
     public class AlarmHandler
     {
         //TODO: 
-        //(未實作)將HistoryAlarms寫入檔案，請參考Logger中交替Que運作方式。
         //(未實作)將檔案讀入到AlarmForm的History欄位，檢視或檢索。目前無想法。
         #region Containers
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
         public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
-        public ConcurrentQueue<Alarm> queHistoryAlarm = new ConcurrentQueue<Alarm>();
+        //public ConcurrentQueue<Alarm> queHistoryAlarm = new ConcurrentQueue<Alarm>();
         public Alarm LastAlarm { get; set; } = new Alarm();
+        private bool hasAlarm = false;
+        public bool HasAlarm
+        {
+            get { return hasAlarm; }
+            set
+            {
+                if (value != hasAlarm)
+                {
+                    hasAlarm = value;
+                    Vehicle.Instance.HasAlarm = value;
+                }
+            }
+        }
+        private bool hasWarn = false;
+        public bool HasWarn
+        {
+            get { return hasWarn; }
+            set
+            {
+                if (value != hasWarn)
+                {
+                    hasWarn = value;
+                    Vehicle.Instance.HasWarn = value;
+                }
+            }
+        }
         #endregion
 
         public event EventHandler<Alarm> OnSetAlarmEvent;
+        public event EventHandler<Alarm> OnPlcResetOneAlarmEvent;
         public event EventHandler<int> OnResetAllAlarmsEvent;
 
         private AlarmConfig alarmConfig;
@@ -83,8 +109,8 @@ namespace Mirle.Agv.Controller
                     Alarm oneRow = new Alarm();
                     oneRow.Id = int.Parse(getThisRow[dicAlarmIndexes["Id"]]);
                     oneRow.AlarmText = getThisRow[dicAlarmIndexes["AlarmText"]];
-                    oneRow.PlcAddress = ushort.Parse(getThisRow[dicAlarmIndexes["PlcAddress"]]);
-                    oneRow.PlcBitNumber = ushort.Parse(getThisRow[dicAlarmIndexes["PlcBitNumber"]]);
+                    oneRow.PlcWord = ushort.Parse(getThisRow[dicAlarmIndexes["PlcWord"]]);
+                    oneRow.PlcBit = ushort.Parse(getThisRow[dicAlarmIndexes["PlcBit"]]);
                     oneRow.Level = EnumAlarmLevelParse(getThisRow[dicAlarmIndexes["Level"]]);
                     oneRow.Description = getThisRow[dicAlarmIndexes["Description"]];
 
@@ -103,7 +129,7 @@ namespace Mirle.Agv.Controller
 
         public Alarm GetAlarmClone(int id)
         {
-            Alarm alarm = new Alarm { Id = id };            
+            Alarm alarm = new Alarm { Id = id };
 
             try
             {
@@ -138,10 +164,19 @@ namespace Mirle.Agv.Controller
                 else
                 {
                     dicHappeningAlarms.TryAdd(id, alarm);
-                    queHistoryAlarm.Enqueue(alarm);
+                    loggerAgent.LogAlarmHistory(alarm);
+                    //queHistoryAlarm.Enqueue(alarm);
                     LastAlarm = alarm.DeepClone();
-
-                    //loggerAgent.LogAlarmHistory(alarm);
+                    switch (alarm.Level)
+                    {
+                        case EnumAlarmLevel.Alarm:
+                            HasAlarm = true;
+                            break;
+                        case EnumAlarmLevel.Warn:
+                        default:
+                            HasWarn = true;
+                            break;
+                    }
                     OnSetAlarmEvent?.Invoke(this, alarm);
                     return true;
                 }
@@ -156,26 +191,17 @@ namespace Mirle.Agv.Controller
 
         public void ResetAlarm(int id)
         {
-            //if (!dicHappeningAlarms.ContainsKey(id))
-            //{
-            //    var ngMsg = $"AlarmHandler : Reset alarm fail, [Id={id}][Not in HappeningAlarms]";
-            //    OnMessageShowEvent?.Invoke(this, ngMsg);
+            if (!dicHappeningAlarms.ContainsKey(id))
+            {
+                var ngMsg = $"AlarmHandler : Reset alarm fail, [Id={id}][Not in HappeningAlarms]";
 
-            //    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //        , ngMsg));
-            //    return;
-            //}
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ngMsg));
+                return;
+            }
 
-            //DateTime resetTime = DateTime.Now;
-            //dicHappeningAlarms.TryRemove(id, out Alarm alarm);
-            //alarm.ResetTime = resetTime;
-            //loggerAgent.LogAlarmHistory(alarm);
-
-            //var okMsg = $"AlarmHandler : Reset alarm ok, [Id={id}]";
-            //OnMessageShowEvent?.Invoke(this, okMsg);
-
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , okMsg));
+            dicHappeningAlarms.TryRemove(id, out Alarm alarm);
+            OnPlcResetOneAlarmEvent?.Invoke(this, alarm);
         }
 
         public void ResetAllAlarms()
@@ -189,12 +215,17 @@ namespace Mirle.Agv.Controller
                 {
                     dicHappeningAlarmsCount = dicHappeningAlarms.Count;
                     dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
-                    OnResetAllAlarmsEvent?.Invoke(this, dicHappeningAlarmsCount);
+                    HasAlarm = false;
+                    HasWarn = false;
                     LastAlarm = new Alarm();
+                    OnResetAllAlarmsEvent?.Invoke(this, dicHappeningAlarmsCount);                   
                 }
                 sw.Stop();
                 var msg = $"AlarmHandler : Reset All Alarms, [Count={dicHappeningAlarmsCount}][TimeMs={sw.ElapsedMilliseconds}]";
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , msg));
+
+                loggerAgent.LogMsg("AlarmHistory", new LogFormat("AlarmHistory", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
 
             }

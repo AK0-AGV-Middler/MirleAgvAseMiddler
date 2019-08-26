@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.Controller;
+using Mirle.Agv.Controller.Tools;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
@@ -46,7 +48,7 @@ namespace Mirle.Agv.Model.TransferCmds
                     break;
                 default:
                     break;
-            }          
+            }
 
             AddressPositions.Add(firstPosition);
 
@@ -60,7 +62,8 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
 
@@ -83,7 +86,8 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
 
@@ -101,7 +105,8 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
 
@@ -126,13 +131,15 @@ namespace Mirle.Agv.Model.TransferCmds
                 {
                     MapSection currentSection = theMapInfo.allMapSections[SectionIds[i]];
                     MapSection nextSection = theMapInfo.allMapSections[SectionIds[i + 1]];
-                    EnumAddressAction addressMotion = SetAddressMotion(currentSection, nextSection);
+                    MapAddress curAddress = theMapInfo.allMapAddresses[AddressIds[i + 1]];
+                    EnumAddressAction addressMotion = SetAddressMotion(currentSection, nextSection, curAddress);
                     AddressActions.Add(addressMotion);
                 }
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
             AddressActions.Add(EnumAddressAction.End);
 
@@ -152,13 +159,14 @@ namespace Mirle.Agv.Model.TransferCmds
                 }
                 catch (Exception ex)
                 {
-                    var msg = ex.StackTrace;
+                    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        , ex.StackTrace));
                 }
                 MovingSections.Add(mapSection);
             }
         }
 
-        private EnumAddressAction SetAddressMotion(MapSection currentSection, MapSection nextSection)
+        private EnumAddressAction SetAddressMotion(MapSection currentSection, MapSection nextSection, MapAddress curAddress)
         {
             if (nextSection.Type == EnumSectionType.R2000)
             {
@@ -186,9 +194,9 @@ namespace Mirle.Agv.Model.TransferCmds
                     {
                         PredictVehicleAngle = 0;
 
-                        return EnumAddressAction.BTR350;
+                        return curAddress.IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350;
                     }
-                    return EnumAddressAction.TR350;
+                    return curAddress.IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350;
                 }
                 else
                 {
@@ -197,9 +205,9 @@ namespace Mirle.Agv.Model.TransferCmds
                     if (PredictVehicleAngle > 100)
                     {
                         PredictVehicleAngle = 0;
-                        return EnumAddressAction.BTR350;
+                        return curAddress.IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350;
                     }
-                    return EnumAddressAction.TR350;
+                    return curAddress.IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350;
                 }
             }
         }
@@ -277,6 +285,5 @@ namespace Mirle.Agv.Model.TransferCmds
             }
 
         }
-
     }
 }

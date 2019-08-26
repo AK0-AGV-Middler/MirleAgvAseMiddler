@@ -29,6 +29,12 @@ namespace Mirle.Agv.View
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
+            alarmHandler.OnPlcResetOneAlarmEvent += AlarmHandler_OnPlcResetOneAlarmEvent;
+        }
+
+        private void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
+        {
+            //var xx = rtbHappeningAlarms.Find($"{alarm.Id}");
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)

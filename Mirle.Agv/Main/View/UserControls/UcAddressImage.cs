@@ -46,7 +46,7 @@ namespace Mirle.Agv
 
         private void SetupShowAddressInfo()
         {
-            string msg = $"Id = {Address.Id}\n" + $"Position = ({Address.Position.X},{Address.Position.Y})\n" + $"BarcodeNum = {Address.Barcode}\n" + $"Coupler = {Address.CouplerId}";
+            string msg = $"Id = {Address.Id}\n" + $"Position = ({Address.Position.X},{Address.Position.Y})\n" + $"Coupler = {Address.CouplerId}";
 
             toolTip.SetToolTip(pictureBox1, msg);
             toolTip.SetToolTip(label1, msg);

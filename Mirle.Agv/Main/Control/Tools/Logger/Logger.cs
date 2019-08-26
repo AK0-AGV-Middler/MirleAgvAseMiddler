@@ -18,7 +18,7 @@ namespace Mirle.Agv.Controller.Tools
         public static readonly String LOG_DEBUG = "Debug";
 
         // Default value
-        private LogType logType;       
+        private LogType logType;
 
         private string strDirectoryFullPath = "Empty";
         private string firstLineString;
@@ -205,7 +205,7 @@ namespace Mirle.Agv.Controller.Tools
                     while (queOutputLogData.Count > 0)
                     {
                         var msg = queOutputLogData.Dequeue().ToString();
-                        totalMsg += msg + Environment.NewLine;
+                        totalMsg = string.Concat(totalMsg, msg, Environment.NewLine);
                     }
 
                     if (!string.IsNullOrWhiteSpace(totalMsg))
@@ -224,28 +224,28 @@ namespace Mirle.Agv.Controller.Tools
 
         }
 
-        private void ThreadAsyncDataSave()
-        {
-            while (true)
-            {
-                try
-                {
-                    string sLog = queInputLogData.Dequeue().ToString();
-                    if (null != sLog)
-                    {
-                        WriteLog(sLog);
-                    }
-                    else
-                    {
-                        SpinWait.SpinUntil(() => false, 10);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    AddDebugLog("ThreadDataSave", ex.StackTrace);
-                }
-            }
-        }
+        //private void ThreadAsyncDataSave()
+        //{
+        //    while (true)
+        //    {
+        //        try
+        //        {
+        //            string sLog = queInputLogData.Dequeue().ToString();
+        //            if (null != sLog)
+        //            {
+        //                WriteLog(sLog);
+        //            }
+        //            else
+        //            {
+        //                SpinWait.SpinUntil(() => false, 10);
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            AddDebugLog("ThreadDataSave", ex.StackTrace);
+        //        }
+        //    }
+        //}
 
         private void CheckOverdueFile()
         {

@@ -45,6 +45,8 @@ namespace Mirle.Agv.Model
         public EnumThreadStatus TrackPositionStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus WatchLowPowerStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus AskReserveStatus { get; set; } = EnumThreadStatus.None;
+        public bool HasAlarm { get; set; } = false;
+        public bool HasWarn { get; set; } = false;
 
         #region Comm Property
 

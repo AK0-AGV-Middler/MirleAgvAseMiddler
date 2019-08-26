@@ -301,12 +301,11 @@ namespace Mirle.Agv.Controller
 
         private bool GetBarcodePosition(BarcodeData barcodeData)
         {
-            if (theMapInfo.allBarcodes.ContainsKey(barcodeData.ID))
+            if (theMapInfo.allMapBarcodes.ContainsKey(barcodeData.ID))
             {
-                barcodeData.MapPosition = new MapPosition(theMapInfo.allBarcodes[barcodeData.ID].Position.X, theMapInfo.allBarcodes[barcodeData.ID].Position.Y);
-                barcodeData.MapPositionOffset = new MapPosition(theMapInfo.allBarcodes[barcodeData.ID].Offset.X, theMapInfo.allBarcodes[barcodeData.ID].Offset.Y);
-                barcodeData.LineBarcodeAngle = theMapInfo.allBarcodes[barcodeData.ID].Direction;
-                barcodeData.LineId = theMapInfo.allBarcodes[barcodeData.ID].LineId;
+                barcodeData.MapPosition = new MapPosition(theMapInfo.allMapBarcodes[barcodeData.ID].Position.X, theMapInfo.allMapBarcodes[barcodeData.ID].Position.Y);
+                barcodeData.MapPositionOffset = new MapPosition(theMapInfo.allMapBarcodes[barcodeData.ID].Offset.X, theMapInfo.allMapBarcodes[barcodeData.ID].Offset.Y);
+                barcodeData.LineId = theMapInfo.allMapBarcodes[barcodeData.ID].LineId;
                 return true;
             }
             else

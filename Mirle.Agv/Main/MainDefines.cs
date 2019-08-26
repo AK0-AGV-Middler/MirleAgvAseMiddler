@@ -106,13 +106,6 @@ namespace Mirle.Agv
         TransferComplete = 123  //Yiming
     }
 
-    public enum EnumMapBarcodeReaderSide
-    {
-        None,
-        Left,
-        Right
-    }
-
     public enum EnumCmdNum
     {
         Cmd000_EmptyCommand = 0,

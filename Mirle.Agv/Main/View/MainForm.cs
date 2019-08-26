@@ -192,16 +192,11 @@ namespace Mirle.Agv.View
             image = new Bitmap(1920, 1080, PixelFormat.Format32bppArgb);
             gra = Graphics.FromImage(image);
 
-            //pictureBox1.Size = new Size(10000, 10000);
-            //image = new Bitmap(10000, 10000, PixelFormat.Format32bppArgb);
-            //gra = Graphics.FromImage(image);
-
-            //gra.Clear(SystemColors.Control);
-
             if (IsBarcodeLineShow)
             {
                 //Draw Barcode in blackDash
-                foreach (var rowBarcode in theMapInfo.mapBarcodeLines)
+                var allMapBarcodeLines = theMapInfo.allMapBarcodeLines.Values.ToList();
+                foreach (var rowBarcode in allMapBarcodeLines)
                 {
                     var fromX = rowBarcode.HeadBarcode.Position.X * coefficient + deltaOrigion;
                     var fromY = rowBarcode.HeadBarcode.Position.Y * coefficient + deltaOrigion;
@@ -215,7 +210,8 @@ namespace Mirle.Agv.View
             allUcSectionImages.Clear();
 
             // Draw Sections in blueLine
-            foreach (var section in theMapInfo.mapSections)
+            var allMapSections = theMapInfo.allMapSections.Values.ToList();
+            foreach (var section in allMapSections)
             {
                 MapAddress fromAddress = section.HeadAddress;
                 MapAddress toAddress = section.TailAddress;
@@ -258,7 +254,8 @@ namespace Mirle.Agv.View
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
-            foreach (var address in theMapInfo.mapAddresses)
+            var allMapAddresses = theMapInfo.allMapAddresses.Values.ToList();
+            foreach (var address in allMapAddresses)
             {
                 UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
                 if (!allUcAddressImages.ContainsKey(address.Id))
@@ -615,7 +612,7 @@ namespace Mirle.Agv.View
                 lastAlarmId = alarm.Id;
                 var msg = $"[{alarm.Id}]\n[{alarm.AlarmText}]";
                 txtLastAlarm.Text = msg;
-            }           
+            }
         }
 
         private void UpdateRtbTransferStep()

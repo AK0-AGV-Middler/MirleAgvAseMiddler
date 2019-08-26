@@ -15,8 +15,8 @@ namespace Mirle.Agv.Model.Configs
         public int WatchLowPowerSleepTimeMs { get; set; }
         public int StopWatchLowPowerWaitingTimeMs { get; set; }
         public int ReportPositionIntervalMs { get; set; }
-        public int StartChargeWaitingTimeMs { get; set; }
-        public int StopChargeWaitingTimeMs { get; set; }
+        public int StartChargeWaitingTimeoutMs { get; set; }
+        public int StopChargeWaitingTimeoutMs { get; set; }
         public int RealPositionRangeMm { get; set; }
     }
 }

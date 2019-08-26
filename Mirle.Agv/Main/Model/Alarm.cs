@@ -11,8 +11,8 @@ namespace Mirle.Agv.Model
     {
         public int Id { get; set; }
         public string AlarmText { get; set; } = "Unknow";
-        public ushort PlcAddress { get; set; } //int -> string
-        public ushort PlcBitNumber { get; set; }//int -> string
+        public ushort PlcWord { get; set; } //int -> string
+        public ushort PlcBit { get; set; }//int -> string
         public EnumAlarmLevel Level { get; set; }
         public string Description { get; set; } = "Unknow";
         public DateTime SetTime { get; set; }
