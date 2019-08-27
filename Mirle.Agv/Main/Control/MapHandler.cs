@@ -17,6 +17,7 @@ namespace Mirle.Agv.Controller
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
+        public string SectionBeamDisablePath { get; set; }
         public MapInfo TheMapInfo { get; private set; } = new MapInfo();
         private double AddressArea { get; set; } = 10;
         private Vehicle theVehicle = Vehicle.Instance;
@@ -28,6 +29,7 @@ namespace Mirle.Agv.Controller
             SectionPath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionFileName);
             AddressPath = Path.Combine(Environment.CurrentDirectory, mapConfig.AddressFileName);
             BarcodePath = Path.Combine(Environment.CurrentDirectory, mapConfig.BarcodeFileName);
+            SectionBeamDisablePath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionBeamDisablePathFileName);
 
             LoadBarcodeLineCsv();
             LoadAddressCsv();
@@ -41,7 +43,7 @@ namespace Mirle.Agv.Controller
                 if (string.IsNullOrWhiteSpace(BarcodePath))
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        , $"BarcodePath={string.IsNullOrWhiteSpace(BarcodePath)}"));
+                        , $"IsBarcodePathNull={string.IsNullOrWhiteSpace(BarcodePath)}"));
                     return;
                 }
                 TheMapInfo.allMapBarcodeLines.Clear();
@@ -61,14 +63,14 @@ namespace Mirle.Agv.Controller
                 int nRows = allRows.Length;
                 int nColumns = titleRow.Length;
 
-                Dictionary<string, int> dicBarcodeIndexes = new Dictionary<string, int>();
+                Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
                 //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, OffsetX, OffsetY
                 for (int i = 0; i < nColumns; i++)
                 {
                     var keyword = titleRow[i].Trim();
                     if (!string.IsNullOrWhiteSpace(keyword))
                     {
-                        dicBarcodeIndexes.Add(keyword, i);
+                        dicHeaderIndexes.Add(keyword, i);
                     }
                 }
 
@@ -79,17 +81,17 @@ namespace Mirle.Agv.Controller
                     string[] getThisRow = allRows[i].Split(',');
 
                     MapBarcodeLine oneRow = new MapBarcodeLine();
-                    oneRow.Id = getThisRow[dicBarcodeIndexes["Id"]];
+                    oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
                     oneRow.HeadBarcode.LineId = oneRow.Id;
-                    oneRow.HeadBarcode.Number = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeHeadNum"]]);
-                    oneRow.HeadBarcode.Position.X = double.Parse(getThisRow[dicBarcodeIndexes["HeadX"]]);
-                    oneRow.HeadBarcode.Position.Y = double.Parse(getThisRow[dicBarcodeIndexes["HeadY"]]);
+                    oneRow.HeadBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeHeadNum"]]);
+                    oneRow.HeadBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["HeadX"]]);
+                    oneRow.HeadBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["HeadY"]]);
                     oneRow.TailBarcode.LineId = oneRow.Id;
-                    oneRow.TailBarcode.Number = int.Parse(getThisRow[dicBarcodeIndexes["BarcodeTailNum"]]);
-                    oneRow.TailBarcode.Position.X = double.Parse(getThisRow[dicBarcodeIndexes["TailX"]]);
-                    oneRow.TailBarcode.Position.Y = double.Parse(getThisRow[dicBarcodeIndexes["TailY"]]);
-                    oneRow.Offset.X = double.Parse(getThisRow[dicBarcodeIndexes["OffsetX"]]);
-                    oneRow.Offset.Y = double.Parse(getThisRow[dicBarcodeIndexes["OffsetY"]]);
+                    oneRow.TailBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeTailNum"]]);
+                    oneRow.TailBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["TailX"]]);
+                    oneRow.TailBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["TailY"]]);
+                    oneRow.Offset.X = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
+                    oneRow.Offset.Y = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
 
                     int count = oneRow.TailBarcode.Number - oneRow.HeadBarcode.Number;
                     int absCount = Math.Abs(count);
@@ -151,6 +153,8 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrWhiteSpace(AddressPath))
                 {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                       , $"IsAddressPathNull={string.IsNullOrWhiteSpace(AddressPath)}"));
                     return;
                 }
                 TheMapInfo.allMapAddresses.Clear();
@@ -158,6 +162,8 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(AddressPath);
                 if (allRows == null || allRows.Length < 2)
                 {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"There are no address in file"));
                     return;
                 }
 
@@ -167,7 +173,7 @@ namespace Mirle.Agv.Controller
                 int nRows = allRows.Length;
                 int nColumns = titleRow.Length;
 
-                Dictionary<string, int> dicAddressIndexes = new Dictionary<string, int>();
+                Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
                 //Id,PositionX,PositionY,
                 //IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,
                 //IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,IsTR50
@@ -176,7 +182,7 @@ namespace Mirle.Agv.Controller
                     var keyword = titleRow[i].Trim();
                     if (!string.IsNullOrWhiteSpace(keyword))
                     {
-                        dicAddressIndexes.Add(keyword, i);
+                        dicHeaderIndexes.Add(keyword, i);
                     }
                 }
 
@@ -184,24 +190,29 @@ namespace Mirle.Agv.Controller
                 {
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
-                    oneRow.Id = getThisRow[dicAddressIndexes["Id"]];
-                    oneRow.Position.X = double.Parse(getThisRow[dicAddressIndexes["PositionX"]]);
-                    oneRow.Position.Y = double.Parse(getThisRow[dicAddressIndexes["PositionY"]]);
-                    oneRow.IsWorkStation = bool.Parse(getThisRow[dicAddressIndexes["IsWorkStation"]]);
-                    oneRow.CanLeftLoad = bool.Parse(getThisRow[dicAddressIndexes["CanLeftLoad"]]);
-                    oneRow.CanLeftUnload = bool.Parse(getThisRow[dicAddressIndexes["CanLeftUnload"]]);
-                    oneRow.CanRightLoad = bool.Parse(getThisRow[dicAddressIndexes["CanRightLoad"]]);
-                    oneRow.CanRightUnload = bool.Parse(getThisRow[dicAddressIndexes["CanRightUnload"]]);
-                    oneRow.IsCharger = bool.Parse(getThisRow[dicAddressIndexes["IsCharger"]]);
-                    oneRow.CouplerId = getThisRow[dicAddressIndexes["CouplerId"]];
-                    oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicAddressIndexes["ChargeDirection"]]);
-                    oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicAddressIndexes["IsSegmentPoint"]]);
-                    oneRow.CanSpin = bool.Parse(getThisRow[dicAddressIndexes["CanSpin"]]);
-                    oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicAddressIndexes["PioDirection"]]);
-                    oneRow.IsTR50 = bool.Parse(getThisRow[dicAddressIndexes["IsTR50"]]);
+                    oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                    oneRow.Position.X = double.Parse(getThisRow[dicHeaderIndexes["PositionX"]]);
+                    oneRow.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["PositionY"]]);
+                    oneRow.IsWorkStation = bool.Parse(getThisRow[dicHeaderIndexes["IsWorkStation"]]);
+                    oneRow.CanLeftLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftLoad"]]);
+                    oneRow.CanLeftUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftUnload"]]);
+                    oneRow.CanRightLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanRightLoad"]]);
+                    oneRow.CanRightUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanRightUnload"]]);
+                    oneRow.IsCharger = bool.Parse(getThisRow[dicHeaderIndexes["IsCharger"]]);
+                    oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];
+                    oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicHeaderIndexes["ChargeDirection"]]);
+                    oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicHeaderIndexes["IsSegmentPoint"]]);
+                    oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
+                    oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
+                    oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
+                    oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
 
                     TheMapInfo.allMapAddresses.Add(oneRow.Id, oneRow);
                 }
+
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"Load Address File Ok."));
+
             }
             catch (Exception ex)
             {
@@ -216,6 +227,8 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrWhiteSpace(SectionPath))
                 {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                         , $"IsSectionPathNull={string.IsNullOrWhiteSpace(SectionPath)}"));
                     return;
                 }
                 TheMapInfo.allMapSections.Clear();
@@ -223,6 +236,8 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(SectionPath);
                 if (allRows == null || allRows.Length < 2)
                 {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"There are no section in file"));
                     return;
                 }
 
@@ -232,14 +247,14 @@ namespace Mirle.Agv.Controller
                 int nRows = allRows.Length;
                 int nColumns = titleRow.Length;
 
-                Dictionary<string, int> dicSectionIndexes = new Dictionary<string, int>();
+                Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
                 //Id, FromAddress, ToAddress, Speed, Type, PermitDirection
                 for (int i = 0; i < nColumns; i++)
                 {
                     var keyword = titleRow[i].Trim();
                     if (!string.IsNullOrWhiteSpace(keyword))
                     {
-                        dicSectionIndexes.Add(keyword, i);
+                        dicHeaderIndexes.Add(keyword, i);
                     }
                 }
 
@@ -247,16 +262,147 @@ namespace Mirle.Agv.Controller
                 {
                     string[] getThisRow = allRows[i].Split(',');
                     MapSection oneRow = new MapSection();
-                    oneRow.Id = getThisRow[dicSectionIndexes["Id"]];
-                    oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["FromAddress"]]];
-                    oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicSectionIndexes["ToAddress"]]];
-                    oneRow.Distance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
-                    oneRow.Speed = double.Parse(getThisRow[dicSectionIndexes["Speed"]]);
-                    oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicSectionIndexes["Type"]]);
-                    oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicSectionIndexes["PermitDirection"]]);
+                    oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                    oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
+                    oneRow.InsideAddresses.Add(oneRow.HeadAddress);
+                    oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
+                    oneRow.InsideAddresses.Add(oneRow.TailAddress);
+                    oneRow.Distance = Math.Sqrt(GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position));
+                    oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
+                    oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
+                    oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
 
                     TheMapInfo.allMapSections.Add(oneRow.Id, oneRow);
                 }
+
+                LoadBeamSensorDisable();
+
+                AddInsideAddresses();
+
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , $"Load Section File Ok."));
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
+            }
+        }
+
+        private void AddInsideAddresses()
+        {
+            try
+            {
+                foreach (var adr in TheMapInfo.allMapAddresses.Values)
+                {
+                    if (TheMapInfo.allMapSections.ContainsKey(adr.InsideSectionId))
+                    {
+                        TheMapInfo.allMapSections[adr.InsideSectionId].InsideAddresses.Add(adr);
+                    }
+                }
+
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                  , $"AddInsideAddresses Ok."));
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
+            }
+        }
+
+        public void LoadBeamSensorDisable()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(SectionBeamDisablePath))
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                         , $"IsSectionBeamDisablePathNull={string.IsNullOrWhiteSpace(SectionBeamDisablePath)}"));
+                    return;
+                }
+
+                string[] allRows = File.ReadAllLines(SectionBeamDisablePath);
+                if (allRows == null || allRows.Length < 2)
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                         , $"There are no beam-disable in file"));
+                    return;
+                }
+
+                string[] titleRow = allRows[0].Split(',');
+                allRows = allRows.Skip(1).ToArray();
+
+                int nRows = allRows.Length;
+                int nColumns = titleRow.Length;
+
+                Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
+                //Id, FromAddress, ToAddress, Speed, Type, PermitDirection
+                for (int i = 0; i < nColumns; i++)
+                {
+                    var keyword = titleRow[i].Trim();
+                    if (!string.IsNullOrWhiteSpace(keyword))
+                    {
+                        dicHeaderIndexes.Add(keyword, i);
+                    }
+                }
+
+                for (int i = 0; i < nRows; i++)
+                {
+                    string[] getThisRow = allRows[i].Split(',');
+                    MapSectionBeamDisable oneRow = new MapSectionBeamDisable();
+                    oneRow.SectionId = getThisRow[dicHeaderIndexes["SectionId"]];
+                    oneRow.Min = double.Parse(getThisRow[dicHeaderIndexes["Min"]]);
+                    oneRow.Max = double.Parse(getThisRow[dicHeaderIndexes["Max"]]);
+                    oneRow.ForwardDisable = bool.Parse(getThisRow[dicHeaderIndexes["ForwardDisable"]]);
+                    oneRow.BackwardDisable = bool.Parse(getThisRow[dicHeaderIndexes["BackwardDisable"]]);
+                    oneRow.LeftDisable = bool.Parse(getThisRow[dicHeaderIndexes["LeftDisable"]]);
+                    oneRow.RightDisable = bool.Parse(getThisRow[dicHeaderIndexes["RightDisable"]]);
+
+                    AddMapSectionBeamDisableIntoList(oneRow);
+
+                    var xx = TheMapInfo.allMapSections;
+                }
+
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"Load BeamDisable File Ok."));
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
+            }
+        }
+
+        private void AddMapSectionBeamDisableIntoList(MapSectionBeamDisable oneRow)
+        {
+            try
+            {
+                if (!TheMapInfo.allMapSections.ContainsKey(oneRow.SectionId))
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"AllMapSections.ContainsKey(SectionId)={false}"));
+
+                    return;
+                }
+                MapSection mapSection = TheMapInfo.allMapSections[oneRow.SectionId];
+                if (oneRow.Min < 0)
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"Min < 0. [SectionId={oneRow.SectionId}][Min={oneRow.Min}]"));
+                    return;
+                }
+                if (oneRow.Max > mapSection.Distance)
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , $"Max > Distance. [SectionId={oneRow.SectionId}][Max={oneRow.Max}][Distance={mapSection.Distance}]"));
+
+                    return;
+                }
+
+                mapSection.BeamSensorDisables.Add(oneRow);
             }
             catch (Exception ex)
             {
@@ -268,54 +414,82 @@ namespace Mirle.Agv.Controller
         public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection)
         {
             MapSection mapSection = aSection.DeepClone();
-            var headPosition = mapSection.HeadAddress.Position;
-            var tailPosition = mapSection.TailAddress.Position;
+            MapAddress myHeadAddr = mapSection.HeadAddress;
+            MapAddress myTailAddr = mapSection.TailAddress;
+
+            switch (aSection.Type)
+            {
+                case EnumSectionType.Vertical:
+                    {
+                        if ((int)aSection.HeadAddress.Position.Y > (int)aSection.TailAddress.Position.Y)
+                        {
+                            myHeadAddr = aSection.TailAddress;
+                            myTailAddr = aSection.HeadAddress;
+                        }
+                    }
+                    break;
+                case EnumSectionType.Horizontal:
+                case EnumSectionType.R2000:
+                    {
+                        if ((int)aSection.HeadAddress.Position.X > (int)aSection.TailAddress.Position.X)
+                        {
+                            myHeadAddr = aSection.TailAddress;
+                            myTailAddr = aSection.HeadAddress;
+                        }
+                    }
+                    break;
+                case EnumSectionType.None:
+                default:
+                    break;
+            }
 
             VehiclePosition location = theVehicle.CurVehiclePosition;
 
+
             #region Not in Section
             //Position 在 Head 西方過遠
-            if (aPosition.X + AddressArea < headPosition.X)
+            if (aPosition.X + AddressArea < myHeadAddr.Position.X)
             {
                 return false;
             }
             //Position 在 Tail 東方過遠
-            if (aPosition.X > tailPosition.X + AddressArea)
+            if (aPosition.X > myTailAddr.Position.X + AddressArea)
             {
                 return false;
             }
             //Position 在 Head 北方過遠
-            if (aPosition.Y < headPosition.Y - AddressArea)
+            if (aPosition.Y < myHeadAddr.Position.Y - AddressArea)
             {
                 return false;
             }
             //Position 在 Tail 南方過遠
-            if (aPosition.Y - AddressArea > tailPosition.Y)
+            if (aPosition.Y - AddressArea > myTailAddr.Position.Y)
             {
                 return false;
             }
             #endregion
 
-            #region In Address
-            if (IsPositionInThisAddress(aPosition, headPosition))
-            {
-                location.LastAddress = mapSection.HeadAddress;
-                location.LastSection = mapSection;
-                location.LastSection.Distance = 0;
-                return true;
-            }
-            if (IsPositionInThisAddress(aPosition, tailPosition))
-            {
-                location.LastAddress = mapSection.TailAddress;
-                location.LastSection = mapSection;
-                location.LastSection.Distance = aSection.Distance;
-                return true;
-            }
-            #endregion
+            #region In Section
+            //if (IsPositionInThisAddress(aPosition, myHeadAddr.Position))
+            //{
+            //    location.LastAddress = myHeadAddr;
+            //}
+            //if (IsPositionInThisAddress(aPosition, myTailAddr.Position))
+            //{
+            //    location.LastAddress = myTailAddr;
+            //}
 
-            #region Else
+            foreach (var insideAddress in mapSection.InsideAddresses)
+            {
+                if (IsPositionInThisAddress(aPosition, insideAddress.Position))
+                {
+                    location.LastAddress = insideAddress;
+                }
+            }
+
             location.LastSection = mapSection;
-            location.LastSection.Distance = GetDistance(aPosition, headPosition);
+
+            location.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, mapSection.HeadAddress.Position));
             return true;
             #endregion
         }
@@ -331,14 +505,14 @@ namespace Mirle.Agv.Controller
 
         public bool IsPositionInThisAddress(MapPosition aPosition, MapPosition addressPosition)
         {
-            return GetDistance(aPosition, addressPosition) <= AddressArea * AddressArea;
+            return Math.Abs(aPosition.X - addressPosition.X) <= AddressArea || Math.Abs(aPosition.Y - addressPosition.Y) <= AddressArea;
         }
 
         private double GetDistance(MapPosition aPosition, MapPosition bPosition)
         {
             var diffX = Math.Abs(aPosition.X - bPosition.X);
             var diffY = Math.Abs(aPosition.Y - bPosition.Y);
-            return diffX * diffX + diffY * diffY;
+            return (diffX * diffX) + (diffY * diffY);
         }
     }
 

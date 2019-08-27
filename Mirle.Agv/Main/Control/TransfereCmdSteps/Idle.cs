@@ -9,6 +9,7 @@ using Mirle.Agv.Model.TransferCmds;
 
 namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
 {
+    [Serializable]
     public class Idle : ITransferStatus
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)

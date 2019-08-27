@@ -18,6 +18,8 @@ namespace Mirle.Agv.Model
         public EnumSectionType Type { get; set; } = EnumSectionType.None;
         public EnumPermitDirection PermitDirection { get; set; } = EnumPermitDirection.None;
         public EnumPermitDirection CmdDirection { get; set; } = EnumPermitDirection.None;
+        public List<MapSectionBeamDisable> BeamSensorDisables { get; set; } = new List<MapSectionBeamDisable>();
+        public List<MapAddress> InsideAddresses { get; set; } = new List<MapAddress>();
 
         public EnumPermitDirection PermitDirectionParse(string v)
         {

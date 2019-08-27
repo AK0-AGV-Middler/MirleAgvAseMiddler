@@ -23,7 +23,6 @@ namespace Mirle.Agv.View
             this.middleAgent = middleAgent;
             middlerConfig = middleAgent.GetMiddlerConfig();
             EventInital();
-
         }
 
         private void CommunicationForm_Load(object sender, EventArgs e)
@@ -43,7 +42,7 @@ namespace Mirle.Agv.View
 
         private void EventInital()
         {
-            middleAgent.OnMessageShowEvent += ConnectionStatusToToolStrip;
+            middleAgent.OnMessageShowOnMainFormEvent += ConnectionStatusToToolStrip;
             //middleAgent.OnDisConnected += ConnectionStatusToToolStrip;
             middleAgent.OnCmdReceive += SendOrReceiveCmdToRichTextBox;
             middleAgent.OnCmdSend += SendOrReceiveCmdToRichTextBox;

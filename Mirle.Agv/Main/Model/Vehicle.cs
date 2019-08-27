@@ -16,6 +16,7 @@ namespace Mirle.Agv.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
 
+        public MiddleAgent ThdMiddleAgent { get; set; }
         public TransferStep CurTrasferStep { get; set; } = new EmptyTransferStep();
         public MapInfo TheMapInfo { get; set; } = new MapInfo();
         public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
@@ -40,7 +41,30 @@ namespace Mirle.Agv.Model
         }
         public AgvcTransCmd LastCurAgvcTransCmd { get; set; } = new AgvcTransCmd();
         public VehiclePosition CurVehiclePosition { get; set; } = new VehiclePosition();
-        public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
+        private EnumAutoState autoState = EnumAutoState.Manual;
+        public EnumAutoState AutoState
+        {
+            get { return autoState; }
+            set
+            {
+                if (value != autoState)
+                {
+                    autoState = value;
+                    if (value == EnumAutoState.Auto)
+                    {
+                        ModeStatus = VHModeStatus.AutoRemote;
+                    }
+                    else
+                    {
+                        ModeStatus = VHModeStatus.Manual;
+                    }
+                    if (ThdMiddleAgent != null)
+                    {
+                        ThdMiddleAgent.Send_Cmd144_StatusChangeReport();
+                    }
+                }
+            }
+        }
         public EnumThreadStatus VisitTransferStepsStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus TrackPositionStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus WatchLowPowerStatus { get; set; } = EnumThreadStatus.None;

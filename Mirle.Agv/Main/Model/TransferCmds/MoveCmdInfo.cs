@@ -31,24 +31,27 @@ namespace Mirle.Agv.Model.TransferCmds
         public void SetAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-            var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition.DeepClone();
-            //Break The MoveControl Protect
-            switch (MovingSections[0].Type)
+            var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition;
+            if (MovingSections.Count > 0)
             {
-                case EnumSectionType.None:
-                    break;
-                case EnumSectionType.Horizontal:
-                    firstPosition.Y = MovingSections[0].HeadAddress.Position.Y;
-                    break;
-                case EnumSectionType.Vertical:
-                    firstPosition.X = MovingSections[0].HeadAddress.Position.X;
-                    break;
-                case EnumSectionType.R2000:
-                    firstPosition = theMapInfo.allMapAddresses[AddressIds[0]].Position;
-                    break;
-                default:
-                    break;
-            }
+                //Setup first position inside MovingSections[0];
+                switch (MovingSections[0].Type)
+                {
+                    case EnumSectionType.None:
+                        break;
+                    case EnumSectionType.Horizontal:
+                        firstPosition.Y = MovingSections[0].HeadAddress.Position.Y;
+                        break;
+                    case EnumSectionType.Vertical:
+                        firstPosition.X = MovingSections[0].HeadAddress.Position.X;
+                        break;
+                    case EnumSectionType.R2000:
+                        firstPosition = theMapInfo.allMapAddresses[AddressIds[0]].Position;
+                        break;
+                    default:
+                        break;
+                }
+            }          
 
             AddressPositions.Add(firstPosition);
 
@@ -65,11 +68,6 @@ namespace Mirle.Agv.Model.TransferCmds
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
-        }
-
-        private bool IsPositionNear(MapPosition aPosition, MapPosition bPosition)
-        {
-            return Math.Abs(aPosition.X - bPosition.X) <= FirstPositionRangeMm && Math.Abs(aPosition.Y - bPosition.Y) <= FirstPositionRangeMm;
         }
 
         public void SetNextUnloadAddressPositions()
@@ -117,6 +115,7 @@ namespace Mirle.Agv.Model.TransferCmds
             AddressActions = new List<EnumAddressAction>();
             try
             {
+                SetupFirstAddressAction();
                 MapSection firstSection = theMapInfo.allMapSections[SectionIds[0]];
                 if (firstSection.Type == EnumSectionType.R2000)
                 {
@@ -146,6 +145,12 @@ namespace Mirle.Agv.Model.TransferCmds
             theVehicle.CurVehiclePosition.PredictVehicleAngle = PredictVehicleAngle;
         }
 
+        private void SetupFirstAddressAction()
+        {
+            var firstPosition = AddressPositions[0];
+            var secondPosition = AddressPositions[1];
+        }
+
         public void SetMovingSections()
         {
             MovingSections = new List<MapSection>();
@@ -155,6 +160,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 try
                 {
                     mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();
+                    //TODO: Verify Cmd Direction
                     mapSection.CmdDirection = (mapSection.HeadAddress.Id == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
                 }
                 catch (Exception ex)

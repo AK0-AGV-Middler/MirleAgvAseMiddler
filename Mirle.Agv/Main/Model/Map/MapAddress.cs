@@ -24,6 +24,7 @@ namespace Mirle.Agv.Model
         public bool CanSpin { get; set; }
         public EnumPioDirection PioDirection { get; set; } = EnumPioDirection.None;
         public bool IsTR50 { get; set; }
+        public string InsideSectionId { get; set; }
 
         public EnumChargeDirection ChargeDirectionParse(string v)
         {

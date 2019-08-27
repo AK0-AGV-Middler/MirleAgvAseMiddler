@@ -34,15 +34,19 @@ namespace Mirle.Agv.View
 
         private void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
         {
-            //var xx = rtbHappeningAlarms.Find($"{alarm.Id}");
+            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][ResetTime={alarm.ResetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
+            RichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
+
+            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][ResetTime={alarm.ResetTime.ToString("yyyy/MM/dd_HH/mm")}]";
+            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][{alarm.SetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
+            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][SetTime={alarm.SetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
             RichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
 
-            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][{alarm.SetTime.ToString("yyyy/MM/dd_HH/mm")}]";
+            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][SetTime={alarm.SetTime.ToString("yyyy/MM/dd_HH/mm")}]";
             RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
         }
 

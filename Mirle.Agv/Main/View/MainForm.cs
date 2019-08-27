@@ -151,9 +151,7 @@ namespace Mirle.Agv.View
         {
             mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
-            middleAgent.OnCmdReceive += ShowMsgOnMainForm;
-            middleAgent.OnCmdSend += ShowMsgOnMainForm;
-            middleAgent.OnMessageShowEvent += ShowMsgOnMainForm;
+            middleAgent.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
         }
@@ -208,49 +206,77 @@ namespace Mirle.Agv.View
             }
 
             allUcSectionImages.Clear();
-
-            // Draw Sections in blueLine
-            var allMapSections = theMapInfo.allMapSections.Values.ToList();
-            foreach (var section in allMapSections)
+            try
             {
-                MapAddress fromAddress = section.HeadAddress;
-                MapAddress toAddress = section.TailAddress;
-
-                var fromX = MapPixelExchange(fromAddress.Position.X);
-                var fromY = MapPixelExchange(fromAddress.Position.Y);
-                var toX = MapPixelExchange(toAddress.Position.X);
-                var toY = MapPixelExchange(toAddress.Position.Y);
-
-                //gra.DrawLine(bluePen, fromX, fromY, toX, toY);
-
-                UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
-                if (!allUcSectionImages.ContainsKey(section.Id))
+                // Draw Sections in blueLine
+                var allMapSections = theMapInfo.allMapSections.Values.ToList();
+                int count = 0;
+                foreach (var section in allMapSections)
                 {
-                    allUcSectionImages.Add(section.Id, ucSectionImage);
-                }
-                pictureBox1.Controls.Add(ucSectionImage);
-                switch (section.Type)
-                {
-                    case EnumSectionType.Horizontal:
-                        ucSectionImage.Location = new Point((int)fromX, (int)fromY - ucSectionImage.labelSize.Height);
-                        ucSectionImage.BringToFront();
-                        break;
-                    case EnumSectionType.Vertical:
-                        ucSectionImage.Location = new Point((int)fromX - ucSectionImage.labelSize.Width, (int)fromY);
-                        ucSectionImage.SendToBack();
-                        break;
-                    case EnumSectionType.R2000:
-                        ucSectionImage.Location = new Point((int)fromX, (int)fromY);
-                        ucSectionImage.BringToFront();
-                        break;
-                    case EnumSectionType.None:
-                    default:
-                        break;
+                    MapPosition sectionLocation = section.HeadAddress.Position;
+
+                    switch (section.Type)
+                    {
+                        case EnumSectionType.Vertical:
+                            {
+                                if ((int)section.HeadAddress.Position.Y > (int)section.TailAddress.Position.Y)
+                                {
+                                    sectionLocation = section.TailAddress.Position;
+                                }
+                            }
+                            break;
+                        case EnumSectionType.Horizontal:
+                        case EnumSectionType.R2000:
+                            {
+                                if ((int)section.HeadAddress.Position.X > (int)section.TailAddress.Position.X)
+                                {
+                                    sectionLocation = section.TailAddress.Position;
+                                }
+                            }
+                            break;
+                        case EnumSectionType.None:
+                        default:
+                            break;
+                    }
+
+                    //gra.DrawLine(bluePen, fromX, fromY, toX, toY);
+
+                    UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
+                    if (!allUcSectionImages.ContainsKey(section.Id))
+                    {
+                        allUcSectionImages.Add(section.Id, ucSectionImage);
+                    }
+                    pictureBox1.Controls.Add(ucSectionImage);
+                    switch (section.Type)
+                    {
+                        case EnumSectionType.Horizontal:
+                            ucSectionImage.Location = new Point(MapPixelExchange(sectionLocation.X), MapPixelExchange(sectionLocation.Y) - ucSectionImage.labelSize.Height);
+                            ucSectionImage.BringToFront();
+                            break;
+                        case EnumSectionType.Vertical:
+                            ucSectionImage.Location = new Point(MapPixelExchange(sectionLocation.X) - ucSectionImage.labelSize.Width, MapPixelExchange(sectionLocation.Y));
+                            ucSectionImage.SendToBack();
+                            break;
+                        case EnumSectionType.R2000:
+                            ucSectionImage.Location = new Point(MapPixelExchange(sectionLocation.X), MapPixelExchange(sectionLocation.Y));
+                            ucSectionImage.BringToFront();
+                            break;
+                        case EnumSectionType.None:
+                        default:
+                            break;
+                    }
+
+                    ucSectionImage.MouseDown += UcSectionImage_MouseDown;
+                    ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
+                    ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
+
+                    count++;
                 }
 
-                ucSectionImage.MouseDown += UcSectionImage_MouseDown;
-                ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
-                ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
@@ -1083,6 +1109,8 @@ namespace Mirle.Agv.View
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                        //Vehicle.Instance.ModeStatus = TcpIpClientSample.VHModeStatus.AutoRemote;
+                        //middleAgent.Send_Cmd144_StatusChangeReport();
                     }
                     break;
                 case EnumAutoState.Auto:
@@ -1090,6 +1118,8 @@ namespace Mirle.Agv.View
                     mainFlowHandler.StopAndClear();
                     mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
+                    //Vehicle.Instance.ModeStatus = TcpIpClientSample.VHModeStatus.Manual;
+                    //middleAgent.Send_Cmd144_StatusChangeReport();
                     break;
             }
         }
@@ -1126,6 +1156,9 @@ namespace Mirle.Agv.View
 
         private void btnTestSomething_Click(object sender, EventArgs e)
         {
+            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
+            Vehicle.Instance.AutoState = EnumAutoState.Auto;
+
             //MapSection mapSection = theMapInfo.allMapSections["sec003"];
             //middleAgent.SetupAskingReserveSection(mapSection);
 
@@ -1134,23 +1167,30 @@ namespace Mirle.Agv.View
             //middleAgent.Send_Cmd141_ModeChangeResponse();
 
 
-            List<MapSection> mapSections = new List<MapSection>();
-            MapSection mapSection;
-            mapSection = theMapInfo.allMapSections["102"];
-            mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["101"];
-            mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["92"];
-            mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["91"];
-            mapSections.Add(mapSection);
-            mapSection = theMapInfo.allMapSections["111"];
-            mapSections.Add(mapSection);
+            //List<MapSection> mapSections = new List<MapSection>();
+            //MapSection mapSection;
+            //mapSection = theMapInfo.allMapSections["102"];
+            //mapSections.Add(mapSection);
+            //mapSection = theMapInfo.allMapSections["101"];
+            //mapSections.Add(mapSection);
+            //mapSection = theMapInfo.allMapSections["92"];
+            //mapSections.Add(mapSection);
+            //mapSection = theMapInfo.allMapSections["91"];
+            //mapSections.Add(mapSection);
+            //mapSection = theMapInfo.allMapSections["111"];
+            //mapSections.Add(mapSection);
 
-            mainFlowHandler.SetupTestMoveCmd(mapSections);
-            middleAgent.StopAskReserve();
-            middleAgent.SetupNeedReserveSections(mapSections);
-            middleAgent.StartAskReserve();
+            //mainFlowHandler.SetupTestMoveCmd(mapSections);
+            //middleAgent.StopAskReserve();
+            //middleAgent.SetupNeedReserveSections(mapSections);
+            //middleAgent.StartAskReserve();
+            RichTextBoxAppendHead(rtbTransferStep, "line001");
+            RichTextBoxAppendHead(rtbTransferStep, "line002");
+            RichTextBoxAppendHead(rtbTransferStep, "line003");
+
+            var xx = rtbTransferStep.Text.ToList();
+
+            Console.WriteLine();
 
         }
 
@@ -1160,8 +1200,8 @@ namespace Mirle.Agv.View
         }
 
         private void btnKeyInSoc_Click(object sender, EventArgs e)
-        {
-            //Vehicle.Instance.ThePlcVehicle.Batterys.Percentage = 100;
+        {           
+            mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
         }
     }
 }

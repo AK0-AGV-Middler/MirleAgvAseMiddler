@@ -89,6 +89,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="MoveControl\Control\AgvMoveRevise.cs" />
     <Compile Include="MoveControl\Control\CreateMoveControlList.cs" />
     <Compile Include="MoveControl\Control\Sr2000Driver.cs" />

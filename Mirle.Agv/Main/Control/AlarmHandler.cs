@@ -199,8 +199,10 @@ namespace Mirle.Agv.Controller
                     , ngMsg));
                 return;
             }
-
+            DateTime timeStamp = DateTime.Now;
             dicHappeningAlarms.TryRemove(id, out Alarm alarm);
+            alarm.ResetTime = timeStamp;
+            loggerAgent.LogAlarmHistory(alarm);           
             OnPlcResetOneAlarmEvent?.Invoke(this, alarm);
         }
 
@@ -208,6 +210,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                DateTime timeStamp = DateTime.Now;
                 int dicHappeningAlarmsCount = 0;
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
@@ -221,13 +224,10 @@ namespace Mirle.Agv.Controller
                     OnResetAllAlarmsEvent?.Invoke(this, dicHappeningAlarmsCount);                   
                 }
                 sw.Stop();
-                var msg = $"AlarmHandler : Reset All Alarms, [Count={dicHappeningAlarmsCount}][TimeMs={sw.ElapsedMilliseconds}]";
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , msg));
+                var msg = $"AlarmHandler : Reset All Alarms, [Count={dicHappeningAlarmsCount}][TimeMs={sw.ElapsedMilliseconds}][ResetTime={timeStamp.ToString("yyyy/MM/DD_HH/mm/ss.fff")}]";
 
                 loggerAgent.LogMsg("AlarmHistory", new LogFormat("AlarmHistory", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
-
             }
             catch (Exception ex)
             {
