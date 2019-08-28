@@ -72,9 +72,10 @@ namespace Mirle.Agv
     }
 
     public enum EnumAutoState
-    {
+    {       
+        Auto,
         Manual,
-        Auto
+        PreManual
     }
 
     public enum EnumLoginLevel
@@ -178,6 +179,9 @@ namespace Mirle.Agv
     }
     #endregion
 
+    /// <summary>
+    /// AgvcTransCmd/XxxCmdInfo cannot deepClone since stopwatch cannot [Serializable]
+    /// </summary>
     public static class ExtensionMethods
     {
         public static T DeepClone<T>(this T item)

@@ -20,15 +20,17 @@ namespace Mirle.Agv.Model.TransferCmds
         public List<string> AddressIds { get; set; } = new List<string>();
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
-        public int FirstPositionRangeMm { get; set; } = 10;
+        public ushort SeqNum { get; set; } = 0;
+        public string EndAddressId { get; set; } = "Empty";
+        public string StartAddressId { get; set; } = "Empty";
 
-        public MoveCmdInfo() : this(new MapInfo()) { }
-        public MoveCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
+        public MoveCmdInfo() : this(new MainFlowHandler()) { }
+        public MoveCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
         {
             type = EnumTransferStepType.Move;
         }
 
-        public void SetAddressPositions()
+        public void SetupAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
             var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition;
@@ -51,7 +53,7 @@ namespace Mirle.Agv.Model.TransferCmds
                     default:
                         break;
                 }
-            }          
+            }
 
             AddressPositions.Add(firstPosition);
 
@@ -65,18 +67,27 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
-        public void SetNextUnloadAddressPositions()
+        public void SetupNextUnloadAddressPositions()
         {
             AddressPositions = new List<MapPosition>();
-
+            if (!theMapInfo.allMapAddresses.ContainsKey(StartAddressId))
+            {
+                var msg = $"[Address({StartAddressId}) from Agvc is not in MapInfo]";
+                middleAgent.Send_Cmd131_TransferResponse(SeqNum, 1, msg);
+                msg = $"MovcCmdInfo : Setup Next Unload Address Positions +++FAIL+++,  " + msg;
+                LoggerAgent.Instance.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                mainFlowHandler.StopVisitTransferSteps();
+                return;
+            }
+            var firstPosition = theMapInfo.allMapAddresses[StartAddressId].Position;
+            AddressPositions.Add(firstPosition);
             try
             {
-                for (int i = 0; i < AddressIds.Count; i++)
+                for (int i = 1; i < AddressIds.Count; i++)
                 {
                     MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]].DeepClone();
                     AddressPositions.Add(mapAddress.Position);
@@ -84,8 +95,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -103,8 +113,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -137,8 +146,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
             AddressActions.Add(EnumAddressAction.End);
 
@@ -151,7 +159,7 @@ namespace Mirle.Agv.Model.TransferCmds
             var secondPosition = AddressPositions[1];
         }
 
-        public void SetMovingSections()
+        public void SetupMovingSections()
         {
             MovingSections = new List<MapSection>();
             for (int i = 0; i < SectionIds.Count; i++)
@@ -159,16 +167,74 @@ namespace Mirle.Agv.Model.TransferCmds
                 MapSection mapSection = new MapSection();
                 try
                 {
+                    if (!theMapInfo.allMapSections.ContainsKey(SectionIds[i]))
+                    {
+                        var msg = $"[Section({SectionIds[i]}) from Agvc is not in MapInfo]";
+                        middleAgent.Send_Cmd131_TransferResponse(SeqNum, 1, msg);
+                        msg = $"MovcCmdInfo : Setup Moving Sections +++FAIL+++,  " + msg;
+                        LoggerAgent.Instance.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                        mainFlowHandler.StopVisitTransferSteps();
+                        return;
+                    }
                     mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();
-                    //TODO: Verify Cmd Direction
                     mapSection.CmdDirection = (mapSection.HeadAddress.Id == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
                 }
                 catch (Exception ex)
                 {
-                    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        , ex.StackTrace));
+                    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
                 MovingSections.Add(mapSection);
+            }
+
+            RebuildLastSectionForInsideEndAddress();
+        }
+
+        private void RebuildLastSectionForInsideEndAddress()
+        {
+            var lastSection = MovingSections[MovingSections.Count - 1];
+
+            if (!theMapInfo.allMapAddresses.ContainsKey(EndAddressId))
+            {
+                var msg = $"[Address({EndAddressId}) from Agvc is not in MapInfo]";
+                middleAgent.Send_Cmd131_TransferResponse(SeqNum, 1, msg);
+                msg = $"MovcCmdInfo : Rebuild Last Section +++FAIL+++,  " + msg;
+                LoggerAgent.Instance.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                mainFlowHandler.StopVisitTransferSteps();
+                return;
+            }            
+
+            if (EndAddressId == lastSection.HeadAddress.Id || EndAddressId == lastSection.TailAddress.Id)
+            {
+                //Move to side address of the last section
+                return;
+            }
+
+            if (lastSection.InsideAddresses.FindIndex(x => x.Id == EndAddressId) < 0)
+            {
+                var msg = $"[EndAddress({EndAddressId}) from Agvc is not in Section({lastSection.Id})]";
+                middleAgent.Send_Cmd131_TransferResponse(SeqNum, 1, msg);
+                msg = $"MovcCmdInfo : Rebuild Last Section +++FAIL+++,  " + msg;
+                LoggerAgent.Instance.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                mainFlowHandler.StopVisitTransferSteps();
+                return;
+            }
+
+            switch (lastSection.CmdDirection)
+            {
+                case EnumPermitDirection.None:
+                    break;
+                case EnumPermitDirection.Forward:
+                    {
+                        lastSection.TailAddress = theMapInfo.allMapAddresses[EndAddressId];
+                    }
+                    break;
+                case EnumPermitDirection.Backward:
+                    {
+                        lastSection.HeadAddress = theMapInfo.allMapAddresses[EndAddressId];
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -290,6 +356,23 @@ namespace Mirle.Agv.Model.TransferCmds
                 }
             }
 
+        }
+
+        public MoveCmdInfo DeepClone()
+        {
+            MoveCmdInfo moveCmd = new MoveCmdInfo();
+            moveCmd.AddressActions = AddressActions.DeepClone();
+            moveCmd.AddressPositions = AddressPositions.DeepClone();
+            moveCmd.SectionSpeedLimits = SectionSpeedLimits.DeepClone();
+            moveCmd.SectionIds = SectionIds.DeepClone();
+            moveCmd.AddressIds = AddressIds.DeepClone();
+            moveCmd.MovingSections = MovingSections.DeepClone();
+            moveCmd.MovingSectionsIndex = MovingSectionsIndex;
+            moveCmd.CmdId = CmdId;
+            moveCmd.CstId = CstId;
+            moveCmd.type = type;
+
+            return moveCmd;
         }
     }
 }

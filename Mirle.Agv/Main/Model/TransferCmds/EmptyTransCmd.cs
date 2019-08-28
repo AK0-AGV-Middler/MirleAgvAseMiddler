@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
     [Serializable]
     public class EmptyTransferStep : TransferStep
     {
-        public EmptyTransferStep() : this(new MapInfo()) { }     
-        public EmptyTransferStep(MapInfo theMapInfo) : base(theMapInfo)
+        public EmptyTransferStep() : this(new MainFlowHandler()) { }
+        public EmptyTransferStep(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
         {
             type = EnumTransferStepType.Empty;
         }

@@ -7,7 +7,7 @@ using Mirle.Agv.Controller;
 
 namespace Mirle.Agv.Model
 {
-
+    [Serializable]
     public class PlcVehicle
     {
         public PlcBatterys Batterys = new PlcBatterys();

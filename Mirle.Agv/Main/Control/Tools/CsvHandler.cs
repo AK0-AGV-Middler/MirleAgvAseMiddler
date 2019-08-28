@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 
 namespace Mirle.Agv.Controller.Tools
 {
@@ -21,7 +22,7 @@ namespace Mirle.Agv.Controller.Tools
             }
             catch (Exception ex)
             {
-                //log ex
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return new string[1];
             }
         }

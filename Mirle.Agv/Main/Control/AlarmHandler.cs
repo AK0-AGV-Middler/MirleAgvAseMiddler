@@ -53,7 +53,7 @@ namespace Mirle.Agv.Controller
 
         public event EventHandler<Alarm> OnSetAlarmEvent;
         public event EventHandler<Alarm> OnPlcResetOneAlarmEvent;
-        public event EventHandler<int> OnResetAllAlarmsEvent;
+        public event EventHandler<List<Alarm>> OnResetAllAlarmsEvent;
 
         private AlarmConfig alarmConfig;
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
@@ -122,8 +122,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -140,8 +139,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
             return alarm;
         }
@@ -183,8 +181,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return false;
             }
         }
@@ -202,7 +199,7 @@ namespace Mirle.Agv.Controller
             DateTime timeStamp = DateTime.Now;
             dicHappeningAlarms.TryRemove(id, out Alarm alarm);
             alarm.ResetTime = timeStamp;
-            loggerAgent.LogAlarmHistory(alarm);           
+            loggerAgent.LogAlarmHistory(alarm);
             OnPlcResetOneAlarmEvent?.Invoke(this, alarm);
         }
 
@@ -211,28 +208,27 @@ namespace Mirle.Agv.Controller
             try
             {
                 DateTime timeStamp = DateTime.Now;
-                int dicHappeningAlarmsCount = 0;
+                List<Alarm> resetAlarms = new List<Alarm>();
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
                 lock (dicHappeningAlarms)
                 {
-                    dicHappeningAlarmsCount = dicHappeningAlarms.Count;
+                    resetAlarms = dicHappeningAlarms.Values.ToList();
                     dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
                     HasAlarm = false;
                     HasWarn = false;
                     LastAlarm = new Alarm();
-                    OnResetAllAlarmsEvent?.Invoke(this, dicHappeningAlarmsCount);                   
+                    OnResetAllAlarmsEvent?.Invoke(this, resetAlarms);
                 }
                 sw.Stop();
-                var msg = $"AlarmHandler : Reset All Alarms, [Count={dicHappeningAlarmsCount}][TimeMs={sw.ElapsedMilliseconds}][ResetTime={timeStamp.ToString("yyyy/MM/DD_HH/mm/ss.fff")}]";
+                var msg = $"AlarmHandler : Reset All Alarms, [Count={resetAlarms.Count}][TimeMs={sw.ElapsedMilliseconds}][ResetTime={timeStamp.ToString("yyyy/MM/DD_HH/mm/ss.fff")}]";
 
                 loggerAgent.LogMsg("AlarmHistory", new LogFormat("AlarmHistory", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 

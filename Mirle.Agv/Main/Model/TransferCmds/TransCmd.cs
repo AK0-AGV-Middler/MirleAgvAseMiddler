@@ -11,15 +11,19 @@ namespace Mirle.Agv.Model.TransferCmds
     public abstract class TransferStep
     {
         protected Vehicle theVehicle = Vehicle.Instance;
-        protected MapInfo theMapInfo = new MapInfo();
+        protected MapInfo theMapInfo;
+        protected MainFlowHandler mainFlowHandler;
+        protected MiddleAgent middleAgent;
         protected EnumTransferStepType type;
         public string CmdId { get; set; } = "Empty";
         public string CstId { get; set; } = "Empty";
 
         //public TransCmd() : this(new MapInfo()) { }
-        public TransferStep(MapInfo theMapInfo)
+        public TransferStep(MainFlowHandler mainFlowHandler)
         {
-            this.theMapInfo = theMapInfo;
+            this.mainFlowHandler = mainFlowHandler;
+            theMapInfo = mainFlowHandler.TheMapInfo;
+            middleAgent = mainFlowHandler.GetMiddleAgent();
         }
 
         public EnumTransferStepType GetTransferStepType() { return type; }       

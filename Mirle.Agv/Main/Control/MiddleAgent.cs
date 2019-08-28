@@ -29,7 +29,7 @@ namespace Mirle.Agv.Controller
         public event EventHandler<string> OnCmdSend;
         public event EventHandler<string> OnTransferCancelEvent;
         public event EventHandler<string> OnTransferAbortEvent;
-        public event EventHandler<MapSection> OnGetReserveOkEvent;
+        //public event EventHandler<MapSection> OnGetReserveOkEvent;
         public event EventHandler<bool> OnGetBlockPassEvent;
 
         #endregion
@@ -116,7 +116,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var temp = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private static Google.Protobuf.IMessage unPackWrapperMsg(byte[] raw_data)
@@ -148,7 +148,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         public void DisConnect()
@@ -163,7 +163,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         protected void DoConnection(object sender, TcpIpEventArgs e)
@@ -323,6 +323,7 @@ namespace Mirle.Agv.Controller
                     break;
             }
         }
+
         #endregion
 
         #region Thd Ask Reserve
@@ -353,8 +354,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        , ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
                 finally
                 {
@@ -410,11 +410,11 @@ namespace Mirle.Agv.Controller
             askReserveShutdownEvent.Set();
             askReservePauseEvent.Set();
             AskReserveStatus = EnumThreadStatus.Stop;
+
             var msg = $"Middler : Stop Ask Reserve, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
             loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                , msg));
-
         }
         private void PreAskReserve()
         {
@@ -559,7 +559,7 @@ namespace Mirle.Agv.Controller
         }
         public void OnGetReserveOk()
         {
-            OnGetReserveOkEvent?.Invoke(this, askingReserveSection);
+            //OnGetReserveOkEvent?.Invoke(this, askingReserveSection);
 
             if (queNeedReserveSections.Count == 0)
             {
@@ -1090,7 +1090,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
         }
@@ -1114,6 +1114,22 @@ namespace Mirle.Agv.Controller
 
             //Send_Cmd144_StatusChangeReport();
             Send_Cmd136_TransferEventReport(EventType.Vhloading);
+        }
+
+        public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
+        {
+            Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrSet);
+        }
+        public void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
+        {
+            Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
+        }
+        public void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
+        {
+            foreach (var alarm in alarms)
+            {
+                Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
+            }
         }
 
         public void ReportAddressPass()
@@ -1234,7 +1250,6 @@ namespace Mirle.Agv.Controller
         public void Receive_Cmd94_AlarmResponse(object sender, TcpIpEventArgs e)
         {
             ID_94_ALARM_RESPONSE receive = (ID_94_ALARM_RESPONSE)e.objPacket;
-
         }
         public void Send_Cmd194_AlarmReport(string alarmCode, ErrorStatus status)
         {
@@ -1253,7 +1268,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1282,7 +1297,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1311,7 +1326,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1344,7 +1359,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1374,7 +1389,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1401,7 +1416,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1433,7 +1448,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1463,7 +1478,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1508,7 +1523,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
         }
@@ -1561,7 +1576,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
         }
@@ -1590,7 +1605,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1622,7 +1637,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1674,7 +1689,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1722,7 +1737,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
         }
@@ -1748,7 +1763,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         public void Send_Cmd136_ReleaseBlock(string releaseBlockAdrID)
@@ -1773,7 +1788,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         public void Send_Cmd136_AskReserve()
@@ -1798,7 +1813,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void FitReserveInfos(RepeatedField<ReserveInfo> reserveInfos)
@@ -1852,7 +1867,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1877,7 +1892,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1920,7 +1935,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1952,7 +1967,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1984,7 +1999,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
@@ -2027,7 +2042,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return VhChargeStatus.ChargeStatusCharging;
             }
         }
@@ -2041,7 +2056,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return VhStopSingle.StopSingleOff;
             }
         }
@@ -2055,7 +2070,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return VHActionStatus.Commanding;
             }
         }
@@ -2069,7 +2084,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return DriveDirction.DriveDirForward;
             }
         }
@@ -2083,7 +2098,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return EventType.AdrOrMoveArrivals;
             }
         }
@@ -2097,7 +2112,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return CompleteStatus.CmpStatusAbort;
             }
         }
@@ -2111,7 +2126,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return OperatingPowerMode.OperatingPowerOff;
             }
         }
@@ -2125,7 +2140,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return OperatingVHMode.OperatingAuto;
             }
         }
@@ -2139,7 +2154,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return PauseType.None;
             }
         }
@@ -2153,7 +2168,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return PauseEvent.Pause;
             }
         }
@@ -2167,7 +2182,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return CMDCancelType.CmdAbort;
             }
         }
@@ -2181,7 +2196,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return ReserveResult.Success;
             }
         }
@@ -2195,7 +2210,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return PassType.Pass;
             }
         }
@@ -2209,7 +2224,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return ErrorStatus.ErrReset;
             }
         }
@@ -2223,7 +2238,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return ActiveType.Home;
             }
         }
@@ -2237,7 +2252,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return ControlType.Nothing;
             }
         }

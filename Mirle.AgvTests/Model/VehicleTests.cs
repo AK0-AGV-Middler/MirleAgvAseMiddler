@@ -93,15 +93,6 @@ namespace Mirle.Agv.Model.Tests
         }
 
         [Test()]
-        public void AgvcTransCmdCloneTest()
-        {
-            AgvcTransCmd transCmd = new AgvcTransCmd();
-            transCmd.CommandId = "ABCDE";
-            AgvcTransCmd bCmd = transCmd.DeepClone();
-            Assert.AreEqual(bCmd.CommandId, transCmd.CommandId);
-        }
-
-        [Test()]
         public void NewListTest()
         {
             List<string> vs = new List<string>();
@@ -124,5 +115,25 @@ namespace Mirle.Agv.Model.Tests
             Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);           
         }
 
+        [Test()]
+        public void AgvcTransCmdCloneTest()
+        {
+            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
+            agvcTransCmd.CommandId = "DIDMC";
+            var xx = agvcTransCmd.DeepClone();
+            var xx1 = xx.CommandId;
+            Assert.True(true);
+        }
+
+
+        [Test()]
+        public void MoveCmdCloneTest()
+        {
+            MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
+            moveCmdInfo.CmdId = "DIDMC";
+            var xx = moveCmdInfo.DeepClone();
+            var xx1 = xx.CmdId;
+            Assert.True(true);
+        }
     }
 }

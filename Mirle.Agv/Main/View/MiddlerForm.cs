@@ -428,7 +428,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 

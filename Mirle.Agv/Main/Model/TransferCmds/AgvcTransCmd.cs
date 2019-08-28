@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 using Mirle.Agv.Controller;
 using TcpIpClientSample;
 using Google.Protobuf.Collections;
-
+using System.Reflection;
+using Mirle.Agv.Controller.Tools;
 
 namespace Mirle.Agv.Model.TransferCmds
 {
     [Serializable]
     public class AgvcTransCmd
     {
-        public EnumAgvcTransCommandType EnumCommandType { get; set; }
+        public EnumAgvcTransCommandType CommandType { get; set; }
         public List<string> ToLoadSections { get; set; } = new List<string>();
         public List<string> ToUnloadSections { get; set; } = new List<string>();
         public List<string> ToLoadAddresses { get; set; } = new List<string>();
@@ -46,22 +47,22 @@ namespace Mirle.Agv.Model.TransferCmds
             switch (activeType)
             {
                 case ActiveType.Move:
-                    EnumCommandType = EnumAgvcTransCommandType.Move;
+                    CommandType = EnumAgvcTransCommandType.Move;
                     break;
                 case ActiveType.Load:
-                    EnumCommandType = EnumAgvcTransCommandType.Load;
+                    CommandType = EnumAgvcTransCommandType.Load;
                     break;
                 case ActiveType.Unload:
-                    EnumCommandType = EnumAgvcTransCommandType.Unload;
+                    CommandType = EnumAgvcTransCommandType.Unload;
                     break;
                 case ActiveType.Loadunload:
-                    EnumCommandType = EnumAgvcTransCommandType.LoadUnload;
+                    CommandType = EnumAgvcTransCommandType.LoadUnload;
                     break;
                 case ActiveType.Home:
-                    EnumCommandType = EnumAgvcTransCommandType.Home;
+                    CommandType = EnumAgvcTransCommandType.Home;
                     break;
                 case ActiveType.Override:
-                    EnumCommandType = EnumAgvcTransCommandType.Override;
+                    CommandType = EnumAgvcTransCommandType.Override;
                     break;
                 case ActiveType.Mtlhome:
                 case ActiveType.Systemout:
@@ -69,7 +70,7 @@ namespace Mirle.Agv.Model.TransferCmds
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    EnumCommandType = EnumAgvcTransCommandType.Else;
+                    CommandType = EnumAgvcTransCommandType.Else;
                     break;
             }
         }
@@ -105,7 +106,24 @@ namespace Mirle.Agv.Model.TransferCmds
                 ToUnloadSections = guideSectionsToDestination.ToList();
             }
         }        
+
+        public AgvcTransCmd DeepClone()
+        {
+            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
+            agvcTransCmd.CommandType = CommandType;
+            agvcTransCmd.ToLoadSections = ToLoadSections.DeepClone();
+            agvcTransCmd.ToLoadAddresses = ToLoadAddresses.DeepClone();
+            agvcTransCmd.ToUnloadSections = ToUnloadSections.DeepClone();
+            agvcTransCmd.ToUnloadAddresses = ToUnloadAddresses.DeepClone();
+            agvcTransCmd.LoadAddress = LoadAddress;
+            agvcTransCmd.UnloadAddress = UnloadAddress;
+            agvcTransCmd.CassetteId = CassetteId;
+            agvcTransCmd.CommandId = CommandId;
+            agvcTransCmd.SeqNum = SeqNum;
+
+            return agvcTransCmd;
     }
+}
 
     public class AgvcMoveCmd : AgvcTransCmd
     {
@@ -120,7 +138,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                var exlog = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
@@ -137,7 +155,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                var exlog = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
@@ -154,7 +172,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                var exlog = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
@@ -174,7 +192,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
             catch (Exception ex)
             {
-                var exlog = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }

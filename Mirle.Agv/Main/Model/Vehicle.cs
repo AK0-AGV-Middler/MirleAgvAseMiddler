@@ -58,7 +58,7 @@ namespace Mirle.Agv.Model
                     {
                         ModeStatus = VHModeStatus.Manual;
                     }
-                    if (ThdMiddleAgent != null)
+                    if (ThdMiddleAgent != null && value != EnumAutoState.PreManual)
                     {
                         ThdMiddleAgent.Send_Cmd144_StatusChangeReport();
                     }

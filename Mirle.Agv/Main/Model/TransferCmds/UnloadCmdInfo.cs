@@ -16,8 +16,8 @@ namespace Mirle.Agv.Model.TransferCmds
         public bool IsEqPio { get; set; }
         public ushort ForkSpeed { get; set; } = 100;
 
-        public UnloadCmdInfo():this(new MapInfo()) { }
-        public UnloadCmdInfo(MapInfo theMapInfo) : base(theMapInfo)
+        public UnloadCmdInfo():this(new MainFlowHandler()) { }
+        public UnloadCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
         {
             type = EnumTransferStepType.Unload;
         }

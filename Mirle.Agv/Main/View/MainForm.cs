@@ -161,10 +161,10 @@ namespace Mirle.Agv.View
             var msg = $"AlarmHandler : Set Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
             RichTextBoxAppendHead(richTextBox1, msg);
         }
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, int count)
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
         {
             btnAlarmReset.Enabled = false;
-            var msg = $"AlarmHandler : Reset All Alarms, [Count={count}]";
+            var msg = $"AlarmHandler : Reset All Alarms, [Count={alarms.Count}]";
             RichTextBoxAppendHead(richTextBox1, msg);
 
             try
@@ -173,8 +173,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
             btnAlarmReset.Enabled = true;
@@ -276,7 +275,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                var msg = ex.StackTrace;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
             //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
@@ -689,7 +688,7 @@ namespace Mirle.Agv.View
             LastAgvcTransferCommandId = agvcTransCmd.CommandId;
 
             var cmdInfo = $"\n" +
-                          $"[SeqNum={agvcTransCmd.SeqNum}] [Type={agvcTransCmd.EnumCommandType}]\n" +
+                          $"[SeqNum={agvcTransCmd.SeqNum}] [Type={agvcTransCmd.CommandType}]\n" +
                           $"[CmdId={agvcTransCmd.CommandId}] [CstId={agvcTransCmd.CassetteId}]\n" +
                           $"[LoadAdr={agvcTransCmd.LoadAddress}] [UnloadAdr={agvcTransCmd.UnloadAddress}]\n" +
                           $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddresses)}]\n" +
@@ -1109,17 +1108,15 @@ namespace Mirle.Agv.View
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        //Vehicle.Instance.ModeStatus = TcpIpClientSample.VHModeStatus.AutoRemote;
-                        //middleAgent.Send_Cmd144_StatusChangeReport();
                     }
                     break;
                 case EnumAutoState.Auto:
                 default:
+                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
                     mainFlowHandler.StopAndClear();
+                    mainFlowHandler.StopWatchLowPower();
                     mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
-                    //Vehicle.Instance.ModeStatus = TcpIpClientSample.VHModeStatus.Manual;
-                    //middleAgent.Send_Cmd144_StatusChangeReport();
                     break;
             }
         }

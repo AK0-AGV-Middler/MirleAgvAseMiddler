@@ -50,7 +50,7 @@ namespace Mirle.Agv.View
             RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
         }
 
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, int count)
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
         {
             btnAlarmReset.Enabled = false;
             rtbHappeningAlarms.Clear();
@@ -103,8 +103,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
