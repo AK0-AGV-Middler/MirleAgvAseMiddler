@@ -91,6 +91,7 @@
             this.button_JogPitch_ChangeFormSize = new System.Windows.Forms.Button();
             this.button_JogPitchHide = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -770,6 +771,17 @@
             this.label_LockResult.TabIndex = 135;
             this.label_LockResult.Text = "Lock Result : ";
             // 
+            // button1
+            // 
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.Location = new System.Drawing.Point(1269, 435);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(108, 48);
+            this.button1.TabIndex = 136;
+            this.button1.Text = "Test";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // JogPitchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -777,6 +789,7 @@
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             this.ClientSize = new System.Drawing.Size(724, 494);
             this.ControlBox = false;
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.label_LockResult);
             this.Controls.Add(this.button_JogPitchHide);
             this.Controls.Add(this.button_JogPitch_ChangeFormSize);
@@ -871,5 +884,6 @@
         private System.Windows.Forms.Button button_JogPitch_ChangeFormSize;
         private System.Windows.Forms.Button button_JogPitchHide;
         private System.Windows.Forms.Label label_LockResult;
+        private System.Windows.Forms.Button button1;
     }
 }

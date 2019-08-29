@@ -40,7 +40,7 @@ namespace Mirle.Agv.View
             this.timer_UpdateData = new System.Windows.Forms.Timer(this.components);
             this.tbC_Debug = new System.Windows.Forms.TabControl();
             this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
-            this.button_TurnOutSafetyDistance = new System.Windows.Forms.Button();
+            this.label_LockResult = new System.Windows.Forms.Label();
             this.tB_PositionY = new System.Windows.Forms.TextBox();
             this.tB_PositionX = new System.Windows.Forms.TextBox();
             this.button_DebugModeSend = new System.Windows.Forms.Button();
@@ -65,6 +65,8 @@ namespace Mirle.Agv.View
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.tbP_List = new System.Windows.Forms.TabPage();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.label_SensorState = new System.Windows.Forms.Label();
             this.label_WaitReserve = new System.Windows.Forms.Label();
             this.label_AlarmMessage = new System.Windows.Forms.Label();
@@ -122,7 +124,6 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
-            this.label_LockResult = new System.Windows.Forms.Label();
             this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_EncoderPosition = new Mirle.Agv.UcLabelTextBox();
@@ -242,7 +243,6 @@ namespace Mirle.Agv.View
             // tbP_CreateCommand
             // 
             this.tbP_CreateCommand.Controls.Add(this.label_LockResult);
-            this.tbP_CreateCommand.Controls.Add(this.button_TurnOutSafetyDistance);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommand_BarcodePosition);
             this.tbP_CreateCommand.Controls.Add(this.tB_PositionY);
@@ -277,15 +277,15 @@ namespace Mirle.Agv.View
             this.tbP_CreateCommand.Text = "產生命令";
             this.tbP_CreateCommand.UseVisualStyleBackColor = true;
             // 
-            // button_TurnOutSafetyDistance
+            // label_LockResult
             // 
-            this.button_TurnOutSafetyDistance.Location = new System.Drawing.Point(453, 539);
-            this.button_TurnOutSafetyDistance.Name = "button_TurnOutSafetyDistance";
-            this.button_TurnOutSafetyDistance.Size = new System.Drawing.Size(160, 40);
-            this.button_TurnOutSafetyDistance.TabIndex = 79;
-            this.button_TurnOutSafetyDistance.Text = "button1";
-            this.button_TurnOutSafetyDistance.UseVisualStyleBackColor = true;
-            this.button_TurnOutSafetyDistance.Click += new System.EventHandler(this.button_TurnOutSafetyDistance_Click);
+            this.label_LockResult.AutoSize = true;
+            this.label_LockResult.ForeColor = System.Drawing.Color.Red;
+            this.label_LockResult.Location = new System.Drawing.Point(907, 522);
+            this.label_LockResult.Name = "label_LockResult";
+            this.label_LockResult.Size = new System.Drawing.Size(112, 19);
+            this.label_LockResult.TabIndex = 80;
+            this.label_LockResult.Text = "Lock Result : ";
             // 
             // tB_PositionY
             // 
@@ -528,6 +528,8 @@ namespace Mirle.Agv.View
             // 
             // tbP_List
             // 
+            this.tbP_List.Controls.Add(this.button2);
+            this.tbP_List.Controls.Add(this.button1);
             this.tbP_List.Controls.Add(this.label_SensorState);
             this.tbP_List.Controls.Add(this.label_WaitReserve);
             this.tbP_List.Controls.Add(this.label_AlarmMessage);
@@ -560,6 +562,28 @@ namespace Mirle.Agv.View
             this.tbP_List.TabIndex = 1;
             this.tbP_List.Text = "CommandList資料";
             this.tbP_List.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button2.Location = new System.Drawing.Point(777, 455);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(44, 24);
+            this.button2.TabIndex = 95;
+            this.button2.Text = "停";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button1
+            // 
+            this.button1.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button1.Location = new System.Drawing.Point(718, 455);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(44, 24);
+            this.button1.TabIndex = 94;
+            this.button1.Text = "走";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label_SensorState
             // 
@@ -1011,16 +1035,6 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
-            // label_LockResult
-            // 
-            this.label_LockResult.AutoSize = true;
-            this.label_LockResult.ForeColor = System.Drawing.Color.Red;
-            this.label_LockResult.Location = new System.Drawing.Point(907, 522);
-            this.label_LockResult.Name = "label_LockResult";
-            this.label_LockResult.Size = new System.Drawing.Size(112, 19);
-            this.label_LockResult.TabIndex = 80;
-            this.label_LockResult.Text = "Lock Result : ";
-            // 
             // ucLabelTB_CreateCommandState
             // 
             this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(658, 554);
@@ -1146,8 +1160,8 @@ namespace Mirle.Agv.View
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1295, 871);
-            this.Controls.Add(this.tbxLogView_MoveControlDebugMessage);
             this.Controls.Add(this.tbC_Debug);
+            this.Controls.Add(this.tbxLogView_MoveControlDebugMessage);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -1225,7 +1239,6 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Button button_DebugCSVClear;
         private System.Windows.Forms.Label label_DebugCSVList;
         private System.Windows.Forms.Button button_DebugCSV;
-        private System.Windows.Forms.Button button_TurnOutSafetyDistance;
         private System.Windows.Forms.DataGridView dataGridView_CSVList;
         private System.Windows.Forms.Button button_CSVListShowAll;
         private System.Windows.Forms.Button button_CSVListDisViewRang;
@@ -1280,5 +1293,7 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Label label_WaitReserve;
         private System.Windows.Forms.Label label_SensorState;
         private System.Windows.Forms.Label label_LockResult;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button1;
     }
 }

@@ -72,8 +72,9 @@ namespace Mirle.Agv.Model
         public bool HasAlarm { get; set; } = false;
         public bool HasWarn { get; set; } = false;
 
-        #region Comm Property
 
+
+        #region Comm Property
         public VHActionStatus ActionStatus { get; set; }
         public VhStopSingle BlockingStatus { get; set; }
         public VhChargeStatus ChargeStatus { get; set; }

@@ -560,24 +560,26 @@
             // 
             // lbxReserveOkSections
             // 
+            this.lbxReserveOkSections.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.lbxReserveOkSections.FormattingEnabled = true;
-            this.lbxReserveOkSections.ItemHeight = 12;
+            this.lbxReserveOkSections.ItemHeight = 19;
             this.lbxReserveOkSections.Location = new System.Drawing.Point(305, 47);
             this.lbxReserveOkSections.Name = "lbxReserveOkSections";
             this.lbxReserveOkSections.ScrollAlwaysVisible = true;
-            this.lbxReserveOkSections.Size = new System.Drawing.Size(144, 256);
+            this.lbxReserveOkSections.Size = new System.Drawing.Size(144, 251);
             this.lbxReserveOkSections.TabIndex = 42;
             // 
             // lbxAskReserveSection
             // 
+            this.lbxAskReserveSection.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.lbxAskReserveSection.FormattingEnabled = true;
-            this.lbxAskReserveSection.ItemHeight = 12;
+            this.lbxAskReserveSection.ItemHeight = 19;
             this.lbxAskReserveSection.Items.AddRange(new object[] {
             "Empty"});
             this.lbxAskReserveSection.Location = new System.Drawing.Point(155, 46);
             this.lbxAskReserveSection.Name = "lbxAskReserveSection";
             this.lbxAskReserveSection.ScrollAlwaysVisible = true;
-            this.lbxAskReserveSection.Size = new System.Drawing.Size(144, 256);
+            this.lbxAskReserveSection.Size = new System.Drawing.Size(144, 251);
             this.lbxAskReserveSection.TabIndex = 47;
             // 
             // btnNeedReserveClear
@@ -593,12 +595,13 @@
             // 
             // lbxNeedReserveSections
             // 
+            this.lbxNeedReserveSections.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.lbxNeedReserveSections.FormattingEnabled = true;
-            this.lbxNeedReserveSections.ItemHeight = 12;
+            this.lbxNeedReserveSections.ItemHeight = 19;
             this.lbxNeedReserveSections.Location = new System.Drawing.Point(5, 47);
             this.lbxNeedReserveSections.Name = "lbxNeedReserveSections";
             this.lbxNeedReserveSections.ScrollAlwaysVisible = true;
-            this.lbxNeedReserveSections.Size = new System.Drawing.Size(144, 256);
+            this.lbxNeedReserveSections.Size = new System.Drawing.Size(144, 251);
             this.lbxNeedReserveSections.TabIndex = 41;
             // 
             // btnStopAndClear
@@ -849,9 +852,9 @@
             // 
             this.gbConnection.Controls.Add(this.radOnline);
             this.gbConnection.Controls.Add(this.radOffline);
-            this.gbConnection.Location = new System.Drawing.Point(12, 14);
+            this.gbConnection.Location = new System.Drawing.Point(3, 3);
             this.gbConnection.Name = "gbConnection";
-            this.gbConnection.Size = new System.Drawing.Size(200, 48);
+            this.gbConnection.Size = new System.Drawing.Size(209, 59);
             this.gbConnection.TabIndex = 0;
             this.gbConnection.TabStop = false;
             this.gbConnection.Text = "Connection";
@@ -859,9 +862,10 @@
             // radOnline
             // 
             this.radOnline.AutoSize = true;
-            this.radOnline.Location = new System.Drawing.Point(68, 21);
+            this.radOnline.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.radOnline.Location = new System.Drawing.Point(92, 20);
             this.radOnline.Name = "radOnline";
-            this.radOnline.Size = new System.Drawing.Size(54, 16);
+            this.radOnline.Size = new System.Drawing.Size(78, 25);
             this.radOnline.TabIndex = 1;
             this.radOnline.TabStop = true;
             this.radOnline.Text = "Online";
@@ -870,9 +874,10 @@
             // radOffline
             // 
             this.radOffline.AutoSize = true;
-            this.radOffline.Location = new System.Drawing.Point(6, 21);
+            this.radOffline.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.radOffline.Location = new System.Drawing.Point(6, 20);
             this.radOffline.Name = "radOffline";
-            this.radOffline.Size = new System.Drawing.Size(56, 16);
+            this.radOffline.Size = new System.Drawing.Size(80, 25);
             this.radOffline.TabIndex = 0;
             this.radOffline.TabStop = true;
             this.radOffline.Text = "Offline";

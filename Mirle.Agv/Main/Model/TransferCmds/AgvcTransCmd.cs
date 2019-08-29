@@ -73,6 +73,38 @@ namespace Mirle.Agv.Model.TransferCmds
                     CommandType = EnumAgvcTransCommandType.Else;
                     break;
             }
+
+            switch (activeType)
+            {
+                case ActiveType.Move:
+                    CommandType = EnumAgvcTransCommandType.Move;
+                    break;
+                case ActiveType.Load:
+                    CommandType = EnumAgvcTransCommandType.Load;
+                    break;
+                case ActiveType.Unload:
+                    CommandType = EnumAgvcTransCommandType.Unload;
+                    break;
+                case ActiveType.Loadunload:
+                    CommandType = EnumAgvcTransCommandType.LoadUnload;
+                    break;
+                case ActiveType.Movetocharger:
+                    CommandType = EnumAgvcTransCommandType.Move;
+                    break;
+                case ActiveType.Override:
+                    CommandType = EnumAgvcTransCommandType.Override;
+                    break;
+                case ActiveType.Home:                              
+                case ActiveType.Cstidrename:                   
+                case ActiveType.Mtlhome:                      
+                case ActiveType.Systemout:                   
+                case ActiveType.Systemin:                   
+                case ActiveType.Techingmove:                  
+                case ActiveType.Round:                  
+                default:
+                    CommandType = EnumAgvcTransCommandType.Else;
+                    break;
+            }
         }
 
         protected void SetToLoadAddresses(RepeatedField<string> guideAddressesStartToLoad)

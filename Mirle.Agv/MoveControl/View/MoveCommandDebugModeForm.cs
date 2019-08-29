@@ -139,8 +139,27 @@ namespace Mirle.Agv.View
                     case EnumSensorSafetyType.BeamSensor:
                         tempSensor.SetLabelString("BeamSensor : ");
                         break;
+                    case EnumSensorSafetyType.BeamSensorTR:
+                        tempSensor.SetLabelString("Beam TR : ");
+                        break;
+                    case EnumSensorSafetyType.TRFlowStart:
+                        tempSensor.SetLabelString("TR中啟動 : ");
+                        break;
+                    case EnumSensorSafetyType.BeamSensorR2000:
+                        tempSensor.SetLabelString("Beam R2000 : ");
+                        break;
+                    case EnumSensorSafetyType.R2000FlowStat:
+                        tempSensor.SetLabelString("R2000中啟動 : ");
+                        break;
                     case EnumSensorSafetyType.Bumper:
                         tempSensor.SetLabelString("Bumper : ");
+                        break;
+                    case EnumSensorSafetyType.CheckAxisState:
+                        tempSensor.SetLabelString("監控Axis狀態 : ");
+                        tempSensor.DisableButton();
+                        break;
+                    case EnumSensorSafetyType.TRPathMonitoring:
+                        tempSensor.SetLabelString("監控TR軌跡 : ");
                         break;
                     default:
                         break;
@@ -271,22 +290,7 @@ namespace Mirle.Agv.View
                 ucLabelTB_CreateCommand_BarcodePosition.TagValue = "( ---, --- )";
 
             ucLabelTB_CreateCommandState.TagValue = moveControl.MoveState.ToString();
-            if (moveControl.MoveState != EnumMoveState.Idle)
-            {
-                button_DebugModeSend.Enabled = false;
-                button_TurnOutSafetyDistance.Enabled = false;
-            }
-            else
-            {
-                button_DebugModeSend.Enabled = true;
-                button_TurnOutSafetyDistance.Enabled = true;
-            }
-
-            if (moveControl.TurnOutSafetyDistance)
-                button_TurnOutSafetyDistance.Text = "出彎Safety關";
-            else
-                button_TurnOutSafetyDistance.Text = "出彎Safety開";
-
+            
             bool buttonEnable = true;
             string lockResult = "";
 
@@ -295,7 +299,7 @@ namespace Mirle.Agv.View
                 buttonEnable = false;
                 lockResult = "Lock Result : AutoMode中!";
             }
-            else if (moveControl.VisitTransferStepsStatus != EnumThreadStatus.None)
+            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None)
             {
                 buttonEnable = false;
                 lockResult = "Lock Result : 主流程動作中!";
@@ -686,9 +690,6 @@ namespace Mirle.Agv.View
         private void button_SendList_Click(object sender, EventArgs e)
         {
             moveControl.TransferMoveDebugMode(moveCmdList, sectionLineList, reserveDataList);
-            moveCmdList = null;
-            sectionLineList = null;
-            reserveDataList = null;
             button_SendList.Enabled = false;
 
             if (cB_GetAllReserve.Checked)
@@ -762,24 +763,7 @@ namespace Mirle.Agv.View
         {
             dataGridView_CSVList.Rows.Clear();
         }
-
-        private void button_TurnOutSafetyDistance_Click(object sender, EventArgs e)
-        {
-            button_TurnOutSafetyDistance.Enabled = false;
-            if (button_TurnOutSafetyDistance.Text == "出彎Safety開")
-            {
-                moveControl.TurnOutSafetyDistance = true;
-                button_TurnOutSafetyDistance.Text = "出彎Safety關";
-            }
-            else
-            {
-                moveControl.TurnOutSafetyDistance = false;
-                button_TurnOutSafetyDistance.Text = "出彎Safety開";
-            }
-
-            button_TurnOutSafetyDistance.Enabled = true;
-        }
-
+        
         private void dataGridView_CSVList_ColumnHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             int index = e.ColumnIndex;
@@ -896,6 +880,16 @@ namespace Mirle.Agv.View
 
                 listCmdSpeedLimits.Items.Add(listMapSpeedLimits.SelectedItem);
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            moveControl.test = EnumVehicleSafetyAction.Normal;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            moveControl.test = EnumVehicleSafetyAction.Stop;
         }
     }
 }

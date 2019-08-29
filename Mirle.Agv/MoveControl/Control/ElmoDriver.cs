@@ -498,6 +498,11 @@ namespace Mirle.Agv.Controller
                         tempFeedbackData.Stopping = ((ncBulkRead[i].ulAxisStatus & (Int32)(MC_STATE_SINGLE.STOPPING)) != 0);
                         tempFeedbackData.ErrorStop = ((ncBulkRead[i].ulAxisStatus & (Int32)(MC_STATE_SINGLE.ERROR_STOP)) != 0);
 
+                        tempFeedbackData.ErrorCode = Convert.ToInt32(ncBulkRead[i].usLastEmcyErrorCode.usVar.ToString(), 10);
+
+                        if (tempFeedbackData.ErrorCode != 0)
+                            WriteLog("Elmo", "2", device, "", "Axis : " + allAxisList[i].Config.ID.ToString() + ", Error code :  " + tempFeedbackData.ErrorCode.ToString());
+                        
                         tempFeedbackData.Count = count;
                         tempFeedbackData.GetDataTime = GetDataTime;
 
@@ -520,7 +525,6 @@ namespace Mirle.Agv.Controller
         }
 
         #region Enable Disable fucntion
-
         private void EnableRealAxis(EnumAxis axis, bool onOff,
                                    [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
@@ -928,19 +932,27 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (allAxis[axis].FeedbackData.Disable)
-                    return;
+                //if (allAxis[axis].FeedbackData.Disable)
+                //    return;
 
                 if (axis == EnumAxis.GX)
                     return;
 
                 if (axis == EnumAxis.GT)
                 {
-                    if (Math.Abs(distance_FL - allAxis[EnumAxis.TFL].LastCommandPosition) < 0.1 &&
-                        Math.Abs(distance_FR - allAxis[EnumAxis.TFR].LastCommandPosition) < 0.1 &&
-                        Math.Abs(distance_RL - allAxis[EnumAxis.TRL].LastCommandPosition) < 0.1 &&
-                        Math.Abs(distance_RR - allAxis[EnumAxis.TRR].LastCommandPosition) < 0.1)
-                        return;
+                    if (MoveCompelete(axis))
+                    {
+                        if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
+                            return;
+                    }
+                    else
+                    {
+                        if (Math.Abs(distance_FL - allAxis[EnumAxis.TFL].LastCommandPosition) < 0.1 &&
+                            Math.Abs(distance_FR - allAxis[EnumAxis.TFR].LastCommandPosition) < 0.1 &&
+                            Math.Abs(distance_RL - allAxis[EnumAxis.TRL].LastCommandPosition) < 0.1 &&
+                            Math.Abs(distance_RR - allAxis[EnumAxis.TRR].LastCommandPosition) < 0.1)
+                            return;
+                    }
                 }
 
                 double sqrt = Math.Sqrt(allAxis[axis].Config.GroupOrder.Count());
@@ -977,6 +989,8 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
+                for (int i = 0; i < allAxis[axis].Config.GroupOrder.Count; i++)
+                    allAxis[allAxis[axis].Config.GroupOrder[i]].NeedAssignLastCommandPosition = true;
                 SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "LastCommand ::" +
                              "TFL : " + allAxis[EnumAxis.TFL].LastCommandPosition.ToString("0.00") +
@@ -993,8 +1007,8 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (allAxis[axis].FeedbackData.Disable)
-                    return;
+                //if (allAxis[axis].FeedbackData.Disable)
+                //    return;
 
                 if (distance_FL == 0 && distance_FR == 0 && distance_RL == 0 && distance_RR == 0)
                     return;
@@ -1231,7 +1245,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected || allAxis[axis].FeedbackData.Disable || !allAxis[axis].Config.IsGroup)
+                if (!connected || /*allAxis[axis].FeedbackData.Disable || */!allAxis[axis].Config.IsGroup)
                     return;
 
                 if (velocityRatio > 1 || velocityRatio < 0)
@@ -1248,6 +1262,45 @@ namespace Mirle.Agv.Controller
             }
         }
         #endregion
+        public double ElmoGetGTPosition([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            try
+            {
+                if (!connected)
+                    return -1;
+
+                return (allAxis[EnumAxis.TFL].FeedbackData.Feedback_Position +
+                        allAxis[EnumAxis.TFR].FeedbackData.Feedback_Position +
+                        allAxis[EnumAxis.TRL].FeedbackData.Feedback_Position +
+                        allAxis[EnumAxis.TRR].FeedbackData.Feedback_Position) / 4;
+            }
+            catch (Exception ex)
+            {
+                SendAlarmCode(100003);
+                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                return -1;
+            }
+        }
+
+        public double ElmoGetGTVelocity([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            try
+            {
+                if (!connected)
+                    return -1;
+
+                return (allAxis[EnumAxis.TFL].FeedbackData.Feedback_Velocity +
+                        allAxis[EnumAxis.TFR].FeedbackData.Feedback_Velocity +
+                        allAxis[EnumAxis.TRL].FeedbackData.Feedback_Velocity +
+                        allAxis[EnumAxis.TRR].FeedbackData.Feedback_Velocity) / 4;
+            }
+            catch (Exception ex)
+            {
+                SendAlarmCode(100003);
+                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                return -1;
+            }
+        }
 
         // 對外開放 讀取position, 只能轉向4實體和 走行"前左","後右"
         public double ElmoGetPosition(EnumAxis axis, bool hasTimeOffset = false,
@@ -1298,7 +1351,6 @@ namespace Mirle.Agv.Controller
                 return -1;
             }
         }
-
 
         public bool ElmoGetDisable(EnumAxis axis, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
@@ -1405,52 +1457,15 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void SetPositionSingleAxis(EnumAxis axis, double position, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        public bool CheckAxisNoError()
         {
-            try
+            for ( int i = 0; i < MAX_AXIS; i++)
             {
-                allAxis[axis].SingleAxis.SetOpMode(OPM402.OPM402_HOMING_MODE);
-                Thread.Sleep(200);
-                byte[] array = new byte[5];
-
-                allAxis[axis].SingleAxis.HomeDS402Ex(
-                    position,
-                    10 * 31.19354839,
-                    (float)(100 * 31.19354839),
-                    100,
-                    10,
-                    0,
-                    0,
-                    MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE,
-                    37, //增量式設35   絕對式設37
-                    100000,
-                    0,
-                    1,
-                    array);
-                Thread.Sleep(200);
-                if (!allAxis[allAxis[axis].Config.VirtualDev4ID].FeedbackData.Disable)
-                    allAxis[allAxis[axis].Config.VirtualDev4ID].SingleAxis.SetParameter(0, MMC_PARAMETER_LIST_ENUM.MMC_ACTUAL_POS_UU_PARAM, 1);
-
-                Thread.Sleep(200);
-                overflowOffset[axis] = 0;
-                allAxis[axis].SingleAxis.SetOpMode(OPM402.OPM402_CYCLIC_SYNC_POSITION_MODE);
-                Thread.Sleep(200);
+                if (!allAxisList[i].Config.IsGroup && allAxisList[i].FeedbackData.ErrorStop)
+                    return false;
             }
-            catch (MMCException ex)
-            {
-                SendAlarmCode(100003);
-                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
-            }
-        }
 
-        public void SetMoveAxisPosition()
-        {
-            DisableAxis(EnumAxis.GX);
-            SetPositionSingleAxis(EnumAxis.XFL, 0);
-            SetPositionSingleAxis(EnumAxis.XFR, 0);
-            SetPositionSingleAxis(EnumAxis.XRL, 0);
-            SetPositionSingleAxis(EnumAxis.XRR, 0);
-            EnableAxis(EnumAxis.GX);
+            return true;
         }
     }
 }

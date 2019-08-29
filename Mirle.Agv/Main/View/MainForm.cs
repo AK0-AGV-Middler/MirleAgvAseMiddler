@@ -1108,6 +1108,11 @@ namespace Mirle.Agv.View
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                        if (Vehicle.Instance.ThePlcVehicle.Loading)
+                        {
+                            string cstid = "";
+                            plcAgent.triggerCassetteIDReader(ref cstid);
+                        }
                     }
                     break;
                 case EnumAutoState.Auto:

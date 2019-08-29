@@ -23,7 +23,10 @@ namespace Mirle.Agv.Model
         public bool FlowClear { get; set; }
         public bool SensorStop { get; set; }
         public bool SensorSlow { get; set; }
+        public EnumAddressAction NowAction { get; set; }
+        public double TurnStartEncoder { get; set; }
         public EnumVehicleSafetyAction SensorState { get; set; }
+        public bool CommandMoving { get; set; }
 
         public MoveControlParameter()
         {
@@ -38,6 +41,7 @@ namespace Mirle.Agv.Model
             FlowClear = false;
             SensorStop = false;
             SensorSlow = false;
+            CommandMoving = false;
             SensorState = EnumVehicleSafetyAction.Normal;
         }
     }

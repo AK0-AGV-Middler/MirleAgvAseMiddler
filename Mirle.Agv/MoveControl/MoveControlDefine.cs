@@ -131,7 +131,13 @@ namespace Mirle.Agv
         Charging,
         ForkHome,
         BeamSensor,
-        Bumper
+        BeamSensorTR,
+        TRFlowStart,
+        BeamSensorR2000,
+        R2000FlowStat,
+        Bumper,
+        CheckAxisState,
+        TRPathMonitoring
     }
 
     public enum EnumMoveStartType
@@ -146,6 +152,7 @@ namespace Mirle.Agv
     {
         Normal,
         TRTurn,
+        R2000Turn,
         SensorSlow
     }
     #endregion

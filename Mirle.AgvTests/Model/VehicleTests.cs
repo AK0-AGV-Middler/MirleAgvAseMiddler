@@ -135,5 +135,18 @@ namespace Mirle.Agv.Model.Tests
             var xx1 = xx.CmdId;
             Assert.True(true);
         }
+
+        [Test()]
+        public void DictionaryFirstTest()
+        {
+            Dictionary<string, MapAddress> pairs = new Dictionary<string, MapAddress>();
+            MapAddress address = new MapAddress();
+            address.Id = "abc";
+            pairs.Add("a", address);
+            var xx = pairs.Values.FirstOrDefault(x => x.Id=="abc");
+            var yy = pairs.Values.FirstOrDefault(x => x.Id == "xxx");
+
+            Assert.True(true);
+        }
     }
 }

@@ -73,7 +73,7 @@ namespace Mirle.Agv.Controller
         public MiddleAgent(MainFlowHandler mainFlowHandler)
         {
             this.mainFlowHandler = mainFlowHandler;
-            middlerConfig = mainFlowHandler.GetMiddlerConfig();
+            middlerConfig = mainFlowHandler.MiddlerConfig;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             loggerAgent = LoggerAgent.Instance;
 
@@ -1110,10 +1110,12 @@ namespace Mirle.Agv.Controller
         }
         public void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
         {
-            theVehicle.CurAgvcTransCmd.CassetteId = cstId;
+            if (theVehicle.CurAgvcTransCmd != null)
+            {
+                theVehicle.CurAgvcTransCmd.CassetteId = cstId;
+            }
 
-            //Send_Cmd144_StatusChangeReport();
-            Send_Cmd136_TransferEventReport(EventType.Vhloading);
+            BcrRead();
         }
 
         public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
@@ -1243,6 +1245,10 @@ namespace Mirle.Agv.Controller
         public bool IsAskReserveAlive()
         {
             return (thdAskReserve != null) && (thdAskReserve.IsAlive);
+        }
+        public void BcrRead()
+        {
+            Send_Cmd136_TransferEventReport(EventType.Bcrread);
         }
 
 
@@ -1973,7 +1979,29 @@ namespace Mirle.Agv.Controller
 
         public void Receive_Cmd31_TransferRequest(object sender, TcpIpEventArgs e)
         {
-            ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;
+            ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;            
+
+            switch (transRequest.ActType)
+            {
+                case ActiveType.Move:
+                case ActiveType.Load:
+                case ActiveType.Unload:
+                case ActiveType.Loadunload:
+                case ActiveType.Override:
+                case ActiveType.Movetocharger:
+                    break;
+                case ActiveType.Home:
+                case ActiveType.Cstidrename:
+                case ActiveType.Mtlhome:
+                case ActiveType.Systemout:
+                case ActiveType.Systemin:
+                case ActiveType.Techingmove:
+                case ActiveType.Round:
+                default:
+                    Send_Cmd131_TransferResponse(e.iSeqNum, 1, "Unknow command.");
+                    return;
+            }
+
             theVehicle.Cmd131ActType = transRequest.ActType;
 
             AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest, e.iSeqNum);
@@ -2004,7 +2032,8 @@ namespace Mirle.Agv.Controller
         }
         private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
         {
-            //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd 
+            //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd            
+
             switch (transRequest.ActType)
             {
                 case ActiveType.Move:
@@ -2015,15 +2044,17 @@ namespace Mirle.Agv.Controller
                     return new AgvcUnloadCmd(transRequest, iSeqNum);
                 case ActiveType.Loadunload:
                     return new AgvcLoadunloadCmd(transRequest, iSeqNum);
-                case ActiveType.Home:
-                    return new AgvcHomeCmd(transRequest, iSeqNum);
                 case ActiveType.Override:
                     return new AgvcOverrideCmd(transRequest, iSeqNum);
+                case ActiveType.Movetocharger:
+                    return new AgvcMoveCmd(transRequest, iSeqNum);
+                case ActiveType.Cstidrename:
                 case ActiveType.Mtlhome:
                 case ActiveType.Systemout:
                 case ActiveType.Systemin:
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
+                case ActiveType.Home:
                 default:
                     return new AgvcTransCmd(transRequest, iSeqNum);
             }

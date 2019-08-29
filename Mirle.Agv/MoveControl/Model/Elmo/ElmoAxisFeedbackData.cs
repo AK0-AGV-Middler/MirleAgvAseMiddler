@@ -21,6 +21,7 @@ namespace Mirle.Agv.Model
         public bool Homing { get; set; }
         public bool Stopping { get; set; }
         public bool ErrorStop { get; set; }
+        public int ErrorCode { get; set; }
         public DateTime GetDataTime { get; set; }
     }
 }

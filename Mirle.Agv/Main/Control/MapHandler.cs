@@ -19,7 +19,7 @@ namespace Mirle.Agv.Controller
         public string BarcodePath { get; set; }
         public string SectionBeamDisablePath { get; set; }
         public MapInfo TheMapInfo { get; private set; } = new MapInfo();
-        private double AddressArea { get; set; } = 10;
+        private double AddressAreaMm { get; set; } = 30;
         private Vehicle theVehicle = Vehicle.Instance;
 
         public MapHandler(MapConfig mapConfig)
@@ -30,7 +30,13 @@ namespace Mirle.Agv.Controller
             AddressPath = Path.Combine(Environment.CurrentDirectory, mapConfig.AddressFileName);
             BarcodePath = Path.Combine(Environment.CurrentDirectory, mapConfig.BarcodeFileName);
             SectionBeamDisablePath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionBeamDisablePathFileName);
+            AddressAreaMm = mapConfig.AddressAreaMm;
 
+            LoadMapInfo();           
+        }
+
+        public void LoadMapInfo()
+        {
             LoadBarcodeLineCsv();
             LoadAddressCsv();
             LoadSectionCsv();
@@ -157,6 +163,7 @@ namespace Mirle.Agv.Controller
                     return;
                 }
                 TheMapInfo.allMapAddresses.Clear();
+                TheMapInfo.allCouples.Clear();
 
                 string[] allRows = File.ReadAllLines(AddressPath);
                 if (allRows == null || allRows.Length < 2)
@@ -207,6 +214,10 @@ namespace Mirle.Agv.Controller
                     oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
 
                     TheMapInfo.allMapAddresses.Add(oneRow.Id, oneRow);
+                    if (oneRow.IsCharger)
+                    {
+                        TheMapInfo.allCouples.Add(oneRow);
+                    }
                 }
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -442,36 +453,28 @@ namespace Mirle.Agv.Controller
 
             #region Not in Section
             //Position 在 Head 西方過遠
-            if (aPosition.X + AddressArea < myHeadAddr.Position.X)
+            if (aPosition.X + AddressAreaMm < myHeadAddr.Position.X)
             {
                 return false;
             }
             //Position 在 Tail 東方過遠
-            if (aPosition.X > myTailAddr.Position.X + AddressArea)
+            if (aPosition.X > myTailAddr.Position.X + AddressAreaMm)
             {
                 return false;
             }
             //Position 在 Head 北方過遠
-            if (aPosition.Y < myHeadAddr.Position.Y - AddressArea)
+            if (aPosition.Y < myHeadAddr.Position.Y - AddressAreaMm)
             {
                 return false;
             }
             //Position 在 Tail 南方過遠
-            if (aPosition.Y - AddressArea > myTailAddr.Position.Y)
+            if (aPosition.Y - AddressAreaMm > myTailAddr.Position.Y)
             {
                 return false;
             }
             #endregion
 
-            #region In Section
-            //if (IsPositionInThisAddress(aPosition, myHeadAddr.Position))
-            //{
-            //    location.LastAddress = myHeadAddr;
-            //}
-            //if (IsPositionInThisAddress(aPosition, myTailAddr.Position))
-            //{
-            //    location.LastAddress = myTailAddr;
-            //}
+            #region In Section           
 
             foreach (var insideAddress in mapSection.InsideAddresses)
             {
@@ -499,10 +502,10 @@ namespace Mirle.Agv.Controller
 
         public bool IsPositionInThisAddress(MapPosition aPosition, MapPosition addressPosition)
         {
-            return Math.Abs(aPosition.X - addressPosition.X) <= AddressArea && Math.Abs(aPosition.Y - addressPosition.Y) <= AddressArea;
+            return Math.Abs(aPosition.X - addressPosition.X) <= AddressAreaMm && Math.Abs(aPosition.Y - addressPosition.Y) <= AddressAreaMm;
         }
 
-        private double GetDistance(MapPosition aPosition, MapPosition bPosition)
+        public double GetDistance(MapPosition aPosition, MapPosition bPosition)
         {
             var diffX = Math.Abs(aPosition.X - bPosition.X);
             var diffY = Math.Abs(aPosition.Y - bPosition.Y);

@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
+    <Compile Include="Main\Model\Map\MapVector.cs" />
     <Compile Include="MoveControl\Control\AgvMoveRevise.cs" />
     <Compile Include="MoveControl\Control\CreateMoveControlList.cs" />
     <Compile Include="MoveControl\Control\Sr2000Driver.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="Main\Control\TransfereCmdSteps\Unload.cs" />
     <Compile Include="Main\Control\IComplete.cs" />
     <Compile Include="MoveControl\Control\MoveControlHandler.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\TRTimeToAngleRange.cs" />
     <Compile Include="MoveControl\MoveControlDefine.cs" />
     <Compile Include="Plc\Control\PlcAgent.cs" />
     <Compile Include="Main\Control\InitialEventArgs.cs" />

@@ -14,8 +14,7 @@ namespace Mirle.Agv.Model.Configs
         public string ElmoConfigPath { get; set; }
         public int SleepTime { get; set; }
         public double LowVelocity { get; set; }
-        public double EQVelocity { get; set; }
-        public double EQVelocityDistance { get; set; }
+        public AxisData EQ { get; set; }
         public AxisData Move { get; set; }
         public AxisData Turn { get; set; }
         public Dictionary<EnumCommandType, double> SafteyDistance { get; set; } = new Dictionary<EnumCommandType, double>();
@@ -27,6 +26,7 @@ namespace Mirle.Agv.Model.Configs
         public int SecondCorrectionX { get; set; }
         public double MoveStartWaitTime { get; set; }
         public double ReserveSafetyDistance { get; set; }
+        public double NormalStopDistance { get; set; }
         public Dictionary<EnumMoveControlSafetyType, SafetyData> Safety { get; set; } = new Dictionary<EnumMoveControlSafetyType, SafetyData>();
         public Dictionary<EnumSensorSafetyType, SafetyData> SensorByPass { get; set; } = new Dictionary<EnumSensorSafetyType, SafetyData>();
 

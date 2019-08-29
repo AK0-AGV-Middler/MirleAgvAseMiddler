@@ -85,6 +85,8 @@ namespace Mirle.Agv.View
             }
 
             label_LockResult.Enabled = true;
+            button_JogPitch_ChangeFormSize.Enabled = true;
+            button_JogPitchHide.Enabled = true;
         }
 
         private void timerUpdate_Tick(object sender, EventArgs e)
@@ -196,7 +198,7 @@ namespace Mirle.Agv.View
                 notLock = false;
                 lockResult = "Lock Result : AutoMode中!";
             }
-            else if (moveControl.VisitTransferStepsStatus != EnumThreadStatus.None)
+            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None)
             {
                 notLock = false;
                 lockResult = "Lock Result : 主流程動作中!";
@@ -759,6 +761,100 @@ namespace Mirle.Agv.View
         private void button_JogPitchHide_Click(object sender, EventArgs e)
         {
             this.Hide();
+        }
+
+        private double GetDeltaTime(double endVel, double acc, double jerk)
+        {
+            double time = acc / jerk; // acc = 0 > acc的時間.
+            double deltaVelocity = time * acc / 2 * 2;
+            double lastDeltaVelocity;
+            double lastDeltaTime;
+            double distance;
+            double origionTime;
+
+            if (deltaVelocity == Math.Abs(-endVel))
+            {
+                time = time * 2;
+            }
+            else if (deltaVelocity > Math.Abs(-endVel))
+            {
+                deltaVelocity = Math.Abs(-endVel) / 2;
+                time = Math.Sqrt(deltaVelocity * 2 / jerk);
+                time = time * 2;
+            }
+            else
+            {
+                lastDeltaVelocity = Math.Abs(-endVel) - deltaVelocity;
+                lastDeltaTime = lastDeltaVelocity / acc;
+                time = 2 * time + lastDeltaTime;
+            }
+
+            distance = endVel * time / 2;
+            origionTime = distance / endVel;
+            return time - origionTime;
+        }
+
+        private void GetAccTimeAndDistance(double vel, double acc, double jerk, ref double time, ref double distance)
+        {
+            time = acc / jerk;
+            vel = Math.Abs(vel);
+            double deltaVelocity = time * acc / 2 * 2;
+            double lastDeltaVelocity;
+            double lastDeltaTime;
+
+            if (deltaVelocity == vel)
+            {
+                time = time * 2;
+            }
+            else if (deltaVelocity > vel)
+            {
+                deltaVelocity = vel / 2;
+                time = Math.Sqrt(deltaVelocity * 2 / jerk);
+                time = time * 2;
+            }
+            else
+            {
+                lastDeltaVelocity = vel - deltaVelocity;
+                lastDeltaTime = lastDeltaVelocity / acc;
+                time = 2 * time + lastDeltaTime;
+            }
+
+            distance = vel * time / 2;
+        }
+
+        private double GetCurrectAcc(double distance, double velocity, double dec, double jerk, double deltaTime)
+        {
+            double time = 0;
+            double dis = 0;
+            GetAccTimeAndDistance(velocity, dec, jerk, ref time, ref dis);
+            double allTime = time + time + (distance - dis * 2) / velocity;
+            allTime = allTime + deltaTime;
+
+            double time2 = 0;
+            double dis2 = 0;
+
+            for (double i = dec; i >= 0; i = i - 5)
+            {
+                GetAccTimeAndDistance(velocity, i, jerk, ref time2, ref dis2);
+                if ((time2 + time + (distance - dis - dis2) / velocity) > allTime)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            double distance = 0;
+            double time = 0;
+            GetAccTimeAndDistance(300, 500, 2000, ref time, ref distance);
+            double origionTime = distance / 300;
+            double deltaTime = time - origionTime;
+
+            double realAcc = GetCurrectAcc(90, 75, 165, 990, deltaTime);
+
+            moveControl.elmoDriver.ElmoMove(EnumAxis.GX, 600, 300, EnumMoveType.Relative, 500, 500, 2000);
+            moveControl.elmoDriver.ElmoMove(EnumAxis.GT, 90, 75, EnumMoveType.Absolute, realAcc, 165, 990);
         }
     }
 }

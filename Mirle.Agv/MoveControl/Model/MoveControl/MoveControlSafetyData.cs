@@ -15,6 +15,7 @@ namespace Mirle.Agv.Model
 
         public double LastReadBarcodeElmoEncoder { get; set; }
         public bool LastReadBarcodeReset { get; set; }
+        public bool TurningByPass { get; set; }
 
         public MoveControlSafetyData()
         {
