@@ -96,6 +96,7 @@
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
+            this.btnSemiAutoManual = new System.Windows.Forms.Button();
             this.btnTestSomething = new System.Windows.Forms.Button();
             this.gbVisitTransferSteps = new System.Windows.Forms.GroupBox();
             this.txtTransferStep = new System.Windows.Forms.Label();
@@ -343,10 +344,9 @@
             // pictureBox1
             // 
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Top;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1161, 1024);
+            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
@@ -486,6 +486,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
+            this.splitContainer2.Panel2.Controls.Add(this.btnSemiAutoManual);
             this.splitContainer2.Panel2.Controls.Add(this.btnTestSomething);
             this.splitContainer2.Panel2.Controls.Add(this.gbVisitTransferSteps);
             this.splitContainer2.Panel2.Controls.Add(this.gbTrackPosition);
@@ -867,13 +868,14 @@
             this.radOnline.Name = "radOnline";
             this.radOnline.Size = new System.Drawing.Size(78, 25);
             this.radOnline.TabIndex = 1;
-            this.radOnline.TabStop = true;
             this.radOnline.Text = "Online";
             this.radOnline.UseVisualStyleBackColor = true;
+            this.radOnline.CheckedChanged += new System.EventHandler(this.radOnline_CheckedChanged);
             // 
             // radOffline
             // 
             this.radOffline.AutoSize = true;
+            this.radOffline.Checked = true;
             this.radOffline.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.radOffline.Location = new System.Drawing.Point(6, 20);
             this.radOffline.Name = "radOffline";
@@ -882,6 +884,17 @@
             this.radOffline.TabStop = true;
             this.radOffline.Text = "Offline";
             this.radOffline.UseVisualStyleBackColor = true;
+            // 
+            // btnSemiAutoManual
+            // 
+            this.btnSemiAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSemiAutoManual.Location = new System.Drawing.Point(519, 252);
+            this.btnSemiAutoManual.Name = "btnSemiAutoManual";
+            this.btnSemiAutoManual.Size = new System.Drawing.Size(200, 65);
+            this.btnSemiAutoManual.TabIndex = 56;
+            this.btnSemiAutoManual.Text = "Semi - Auto/Manual";
+            this.btnSemiAutoManual.UseVisualStyleBackColor = true;
+            this.btnSemiAutoManual.Click += new System.EventHandler(this.btnSemiAutoManual_Click);
             // 
             // btnTestSomething
             // 
@@ -1416,5 +1429,6 @@
         private System.Windows.Forms.Button btnPauseWatchLowPower;
         private System.Windows.Forms.NumericUpDown numSoc;
         private System.Windows.Forms.Button btnKeyInSoc;
+        private System.Windows.Forms.Button btnSemiAutoManual;
     }
 }

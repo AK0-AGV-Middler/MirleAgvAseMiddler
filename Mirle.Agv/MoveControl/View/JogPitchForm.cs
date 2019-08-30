@@ -22,6 +22,8 @@ namespace Mirle.Agv.View
         private AgvMoveRevise agvRevise;
         private bool changingMode = false;
         private int wheelAngle = 0;
+        private double velocityCommand = 0;
+        private ComputeFunction computeFunction = new ComputeFunction();
         private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
                                                 EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
                                                 EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
@@ -198,7 +200,8 @@ namespace Mirle.Agv.View
                 notLock = false;
                 lockResult = "Lock Result : AutoMode中!";
             }
-            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None)
+            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
+                     Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
             {
                 notLock = false;
                 lockResult = "Lock Result : 主流程動作中!";
@@ -308,7 +311,7 @@ namespace Mirle.Agv.View
 
             while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
             {
-                if (agvRevise.OntimeRevise(ref reviseWheelAngle, wheelAngle, ref str))
+                if (agvRevise.OntimeRevise(ref reviseWheelAngle, wheelAngle, velocityCommand, ref str))
                 {
                     moveControl.elmoDriver.ElmoMove(EnumAxis.GT, reviseWheelAngle[0], reviseWheelAngle[1], reviseWheelAngle[2], reviseWheelAngle[3],
                         moveControl.ontimeReviseConfig.ThetaSpeed, EnumMoveType.Absolute,
@@ -493,10 +496,13 @@ namespace Mirle.Agv.View
                 else
                     wheelAngle = 0;
 
+                velocityCommand = velocity;
                 moveControl.elmoDriver.ElmoMove(EnumAxis.GX, (flag ? distance : -distance), velocity, EnumMoveType.Relative,
                     moveControl.moveControlConfig.Move.Acceleration, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
 
-                ontimeRevise = new Thread(OntimeReviseThread);
+                if (wheelAngle == 0)
+                    ontimeRevise = new Thread(OntimeReviseThread);
+
                 ontimeRevise.Start();
             }
             else
@@ -594,7 +600,7 @@ namespace Mirle.Agv.View
                 reviseData = moveControl.DriverSr2000List[i].GetThetaSectionDeviation();
                 if (reviseData != null)
                 {
-                    if (moveControl.IsSameAngle(reviseData.BarodeAngleInMap, reviseData.AGVAngleInMap, 0))
+                    if (computeFunction.IsSameAngle(reviseData.BarcodeAngleInMap, reviseData.AGVAngleInMap, 0))
                         break;
                     else
                         reviseData = null;
@@ -664,7 +670,7 @@ namespace Mirle.Agv.View
                 reviseData = moveControl.DriverSr2000List[i].GetThetaSectionDeviation();
                 if (reviseData != null)
                 {
-                    if (moveControl.IsSameAngle(reviseData.BarodeAngleInMap, reviseData.AGVAngleInMap, 0))
+                    if (computeFunction.IsSameAngle(reviseData.BarcodeAngleInMap, reviseData.AGVAngleInMap, 0))
                         break;
                     else
                         reviseData = null;

@@ -27,6 +27,11 @@ namespace Mirle.Agv.Model
         public double TurnStartEncoder { get; set; }
         public EnumVehicleSafetyAction SensorState { get; set; }
         public bool CommandMoving { get; set; }
+        public bool PauseRequest { get; set; }
+        public bool PauseAlready { get; set; }
+        public bool CancelRequest { get; set; }
+        public bool ContinueRequest { get; set; }
+
 
         public MoveControlParameter()
         {

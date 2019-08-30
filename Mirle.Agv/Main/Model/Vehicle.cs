@@ -72,7 +72,58 @@ namespace Mirle.Agv.Model
         public bool HasAlarm { get; set; } = false;
         public bool HasWarn { get; set; } = false;
 
-
+        private bool frontBeamDisable = false;
+        public bool FrontBeamDisable
+        {
+            get { return frontBeamDisable; }
+            set
+            {
+                if (value != frontBeamDisable)
+                {
+                    frontBeamDisable = value;
+                    ThePlcVehicle.FrontBeamSensorDisable = value;
+                }
+            }
+        }
+        private bool backBeamDisable = false;
+        public bool BackBeamDisable
+        {
+            get { return backBeamDisable; }
+            set
+            {
+                if (value != backBeamDisable)
+                {
+                    backBeamDisable = value;
+                    ThePlcVehicle.BackBeamSensorDisable = value;
+                }
+            }
+        }
+        private bool leftBeamDisable = false;
+        public bool LeftBeamDisable
+        {
+            get { return leftBeamDisable; }
+            set
+            {
+                if (value != leftBeamDisable)
+                {
+                    leftBeamDisable = value;
+                    ThePlcVehicle.LeftBeamSensorDisable = value;
+                }
+            }
+        }
+        private bool rightBeamDisable = false;
+        public bool RightBeamDisable
+        {
+            get { return rightBeamDisable; }
+            set
+            {
+                if (value != rightBeamDisable)
+                {
+                    rightBeamDisable = value;
+                    ThePlcVehicle.RightBeamSensorDisable = value;
+                }
+            }
+        }
 
         #region Comm Property
         public VHActionStatus ActionStatus { get; set; }
@@ -82,11 +133,11 @@ namespace Mirle.Agv.Model
         public VHModeStatus ModeStatus { get; set; }
         public VhStopSingle ObstacleStatus { get; set; }
         public int ObstDistance { get; set; }
-        public string ObstVehicleID { get; set; } = "Empty";
+        public string ObstVehicleID { get; set; } = "";
         public VhStopSingle PauseStatus { get; set; }
         public VhPowerStatus PowerStatus { get; set; }
         public VhStopSingle ReserveStatus { get; set; }
-        public string StoppedBlockID { get; set; } = "Empty";
+        public string StoppedBlockID { get; set; } = "";
         public VhStopSingle ErrorStatus { get; set; }
         public ActiveType Cmd131ActType { get; set; }
         public CompleteStatus CompleteStatus { get; set; }
@@ -95,8 +146,8 @@ namespace Mirle.Agv.Model
         public EventType Cmd134EventType { get; set; }
         public CMDCancelType Cmd137ActType { get; set; }
         public PauseEvent Cmd139EventType { get; set; }
-        public string TeachingFromAddress { get; internal set; } = "Empty";
-        public string TeachingToAddress { get; internal set; } = "Empty";
+        public string TeachingFromAddress { get; internal set; } = "";
+        public string TeachingToAddress { get; internal set; } = "";
 
         #endregion
 

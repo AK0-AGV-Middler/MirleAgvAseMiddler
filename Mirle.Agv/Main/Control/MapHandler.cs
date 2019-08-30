@@ -362,8 +362,8 @@ namespace Mirle.Agv.Controller
                     oneRow.SectionId = getThisRow[dicHeaderIndexes["SectionId"]];
                     oneRow.Min = double.Parse(getThisRow[dicHeaderIndexes["Min"]]);
                     oneRow.Max = double.Parse(getThisRow[dicHeaderIndexes["Max"]]);
-                    oneRow.ForwardDisable = bool.Parse(getThisRow[dicHeaderIndexes["ForwardDisable"]]);
-                    oneRow.BackwardDisable = bool.Parse(getThisRow[dicHeaderIndexes["BackwardDisable"]]);
+                    oneRow.FrontDisable = bool.Parse(getThisRow[dicHeaderIndexes["FrontDisable"]]);
+                    oneRow.BackDisable = bool.Parse(getThisRow[dicHeaderIndexes["BackDisable"]]);
                     oneRow.LeftDisable = bool.Parse(getThisRow[dicHeaderIndexes["LeftDisable"]]);
                     oneRow.RightDisable = bool.Parse(getThisRow[dicHeaderIndexes["RightDisable"]]);
 

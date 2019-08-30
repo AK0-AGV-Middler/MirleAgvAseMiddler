@@ -331,6 +331,7 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
+            this.chkFakeForking = new System.Windows.Forms.CheckBox();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.palForkParams.SuspendLayout();
@@ -384,6 +385,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.chkFakeForking);
             this.tabPage2.Controls.Add(this.palForkParams);
             this.tabPage2.Controls.Add(this.panel3);
             this.tabPage2.Controls.Add(this.grpForkCycleRun);
@@ -3810,11 +3812,22 @@
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
             // 
+            // chkFakeForking
+            // 
+            this.chkFakeForking.AutoSize = true;
+            this.chkFakeForking.Location = new System.Drawing.Point(967, 316);
+            this.chkFakeForking.Name = "chkFakeForking";
+            this.chkFakeForking.Size = new System.Drawing.Size(119, 17);
+            this.chkFakeForking.TabIndex = 71;
+            this.chkFakeForking.Text = "Fake Forking Open";
+            this.chkFakeForking.UseVisualStyleBackColor = true;
+            this.chkFakeForking.CheckedChanged += new System.EventHandler(this.chkFakeForking_CheckedChanged);
+            // 
             // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1321, 876);
+            this.ClientSize = new System.Drawing.Size(1321, 873);
             this.ControlBox = false;
             this.Controls.Add(this.labIPcStatusManual);
             this.Controls.Add(this.label62);
@@ -3830,9 +3843,11 @@
             this.Name = "PlcForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PLCAgent";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PlcForm_FormClosing);
             this.Load += new System.EventHandler(this.frmPLCAgent_Load);
             this.tabContol1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.palForkParams.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
@@ -4179,5 +4194,6 @@
         private System.Windows.Forms.Label label90;
         private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_PV;
         private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_SV;
+        private System.Windows.Forms.CheckBox chkFakeForking;
     }
 }

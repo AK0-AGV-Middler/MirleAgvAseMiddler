@@ -177,6 +177,13 @@ namespace Mirle.Agv
         Working,
         Stop
     }
+
+    public enum EnumIdReadResult
+    {
+        Noraml,
+        Mismatch,
+        Fail
+    }
     #endregion
 
     /// <summary>

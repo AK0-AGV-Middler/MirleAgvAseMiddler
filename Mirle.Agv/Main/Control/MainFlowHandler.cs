@@ -251,8 +251,9 @@ namespace Mirle.Agv.Controller
                 plcAgent.OnBatteryPercentageChangeEvent += middleAgent.PlcAgent_OnBatteryPercentageChangeEvent;
 
                 //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
-                plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
+                //plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
                 plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
+
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
@@ -281,7 +282,7 @@ namespace Mirle.Agv.Controller
             {
                 try
                 {
-                    theVehicle.CurVehiclePosition.RealPosition = TheMapInfo.allMapAddresses.First(x => x.Key != "Empty").Value.Position.DeepClone();
+                    theVehicle.CurVehiclePosition.RealPosition = TheMapInfo.allMapAddresses.First(x => x.Key != "").Value.Position.DeepClone();
                 }
                 catch (Exception ex)
                 {
@@ -420,7 +421,7 @@ namespace Mirle.Agv.Controller
             theVehicle.CurTrasferStep = GetCurTransferStep();
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
-            theVehicle.ActionStatus = VHActionStatus.NoCommand;
+            //theVehicle.ActionStatus = VHActionStatus.NoCommand;
             VisitTransferStepsStatus = EnumThreadStatus.None;
             middleAgent.Send_Cmd144_StatusChangeReport();
             if (theVehicle.AutoState == EnumAutoState.Auto)
@@ -525,11 +526,6 @@ namespace Mirle.Agv.Controller
         }
         public void AfterWatchLowPower(long total)
         {
-            if (theVehicle.ThePlcVehicle.Batterys.Charging)
-            {
-                StopCharge();
-            }
-
             WatchLowPowerStatus = EnumThreadStatus.None;
             var msg = $"MainFlow : After Watch LowPower, [ThreadStatus={WatchLowPowerStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -774,7 +770,7 @@ namespace Mirle.Agv.Controller
             if (agvcTransCmd.ToUnloadSections.Count > 0)
             {
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSections;
-            }           
+            }
             moveCmd.SeqNum = agvcTransCmd.SeqNum;
             moveCmd.EndAddressId = agvcTransCmd.UnloadAddress;
             moveCmd.SetupMovingSections();
@@ -1126,7 +1122,7 @@ namespace Mirle.Agv.Controller
                     //TODO: RobotHomeComplete
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : ForkCommandFinish,[Type={forkCommand.ForkCommandType}] [RobotHomeComplete]");
                 }
-
+                middleAgent.Send_Cmd144_StatusChangeReport();
                 VisitNextTransCmd();
             }
             catch (Exception ex)
@@ -1353,17 +1349,17 @@ namespace Mirle.Agv.Controller
             if (index > -1)
             {
                 var beamDisable = mapSection.BeamSensorDisables[index];
-                plcVeh.FrontBeamSensorDisable = beamDisable.ForwardDisable;
-                plcVeh.BackBeamSensorDisable = beamDisable.BackwardDisable;
-                plcVeh.LeftBeamSensorDisable = beamDisable.LeftDisable;
-                plcVeh.RightBeamSensorDisable = beamDisable.RightDisable;
+                theVehicle.FrontBeamDisable = beamDisable.FrontDisable;
+                theVehicle.BackBeamDisable = beamDisable.BackDisable;
+                theVehicle.LeftBeamDisable = beamDisable.LeftDisable;
+                theVehicle.RightBeamDisable = beamDisable.RightDisable;
             }
             else
             {
-                plcVeh.FrontBeamSensorDisable = false;
-                plcVeh.BackBeamSensorDisable = false;
-                plcVeh.LeftBeamSensorDisable = false;
-                plcVeh.RightBeamSensorDisable = false;
+                theVehicle.FrontBeamDisable = false;
+                theVehicle.BackBeamDisable = false;
+                theVehicle.LeftBeamDisable = false;
+                theVehicle.RightBeamDisable = false;
             }
         }
 
@@ -1714,13 +1710,32 @@ namespace Mirle.Agv.Controller
 
         private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
         {
-            if (agvcTransCmd != null)
+            if (cstId == "ERROR")
             {
-                agvcTransCmd.CassetteId = cstId;
-                foreach (var step in transferSteps)
+                //Id Read Fail
+                theVehicle.CurAgvcTransCmd.CassetteId = "";
+                middleAgent.MainFlow_OnIdReadEvent(EnumIdReadResult.Fail);
+            }
+            else if (agvcTransCmd != null)
+            {
+                if (agvcTransCmd.CassetteId != cstId)
                 {
-                    step.CstId = cstId;
+                    //Id Read Mismatch
+                    theVehicle.CurAgvcTransCmd.CassetteId = cstId;
+                    middleAgent.MainFlow_OnIdReadEvent(EnumIdReadResult.Mismatch);
                 }
+                else
+                {
+                    //Id Read Normal
+                    theVehicle.CurAgvcTransCmd.CassetteId = cstId;
+                    middleAgent.MainFlow_OnIdReadEvent(EnumIdReadResult.Noraml);
+                }
+            }
+            else
+            {
+                //Id Read Normal
+                theVehicle.CurAgvcTransCmd.CassetteId = cstId;
+                middleAgent.MainFlow_OnIdReadEvent(EnumIdReadResult.Noraml);
             }
         }
 

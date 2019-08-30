@@ -28,10 +28,13 @@ namespace Mirle.Agv.View
         private void CommunicationForm_Load(object sender, EventArgs e)
         {
             ConfigToUI();
-            if (middleAgent.ClientAgent.IsConnection)
+            if (middleAgent.ClientAgent != null)
             {
-                toolStripStatusLabel1.Text = "Connect";
-            }
+                if (middleAgent.ClientAgent.IsConnection)
+                {
+                    toolStripStatusLabel1.Text = "Connect";
+                }
+            }           
         }
 
         private void ConfigToUI()
@@ -42,10 +45,21 @@ namespace Mirle.Agv.View
 
         private void EventInital()
         {
-            middleAgent.OnMessageShowOnMainFormEvent += ConnectionStatusToToolStrip;
-            //middleAgent.OnDisConnected += ConnectionStatusToToolStrip;
-            middleAgent.OnCmdReceive += SendOrReceiveCmdToRichTextBox;
-            middleAgent.OnCmdSend += SendOrReceiveCmdToRichTextBox;
+            middleAgent.OnCmdReceiveEvent += SendOrReceiveCmdToRichTextBox;
+            middleAgent.OnCmdSendEvent += SendOrReceiveCmdToRichTextBox;
+            middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
+        }
+
+        private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
+        {
+            if (isConnect)
+            {
+                ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Connect");
+            }
+            else
+            {
+                ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Disconnect");
+            }
         }
 
         public void SendOrReceiveCmdToRichTextBox(object sender, string e)
@@ -65,10 +79,6 @@ namespace Mirle.Agv.View
             {
                 toolStripStatusLabel.Text = msg;
             }
-        }
-        private void ConnectionStatusToToolStrip(object sender, string msg)
-        {
-            ToolStripStatusLabelTextChange(toolStripStatusLabel1, msg);
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
@@ -260,7 +270,7 @@ namespace Mirle.Agv.View
                     ID_131_TRANS_RESPONSE cmd131 = new ID_131_TRANS_RESPONSE();
                     cmd131.CmdID = "Cmd001";
                     cmd131.ActType = ActiveType.Move;
-                    cmd131.NgReason = "Empty";
+                    cmd131.NgReason = "";
                     cmd131.ReplyCode = 0;
                     infos = cmd131.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd131);
@@ -379,8 +389,8 @@ namespace Mirle.Agv.View
                 case EnumCmdNum.Cmd194_AlarmReport:
                 default:
                     ID_194_ALARM_REPORT cmd194 = new ID_194_ALARM_REPORT();
-                    cmd194.ErrCode = "Empty";
-                    cmd194.ErrDescription = "Empty";
+                    cmd194.ErrCode = "";
+                    cmd194.ErrDescription = "";
                     cmd194.ErrStatus = ErrorStatus.ErrSet;
                     infos = cmd194.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd194);
@@ -415,22 +425,6 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                middlerConfig.RemoteIp = txtRemoteIp.Text;
-                middlerConfig.RemotePort = int.Parse(txtRemotePort.Text);
-                SaveMiddlerConfigs();
-
-                middleAgent.ReConnect();
-
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
 
         private void SaveMiddlerConfigs()
         {
@@ -441,11 +435,54 @@ namespace Mirle.Agv.View
             configHandler.SetString("Middler", "RemotePort", middlerConfig.RemotePort.ToString());
         }
 
+        private void btnIsClientAgentNull_Click(object sender, EventArgs e)
+        {
+            if (middleAgent.IsClientAgentNull())
+            {
+                RichTextBoxAppendHead(richTextBox1, "ClientAgent is null");
+            }
+            else
+            {
+                RichTextBoxAppendHead(richTextBox1, "ClientAgent is not null");
+            }
+        }
+
+        private void btnCreateInstance_Click(object sender, EventArgs e)
+        {
+            //if (middleAgent.IsClientAgentNull())
+            //{
+            //    middleAgent.CreatTcpIpClientAgent();
+            //    middleAgent.Connect();
+            //}
+            middleAgent.OnlyConnect();
+        }
+
         private void btnDisConnect_Click(object sender, EventArgs e)
         {
             middleAgent.DisConnect();
         }
 
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                //middlerConfig.RemoteIp = txtRemoteIp.Text;
+                //middlerConfig.RemotePort = int.Parse(txtRemotePort.Text);
+                //SaveMiddlerConfigs();
 
+                //middleAgent.ReConnect();
+                middleAgent.Connect();
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            middleAgent.StopClientAgent();
+        }
     }
 }

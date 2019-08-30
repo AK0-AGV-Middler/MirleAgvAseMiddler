@@ -10,7 +10,7 @@ namespace Mirle.Agv.Model
     public class MapBarcodeLine
     {
         //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, Offset
-        public string Id { get; set; } = "Empty";
+        public string Id { get; set; } = "";
         public MapBarcode HeadBarcode { get; set; } = new MapBarcode();
         public MapBarcode TailBarcode { get; set; } = new MapBarcode();
         public MapPosition Offset { get; set; } = new MapPosition();

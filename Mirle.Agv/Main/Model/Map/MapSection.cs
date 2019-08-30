@@ -10,7 +10,7 @@ namespace Mirle.Agv.Model
     public class MapSection
     {
         //Id, FromAddress, ToAddress, Distance, Speed, Type, PermitDirection, FowardBeamSensorEnable, BackwardBeamSensorEnable
-        public string Id { get; set; } = "Empty";
+        public string Id { get; set; } = "";
         public MapAddress HeadAddress { get; set; } = new MapAddress();
         public MapAddress TailAddress { get; set; } = new MapAddress();
         public double Distance { get; set; }

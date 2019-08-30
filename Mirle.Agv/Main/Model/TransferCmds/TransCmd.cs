@@ -17,8 +17,8 @@ namespace Mirle.Agv.Model.TransferCmds
         protected MiddleAgent middleAgent;
         protected MapConfig mapConfig;
         protected EnumTransferStepType type;
-        public string CmdId { get; set; } = "Empty";
-        public string CstId { get; set; } = "Empty";
+        public string CmdId { get; set; } = "";
+        public string CstId { get; set; } = "";
 
         //public TransCmd() : this(new MapInfo()) { }
         public TransferStep(MainFlowHandler mainFlowHandler)

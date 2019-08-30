@@ -15,7 +15,7 @@ namespace Mirle.Agv
     public partial class UcSectionImage : UserControl
     {
         public MapSection Section { get; set; } = new MapSection();
-        public string Id { get; set; } = "Empty";
+        public string Id { get; set; } = "";
         public Size labelSize { get; set; } = new Size(100, 100);
 
         private MapInfo theMapInfo = new MapInfo();

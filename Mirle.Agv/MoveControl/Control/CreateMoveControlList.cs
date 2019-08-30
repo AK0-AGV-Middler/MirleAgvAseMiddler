@@ -15,6 +15,7 @@ namespace Mirle.Agv.Controller
     public class CreateMoveControlList
     {
         private MoveControlConfig moveControlConfig;
+        private ComputeFunction computeFunction = new ComputeFunction();
         private AlarmHandler alarmHandler;
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
         private string device = "MoveControl";
@@ -127,7 +128,7 @@ namespace Mirle.Agv.Controller
 
             return returnCommand;
         }
-        
+
         private Command NewReviseOpenCommand()
         {
             Command returnCommand = new Command();
@@ -149,7 +150,7 @@ namespace Mirle.Agv.Controller
 
             return returnCommand;
         }
-        
+
         public Command NewStopCommand(MapPosition position, double realEncoder, bool dirFlag, int nextReserveNumber = -1)
         {
             Command returnCommand = new Command();
@@ -244,6 +245,20 @@ namespace Mirle.Agv.Controller
                                  reserveDataList[i].Position.Y.ToString("0") + " )";
 
             WriteLog("MoveControl", "7", device, "", logMessage);
+        }
+
+
+        public void GetReserveListInfo(List<ReserveData> reserveDataList, ref List<string> logMessage)
+        {
+            string lineString;
+
+            for (int i = 0; i < reserveDataList.Count; i++)
+            {
+                lineString = "reserve node " + i.ToString() + " : ( " +
+                    reserveDataList[i].Position.X.ToString("0") + ", " +
+                    reserveDataList[i].Position.Y.ToString("0") + " )";
+                logMessage.Add(lineString);
+            }
         }
 
         private void TriggerLog(Command cmd, ref string logMessage)
@@ -460,199 +475,6 @@ namespace Mirle.Agv.Controller
         }
         #endregion
 
-        private MapPosition GetPositionFormEndDistance(MapPosition start, MapPosition end, double endDistance)
-        {
-            double distance = Math.Sqrt(Math.Pow(start.X - end.X, 2) + Math.Pow(start.Y - end.Y, 2));
-            double x = end.X + (start.X - end.X) * endDistance / distance;
-            double y = end.Y + (start.Y - end.Y) * endDistance / distance;
-
-            MapPosition returnData = new MapPosition((float)x, (float)y);
-            return returnData;
-        }
-
-        #region 角度計算function
-        // angle : start to end.
-        // input : ( x, y ) ( x2, y2 ), output : angle ( -180 < angle <= 180 ).
-        private double ComputeAngle(MapPosition start, MapPosition end)
-        {
-            double returnAngle = 0;
-            try
-            {
-                if (start.X == end.X)
-                {
-                    if (start.Y > end.Y)
-                        returnAngle = 90;
-                    else
-                        returnAngle = -90;
-                }
-                else
-                {
-                    returnAngle = Math.Atan(-(start.Y - end.Y) / (start.X - end.X)) * 180 / Math.PI;
-
-                    if (start.X > end.X)
-                    {
-                        if (returnAngle > 0)
-                            returnAngle -= 180;
-                        else
-                            returnAngle += 180;
-                    }
-                }
-
-                return returnAngle;
-            }
-            catch (Exception ex)
-            {
-                WriteLog("Elmo", "3", device, "", "Excption : " + ex.ToString());
-                return returnAngle;
-            }
-        }
-
-
-        private int GetAGVAngle(AGVPosition nowAGV, ref string errorMessage)
-        {
-            double nowAngle;
-            int returnInt;
-
-            if (nowAGV != null)
-            {
-                nowAngle = (int)nowAGV.AGVAngle;
-            }
-            else
-            {
-                errorMessage = "Real position為null!";
-                return -1;
-            }
-
-            if (Math.Abs(nowAngle - 0) < AllowableTheta)
-                returnInt = 0;
-            else if (Math.Abs(nowAngle - 90) < AllowableTheta)
-                returnInt = 90;
-            else if (Math.Abs(nowAngle - -90) < AllowableTheta)
-                returnInt = -90;
-            else if (Math.Abs(nowAngle - 180) < AllowableTheta || Math.Abs(nowAngle - -180) < AllowableTheta)
-                returnInt = 180;
-            else
-            {
-                errorMessage = "Real position角度偏差過大(超過10度)!";
-                returnInt = -1;
-            }
-
-            return returnInt;
-        }
-
-        private bool GetDirFlagWheelAngleStartInHorizontal(MoveCmdInfo moveCmd, ref BreakDownMoveCommandData data,
-            int wheelAngle, ref string errorMessage)
-        {
-            int trIndex = -1;
-            bool hasR2000 = false;
-
-            for (int i = 0; i < moveCmd.AddressActions.Count; i++)
-            {
-                if (moveCmd.AddressActions[i] == EnumAddressAction.TR50 || moveCmd.AddressActions[i] == EnumAddressAction.TR350 ||
-                    moveCmd.AddressActions[i] == EnumAddressAction.BTR50 || moveCmd.AddressActions[i] == EnumAddressAction.BTR350)
-                {
-                    trIndex = i;
-                    break;
-                }
-                else if (moveCmd.AddressActions[i] == EnumAddressAction.R2000 || moveCmd.AddressActions[i] == EnumAddressAction.BR2000 ||
-                         moveCmd.AddressActions[i] == EnumAddressAction.BST)
-                    hasR2000 = true;
-            }
-
-            if (trIndex == -1)
-            {
-                if (hasR2000)
-                {
-                    errorMessage = "不該有橫移接續R2000的動作..";
-                    return false;
-                }
-
-                if (wheelAngle == 90 || wheelAngle == -90)
-                    data.WheelAngle = wheelAngle;
-
-                return true;
-            }
-            else
-            {
-                int startSectionAngle = (int)ComputeAngle(moveCmd.AddressPositions[trIndex - 1], moveCmd.AddressPositions[trIndex]);
-                int endSectionAngle = (int)ComputeAngle(moveCmd.AddressPositions[trIndex], moveCmd.AddressPositions[trIndex + 1]);
-                int deltaAngle = endSectionAngle - startSectionAngle;
-
-                if (moveCmd.AddressActions[trIndex] == EnumAddressAction.TR350 || moveCmd.AddressActions[trIndex] == EnumAddressAction.TR50)
-                    data.WheelAngle = -deltaAngle;
-                else
-                    data.WheelAngle = deltaAngle;
-
-                return Math.Abs(deltaAngle) == 90;
-            }
-        }
-
-        private bool GetDirFlagWheelAngle(MoveCmdInfo moveCmd, ref BreakDownMoveCommandData data,
-                                  AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
-        {
-            MapPosition start = moveCmd.AddressPositions[0];
-            MapPosition end = moveCmd.AddressPositions[1];
-            EnumAddressAction action = moveCmd.AddressActions[0];
-
-            int sectionAngle = 0, deltaAngle = 0;
-
-            int agvAngle = GetAGVAngle(nowAGV, ref errorMessage);
-
-            if (agvAngle == -1)
-            {
-                return false;
-            }
-
-            data.AGVAngleInMap = agvAngle;
-            data.NowAGVAngleInMap = agvAngle;
-
-            sectionAngle = (int)ComputeAngle(start, end);
-            deltaAngle = sectionAngle - agvAngle;
-
-            if (deltaAngle > 180)
-                deltaAngle -= 360;
-            else if (deltaAngle <= -180)
-                deltaAngle += 360;
-
-            if (action == EnumAddressAction.ST)
-            {
-                switch (deltaAngle)
-                {
-                    case 0:
-                        data.WheelAngle = 0;
-                        data.DirFlag = true;
-                        break;
-                    case 180:
-                        data.WheelAngle = 0;
-                        data.DirFlag = false;
-                        break;
-                    case 90:
-                    case -90:
-                        data.WheelAngle = deltaAngle;
-                        if (!GetDirFlagWheelAngleStartInHorizontal(moveCmd, ref data, wheelAngle, ref errorMessage))
-                            return false;
-
-                        data.DirFlag = (deltaAngle == data.WheelAngle);
-                        break;
-                    default:
-                        errorMessage = "車姿和Section的角度差不該有0 90 -90 180以外的角度.";
-                        return false;
-                }
-            }
-            else if (action == EnumAddressAction.R2000)
-            {
-                data.WheelAngle = 0;
-                data.DirFlag = (Math.Abs(deltaAngle) == 45);
-            }
-            else
-            {
-                errorMessage = "起點不該有除了ST, R2000的起點動作.";
-                return false;
-            }
-
-            return true;
-        }
-        #endregion
 
         public double GetFirstVChangeCommandVelocity(double moveCommandVelocity,
             double firstVChangeDistance, double firstVChangeVelocity, double secondVChangeDistance)
@@ -679,40 +501,14 @@ namespace Mirle.Agv.Controller
                 return firstVChangeVelocity;
         }
 
-        private double GetAccDecDistance(double startVel, double endVel, double accOrDec, double jerk)
-        {
-            double time = accOrDec / jerk; // acc = 0 > acc的時間.
-            double deltaVelocity = time * accOrDec / 2 * 2;
-            double lastDeltaVelocity;
-            double lastDeltaTime;
-
-            if (deltaVelocity == Math.Abs(startVel - endVel))
-            {
-                return (startVel + endVel) * time; // t = time * 2, distance = (sV+eV)*t/2.
-            }
-            else if (deltaVelocity > Math.Abs(startVel - endVel))
-            {
-                deltaVelocity = Math.Abs(startVel - endVel) / 2;
-                time = Math.Sqrt(deltaVelocity * 2 / jerk);
-                return (startVel + endVel) * time; // t = time * 2, distance = (sV+eV)*t/2.
-            }
-            else
-            {
-                lastDeltaVelocity = Math.Abs(startVel - endVel) - deltaVelocity;
-                lastDeltaTime = lastDeltaVelocity / accOrDec;
-
-                return (startVel + endVel) * (time + lastDeltaTime / 2); // ( start + end ) * (2*time + lastDeltaTime) / 2.
-            }
-        }
-
-        private double GetSLowStopDistance()
+        public double GetSLowStopDistance()
         {
             double jerk = moveControlConfig.Move.Jerk;
             double dec = moveControlConfig.Move.Deceleration;
-            return GetAccDecDistance(moveControlConfig.EQ.Velocity, 0, dec, jerk);
+            return computeFunction.GetAccDecDistance(moveControlConfig.EQ.Velocity, 0, dec, jerk);
         }
 
-        private double GetVChangeDistance(double startVel, double endVel, double tragetVel, double distance)
+        public double GetVChangeDistance(double startVel, double endVel, double tragetVel, double distance)
         {
             double jerk = moveControlConfig.Move.Jerk;
             double acc = moveControlConfig.Move.Acceleration;
@@ -722,8 +518,8 @@ namespace Mirle.Agv.Controller
             double accDistance = 0;
             double decDistance = 0;
 
-            decDistance = GetAccDecDistance(tragetVel, endVel, dec, jerk);
-            accDistance = GetAccDecDistance(startVel, tragetVel, acc, jerk);
+            decDistance = computeFunction.GetAccDecDistance(tragetVel, endVel, dec, jerk);
+            accDistance = computeFunction.GetAccDecDistance(startVel, tragetVel, acc, jerk);
 
             if (accDistance + decDistance < distance)
                 return decDistance;
@@ -735,8 +531,8 @@ namespace Mirle.Agv.Controller
 
             for (; accDistance + decDistance < distance; tempVel += 5)
             {
-                decDistance = GetAccDecDistance(tempVel, endVel, dec, jerk);
-                accDistance = GetAccDecDistance(startVel, tempVel, acc, jerk);
+                decDistance = computeFunction.GetAccDecDistance(tempVel, endVel, dec, jerk);
+                accDistance = computeFunction.GetAccDecDistance(startVel, tempVel, acc, jerk);
             }
 
             return decDistance;
@@ -790,7 +586,7 @@ namespace Mirle.Agv.Controller
                     double distance = Math.Sqrt(Math.Pow(oneceMoveCommand.AddressPositions[i].X - reserveDataList[reserveIndex].Position.X, 2) +
                                                 Math.Pow(oneceMoveCommand.AddressPositions[i].Y - reserveDataList[reserveIndex].Position.Y, 2));
 
-                    accDistance = GetAccDecDistance(0, moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].Velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+                    accDistance = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].Velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
 
                     totalDistance = moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].R +
                                     moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].VChangeSafetyDistance +
@@ -847,7 +643,7 @@ namespace Mirle.Agv.Controller
 
                         if (distance < data.STDistance - data.TurnOutDistance)
                         {
-                            triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+                            triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
                             tempCommand = NewStopCommand(triggerPosition, data.MoveStartEncoder +
                                            (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                                                                   data.DirFlag, reserveIndex + 1);
@@ -858,7 +654,7 @@ namespace Mirle.Agv.Controller
 
                 if (data.NowVelocityCommand != velocityCommand)
                 {  // VChange.
-                    triggerPosition = GetPositionFormEndDistance(data.LastNode, position, 0);
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, 0);
                     tempCommand = NewVChangeCommand(triggerPosition, data.MoveStartEncoder +
                                    (data.DirFlag ? data.CommandDistance : -data.CommandDistance), velocityCommand, data.DirFlag);
                     moveCmdList.Add(tempCommand);
@@ -885,7 +681,7 @@ namespace Mirle.Agv.Controller
             {
                 // 取得停止距離(vel:80->0),和座標點.
                 distance = GetVChangeDistance(data.NowVelocity, 0, moveControlConfig.EQ.Velocity, data.STDistance);
-                triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
 
                 // 直接塞入降速至80命令和SlowStop命令
                 tempCommand = NewVChangeCommand(null, 0, moveControlConfig.EQ.Velocity, data.DirFlag);
@@ -899,7 +695,7 @@ namespace Mirle.Agv.Controller
             else
             { // 距離不會太短之情況.
               // 算出直接減速距離是否足夠.
-                distance = GetAccDecDistance(data.NowVelocity, 0, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                distance = computeFunction.GetAccDecDistance(data.NowVelocity, 0, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
 
                 // 需要直接減速.
                 if (distance > data.STDistance - data.TurnOutDistance - moveControlConfig.EQ.Distance)
@@ -926,8 +722,8 @@ namespace Mirle.Agv.Controller
 
                             distance = distance + moveControlConfig.NormalStopDistance;
                         }
-                        
-                        triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+
+                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
 
                         // 插入減速指令.
                         tempCommand = NewVChangeCommand(triggerPosition,
@@ -941,7 +737,7 @@ namespace Mirle.Agv.Controller
 
                 // 算出停止距離跟座標.
                 distance = GetSLowStopDistance();
-                triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
 
                 // 插入停止指令.
                 tempCommand = NewSlowStopCommand(triggerPosition,
@@ -979,7 +775,7 @@ namespace Mirle.Agv.Controller
             MapPosition triggerPosition;
             Command tempCommand;
 
-            data.NowWheelAngle = GetTurnWheelAngle(data.NowWheelAngle, data.LastNode, position, nextPosition, ref errorMessage);
+            data.NowWheelAngle = computeFunction.GetTurnWheelAngle(data.NowWheelAngle, data.LastNode, position, nextPosition, ref errorMessage);
 
             if (data.NowWheelAngle == -1)
                 return false;
@@ -988,14 +784,14 @@ namespace Mirle.Agv.Controller
 
             if (reserveIndex != -1)
             {
-                double accDistance = GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+                double accDistance = computeFunction.GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
                 distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand,
                     data.STDistance - vChangeSafetyDistance - data.TurnOutDistance - r - accDistance - moveControlConfig.ReserveSafetyDistance);
                 distance = distance + vChangeSafetyDistance + r + accDistance + moveControlConfig.ReserveSafetyDistance;
 
                 if (distance < data.STDistance - data.TurnOutDistance)
                 {
-                    triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
 
                     tempCommand = NewStopCommand(triggerPosition,
                         data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
@@ -1007,7 +803,7 @@ namespace Mirle.Agv.Controller
             // 需要降速.
             if (data.NowVelocityCommand > velocity)
             {
-                distance = GetAccDecDistance(data.NowVelocity, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+                distance = computeFunction.GetAccDecDistance(data.NowVelocity, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
 
                 // 啟動且距離非常短
                 if (data.NowVelocity == 0 && distance + 2 * moveControlConfig.TurnParameter[action].VChangeSafetyDistance + moveControlConfig.TurnParameter[action].R > data.STDistance - data.TurnOutDistance)
@@ -1021,7 +817,7 @@ namespace Mirle.Agv.Controller
                         data.STDistance - vChangeSafetyDistance - r - data.TurnOutDistance);
                     trVChangeDistance = trVChangeDistance + vChangeSafetyDistance + r;
 
-                    triggerPosition = GetPositionFormEndDistance(data.LastNode, position, trVChangeDistance);
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, trVChangeDistance);
 
                     tempCommand = NewVChangeCommand(triggerPosition,
                         data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - trVChangeDistance : -(data.CommandDistance - trVChangeDistance)),
@@ -1033,7 +829,7 @@ namespace Mirle.Agv.Controller
             {
                 trVChangeDistance = vChangeSafetyDistance + r;
 
-                triggerPosition = GetPositionFormEndDistance(data.LastNode, position, trVChangeDistance);
+                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, trVChangeDistance);
 
                 tempCommand = NewVChangeCommand(triggerPosition,
                     data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - trVChangeDistance : -(data.CommandDistance - trVChangeDistance)),
@@ -1041,11 +837,9 @@ namespace Mirle.Agv.Controller
                 moveCmdList.Add(tempCommand);
             }
 
-            //data.TurnOutDistance = 0;
-
             distance = closeReviseDistance + r;
 
-            triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+            triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
             tempCommand = NewReviseCloseCommand(triggerPosition,
                                  data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                  data.DirFlag, action);
@@ -1055,7 +849,7 @@ namespace Mirle.Agv.Controller
             else
                 moveCmdList.Add(tempCommand);
 
-            triggerPosition = GetPositionFormEndDistance(data.LastNode, position, r);
+            triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, r);
 
             tempCommand = NewTRCommand(triggerPosition, data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - r : -(data.CommandDistance - r)),
                                        data.DirFlag, data.NowWheelAngle, action);
@@ -1078,36 +872,6 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-        private bool GetR2000IsTurnLeftOrRight(int oldAGVAngle, int newAGVAngle, bool dirFlag, ref int wheelAngle, ref string errorMessage)
-        {
-            //if (oldAGVAngle < 0)
-            //    oldAGVAngle += 360;
-
-            //if (newAGVAngle < 0)
-            //    newAGVAngle += 360;
-
-            if (oldAGVAngle - newAGVAngle == 270)
-                newAGVAngle += 360;
-            else if (oldAGVAngle - newAGVAngle == -270)
-                oldAGVAngle += 360;
-
-            if (Math.Abs(oldAGVAngle - newAGVAngle) != 90)
-            {
-                errorMessage = "GetR2000IsTurnLeftOrRight 新舊角度差距不是90度..";
-                return false;
-            }
-
-            if (newAGVAngle > oldAGVAngle)
-                wheelAngle = -1;
-            else
-                wheelAngle = 1;
-
-            if (!dirFlag)
-                wheelAngle = -wheelAngle;
-
-            return true;
-        }
-
         private bool AddOneMoveCommandToCommandListActionR2000(MapPosition position, EnumAddressAction action, double velocityCommand,
                                                                MapPosition nextPosition, double nextVelocityCommand,
                      ref List<Command> moveCmdList, List<ReserveData> reserveDataList, ref AddToCommandListData data, ref string errorMessage)
@@ -1122,26 +886,28 @@ namespace Mirle.Agv.Controller
             Command tempCommand;
             int wheelAngle = 0;
 
-            int newAgvAngle = GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, position, nextPosition, ref errorMessage);
+            int newAgvAngle = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, position, nextPosition, ref errorMessage);
 
-            if (data.NowWheelAngle == -1)
+            if (newAgvAngle == -1)
                 return false;
 
-            if (!GetR2000IsTurnLeftOrRight(data.AGVAngleInMap, newAgvAngle, data.DirFlag, ref wheelAngle, ref errorMessage))
+            if (!computeFunction.GetR2000IsTurnLeftOrRight(data.AGVAngleInMap, newAgvAngle, data.DirFlag, ref wheelAngle, ref errorMessage))
                 return false;
+
+            data.AGVAngleInMap = newAgvAngle;
 
             int reserveIndex = GetReserveIndex(reserveDataList, position);
 
             if (reserveIndex != -1)
             {
-                double accDistance = GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+                double accDistance = computeFunction.GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
                 distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand,
                     data.STDistance - vChangeSafetyDistance - data.TurnOutDistance - accDistance - moveControlConfig.ReserveSafetyDistance);
                 distance = distance + vChangeSafetyDistance + accDistance + moveControlConfig.ReserveSafetyDistance;
 
                 if (distance < data.STDistance - data.TurnOutDistance)
                 {
-                    triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
 
                     tempCommand = NewStopCommand(triggerPosition,
                         data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
@@ -1153,7 +919,7 @@ namespace Mirle.Agv.Controller
             // 需要降速.
             if (data.NowVelocityCommand > velocity)
             {
-                distance = GetAccDecDistance(data.NowVelocity, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+                distance = computeFunction.GetAccDecDistance(data.NowVelocity, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
 
                 // 啟動且距離非常短
                 if (data.NowVelocity == 0 && distance + 2 * moveControlConfig.TurnParameter[action].VChangeSafetyDistance > data.STDistance - data.TurnOutDistance)
@@ -1167,7 +933,7 @@ namespace Mirle.Agv.Controller
                         data.STDistance - vChangeSafetyDistance - data.TurnOutDistance);
                     r2000VChangeDistance = r2000VChangeDistance + vChangeSafetyDistance;
 
-                    triggerPosition = GetPositionFormEndDistance(data.LastNode, position, r2000VChangeDistance);
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, r2000VChangeDistance);
 
                     tempCommand = NewVChangeCommand(triggerPosition,
                         data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - r2000VChangeDistance : -(data.CommandDistance - r2000VChangeDistance)),
@@ -1179,7 +945,7 @@ namespace Mirle.Agv.Controller
             {
                 r2000VChangeDistance = vChangeSafetyDistance;
 
-                triggerPosition = GetPositionFormEndDistance(data.LastNode, position, r2000VChangeDistance);
+                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, r2000VChangeDistance);
 
                 tempCommand = NewVChangeCommand(triggerPosition,
                     data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - r2000VChangeDistance : -(data.CommandDistance - r2000VChangeDistance)),
@@ -1187,11 +953,9 @@ namespace Mirle.Agv.Controller
                 moveCmdList.Add(tempCommand);
             }
 
-            //data.TurnOutDistance = 0;
-
             distance = closeReviseDistance;
 
-            triggerPosition = GetPositionFormEndDistance(data.LastNode, position, distance);
+            triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
             tempCommand = NewReviseCloseCommand(triggerPosition,
                                  data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                  data.DirFlag, action);
@@ -1201,7 +965,7 @@ namespace Mirle.Agv.Controller
             else
                 moveCmdList.Add(tempCommand);
 
-            triggerPosition = GetPositionFormEndDistance(data.LastNode, position, 0);
+            triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, 0);
 
             tempCommand = NewR2000Command(triggerPosition, data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : -data.CommandDistance),
                                        data.DirFlag, wheelAngle, action);
@@ -1212,12 +976,12 @@ namespace Mirle.Agv.Controller
             {
                 tempCommand = NewVChangeCommand(null, 0, nextVelocityCommand, data.DirFlag);
                 data.NowVelocityCommand = nextVelocityCommand;
+                moveCmdList.Add(tempCommand);
+                data.NowVelocity = velocity;
             }
             else
                 data.NowVelocityCommand = velocity;
 
-            moveCmdList.Add(tempCommand);
-            data.NowVelocity = velocity;
             tempCommand = NewReviseOpenCommand();
             moveCmdList.Add(tempCommand);
             data.TurnOutDistance = 0;
@@ -1346,145 +1110,6 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-        private int GetTurnWheelAngle(int oldWheelAngle, MapPosition start, MapPosition tr, MapPosition end, ref string errorMessage)
-        {
-            if (oldWheelAngle != 0)
-                return 0;
-
-            double startSectionAngle = ComputeAngle(start, tr);
-            double endSectionAngle = ComputeAngle(tr, end);
-            double delta = endSectionAngle - startSectionAngle;
-
-            if (delta < -90)
-                delta += 360;
-            else if (delta > 90)
-                delta -= 360;
-
-            if (delta == 90)
-                return 90;
-            else if (delta == -90)
-                return -90;
-            else
-            {
-                errorMessage = "GetTurnWheelAngle 出現奇怪角度..";
-                return -1;
-                //GGG....
-            }
-        }
-
-        private int GetAGVAngleAfterR2000(int oldAGVAngle, bool dirFlag, MapPosition start, MapPosition end, ref string errorMessage)
-        {
-            int newAGVAngle;
-
-            if (oldAGVAngle != 90 && oldAGVAngle != -90 && oldAGVAngle != 0 && oldAGVAngle != 180)
-            {
-                errorMessage = "GetAGVAngleAfterR2000 oldAGVAngle出現奇怪角度..";
-                return -1;
-            }
-
-            int r2000SectionAngle = (int)ComputeAngle(start, end);
-
-            if (!dirFlag)
-            {
-                if (oldAGVAngle <= 0)
-                    oldAGVAngle += 180;
-                else
-                    oldAGVAngle -= 180;
-            }
-
-            if (r2000SectionAngle != 45 && r2000SectionAngle != -45 && r2000SectionAngle != 135 && r2000SectionAngle != -135)
-            {
-                errorMessage = "GetAGVAngleAfterR2000 r2000SectionAngle出現奇怪角度..";
-                return -1;
-            }
-
-            int delta = oldAGVAngle - r2000SectionAngle;
-            if (delta < -45)
-                delta += 360;
-            else if (delta > 45)
-                delta -= 360;
-
-            if (Math.Abs(delta) != 45)
-            {
-                errorMessage = "GetAGVAngleAfterR2000 r2000SectionAngle 和 oldAGVAngle出現奇怪夾角..";
-                return -1;
-            }
-
-            newAGVAngle = oldAGVAngle + 2 * delta;
-
-            if (!dirFlag)
-            {
-                if (newAGVAngle <= 0)
-                    newAGVAngle += 180;
-                else
-                    newAGVAngle -= 180;
-            }
-
-            return newAGVAngle;
-        }
-
-        private MapPosition GetReversePosition(MapPosition start, MapPosition end, double distance)
-        {
-            if (distance > 0)
-                distance = -distance;
-
-            double distanceAll = Math.Sqrt(Math.Pow(start.X - end.X, 2) + Math.Pow(start.Y - end.Y, 2));
-
-            double x = start.X + (end.X - start.X) * distance / distanceAll;
-            double y = start.Y + (end.Y - start.Y) * distance / distanceAll;
-
-            MapPosition returnMapPosition = new MapPosition(x, y);
-            return returnMapPosition;
-        }
-
-        private MapPosition GetReversePositionR2000(MapPosition end, BreakDownMoveCommandData data, bool isTurnIn, double distance)
-        {
-            double x = end.X;
-            double y = end.Y;
-
-            if (distance < 0)
-                distance = -distance;
-
-            int nowAngle = data.NowAGVAngleInMap;
-
-            if (!data.DirFlag)
-            {
-                if (nowAngle <= 0)
-                    nowAngle = nowAngle + 180;
-                else
-                    nowAngle = nowAngle - 180;
-            }
-
-            if (isTurnIn)
-            {
-                if (nowAngle <= 0)
-                    nowAngle = nowAngle + 180;
-                else
-                    nowAngle = nowAngle - 180;
-            }
-
-            switch (nowAngle)
-            {
-                case 0:
-                    x += distance;
-                    break;
-                case 90:
-                    y -= distance;
-                    break;
-                case -90:
-                    y += distance;
-                    break;
-                case 180:
-                    x -= distance;
-                    break;
-                default:
-                    break;
-            }
-
-            MapPosition returnMapPosition = new MapPosition(x, y);
-            return returnMapPosition;
-        }
-
         // 計算出所有轉彎入彎、出灣的安全距離(加速、減速距離 加上安全距離(出彎可能會沒有、可以設定)).
         private bool GetTurnInOutSafetyDistance(ref BreakDownMoveCommandData data, ref string errorMessage)
         {
@@ -1496,12 +1121,12 @@ namespace Mirle.Agv.Controller
                 {
                     if (action == EnumAddressAction.TR50 || action == EnumAddressAction.TR350)
                     {
-                        tempDouble = GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
+                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
                                                           moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk) +
                                                           moveControlConfig.TurnParameter[action].VChangeSafetyDistance + moveControlConfig.TurnParameter[action].R;
                         data.TurnInSafetyDistance.Add(action, tempDouble);
 
-                        tempDouble = GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
+                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
                                                           moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk) +
                                                           moveControlConfig.TurnParameter[action].R;
                         //if (TurnOutSafetyDistance)
@@ -1511,12 +1136,12 @@ namespace Mirle.Agv.Controller
                     }
                     else if (action == EnumAddressAction.R2000)
                     {
-                        tempDouble = GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
+                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
                                                           moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk) +
                                                           moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
                         data.TurnInSafetyDistance.Add(action, tempDouble);
 
-                        tempDouble = GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
+                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
                                                           moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
                         tempDouble = tempDouble + 100;
                         //if (TurnOutSafetyDistance)
@@ -1582,7 +1207,8 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                SectionLine tempSectionLine = new SectionLine(startNode, endNode, startEncoder, dirFlag, data.StartByPassDistance, data.EndByPassDistance);
+                double sectionAngle = computeFunction.ComputeAngle(startNode, endNode);
+                SectionLine tempSectionLine = new SectionLine(startNode, endNode, sectionAngle, startEncoder, dirFlag, data.StartByPassDistance, data.EndByPassDistance);
                 data.StartByPassDistance = 0;
                 data.EndByPassDistance = 0;
                 sectionLineList.Add(tempSectionLine);
@@ -1613,39 +1239,67 @@ namespace Mirle.Agv.Controller
                 // 第一次入彎距離不夠,需直接後退.
                 if (data.TempDistance < data.TurnInOutDistance)
                 {
-                    // 必定是起點,從起點需要往後多少距離(正值).
-                    data.BackDistance = data.TurnInOutDistance - data.TempDistance;
+                    if (moveCmd.AddressActions[data.Index] == EnumAddressAction.R2000)
+                    {
+                        // 必定是起點,從起點需要往後多少距離(正值).
+                        data.BackDistance = data.TurnInOutDistance - data.TempDistance;
 
-                    // 取得反折點的座標.
-                    if (moveCmd.AddressActions[data.Index] != EnumAddressAction.R2000)
-                        data.TempNode = GetReversePosition(data.StartNode, data.EndNode, data.BackDistance);
+                        // 取得反折點的座標.
+                        data.TempNode = computeFunction.GetReversePositionR2000(data.StartNode, data, true, data.BackDistance);
+
+                        // SectionLineList加入從起點到反折點,且轉換座標只能是起點.
+                        if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.TempNode, data.StartMoveEncoder, !data.DirFlag, ref errorMessage))
+                            return false;
+
+                        // 第一次移動命令加入在反折點SlowStop且移動方向改為反方向,加入到第一次移動命令.
+                        AddOneceMoveCommand(ref tempOnceMoveCmd, data.StartNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index]);
+                        AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
+                        tempOnceMoveCmd.DirFlag = !tempOnceMoveCmd.DirFlag;
+                        oneceMoveCommandList.Add(tempOnceMoveCmd);
+
+                        // 宣告第二次移動命令.
+                        tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
+                        AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index]);
+                        // 起點修改為反折點,SectionLine開始encoder設定,設定轉換座標的最小值起點offset.
+                        data.StartNode = data.TempNode;
+                        data.StartMoveEncoder = data.StartMoveEncoder + (!data.DirFlag ? data.BackDistance : -data.BackDistance);
+                        data.StartByPassDistance = data.BackDistance;
+                        // 重新該新此段SectionLine的距離.
+                        data.TempDistance = Math.Sqrt(Math.Pow(data.EndNode.X - data.StartNode.X, 2) + Math.Pow(data.EndNode.Y - data.StartNode.Y, 2));
+
+                    }
                     else
-                        data.TempNode = GetReversePositionR2000(data.StartNode, data, true, data.BackDistance);
+                    {
+                        // 必定是起點,從起點需要往後多少距離(正值).
+                        data.BackDistance = data.TurnInOutDistance - data.TempDistance;
 
-                    // SectionLineList加入從起點到反折點,且轉換座標只能是起點.
-                    if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.TempNode, data.StartMoveEncoder, !data.DirFlag, ref errorMessage))
-                        return false;
+                        // 取得反折點的座標.
+                        data.TempNode = computeFunction.GetReversePosition(data.StartNode, data.EndNode, data.BackDistance);
 
-                    // 第一次移動命令加入在反折點SlowStop且移動方向改為反方向,加入到第一次移動命令.
-                    AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
-                    tempOnceMoveCmd.DirFlag = !tempOnceMoveCmd.DirFlag;
-                    oneceMoveCommandList.Add(tempOnceMoveCmd);
+                        // SectionLineList加入從起點到反折點,且轉換座標只能是起點.
+                        if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.TempNode, data.StartMoveEncoder, !data.DirFlag, ref errorMessage))
+                            return false;
 
-                    // 宣告第二次移動命令.
-                    tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
-                    AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
-                    // 起點修改為反折點,SectionLine開始encoder設定,設定轉換座標的最小值起點offset.
-                    data.StartNode = data.TempNode;
-                    data.StartMoveEncoder = data.StartMoveEncoder + (!data.DirFlag ? data.BackDistance : -data.BackDistance);
-                    data.StartByPassDistance = data.BackDistance;
-                    // 重新該新此段SectionLine的距離.
-                    data.TempDistance = Math.Sqrt(Math.Pow(data.EndNode.X - data.StartNode.X, 2) + Math.Pow(data.EndNode.Y - data.StartNode.Y, 2));
+                        // 第一次移動命令加入在反折點SlowStop且移動方向改為反方向,加入到第一次移動命令.
+                        AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
+                        tempOnceMoveCmd.DirFlag = !tempOnceMoveCmd.DirFlag;
+                        oneceMoveCommandList.Add(tempOnceMoveCmd);
+
+                        // 宣告第二次移動命令.
+                        tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
+                        AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
+                        // 起點修改為反折點,SectionLine開始encoder設定,設定轉換座標的最小值起點offset.
+                        data.StartNode = data.TempNode;
+                        data.StartMoveEncoder = data.StartMoveEncoder + (!data.DirFlag ? data.BackDistance : -data.BackDistance);
+                        data.StartByPassDistance = data.BackDistance;
+                        // 重新該新此段SectionLine的距離.
+                        data.TempDistance = Math.Sqrt(Math.Pow(data.EndNode.X - data.StartNode.X, 2) + Math.Pow(data.EndNode.Y - data.StartNode.Y, 2));
+                    }
                 }
             }
 
             return true;
         }
-
 
         private bool BreakDownMoveCmd_Turn(MoveCmdInfo moveCmd, ref List<SectionLine> sectionLineList, ref BreakDownMoveCommandData data,
                ref List<OneceMoveCommand> oneceMoveCommandList, ref OneceMoveCommand tempOnceMoveCmd, ref string errorMessage)
@@ -1668,13 +1322,13 @@ namespace Mirle.Agv.Controller
 
                 if (moveCmd.AddressActions[data.Index] == EnumAddressAction.TR350 || moveCmd.AddressActions[data.Index] == EnumAddressAction.TR50)
                 {
-                    data.WheelAngle = GetTurnWheelAngle(data.WheelAngle, data.StartNode, data.EndNode, data.NextNode, ref errorMessage);
+                    data.WheelAngle = computeFunction.GetTurnWheelAngle(data.WheelAngle, data.StartNode, data.EndNode, data.NextNode, ref errorMessage);
                     if (data.WheelAngle == -1)
                         return false;
                 }
                 else
                 {
-                    data.NowAGVAngleInMap = GetAGVAngleAfterR2000(data.NowAGVAngleInMap, data.DirFlag, data.EndNode, data.NextNode, ref errorMessage);
+                    data.NowAGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.NowAGVAngleInMap, data.DirFlag, data.EndNode, data.NextNode, ref errorMessage);
                     if (data.NowAGVAngleInMap == -1)
                         return false;
                 }
@@ -1710,7 +1364,7 @@ namespace Mirle.Agv.Controller
 
             // 確認啟動時的舵輪角度應該為多少、前進方向 retrun false表示不知道目前位置或者是角度偏差過大(10度).
             // 取得所有入彎、出彎所需要的距離(可能會含保護距離(可以設定)).
-            if (!GetDirFlagWheelAngle(moveCmd, ref data, nowAGV, wheelAngle, ref errorMessage) ||
+            if (!computeFunction.GetDirFlagWheelAngle(moveCmd, ref data, nowAGV, wheelAngle, ref errorMessage) ||
                 !GetTurnInOutSafetyDistance(ref data, ref errorMessage))
             {
                 return false;
@@ -1778,6 +1432,20 @@ namespace Mirle.Agv.Controller
                 {
                     data.IsEnd = true;
                     data.EndNode = moveCmd.AddressPositions[data.Index];
+                    if (moveCmd.AddressActions[data.Index - 1] == EnumAddressAction.R2000)
+                    {
+                        data.EndNode = moveCmd.AddressPositions[data.Index];
+                        data.TempDistance = Math.Sqrt(Math.Pow(data.EndNode.X - data.StartNode.X, 2) + Math.Pow(data.EndNode.Y - data.StartNode.Y, 2));
+
+                        if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.EndNode, data.StartMoveEncoder,
+                                               data.DirFlag, ref errorMessage))
+                            return false;
+
+                        data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TempDistance : -data.TempDistance);
+                        data.StartNode = data.EndNode;
+                        AddOneceMoveCommand(ref tempOnceMoveCmd, data.StartNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
+                    }
+
                     data.TempDistance = Math.Sqrt(Math.Pow(data.EndNode.X - data.StartNode.X, 2) + Math.Pow(data.EndNode.Y - data.StartNode.Y, 2));
 
                     // 如果出彎動作中且出彎距離不夠.
@@ -1788,7 +1456,10 @@ namespace Mirle.Agv.Controller
                         data.BackDistance = data.TurnInOutDistance - data.TempDistance;
 
                         // 計算出終點的反折點座標.
-                        data.TempNode = GetReversePosition(data.EndNode, data.StartNode, data.BackDistance);
+                        if (moveCmd.AddressActions[data.Index - 1] != EnumAddressAction.R2000)
+                            data.TempNode = computeFunction.GetReversePosition(data.EndNode, data.StartNode, data.BackDistance);
+                        else
+                            data.TempNode = computeFunction.GetReversePositionR2000(data.EndNode, data, false, data.BackDistance);
 
                         // SectionLineList加入從start到反折點,且轉換座標只能是start到終點.
                         data.EndByPassDistance = data.BackDistance;
@@ -1830,7 +1501,7 @@ namespace Mirle.Agv.Controller
                         moveCmd.AddressActions[data.Index] = EnumAddressAction.TR50;
                     else if (moveCmd.AddressActions[data.Index] == EnumAddressAction.BTR350)
                         moveCmd.AddressActions[data.Index] = EnumAddressAction.TR350;
-                    else if (moveCmd.AddressActions[data.Index] == EnumAddressAction.ST)
+                    else if (moveCmd.AddressActions[data.Index] == EnumAddressAction.BST)
                         moveCmd.AddressActions[data.Index] = EnumAddressAction.ST;
 
                     // 後反折 : 先轉完彎在反折,轉彎前的舵輪角度不為0 (目前都是在舵輪0度時反折) 或 ST(BST:R2000完的反折).
@@ -1839,7 +1510,11 @@ namespace Mirle.Agv.Controller
                         if (moveCmd.AddressActions[data.Index] == EnumAddressAction.ST)
                         { //
                           // 先加入R2000終點BST->ST. 和SectionLineList
-                            AddMoveCmdToOneceMoveCommand(moveCmd, ref tempOnceMoveCmd, ref data);
+                            AddOneceMoveCommand(ref tempOnceMoveCmd, moveCmd.AddressPositions[data.Index],
+                                                moveCmd.AddressActions[data.Index], moveCmd.SectionSpeedLimits[data.Index - 1]);
+                            data.Index++;
+                            // 這樣出彎的速度會有問題.
+                            //AddMoveCmdToOneceMoveCommand(moveCmd, ref tempOnceMoveCmd, ref data);
                             if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.EndNode, data.StartMoveEncoder,
                                                    data.DirFlag, ref errorMessage))
                                 return false;
@@ -1850,7 +1525,7 @@ namespace Mirle.Agv.Controller
                             data.TurnInOutDistance = data.TurnOutSafetyDistance[EnumAddressAction.R2000];
 
                             // 取得即將反折的反折點座標.
-                            data.TempNode = GetReversePositionR2000(data.EndNode, data, false, data.TurnInOutDistance);
+                            data.TempNode = computeFunction.GetReversePositionR2000(data.EndNode, data, false, data.TurnInOutDistance);
 
                             // SectionLineList加入從BST點到反折點,且轉換座標只能是BST點.
                             data.EndByPassDistance = data.TurnInOutDistance;
@@ -1866,7 +1541,7 @@ namespace Mirle.Agv.Controller
                             data.DirFlag = !data.DirFlag;
                             tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
                             // 這邊速度必須是下一段Section的速度(因為不可能拿上一段的138太慢).
-                            AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index]);
+                            AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
                             data.IsTurnOut = false;
                             data.StartByPassDistance = data.TurnInOutDistance;
                             data.StartNode = data.TempNode;
@@ -1877,7 +1552,7 @@ namespace Mirle.Agv.Controller
                             data.TurnInOutDistance = data.TurnOutSafetyDistance[moveCmd.AddressActions[data.Index]];
 
                             // 取得即將反折的反折點座標(會跟TR下一個Node點反方向).
-                            data.NextNode = GetReversePosition(data.EndNode, moveCmd.AddressPositions[data.Index + 1], data.TurnInOutDistance);
+                            data.NextNode = computeFunction.GetReversePosition(data.EndNode, moveCmd.AddressPositions[data.Index + 1], data.TurnInOutDistance);
 
                             if (!BreakDownMoveCmd_Turn(moveCmd, ref sectionLineList, ref data, ref oneceMoveCommandList, ref tempOnceMoveCmd, ref errorMessage))
                                 return false;
@@ -1911,7 +1586,7 @@ namespace Mirle.Agv.Controller
                         data.TurnInOutDistance = data.TurnInSafetyDistance[moveCmd.AddressActions[data.Index]];
 
                         // 取得即將反折的反折點座標(會在直行過TR後一點的地方).
-                        data.TempNode = GetReversePosition(data.EndNode, data.StartNode, data.TurnInOutDistance);
+                        data.TempNode = computeFunction.GetReversePosition(data.EndNode, data.StartNode, data.TurnInOutDistance);
 
                         // SectionLineList加入從start經過TR node點到反折點,且轉換座標只能是start到TR node點.
                         data.EndByPassDistance = data.TurnInOutDistance;
@@ -1920,7 +1595,7 @@ namespace Mirle.Agv.Controller
                             return false;
 
                         // 在反折點加入SlowStop指令.
-                        AddOneceMoveCommand(ref tempOnceMoveCmd, moveCmd.AddressPositions[data.Index], EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index]);
+                        AddOneceMoveCommand(ref tempOnceMoveCmd, moveCmd.AddressPositions[data.Index], EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
 
                         AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
                         oneceMoveCommandList.Add(tempOnceMoveCmd);
@@ -1943,8 +1618,15 @@ namespace Mirle.Agv.Controller
                         }
                         else if (moveCmd.AddressActions[data.Index] == EnumAddressAction.R2000)
                         {
+                            if (moveCmd.SectionSpeedLimits[data.Index] != moveControlConfig.TurnParameter[EnumAddressAction.R2000].Velocity)
+                            {
+                                errorMessage = "R2000 速度必須要是138!";
+                                return false;
+                            }
+
                             if (!BreakDownMoveCmd_Turn(moveCmd, ref sectionLineList, ref data, ref oneceMoveCommandList, ref tempOnceMoveCmd, ref errorMessage))
                                 return false;
+
                         }
                         else
                         {
@@ -2016,21 +1698,21 @@ namespace Mirle.Agv.Controller
             double vChangeDistance;
 
             if (velocityCommand > startVelocity)
-                vChangeDistance = GetAccDecDistance(startVelocity, velocityCommand, acc, jerk);
+                vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, acc, jerk);
             else
-                vChangeDistance = GetAccDecDistance(startVelocity, velocityCommand, dec, jerk);
+                vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, dec, jerk);
 
             if (vChangeDistance <= distance)
                 return velocityCommand;
 
-            double deltaVelocity = (velocityCommand > startVelocity ? -5 : 5);
+            double deltaVelocity = (velocityCommand > startVelocity ? -1 : 1);
 
             for (; vChangeDistance > distance; velocityCommand += deltaVelocity)
             {
                 if (velocityCommand > startVelocity)
-                    vChangeDistance = GetAccDecDistance(startVelocity, velocityCommand, acc, jerk);
+                    vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, acc, jerk);
                 else
-                    vChangeDistance = GetAccDecDistance(startVelocity, velocityCommand, dec, jerk);
+                    vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, dec, jerk);
             }
 
             return velocityCommand;
@@ -2064,7 +1746,6 @@ namespace Mirle.Agv.Controller
                         break;
 
                     case EnumCommandType.SlowStop:
-                    case EnumCommandType.Stop:
                         if (moveCmdList[i].Position != null)
                             nowEncoder = moveCmdList[i].TriggerEncoder;
 
@@ -2092,11 +1773,11 @@ namespace Mirle.Agv.Controller
                             {
                                 if (nowVelocity < nowVelocityCommand)
                                 {  // 升速.
-                                    moveCmdList[lastVChangeCommandIndex].Velocity = (int)(tempNowVelocity / 100) * 100;
+                                    moveCmdList[lastVChangeCommandIndex].Velocity = (int)(tempNowVelocity);
                                 }
                                 else
                                 {  // 降速.
-                                    moveCmdList[lastVChangeCommandIndex].Velocity = (int)(tempNowVelocity / 100) * 100 + 100;
+                                    moveCmdList[lastVChangeCommandIndex].Velocity = (int)(tempNowVelocity);
                                 }
                             }
 
@@ -2114,6 +1795,7 @@ namespace Mirle.Agv.Controller
                         deltaEncoder = moveControlConfig.TurnParameter[moveCmdList[i].TurnType].R * 2;
                         nowEncoder = nowEncoder + (dirFlag ? deltaEncoder : -deltaEncoder);
                         nowVelocity = moveControlConfig.TurnParameter[moveCmdList[i].TurnType].Velocity;
+                        lastVChangeEncoder = nowEncoder;
                         break;
 
                     case EnumCommandType.R2000:
@@ -2121,6 +1803,7 @@ namespace Mirle.Agv.Controller
                         deltaEncoder = moveControlConfig.TurnParameter[EnumAddressAction.R2000].R * Math.Sqrt(2);
                         nowEncoder = nowEncoder + (dirFlag ? deltaEncoder : -deltaEncoder);
                         nowVelocity = moveControlConfig.TurnParameter[moveCmdList[i].TurnType].Velocity;
+                        lastVChangeEncoder = nowEncoder;
                         break;
 
                     case EnumCommandType.ReviseClose:
@@ -2130,14 +1813,15 @@ namespace Mirle.Agv.Controller
                         break;
 
                     case EnumCommandType.End:
+                    case EnumCommandType.Stop:
                     default:
                         break;
                 }
             }
         }
 
-        public bool CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
-                                     ref List<ReserveData> reserveList, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
+        public MoveCommandData CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd,
+                                  AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
             try
             {
@@ -2146,15 +1830,19 @@ namespace Mirle.Agv.Controller
                     moveCmd.AddressActions.Count != moveCmd.AddressPositions.Count)
                 {
                     errorMessage = "moveCmd的三種List(Action, Position, Speed)數量不正確!";
-                    return false;
+                    return null;
                 }
                 else if (moveCmd.AddressActions[moveCmd.AddressActions.Count - 1] != EnumAddressAction.End)
                 {
                     errorMessage = "Action結尾必須是End!";
-                    return false;
+                    return null;
                 }
 
                 WriteAGVMCommand(moveCmd);
+                List<ReserveData> reserveList = new List<ReserveData>();
+                List<Command> moveCmdList = new List<Command>();
+                List<SectionLine> sectionLineList = new List<SectionLine>();
+
                 NewReserveList(moveCmd.AddressPositions, moveCmd.AddressActions, ref reserveList);
 
                 for (int i = 0; i < moveCmd.SectionSpeedLimits.Count; i++)
@@ -2169,15 +1857,17 @@ namespace Mirle.Agv.Controller
                     CommandListChangeReserveIndexToCurrectIndex(ref moveCmdList, reserveList);
                     ProcessVChangeCommand(ref moveCmdList);
                     WriteListLog(moveCmdList, sectionLineList, reserveList);
-                    return true;
+
+                    MoveCommandData returnCommand = new MoveCommandData(moveCmdList, sectionLineList, reserveList);
+                    return returnCommand;
                 }
                 else
-                    return false;
+                    return null;
             }
             catch (Exception ex)
             {
                 errorMessage = "Excption! " + ex.ToString();
-                return false;
+                return null;
             }
         }
     }

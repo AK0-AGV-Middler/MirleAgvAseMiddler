@@ -14,7 +14,7 @@ namespace Mirle.Agv.Model
         public PlcRobot Robot = new PlcRobot();
 
         public bool Loading { get; set; }
-        public string CassetteId { get; set; } = "Empty";
+        public string CassetteId { get; set; } = "";
 
         //以下屬性會影響方向燈,語音和Beam sensor sleep
         //public bool Forward { get; set; }

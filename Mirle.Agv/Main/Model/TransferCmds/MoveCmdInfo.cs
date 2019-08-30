@@ -23,8 +23,8 @@ namespace Mirle.Agv.Model.TransferCmds
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
         public ushort SeqNum { get; set; } = 0;
-        public string EndAddressId { get; set; } = "Empty";
-        public string StartAddressId { get; set; } = "Empty";
+        public string EndAddressId { get; set; } = "";
+        public string StartAddressId { get; set; } = "";
         private int HalfR2000Radius { get; set; } = 1000;
 
         public MoveCmdInfo() : this(new MainFlowHandler()) { }

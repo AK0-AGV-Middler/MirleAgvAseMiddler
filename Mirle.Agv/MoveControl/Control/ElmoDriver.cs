@@ -505,6 +505,7 @@ namespace Mirle.Agv.Controller
                         
                         tempFeedbackData.Count = count;
                         tempFeedbackData.GetDataTime = GetDataTime;
+                        
 
                         if (allAxisList[i].NeedAssignLastCommandPosition && tempFeedbackData.StandStill)
                         {
@@ -798,7 +799,7 @@ namespace Mirle.Agv.Controller
                 if (!allAxisList[i].Config.IsGroup && !allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Move)
                 {
                     DisableAxis(allAxisList[i].Config.ID, memberName);
-                    Thread.Sleep(200);
+                    Thread.Sleep(400);
                 }
             }
 
@@ -807,7 +808,7 @@ namespace Mirle.Agv.Controller
                 if (!allAxisList[i].Config.IsGroup && allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Move)
                 {
                     DisableAxis(allAxisList[i].Config.ID, memberName);
-                    Thread.Sleep(200);
+                    Thread.Sleep(100);
                 }
             }
 
@@ -918,7 +919,7 @@ namespace Mirle.Agv.Controller
                 return false;
             }
         }
-
+        
         public bool WheelAngleCompare(double angle_ALL, double range,
             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
@@ -940,19 +941,19 @@ namespace Mirle.Agv.Controller
 
                 if (axis == EnumAxis.GT)
                 {
-                    if (MoveCompelete(axis))
-                    {
-                        if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
-                            return;
-                    }
-                    else
-                    {
+                    //if (MoveCompelete(axis))
+                    //{
+                    //    if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
+                    //        return;
+                    //}
+                    //else
+                    //{
                         if (Math.Abs(distance_FL - allAxis[EnumAxis.TFL].LastCommandPosition) < 0.1 &&
                             Math.Abs(distance_FR - allAxis[EnumAxis.TFR].LastCommandPosition) < 0.1 &&
                             Math.Abs(distance_RL - allAxis[EnumAxis.TRL].LastCommandPosition) < 0.1 &&
                             Math.Abs(distance_RR - allAxis[EnumAxis.TRR].LastCommandPosition) < 0.1)
                             return;
-                    }
+                    //}
                 }
 
                 double sqrt = Math.Sqrt(allAxis[axis].Config.GroupOrder.Count());
@@ -981,7 +982,7 @@ namespace Mirle.Agv.Controller
                               MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
                               NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
                               Transition, 1, 1);
-
+                
                 allAxis[EnumAxis.TFL].LastCommandPosition = distance_FL;
                 allAxis[EnumAxis.TFR].LastCommandPosition = distance_FR;
                 allAxis[EnumAxis.TRL].LastCommandPosition = distance_RL;
@@ -1040,7 +1041,6 @@ namespace Mirle.Agv.Controller
                               NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
                               Transition, 1, 1);
 
-
                 allAxis[allAxis[axis].Config.CommandOrder[0]].LastCommandPosition += distance_FL;
                 allAxis[allAxis[axis].Config.CommandOrder[1]].LastCommandPosition += distance_FR;
                 allAxis[allAxis[axis].Config.CommandOrder[2]].LastCommandPosition += distance_RL;
@@ -1075,7 +1075,7 @@ namespace Mirle.Agv.Controller
                               (float)jerk,
                               MC_DIRECTION_ENUM.MC_POSITIVE_DIRECTION,
                               MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
-
+                
                 allAxis[axis].LastCommandPosition += distance;
             }
             catch (MMCException ex)
@@ -1097,7 +1097,6 @@ namespace Mirle.Agv.Controller
                 if (!allAxis[axis].Config.IsVirtualDevice && Math.Abs(distance - allAxis[axis].LastCommandPosition) < 0.1)
                     return;
 
-                allAxis[axis].LastCommandPosition = distance;
 
                 WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance : " + distance.ToString("0.00") +
                             ", velocity : " + velocity.ToString("0") + ", acc : " + acceleration.ToString("0") +
@@ -1109,6 +1108,8 @@ namespace Mirle.Agv.Controller
                               (float)jerk,
                               MC_DIRECTION_ENUM.MC_POSITIVE_DIRECTION,
                               MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE);
+
+                allAxis[axis].LastCommandPosition = distance;
             }
             catch (MMCException ex)
             {

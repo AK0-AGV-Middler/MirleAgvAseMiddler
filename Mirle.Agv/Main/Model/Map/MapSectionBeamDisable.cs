@@ -9,11 +9,11 @@ namespace Mirle.Agv.Model
     [Serializable]
     public class MapSectionBeamDisable
     {
-        public string SectionId { get; set; } = "Empty";
+        public string SectionId { get; set; } = "";
         public double Min { get; set; }
         public double Max { get; set; }
-        public bool ForwardDisable { get; set; }
-        public bool BackwardDisable { get; set; }
+        public bool FrontDisable { get; set; }
+        public bool BackDisable { get; set; }
         public bool LeftDisable { get; set; }
         public bool RightDisable { get; set; }
     }

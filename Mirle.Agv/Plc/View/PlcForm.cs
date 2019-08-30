@@ -50,6 +50,11 @@ namespace Mirle.Agv.View
 
         }
 
+        private void PlcForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = true;
+        }
+
         private void EventInitial()
         {
             mcProtocol.OnDataChangeEvent += McProtocol_OnDataChangeEvent;
@@ -1361,5 +1366,18 @@ namespace Mirle.Agv.View
             else
                 Vehicle.Instance.AutoState = EnumAutoState.Auto;
         }
+
+        private void chkFakeForking_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFakeForking.Checked)
+            {
+                if(this.plcAgent != null)
+                {
+                    this.plcAgent.IsFakeForking = chkFakeForking.Checked;
+                }
+            }
+        }
+
+      
     }
 }

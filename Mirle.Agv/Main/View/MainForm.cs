@@ -43,8 +43,8 @@ namespace Mirle.Agv.View
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
         private bool IsAskingReserve { get; set; }
-        private string LastAskingReserveSectionId { get; set; } = "Empty";
-        private string LastAgvcTransferCommandId { get; set; } = "Empty";
+        private string LastAskingReserveSectionId { get; set; } = "";
+        private string LastAgvcTransferCommandId { get; set; } = "";
         private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
         private int lastAlarmId = 0;
 
@@ -139,12 +139,20 @@ namespace Mirle.Agv.View
         private void InitialPanels()
         {
             panelLeftUp = splitContainer3.Panel1;
+            panelLeftUp.HorizontalScroll.Enabled = true;
+            panelLeftUp.VerticalScroll.Enabled = true;
 
             panelLeftDown = splitContainer3.Panel2;
+            panelLeftDown.HorizontalScroll.Enabled = true;
+            panelLeftDown.VerticalScroll.Enabled = true;
 
             panelRightUp = splitContainer2.Panel1;
+            panelRightUp.HorizontalScroll.Enabled = true;
+            panelRightUp.VerticalScroll.Enabled = true;
 
             panelRightDown = splitContainer2.Panel2;
+            panelRightDown.HorizontalScroll.Enabled = true;
+            panelRightDown.VerticalScroll.Enabled = true;
         }
 
         private void InitialEvents()
@@ -152,8 +160,35 @@ namespace Mirle.Agv.View
             mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
             middleAgent.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
+            middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
+
+        }
+
+        public delegate void RadioButtonCheckDel(RadioButton radioButton, bool isCheck);
+        public void RadioButtonCheck(RadioButton radioButton,bool isCheck)
+        {
+            if (radioButton.InvokeRequired)
+            {
+                RadioButtonCheckDel mydel = new RadioButtonCheckDel(RadioButtonCheck);
+                this.Invoke(mydel, new object[] { radioButton, isCheck });
+            }
+            else
+            {
+                radioButton.Checked = isCheck;
+            }
+        }
+        private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
+        {
+            if (isConnect)
+            {
+                RadioButtonCheck(radOnline, true);               
+            }
+            else
+            {
+                RadioButtonCheck(radOffline, true);
+            }
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
@@ -186,6 +221,8 @@ namespace Mirle.Agv.View
 
         public void DrawBasicMap()
         {
+            //pictureBox1.Parent = panelLeftUp;
+            pictureBox1.Size = new Size(2000, 2000);
             image = new Bitmap(1920, 1080, PixelFormat.Format32bppArgb);
             gra = Graphics.FromImage(image);
 
@@ -1204,6 +1241,52 @@ namespace Mirle.Agv.View
         private void btnKeyInSoc_Click(object sender, EventArgs e)
         {           
             mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
+        }
+
+        private void radOnline_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radOnline.Checked)
+            {
+                if (!middleAgent.IsConnected())
+                {
+                    middleAgent.ReConnect();
+                }
+            }
+            else
+            {
+                if (middleAgent.IsConnected())
+                {
+                    middleAgent.DisConnect();
+                }
+            }            
+        }
+
+        private void btnSemiAutoManual_Click(object sender, EventArgs e)
+        {
+            switch (Vehicle.Instance.AutoState)
+            {
+                case EnumAutoState.Manual:
+                    if (true/*SetManualToAuto()*/)
+                    {
+                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
+                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                        if (Vehicle.Instance.ThePlcVehicle.Loading)
+                        {
+                            string cstid = "";
+                            plcAgent.triggerCassetteIDReader(ref cstid);
+                        }
+                    }
+                    break;
+                case EnumAutoState.Auto:
+                default:
+                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
+                    mainFlowHandler.StopAndClear();
+                    mainFlowHandler.StopWatchLowPower();
+                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
+                    Vehicle.Instance.AutoState = EnumAutoState.Manual;
+                    break;
+            }
+
         }
     }
 }

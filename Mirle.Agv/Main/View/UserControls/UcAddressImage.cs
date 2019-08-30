@@ -14,7 +14,7 @@ namespace Mirle.Agv
     public partial class UcAddressImage : UserControl
     {
         public MapAddress Address { get; set; } = new MapAddress();
-        public string Id { get; set; } = "Empty";
+        public string Id { get; set; } = "";
         public Size labelSize { get; set; } = new Size(100, 100);
         public int Delta { get; set; } = 0;
         public int Radius { get; set; } = 6;

@@ -73,6 +73,7 @@ namespace Mirle.Agv.Controller
         public event EventHandler<EnumAutoState> OnIpcAutoManualChangeEvent;
 
         public Boolean IsNeedReadCassetteID { get; set; } = true;
+        public Boolean IsFakeForking { get; set; } = false;
 
         private Boolean boolConnectionState = false;
         public Boolean ConnectionState
@@ -575,19 +576,19 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Batterys.MeterAh = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
                                     break;
                                 case "FullChargeIndex":
-                                    if (this.APLCVehicle.Batterys.FullChargeIndex == 0)
-                                    {
-                                        //AGV斷電重開
-                                        //this.APLCVehicle.APlcBatterys.CcModeAh = this.APLCVehicle.APlcBatterys.CcModeAh - this.APLCVehicle.APlcBatterys.AhWorkingRange;
-                                        this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.CcModeAh - this.APLCVehicle.Batterys.AhWorkingRange, false);
-                                    }
-                                    else
-                                    {
+                                    //if (this.APLCVehicle.Batterys.FullChargeIndex == 0)
+                                    //{
+                                    //    //AGV斷電重開
+                                    //    //this.APLCVehicle.APlcBatterys.CcModeAh = this.APLCVehicle.APlcBatterys.CcModeAh - this.APLCVehicle.APlcBatterys.AhWorkingRange;
+                                    //    this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.CcModeAh - this.APLCVehicle.Batterys.AhWorkingRange, false);
+                                    //}
+                                    //else
+                                    //{
                                         this.APLCVehicle.Batterys.CcModeFlag = true;
                                         //CC Mode達到                                
                                         this.APLCVehicle.Batterys.FullChargeIndex = oColParam.Item(i).AsUInt16;
 
-                                    }
+                                    //}
 
                                     break;
                                 case "HomeStatus":
@@ -1116,7 +1117,7 @@ namespace Mirle.Agv.Controller
                                 backSleepFlag = (!APLCVehicle.MoveBack) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
                                 leftSleepFlag = (!APLCVehicle.MoveLeft) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
                                 rightSleepFlag = (!APLCVehicle.MoveRight) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
-
+                           
                                 if (frontSleepFlag)
                                 {
                                     this.SetBeamSensorSleepOn(EnumVehicleSide.Forward);
@@ -1944,15 +1945,23 @@ namespace Mirle.Agv.Controller
             string strItem = $"{stLevelr}_{word.ToString()}_{bit.ToString()}";
             try
             {
-                this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = status;
-                if (this.aMCProtocol.WritePLC())
+                if(this.aMCProtocol.get_ItemByTag(strItem) != null)
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} Success"));
-                    result = true;
+                    this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = status;
+                    if (this.aMCProtocol.WritePLC())
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} Success"));
+                        result = true;
+                    }
+                    else
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} fail"));
+
                 }
                 else
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} fail"));
-            }
+                {
+
+                }
+             }
             catch (Exception ex)
             {
                 LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
@@ -2343,32 +2352,35 @@ namespace Mirle.Agv.Controller
                         {
                             case EnumForkCommandState.Queue:
 
-                                //System.Threading.Thread.Sleep(15000);
-                                //if(this.APLCVehicle.Batterys.Charging == true)
-                                //{
-                                //    System.Threading.Thread.Sleep(15000);
-                                //}
+                                if (this.IsFakeForking)
+                                {
+                                    System.Threading.Thread.Sleep(3000);
+                                    if (this.APLCVehicle.Batterys.Charging == true)
+                                    {
+                                        System.Threading.Thread.Sleep(27000);
+                                    }
 
-                                //if(this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
-                                //{
-                                //    this.APLCVehicle.Loading = true;
-                                //    this.APLCVehicle.CassetteId = "CA0070";
-                                //}
-                                //else if(this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
-                                //{
-                                //    this.APLCVehicle.Loading = false;
-                                //    this.APLCVehicle.CassetteId = "";
-                                //}
-                                //else
-                                //{
+                                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
+                                    {
+                                        this.APLCVehicle.Loading = true;
+                                        this.APLCVehicle.CassetteId = "CA0070";
+                                    }
+                                    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
+                                    {
+                                        this.APLCVehicle.Loading = false;
+                                        this.APLCVehicle.CassetteId = "";
+                                    }
+                                    else
+                                    {
 
-                                //}
+                                    }
 
-                                //eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                //OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
-                                //clearExecutingForkCommandFlag = true;
+                                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                                    clearExecutingForkCommandFlag = true;
 
-                                //break;
+                                    break;
+                                }                                
 
                                 //送出指令                              
                                 if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)

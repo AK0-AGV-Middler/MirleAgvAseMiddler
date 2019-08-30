@@ -226,7 +226,7 @@ namespace Mirle.Agv.Controller
                             //{
                             ComputeMapPosition(sr2000ReadData);
                             ComputeThetaSectionDeviation(sr2000ReadData);
-                            sr2000ReadData.ReviseData.BarodeAngleInMap = sr2000ReadData.AGV.BarcodeAngleInMap;
+                            sr2000ReadData.ReviseData.BarcodeAngleInMap = sr2000ReadData.AGV.BarcodeAngleInMap;
                             sr2000ReadData.ReviseData.AGVAngleInMap = sr2000ReadData.AGV.AGVAngle;
                             //}
                         }
@@ -458,7 +458,7 @@ namespace Mirle.Agv.Controller
                               (sr2000Config.Target.X - offsetBarcode1.X) / (offsetBarcode2.X - offsetBarcode1.X);
 
                 sectionDeviation = -Math.Cos(-sr2000Config.ReaderSetupAngle / 180 * Math.PI) * (centerPixel - sr2000Config.Target.Y) * sr2000Config.Change.Y;
-                sr2000ReadData.ReviseData = new ThetaSectionDeviation(theta, sectionDeviation);
+                sr2000ReadData.ReviseData = new ThetaSectionDeviation(theta, sectionDeviation, sr2000ReadData.Count);
             }
             else if (Math.Abs(sr2000ReadData.AGV.BarcodeAngle - 90) <= AllowableTheta ||
                      Math.Abs(sr2000ReadData.AGV.BarcodeAngle - -90) <= AllowableTheta)
@@ -478,7 +478,7 @@ namespace Mirle.Agv.Controller
                               (sr2000Config.Target.Y - offsetBarcode1.Y) / (offsetBarcode2.Y - offsetBarcode1.Y);
 
                 sectionDeviation = -Math.Cos(-sr2000Config.ReaderSetupAngle / 180 * Math.PI) * (centerPixel - sr2000Config.Target.X) * sr2000Config.Change.X;
-                sr2000ReadData.ReviseData = new ThetaSectionDeviation(theta, sectionDeviation);
+                sr2000ReadData.ReviseData = new ThetaSectionDeviation(theta, sectionDeviation, sr2000ReadData.Count);
             }
             else
             {

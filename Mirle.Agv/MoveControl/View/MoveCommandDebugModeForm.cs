@@ -18,9 +18,7 @@ namespace Mirle.Agv.View
     public partial class MoveCommandDebugModeForm : Form
     {
         private MoveControlHandler moveControl;
-        private List<Command> moveCmdList = null;
-        private List<SectionLine> sectionLineList = null;
-        private List<ReserveData> reserveDataList = null;
+        private MoveCommandData command;
         private MapInfo theMapInfo = new MapInfo();
         private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
 
@@ -132,6 +130,7 @@ namespace Mirle.Agv.View
                 {
                     case EnumSensorSafetyType.Charging:
                         tempSensor.SetLabelString("充電檢查 : ");
+                        tempSensor.DisableButton();
                         break;
                     case EnumSensorSafetyType.ForkHome:
                         tempSensor.SetLabelString("Fork原點 : ");
@@ -290,7 +289,7 @@ namespace Mirle.Agv.View
                 ucLabelTB_CreateCommand_BarcodePosition.TagValue = "( ---, --- )";
 
             ucLabelTB_CreateCommandState.TagValue = moveControl.MoveState.ToString();
-            
+
             bool buttonEnable = true;
             string lockResult = "";
 
@@ -299,7 +298,8 @@ namespace Mirle.Agv.View
                 buttonEnable = false;
                 lockResult = "Lock Result : AutoMode中!";
             }
-            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None)
+            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
+                     Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
             {
                 buttonEnable = false;
                 lockResult = "Lock Result : 主流程動作中!";
@@ -326,17 +326,14 @@ namespace Mirle.Agv.View
 
         private void UpdateList()
         {
-            reserveDataList = moveControl.ReserveList;
-            moveCmdList = moveControl.CommandList;
-            ShowList();
-            reserveDataList = null;
-            moveCmdList = null;
+            ShowReserveList(null);
+            ShowMoveCommandList(null);
         }
 
         private void Timer_Update_CommandList()
         {
             string nowCommandID = moveControl.MoveCommandID;
-            if (nowCommandID != commandID || (moveControl.MoveState != EnumMoveState.Idle && moveControl.CommandList.Count != commandStringList.Count))
+            if (nowCommandID != commandID || (moveControl.MoveState != EnumMoveState.Idle && moveControl.command.CommandList.Count != commandStringList.Count))
             {
                 UpdateList();
                 commandID = nowCommandID;
@@ -353,6 +350,13 @@ namespace Mirle.Agv.View
             ucLabelTB_ElmoEncoder.TagValue = moveControl.location.ElmoEncoder.ToString("0");
             ucLabelTB_EncoderOffset.TagValue = moveControl.location.Offset.ToString("0");
 
+            double looptime = moveControl.LoopTime;
+            if (looptime > 10)
+                label_LoopTime.ForeColor = System.Drawing.Color.Red;
+            else
+                label_LoopTime.ForeColor = System.Drawing.Color.Black;
+
+            label_LoopTime.Text = looptime.ToString("0") + "ms";
             tempReal = moveControl.location.Real;
 
             ucLabelTB_RealPosition.TagValue = (tempReal != null) ?
@@ -370,14 +374,17 @@ namespace Mirle.Agv.View
             label_WaitReserve.Text = "Wait index : " + (moveControl.WaitReseveIndex == -1 ? "" : moveControl.WaitReseveIndex.ToString());
             label_SensorState.Text = moveControl.ControlData.SensorState.ToString();
 
+            label_LastIdealTime.Text = moveControl.autoTime;
+            label_LastIErrorTime.Text = moveControl.errorTime;
+
             try
             {
                 int tempResserveIndex = moveControl.GetReserveIndex();
-                int tempCommandIndex = moveControl.IndexOfCmdList;
+                int tempCommandIndex = moveControl.command.IndexOfCmdList;
 
-                if (tempResserveIndex != -1 && tempResserveIndex > reserveIndex)
+                if (tempResserveIndex > reserveIndex)
                 {
-                    for (int i = reserveIndex + 1; i <= tempResserveIndex; i++)
+                    for (int i = reserveIndex; i < tempResserveIndex; i++)
                         ReserveList.Items[i] = "▶ " + reserveStringList[i];
 
                     reserveIndex = tempResserveIndex;
@@ -393,13 +400,11 @@ namespace Mirle.Agv.View
             }
             catch
             {
-
             }
         }
 
         private void Timer_Update_Debug()
         {
-
         }
 
         private void Timer_Update_DebugCSV()
@@ -636,60 +641,51 @@ namespace Mirle.Agv.View
                 return;
             }
 
-            if (moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo,
-                         ref moveCmdList, ref sectionLineList, ref reserveDataList, moveControl.location.Real, ref errorMessage))
+            command = moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo, ref errorMessage);
+
+            if (command != null)
             {
                 moveCmdInfo = null;
                 button_SendList.Enabled = true;
                 ShowList();
             }
             else
-                MessageBox.Show("Cycle List 產生失敗!\n" + errorMessage);
+                MessageBox.Show("List 產生失敗!\n" + errorMessage);
         }
         #endregion
 
         #region Page Command List
-        private void ShowReserveList()
+        private void ShowReserveList(List<ReserveData> reserveList)
         {
-            if (reserveDataList == null)
-                return;
-
-            reserveIndex = -1;
+            reserveIndex = 0;
             ReserveList.Items.Clear();
             reserveStringList = new List<string>();
-            string lineString;
-            for (int i = 0; i < reserveDataList.Count; i++)
-            {
-                lineString = "reserve node " + i.ToString() + " : ( " +
-                    reserveDataList[i].Position.X.ToString("0") + ", " +
-                    reserveDataList[i].Position.Y.ToString("0") + " )";
-                reserveStringList.Add(lineString);
 
-                lineString = "▷ " + lineString;
-                ReserveList.Items.Add(lineString);
-            }
+            moveControl.GetReserveListInfo(reserveList, ref reserveStringList);
+            for (int i = 0; i < reserveStringList.Count; i++)
+                ReserveList.Items.Add("▷ " + reserveStringList[i]);
         }
 
-        private void ShowMoveCommandList()
+        private void ShowMoveCommandList(List<Command> cmdList)
         {
             commandIndex = 0;
             CommandList.Items.Clear();
             commandStringList = new List<string>();
 
-            moveControl.GetMoveCommandListInfo(moveCmdList, ref commandStringList);
+            moveControl.GetMoveCommandListInfo(cmdList, ref commandStringList);
             for (int i = 0; i < commandStringList.Count; i++)
                 CommandList.Items.Add("▷ " + commandStringList[i]);
         }
 
         private void ShowList()
         {
-            ShowReserveList();
-            ShowMoveCommandList();
+            ShowReserveList(command.ReserveList);
+            ShowMoveCommandList(command.CommandList);
         }
 
         private void button_SendList_Click(object sender, EventArgs e)
         {
-            moveControl.TransferMoveDebugMode(moveCmdList, sectionLineList, reserveDataList);
+            moveControl.TransferMoveDebugMode(command);
             button_SendList.Enabled = false;
 
             if (cB_GetAllReserve.Checked)
@@ -763,7 +759,7 @@ namespace Mirle.Agv.View
         {
             dataGridView_CSVList.Rows.Clear();
         }
-        
+
         private void dataGridView_CSVList_ColumnHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             int index = e.ColumnIndex;

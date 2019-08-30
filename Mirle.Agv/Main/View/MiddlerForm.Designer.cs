@@ -46,6 +46,7 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btnIsClientAgentNull = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -232,13 +233,24 @@
             // 
             this.toolStripStatusLabel2.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(707, 17);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(676, 17);
             this.toolStripStatusLabel2.Spring = true;
             // 
             // toolStripStatusLabel3
             // 
             this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
             this.toolStripStatusLabel3.Size = new System.Drawing.Size(0, 17);
+            // 
+            // btnIsClientAgentNull
+            // 
+            this.btnIsClientAgentNull.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnIsClientAgentNull.Location = new System.Drawing.Point(485, 6);
+            this.btnIsClientAgentNull.Name = "btnIsClientAgentNull";
+            this.btnIsClientAgentNull.Size = new System.Drawing.Size(69, 23);
+            this.btnIsClientAgentNull.TabIndex = 20;
+            this.btnIsClientAgentNull.Text = "IsNull";
+            this.btnIsClientAgentNull.UseVisualStyleBackColor = true;
+            this.btnIsClientAgentNull.Click += new System.EventHandler(this.btnIsClientAgentNull_Click);
             // 
             // MiddlerForm
             // 
@@ -253,6 +265,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbSend);
             this.Controls.Add(this.btnSend);
+            this.Controls.Add(this.btnIsClientAgentNull);
             this.Controls.Add(this.btnDisConnect);
             this.Controls.Add(this.btnConnect);
             this.Controls.Add(this.label3);
@@ -293,5 +306,6 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
+        private System.Windows.Forms.Button btnIsClientAgentNull;
     }
 }
