@@ -41,6 +41,8 @@ namespace Mirle.Agv.View
             this.tbC_Debug = new System.Windows.Forms.TabControl();
             this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
             this.label_LockResult = new System.Windows.Forms.Label();
+            this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.tB_PositionY = new System.Windows.Forms.TextBox();
             this.tB_PositionX = new System.Windows.Forms.TextBox();
             this.button_DebugModeSend = new System.Windows.Forms.Button();
@@ -65,6 +67,8 @@ namespace Mirle.Agv.View
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.tbP_List = new System.Windows.Forms.TabPage();
+            this.label_LastIErrorTime = new System.Windows.Forms.Label();
+            this.label_LastIdealTime = new System.Windows.Forms.Label();
             this.label_SensorState_Label = new System.Windows.Forms.Label();
             this.label_LoopTime_Label = new System.Windows.Forms.Label();
             this.label_LoopTime = new System.Windows.Forms.Label();
@@ -77,6 +81,16 @@ namespace Mirle.Agv.View
             this.label_MoveCommandID = new System.Windows.Forms.Label();
             this.label_MoveCommandIDLabel = new System.Windows.Forms.Label();
             this.cB_GetAllReserve = new System.Windows.Forms.CheckBox();
+            this.ucLabelTB_EncoderPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_Velocity = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_EncoderOffset = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_ElmoEncoder = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTtB_CommandListState = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_RealPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_Delta = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_RealEncoder = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTextBox1 = new Mirle.Agv.UcLabelTextBox();
             this.tbP_Debug = new System.Windows.Forms.TabPage();
             this.button_DebugListClear = new System.Windows.Forms.Button();
             this.label_DebugList = new System.Windows.Forms.Label();
@@ -127,20 +141,7 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
-            this.label_LastIdealTime = new System.Windows.Forms.Label();
-            this.label_LastIErrorTime = new System.Windows.Forms.Label();
-            this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_EncoderPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_Velocity = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_EncoderOffset = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_ElmoEncoder = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTtB_CommandListState = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_RealPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_Delta = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_RealEncoder = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTextBox1 = new Mirle.Agv.UcLabelTextBox();
+            this.tB_AddressId = new System.Windows.Forms.TextBox();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -247,6 +248,7 @@ namespace Mirle.Agv.View
             // 
             // tbP_CreateCommand
             // 
+            this.tbP_CreateCommand.Controls.Add(this.tB_AddressId);
             this.tbP_CreateCommand.Controls.Add(this.label_LockResult);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommand_BarcodePosition);
@@ -291,6 +293,26 @@ namespace Mirle.Agv.View
             this.label_LockResult.Size = new System.Drawing.Size(112, 19);
             this.label_LockResult.TabIndex = 80;
             this.label_LockResult.Text = "Lock Result : ";
+            // 
+            // ucLabelTB_CreateCommandState
+            // 
+            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(658, 554);
+            this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8);
+            this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
+            this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_CreateCommandState.TabIndex = 78;
+            this.ucLabelTB_CreateCommandState.TagName = "label1";
+            this.ucLabelTB_CreateCommandState.TagValue = "";
+            // 
+            // ucLabelTB_CreateCommand_BarcodePosition
+            // 
+            this.ucLabelTB_CreateCommand_BarcodePosition.Location = new System.Drawing.Point(18, 566);
+            this.ucLabelTB_CreateCommand_BarcodePosition.Margin = new System.Windows.Forms.Padding(5);
+            this.ucLabelTB_CreateCommand_BarcodePosition.Name = "ucLabelTB_CreateCommand_BarcodePosition";
+            this.ucLabelTB_CreateCommand_BarcodePosition.Size = new System.Drawing.Size(332, 27);
+            this.ucLabelTB_CreateCommand_BarcodePosition.TabIndex = 77;
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagName = "label1";
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagValue = "";
             // 
             // tB_PositionY
             // 
@@ -394,9 +416,9 @@ namespace Mirle.Agv.View
             // btnPositionXY
             // 
             this.btnPositionXY.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnPositionXY.Location = new System.Drawing.Point(267, 526);
+            this.btnPositionXY.Location = new System.Drawing.Point(406, 526);
             this.btnPositionXY.Name = "btnPositionXY";
-            this.btnPositionXY.Size = new System.Drawing.Size(180, 32);
+            this.btnPositionXY.Size = new System.Drawing.Size(104, 32);
             this.btnPositionXY.TabIndex = 63;
             this.btnPositionXY.Text = "Add";
             this.btnPositionXY.UseVisualStyleBackColor = true;
@@ -573,6 +595,28 @@ namespace Mirle.Agv.View
             this.tbP_List.Text = "CommandList資料";
             this.tbP_List.UseVisualStyleBackColor = true;
             // 
+            // label_LastIErrorTime
+            // 
+            this.label_LastIErrorTime.AutoSize = true;
+            this.label_LastIErrorTime.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_LastIErrorTime.ForeColor = System.Drawing.Color.Black;
+            this.label_LastIErrorTime.Location = new System.Drawing.Point(213, 487);
+            this.label_LastIErrorTime.Name = "label_LastIErrorTime";
+            this.label_LastIErrorTime.Size = new System.Drawing.Size(138, 19);
+            this.label_LastIErrorTime.TabIndex = 102;
+            this.label_LastIErrorTime.Text = "異常停止時間 : ";
+            // 
+            // label_LastIdealTime
+            // 
+            this.label_LastIdealTime.AutoSize = true;
+            this.label_LastIdealTime.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_LastIdealTime.ForeColor = System.Drawing.Color.Black;
+            this.label_LastIdealTime.Location = new System.Drawing.Point(17, 487);
+            this.label_LastIdealTime.Name = "label_LastIdealTime";
+            this.label_LastIdealTime.Size = new System.Drawing.Size(100, 19);
+            this.label_LastIdealTime.TabIndex = 100;
+            this.label_LastIdealTime.Text = "啟動時間 : ";
+            // 
             // label_SensorState_Label
             // 
             this.label_SensorState_Label.AutoSize = true;
@@ -699,6 +743,106 @@ namespace Mirle.Agv.View
             this.cB_GetAllReserve.TabIndex = 80;
             this.cB_GetAllReserve.Text = "取得所有點";
             this.cB_GetAllReserve.UseVisualStyleBackColor = true;
+            // 
+            // ucLabelTB_EncoderPosition
+            // 
+            this.ucLabelTB_EncoderPosition.Location = new System.Drawing.Point(512, 566);
+            this.ucLabelTB_EncoderPosition.Margin = new System.Windows.Forms.Padding(37, 33, 37, 33);
+            this.ucLabelTB_EncoderPosition.Name = "ucLabelTB_EncoderPosition";
+            this.ucLabelTB_EncoderPosition.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_EncoderPosition.TabIndex = 88;
+            this.ucLabelTB_EncoderPosition.TagName = "label1";
+            this.ucLabelTB_EncoderPosition.TagValue = "";
+            // 
+            // ucLabelTB_Velocity
+            // 
+            this.ucLabelTB_Velocity.Location = new System.Drawing.Point(512, 514);
+            this.ucLabelTB_Velocity.Margin = new System.Windows.Forms.Padding(22, 21, 22, 21);
+            this.ucLabelTB_Velocity.Name = "ucLabelTB_Velocity";
+            this.ucLabelTB_Velocity.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_Velocity.TabIndex = 83;
+            this.ucLabelTB_Velocity.TagName = "label1";
+            this.ucLabelTB_Velocity.TagValue = "";
+            // 
+            // ucLabelTB_EncoderOffset
+            // 
+            this.ucLabelTB_EncoderOffset.Location = new System.Drawing.Point(1027, 514);
+            this.ucLabelTB_EncoderOffset.Margin = new System.Windows.Forms.Padding(13);
+            this.ucLabelTB_EncoderOffset.Name = "ucLabelTB_EncoderOffset";
+            this.ucLabelTB_EncoderOffset.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_EncoderOffset.TabIndex = 82;
+            this.ucLabelTB_EncoderOffset.TagName = "label1";
+            this.ucLabelTB_EncoderOffset.TagValue = "";
+            // 
+            // ucLabelTB_ElmoEncoder
+            // 
+            this.ucLabelTB_ElmoEncoder.Location = new System.Drawing.Point(767, 514);
+            this.ucLabelTB_ElmoEncoder.Margin = new System.Windows.Forms.Padding(13);
+            this.ucLabelTB_ElmoEncoder.Name = "ucLabelTB_ElmoEncoder";
+            this.ucLabelTB_ElmoEncoder.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_ElmoEncoder.TabIndex = 81;
+            this.ucLabelTB_ElmoEncoder.TagName = "label1";
+            this.ucLabelTB_ElmoEncoder.TagValue = "";
+            // 
+            // ucLabelTtB_CommandListState
+            // 
+            this.ucLabelTtB_CommandListState.Location = new System.Drawing.Point(768, 566);
+            this.ucLabelTtB_CommandListState.Margin = new System.Windows.Forms.Padding(13);
+            this.ucLabelTtB_CommandListState.Name = "ucLabelTtB_CommandListState";
+            this.ucLabelTtB_CommandListState.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTtB_CommandListState.TabIndex = 79;
+            this.ucLabelTtB_CommandListState.TagName = "label1";
+            this.ucLabelTtB_CommandListState.TagValue = "";
+            // 
+            // ucLabelTB_BarcodePosition
+            // 
+            this.ucLabelTB_BarcodePosition.Location = new System.Drawing.Point(257, 566);
+            this.ucLabelTB_BarcodePosition.Margin = new System.Windows.Forms.Padding(8);
+            this.ucLabelTB_BarcodePosition.Name = "ucLabelTB_BarcodePosition";
+            this.ucLabelTB_BarcodePosition.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_BarcodePosition.TabIndex = 50;
+            this.ucLabelTB_BarcodePosition.TagName = "label1";
+            this.ucLabelTB_BarcodePosition.TagValue = "";
+            // 
+            // ucLabelTB_RealPosition
+            // 
+            this.ucLabelTB_RealPosition.Location = new System.Drawing.Point(7, 566);
+            this.ucLabelTB_RealPosition.Margin = new System.Windows.Forms.Padding(8);
+            this.ucLabelTB_RealPosition.Name = "ucLabelTB_RealPosition";
+            this.ucLabelTB_RealPosition.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_RealPosition.TabIndex = 49;
+            this.ucLabelTB_RealPosition.TagName = "label1";
+            this.ucLabelTB_RealPosition.TagValue = "";
+            // 
+            // ucLabelTB_Delta
+            // 
+            this.ucLabelTB_Delta.Location = new System.Drawing.Point(257, 514);
+            this.ucLabelTB_Delta.Margin = new System.Windows.Forms.Padding(8);
+            this.ucLabelTB_Delta.Name = "ucLabelTB_Delta";
+            this.ucLabelTB_Delta.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_Delta.TabIndex = 48;
+            this.ucLabelTB_Delta.TagName = "label1";
+            this.ucLabelTB_Delta.TagValue = "";
+            // 
+            // ucLabelTB_RealEncoder
+            // 
+            this.ucLabelTB_RealEncoder.Location = new System.Drawing.Point(7, 514);
+            this.ucLabelTB_RealEncoder.Margin = new System.Windows.Forms.Padding(5);
+            this.ucLabelTB_RealEncoder.Name = "ucLabelTB_RealEncoder";
+            this.ucLabelTB_RealEncoder.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_RealEncoder.TabIndex = 47;
+            this.ucLabelTB_RealEncoder.TagName = "label1";
+            this.ucLabelTB_RealEncoder.TagValue = "";
+            // 
+            // ucLabelTextBox1
+            // 
+            this.ucLabelTextBox1.Location = new System.Drawing.Point(1802, 238);
+            this.ucLabelTextBox1.Margin = new System.Windows.Forms.Padding(5);
+            this.ucLabelTextBox1.Name = "ucLabelTextBox1";
+            this.ucLabelTextBox1.Size = new System.Drawing.Size(13, 13);
+            this.ucLabelTextBox1.TabIndex = 37;
+            this.ucLabelTextBox1.TagName = "label1";
+            this.ucLabelTextBox1.TagValue = "";
             // 
             // tbP_Debug
             // 
@@ -1078,147 +1222,12 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
-            // label_LastIdealTime
+            // tB_AddressId
             // 
-            this.label_LastIdealTime.AutoSize = true;
-            this.label_LastIdealTime.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_LastIdealTime.ForeColor = System.Drawing.Color.Black;
-            this.label_LastIdealTime.Location = new System.Drawing.Point(17, 487);
-            this.label_LastIdealTime.Name = "label_LastIdealTime";
-            this.label_LastIdealTime.Size = new System.Drawing.Size(100, 19);
-            this.label_LastIdealTime.TabIndex = 100;
-            this.label_LastIdealTime.Text = "啟動時間 : ";
-            // 
-            // label_LastIErrorTime
-            // 
-            this.label_LastIErrorTime.AutoSize = true;
-            this.label_LastIErrorTime.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_LastIErrorTime.ForeColor = System.Drawing.Color.Black;
-            this.label_LastIErrorTime.Location = new System.Drawing.Point(213, 487);
-            this.label_LastIErrorTime.Name = "label_LastIErrorTime";
-            this.label_LastIErrorTime.Size = new System.Drawing.Size(138, 19);
-            this.label_LastIErrorTime.TabIndex = 102;
-            this.label_LastIErrorTime.Text = "異常停止時間 : ";
-            // 
-            // ucLabelTB_CreateCommandState
-            // 
-            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(658, 554);
-            this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8);
-            this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
-            this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_CreateCommandState.TabIndex = 78;
-            this.ucLabelTB_CreateCommandState.TagName = "label1";
-            this.ucLabelTB_CreateCommandState.TagValue = "";
-            // 
-            // ucLabelTB_CreateCommand_BarcodePosition
-            // 
-            this.ucLabelTB_CreateCommand_BarcodePosition.Location = new System.Drawing.Point(18, 566);
-            this.ucLabelTB_CreateCommand_BarcodePosition.Margin = new System.Windows.Forms.Padding(5);
-            this.ucLabelTB_CreateCommand_BarcodePosition.Name = "ucLabelTB_CreateCommand_BarcodePosition";
-            this.ucLabelTB_CreateCommand_BarcodePosition.Size = new System.Drawing.Size(332, 27);
-            this.ucLabelTB_CreateCommand_BarcodePosition.TabIndex = 77;
-            this.ucLabelTB_CreateCommand_BarcodePosition.TagName = "label1";
-            this.ucLabelTB_CreateCommand_BarcodePosition.TagValue = "";
-            // 
-            // ucLabelTB_EncoderPosition
-            // 
-            this.ucLabelTB_EncoderPosition.Location = new System.Drawing.Point(512, 566);
-            this.ucLabelTB_EncoderPosition.Margin = new System.Windows.Forms.Padding(37, 33, 37, 33);
-            this.ucLabelTB_EncoderPosition.Name = "ucLabelTB_EncoderPosition";
-            this.ucLabelTB_EncoderPosition.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_EncoderPosition.TabIndex = 88;
-            this.ucLabelTB_EncoderPosition.TagName = "label1";
-            this.ucLabelTB_EncoderPosition.TagValue = "";
-            // 
-            // ucLabelTB_Velocity
-            // 
-            this.ucLabelTB_Velocity.Location = new System.Drawing.Point(512, 514);
-            this.ucLabelTB_Velocity.Margin = new System.Windows.Forms.Padding(22, 21, 22, 21);
-            this.ucLabelTB_Velocity.Name = "ucLabelTB_Velocity";
-            this.ucLabelTB_Velocity.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_Velocity.TabIndex = 83;
-            this.ucLabelTB_Velocity.TagName = "label1";
-            this.ucLabelTB_Velocity.TagValue = "";
-            // 
-            // ucLabelTB_EncoderOffset
-            // 
-            this.ucLabelTB_EncoderOffset.Location = new System.Drawing.Point(1027, 514);
-            this.ucLabelTB_EncoderOffset.Margin = new System.Windows.Forms.Padding(13);
-            this.ucLabelTB_EncoderOffset.Name = "ucLabelTB_EncoderOffset";
-            this.ucLabelTB_EncoderOffset.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_EncoderOffset.TabIndex = 82;
-            this.ucLabelTB_EncoderOffset.TagName = "label1";
-            this.ucLabelTB_EncoderOffset.TagValue = "";
-            // 
-            // ucLabelTB_ElmoEncoder
-            // 
-            this.ucLabelTB_ElmoEncoder.Location = new System.Drawing.Point(767, 514);
-            this.ucLabelTB_ElmoEncoder.Margin = new System.Windows.Forms.Padding(13);
-            this.ucLabelTB_ElmoEncoder.Name = "ucLabelTB_ElmoEncoder";
-            this.ucLabelTB_ElmoEncoder.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_ElmoEncoder.TabIndex = 81;
-            this.ucLabelTB_ElmoEncoder.TagName = "label1";
-            this.ucLabelTB_ElmoEncoder.TagValue = "";
-            // 
-            // ucLabelTtB_CommandListState
-            // 
-            this.ucLabelTtB_CommandListState.Location = new System.Drawing.Point(768, 566);
-            this.ucLabelTtB_CommandListState.Margin = new System.Windows.Forms.Padding(13);
-            this.ucLabelTtB_CommandListState.Name = "ucLabelTtB_CommandListState";
-            this.ucLabelTtB_CommandListState.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTtB_CommandListState.TabIndex = 79;
-            this.ucLabelTtB_CommandListState.TagName = "label1";
-            this.ucLabelTtB_CommandListState.TagValue = "";
-            // 
-            // ucLabelTB_BarcodePosition
-            // 
-            this.ucLabelTB_BarcodePosition.Location = new System.Drawing.Point(257, 566);
-            this.ucLabelTB_BarcodePosition.Margin = new System.Windows.Forms.Padding(8);
-            this.ucLabelTB_BarcodePosition.Name = "ucLabelTB_BarcodePosition";
-            this.ucLabelTB_BarcodePosition.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_BarcodePosition.TabIndex = 50;
-            this.ucLabelTB_BarcodePosition.TagName = "label1";
-            this.ucLabelTB_BarcodePosition.TagValue = "";
-            // 
-            // ucLabelTB_RealPosition
-            // 
-            this.ucLabelTB_RealPosition.Location = new System.Drawing.Point(7, 566);
-            this.ucLabelTB_RealPosition.Margin = new System.Windows.Forms.Padding(8);
-            this.ucLabelTB_RealPosition.Name = "ucLabelTB_RealPosition";
-            this.ucLabelTB_RealPosition.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_RealPosition.TabIndex = 49;
-            this.ucLabelTB_RealPosition.TagName = "label1";
-            this.ucLabelTB_RealPosition.TagValue = "";
-            // 
-            // ucLabelTB_Delta
-            // 
-            this.ucLabelTB_Delta.Location = new System.Drawing.Point(257, 514);
-            this.ucLabelTB_Delta.Margin = new System.Windows.Forms.Padding(8);
-            this.ucLabelTB_Delta.Name = "ucLabelTB_Delta";
-            this.ucLabelTB_Delta.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_Delta.TabIndex = 48;
-            this.ucLabelTB_Delta.TagName = "label1";
-            this.ucLabelTB_Delta.TagValue = "";
-            // 
-            // ucLabelTB_RealEncoder
-            // 
-            this.ucLabelTB_RealEncoder.Location = new System.Drawing.Point(7, 514);
-            this.ucLabelTB_RealEncoder.Margin = new System.Windows.Forms.Padding(5);
-            this.ucLabelTB_RealEncoder.Name = "ucLabelTB_RealEncoder";
-            this.ucLabelTB_RealEncoder.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_RealEncoder.TabIndex = 47;
-            this.ucLabelTB_RealEncoder.TagName = "label1";
-            this.ucLabelTB_RealEncoder.TagValue = "";
-            // 
-            // ucLabelTextBox1
-            // 
-            this.ucLabelTextBox1.Location = new System.Drawing.Point(1802, 238);
-            this.ucLabelTextBox1.Margin = new System.Windows.Forms.Padding(5);
-            this.ucLabelTextBox1.Name = "ucLabelTextBox1";
-            this.ucLabelTextBox1.Size = new System.Drawing.Size(13, 13);
-            this.ucLabelTextBox1.TabIndex = 37;
-            this.ucLabelTextBox1.TagName = "label1";
-            this.ucLabelTextBox1.TagValue = "";
+            this.tB_AddressId.Location = new System.Drawing.Point(269, 526);
+            this.tB_AddressId.Name = "tB_AddressId";
+            this.tB_AddressId.Size = new System.Drawing.Size(123, 30);
+            this.tB_AddressId.TabIndex = 81;
             // 
             // MoveCommandDebugModeForm
             // 
@@ -1365,5 +1374,6 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Label label_SensorState_Label;
         private System.Windows.Forms.Label label_LastIErrorTime;
         private System.Windows.Forms.Label label_LastIdealTime;
+        private System.Windows.Forms.TextBox tB_AddressId;
     }
 }

@@ -501,9 +501,10 @@ namespace Mirle.Agv.View
                     moveControl.moveControlConfig.Move.Acceleration, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
 
                 if (wheelAngle == 0)
+                {
                     ontimeRevise = new Thread(OntimeReviseThread);
-
-                ontimeRevise.Start();
+                    ontimeRevise.Start();
+                }
             }
             else
             {

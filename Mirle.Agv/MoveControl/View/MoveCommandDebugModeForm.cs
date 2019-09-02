@@ -548,11 +548,18 @@ namespace Mirle.Agv.View
         {
             try
             {
-                int x = Int16.Parse(tB_PositionX.Text);
-                int y = Int16.Parse(tB_PositionY.Text);
-
-                string txtPosition = $"{x.ToString()},{y.ToString()}";
-                listCmdAddressPositions.Items.Add(txtPosition);
+                string txtPosition = $"{int.Parse(tB_PositionX.Text)},{int.Parse(tB_PositionY.Text)}"; 
+                if (!string.IsNullOrWhiteSpace(tB_AddressId.Text))
+                {
+                    if (theMapInfo.allMapAddresses.ContainsKey(tB_AddressId.Text))
+                    {
+                        var addrPos = theMapInfo.allMapAddresses[tB_AddressId.Text].Position;
+                        txtPosition = $"{(int)addrPos.X}{(int)addrPos.Y}_{tB_AddressId.Text}";
+                        tB_AddressId.Text = "";
+                    }
+                }         
+            
+                listCmdAddressPositions.Items.Add(txtPosition);                
             }
             catch
             {

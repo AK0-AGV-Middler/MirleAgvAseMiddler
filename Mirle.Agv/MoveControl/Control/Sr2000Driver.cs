@@ -219,6 +219,7 @@ namespace Mirle.Agv.Controller
                     {
 
                         sr2000ReadData = new Sr2000ReadData(splitResult, LON, receivedData, count);
+                        
                         XChangeTheta55ALL(sr2000ReadData);
                         if (sr2000ReadData.ScanTime < sr2000Config.TimeOutValue && GetReadDataPosition(sr2000ReadData))
                         {
@@ -310,7 +311,6 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                // can't find in map, print error in log.
                 return false;
             }
         }

@@ -33,10 +33,10 @@ namespace Mirle.Agv.Model
                 GetDataTime = DateTime.Now;
                 SendCmd = sendCmd;
                 ReceivedData = receivedData;
-                Barcode1 = new BarcodeData(Int16.Parse(Regex.Replace(splitResult[0], "[^0-9]", "")), double.Parse(splitResult[1]), double.Parse(splitResult[2]));
-                Barcode2 = new BarcodeData(Int16.Parse(Regex.Replace(splitResult[3], "[^0-9]", "")), double.Parse(splitResult[4]), double.Parse(splitResult[5]));
+                Barcode1 = new BarcodeData(Int32.Parse(Regex.Replace(splitResult[0], "[^0-9]", "")), double.Parse(splitResult[1]), double.Parse(splitResult[2]));
+                Barcode2 = new BarcodeData(Int32.Parse(Regex.Replace(splitResult[3], "[^0-9]", "")), double.Parse(splitResult[4]), double.Parse(splitResult[5]));
 
-                ScanTime = Int16.Parse(Regex.Replace(splitResult[6], "[^0-9]", ""));
+                ScanTime = Int32.Parse(Regex.Replace(splitResult[6], "[^0-9]", ""));
                 AGV = null;
                 ReviseData = null;
                 Count = count;
