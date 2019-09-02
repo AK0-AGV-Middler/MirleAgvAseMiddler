@@ -25,7 +25,7 @@ namespace Mirle.Agv.Model.TransferCmds
         public ushort SeqNum { get; set; } = 0;
         public string EndAddressId { get; set; } = "";
         public string StartAddressId { get; set; } = "";
-        private int HalfR2000Radius { get; set; } = 1000;
+        protected int HalfR2000Radius { get; set; } = 1000;
 
         public MoveCmdInfo() : this(new MainFlowHandler()) { }
         public MoveCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
@@ -192,7 +192,7 @@ namespace Mirle.Agv.Model.TransferCmds
             theVehicle.CurVehiclePosition.WheelAngle = WheelAngle;
         }
 
-        private EnumAddressAction SetupAddressAction(MapPosition prePosition, MapPosition curPosition, MapPosition nextPosition, MapAddress curAddress)
+        protected EnumAddressAction SetupAddressAction(MapPosition prePosition, MapPosition curPosition, MapPosition nextPosition, MapAddress curAddress)
         {
             MapVector vecPreToCur = new MapVector(curPosition.X - prePosition.X, curPosition.Y - prePosition.Y);
             MapVector vecCurToNext = new MapVector(nextPosition.X - curPosition.X, nextPosition.Y - curPosition.Y);
@@ -354,7 +354,7 @@ namespace Mirle.Agv.Model.TransferCmds
             }
         }
 
-        private void AddFirstAction()
+        protected void AddFirstAction()
         {
             if (Math.Abs(AddressPositions[1].X - AddressPositions[0].X) > HalfR2000Radius && Math.Abs(AddressPositions[1].Y - AddressPositions[0].Y) > HalfR2000Radius)
             {
@@ -366,129 +366,129 @@ namespace Mirle.Agv.Model.TransferCmds
             }
         }
 
-        private EnumAddressAction SetAddressMotion(MapSection currentSection, MapSection nextSection, MapAddress curAddress)
-        {
-            if (nextSection.Type == EnumSectionType.R2000)
-            {
-                //水平接R2000 或是 垂直接R2000 是否不同
-                return EnumAddressAction.R2000;
-            }
-            else if (currentSection.Type == EnumSectionType.R2000)
-            {
-                //R2000接水平 或是 R2000接垂直 是否不同
-                return EnumAddressAction.ST;
-            }
-            else if (currentSection.Type == nextSection.Type)
-            {
-                //水平接水平 或 垂直接垂直
-                return EnumAddressAction.ST;
-            }
-            else
-            {
-                //水平接垂直 或 垂直接水平
-                if (IsTurnRight(currentSection, nextSection))
-                {
-                    //右轉
-                    VehicleHeadAngle -= 90;
-                    if (VehicleHeadAngle < -100)
-                    {
-                        VehicleHeadAngle = 0;
+        //private EnumAddressAction SetAddressMotion(MapSection currentSection, MapSection nextSection, MapAddress curAddress)
+        //{
+        //    if (nextSection.Type == EnumSectionType.R2000)
+        //    {
+        //        //水平接R2000 或是 垂直接R2000 是否不同
+        //        return EnumAddressAction.R2000;
+        //    }
+        //    else if (currentSection.Type == EnumSectionType.R2000)
+        //    {
+        //        //R2000接水平 或是 R2000接垂直 是否不同
+        //        return EnumAddressAction.ST;
+        //    }
+        //    else if (currentSection.Type == nextSection.Type)
+        //    {
+        //        //水平接水平 或 垂直接垂直
+        //        return EnumAddressAction.ST;
+        //    }
+        //    else
+        //    {
+        //        //水平接垂直 或 垂直接水平
+        //        if (IsTurnRight(currentSection, nextSection))
+        //        {
+        //            //右轉
+        //            VehicleHeadAngle -= 90;
+        //            if (VehicleHeadAngle < -100)
+        //            {
+        //                VehicleHeadAngle = 0;
 
-                        return curAddress.IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350;
-                    }
-                    return curAddress.IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350;
-                }
-                else
-                {
-                    //左轉
-                    VehicleHeadAngle += 90;
-                    if (VehicleHeadAngle > 100)
-                    {
-                        VehicleHeadAngle = 0;
-                        return curAddress.IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350;
-                    }
-                    return curAddress.IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350;
-                }
-            }
-        }
-        private void SetupFirstAddressAction()
-        {
-            var firstPosition = AddressPositions[0];
-            var secondPosition = AddressPositions[1];
-        }
-        private bool IsTurnRight(MapSection currentSection, MapSection nextSection)
-        {
-            MapPosition curSectionMid = new MapPosition((currentSection.HeadAddress.Position.X + currentSection.TailAddress.Position.X) / 2,
-                (currentSection.HeadAddress.Position.Y + currentSection.TailAddress.Position.Y) / 2);
-            MapPosition nextSectionMid = new MapPosition((nextSection.HeadAddress.Position.X + nextSection.TailAddress.Position.X) / 2,
-                (nextSection.HeadAddress.Position.Y + nextSection.TailAddress.Position.Y) / 2);
+        //                return curAddress.IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350;
+        //            }
+        //            return curAddress.IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350;
+        //        }
+        //        else
+        //        {
+        //            //左轉
+        //            VehicleHeadAngle += 90;
+        //            if (VehicleHeadAngle > 100)
+        //            {
+        //                VehicleHeadAngle = 0;
+        //                return curAddress.IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350;
+        //            }
+        //            return curAddress.IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350;
+        //        }
+        //    }
+        //}
+        //private void SetupFirstAddressAction()
+        //{
+        //    var firstPosition = AddressPositions[0];
+        //    var secondPosition = AddressPositions[1];
+        //}
+        //private bool IsTurnRight(MapSection currentSection, MapSection nextSection)
+        //{
+        //    MapPosition curSectionMid = new MapPosition((currentSection.HeadAddress.Position.X + currentSection.TailAddress.Position.X) / 2,
+        //        (currentSection.HeadAddress.Position.Y + currentSection.TailAddress.Position.Y) / 2);
+        //    MapPosition nextSectionMid = new MapPosition((nextSection.HeadAddress.Position.X + nextSection.TailAddress.Position.X) / 2,
+        //        (nextSection.HeadAddress.Position.Y + nextSection.TailAddress.Position.Y) / 2);
 
-            if (currentSection.Type == EnumSectionType.Horizontal)
-            {
-                //水平接垂直
-                if (curSectionMid.X < nextSectionMid.X)
-                {
-                    //W > XXX
-                    if (curSectionMid.Y < nextSectionMid.Y)
-                    {
-                        //W > S
-                        return true;
-                    }
-                    else
-                    {
-                        //W > N
-                        return false;
-                    }
-                }
-                else
-                {
-                    //E > XXX
-                    if (curSectionMid.Y < nextSectionMid.Y)
-                    {
-                        //E > S
-                        return false;
-                    }
-                    else
-                    {
-                        //E > N
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                //垂直接水平
-                if (curSectionMid.X < nextSectionMid.X)
-                {
-                    //XX > E
-                    if (curSectionMid.Y < nextSectionMid.Y)
-                    {
-                        //N > E
-                        return false;
-                    }
-                    else
-                    {
-                        //S > E
-                        return true;
-                    }
-                }
-                else
-                {
-                    //XX > W
-                    if (curSectionMid.Y < nextSectionMid.Y)
-                    {
-                        //N > W
-                        return true;
-                    }
-                    else
-                    {
-                        //S > W
-                        return false;
-                    }
-                }
-            }
+        //    if (currentSection.Type == EnumSectionType.Horizontal)
+        //    {
+        //        //水平接垂直
+        //        if (curSectionMid.X < nextSectionMid.X)
+        //        {
+        //            //W > XXX
+        //            if (curSectionMid.Y < nextSectionMid.Y)
+        //            {
+        //                //W > S
+        //                return true;
+        //            }
+        //            else
+        //            {
+        //                //W > N
+        //                return false;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //E > XXX
+        //            if (curSectionMid.Y < nextSectionMid.Y)
+        //            {
+        //                //E > S
+        //                return false;
+        //            }
+        //            else
+        //            {
+        //                //E > N
+        //                return true;
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //垂直接水平
+        //        if (curSectionMid.X < nextSectionMid.X)
+        //        {
+        //            //XX > E
+        //            if (curSectionMid.Y < nextSectionMid.Y)
+        //            {
+        //                //N > E
+        //                return false;
+        //            }
+        //            else
+        //            {
+        //                //S > E
+        //                return true;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //XX > W
+        //            if (curSectionMid.Y < nextSectionMid.Y)
+        //            {
+        //                //N > W
+        //                return true;
+        //            }
+        //            else
+        //            {
+        //                //S > W
+        //                return false;
+        //            }
+        //        }
+        //    }
 
-        }
+        //}
 
         private void RebuildLastSectionForInsideEndAddress()
         {
@@ -557,6 +557,14 @@ namespace Mirle.Agv.Model.TransferCmds
             moveCmd.type = type;
 
             return moveCmd;
+        }
+    }
+
+    public class MoveToChargerCmdInfo : MoveCmdInfo
+    {
+        public MoveToChargerCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
+        {
+            type = EnumTransferStepType.MoveToCharger;
         }
     }
 }

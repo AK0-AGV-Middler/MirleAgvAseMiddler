@@ -59,10 +59,11 @@ namespace Mirle.Agv.Controller
         public string DebugFlowLog { get; set; }
         public int WaitReseveIndex { get; set; }
         public double LoopTime { get; set; } = 0;
+        private System.Diagnostics.Stopwatch loopTimeTimer = new System.Diagnostics.Stopwatch();
 
         public string autoTime { get; set; } = "啟動時間 : ";
         public string errorTime { get; set; } = "異常停止時間 : ";
-        
+
         private void SetDebugFlowLog(string functionName, string message)
         {
             if (DebugFlowMode)
@@ -326,6 +327,9 @@ namespace Mirle.Agv.Controller
 
             agvRevise = new AgvMoveRevise(ontimeReviseConfig, elmoDriver, DriverSr2000List, moveControlConfig.Safety, this.alarmHandler);
 
+            loopTimeTimer.Reset();
+            loopTimeTimer.Start();
+
             ControlData.MoveControlThread = new Thread(MoveControlThread);
             ControlData.MoveControlThread.Start();
 
@@ -437,6 +441,7 @@ namespace Mirle.Agv.Controller
                     case "OntimeReviseSectionDeviation":
                     case "OntimeReviseTheta":
                     case "UpdateDeltaPositionRange":
+                    case "OneTimeRevise":
                         temp = ReadSafetyDataXML((XmlElement)item);
                         moveControlConfig.Safety.Add(
                             (EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name),
@@ -794,7 +799,7 @@ namespace Mirle.Agv.Controller
         }
         #endregion
 
-        #region ReadLineReviseConfig
+        #region ReadReviseConfig
         private void ReadOntimeReviseConfigXML(string path)
         {
             if (path == null || path == "")
@@ -814,7 +819,6 @@ namespace Mirle.Agv.Controller
             }
 
             doc.Load(xmlPath);
-
             ontimeReviseConfig = ConvertXmlElementToLineReviseConfig((XmlElement)doc.DocumentElement);
         }
 
@@ -1168,6 +1172,10 @@ namespace Mirle.Agv.Controller
 
         private void UpdatePosition()
         {
+            LoopTime = loopTimeTimer.ElapsedMilliseconds;
+            loopTimeTimer.Reset();
+            loopTimeTimer.Start();
+
             UpdateElmo();
             bool newBarcodeData = UpdateSR2000();
 
@@ -1220,10 +1228,7 @@ namespace Mirle.Agv.Controller
 
             distance = vel * time / 2;
         }
-
-
-
-
+        
         private double GetTRStopTurnDec()
         {
             return 0;
@@ -1341,13 +1346,9 @@ namespace Mirle.Agv.Controller
                                                              ", XRR vel : " + xRRVelocity.ToString("0"));
                 }
             }
-
-            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
-
+            
             while (!elmoDriver.WheelAngleCompare(wheelAngle, moveControlConfig.StartWheelAngleRange) && !SimulationMode)
             {
-                timer.Reset();
-                timer.Start();
                 UpdatePosition();
                 SensorSafety();
                 if (ControlData.FlowStopRequeset)
@@ -1358,8 +1359,7 @@ namespace Mirle.Agv.Controller
                     EMSControl("不再TR預計路徑上,異常停止!");
                     return;
                 }
-
-                LoopTime = timer.ElapsedMilliseconds;
+                
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
 
@@ -1466,8 +1466,7 @@ namespace Mirle.Agv.Controller
                 EMSControl("R2000取得奇怪的wheelAngle");
                 return;
             }
-
-            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+            
             startOuterWheelEncoder = outerWheelEncoder;
             trunZeroEncoder = outerWheelEncoder + (ControlData.DirFlag ? moveControlConfig.TurnParameter[EnumAddressAction.R2000].Distance :
                                                                         -moveControlConfig.TurnParameter[EnumAddressAction.R2000].Distance);
@@ -1497,8 +1496,6 @@ namespace Mirle.Agv.Controller
 
             while (!OkToTurnZero(outerWheelEncoder, trunZeroEncoder) && !SimulationMode)
             {
-                timer.Reset();
-                timer.Start();
                 if (wheelAngle == 1)
                     outerWheelEncoder = elmoDriver.ElmoGetPosition(EnumAxis.XFL, true);
                 else if (wheelAngle == -1)
@@ -1509,8 +1506,7 @@ namespace Mirle.Agv.Controller
 
                 if (ControlData.FlowStopRequeset)
                     return;
-
-                LoopTime = timer.ElapsedMilliseconds;
+                
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
 
@@ -1528,17 +1524,14 @@ namespace Mirle.Agv.Controller
             elmoDriver.ElmoMove(EnumAxis.VTRR, 0, rightTurn.Velocity, EnumMoveType.Absolute, rightTurn.Acceleration, rightTurn.Deceleration, rightTurn.Jerk);
 
             Thread.Sleep(moveControlConfig.SleepTime * 2);
-            while (!elmoDriver.MoveCompeleteVirtual(EnumAxisType.Move))
+            while (!elmoDriver.MoveCompeleteVirtual(EnumAxisType.Move) && !SimulationMode)
             {
-                timer.Reset();
-                timer.Start();
                 UpdatePosition();
                 SensorSafety();
 
                 if (ControlData.FlowStopRequeset)
                     return;
-
-                LoopTime = timer.ElapsedMilliseconds;
+                
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
 
@@ -1629,7 +1622,7 @@ namespace Mirle.Agv.Controller
             {
                 elmoDriver.ElmoMove(EnumAxis.GT, wheelAngle, moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
                         moveControlConfig.Turn.Acceleration, moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
-
+                
                 timer.Reset();
                 timer.Start();
                 Thread.Sleep(moveControlConfig.SleepTime * 2);
@@ -1641,8 +1634,7 @@ namespace Mirle.Agv.Controller
                         EMSControl("舵輪旋轉Timeout!");
                         return;
                     }
-
-                    LoopTime = timer.ElapsedMilliseconds;
+                    
                     Thread.Sleep(moveControlConfig.SleepTime);
                 }
 
@@ -1686,8 +1678,7 @@ namespace Mirle.Agv.Controller
                         WriteLog("MoveControl", "4", device, "", "Enable Timeout!");
                         return;
                     }
-
-                    LoopTime = timer.ElapsedMilliseconds;
+                    
                     Thread.Sleep(moveControlConfig.SleepTime);
                 }
             }
@@ -1735,8 +1726,7 @@ namespace Mirle.Agv.Controller
                     EMSControl("SlowStop Timeout!");
                     return;
                 }
-
-                LoopTime = timer.ElapsedMilliseconds;
+                
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
 
@@ -1755,10 +1745,13 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                for (int i = 2; i <= 3; i++)
+                for (int i = 1; i <= 3; i++)
                 {
                     if (command.IndexOfCmdList + i < command.CommandList.Count)
                     {
+                        if (command.CommandList[command.IndexOfCmdList + i].CmdType == EnumCommandType.Move)
+                            break;
+
                         if (command.CommandList[command.IndexOfCmdList + i].Position != null)
                         {
                             if ((ControlData.DirFlag && location.RealEncoder > command.CommandList[command.IndexOfCmdList + i].TriggerEncoder) ||
@@ -1780,7 +1773,8 @@ namespace Mirle.Agv.Controller
 
                 if (ControlData.VelocityCommand != moveControlConfig.Move.Velocity)
                 {
-                    temp = createMoveControlList.NewVChangeCommand(null, 0, ControlData.VelocityCommand, ControlData.DirFlag);
+                    double vel = GetVChangeVelocity(ControlData.VelocityCommand);
+                    temp = createMoveControlList.NewVChangeCommand(null, 0, vel, ControlData.DirFlag);
                     command.CommandList.Insert(command.IndexOfCmdList + 2, temp);
                 }
             }
@@ -1815,8 +1809,7 @@ namespace Mirle.Agv.Controller
                         EMSControl("SecondCorrectionControl Timeout!");
                         return;
                     }
-
-                    LoopTime = timer.ElapsedMilliseconds;
+                    
                     Thread.Sleep(moveControlConfig.SleepTime);
                 }
 
@@ -2086,6 +2079,7 @@ namespace Mirle.Agv.Controller
                         if (ControlData.OntimeReviseFlag == false)
                         {
                             agvRevise.SettingReviseData(ControlData.VelocityCommand, ControlData.DirFlag);
+                            agvRevise.ResetOneTimeReivseParameter();
                             ControlData.OntimeReviseFlag = true;
                         }
 
@@ -2125,14 +2119,11 @@ namespace Mirle.Agv.Controller
         {
             double[] reviseWheelAngle = new double[4];
             string ontimeReviseEMSMessage;
-            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
 
             try
             {
                 while (true)
                 {
-                    timer.Reset();
-                    timer.Start();
 
                     UpdatePosition();
 
@@ -2150,7 +2141,8 @@ namespace Mirle.Agv.Controller
 
                         //if (agvRevise.OntimeRevise(ref reviseWheelAngle, ControlData.WheelAngle, ref ontimeReviseEMSMessage))
                         if (agvRevise.OntimeReviseByAGVPositionAndSection(ref reviseWheelAngle, ControlData.WheelAngle,
-                            location.XFLVelocity, command.SectionLineList[command.IndexOflisSectionLine], ref ontimeReviseEMSMessage))
+                            location.XFLVelocity, location.ElmoEncoder,
+                            command.SectionLineList[command.IndexOflisSectionLine], ref ontimeReviseEMSMessage))
                         {
                             if (ontimeReviseEMSMessage != "")
                             {
@@ -2181,7 +2173,6 @@ namespace Mirle.Agv.Controller
                         ControlData.FlowStop = false;
                     }
                     
-                    LoopTime = timer.ElapsedMilliseconds;
                     Thread.Sleep(moveControlConfig.SleepTime);
                 }
             }
@@ -2774,6 +2765,7 @@ namespace Mirle.Agv.Controller
 
         public bool IsLocationRealNotNull()
         {
+            errorTime = "異常停止時間 : ";
             autoTime = "啟動時間 : " + DateTime.Now.ToString("HH:mm:ss");
             return location.Real != null;
         }
@@ -2788,7 +2780,7 @@ namespace Mirle.Agv.Controller
         public void VehcleContinue()
         {
             WriteLog("MoveControl", "7", device, "", "Pause Request!");
-            if (!ControlData.ContinueRequest && (ControlData.PauseRequest || ControlData.PauseAlready))
+            if (!ControlData.ContinueRequest && ControlData.PauseAlready)
                 ControlData.ContinueRequest = true;
         }
 
@@ -2919,7 +2911,7 @@ namespace Mirle.Agv.Controller
         {
             if (MoveState == EnumMoveState.Idle)
                 return;
-            
+
             if (index >= 0 && index < command.ReserveList.Count)
             {
                 for (int i = 0; i <= index; i++)

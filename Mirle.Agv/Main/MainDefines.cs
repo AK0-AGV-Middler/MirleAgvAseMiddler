@@ -48,6 +48,7 @@ namespace Mirle.Agv
     public enum EnumTransferStepType
     {
         Move,
+        MoveToCharger,
         Load,
         Unload,
         Empty
@@ -61,6 +62,7 @@ namespace Mirle.Agv
         LoadUnload,
         Home,
         Override,
+        MoveToCharger,
         Else
     }
 

@@ -475,7 +475,11 @@ namespace Mirle.Agv.Controller
         {
             askReserveShutdownEvent.Set();
             askReservePauseEvent.Set();
-            AskReserveStatus = EnumThreadStatus.Stop;
+
+            if (AskReserveStatus != EnumThreadStatus.None)
+            {
+                AskReserveStatus = EnumThreadStatus.Stop;
+            }
 
             var msg = $"Middler : Stop Ask Reserve, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
@@ -507,7 +511,6 @@ namespace Mirle.Agv.Controller
             loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 , msg));
         }
-
 
         private bool CanAskReserve()
         {
@@ -1195,10 +1198,6 @@ namespace Mirle.Agv.Controller
 
         public void ReportAddressPass()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             if (!IsNeerlyNoMove())
             {
                 lastReportSection = theVehicle.CurVehiclePosition.LastSection.DeepClone();
@@ -1213,71 +1212,50 @@ namespace Mirle.Agv.Controller
         }
         public void LoadArrivals()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             theVehicle.Cmd134EventType = EventType.LoadArrivals;
             Send_Cmd136_TransferEventReport(EventType.LoadArrivals);
             Send_Cmd134_TransferEventReport();
         }
         public void UnloadArrivals()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             theVehicle.Cmd134EventType = EventType.UnloadArrivals;
             Send_Cmd136_TransferEventReport(EventType.UnloadArrivals);
             Send_Cmd134_TransferEventReport();
         }
         public void MoveComplete()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
-
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
             Send_Cmd134_TransferEventReport();
             Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusMove;
             Send_Cmd132_TransferCompleteReport();
         }
+        public void MoveToChargerComplete()
+        {
+            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
+            Send_Cmd134_TransferEventReport();
+            Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusMoveToCharger;
+            Send_Cmd132_TransferCompleteReport();
+        }
         public void LoadComplete()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             Send_Cmd136_TransferEventReport(EventType.LoadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
             Send_Cmd132_TransferCompleteReport();
         }
         public void LoadCompleteInLoadunload()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             Send_Cmd136_TransferEventReport(EventType.LoadComplete);
         }
         public void UnloadComplete()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
             Send_Cmd132_TransferCompleteReport();
         }
         public void LoadUnloadComplete()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
             Send_Cmd132_TransferCompleteReport();
@@ -1285,19 +1263,11 @@ namespace Mirle.Agv.Controller
         }
         public void MainFlowGetCancel()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusCancel;
             Send_Cmd132_TransferCompleteReport();
         }
         public void MainFlowGetAbort()
         {
-            //if (!ClientAgent.IsConnection)
-            //{
-            //    return;
-            //}
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
             Send_Cmd132_TransferCompleteReport();
         }
@@ -1305,13 +1275,28 @@ namespace Mirle.Agv.Controller
         {
             return (thdAskReserve != null) && (thdAskReserve.IsAlive);
         }
+        public void ErrorComplete()
+        {
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
+            Send_Cmd132_TransferCompleteReport();
+        }
+        public void AbortComplete()
+        {
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
+            Send_Cmd132_TransferCompleteReport();
+        }
+        public void CancelComplete()
+        {
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusCancel;
+            Send_Cmd132_TransferCompleteReport();
+        }
+
         public void MainFlow_OnIdReadEvent(EnumIdReadResult readResult)
         {
             Send_Cmd136_CstIdReadReport(readResult);
         }
 
         public bool IsConnected() => ClientAgent == null ? false : ClientAgent.IsConnection;
-
 
         #region Send_Or_Receive_CmdNum
         public void Receive_Cmd94_AlarmResponse(object sender, TcpIpEventArgs e)
@@ -1678,20 +1663,48 @@ namespace Mirle.Agv.Controller
 
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
+            int replyCode = 0;
             ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
             //TODO: Pause/Continue+/Reserve
+            switch (receive.EventType)
+            {
+                case PauseEvent.Continue:
+                    if (theVehicle.VisitTransferStepsStatus != EnumThreadStatus.Pause)
+                    {
+                        replyCode = 1;
+                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                        return;
+                    }
+                    else
+                    {                        
+                        mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.PauseType, receive.ReserveInfos);
+                    }
+                    break;
+                case PauseEvent.Pause:
+                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.None || theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Stop)
+                    {
+                        replyCode = 1;
+                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                        return;
+                    }
+                    else
+                    {
+                        mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.PauseType);
+                    }
+                    break;
+                default:
+                    break;
+            }
 
-
-
-            int replyCode = 0;
-            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode);
+            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
         }
-        public void Send_Cmd139_PauseResponse(ushort seqNum, int replyCode)
+
+        public void Send_Cmd139_PauseResponse(ushort seqNum, int replyCode, PauseEvent eventType)
         {
             try
             {
                 ID_139_PAUSE_RESPONSE iD_139_PAUSE_RESPONSE = new ID_139_PAUSE_RESPONSE();
-                iD_139_PAUSE_RESPONSE.EventType = theVehicle.Cmd139EventType;
+                iD_139_PAUSE_RESPONSE.EventType = eventType;
                 iD_139_PAUSE_RESPONSE.ReplyCode = replyCode;
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -1709,41 +1722,33 @@ namespace Mirle.Agv.Controller
 
         public void Receive_Cmd37_TransferCancelRequest(object sender, TcpIpEventArgs e)
         {
-
+            int replyCode = 0;
             ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
-            bool result = false;
             switch (receive.ActType)
             {
                 case CMDCancelType.CmdCancel:
-                    if (CanVehCancel())
-                    {
-                        result = true;
-                        OnTransferCancelEvent?.Invoke(this, receive.CmdID);
-                    }
+                    mainFlowHandler.Middler_OnCmdCancelEvent(e.iSeqNum, receive.CmdID, receive.ActType);
                     break;
                 case CMDCancelType.CmdAbort:
-                    if (CanVehAbort())
-                    {
-                        result = true;
-                        OnTransferAbortEvent?.Invoke(this, receive.CmdID);
-                    }
+                    mainFlowHandler.Middler_OnCmdAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
                     break;
+                case CMDCancelType.CmdNone:
+                case CMDCancelType.CmdCancelIdMismatch:
+                case CMDCancelType.CmdCancelIdReadFailed:
                 default:
+                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
                     break;
             }
-
-
-            int replyCode = result ? 0 : 1;
-            Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode);
         }
-        public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode)
+        public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode, string cmdID, CMDCancelType actType)
         {
             try
             {
                 ID_137_TRANS_CANCEL_RESPONSE iD_137_TRANS_CANCEL_RESPONSE = new ID_137_TRANS_CANCEL_RESPONSE();
-                iD_137_TRANS_CANCEL_RESPONSE.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
-                iD_137_TRANS_CANCEL_RESPONSE.ActType = theVehicle.Cmd137ActType;
+                iD_137_TRANS_CANCEL_RESPONSE.CmdID = cmdID;
+                iD_137_TRANS_CANCEL_RESPONSE.ActType = actType;
                 iD_137_TRANS_CANCEL_RESPONSE.ReplyCode = replyCode;
+
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransCancelRespFieldNumber;
@@ -1756,15 +1761,6 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
-
-        private bool CanVehAbort()
-        {
-            throw new NotImplementedException();
-        }
-        private bool CanVehCancel()
-        {
-            throw new NotImplementedException();
         }
 
         public void Receive_Cmd36_TransferEventResponse(object sender, TcpIpEventArgs e)
@@ -1932,12 +1928,15 @@ namespace Mirle.Agv.Controller
         public void Receive_Cmd35_CarrierIdRenameRequest(object sender, TcpIpEventArgs e)
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
-            bool result = theVehicle.ThePlcVehicle.CassetteId == receive.OLDCSTID;
-            if (result)
+            var result = false;
+            if (theVehicle.ThePlcVehicle.Loading)
             {
-                theVehicle.ThePlcVehicle.CassetteId = receive.NEWCSTID;
+                if (theVehicle.ThePlcVehicle.CassetteId == receive.OLDCSTID)
+                {
+                    mainFlowHandler.RenameCstId(receive.NEWCSTID);
+                    result = true;
+                }
             }
-
             int replyCode = result ? 0 : 1;
             Send_Cmd135_CarrierIdRenameResponse(e.iSeqNum, replyCode);
         }
@@ -2144,7 +2143,7 @@ namespace Mirle.Agv.Controller
                 case ActiveType.Override:
                     return new AgvcOverrideCmd(transRequest, iSeqNum);
                 case ActiveType.Movetocharger:
-                    return new AgvcMoveCmd(transRequest, iSeqNum);
+                    return new AgvcMoveToChargerCmd(transRequest, iSeqNum);
                 case ActiveType.Cstidrename:
                 case ActiveType.Mtlhome:
                 case ActiveType.Systemout:

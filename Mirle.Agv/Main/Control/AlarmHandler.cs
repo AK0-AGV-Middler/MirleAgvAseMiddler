@@ -198,6 +198,21 @@ namespace Mirle.Agv.Controller
             }
             DateTime timeStamp = DateTime.Now;
             dicHappeningAlarms.TryRemove(id, out Alarm alarm);
+            var happeningAlarms = dicHappeningAlarms.Values.ToList();
+            HasAlarm = false;
+            HasWarn = false;
+            foreach (var item in happeningAlarms)
+            {
+                if (item.Level== EnumAlarmLevel.Alarm)
+                {
+                    HasAlarm = true;
+                }
+
+                if (item.Level == EnumAlarmLevel.Warn)
+                {
+                    HasWarn = true;
+                }
+            }
             alarm.ResetTime = timeStamp;
             loggerAgent.LogAlarmHistory(alarm);
             OnPlcResetOneAlarmEvent?.Invoke(this, alarm);

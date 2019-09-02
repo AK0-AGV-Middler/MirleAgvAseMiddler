@@ -16,6 +16,7 @@ namespace Mirle.Agv.Model.Configs
         public ThetaSectionDeviation ModifyPriority { get; set; }
         public ThetaSectionDeviation Return0ThetaPriority { get; set; }
         public List<SpeedAndMaxTheta> SpeedToMaxTheta { get; set; }
+        public SafetyData OneTimeRevise { get; set; }
 
         public OntimeReviseConfig()
         {

@@ -106,6 +106,7 @@
     <Compile Include="Main\Control\IComplete.cs" />
     <Compile Include="MoveControl\Control\MoveControlHandler.cs" />
     <Compile Include="MoveControl\Model\MoveControl\MoveCommandData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\OneTimeReviseParameter.cs" />
     <Compile Include="MoveControl\Model\MoveControl\TRTimeToAngleRange.cs" />
     <Compile Include="MoveControl\MoveControlDefine.cs" />
     <Compile Include="Plc\Control\PlcAgent.cs" />

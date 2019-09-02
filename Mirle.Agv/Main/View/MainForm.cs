@@ -70,6 +70,9 @@ namespace Mirle.Agv.View
         private double deltaOrigion = 25;
         private double triangleCoefficient = (double)(1 / Math.Sqrt(3.0));
         private UcVehicleImage ucVehicleImage = new UcVehicleImage();
+        private MapPosition minPos = new MapPosition();
+        private MapPosition maxPos = new MapPosition();
+
         #endregion
 
         public MainForm(MainFlowHandler mainFlowHandler)
@@ -91,6 +94,7 @@ namespace Mirle.Agv.View
             InitialPanels();
             InitialEvents();
             ResetImageAndPb();
+            InitialSoc();
         }
 
         private void InitialForms()
@@ -166,8 +170,13 @@ namespace Mirle.Agv.View
 
         }
 
+        private void InitialSoc()
+        {
+            mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
+        }
+
         public delegate void RadioButtonCheckDel(RadioButton radioButton, bool isCheck);
-        public void RadioButtonCheck(RadioButton radioButton,bool isCheck)
+        public void RadioButtonCheck(RadioButton radioButton, bool isCheck)
         {
             if (radioButton.InvokeRequired)
             {
@@ -183,7 +192,7 @@ namespace Mirle.Agv.View
         {
             if (isConnect)
             {
-                RadioButtonCheck(radOnline, true);               
+                RadioButtonCheck(radOnline, true);
             }
             else
             {
@@ -221,61 +230,37 @@ namespace Mirle.Agv.View
 
         public void DrawBasicMap()
         {
-            //pictureBox1.Parent = panelLeftUp;
-            pictureBox1.Size = new Size(2000, 2000);
-            image = new Bitmap(1920, 1080, PixelFormat.Format32bppArgb);
-            gra = Graphics.FromImage(image);
-
-            if (IsBarcodeLineShow)
-            {
-                //Draw Barcode in blackDash
-                var allMapBarcodeLines = theMapInfo.allMapBarcodeLines.Values.ToList();
-                foreach (var rowBarcode in allMapBarcodeLines)
-                {
-                    var fromX = rowBarcode.HeadBarcode.Position.X * coefficient + deltaOrigion;
-                    var fromY = rowBarcode.HeadBarcode.Position.Y * coefficient + deltaOrigion;
-                    var toX = rowBarcode.TailBarcode.Position.X * coefficient + deltaOrigion;
-                    var toY = rowBarcode.TailBarcode.Position.Y * coefficient + deltaOrigion;
-
-                    gra.DrawLine(allPens["BlackDashDot1"], (float)fromX, (float)fromY, (float)toX, (float)toY);
-                }
-            }
-
-            allUcSectionImages.Clear();
             try
             {
+
+                //pictureBox1.Parent = panelLeftUp;
+                SetupImageRegion();
+                //pictureBox1.Size = new Size(2000, 2000);
+                //image = new Bitmap(1920, 1080, PixelFormat.Format32bppArgb);
+                //gra = Graphics.FromImage(image);
+
+
+                if (IsBarcodeLineShow)
+                {
+                    //Draw Barcode in blackDash
+                    var allMapBarcodeLines = theMapInfo.allMapBarcodeLines.Values.ToList();
+                    foreach (var rowBarcode in allMapBarcodeLines)
+                    {
+                        var headPosInPixel = MapPixelExchange(rowBarcode.HeadBarcode.Position);
+                        var tailPosInPixel = MapPixelExchange(rowBarcode.TailBarcode.Position);
+
+                        gra.DrawLine(allPens["BlackDashDot1"], headPosInPixel.X, headPosInPixel.Y, tailPosInPixel.X, tailPosInPixel.Y);
+                    }
+                }
+
+                allUcSectionImages.Clear();
                 // Draw Sections in blueLine
                 var allMapSections = theMapInfo.allMapSections.Values.ToList();
-                int count = 0;
                 foreach (var section in allMapSections)
                 {
-                    MapPosition sectionLocation = section.HeadAddress.Position;
-
-                    switch (section.Type)
-                    {
-                        case EnumSectionType.Vertical:
-                            {
-                                if ((int)section.HeadAddress.Position.Y > (int)section.TailAddress.Position.Y)
-                                {
-                                    sectionLocation = section.TailAddress.Position;
-                                }
-                            }
-                            break;
-                        case EnumSectionType.Horizontal:
-                        case EnumSectionType.R2000:
-                            {
-                                if ((int)section.HeadAddress.Position.X > (int)section.TailAddress.Position.X)
-                                {
-                                    sectionLocation = section.TailAddress.Position;
-                                }
-                            }
-                            break;
-                        case EnumSectionType.None:
-                        default:
-                            break;
-                    }
-
-                    //gra.DrawLine(bluePen, fromX, fromY, toX, toY);
+                    var headPos = section.HeadAddress.Position;
+                    var tailPos = section.TailAddress.Position;
+                    MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Min(headPos.Y, tailPos.Y));
 
                     UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
                     if (!allUcSectionImages.ContainsKey(section.Id))
@@ -283,77 +268,109 @@ namespace Mirle.Agv.View
                         allUcSectionImages.Add(section.Id, ucSectionImage);
                     }
                     pictureBox1.Controls.Add(ucSectionImage);
+                    ucSectionImage.Location = MapPixelExchange(sectionLocation);
                     switch (section.Type)
                     {
                         case EnumSectionType.Horizontal:
-                            ucSectionImage.Location = new Point(MapPixelExchange(sectionLocation.X), MapPixelExchange(sectionLocation.Y) - ucSectionImage.labelSize.Height);
-                            ucSectionImage.BringToFront();
                             break;
                         case EnumSectionType.Vertical:
-                            ucSectionImage.Location = new Point(MapPixelExchange(sectionLocation.X) - ucSectionImage.labelSize.Width, MapPixelExchange(sectionLocation.Y));
-                            ucSectionImage.SendToBack();
+                            ucSectionImage.Location = new Point(ucSectionImage.Location.X - ucSectionImage.labelSize.Width, ucSectionImage.Location.Y);
                             break;
                         case EnumSectionType.R2000:
-                            ucSectionImage.Location = new Point(MapPixelExchange(sectionLocation.X), MapPixelExchange(sectionLocation.Y));
-                            ucSectionImage.BringToFront();
                             break;
                         case EnumSectionType.None:
                         default:
                             break;
                     }
 
+                    ucSectionImage.BringToFront();
+
                     ucSectionImage.MouseDown += UcSectionImage_MouseDown;
                     ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
                     ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
-
-                    count++;
                 }
 
+                //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
+                var allMapAddresses = theMapInfo.allMapAddresses.Values.ToList();
+                foreach (var address in allMapAddresses)
+                {
+                    UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
+                    if (!allUcAddressImages.ContainsKey(address.Id))
+                    {
+                        allUcAddressImages.Add(address.Id, ucAddressImage);
+                    }
+                    pictureBox1.Controls.Add(ucAddressImage);
+                    ucAddressImage.Location = MapPixelExchange(address.Position);
+                    ucAddressImage.FixToCenter();
+                    ucAddressImage.BringToFront();
+                    Label label = new Label();
+                    label.AutoSize = false;
+                    label.Size = new Size(35, 12);
+                    label.Parent = pictureBox1;
+                    label.Text = address.Id;
+                    label.Location = new Point(ucAddressImage.Location.X, ucAddressImage.Location.Y + 2 * (ucAddressImage.Radius + 1));
+                    label.BringToFront();
+
+
+                    ucAddressImage.MouseDown += UcAddressImage_MouseDown;
+                    //ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
+                    ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
+                }
+
+                pictureBox1.SendToBack();
             }
             catch (Exception ex)
             {
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+        }
 
-            //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
-            var allMapAddresses = theMapInfo.allMapAddresses.Values.ToList();
-            foreach (var address in allMapAddresses)
+        private void SetupImageRegion()
+        {
+            foreach (var address in theMapInfo.allMapAddresses.Values)
             {
-                UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
-                if (!allUcAddressImages.ContainsKey(address.Id))
+                if (address.Position.X > maxPos.X)
                 {
-                    allUcAddressImages.Add(address.Id, ucAddressImage);
+                    maxPos.X = address.Position.X;
                 }
-                pictureBox1.Controls.Add(ucAddressImage);
-                ucAddressImage.Location = new Point(MapPixelExchange(address.Position.X), MapPixelExchange(address.Position.Y));
-                ucAddressImage.FixToCenter();
-                ucAddressImage.BringToFront();
 
-                ucAddressImage.MouseDown += UcAddressImage_MouseDown;
-                ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
-                ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
+                if (address.Position.X < minPos.X)
+                {
+                    minPos.X = address.Position.X;
+                }
+
+                if (address.Position.Y > maxPos.Y)
+                {
+                    maxPos.Y = address.Position.Y;
+                }
+
+                if (address.Position.Y < minPos.Y)
+                {
+                    minPos.Y = address.Position.Y;
+                }
             }
 
-            pictureBox1.SendToBack();
+            var maxPosInPixel = MapPixelExchange(maxPos);
+            var minPosInPixel = MapPixelExchange(minPos);
+            Point point = new Point(2 * (maxPosInPixel.X - minPosInPixel.X), 2 * (maxPosInPixel.Y - minPosInPixel.Y));
+            pictureBox1.Size = new Size(point);
+            image = new Bitmap(point.X, point.Y, PixelFormat.Format32bppArgb);
+            gra = Graphics.FromImage(image);
         }
 
-        public int MapPixelExchange(double num)
+        public Point MapPixelExchange(MapPosition position)
         {
-            return (int)(num * coefficient + deltaOrigion);
+            var pixelX = Convert.ToInt32((position.X - minPos.X) * coefficient + deltaOrigion);
+            var pixelY = Convert.ToInt32((position.Y - minPos.Y) * coefficient + deltaOrigion);
+            return new Point(pixelX, pixelY);
         }
 
-        public double MapPositionExchange(int pixel)
+        public MapPosition MapPositionExchange(MapPosition pixel)
         {
-            var posValue = (pixel - deltaOrigion) / coefficient;
+            var posX = (pixel.X - deltaOrigion) / coefficient + minPos.X;
+            var posY = (pixel.Y - deltaOrigion) / coefficient + minPos.Y;
 
-            if (posValue > 0)
-            {
-                return posValue;
-            }
-            else
-            {
-                return 0;
-            }
+            return new MapPosition(posX, posY);
         }
 
         public Point MoveToImageCenter(Size size, Point oldPoint)
@@ -365,10 +382,7 @@ namespace Mirle.Agv.View
         {
             Control control = ((Control)sender).Parent;
             UcAddressImage ucAddressImage = (UcAddressImage)control;
-            int addX = (int)(ucAddressImage.Address.Position.X * coefficient + deltaOrigion);
-            int addY = (int)(ucAddressImage.Address.Position.Y * coefficient + deltaOrigion);
-            Point point = new Point(addX, addY);
-            mouseDownPbPoint = point;
+            mouseDownPbPoint = MapPixelExchange(ucAddressImage.Address.Position);
             mouseDownScreenPoint = ((Control)sender).PointToScreen(new Point(e.X, e.Y));
             SetpupVehicleLocation();
         }
@@ -377,10 +391,7 @@ namespace Mirle.Agv.View
         {
             Control control = (Control)sender;
             UcAddressImage ucAddressImage = (UcAddressImage)control;
-            int addX = (int)(ucAddressImage.Address.Position.X * coefficient + deltaOrigion);
-            int addY = (int)(ucAddressImage.Address.Position.Y * coefficient + deltaOrigion);
-            Point point = new Point(addX, addY);
-            mouseDownPbPoint = point;
+            mouseDownPbPoint = MapPixelExchange(ucAddressImage.Address.Position);
             mouseDownScreenPoint = ((Control)sender).PointToScreen(new Point(e.X, e.Y));
             SetpupVehicleLocation();
         }
@@ -491,16 +502,14 @@ namespace Mirle.Agv.View
 
         private void SetpupVehicleLocation()
         {
-            var pX = MapPositionExchange(mouseDownPbPoint.X);
-            var pY = MapPositionExchange(mouseDownPbPoint.Y);
+            var mdpx = mouseDownPbPoint.X;
+            var mdpy = mouseDownPbPoint.Y;
+            var mouseDownPointInPosition = MapPositionExchange(new MapPosition(mouseDownPbPoint.X, mouseDownPbPoint.Y));
 
-            if (pX < 0) pX = 0;
-            if (pY < 0) pY = 0;
+            string msg = $"Position({mouseDownPointInPosition.X},{mouseDownPointInPosition.Y})";
 
-            string msg = $"Position({pX},{pY})";
-
-            numPositionX.Value = (decimal)pX;
-            numPositionY.Value = (decimal)pY;
+            numPositionX.Value = (decimal)mouseDownPointInPosition.X;
+            numPositionY.Value = (decimal)mouseDownPointInPosition.Y;
 
             RenewUI(this, msg);
         }
@@ -919,7 +928,7 @@ namespace Mirle.Agv.View
             var loading = mainFlowHandler.theVehicle.ThePlcVehicle.Loading;
             ucLoading.TagValue = loading ? "Yes" : "No";
             ucVehicleImage.Loading = loading;
-            ucVehicleImage.Location = new Point(MapPixelExchange(realPos.X), MapPixelExchange(realPos.Y));
+            ucVehicleImage.Location = MapPixelExchange(realPos);
             ucVehicleImage.FixToCenter();
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
@@ -943,13 +952,25 @@ namespace Mirle.Agv.View
 
         private void btnKeyInPosition_Click(object sender, EventArgs e)
         {
-            var curVehPos = Vehicle.Instance.CurVehiclePosition;
-            var posX = (int)numPositionX.Value;
-            var posY = (int)numPositionY.Value;
-            var tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
-            curVehPos.RealPositionRangeMm = 0;
-            curVehPos.RealPosition = new MapPosition(posX, posY);
-            curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
+            try
+            {
+                var curVehPos = Vehicle.Instance.CurVehiclePosition;
+                var posX = (int)numPositionX.Value;
+                var posY = (int)numPositionY.Value;
+                var tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
+                curVehPos.RealPositionRangeMm = 0;
+                curVehPos.RealPosition = new MapPosition(posX, posY);
+                curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
+
+                var barNum = int.Parse(txtBarNum.Text);
+                var mapBar = theMapInfo.allMapBarcodes[barNum];
+                ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
@@ -1239,7 +1260,7 @@ namespace Mirle.Agv.View
         }
 
         private void btnKeyInSoc_Click(object sender, EventArgs e)
-        {           
+        {
             mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
         }
 
@@ -1252,14 +1273,18 @@ namespace Mirle.Agv.View
                     middleAgent.ReConnect();
                 }
             }
-            else
+        }
+        private void radOffline_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radOffline.Checked)
             {
                 if (middleAgent.IsConnected())
                 {
                     middleAgent.DisConnect();
                 }
-            }            
+            }
         }
+
 
         private void btnSemiAutoManual_Click(object sender, EventArgs e)
         {
@@ -1288,5 +1313,6 @@ namespace Mirle.Agv.View
             }
 
         }
+
     }
 }

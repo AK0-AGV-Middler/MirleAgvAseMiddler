@@ -123,7 +123,8 @@ namespace Mirle.Agv
         LineBarcodeInterval,
         OntimeReviseTheta,
         OntimeReviseSectionDeviation,
-        UpdateDeltaPositionRange
+        UpdateDeltaPositionRange,
+        OneTimeRevise
     }
 
     public enum EnumSensorSafetyType
@@ -147,13 +148,29 @@ namespace Mirle.Agv
         ReserveStopMove,
         SensorStopMove
     }
-    
+
     public enum EnumVChangeType
     {
         Normal,
         TRTurn,
         R2000Turn,
         SensorSlow
+    }
+
+    public enum EnumGetThetaSectionDeviationType
+    {
+        SR2000Barcode,
+        SR2000MapPosition
+    }
+
+    public enum EnumOneTimeReviseState
+    {
+        NoRevise,
+        ReviseTheta,
+        ReviseThetaTurnZero,
+        CanReviseSectionDeviation,
+        ReviseSectionDeviation,
+        ReviseSectionDeviationTurnZero
     }
     #endregion
 }

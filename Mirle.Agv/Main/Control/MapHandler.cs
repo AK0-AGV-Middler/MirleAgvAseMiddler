@@ -22,6 +22,11 @@ namespace Mirle.Agv.Controller
         private double AddressAreaMm { get; set; } = 30;
         private Vehicle theVehicle = Vehicle.Instance;
 
+        private string lastReadBcrLineId = "";
+        private string lastReadBcrId = "";
+        private string lastReadAdrId = "";
+        private string lastReadSecId = "";
+
         public MapHandler(MapConfig mapConfig)
         {
             this.mapConfig = mapConfig;
@@ -32,7 +37,7 @@ namespace Mirle.Agv.Controller
             SectionBeamDisablePath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionBeamDisablePathFileName);
             AddressAreaMm = mapConfig.AddressAreaMm;
 
-            LoadMapInfo();           
+            LoadMapInfo();
         }
 
         public void LoadMapInfo()
@@ -80,8 +85,6 @@ namespace Mirle.Agv.Controller
                     }
                 }
 
-                var isLoadBarcodeFail = false;
-
                 for (int i = 0; i < nRows; i++)
                 {
                     string[] getThisRow = allRows[i].Split(',');
@@ -99,11 +102,12 @@ namespace Mirle.Agv.Controller
                     oneRow.Offset.X = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
                     oneRow.Offset.Y = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
 
+                    
+
                     int count = oneRow.TailBarcode.Number - oneRow.HeadBarcode.Number;
                     int absCount = Math.Abs(count);
                     if (absCount % 3 != 0)
                     {
-                        isLoadBarcodeFail = true;
                         loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                             , $"BarcodeLineNum mod 3 is not zero, [Id = {oneRow.Id}][HeadNum={oneRow.HeadBarcode.Number}][TailNum={oneRow.TailBarcode.Number}]"));
                         break;
@@ -121,6 +125,7 @@ namespace Mirle.Agv.Controller
                             mapBarcode.Offset.Y = oneRow.Offset.Y;
                             mapBarcode.LineId = oneRow.Id;
 
+                            lastReadBcrId = mapBarcode.Number.ToString();
                             TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
                         }
                     }
@@ -136,18 +141,21 @@ namespace Mirle.Agv.Controller
                             mapBarcode.Offset.Y = oneRow.Offset.Y;
                             mapBarcode.LineId = oneRow.Id;
 
+                            lastReadBcrId = mapBarcode.Number.ToString();
                             TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
                         }
                     }
-
+                    lastReadBcrLineId = oneRow.Id;
                     TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
                 }
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"Load Barcode File Ok. [IsLoadBarcodeFail={isLoadBarcodeFail}]"));
+                    , $"Load Barcode File Ok. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
             }
             catch (Exception ex)
             {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
@@ -213,6 +221,7 @@ namespace Mirle.Agv.Controller
                     oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
                     oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
 
+                    lastReadAdrId = oneRow.Id;
                     TheMapInfo.allMapAddresses.Add(oneRow.Id, oneRow);
                     if (oneRow.IsCharger)
                     {
@@ -221,11 +230,13 @@ namespace Mirle.Agv.Controller
                 }
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"Load Address File Ok."));
+                     , $"Load Address File Ok. [lastReadAdrId={lastReadAdrId}]"));
 
             }
             catch (Exception ex)
             {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadAdrId={lastReadAdrId}]"));
+
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
@@ -281,6 +292,7 @@ namespace Mirle.Agv.Controller
                     oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
                     oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
 
+                    lastReadSecId = oneRow.Id;
                     TheMapInfo.allMapSections.Add(oneRow.Id, oneRow);
                 }
 
@@ -289,11 +301,13 @@ namespace Mirle.Agv.Controller
                 AddInsideAddresses();
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                  , $"Load Section File Ok."));
+                  , $"Load Section File Ok. [lastReadSecId={lastReadSecId}]"));
 
             }
             catch (Exception ex)
             {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadSecId={lastReadSecId}]"));
+
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }

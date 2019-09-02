@@ -182,9 +182,6 @@ namespace Mirle.Agv.Controller
 
         public int GetTurnWheelAngle(int oldWheelAngle, MapPosition start, MapPosition tr, MapPosition end, ref string errorMessage)
         {
-            if (oldWheelAngle != 0)
-                return 0;
-
             int startSectionAngle = ComputeAngleInt(start, tr);
             int endSectionAngle = ComputeAngleInt(tr, end);
             int delta = endSectionAngle - startSectionAngle;
@@ -194,15 +191,19 @@ namespace Mirle.Agv.Controller
             else if (delta > 90)
                 delta -= 360;
 
-            if (delta == 90)
-                return 90;
-            else if (delta == -90)
-                return -90;
+            delta += oldWheelAngle;
+
+            if (delta == 0 || delta == 90 || delta == -90)
+                return delta;
+            else if (delta == 180 || delta == -180)
+            {
+                errorMessage = "TR BTR錯誤,輪子要轉斷了!";
+                return -1;
+            }
             else
             {
                 errorMessage = "GetTurnWheelAngle 出現奇怪角度..";
                 return -1;
-                //GGG....
             }
         }
 

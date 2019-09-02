@@ -105,6 +105,9 @@ namespace Mirle.Agv.View
                     case EnumMoveControlSafetyType.UpdateDeltaPositionRange:
                         temp.SetLabelString("更新偏差 : ", "容許Barcode和目前位置偏差 :");
                         break;
+                    case EnumMoveControlSafetyType.OneTimeRevise:
+                        temp.SetLabelString("一次修正 : ", "一次性修正距離,多少會修完 :");
+                        break;
                     default:
                         break;
                 }
@@ -239,7 +242,7 @@ namespace Mirle.Agv.View
             {
                 MapAddress mapAddress = valuePair.Value;
                 MapPosition mapPosition = mapAddress.Position.DeepClone();
-                string txtPosition = $"{mapPosition.X},{mapPosition.Y}";
+                string txtPosition = $"{mapPosition.X},{mapPosition.Y}_{mapAddress.Id}";
                 listMapAddressPositions.Items.Add(txtPosition);
             }
         }
@@ -612,6 +615,7 @@ namespace Mirle.Agv.View
             for (int i = 0; i < listCmdAddressPositions.Items.Count; i++)
             {
                 string positionPair = (string)listCmdAddressPositions.Items[i];
+                positionPair = positionPair.Split('_')[0];
                 string[] posXY = positionPair.Split(',');
                 var posX = float.Parse(posXY[0]);
                 var posY = float.Parse(posXY[1]);

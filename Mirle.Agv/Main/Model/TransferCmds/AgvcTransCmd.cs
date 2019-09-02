@@ -58,38 +58,8 @@ namespace Mirle.Agv.Model.TransferCmds
                 case ActiveType.Loadunload:
                     CommandType = EnumAgvcTransCommandType.LoadUnload;
                     break;
-                case ActiveType.Home:
-                    CommandType = EnumAgvcTransCommandType.Home;
-                    break;
-                case ActiveType.Override:
-                    CommandType = EnumAgvcTransCommandType.Override;
-                    break;
-                case ActiveType.Mtlhome:
-                case ActiveType.Systemout:
-                case ActiveType.Systemin:
-                case ActiveType.Techingmove:
-                case ActiveType.Round:
-                default:
-                    CommandType = EnumAgvcTransCommandType.Else;
-                    break;
-            }
-
-            switch (activeType)
-            {
-                case ActiveType.Move:
-                    CommandType = EnumAgvcTransCommandType.Move;
-                    break;
-                case ActiveType.Load:
-                    CommandType = EnumAgvcTransCommandType.Load;
-                    break;
-                case ActiveType.Unload:
-                    CommandType = EnumAgvcTransCommandType.Unload;
-                    break;
-                case ActiveType.Loadunload:
-                    CommandType = EnumAgvcTransCommandType.LoadUnload;
-                    break;
                 case ActiveType.Movetocharger:
-                    CommandType = EnumAgvcTransCommandType.Move;
+                    CommandType = EnumAgvcTransCommandType.MoveToCharger;
                     break;
                 case ActiveType.Override:
                     CommandType = EnumAgvcTransCommandType.Override;
@@ -172,6 +142,12 @@ namespace Mirle.Agv.Model.TransferCmds
             {
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+        }
+    }
+    public class AgvcMoveToChargerCmd : AgvcMoveCmd
+    {
+        public AgvcMoveToChargerCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+        {
         }
     }
 

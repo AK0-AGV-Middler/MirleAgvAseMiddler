@@ -61,6 +61,8 @@
             this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.ucBarPos = new Mirle.Agv.UcLabelTextBox();
+            this.txtBarNum = new System.Windows.Forms.TextBox();
             this.rtbTransferStep = new System.Windows.Forms.RichTextBox();
             this.rtbAgvcTransCmd = new System.Windows.Forms.RichTextBox();
             this.gbReserve = new System.Windows.Forms.GroupBox();
@@ -369,6 +371,7 @@
             this.btnYflip.TabIndex = 33;
             this.btnYflip.Text = "垂直翻轉";
             this.btnYflip.UseVisualStyleBackColor = true;
+            this.btnYflip.Visible = false;
             this.btnYflip.Click += new System.EventHandler(this.btnYflip_Click);
             // 
             // btnXflip
@@ -380,6 +383,7 @@
             this.btnXflip.TabIndex = 32;
             this.btnXflip.Text = "水平翻轉";
             this.btnXflip.UseVisualStyleBackColor = true;
+            this.btnXflip.Visible = false;
             this.btnXflip.Click += new System.EventHandler(this.btnXflip_Click);
             // 
             // txtResizePercent
@@ -392,6 +396,7 @@
             this.txtResizePercent.TabIndex = 30;
             this.txtResizePercent.Text = "150";
             this.txtResizePercent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtResizePercent.Visible = false;
             // 
             // txtRotateAngle
             // 
@@ -403,6 +408,7 @@
             this.txtRotateAngle.TabIndex = 31;
             this.txtRotateAngle.Text = "1";
             this.txtRotateAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtRotateAngle.Visible = false;
             // 
             // btnRotate
             // 
@@ -413,6 +419,7 @@
             this.btnRotate.TabIndex = 29;
             this.btnRotate.Text = "旋轉";
             this.btnRotate.UseVisualStyleBackColor = true;
+            this.btnRotate.Visible = false;
             this.btnRotate.Click += new System.EventHandler(this.btnRotate_Click);
             // 
             // btnResizePercent
@@ -424,6 +431,7 @@
             this.btnResizePercent.TabIndex = 27;
             this.btnResizePercent.Text = "比例縮放";
             this.btnResizePercent.UseVisualStyleBackColor = true;
+            this.btnResizePercent.Visible = false;
             this.btnResizePercent.Click += new System.EventHandler(this.btnResizePercent_Click);
             // 
             // btnReset
@@ -435,6 +443,7 @@
             this.btnReset.TabIndex = 26;
             this.btnReset.Text = "Reset";
             this.btnReset.UseVisualStyleBackColor = true;
+            this.btnReset.Visible = false;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             // 
             // btnSaveImage
@@ -446,6 +455,7 @@
             this.btnSaveImage.TabIndex = 25;
             this.btnSaveImage.Text = "Save Image";
             this.btnSaveImage.UseVisualStyleBackColor = true;
+            this.btnSaveImage.Visible = false;
             // 
             // btnSwitchBarcodeLine
             // 
@@ -456,6 +466,7 @@
             this.btnSwitchBarcodeLine.TabIndex = 24;
             this.btnSwitchBarcodeLine.Text = "切換BarcodeLine";
             this.btnSwitchBarcodeLine.UseVisualStyleBackColor = true;
+            this.btnSwitchBarcodeLine.Visible = false;
             this.btnSwitchBarcodeLine.Click += new System.EventHandler(this.btnSwitchBarcodeLine_Click);
             // 
             // splitContainer2
@@ -468,6 +479,8 @@
             // splitContainer2.Panel1
             // 
             this.splitContainer2.Panel1.AutoScroll = true;
+            this.splitContainer2.Panel1.Controls.Add(this.ucBarPos);
+            this.splitContainer2.Panel1.Controls.Add(this.txtBarNum);
             this.splitContainer2.Panel1.Controls.Add(this.rtbTransferStep);
             this.splitContainer2.Panel1.Controls.Add(this.rtbAgvcTransCmd);
             this.splitContainer2.Panel1.Controls.Add(this.gbReserve);
@@ -501,6 +514,23 @@
             this.splitContainer2.Size = new System.Drawing.Size(722, 1017);
             this.splitContainer2.SplitterDistance = 677;
             this.splitContainer2.TabIndex = 0;
+            // 
+            // ucBarPos
+            // 
+            this.ucBarPos.Location = new System.Drawing.Point(217, 318);
+            this.ucBarPos.Name = "ucBarPos";
+            this.ucBarPos.Size = new System.Drawing.Size(194, 26);
+            this.ucBarPos.TabIndex = 42;
+            this.ucBarPos.TagName = "Bar Pos";
+            this.ucBarPos.TagValue = "";
+            // 
+            // txtBarNum
+            // 
+            this.txtBarNum.Location = new System.Drawing.Point(230, 290);
+            this.txtBarNum.Name = "txtBarNum";
+            this.txtBarNum.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.txtBarNum.Size = new System.Drawing.Size(100, 22);
+            this.txtBarNum.TabIndex = 57;
             // 
             // rtbTransferStep
             // 
@@ -804,6 +834,16 @@
             // numPositionX
             // 
             this.numPositionX.Location = new System.Drawing.Point(99, 177);
+            this.numPositionX.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.numPositionX.Minimum = new decimal(new int[] {
+            999999,
+            0,
+            0,
+            -2147483648});
             this.numPositionX.Name = "numPositionX";
             this.numPositionX.Size = new System.Drawing.Size(95, 22);
             this.numPositionX.TabIndex = 41;
@@ -830,10 +870,15 @@
             // 
             this.numPositionY.Location = new System.Drawing.Point(99, 205);
             this.numPositionY.Maximum = new decimal(new int[] {
-            1000000,
+            99999,
             0,
             0,
             0});
+            this.numPositionY.Minimum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            -2147483648});
             this.numPositionY.Name = "numPositionY";
             this.numPositionY.Size = new System.Drawing.Size(95, 22);
             this.numPositionY.TabIndex = 41;
@@ -884,9 +929,11 @@
             this.radOffline.TabStop = true;
             this.radOffline.Text = "Offline";
             this.radOffline.UseVisualStyleBackColor = true;
+            this.radOffline.CheckedChanged += new System.EventHandler(this.radOffline_CheckedChanged);
             // 
             // btnSemiAutoManual
             // 
+            this.btnSemiAutoManual.Enabled = false;
             this.btnSemiAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnSemiAutoManual.Location = new System.Drawing.Point(519, 252);
             this.btnSemiAutoManual.Name = "btnSemiAutoManual";
@@ -894,10 +941,12 @@
             this.btnSemiAutoManual.TabIndex = 56;
             this.btnSemiAutoManual.Text = "Semi - Auto/Manual";
             this.btnSemiAutoManual.UseVisualStyleBackColor = true;
+            this.btnSemiAutoManual.Visible = false;
             this.btnSemiAutoManual.Click += new System.EventHandler(this.btnSemiAutoManual_Click);
             // 
             // btnTestSomething
             // 
+            this.btnTestSomething.Enabled = false;
             this.btnTestSomething.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnTestSomething.ForeColor = System.Drawing.Color.Green;
             this.btnTestSomething.Location = new System.Drawing.Point(345, 244);
@@ -906,6 +955,7 @@
             this.btnTestSomething.TabIndex = 55;
             this.btnTestSomething.Text = "Test Button";
             this.btnTestSomething.UseVisualStyleBackColor = true;
+            this.btnTestSomething.Visible = false;
             this.btnTestSomething.Click += new System.EventHandler(this.btnTestSomething_Click);
             // 
             // gbVisitTransferSteps
@@ -1206,26 +1256,31 @@
             // 
             // btnTransferComplete
             // 
+            this.btnTransferComplete.Enabled = false;
             this.btnTransferComplete.Location = new System.Drawing.Point(238, 200);
             this.btnTransferComplete.Name = "btnTransferComplete";
             this.btnTransferComplete.Size = new System.Drawing.Size(91, 54);
             this.btnTransferComplete.TabIndex = 51;
             this.btnTransferComplete.Text = "Transfer Complete";
             this.btnTransferComplete.UseVisualStyleBackColor = true;
+            this.btnTransferComplete.Visible = false;
             this.btnTransferComplete.Click += new System.EventHandler(this.btnTransferComplete_Click);
             // 
             // btnAutoApplyReserveOnce
             // 
+            this.btnAutoApplyReserveOnce.Enabled = false;
             this.btnAutoApplyReserveOnce.Location = new System.Drawing.Point(345, 200);
             this.btnAutoApplyReserveOnce.Name = "btnAutoApplyReserveOnce";
             this.btnAutoApplyReserveOnce.Size = new System.Drawing.Size(165, 36);
             this.btnAutoApplyReserveOnce.TabIndex = 46;
             this.btnAutoApplyReserveOnce.Text = "Auto Apply Reserve Once";
             this.btnAutoApplyReserveOnce.UseVisualStyleBackColor = true;
+            this.btnAutoApplyReserveOnce.Visible = false;
             this.btnAutoApplyReserveOnce.Click += new System.EventHandler(this.btnAutoApplyReserveOnce_Click);
             // 
             // btnSetupTestAgvcTransferCmd
             // 
+            this.btnSetupTestAgvcTransferCmd.Enabled = false;
             this.btnSetupTestAgvcTransferCmd.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnSetupTestAgvcTransferCmd.ForeColor = System.Drawing.Color.Green;
             this.btnSetupTestAgvcTransferCmd.Location = new System.Drawing.Point(3, 200);
@@ -1234,36 +1289,43 @@
             this.btnSetupTestAgvcTransferCmd.TabIndex = 45;
             this.btnSetupTestAgvcTransferCmd.Text = "Set A >> B LoadUnload";
             this.btnSetupTestAgvcTransferCmd.UseVisualStyleBackColor = true;
+            this.btnSetupTestAgvcTransferCmd.Visible = false;
             this.btnSetupTestAgvcTransferCmd.Click += new System.EventHandler(this.btnSetupTestAgvcTransferCmd_Click);
             // 
             // btnMoveFinish
             // 
+            this.btnMoveFinish.Enabled = false;
             this.btnMoveFinish.Location = new System.Drawing.Point(141, 200);
             this.btnMoveFinish.Name = "btnMoveFinish";
             this.btnMoveFinish.Size = new System.Drawing.Size(91, 54);
             this.btnMoveFinish.TabIndex = 0;
             this.btnMoveFinish.Text = "MoveFinish";
             this.btnMoveFinish.UseVisualStyleBackColor = true;
+            this.btnMoveFinish.Visible = false;
             this.btnMoveFinish.Click += new System.EventHandler(this.btnMoveFinish_Click);
             // 
             // btnUnloadFinish
             // 
+            this.btnUnloadFinish.Enabled = false;
             this.btnUnloadFinish.Location = new System.Drawing.Point(238, 254);
             this.btnUnloadFinish.Name = "btnUnloadFinish";
             this.btnUnloadFinish.Size = new System.Drawing.Size(91, 54);
             this.btnUnloadFinish.TabIndex = 49;
             this.btnUnloadFinish.Text = "UnloadFinish";
             this.btnUnloadFinish.UseVisualStyleBackColor = true;
+            this.btnUnloadFinish.Visible = false;
             this.btnUnloadFinish.Click += new System.EventHandler(this.btnUnloadFinish_Click);
             // 
             // btnLoadFinish
             // 
+            this.btnLoadFinish.Enabled = false;
             this.btnLoadFinish.Location = new System.Drawing.Point(141, 254);
             this.btnLoadFinish.Name = "btnLoadFinish";
             this.btnLoadFinish.Size = new System.Drawing.Size(91, 54);
             this.btnLoadFinish.TabIndex = 48;
             this.btnLoadFinish.Text = "LoadFinish";
             this.btnLoadFinish.UseVisualStyleBackColor = true;
+            this.btnLoadFinish.Visible = false;
             this.btnLoadFinish.Click += new System.EventHandler(this.btnLoadFinish_Click);
             // 
             // timeUpdateUI
@@ -1301,6 +1363,7 @@
             this.splitContainer3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
@@ -1430,5 +1493,7 @@
         private System.Windows.Forms.NumericUpDown numSoc;
         private System.Windows.Forms.Button btnKeyInSoc;
         private System.Windows.Forms.Button btnSemiAutoManual;
+        private UcLabelTextBox ucBarPos;
+        private System.Windows.Forms.TextBox txtBarNum;
     }
 }

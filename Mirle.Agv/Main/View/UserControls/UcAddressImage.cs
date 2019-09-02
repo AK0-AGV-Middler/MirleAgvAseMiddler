@@ -22,12 +22,9 @@ namespace Mirle.Agv
         private MapInfo theMapInfo = new MapInfo();
         private Image image;
         private Graphics gra;
-        private Pen bluePen = new Pen(Color.Blue, 1);
         private Pen blackPen = new Pen(Color.Black, 1);
         private Pen redPen = new Pen(Color.Red, 1);
-        private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private SolidBrush redBrush = new SolidBrush(Color.Red);
-        //private double addressRadius = 6;
         private double triangleCoefficient = (double)(Math.Sqrt(3.0));
 
         private ToolTip toolTip = new ToolTip();
@@ -38,9 +35,7 @@ namespace Mirle.Agv
             this.theMapInfo = theMapInfo;
             Address = address;
             Id = Address.Id;
-            label1.Text = Id;
-            labelSize = label1.Size.DeepClone();
-            DrawAddressImage();
+            DrawAddressImage(redPen);
             SetupShowAddressInfo();
         }
 
@@ -49,53 +44,48 @@ namespace Mirle.Agv
             string msg = $"Id = {Address.Id}\n" + $"Position = ({Address.Position.X},{Address.Position.Y})\n" + $"Coupler = {Address.CouplerId}";
 
             toolTip.SetToolTip(pictureBox1, msg);
-            toolTip.SetToolTip(label1, msg);
         }
 
         public void DrawAddressImage(Pen pen)
         {
-            int recSize = (int)(2 * Radius);
-            Size = new Size(Math.Max(label1.Width, recSize) + 2, label1.Height + recSize + 4);
+            int recSize = 2 * Radius;
+            Size = new Size(recSize + 2, recSize + 2);
             image = new Bitmap(Size.Width, Size.Height);
             gra = Graphics.FromImage(image);
-            if (label1.Width >= recSize)
-            {
-                Delta = (label1.Width - recSize) / 2;
-            }
 
             if (Address.IsWorkStation)
             {
-                RectangleF rectangleF = new RectangleF(Delta + 1, label1.Height + 3, recSize, recSize);
+                //Port站 : 畫圓
+                //RectangleF rectangleF = new RectangleF(Delta + 1, label1.Height + 3, recSize, recSize);
+                RectangleF rectangleF = new RectangleF(1, 1, recSize, recSize);
                 gra.DrawEllipse(redPen, rectangleF);
             }
 
             if (Address.IsCharger)
             {
-                PointF pointf = new PointF(Delta + 1, label1.Height + 3);
+                //充電樁 : 畫圓內接三角形
+                var triangleHeight = (float)((Radius * triangleCoefficient));
+                PointF pointf = new PointF(1, 1);
                 PointF p1 = new PointF(pointf.X + Radius, pointf.Y);
-                PointF p2 = new PointF(pointf.X, (float)(pointf.Y + (Radius * triangleCoefficient)));
-                PointF p3 = new PointF(pointf.X + 2 * Radius, (float)(pointf.Y + (Radius * triangleCoefficient)));
+                PointF p2 = new PointF(pointf.X + 0, pointf.Y + triangleHeight);
+                PointF p3 = new PointF(pointf.X + recSize, pointf.Y + triangleHeight);
                 PointF[] pointFs = new PointF[] { p1, p2, p3 };
                 gra.FillPolygon(redBrush, pointFs);
             }
 
             if (Address.IsSegmentPoint)
             {
-                Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
+                //Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
+                Rectangle rectangle = new Rectangle(1, 1, recSize, recSize);
                 gra.DrawRectangle(blackPen, rectangle);
             }
 
             pictureBox1.Image = image;
         }
 
-        public void DrawAddressImage()
-        {
-            DrawAddressImage(redPen);
-        }
-
         public void FixToCenter()
         {
-            Location = new Point(Location.X - (Radius + Delta), Location.Y - (label1.Height + 3 + Radius));
+            Location = new Point(Location.X - Radius, Location.Y - Radius);
         }
     }
 }
