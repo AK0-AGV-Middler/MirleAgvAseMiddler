@@ -25,6 +25,7 @@ namespace Mirle.Agv
         private Pen blackPen = new Pen(Color.Black, 1);
         private Pen redPen = new Pen(Color.Red, 1);
         private SolidBrush redBrush = new SolidBrush(Color.Red);
+        private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private double triangleCoefficient = (double)(Math.Sqrt(3.0));
 
         private ToolTip toolTip = new ToolTip();
@@ -78,6 +79,13 @@ namespace Mirle.Agv
                 //Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
                 Rectangle rectangle = new Rectangle(1, 1, recSize, recSize);
                 gra.DrawRectangle(blackPen, rectangle);
+            }
+
+            if (!Address.IsWorkStation && !Address.IsSegmentPoint && !Address.IsCharger)
+            {
+                //Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
+                Rectangle rectangle = new Rectangle(1, 1, recSize, recSize);
+                gra.FillEllipse(blackBrush, rectangle);
             }
 
             pictureBox1.Image = image;

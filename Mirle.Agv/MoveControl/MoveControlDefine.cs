@@ -122,7 +122,8 @@ namespace Mirle.Agv
         TurnOut,
         LineBarcodeInterval,
         OntimeReviseTheta,
-        OntimeReviseSectionDeviation,
+        OntimeReviseSectionDeviationLine,
+        OntimeReviseSectionDeviationHorizontal,
         UpdateDeltaPositionRange,
         OneTimeRevise
     }

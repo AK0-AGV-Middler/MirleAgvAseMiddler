@@ -141,7 +141,7 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
-            this.tB_AddressId = new System.Windows.Forms.TextBox();
+            this.button_AddReadPosition = new System.Windows.Forms.Button();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -248,7 +248,7 @@ namespace Mirle.Agv.View
             // 
             // tbP_CreateCommand
             // 
-            this.tbP_CreateCommand.Controls.Add(this.tB_AddressId);
+            this.tbP_CreateCommand.Controls.Add(this.button_AddReadPosition);
             this.tbP_CreateCommand.Controls.Add(this.label_LockResult);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommand_BarcodePosition);
@@ -416,9 +416,9 @@ namespace Mirle.Agv.View
             // btnPositionXY
             // 
             this.btnPositionXY.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnPositionXY.Location = new System.Drawing.Point(406, 526);
+            this.btnPositionXY.Location = new System.Drawing.Point(267, 526);
             this.btnPositionXY.Name = "btnPositionXY";
-            this.btnPositionXY.Size = new System.Drawing.Size(104, 32);
+            this.btnPositionXY.Size = new System.Drawing.Size(124, 32);
             this.btnPositionXY.TabIndex = 63;
             this.btnPositionXY.Text = "Add";
             this.btnPositionXY.UseVisualStyleBackColor = true;
@@ -1222,12 +1222,16 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
-            // tB_AddressId
+            // button_AddReadPosition
             // 
-            this.tB_AddressId.Location = new System.Drawing.Point(269, 526);
-            this.tB_AddressId.Name = "tB_AddressId";
-            this.tB_AddressId.Size = new System.Drawing.Size(123, 30);
-            this.tB_AddressId.TabIndex = 81;
+            this.button_AddReadPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_AddReadPosition.Location = new System.Drawing.Point(358, 564);
+            this.button_AddReadPosition.Name = "button_AddReadPosition";
+            this.button_AddReadPosition.Size = new System.Drawing.Size(82, 29);
+            this.button_AddReadPosition.TabIndex = 81;
+            this.button_AddReadPosition.Text = "Add";
+            this.button_AddReadPosition.UseVisualStyleBackColor = true;
+            this.button_AddReadPosition.Click += new System.EventHandler(this.button_AddReadPosition_Click);
             // 
             // MoveCommandDebugModeForm
             // 
@@ -1241,7 +1245,6 @@ namespace Mirle.Agv.View
             this.MinimizeBox = false;
             this.Name = "MoveCommandDebugModeForm";
             this.Text = "MoveCommandMonitor";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MoveCommandDebugModeForm_FormClosing);
             this.Load += new System.EventHandler(this.MoveCommandMonitor_Load);
             this.Leave += new System.EventHandler(this.MoveCommandDebugMode_Leave);
             this.tbC_Debug.ResumeLayout(false);
@@ -1374,6 +1377,6 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Label label_SensorState_Label;
         private System.Windows.Forms.Label label_LastIErrorTime;
         private System.Windows.Forms.Label label_LastIdealTime;
-        private System.Windows.Forms.TextBox tB_AddressId;
+        private System.Windows.Forms.Button button_AddReadPosition;
     }
 }

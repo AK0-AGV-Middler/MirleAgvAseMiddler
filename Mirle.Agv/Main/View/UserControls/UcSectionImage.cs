@@ -17,7 +17,7 @@ namespace Mirle.Agv
         public MapSection Section { get; set; } = new MapSection();
         public MapVector VectorHeadToTail { get; set; } = new MapVector();
         public string Id { get; set; } = "";
-        public Size labelSize { get; set; } = new Size(100, 100);        
+        public Size labelSize { get; set; } = new Size(100, 100);
 
         private MapInfo theMapInfo = new MapInfo();
         private Image image;
@@ -34,7 +34,7 @@ namespace Mirle.Agv
             InitializeComponent();
             this.theMapInfo = theMapInfo;
             Section = section;
-            VectorHeadToTail = new MapVector(Section.TailAddress.Position.X - Section.HeadAddress.Position.X, Section.TailAddress.Position.Y - Section.HeadAddress.Position.Y); 
+            VectorHeadToTail = new MapVector(Section.TailAddress.Position.X - Section.HeadAddress.Position.X, Section.TailAddress.Position.Y - Section.HeadAddress.Position.Y);
             Id = Section.Id;
             label1.Text = Id;
             labelSize = label1.Size.DeepClone();
@@ -62,8 +62,8 @@ namespace Mirle.Agv
             {
                 case EnumSectionType.Horizontal:
                     {
-                        Size = new Size(disX, label1.Height * 2);
-                        label1.Location = new Point(disX / 2, label1.Height);
+                        Size = new Size(disX, label1.Height * 3);
+                        label1.Location = new Point(disX / 2, label1.Height * 2);
                         image = new Bitmap(Size.Width, Size.Height);
                         gra = Graphics.FromImage(image);
                         gra.DrawLine(aPen, 0, 0, disX, 0);
@@ -71,11 +71,11 @@ namespace Mirle.Agv
                     break;
                 case EnumSectionType.Vertical:
                     {
-                        Size = new Size(label1.Width * 2, disY);
-                        label1.Location = new Point(0, disY / 2);
+                        Size = new Size(label1.Width + 10, disY);
+                        label1.Location = new Point(5, disY / 2);
                         image = new Bitmap(Size.Width, Size.Height);
                         gra = Graphics.FromImage(image);
-                        gra.DrawLine(aPen, label1.Width, 0, label1.Width, disY);
+                        gra.DrawLine(aPen, label1.Width / 2 + 5, 0, label1.Width / 2 + 5, disY);
                     }
                     break;
                 case EnumSectionType.R2000:
@@ -93,7 +93,7 @@ namespace Mirle.Agv
                         {
                             //左下右上型
                             gra.DrawLine(aPen, 0, disY, disX, 0);
-                        }                       
+                        }
                     }
                     break;
                 case EnumSectionType.None:

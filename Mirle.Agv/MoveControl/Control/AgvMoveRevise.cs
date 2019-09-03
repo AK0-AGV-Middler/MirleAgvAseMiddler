@@ -364,7 +364,7 @@ namespace Mirle.Agv.Controller
         #endregion
 
         #region 角度偏差檢查
-        private bool CheckTehtaSectionDeviationSafe(double theta, double sectionDeviation, ref string safetyMessage)
+        private bool CheckTehtaSectionDeviationSafe(double wheelAngle, double theta, double sectionDeviation, ref string safetyMessage)
         {
             if (safety == null)
                 return true;
@@ -382,16 +382,44 @@ namespace Mirle.Agv.Controller
                 }
             }
 
-            if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Enable)
+            if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Enable)
             {
-                if (Math.Abs(sectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range)
+                if (Math.Abs(sectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
                 {
                     safetyMessage = "軌道偏差" + sectionDeviation.ToString("0") +
                         "mm,已超過安全設置的" +
-                        safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range.ToString("0") +
+                        safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0") +
                         "mm,因此啟動EMS!";
 
                     return false;
+                }
+            }
+
+            if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Enable)
+            {
+                if (wheelAngle != 0 && safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Enable)
+                {
+                    if (Math.Abs(sectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range)
+                    {
+                        safetyMessage = "橫移偏差" + sectionDeviation.ToString("0") +
+                            "mm,已超過安全設置的" +
+                            safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0") +
+                            "mm,因此啟動EMS!";
+
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (Math.Abs(sectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
+                    {
+                        safetyMessage = "軌道偏差" + sectionDeviation.ToString("0") +
+                            "mm,已超過安全設置的" +
+                            safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0") +
+                            "mm,因此啟動EMS!";
+
+                        return true;
+                    }
                 }
             }
 
@@ -522,7 +550,7 @@ namespace Mirle.Agv.Controller
             double sectionDeviation = 0;
             bool NewData = GetThetaSectionDeviation(type, wheelAngle, section, ref theta, ref sectionDeviation);
 
-            if (NewData && !CheckTehtaSectionDeviationSafe(theta, sectionDeviation, ref safetyMessage))
+            if (NewData && !CheckTehtaSectionDeviationSafe(wheelAngle, theta, sectionDeviation, ref safetyMessage))
                 return true;
 
             if (!elmoDriver.MoveCompelete(EnumAxis.GT))
@@ -587,16 +615,31 @@ namespace Mirle.Agv.Controller
                     }
                 }
 
-                if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Enable)
+                if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Enable)
                 {
-                    if (Math.Abs(reviseData.SectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range)
+                    if (wheelAngle != 0 && safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Enable)
                     {
-                        safetyMessage = "軌道偏差" + reviseData.SectionDeviation.ToString("0") +
-                            "mm,已超過安全設置的" +
-                            safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range.ToString("0") +
-                            "mm,因此啟動EMS!";
+                        if (Math.Abs(reviseData.SectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range)
+                        {
+                            safetyMessage = "橫移偏差" + reviseData.SectionDeviation.ToString("0") +
+                                "mm,已超過安全設置的" +
+                                safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0") +
+                                "mm,因此啟動EMS!";
 
-                        return true;
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(reviseData.SectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
+                        {
+                            safetyMessage = "軌道偏差" + reviseData.SectionDeviation.ToString("0") +
+                                "mm,已超過安全設置的" +
+                                safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0") +
+                                "mm,因此啟動EMS!";
+
+                            return true;
+                        }
                     }
                 }
             }
@@ -703,16 +746,31 @@ namespace Mirle.Agv.Controller
                     }
                 }
 
-                if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Enable)
+                if (safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Enable)
                 {
-                    if (Math.Abs(sectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range)
+                    if (wheelAngle != 0 && safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Enable)
                     {
-                        safetyMessage = "軌道偏差" + sectionDeviation.ToString("0") +
-                            "mm,已超過安全設置的" +
-                            safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviation].Range.ToString("0") +
-                            "mm,因此啟動EMS!";
+                        if (Math.Abs(sectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range)
+                        {
+                            safetyMessage = "橫移偏差" + sectionDeviation.ToString("0") +
+                                "mm,已超過安全設置的" +
+                                safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0") +
+                                "mm,因此啟動EMS!";
 
-                        return true;
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(sectionDeviation) > safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
+                        {
+                            safetyMessage = "軌道偏差" + sectionDeviation.ToString("0") +
+                                "mm,已超過安全設置的" +
+                                safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0") +
+                                "mm,因此啟動EMS!";
+
+                            return true;
+                        }
                     }
                 }
             }
@@ -766,7 +824,6 @@ namespace Mirle.Agv.Controller
                     }
                 }
             }
-
         } // OntimeReviseByAGVPositionAndSection()
     }
 }

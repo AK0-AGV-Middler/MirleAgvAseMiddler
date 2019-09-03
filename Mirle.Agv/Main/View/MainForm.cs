@@ -210,16 +210,6 @@ namespace Mirle.Agv.View
             btnAlarmReset.Enabled = false;
             var msg = $"AlarmHandler : Reset All Alarms, [Count={alarms.Count}]";
             RichTextBoxAppendHead(richTextBox1, msg);
-
-            try
-            {
-                var xx = alarmHandler.allAlarms.First(x => x.Key != 0).Key;
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-
             btnAlarmReset.Enabled = true;
         }
 
@@ -232,13 +222,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-
-                //pictureBox1.Parent = panelLeftUp;
                 SetupImageRegion();
-                //pictureBox1.Size = new Size(2000, 2000);
-                //image = new Bitmap(1920, 1080, PixelFormat.Format32bppArgb);
-                //gra = Graphics.FromImage(image);
-
 
                 if (IsBarcodeLineShow)
                 {
@@ -274,7 +258,7 @@ namespace Mirle.Agv.View
                         case EnumSectionType.Horizontal:
                             break;
                         case EnumSectionType.Vertical:
-                            ucSectionImage.Location = new Point(ucSectionImage.Location.X - ucSectionImage.labelSize.Width, ucSectionImage.Location.Y);
+                            ucSectionImage.Location = new Point(ucSectionImage.Location.X - (ucSectionImage.labelSize.Width / 2 + 5), ucSectionImage.Location.Y);
                             break;
                         case EnumSectionType.R2000:
                             break;
@@ -315,6 +299,7 @@ namespace Mirle.Agv.View
                     ucAddressImage.MouseDown += UcAddressImage_MouseDown;
                     //ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
                     ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
+                    ucAddressImage.pictureBox1.MouseDoubleClick += ucAddressImageItem_DoubleClick;
                 }
 
                 pictureBox1.SendToBack();
@@ -352,7 +337,7 @@ namespace Mirle.Agv.View
 
             var maxPosInPixel = MapPixelExchange(maxPos);
             var minPosInPixel = MapPixelExchange(minPos);
-            Point point = new Point(2 * (maxPosInPixel.X - minPosInPixel.X), 2 * (maxPosInPixel.Y - minPosInPixel.Y));
+            Point point = new Point(100 + (maxPosInPixel.X - minPosInPixel.X), 100 + (maxPosInPixel.Y - minPosInPixel.Y));
             pictureBox1.Size = new Size(point);
             image = new Bitmap(point.X, point.Y, PixelFormat.Format32bppArgb);
             gra = Graphics.FromImage(image);
@@ -1244,13 +1229,13 @@ namespace Mirle.Agv.View
             //middleAgent.StopAskReserve();
             //middleAgent.SetupNeedReserveSections(mapSections);
             //middleAgent.StartAskReserve();
-            RichTextBoxAppendHead(rtbTransferStep, "line001");
-            RichTextBoxAppendHead(rtbTransferStep, "line002");
-            RichTextBoxAppendHead(rtbTransferStep, "line003");
+            //RichTextBoxAppendHead(rtbTransferStep, "line001");
+            //RichTextBoxAppendHead(rtbTransferStep, "line002");
+            //RichTextBoxAppendHead(rtbTransferStep, "line003");
 
-            var xx = rtbTransferStep.Text.ToList();
+            //var xx = rtbTransferStep.Text.ToList();
 
-            Console.WriteLine();
+            //Console.WriteLine();
 
         }
 
@@ -1285,7 +1270,6 @@ namespace Mirle.Agv.View
             }
         }
 
-
         private void btnSemiAutoManual_Click(object sender, EventArgs e)
         {
             switch (Vehicle.Instance.AutoState)
@@ -1312,6 +1296,26 @@ namespace Mirle.Agv.View
                     break;
             }
 
+        }
+
+        private void ucAddressImageItem_DoubleClick(object sender, MouseEventArgs e)
+        {
+            Control control = ((Control)sender).Parent;
+            UcAddressImage ucAddressImage = (UcAddressImage)control;
+
+            try
+            {
+                if (moveCommandDebugMode != null)
+                {
+                    moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
+                    moveCommandDebugMode.Show();
+                    moveCommandDebugMode.TopMost = true;
+                }
+            }
+            catch
+            {
+
+            }
         }
 
     }

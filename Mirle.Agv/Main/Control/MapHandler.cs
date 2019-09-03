@@ -102,7 +102,7 @@ namespace Mirle.Agv.Controller
                     oneRow.Offset.X = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
                     oneRow.Offset.Y = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
 
-                    
+
 
                     int count = oneRow.TailBarcode.Number - oneRow.HeadBarcode.Number;
                     int absCount = Math.Abs(count);
@@ -382,8 +382,6 @@ namespace Mirle.Agv.Controller
                     oneRow.RightDisable = bool.Parse(getThisRow[dicHeaderIndexes["RightDisable"]]);
 
                     AddMapSectionBeamDisableIntoList(oneRow);
-
-                    var xx = TheMapInfo.allMapSections;
                 }
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -403,7 +401,7 @@ namespace Mirle.Agv.Controller
                 if (!TheMapInfo.allMapSections.ContainsKey(oneRow.SectionId))
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"AllMapSections.ContainsKey(SectionId)={false}"));
+                     , $"AddMapSectionBeamDisableIntoList +++FAIL+++. AllMapSections.ContainsKey({oneRow.SectionId})={false}"));
 
                     return;
                 }
@@ -414,7 +412,7 @@ namespace Mirle.Agv.Controller
                      , $"Min < 0. [SectionId={oneRow.SectionId}][Min={oneRow.Min}]"));
                     return;
                 }
-                if (oneRow.Max > mapSection.Distance)
+                if (oneRow.Max > mapSection.Distance + 1)
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"Max > Distance. [SectionId={oneRow.SectionId}][Max={oneRow.Max}][Distance={mapSection.Distance}]"));

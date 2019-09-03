@@ -31,10 +31,11 @@ namespace Mirle.Agv.Model
         public bool PauseAlready { get; set; }
         public bool CancelRequest { get; set; }
         public bool ContinueRequest { get; set; }
-
+        public bool CanPause { get; set; }
 
         public MoveControlParameter()
         {
+            CanPause = true;
             DirFlag = true;
             PositionDirFlag = true;
             WheelAngle = 0;

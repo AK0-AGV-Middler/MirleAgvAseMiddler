@@ -652,17 +652,26 @@ namespace Mirle.Agv.Controller
                     }
                 }
 
-                if (data.NowVelocityCommand != velocityCommand)
-                {  // VChange.
+                if (velocityCommand > data.NowVelocityCommand)
+                {
                     triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, 0);
                     tempCommand = NewVChangeCommand(triggerPosition, data.MoveStartEncoder +
                                    (data.DirFlag ? data.CommandDistance : -data.CommandDistance), velocityCommand, data.DirFlag);
                     moveCmdList.Add(tempCommand);
 
                     data.NowVelocityCommand = velocityCommand;
-                    //// 先不考慮ST ST 間的V不同.
-                    //errorMessage = "// 先不考慮ST ST 間的V不同.";
-                    //return false;
+                }
+                else if (velocityCommand < data.NowVelocityCommand)
+                {
+                    distance = GetVChangeDistance(data.NowVelocity, velocityCommand, data.NowVelocityCommand, data.STDistance);
+
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                    tempCommand = NewVChangeCommand(triggerPosition, data.MoveStartEncoder +
+                                   (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
+                                   velocityCommand, data.DirFlag);
+                    moveCmdList.Add(tempCommand);
+
+                    data.NowVelocityCommand = velocityCommand;
                 }
             }
 

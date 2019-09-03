@@ -246,9 +246,7 @@ namespace Mirle.Agv.Controller
         {
             if (!IsConnected())
             {
-                string msg = $"Middler : SendCommandWrapper +++FAIL+++ [SeqNum = {wrapper.SeqNum}][{(EnumCmdNum)wrapper.ID}]";
-                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                msg += " " + wrapper.ToString();
+                var msg = $"Middler : SendCommandWrapper +++FAIL+++ [SeqNum = {wrapper.SeqNum}][{(EnumCmdNum)wrapper.ID}] " + wrapper.ToString();
                 OnCmdSendEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
@@ -1290,6 +1288,11 @@ namespace Mirle.Agv.Controller
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusCancel;
             Send_Cmd132_TransferCompleteReport();
         }
+        public void InterLockError()
+        {
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
+            Send_Cmd132_TransferCompleteReport();
+        }
 
         public void MainFlow_OnIdReadEvent(EnumIdReadResult readResult)
         {
@@ -1676,7 +1679,7 @@ namespace Mirle.Agv.Controller
                         return;
                     }
                     else
-                    {                        
+                    {
                         mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.PauseType, receive.ReserveInfos);
                     }
                     break;

@@ -8,6 +8,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -30,6 +31,7 @@ namespace Mirle.Agv.View
         private int firstSelect;
         private int secondSelect;
         private string commandID = "";
+        private bool simulationModeFirstDoubleClick = false;
         private Dictionary<EnumMoveControlSafetyType, SafetyInformation> safetyUserControl = new Dictionary<EnumMoveControlSafetyType, SafetyInformation>();
         private Dictionary<EnumSensorSafetyType, SensorByPassInformation> sensorByPassUserControl = new Dictionary<EnumSensorSafetyType, SensorByPassInformation>();
 
@@ -69,11 +71,6 @@ namespace Mirle.Agv.View
             moveControl.DebugFlowMode = true;
         }
 
-        private void MoveCommandDebugModeForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //moveControl.DebugFlowMode = false;
-        }
-
         private void AddAdminSafetyUserControl()
         {
             SafetyInformation temp;
@@ -99,8 +96,11 @@ namespace Mirle.Agv.View
                     case EnumMoveControlSafetyType.OntimeReviseTheta:
                         temp.SetLabelString("角度偏差 : ", "容許Theta偏差量 :");
                         break;
-                    case EnumMoveControlSafetyType.OntimeReviseSectionDeviation:
-                        temp.SetLabelString("軌道偏差 : ", "容許軌道偏差量 :");
+                    case EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine:
+                        temp.SetLabelString("直線偏差 : ", "容許直線軌道偏差量 :");
+                        break;
+                    case EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal:
+                        temp.SetLabelString("橫移偏差 : ", "容許橫移軌道偏差量 :");
                         break;
                     case EnumMoveControlSafetyType.UpdateDeltaPositionRange:
                         temp.SetLabelString("更新偏差 : ", "容許Barcode和目前位置偏差 :");
@@ -242,7 +242,7 @@ namespace Mirle.Agv.View
             {
                 MapAddress mapAddress = valuePair.Value;
                 MapPosition mapPosition = mapAddress.Position.DeepClone();
-                string txtPosition = $"{mapPosition.X},{mapPosition.Y}_{mapAddress.Id}";
+                string txtPosition = $"{mapPosition.X},{mapPosition.Y}";
                 listMapAddressPositions.Items.Add(txtPosition);
             }
         }
@@ -469,6 +469,7 @@ namespace Mirle.Agv.View
         #endregion
 
         #region Page Create Command
+
         private void btnAddAddressPosition_Click(object sender, EventArgs e)
         {
             if (listMapAddressPositions.Items.Count < 1)
@@ -548,18 +549,11 @@ namespace Mirle.Agv.View
         {
             try
             {
-                string txtPosition = $"{int.Parse(tB_PositionX.Text)},{int.Parse(tB_PositionY.Text)}"; 
-                if (!string.IsNullOrWhiteSpace(tB_AddressId.Text))
-                {
-                    if (theMapInfo.allMapAddresses.ContainsKey(tB_AddressId.Text))
-                    {
-                        var addrPos = theMapInfo.allMapAddresses[tB_AddressId.Text].Position;
-                        txtPosition = $"{(int)addrPos.X}{(int)addrPos.Y}_{tB_AddressId.Text}";
-                        tB_AddressId.Text = "";
-                    }
-                }         
-            
-                listCmdAddressPositions.Items.Add(txtPosition);                
+                int x = Int32.Parse(tB_PositionX.Text);
+                int y = Int32.Parse(tB_PositionY.Text);
+
+                string txtPosition = $"{x.ToString()},{y.ToString()}";
+                listCmdAddressPositions.Items.Add(txtPosition);
             }
             catch
             {
@@ -622,7 +616,6 @@ namespace Mirle.Agv.View
             for (int i = 0; i < listCmdAddressPositions.Items.Count; i++)
             {
                 string positionPair = (string)listCmdAddressPositions.Items[i];
-                positionPair = positionPair.Split('_')[0];
                 string[] posXY = positionPair.Split(',');
                 var posX = float.Parse(posXY[0]);
                 var posY = float.Parse(posXY[1]);
@@ -840,6 +833,7 @@ namespace Mirle.Agv.View
         {
             button_SimulationModeChange.Enabled = false;
             moveControl.SimulationMode = (button_SimulationModeChange.Text == "關閉中");
+            simulationModeFirstDoubleClick = moveControl.SimulationMode;
             button_SimulationModeChange.Text = (button_SimulationModeChange.Text == "關閉中") ? "開啟中" : "關閉中";
             button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
 
@@ -886,6 +880,71 @@ namespace Mirle.Agv.View
                     return;
 
                 listCmdSpeedLimits.Items.Add(listMapSpeedLimits.SelectedItem);
+            }
+        }
+
+        public void AddAddressPositionByMainFormDoubleClick(string id)
+        {
+            if (theMapInfo.allMapAddresses.ContainsKey(id))
+            {
+                string str = theMapInfo.allMapAddresses[id].Position.X.ToString() + "," + theMapInfo.allMapAddresses[id].Position.Y.ToString();
+                listCmdAddressPositions.Items.Add(str);
+
+                if (moveControl.SimulationMode && simulationModeFirstDoubleClick)
+                {
+                    simulationModeFirstDoubleClick = false;
+                    moveControl.location.Real = new AGVPosition();
+                    moveControl.location.Real.AGVAngle = 0;
+                    moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position.DeepClone();
+                    Vehicle.Instance.CurVehiclePosition.RealPosition = moveControl.location.Real.Position;
+                    Vehicle.Instance.CurVehiclePosition.VehicleAngle = moveControl.location.Real.AGVAngle;
+                }
+            }
+        }
+
+        private bool IsAddress(MapPosition now)
+        {
+            foreach (var valuePair in theMapInfo.allMapAddresses)
+            {
+                if (Math.Abs(now.X - valuePair.Value.Position.X) <= 10 &&
+                    Math.Abs(now.X - valuePair.Value.Position.Y) <= 10)
+                {
+                    string str = valuePair.Value.Position.X.ToString() + "," + valuePair.Value.Position.Y.ToString();
+                    listCmdAddressPositions.Items.Add(str);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void FindPositionBySection(MapPosition now)
+        {
+            foreach (var valuePair in theMapInfo.allMapSections)
+            {
+                if (valuePair.Value.HeadAddress.Position.X == valuePair.Value.TailAddress.Position.X &&
+                     Math.Abs(valuePair.Value.HeadAddress.Position.X - now.X) <= 10)
+                {
+                    string str = valuePair.Value.HeadAddress.Position.X.ToString() + "," + now.Y.ToString();
+                    listCmdAddressPositions.Items.Add(str);
+                    return;
+                }
+                else if (valuePair.Value.HeadAddress.Position.Y == valuePair.Value.TailAddress.Position.Y &&
+                     Math.Abs(valuePair.Value.HeadAddress.Position.Y - now.Y) <= 10)
+                {
+                    string str = now.X.ToString() + "," + valuePair.Value.HeadAddress.Position.Y.ToString();
+                    listCmdAddressPositions.Items.Add(str);
+                    return;
+                }
+            }
+        }
+
+        private void button_AddReadPosition_Click(object sender, EventArgs e)
+        {
+            if (moveControl.location.Real != null)
+            {
+                if (!IsAddress(moveControl.location.Real.Position))
+                    FindPositionBySection(moveControl.location.Real.Position);
             }
         }
 

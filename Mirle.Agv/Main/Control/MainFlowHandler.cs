@@ -1451,6 +1451,8 @@ namespace Mirle.Agv.Controller
                         theVehicle.CurVehiclePosition.RealPosition.X = mapSection.HeadAddress.Position.X;
                     }
 
+                    UpdatePlcVehicleBeamSensor();
+
                     break;
                 }
             }
