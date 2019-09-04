@@ -50,6 +50,11 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnReDraw = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.ckAddress = new System.Windows.Forms.CheckBox();
+            this.ckSection = new System.Windows.Forms.CheckBox();
+            this.ckBarcode = new System.Windows.Forms.CheckBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.btnYflip = new System.Windows.Forms.Button();
             this.btnXflip = new System.Windows.Forms.Button();
@@ -135,6 +140,7 @@
             this.btnUnloadFinish = new System.Windows.Forms.Button();
             this.btnLoadFinish = new System.Windows.Forms.Button();
             this.timeUpdateUI = new System.Windows.Forms.Timer(this.components);
+            this.ucCharging = new Mirle.Agv.UcLabelTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -145,6 +151,7 @@
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -328,6 +335,8 @@
             // 
             // splitContainer3.Panel2
             // 
+            this.splitContainer3.Panel2.Controls.Add(this.btnReDraw);
+            this.splitContainer3.Panel2.Controls.Add(this.groupBox1);
             this.splitContainer3.Panel2.Controls.Add(this.richTextBox1);
             this.splitContainer3.Panel2.Controls.Add(this.btnYflip);
             this.splitContainer3.Panel2.Controls.Add(this.btnXflip);
@@ -352,6 +361,66 @@
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // btnReDraw
+            // 
+            this.btnReDraw.Location = new System.Drawing.Point(612, 13);
+            this.btnReDraw.Name = "btnReDraw";
+            this.btnReDraw.Size = new System.Drawing.Size(91, 71);
+            this.btnReDraw.TabIndex = 36;
+            this.btnReDraw.Text = "ReDraw";
+            this.btnReDraw.UseVisualStyleBackColor = true;
+            this.btnReDraw.Visible = false;
+            this.btnReDraw.Click += new System.EventHandler(this.btnReDraw_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.ckAddress);
+            this.groupBox1.Controls.Add(this.ckSection);
+            this.groupBox1.Controls.Add(this.ckBarcode);
+            this.groupBox1.Location = new System.Drawing.Point(382, 4);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(224, 80);
+            this.groupBox1.TabIndex = 35;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Map Items";
+            this.groupBox1.Visible = false;
+            // 
+            // ckAddress
+            // 
+            this.ckAddress.AutoSize = true;
+            this.ckAddress.Checked = true;
+            this.ckAddress.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckAddress.Location = new System.Drawing.Point(139, 21);
+            this.ckAddress.Name = "ckAddress";
+            this.ckAddress.Size = new System.Drawing.Size(61, 16);
+            this.ckAddress.TabIndex = 2;
+            this.ckAddress.Text = "Address";
+            this.ckAddress.UseVisualStyleBackColor = true;
+            // 
+            // ckSection
+            // 
+            this.ckSection.AutoSize = true;
+            this.ckSection.Checked = true;
+            this.ckSection.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckSection.Location = new System.Drawing.Point(75, 21);
+            this.ckSection.Name = "ckSection";
+            this.ckSection.Size = new System.Drawing.Size(58, 16);
+            this.ckSection.TabIndex = 1;
+            this.ckSection.Text = "Section";
+            this.ckSection.UseVisualStyleBackColor = true;
+            // 
+            // ckBarcode
+            // 
+            this.ckBarcode.AutoSize = true;
+            this.ckBarcode.Checked = true;
+            this.ckBarcode.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckBarcode.Location = new System.Drawing.Point(6, 21);
+            this.ckBarcode.Name = "ckBarcode";
+            this.ckBarcode.Size = new System.Drawing.Size(63, 16);
+            this.ckBarcode.TabIndex = 0;
+            this.ckBarcode.Text = "Barcode";
+            this.ckBarcode.UseVisualStyleBackColor = true;
             // 
             // richTextBox1
             // 
@@ -661,7 +730,7 @@
             // numSoc
             // 
             this.numSoc.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.numSoc.Location = new System.Drawing.Point(317, 208);
+            this.numSoc.Location = new System.Drawing.Point(317, 245);
             this.numSoc.Name = "numSoc";
             this.numSoc.Size = new System.Drawing.Size(101, 27);
             this.numSoc.TabIndex = 41;
@@ -683,12 +752,13 @@
             // 
             // gbPerformanceCounter
             // 
+            this.gbPerformanceCounter.Controls.Add(this.ucCharging);
             this.gbPerformanceCounter.Controls.Add(this.ucSoc);
             this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterRam);
             this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterCpu);
             this.gbPerformanceCounter.Location = new System.Drawing.Point(218, 74);
             this.gbPerformanceCounter.Name = "gbPerformanceCounter";
-            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 128);
+            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 162);
             this.gbPerformanceCounter.TabIndex = 10;
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
@@ -735,7 +805,7 @@
             // btnKeyInSoc
             // 
             this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnKeyInSoc.Location = new System.Drawing.Point(218, 205);
+            this.btnKeyInSoc.Location = new System.Drawing.Point(218, 242);
             this.btnKeyInSoc.Name = "btnKeyInSoc";
             this.btnKeyInSoc.Size = new System.Drawing.Size(93, 34);
             this.btnKeyInSoc.TabIndex = 40;
@@ -1334,6 +1404,15 @@
             this.timeUpdateUI.Interval = 250;
             this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
             // 
+            // ucCharging
+            // 
+            this.ucCharging.Location = new System.Drawing.Point(7, 127);
+            this.ucCharging.Name = "ucCharging";
+            this.ucCharging.Size = new System.Drawing.Size(187, 30);
+            this.ucCharging.TabIndex = 3;
+            this.ucCharging.TagName = "Charge";
+            this.ucCharging.TagValue = "";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1362,6 +1441,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -1495,5 +1576,11 @@
         private System.Windows.Forms.Button btnSemiAutoManual;
         private UcLabelTextBox ucBarPos;
         private System.Windows.Forms.TextBox txtBarNum;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.CheckBox ckAddress;
+        private System.Windows.Forms.CheckBox ckSection;
+        private System.Windows.Forms.CheckBox ckBarcode;
+        private System.Windows.Forms.Button btnReDraw;
+        private UcLabelTextBox ucCharging;
     }
 }

@@ -26,6 +26,7 @@ namespace Mirle.Agv.Controller
         private string lastReadBcrId = "";
         private string lastReadAdrId = "";
         private string lastReadSecId = "";
+        private int lastIndesx = 0;
 
         public MapHandler(MapConfig mapConfig)
         {
@@ -202,24 +203,41 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
+                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
                     oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                    lastIndesx++;
                     oneRow.Position.X = double.Parse(getThisRow[dicHeaderIndexes["PositionX"]]);
+                    lastIndesx++;
                     oneRow.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["PositionY"]]);
+                    lastIndesx++;
                     oneRow.IsWorkStation = bool.Parse(getThisRow[dicHeaderIndexes["IsWorkStation"]]);
+                    lastIndesx++;
                     oneRow.CanLeftLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftLoad"]]);
+                    lastIndesx++;
                     oneRow.CanLeftUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftUnload"]]);
+                    lastIndesx++;
                     oneRow.CanRightLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanRightLoad"]]);
+                    lastIndesx++;
                     oneRow.CanRightUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanRightUnload"]]);
+                    lastIndesx++;
                     oneRow.IsCharger = bool.Parse(getThisRow[dicHeaderIndexes["IsCharger"]]);
+                    lastIndesx++;
                     oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];
+                    lastIndesx++;
                     oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicHeaderIndexes["ChargeDirection"]]);
+                    lastIndesx++;
                     oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicHeaderIndexes["IsSegmentPoint"]]);
+                    lastIndesx++;
                     oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
+                    lastIndesx++;
                     oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
+                    lastIndesx++;
                     oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
+                    lastIndesx++;
                     oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
+                    lastIndesx++;
 
                     lastReadAdrId = oneRow.Id;
                     TheMapInfo.allMapAddresses.Add(oneRow.Id, oneRow);
@@ -235,7 +253,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadAdrId={lastReadAdrId}]"));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv : [lastReadAdrId={lastReadAdrId}][lastIndesx={lastIndesx}]"));
 
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
@@ -280,17 +298,27 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
+                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
                     MapSection oneRow = new MapSection();
                     oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                    lastIndesx++;
                     oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
+                    lastIndesx++;
                     oneRow.InsideAddresses.Add(oneRow.HeadAddress);
+                    lastIndesx++;
                     oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
+                    lastIndesx++;
                     oneRow.InsideAddresses.Add(oneRow.TailAddress);
+                    lastIndesx++;
                     oneRow.Distance = Math.Sqrt(GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position));
+                    lastIndesx++;
                     oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
+                    lastIndesx++;
                     oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
+                    lastIndesx++;
                     oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
+                    lastIndesx++;
 
                     lastReadSecId = oneRow.Id;
                     TheMapInfo.allMapSections.Add(oneRow.Id, oneRow);
@@ -306,7 +334,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadSecId={lastReadSecId}]"));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv : [lastReadSecId={lastReadSecId}]"));
 
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
@@ -371,15 +399,23 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
+                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
                     MapSectionBeamDisable oneRow = new MapSectionBeamDisable();
                     oneRow.SectionId = getThisRow[dicHeaderIndexes["SectionId"]];
+                    lastIndesx++;
                     oneRow.Min = double.Parse(getThisRow[dicHeaderIndexes["Min"]]);
+                    lastIndesx++;
                     oneRow.Max = double.Parse(getThisRow[dicHeaderIndexes["Max"]]);
+                    lastIndesx++;
                     oneRow.FrontDisable = bool.Parse(getThisRow[dicHeaderIndexes["FrontDisable"]]);
+                    lastIndesx++;
                     oneRow.BackDisable = bool.Parse(getThisRow[dicHeaderIndexes["BackDisable"]]);
+                    lastIndesx++;
                     oneRow.LeftDisable = bool.Parse(getThisRow[dicHeaderIndexes["LeftDisable"]]);
+                    lastIndesx++;
                     oneRow.RightDisable = bool.Parse(getThisRow[dicHeaderIndexes["RightDisable"]]);
+                    lastIndesx++;
 
                     AddMapSectionBeamDisableIntoList(oneRow);
                 }
@@ -390,6 +426,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadBeamSensorDisable [lastIndesx={lastIndesx}]"));
+
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }

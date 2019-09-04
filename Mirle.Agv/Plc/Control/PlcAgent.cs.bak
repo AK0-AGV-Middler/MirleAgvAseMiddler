@@ -540,10 +540,6 @@ namespace Mirle.Agv.Controller
                         {
                             switch (oColParam.Item(i).DataName.ToString())
                             {
-                                case "BumpAlarmStatus":
-                                    this.APLCVehicle.BumperAlarmStatus = aMCProtocol.get_ItemByTag("BumpAlarmStatus").AsBoolean;
-                                    break;
-
                                 case "BatteryGotech":
                                     if (oColParam.Item(i).AsBoolean)
                                     {
@@ -699,6 +695,9 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "StageLoading":
                                     this.APLCVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
+                                    break;
+                                case "BumperAlarmStatus":
+                                    this.APLCVehicle.BumperAlarmStatus = aMCProtocol.get_ItemByTag("BumperAlarmStatus").AsBoolean;
                                     break;
 
                                 case "Temperature_sensor_number":
@@ -2365,13 +2364,11 @@ namespace Mirle.Agv.Controller
                                     {
                                         this.APLCVehicle.Loading = true;
                                         this.APLCVehicle.CassetteId = "CA0070";
-                                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
                                     }
                                     else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
                                     {
-                                        this.APLCVehicle.CassetteId = "";
                                         this.APLCVehicle.Loading = false;
-                                        
+                                        this.APLCVehicle.CassetteId = "";
                                     }
                                     else
                                     {
@@ -2572,7 +2569,7 @@ namespace Mirle.Agv.Controller
                                 }
                                 else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
                                 {
-                                    //this.APLCVehicle.CassetteId = "";
+                                    this.APLCVehicle.CassetteId = "";
                                 }
                                 else
                                 {

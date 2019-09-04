@@ -18,6 +18,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
             switch (type)
             {
                 case EnumTransferStepType.Move:
+                case EnumTransferStepType.MoveToCharger:
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
                     if (mainFlowHandler.StopCharge())
                     {

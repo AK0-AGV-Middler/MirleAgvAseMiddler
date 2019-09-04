@@ -148,6 +148,7 @@ namespace Mirle.Agv.Model.TransferCmds
     {
         public AgvcMoveToChargerCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
+            
         }
     }
 

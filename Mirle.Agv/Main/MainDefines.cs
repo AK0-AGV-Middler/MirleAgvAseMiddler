@@ -180,7 +180,7 @@ namespace Mirle.Agv
         Stop
     }
 
-    public enum EnumIdReadResult
+    public enum EnumCstIdReadResult
     {
         Noraml,
         Mismatch,

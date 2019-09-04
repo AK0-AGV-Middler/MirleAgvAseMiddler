@@ -42,6 +42,7 @@ namespace Mirle.Agv.View
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "Available MBytes");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
+        private Vehicle theVehicle = Vehicle.Instance;
         private bool IsAskingReserve { get; set; }
         private string LastAskingReserveSectionId { get; set; } = "";
         private string LastAgvcTransferCommandId { get; set; } = "";
@@ -224,7 +225,7 @@ namespace Mirle.Agv.View
             {
                 SetupImageRegion();
 
-                if (IsBarcodeLineShow)
+                if (ckBarcode.Checked)
                 {
                     //Draw Barcode in blackDash
                     var allMapBarcodeLines = theMapInfo.allMapBarcodeLines.Values.ToList();
@@ -237,69 +238,78 @@ namespace Mirle.Agv.View
                     }
                 }
 
-                allUcSectionImages.Clear();
+
                 // Draw Sections in blueLine
-                var allMapSections = theMapInfo.allMapSections.Values.ToList();
-                foreach (var section in allMapSections)
+                allUcSectionImages.Clear();
+                if (ckSection.Checked)
                 {
-                    var headPos = section.HeadAddress.Position;
-                    var tailPos = section.TailAddress.Position;
-                    MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Min(headPos.Y, tailPos.Y));
-
-                    UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
-                    if (!allUcSectionImages.ContainsKey(section.Id))
+                    var allMapSections = theMapInfo.allMapSections.Values.ToList();
+                    foreach (var section in allMapSections)
                     {
-                        allUcSectionImages.Add(section.Id, ucSectionImage);
-                    }
-                    pictureBox1.Controls.Add(ucSectionImage);
-                    ucSectionImage.Location = MapPixelExchange(sectionLocation);
-                    switch (section.Type)
-                    {
-                        case EnumSectionType.Horizontal:
-                            break;
-                        case EnumSectionType.Vertical:
-                            ucSectionImage.Location = new Point(ucSectionImage.Location.X - (ucSectionImage.labelSize.Width / 2 + 5), ucSectionImage.Location.Y);
-                            break;
-                        case EnumSectionType.R2000:
-                            break;
-                        case EnumSectionType.None:
-                        default:
-                            break;
-                    }
+                        var headPos = section.HeadAddress.Position;
+                        var tailPos = section.TailAddress.Position;
+                        MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Min(headPos.Y, tailPos.Y));
 
-                    ucSectionImage.BringToFront();
+                        UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
+                        if (!allUcSectionImages.ContainsKey(section.Id))
+                        {
+                            allUcSectionImages.Add(section.Id, ucSectionImage);
+                        }
+                        pictureBox1.Controls.Add(ucSectionImage);
+                        ucSectionImage.Location = MapPixelExchange(sectionLocation);
+                        switch (section.Type)
+                        {
+                            case EnumSectionType.Horizontal:
+                                break;
+                            case EnumSectionType.Vertical:
+                                ucSectionImage.Location = new Point(ucSectionImage.Location.X - (ucSectionImage.labelSize.Width / 2 + 5), ucSectionImage.Location.Y);
+                                break;
+                            case EnumSectionType.R2000:
+                                break;
+                            case EnumSectionType.None:
+                            default:
+                                break;
+                        }
 
-                    ucSectionImage.MouseDown += UcSectionImage_MouseDown;
-                    ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
-                    ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
+                        ucSectionImage.BringToFront();
+
+                        ucSectionImage.MouseDown += UcSectionImage_MouseDown;
+                        ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
+                        ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
+                    }
                 }
 
                 //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
-                var allMapAddresses = theMapInfo.allMapAddresses.Values.ToList();
-                foreach (var address in allMapAddresses)
+                allUcAddressImages.Clear();
+                if (ckAddress.Checked)
                 {
-                    UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
-                    if (!allUcAddressImages.ContainsKey(address.Id))
+                    var allMapAddresses = theMapInfo.allMapAddresses.Values.ToList();
+                    foreach (var address in allMapAddresses)
                     {
-                        allUcAddressImages.Add(address.Id, ucAddressImage);
+                        UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
+                        if (!allUcAddressImages.ContainsKey(address.Id))
+                        {
+                            allUcAddressImages.Add(address.Id, ucAddressImage);
+                        }
+                        pictureBox1.Controls.Add(ucAddressImage);
+                        ucAddressImage.Location = MapPixelExchange(address.Position);
+                        ucAddressImage.FixToCenter();
+                        ucAddressImage.BringToFront();
+                        Label label = new Label();
+                        label.AutoSize = false;
+                        label.Size = new Size(35, 12);
+                        label.Parent = pictureBox1;
+                        label.Text = address.Id;
+                        label.Location = new Point(ucAddressImage.Location.X, ucAddressImage.Location.Y + 2 * (ucAddressImage.Radius + 1));
+                        label.BringToFront();
+
+
+                        ucAddressImage.MouseDown += UcAddressImage_MouseDown;
+                        //ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
+                        ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
+                        ucAddressImage.pictureBox1.MouseDoubleClick += ucAddressImageItem_DoubleClick;
                     }
-                    pictureBox1.Controls.Add(ucAddressImage);
-                    ucAddressImage.Location = MapPixelExchange(address.Position);
-                    ucAddressImage.FixToCenter();
-                    ucAddressImage.BringToFront();
-                    Label label = new Label();
-                    label.AutoSize = false;
-                    label.Size = new Size(35, 12);
-                    label.Parent = pictureBox1;
-                    label.Text = address.Id;
-                    label.Location = new Point(ucAddressImage.Location.X, ucAddressImage.Location.Y + 2 * (ucAddressImage.Radius + 1));
-                    label.BringToFront();
 
-
-                    ucAddressImage.MouseDown += UcAddressImage_MouseDown;
-                    //ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
-                    ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
-                    ucAddressImage.pictureBox1.MouseDoubleClick += ucAddressImageItem_DoubleClick;
                 }
 
                 pictureBox1.SendToBack();
@@ -652,13 +662,16 @@ namespace Mirle.Agv.View
             UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
 
             UpdateAutoManual();
-            UpdateVehLocationAndLoading();
+            UpdateVehLocation();
+            UpdateCharginAndLoading();
             //DrawReserveSections();
             UpdateThreadPicture();
             UpdateRtbAgvcTransCmd();
             UpdateRtbTransferStep();
             UpdateLastAlarm();
         }
+
+
 
         private void UpdateLastAlarm()
         {
@@ -670,7 +683,6 @@ namespace Mirle.Agv.View
                 txtLastAlarm.Text = msg;
             }
         }
-
         private void UpdateRtbTransferStep()
         {
             if (mainFlowHandler.GetTransferStepsCount() == 0)
@@ -702,7 +714,6 @@ namespace Mirle.Agv.View
                     break;
             }
         }
-
         private void UpdateRtbAgvcTransCmd()
         {
             if (mainFlowHandler.IsAgvcTransferCommandEmpty())
@@ -729,7 +740,6 @@ namespace Mirle.Agv.View
 
             RichTextBoxAppendHead(rtbAgvcTransCmd, cmdInfo);
         }
-
         private void UpdateUnloadCmdInfo(TransferStep transferStep)
         {
             UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
@@ -745,7 +755,6 @@ namespace Mirle.Agv.View
 
             RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
         }
-
         private void UpdateLoadCmdInfo(TransferStep transferStep)
         {
             LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
@@ -761,7 +770,6 @@ namespace Mirle.Agv.View
 
             RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
         }
-
         private void UpdateMoveCmdInfo(TransferStep transferStep)
         {
             MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
@@ -777,7 +785,6 @@ namespace Mirle.Agv.View
 
             RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
         }
-
         private object GetListSpeedsToString(List<double> speeds)
         {
             List<string> result = new List<string>();
@@ -787,7 +794,6 @@ namespace Mirle.Agv.View
             }
             return GuideListToString(result);
         }
-
         private string GetListActionsToString(List<EnumAddressAction> actions)
         {
             List<string> result = new List<string>();
@@ -797,12 +803,10 @@ namespace Mirle.Agv.View
             }
             return GuideListToString(result);
         }
-
         private string GuideListToString(List<string> aList)
         {
             return string.Join(", ", aList.ToArray());
         }
-
         private string GetListPositionsToString(List<MapPosition> positions)
         {
             List<string> result = new List<string>();
@@ -812,7 +816,6 @@ namespace Mirle.Agv.View
             }
             return GuideListToString(result);
         }
-
         private void UpdateThreadPicture()
         {
             Vehicle theVehicle = Vehicle.Instance;
@@ -893,9 +896,9 @@ namespace Mirle.Agv.View
             }
 
         }
-        private void UpdateVehLocationAndLoading()
+        private void UpdateVehLocation()
         {
-            var location = mainFlowHandler.theVehicle.CurVehiclePosition;
+            var location = theVehicle.CurVehiclePosition;
 
             var realPos = location.RealPosition;
             ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
@@ -910,13 +913,20 @@ namespace Mirle.Agv.View
             ucMapSection.TagValue = curSection.Id;
 
             ucVehicleImage.Hide();
-            var loading = mainFlowHandler.theVehicle.ThePlcVehicle.Loading;
-            ucLoading.TagValue = loading ? "Yes" : "No";
-            ucVehicleImage.Loading = loading;
+
             ucVehicleImage.Location = MapPixelExchange(realPos);
             ucVehicleImage.FixToCenter();
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
+        }
+        private void UpdateCharginAndLoading()
+        {
+            var loading = !string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId);
+            ucLoading.TagValue = loading ? "Yes" : "No";
+            ucVehicleImage.Loading = loading;
+
+            var charging = theVehicle.ThePlcVehicle.Batterys.Charging;
+            ucCharging.TagValue = charging ? "Yes" : "No";
         }
         private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
         {
@@ -1094,7 +1104,7 @@ namespace Mirle.Agv.View
         {
             if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Load)
             {
-                var plcVeh = mainFlowHandler.theVehicle.ThePlcVehicle;
+                var plcVeh = theVehicle.ThePlcVehicle;
                 plcVeh.Loading = true;
                 plcVeh.CassetteId = "FakeCst001";
 
@@ -1111,7 +1121,7 @@ namespace Mirle.Agv.View
         {
             if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Unload)
             {
-                var plcVeh = mainFlowHandler.theVehicle.ThePlcVehicle;
+                var plcVeh = theVehicle.ThePlcVehicle;
                 plcVeh.Loading = false;
                 plcVeh.CassetteId = null;
 
@@ -1156,6 +1166,7 @@ namespace Mirle.Agv.View
                             string cstid = "";
                             plcAgent.triggerCassetteIDReader(ref cstid);
                         }
+                        mainFlowHandler.StartWatchLowPower();
                     }
                     break;
                 case EnumAutoState.Auto:
@@ -1318,5 +1329,9 @@ namespace Mirle.Agv.View
             }
         }
 
+        private void btnReDraw_Click(object sender, EventArgs e)
+        {
+            ResetImageAndPb();
+        }
     }
 }
