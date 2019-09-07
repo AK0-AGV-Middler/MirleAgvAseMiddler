@@ -17,16 +17,16 @@ namespace Mirle.Agv.Model
         public string CassetteId { get; set; } = "";
 
         //以下屬性會影響方向燈,語音和Beam sensor sleep
-        //public bool Forward { get; set; }
-        //public bool Backward { get; set; }
-        //public bool SpinTurnLeft { get; set; }//左旋轉
-        //public bool SpinTurnRight { get; set; }//右旋轉
-        //public bool TraverseLeft { get; set; }//左橫移
-        //public bool TraverseRight { get; set; }//右橫移
-        //public bool SteeringFL { get; set; }
-        //public bool SteeringFR { get; set; }
-        //public bool SteeringBL { get; set; }
-        //public bool SteeringBR { get; set; }
+        public bool Forward { get; set; }
+        public bool Backward { get; set; }
+        public bool SpinTurnLeft { get; set; }//左旋轉
+        public bool SpinTurnRight { get; set; }//右旋轉
+        public bool TraverseLeft { get; set; }//左橫移
+        public bool TraverseRight { get; set; }//右橫移
+        public bool SteeringFL { get; set; }
+        public bool SteeringFR { get; set; }
+        public bool SteeringBL { get; set; }
+        public bool SteeringBR { get; set; }
 
         //dicBeamSensor key值為PLCNearSignalTagID and PLCFarSignalTagID, 兩個都會指到相同PLCBeamSensor物件
         public Dictionary<string, PlcBeamSensor> dicBeamSensor = new Dictionary<string, PlcBeamSensor>();

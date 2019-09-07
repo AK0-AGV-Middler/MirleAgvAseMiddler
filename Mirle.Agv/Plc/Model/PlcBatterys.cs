@@ -44,6 +44,7 @@ namespace Mirle.Agv.Model
         public ushort FullChargeIndex { get; set; } = 50;
         //Port_AutoCharge_Low_SOC
         public double PortAutoChargeLowSoc { get; set; } = 50.00;
+        public double PortAutoChargeHighSoc { get; set; } = 70.00;
 
         public uint Battery_Logger_Interval { get; set; } = 3;
         public uint Batterys_Charging_Time_Out { get; set; } = 10;

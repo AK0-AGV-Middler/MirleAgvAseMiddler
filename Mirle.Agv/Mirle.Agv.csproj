@@ -160,6 +160,7 @@
     <Compile Include="Plc\Model\PlcBatterys.cs" />
     <Compile Include="Plc\Model\PlcBeamSensor.cs" />
     <Compile Include="Plc\Model\PlcBumper.cs" />
+    <Compile Include="Plc\Model\PlcConfig.cs" />
     <Compile Include="Plc\Model\PlcEmo.cs" />
     <Compile Include="Plc\Model\PlcForkCommand.cs" />
     <Compile Include="Plc\Model\PlcRobot.cs" />

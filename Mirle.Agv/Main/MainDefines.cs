@@ -176,8 +176,10 @@ namespace Mirle.Agv
         None,
         Start,
         Pause,
+        PauseComplete,
         Working,
-        Stop
+        Stop,
+        StopComplete
     }
 
     public enum EnumCstIdReadResult
@@ -185,6 +187,13 @@ namespace Mirle.Agv
         Noraml,
         Mismatch,
         Fail
+    }
+
+    public enum EnumBarcodeMaterial
+    {
+        Iron,
+        Papper,
+        None
     }
     #endregion
 

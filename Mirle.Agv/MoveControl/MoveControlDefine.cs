@@ -106,7 +106,9 @@ namespace Mirle.Agv
     public enum EnumMoveComplete
     {
         Success,
-        Fail
+        Fail,
+        Pause,
+        Cancel
     }
 
     public enum EnumR2000Parameter

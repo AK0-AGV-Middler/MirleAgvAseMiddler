@@ -1481,7 +1481,7 @@ namespace Mirle.Agv.Controller
                         oneceMoveCommandList.Add(tempOnceMoveCmd);
 
                         // 前進方向改成反方向、設定SectionLine開始encoder,設定startByPassDisance,設定新起點和新的啟動encoder和距離.
-                        data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TempDistance : -data.TempDistance);
+                        data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TurnOutSafetyDistance[data.TurnType] : -data.TurnOutSafetyDistance[data.TurnType]);
                         data.DirFlag = !data.DirFlag;
                         tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
                         AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);

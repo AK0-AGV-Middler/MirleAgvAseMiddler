@@ -32,6 +32,7 @@
             this.tabContol1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.chkFakeForking = new System.Windows.Forms.CheckBox();
             this.palForkParams = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
@@ -331,7 +332,21 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
-            this.chkFakeForking = new System.Windows.Forms.CheckBox();
+            this.panel5 = new System.Windows.Forms.Panel();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.panel9 = new System.Windows.Forms.Panel();
+            this.chkSteeringBRLight = new System.Windows.Forms.CheckBox();
+            this.chkSteeringBLLight = new System.Windows.Forms.CheckBox();
+            this.chkSteeringFRLight = new System.Windows.Forms.CheckBox();
+            this.chkSteeringFLLight = new System.Windows.Forms.CheckBox();
+            this.chkTraverseRightLight = new System.Windows.Forms.CheckBox();
+            this.chkTraverseLeftLight = new System.Windows.Forms.CheckBox();
+            this.chkSpinTurnRightLight = new System.Windows.Forms.CheckBox();
+            this.chkSpinTurnLeftLight = new System.Windows.Forms.CheckBox();
+            this.chkMoveBackLight = new System.Windows.Forms.CheckBox();
+            this.chkMoveFrontLight = new System.Windows.Forms.CheckBox();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.palForkParams.SuspendLayout();
@@ -358,6 +373,11 @@
             this.grpL.SuspendLayout();
             this.grpB.SuspendLayout();
             this.grpF.SuspendLayout();
+            this.panel5.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            this.panel6.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.panel9.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabContol1
@@ -398,6 +418,17 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fork";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // chkFakeForking
+            // 
+            this.chkFakeForking.AutoSize = true;
+            this.chkFakeForking.Location = new System.Drawing.Point(967, 316);
+            this.chkFakeForking.Name = "chkFakeForking";
+            this.chkFakeForking.Size = new System.Drawing.Size(119, 17);
+            this.chkFakeForking.TabIndex = 71;
+            this.chkFakeForking.Text = "Fake Forking Open";
+            this.chkFakeForking.UseVisualStyleBackColor = true;
+            this.chkFakeForking.CheckedChanged += new System.EventHandler(this.chkFakeForking_CheckedChanged);
             // 
             // palForkParams
             // 
@@ -2735,21 +2766,12 @@
             // 
             // tabSafety
             // 
-            this.tabSafety.Controls.Add(this.pnlMove);
-            this.tabSafety.Controls.Add(this.lblEMO);
-            this.tabSafety.Controls.Add(this.lblBumperAlarm);
+            this.tabSafety.Controls.Add(this.groupBox2);
+            this.tabSafety.Controls.Add(this.panel6);
+            this.tabSafety.Controls.Add(this.groupBox1);
+            this.tabSafety.Controls.Add(this.panel5);
             this.tabSafety.Controls.Add(this.grpAutoSleep);
-            this.tabSafety.Controls.Add(this.txtSafetyAction);
-            this.tabSafety.Controls.Add(this.label28);
             this.tabSafety.Controls.Add(this.grpSafety);
-            this.tabSafety.Controls.Add(this.label36);
-            this.tabSafety.Controls.Add(this.label35);
-            this.tabSafety.Controls.Add(this.label34);
-            this.tabSafety.Controls.Add(this.label33);
-            this.tabSafety.Controls.Add(this.lblSleep);
-            this.tabSafety.Controls.Add(this.lblNearDetect);
-            this.tabSafety.Controls.Add(this.lblFarDetect);
-            this.tabSafety.Controls.Add(this.lblNoDetect);
             this.tabSafety.Controls.Add(this.grpR);
             this.tabSafety.Controls.Add(this.grpL);
             this.tabSafety.Controls.Add(this.grpB);
@@ -2768,15 +2790,15 @@
             this.pnlMove.Controls.Add(this.chkMoveLeft);
             this.pnlMove.Controls.Add(this.chkMoveBack);
             this.pnlMove.Controls.Add(this.chkMoveFront);
-            this.pnlMove.Location = new System.Drawing.Point(311, 457);
+            this.pnlMove.Location = new System.Drawing.Point(4, 19);
             this.pnlMove.Name = "pnlMove";
-            this.pnlMove.Size = new System.Drawing.Size(112, 108);
+            this.pnlMove.Size = new System.Drawing.Size(112, 102);
             this.pnlMove.TabIndex = 80;
             // 
             // chkMoveRight
             // 
             this.chkMoveRight.AutoSize = true;
-            this.chkMoveRight.Location = new System.Drawing.Point(14, 84);
+            this.chkMoveRight.Location = new System.Drawing.Point(14, 79);
             this.chkMoveRight.Name = "chkMoveRight";
             this.chkMoveRight.Size = new System.Drawing.Size(90, 20);
             this.chkMoveRight.TabIndex = 76;
@@ -2787,7 +2809,7 @@
             // chkMoveLeft
             // 
             this.chkMoveLeft.AutoSize = true;
-            this.chkMoveLeft.Location = new System.Drawing.Point(14, 58);
+            this.chkMoveLeft.Location = new System.Drawing.Point(14, 56);
             this.chkMoveLeft.Name = "chkMoveLeft";
             this.chkMoveLeft.Size = new System.Drawing.Size(81, 20);
             this.chkMoveLeft.TabIndex = 75;
@@ -2798,7 +2820,7 @@
             // chkMoveBack
             // 
             this.chkMoveBack.AutoSize = true;
-            this.chkMoveBack.Location = new System.Drawing.Point(14, 32);
+            this.chkMoveBack.Location = new System.Drawing.Point(14, 31);
             this.chkMoveBack.Name = "chkMoveBack";
             this.chkMoveBack.Size = new System.Drawing.Size(86, 20);
             this.chkMoveBack.TabIndex = 74;
@@ -2809,7 +2831,7 @@
             // chkMoveFront
             // 
             this.chkMoveFront.AutoSize = true;
-            this.chkMoveFront.Location = new System.Drawing.Point(14, 6);
+            this.chkMoveFront.Location = new System.Drawing.Point(14, 7);
             this.chkMoveFront.Name = "chkMoveFront";
             this.chkMoveFront.Size = new System.Drawing.Size(89, 20);
             this.chkMoveFront.TabIndex = 73;
@@ -2822,7 +2844,7 @@
             this.lblEMO.BackColor = System.Drawing.Color.LightGreen;
             this.lblEMO.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblEMO.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblEMO.Location = new System.Drawing.Point(874, 577);
+            this.lblEMO.Location = new System.Drawing.Point(14, 98);
             this.lblEMO.Name = "lblEMO";
             this.lblEMO.Size = new System.Drawing.Size(315, 34);
             this.lblEMO.TabIndex = 79;
@@ -2834,7 +2856,7 @@
             this.lblBumperAlarm.BackColor = System.Drawing.Color.LightGreen;
             this.lblBumperAlarm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblBumperAlarm.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblBumperAlarm.Location = new System.Drawing.Point(874, 527);
+            this.lblBumperAlarm.Location = new System.Drawing.Point(14, 55);
             this.lblBumperAlarm.Name = "lblBumperAlarm";
             this.lblBumperAlarm.Size = new System.Drawing.Size(315, 34);
             this.lblBumperAlarm.TabIndex = 78;
@@ -2889,7 +2911,7 @@
             // 
             this.txtSafetyAction.Enabled = false;
             this.txtSafetyAction.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtSafetyAction.Location = new System.Drawing.Point(1022, 476);
+            this.txtSafetyAction.Location = new System.Drawing.Point(162, 11);
             this.txtSafetyAction.Name = "txtSafetyAction";
             this.txtSafetyAction.Size = new System.Drawing.Size(167, 35);
             this.txtSafetyAction.TabIndex = 72;
@@ -2898,7 +2920,7 @@
             // 
             this.label28.AutoSize = true;
             this.label28.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label28.Location = new System.Drawing.Point(869, 479);
+            this.label28.Location = new System.Drawing.Point(9, 14);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(147, 26);
             this.label28.TabIndex = 71;
@@ -2951,7 +2973,7 @@
             // label36
             // 
             this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(750, 515);
+            this.label36.Location = new System.Drawing.Point(261, 46);
             this.label36.Name = "label36";
             this.label36.Size = new System.Drawing.Size(40, 16);
             this.label36.TabIndex = 66;
@@ -2960,7 +2982,7 @@
             // label35
             // 
             this.label35.AutoSize = true;
-            this.label35.Location = new System.Drawing.Point(653, 515);
+            this.label35.Location = new System.Drawing.Point(164, 46);
             this.label35.Name = "label35";
             this.label35.Size = new System.Drawing.Size(76, 16);
             this.label35.TabIndex = 65;
@@ -2969,7 +2991,7 @@
             // label34
             // 
             this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(578, 515);
+            this.label34.Location = new System.Drawing.Point(89, 46);
             this.label34.Name = "label34";
             this.label34.Size = new System.Drawing.Size(65, 16);
             this.label34.TabIndex = 64;
@@ -2978,7 +3000,7 @@
             // label33
             // 
             this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(498, 515);
+            this.label33.Location = new System.Drawing.Point(9, 46);
             this.label33.Name = "label33";
             this.label33.Size = new System.Drawing.Size(66, 16);
             this.label33.TabIndex = 63;
@@ -2989,7 +3011,7 @@
             this.lblSleep.BackColor = System.Drawing.Color.Silver;
             this.lblSleep.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblSleep.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblSleep.Location = new System.Drawing.Point(736, 472);
+            this.lblSleep.Location = new System.Drawing.Point(247, 7);
             this.lblSleep.Name = "lblSleep";
             this.lblSleep.Size = new System.Drawing.Size(63, 34);
             this.lblSleep.TabIndex = 61;
@@ -3001,7 +3023,7 @@
             this.lblNearDetect.BackColor = System.Drawing.Color.Pink;
             this.lblNearDetect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblNearDetect.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblNearDetect.Location = new System.Drawing.Point(657, 472);
+            this.lblNearDetect.Location = new System.Drawing.Point(168, 7);
             this.lblNearDetect.Name = "lblNearDetect";
             this.lblNearDetect.Size = new System.Drawing.Size(63, 34);
             this.lblNearDetect.TabIndex = 60;
@@ -3013,7 +3035,7 @@
             this.lblFarDetect.BackColor = System.Drawing.Color.Yellow;
             this.lblFarDetect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblFarDetect.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblFarDetect.Location = new System.Drawing.Point(578, 472);
+            this.lblFarDetect.Location = new System.Drawing.Point(89, 7);
             this.lblFarDetect.Name = "lblFarDetect";
             this.lblFarDetect.Size = new System.Drawing.Size(63, 34);
             this.lblFarDetect.TabIndex = 59;
@@ -3025,7 +3047,7 @@
             this.lblNoDetect.BackColor = System.Drawing.Color.LightGreen;
             this.lblNoDetect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblNoDetect.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblNoDetect.Location = new System.Drawing.Point(499, 472);
+            this.lblNoDetect.Location = new System.Drawing.Point(10, 7);
             this.lblNoDetect.Name = "lblNoDetect";
             this.lblNoDetect.Size = new System.Drawing.Size(63, 34);
             this.lblNoDetect.TabIndex = 58;
@@ -3043,7 +3065,7 @@
             this.grpR.Controls.Add(this.lblBeamSensorRUL);
             this.grpR.Controls.Add(this.pnlR);
             this.grpR.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.grpR.Location = new System.Drawing.Point(380, 248);
+            this.grpR.Location = new System.Drawing.Point(380, 213);
             this.grpR.Name = "grpR";
             this.grpR.Size = new System.Drawing.Size(515, 197);
             this.grpR.TabIndex = 57;
@@ -3159,7 +3181,7 @@
             this.grpL.Controls.Add(this.lblBeamSensorLUL);
             this.grpL.Controls.Add(this.pnlL);
             this.grpL.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.grpL.Location = new System.Drawing.Point(380, 43);
+            this.grpL.Location = new System.Drawing.Point(380, 8);
             this.grpL.Name = "grpL";
             this.grpL.Size = new System.Drawing.Size(515, 197);
             this.grpL.TabIndex = 2;
@@ -3294,7 +3316,7 @@
             this.grpB.Controls.Add(this.lblBeamSensorBUL);
             this.grpB.Controls.Add(this.pnlB);
             this.grpB.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.grpB.Location = new System.Drawing.Point(19, 43);
+            this.grpB.Location = new System.Drawing.Point(19, 8);
             this.grpB.Name = "grpB";
             this.grpB.Size = new System.Drawing.Size(325, 402);
             this.grpB.TabIndex = 1;
@@ -3507,7 +3529,7 @@
             this.grpF.Controls.Add(this.lblBeamSensorFUL);
             this.grpF.Controls.Add(this.pnlF);
             this.grpF.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.grpF.Location = new System.Drawing.Point(931, 43);
+            this.grpF.Location = new System.Drawing.Point(931, 8);
             this.grpF.Name = "grpF";
             this.grpF.Size = new System.Drawing.Size(325, 402);
             this.grpF.TabIndex = 0;
@@ -3812,16 +3834,178 @@
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
             // 
-            // chkFakeForking
+            // panel5
             // 
-            this.chkFakeForking.AutoSize = true;
-            this.chkFakeForking.Location = new System.Drawing.Point(967, 316);
-            this.chkFakeForking.Name = "chkFakeForking";
-            this.chkFakeForking.Size = new System.Drawing.Size(119, 17);
-            this.chkFakeForking.TabIndex = 71;
-            this.chkFakeForking.Text = "Fake Forking Open";
-            this.chkFakeForking.UseVisualStyleBackColor = true;
-            this.chkFakeForking.CheckedChanged += new System.EventHandler(this.chkFakeForking_CheckedChanged);
+            this.panel5.Controls.Add(this.label36);
+            this.panel5.Controls.Add(this.label35);
+            this.panel5.Controls.Add(this.label34);
+            this.panel5.Controls.Add(this.label33);
+            this.panel5.Controls.Add(this.lblSleep);
+            this.panel5.Controls.Add(this.lblNearDetect);
+            this.panel5.Controls.Add(this.lblFarDetect);
+            this.panel5.Controls.Add(this.lblNoDetect);
+            this.panel5.Location = new System.Drawing.Point(581, 416);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(318, 67);
+            this.panel5.TabIndex = 81;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.pnlMove);
+            this.groupBox1.Location = new System.Drawing.Point(298, 413);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(121, 131);
+            this.groupBox1.TabIndex = 82;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Beam Sensor";
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.lblEMO);
+            this.panel6.Controls.Add(this.lblBumperAlarm);
+            this.panel6.Controls.Add(this.txtSafetyAction);
+            this.panel6.Controls.Add(this.label28);
+            this.panel6.Location = new System.Drawing.Point(922, 416);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(339, 146);
+            this.panel6.TabIndex = 83;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.panel9);
+            this.groupBox2.Location = new System.Drawing.Point(434, 411);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(130, 228);
+            this.groupBox2.TabIndex = 88;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Directional Light";
+            // 
+            // panel9
+            // 
+            this.panel9.Controls.Add(this.chkSteeringBRLight);
+            this.panel9.Controls.Add(this.chkSteeringBLLight);
+            this.panel9.Controls.Add(this.chkSteeringFRLight);
+            this.panel9.Controls.Add(this.chkSteeringFLLight);
+            this.panel9.Controls.Add(this.chkTraverseRightLight);
+            this.panel9.Controls.Add(this.chkTraverseLeftLight);
+            this.panel9.Controls.Add(this.chkSpinTurnRightLight);
+            this.panel9.Controls.Add(this.chkSpinTurnLeftLight);
+            this.panel9.Controls.Add(this.chkMoveBackLight);
+            this.panel9.Controls.Add(this.chkMoveFrontLight);
+            this.panel9.Location = new System.Drawing.Point(5, 18);
+            this.panel9.Name = "panel9";
+            this.panel9.Size = new System.Drawing.Size(119, 205);
+            this.panel9.TabIndex = 84;
+            // 
+            // chkSteeringBRLight
+            // 
+            this.chkSteeringBRLight.AutoSize = true;
+            this.chkSteeringBRLight.Location = new System.Drawing.Point(7, 184);
+            this.chkSteeringBRLight.Name = "chkSteeringBRLight";
+            this.chkSteeringBRLight.Size = new System.Drawing.Size(89, 20);
+            this.chkSteeringBRLight.TabIndex = 82;
+            this.chkSteeringBRLight.Text = "SteeringBR";
+            this.chkSteeringBRLight.UseVisualStyleBackColor = true;
+            this.chkSteeringBRLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSteeringBLLight
+            // 
+            this.chkSteeringBLLight.AutoSize = true;
+            this.chkSteeringBLLight.Location = new System.Drawing.Point(7, 164);
+            this.chkSteeringBLLight.Name = "chkSteeringBLLight";
+            this.chkSteeringBLLight.Size = new System.Drawing.Size(87, 20);
+            this.chkSteeringBLLight.TabIndex = 81;
+            this.chkSteeringBLLight.Text = "SteeringBL";
+            this.chkSteeringBLLight.UseVisualStyleBackColor = true;
+            this.chkSteeringBLLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSteeringFRLight
+            // 
+            this.chkSteeringFRLight.AutoSize = true;
+            this.chkSteeringFRLight.Location = new System.Drawing.Point(7, 144);
+            this.chkSteeringFRLight.Name = "chkSteeringFRLight";
+            this.chkSteeringFRLight.Size = new System.Drawing.Size(88, 20);
+            this.chkSteeringFRLight.TabIndex = 80;
+            this.chkSteeringFRLight.Text = "SteeringFR";
+            this.chkSteeringFRLight.UseVisualStyleBackColor = true;
+            this.chkSteeringFRLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSteeringFLLight
+            // 
+            this.chkSteeringFLLight.AutoSize = true;
+            this.chkSteeringFLLight.Location = new System.Drawing.Point(7, 124);
+            this.chkSteeringFLLight.Name = "chkSteeringFLLight";
+            this.chkSteeringFLLight.Size = new System.Drawing.Size(86, 20);
+            this.chkSteeringFLLight.TabIndex = 79;
+            this.chkSteeringFLLight.Text = "SteeringFL";
+            this.chkSteeringFLLight.UseVisualStyleBackColor = true;
+            this.chkSteeringFLLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkTraverseRightLight
+            // 
+            this.chkTraverseRightLight.AutoSize = true;
+            this.chkTraverseRightLight.Location = new System.Drawing.Point(7, 104);
+            this.chkTraverseRightLight.Name = "chkTraverseRightLight";
+            this.chkTraverseRightLight.Size = new System.Drawing.Size(104, 20);
+            this.chkTraverseRightLight.TabIndex = 78;
+            this.chkTraverseRightLight.Text = "TraverseRight";
+            this.chkTraverseRightLight.UseVisualStyleBackColor = true;
+            this.chkTraverseRightLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkTraverseLeftLight
+            // 
+            this.chkTraverseLeftLight.AutoSize = true;
+            this.chkTraverseLeftLight.Location = new System.Drawing.Point(7, 84);
+            this.chkTraverseLeftLight.Name = "chkTraverseLeftLight";
+            this.chkTraverseLeftLight.Size = new System.Drawing.Size(95, 20);
+            this.chkTraverseLeftLight.TabIndex = 77;
+            this.chkTraverseLeftLight.Text = "TraverseLeft";
+            this.chkTraverseLeftLight.UseVisualStyleBackColor = true;
+            this.chkTraverseLeftLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSpinTurnRightLight
+            // 
+            this.chkSpinTurnRightLight.AutoSize = true;
+            this.chkSpinTurnRightLight.Location = new System.Drawing.Point(7, 64);
+            this.chkSpinTurnRightLight.Name = "chkSpinTurnRightLight";
+            this.chkSpinTurnRightLight.Size = new System.Drawing.Size(107, 20);
+            this.chkSpinTurnRightLight.TabIndex = 76;
+            this.chkSpinTurnRightLight.Text = "SpinTurnRight";
+            this.chkSpinTurnRightLight.UseVisualStyleBackColor = true;
+            this.chkSpinTurnRightLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSpinTurnLeftLight
+            // 
+            this.chkSpinTurnLeftLight.AutoSize = true;
+            this.chkSpinTurnLeftLight.Location = new System.Drawing.Point(7, 44);
+            this.chkSpinTurnLeftLight.Name = "chkSpinTurnLeftLight";
+            this.chkSpinTurnLeftLight.Size = new System.Drawing.Size(98, 20);
+            this.chkSpinTurnLeftLight.TabIndex = 75;
+            this.chkSpinTurnLeftLight.Text = "SpinTurnLeft";
+            this.chkSpinTurnLeftLight.UseVisualStyleBackColor = true;
+            this.chkSpinTurnLeftLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkMoveBackLight
+            // 
+            this.chkMoveBackLight.AutoSize = true;
+            this.chkMoveBackLight.Location = new System.Drawing.Point(7, 24);
+            this.chkMoveBackLight.Name = "chkMoveBackLight";
+            this.chkMoveBackLight.Size = new System.Drawing.Size(86, 20);
+            this.chkMoveBackLight.TabIndex = 74;
+            this.chkMoveBackLight.Text = "MoveBack";
+            this.chkMoveBackLight.UseVisualStyleBackColor = true;
+            this.chkMoveBackLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkMoveFrontLight
+            // 
+            this.chkMoveFrontLight.AutoSize = true;
+            this.chkMoveFrontLight.Location = new System.Drawing.Point(7, 4);
+            this.chkMoveFrontLight.Name = "chkMoveFrontLight";
+            this.chkMoveFrontLight.Size = new System.Drawing.Size(89, 20);
+            this.chkMoveFrontLight.TabIndex = 73;
+            this.chkMoveFrontLight.Text = "MoveFront";
+            this.chkMoveFrontLight.UseVisualStyleBackColor = true;
+            this.chkMoveFrontLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
             // 
             // PlcForm
             // 
@@ -3874,7 +4058,6 @@
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tabSafety.ResumeLayout(false);
-            this.tabSafety.PerformLayout();
             this.pnlMove.ResumeLayout(false);
             this.pnlMove.PerformLayout();
             this.grpAutoSleep.ResumeLayout(false);
@@ -3885,6 +4068,14 @@
             this.grpL.ResumeLayout(false);
             this.grpB.ResumeLayout(false);
             this.grpF.ResumeLayout(false);
+            this.panel5.ResumeLayout(false);
+            this.panel5.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.panel6.ResumeLayout(false);
+            this.panel6.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.panel9.ResumeLayout(false);
+            this.panel9.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -4195,5 +4386,20 @@
         private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_PV;
         private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_SV;
         private System.Windows.Forms.CheckBox chkFakeForking;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Panel panel9;
+        private System.Windows.Forms.CheckBox chkSteeringBRLight;
+        private System.Windows.Forms.CheckBox chkSteeringBLLight;
+        private System.Windows.Forms.CheckBox chkSteeringFRLight;
+        private System.Windows.Forms.CheckBox chkSteeringFLLight;
+        private System.Windows.Forms.CheckBox chkTraverseRightLight;
+        private System.Windows.Forms.CheckBox chkTraverseLeftLight;
+        private System.Windows.Forms.CheckBox chkSpinTurnRightLight;
+        private System.Windows.Forms.CheckBox chkSpinTurnLeftLight;
+        private System.Windows.Forms.CheckBox chkMoveBackLight;
+        private System.Windows.Forms.CheckBox chkMoveFrontLight;
+        private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Panel panel5;
     }
 }

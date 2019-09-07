@@ -133,7 +133,6 @@ namespace Mirle.Agv.View
                 {
                     case EnumSensorSafetyType.Charging:
                         tempSensor.SetLabelString("充電檢查 : ");
-                        tempSensor.DisableButton();
                         break;
                     case EnumSensorSafetyType.ForkHome:
                         tempSensor.SetLabelString("Fork原點 : ");

@@ -307,6 +307,7 @@ namespace Mirle.Agv.Controller
                 barcodeData.MapPosition = new MapPosition(theMapInfo.allMapBarcodes[barcodeData.ID].Position.X, theMapInfo.allMapBarcodes[barcodeData.ID].Position.Y);
                 barcodeData.MapPositionOffset = new MapPosition(theMapInfo.allMapBarcodes[barcodeData.ID].Offset.X, theMapInfo.allMapBarcodes[barcodeData.ID].Offset.Y);
                 barcodeData.LineId = theMapInfo.allMapBarcodes[barcodeData.ID].LineId;
+                barcodeData.Type = theMapInfo.allMapBarcodes[barcodeData.ID].Material;
                 return true;
             }
             else
@@ -405,7 +406,7 @@ namespace Mirle.Agv.Controller
                 Math.Sin(-(agvAngleInMap + sr2000Config.ReaderToCenterDegree + 180) / 180 * Math.PI)));
 
             sr2000ReadData.AGV = new AGVPosition(agvPosition, agvAngleInMap, barcodeAngleInView, sr2000ReadData.ScanTime,
-                                                 sr2000ReadData.GetDataTime, sr2000ReadData.Count, barcodeAngleInMap);
+                                                 sr2000ReadData.GetDataTime, sr2000ReadData.Count, barcodeAngleInMap, sr2000ReadData.Barcode1.Type);
 
             sr2000ReadData.AngleOfMapInReader = barcodeAngleInView - barcodeAngleInMap;
             if (sr2000ReadData.AngleOfMapInReader > 180)

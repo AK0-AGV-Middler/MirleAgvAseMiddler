@@ -14,5 +14,12 @@ namespace Mirle.Agv.Model
         public MapBarcode HeadBarcode { get; set; } = new MapBarcode();
         public MapBarcode TailBarcode { get; set; } = new MapBarcode();
         public MapPosition Offset { get; set; } = new MapPosition();
+        public EnumBarcodeMaterial Material { get; set; } = EnumBarcodeMaterial.Iron;
+
+        public EnumBarcodeMaterial BarcodeMaterialParse(string v)
+        {
+            v = v.Trim();
+            return (EnumBarcodeMaterial)Enum.Parse(typeof(EnumBarcodeMaterial), v);
+        }
     }
 }

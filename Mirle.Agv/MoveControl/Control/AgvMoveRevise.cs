@@ -185,8 +185,17 @@ namespace Mirle.Agv.Controller
                     else if (turnTheta < -reviseParameter.MaxTheta)
                         turnTheta = -reviseParameter.MaxTheta;
 
-                    turnTheta = reviseParameter.DirFlag ? -turnTheta : turnTheta;
-                    wheelTheta = new double[4] { wheelAngle - turnTheta, wheelAngle + turnTheta, wheelAngle - turnTheta, wheelAngle + turnTheta };
+                    double leftTheta;
+
+                    if ((reviseParameter.DirFlag && wheelAngle == 90) ||
+                        (!reviseParameter.DirFlag && wheelAngle == -90))
+                        leftTheta = turnTheta;
+                    else
+                        leftTheta = -turnTheta;
+
+                    double rightTheta = -leftTheta;
+                    
+                    wheelTheta = new double[4] { wheelAngle + leftTheta, wheelAngle + rightTheta, wheelAngle + leftTheta, wheelAngle + rightTheta };
                     return true;
                 }
             }

@@ -96,7 +96,8 @@ namespace Mirle.Agv.View
             InitialEvents();
             ResetImageAndPb();
             InitialSoc();
-        }
+            InitialConnectionAndCstStatus();
+        }        
 
         private void InitialForms()
         {
@@ -176,6 +177,13 @@ namespace Mirle.Agv.View
             mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
         }
 
+        private void InitialConnectionAndCstStatus()
+        {
+            radOnline.Checked = middleAgent.IsConnected();
+            string cstid = "";
+            plcAgent.triggerCassetteIDReader(ref cstid);
+        }
+
         public delegate void RadioButtonCheckDel(RadioButton radioButton, bool isCheck);
         public void RadioButtonCheck(RadioButton radioButton, bool isCheck)
         {
@@ -234,7 +242,10 @@ namespace Mirle.Agv.View
                         var headPosInPixel = MapPixelExchange(rowBarcode.HeadBarcode.Position);
                         var tailPosInPixel = MapPixelExchange(rowBarcode.TailBarcode.Position);
 
-                        gra.DrawLine(allPens["BlackDashDot1"], headPosInPixel.X, headPosInPixel.Y, tailPosInPixel.X, tailPosInPixel.Y);
+                        if (rowBarcode.Material == EnumBarcodeMaterial.Iron)
+                        {
+                            gra.DrawLine(allPens["BlackDashDot1"], headPosInPixel.X, headPosInPixel.Y, tailPosInPixel.X, tailPosInPixel.Y);
+                        }
                     }
                 }
 
@@ -671,8 +682,6 @@ namespace Mirle.Agv.View
             UpdateLastAlarm();
         }
 
-
-
         private void UpdateLastAlarm()
         {
             var alarm = alarmHandler.LastAlarm;
@@ -732,11 +741,11 @@ namespace Mirle.Agv.View
             var cmdInfo = $"\n" +
                           $"[SeqNum={agvcTransCmd.SeqNum}] [Type={agvcTransCmd.CommandType}]\n" +
                           $"[CmdId={agvcTransCmd.CommandId}] [CstId={agvcTransCmd.CassetteId}]\n" +
-                          $"[LoadAdr={agvcTransCmd.LoadAddress}] [UnloadAdr={agvcTransCmd.UnloadAddress}]\n" +
-                          $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddresses)}]\n" +
-                          $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSections)}]\n" +
-                          $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddresses)}]\n" +
-                          $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSections)}]";
+                          $"[LoadAdr={agvcTransCmd.LoadAddressId}] [UnloadAdr={agvcTransCmd.UnloadAddressId}]\n" +
+                          $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\n" +
+                          $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\n" +
+                          $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\n" +
+                          $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]";
 
             RichTextBoxAppendHead(rtbAgvcTransCmd, cmdInfo);
         }
@@ -1157,15 +1166,10 @@ namespace Mirle.Agv.View
             switch (Vehicle.Instance.AutoState)
             {
                 case EnumAutoState.Manual:
-                    if (SetManualToAuto())
+                    if (mainFlowHandler.SetManualToAuto())
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        if (Vehicle.Instance.ThePlcVehicle.Loading)
-                        {
-                            string cstid = "";
-                            plcAgent.triggerCassetteIDReader(ref cstid);
-                        }
                         mainFlowHandler.StartWatchLowPower();
                     }
                     break;
@@ -1178,11 +1182,6 @@ namespace Mirle.Agv.View
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
             }
-        }
-
-        private bool SetManualToAuto()
-        {
-            return mainFlowHandler.SetManualToAuto();
         }
 
         private void btnStopAndClear_Click(object sender, EventArgs e)
@@ -1286,15 +1285,10 @@ namespace Mirle.Agv.View
             switch (Vehicle.Instance.AutoState)
             {
                 case EnumAutoState.Manual:
-                    if (true/*SetManualToAuto()*/)
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        if (Vehicle.Instance.ThePlcVehicle.Loading)
-                        {
-                            string cstid = "";
-                            plcAgent.triggerCassetteIDReader(ref cstid);
-                        }
+                        mainFlowHandler.StartWatchLowPower();
                     }
                     break;
                 case EnumAutoState.Auto:
@@ -1320,7 +1314,7 @@ namespace Mirle.Agv.View
                 {
                     moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
                     moveCommandDebugMode.Show();
-                    moveCommandDebugMode.TopMost = true;
+                    moveCommandDebugMode.BringToFront();
                 }
             }
             catch

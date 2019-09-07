@@ -13,6 +13,7 @@ namespace Mirle.Agv.Model
         public MapPosition MapPosition { get; set; }
         public MapPosition MapPositionOffset { get; set; }
         public string LineId { get; set; }
+        public EnumBarcodeMaterial Type { get; set; }
 
         public BarcodeData(int id, double x, double y)
         {

@@ -9,9 +9,10 @@ namespace Mirle.Agv.Model
     [Serializable]
     public class MapBarcode
     {
+        public string LineId { get; set; }
         public int Number { get; set; }
         public MapPosition Position { get; set; } = new MapPosition();
-        public MapPosition Offset { get; set; } = new MapPosition();
-        public string LineId { get; set; }
+        public MapPosition Offset { get; set; } = new MapPosition();      
+        public EnumBarcodeMaterial Material { get; set; } = EnumBarcodeMaterial.Iron;
     }
 }

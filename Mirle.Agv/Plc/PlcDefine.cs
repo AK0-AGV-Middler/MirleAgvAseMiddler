@@ -25,7 +25,20 @@ namespace Mirle.Agv
         Right = 4
 
     }
-
+    public enum EnumDirectionalLightType
+    {
+        None = 0,
+        SpinL = 1,
+        SpinR = 2,
+        SteerFR = 3,
+        SteerFL = 4,
+        RTraverse = 5,
+        LTraverse = 6,
+        SteerBR = 7,
+        SteerBL = 8,
+        Backward = 9,
+        Forward = 10
+    }
     public enum EnumVehicleSafetyAction
     {
         Normal = 0,

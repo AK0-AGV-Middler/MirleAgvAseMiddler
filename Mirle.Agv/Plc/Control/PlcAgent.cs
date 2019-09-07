@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Mirle.Agv.View;
 using System.Runtime.CompilerServices;
+using Mirle.Agv.Model.Configs;
 
 namespace Mirle.Agv.Controller
 {
@@ -284,6 +285,7 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol = objMCProtocol;
             //PLC_Config.xml
             ReadXml("PLC_Config.xml");
+            //ReadXml();
             aMCProtocol.Name = "";
             aMCProtocol.OnDataChangeEvent += MCProtocol_OnDataChangeEvent;
             aMCProtocol.ConnectEvent += MCProtocol_OnConnectEvent;
@@ -378,6 +380,9 @@ namespace Mirle.Agv.Controller
                         case "Port_AutoCharge_Low_SOC":
                             this.APLCVehicle.Batterys.PortAutoChargeLowSoc = Convert.ToDouble(childItem.InnerText);
                             break;
+                        case "Port_AutoCharge_High_SOC":
+                            this.APLCVehicle.Batterys.PortAutoChargeHighSoc = Convert.ToDouble(childItem.InnerText);
+                            break;
 
                         case "Battery_Logger_Interval":
                             this.APLCVehicle.Batterys.Battery_Logger_Interval = Convert.ToUInt32(Convert.ToDouble(childItem.InnerText) * 1000);
@@ -400,6 +405,11 @@ namespace Mirle.Agv.Controller
                 }
             }
         }
+        //private void ReadXml()
+        //{
+        //    XmlHandler xmlHandler = new XmlHandler();
+        //    plcConfig = xmlHandler.ReadXml<PlcConfig>("Plc.xml");
+        //}
 
         private void MCProtocol_OnDataChangeEvent(string sMessage, ClsMCProtocol.clsColParameter oColParam)
         {
@@ -1082,7 +1092,7 @@ namespace Mirle.Agv.Controller
                             //APLCVehicle.MoveLeft = false;
                             //APLCVehicle.MoveRight = false;
                             OnIpcAutoManualChangeEvent?.Invoke(this, EnumAutoState.Manual);
-                            WriteDirectionalLight(EnumVehicleSide.None);
+                            WriteDirectionalLight(EnumDirectionalLightType.None);
                         }
                         IpcAutoModeDirectionalLightControl();
                         IpcStatusAutoIni = true;
@@ -2730,6 +2740,7 @@ namespace Mirle.Agv.Controller
                 {
                     doc.Save(file_address);
                     ReadXml("PLC_Config.xml");
+                    //ReadXml();
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Write Plc Config To XML Success"));
                     result = true;
                 }
@@ -2744,20 +2755,77 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
+        //public void WritePlcConfigToXML()
+        //{
+        //    XmlHandler xmlHandler = new XmlHandler();
+        //    xmlHandler.WriteXml(plcConfig, "Plc.xml");
+        //}
+
+        private bool LogVehicleMove_SpinL, LogVehicleMove_SpinR;
+        private bool LogVehicleMove_SteerFR, LogVehicleMove_SteerFL;
+        private bool LogVehicleMove_RTraverse, LogVehicleMove_LTraverse;
+        private bool LogVehicleMove_SteerBR, LogVehicleMove_SteerBL;
         private bool LogVehicleMove_Forward, LogVehicleMove_Backward;
-        private bool LogVehicleMove_Left, LogVehicleMove_Right;
-        private void WriteDirectionalLight(EnumVehicleSide aSide, bool status = false)
+
+        private void WriteDirectionalLight(EnumDirectionalLightType atype, bool status = false)
         {
+            string SpinTurnL = "SpinTurn(L)", SpinTurnR = "SpinTurn(R)";
+            string SteerFR = "Steering(FR)", SteerFL = "Steering(FL)";
+            string TraverseR = "Traverse(R)", TraverseL = "Traverse(L)";
+            string SteerBR = "Steering(BR)", SteerBL = "Steering(BL)";
+
             string VehicleMove = "VehicleMove", Forward = "Forward", Backward = "Backward";
-            string SteerFR = "Steering(FR)", SteerFL = "Steering(FL)", SteerBR = "Steering(BR)", SteerBL = "Steering(BL)";
+
             bool bWriteStatus = false;
-            switch (aSide)
+            switch (atype)
             {
-                case EnumVehicleSide.None:
-                    if (LogVehicleMove_Forward != status)
+                case EnumDirectionalLightType.None:
+                    if (LogVehicleMove_SpinL != status)
                     {
-                        this.aMCProtocol.get_ItemByTag(Forward).AsBoolean = status;
-                        LogVehicleMove_Forward = status;
+                        this.aMCProtocol.get_ItemByTag(SpinTurnL).AsBoolean = status;
+                        LogVehicleMove_SpinL = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_SpinR != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SpinTurnR).AsBoolean = status;
+                        LogVehicleMove_SpinR = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_SteerFR != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFR).AsBoolean = status;
+                        LogVehicleMove_SteerFR = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_SteerFL != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFL).AsBoolean = status;
+                        LogVehicleMove_SteerFL = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_RTraverse != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(TraverseR).AsBoolean = status;
+                        LogVehicleMove_RTraverse = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_LTraverse != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(TraverseL).AsBoolean = status;
+                        LogVehicleMove_LTraverse = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_SteerBR != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerBR).AsBoolean = status;
+                        LogVehicleMove_SteerBR = status;
+                        bWriteStatus = true;
+                    }
+                    if (LogVehicleMove_SteerBL != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerBL).AsBoolean = status;
+                        LogVehicleMove_SteerBL = status;
                         bWriteStatus = true;
                     }
                     if (LogVehicleMove_Backward != status)
@@ -2766,22 +2834,6 @@ namespace Mirle.Agv.Controller
                         LogVehicleMove_Backward = status;
                         bWriteStatus = true;
                     }
-                    if (LogVehicleMove_Left != status)
-                    {
-                        this.aMCProtocol.get_ItemByTag(SteerFL).AsBoolean = status;
-                        this.aMCProtocol.get_ItemByTag(SteerBL).AsBoolean = status;
-                        LogVehicleMove_Left = status;
-                        bWriteStatus = true;
-                    }
-                    if (LogVehicleMove_Right != status)
-                    {
-                        this.aMCProtocol.get_ItemByTag(SteerFR).AsBoolean = status;
-                        this.aMCProtocol.get_ItemByTag(SteerBR).AsBoolean = status;
-                        LogVehicleMove_Right = status;
-                        bWriteStatus = true;
-                    }
-                    break;
-                case EnumVehicleSide.Forward:
                     if (LogVehicleMove_Forward != status)
                     {
                         this.aMCProtocol.get_ItemByTag(Forward).AsBoolean = status;
@@ -2789,7 +2841,71 @@ namespace Mirle.Agv.Controller
                         bWriteStatus = true;
                     }
                     break;
-                case EnumVehicleSide.Backward:
+                case EnumDirectionalLightType.SpinL:
+                    if (LogVehicleMove_SpinL != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SpinTurnL).AsBoolean = status;
+                        LogVehicleMove_SpinL = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.SpinR:
+                    if (LogVehicleMove_SpinR != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SpinTurnR).AsBoolean = status;
+                        LogVehicleMove_SpinR = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.SteerFR:
+                    if (LogVehicleMove_SteerFR != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFR).AsBoolean = status;
+                        LogVehicleMove_SteerFR = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.SteerFL:
+                    if (LogVehicleMove_SteerFL != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerFL).AsBoolean = status;
+                        LogVehicleMove_SteerFL = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.RTraverse:
+                    if (LogVehicleMove_RTraverse != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(TraverseR).AsBoolean = status;
+                        LogVehicleMove_RTraverse = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.LTraverse:
+                    if (LogVehicleMove_LTraverse != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(TraverseL).AsBoolean = status;
+                        LogVehicleMove_LTraverse = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.SteerBR:
+                    if (LogVehicleMove_SteerBR != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerBR).AsBoolean = status;
+                        LogVehicleMove_SteerBR = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.SteerBL:
+                    if (LogVehicleMove_SteerBL != status)
+                    {
+                        this.aMCProtocol.get_ItemByTag(SteerBL).AsBoolean = status;
+                        LogVehicleMove_SteerBL = status;
+                        bWriteStatus = true;
+                    }
+                    break;
+                case EnumDirectionalLightType.Backward:
                     if (LogVehicleMove_Backward != status)
                     {
                         this.aMCProtocol.get_ItemByTag(Backward).AsBoolean = status;
@@ -2797,24 +2913,15 @@ namespace Mirle.Agv.Controller
                         bWriteStatus = true;
                     }
                     break;
-                case EnumVehicleSide.Left:
-                    if (LogVehicleMove_Left != status)
+                case EnumDirectionalLightType.Forward:
+                    if (LogVehicleMove_Forward != status)
                     {
-                        this.aMCProtocol.get_ItemByTag(SteerFL).AsBoolean = status;
-                        this.aMCProtocol.get_ItemByTag(SteerBL).AsBoolean = status;
-                        LogVehicleMove_Left = status;
+                        this.aMCProtocol.get_ItemByTag(Forward).AsBoolean = status;
+                        LogVehicleMove_Forward = status;
                         bWriteStatus = true;
                     }
                     break;
-                case EnumVehicleSide.Right:
-                    if (LogVehicleMove_Right != status)
-                    {
-                        this.aMCProtocol.get_ItemByTag(SteerFR).AsBoolean = status;
-                        this.aMCProtocol.get_ItemByTag(SteerBR).AsBoolean = status;
-                        LogVehicleMove_Right = status;
-                        bWriteStatus = true;
-                    }
-                    break;
+
                 default:
                     break;
             }
@@ -2822,8 +2929,15 @@ namespace Mirle.Agv.Controller
             {
                 bool MoveFlag = LogVehicleMove_Forward ||
                                 LogVehicleMove_Backward ||
-                                LogVehicleMove_Left ||
-                                LogVehicleMove_Right;
+                                LogVehicleMove_SpinL ||
+                                LogVehicleMove_SpinR ||
+                                LogVehicleMove_SteerFR ||
+                                LogVehicleMove_SteerFL ||
+                                LogVehicleMove_RTraverse ||
+                                LogVehicleMove_LTraverse ||
+                                LogVehicleMove_SteerBR ||
+                                LogVehicleMove_SteerBL;
+
                 if (MoveFlag)
                     this.aMCProtocol.get_ItemByTag(VehicleMove).AsBoolean = true;
                 else
@@ -2831,11 +2945,11 @@ namespace Mirle.Agv.Controller
 
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + aSide.ToString() + ") = " + Convert.ToString(status) + " Success"));
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + atype.ToString() + ") = " + Convert.ToString(status) + " Success"));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + aSide.ToString() + ") = " + Convert.ToString(status) + " fail"));
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + atype.ToString() + ") = " + Convert.ToString(status) + " fail"));
                 }
             }
         }
@@ -2872,41 +2986,86 @@ namespace Mirle.Agv.Controller
         }
         private void IpcAutoModeDirectionalLightControl()
         {
-            //前方
-            if (APLCVehicle.MoveFront && !APLCVehicle.MoveLeft && !APLCVehicle.MoveRight)
+            if (APLCVehicle.Forward)
             {
-                WriteDirectionalLight(EnumVehicleSide.Forward, true);
+                WriteDirectionalLight(EnumDirectionalLightType.Forward, true);
             }
             else
             {
-                WriteDirectionalLight(EnumVehicleSide.Forward);
+                WriteDirectionalLight(EnumDirectionalLightType.Forward);
             }
-            //後方
-            if (APLCVehicle.MoveBack && !APLCVehicle.MoveLeft && !APLCVehicle.MoveRight)
+            if (APLCVehicle.Backward)
             {
-                WriteDirectionalLight(EnumVehicleSide.Backward, true);
-            }
-            else
-            {
-                WriteDirectionalLight(EnumVehicleSide.Backward);
-            }
-            //左方
-            if (APLCVehicle.MoveLeft)
-            {
-                WriteDirectionalLight(EnumVehicleSide.Left, true);
+                WriteDirectionalLight(EnumDirectionalLightType.Backward, true);
             }
             else
             {
-                WriteDirectionalLight(EnumVehicleSide.Left);
+                WriteDirectionalLight(EnumDirectionalLightType.Backward);
             }
-            //右方
-            if (APLCVehicle.MoveRight)
+            if (APLCVehicle.SpinTurnLeft)
             {
-                WriteDirectionalLight(EnumVehicleSide.Right, true);
+                WriteDirectionalLight(EnumDirectionalLightType.SpinL, true);
             }
             else
             {
-                WriteDirectionalLight(EnumVehicleSide.Right);
+                WriteDirectionalLight(EnumDirectionalLightType.SpinL);
+            }
+            if (APLCVehicle.SpinTurnRight)
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SpinR, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SpinR);
+            }
+            if (APLCVehicle.TraverseLeft)
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.LTraverse, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.LTraverse);
+            }
+            if (APLCVehicle.TraverseRight)
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.RTraverse, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.RTraverse);
+            }
+            if (APLCVehicle.SteeringBL)
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerBL, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerBL);
+            }
+            if (APLCVehicle.SteeringBR)
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerBR, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerBR);
+            }
+
+            if (APLCVehicle.SteeringFR)
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerFR, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerFR);
+            }
+            if (APLCVehicle.SteeringFL)
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerFL, true);
+            }
+            else
+            {
+                WriteDirectionalLight(EnumDirectionalLightType.SteerFL);
             }
 
         }

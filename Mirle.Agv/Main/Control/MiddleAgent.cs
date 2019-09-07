@@ -61,11 +61,6 @@ namespace Mirle.Agv.Controller
 
         public TcpIpAgent ClientAgent { get; private set; }
 
-        public int AskReserveTimeout { get; set; } = 10000;
-        public int AskReserveLoopTimeout { get; set; } = 10000;
-        public bool AutoApplyReserve { get; set; } = false;
-        public int SeqNum { get; set; }
-
         private MapSection lastReportSection = new MapSection();
 
         public MiddleAgent(MainFlowHandler mainFlowHandler)
@@ -598,7 +593,7 @@ namespace Mirle.Agv.Controller
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
             loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                  , msg));
-        }
+        }        
         public List<MapSection> GetNeedReserveSections()
         {
             return new List<MapSection>(queNeedReserveSections);
@@ -626,8 +621,14 @@ namespace Mirle.Agv.Controller
                      , msg));
             }
         }
-
-
+        public void SetupReserveOkSections(List<MapSection> reserveOkSections)
+        {
+            queGotReserveOkSections = new ConcurrentQueue<MapSection>(reserveOkSections);
+            var msg = $"Middler : SetupReserveOkSectionsByList, [QueCount={queGotReserveOkSections.Count}]";
+            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                 , msg));
+        }
 
         public MapSection GetPeekOfGotReserveOkSections()
         {
@@ -676,7 +677,12 @@ namespace Mirle.Agv.Controller
 
             }
         }
-
+        public void ClearAskReserve()
+        {
+            ClearAskingReserveSection();
+            ClearGotReserveOkSections();
+            ClearNeedReserveSections();
+        }
         #endregion
 
         public void SendMiddlerFormCommands(int cmdNum, Dictionary<string, string> pairs)
@@ -1196,10 +1202,12 @@ namespace Mirle.Agv.Controller
         }
         public void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
         {
-            foreach (var alarm in alarms)
-            {
-                Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
-            }
+            Send_Cmd194_AlarmReport("0", ErrorStatus.ErrReset);
+
+            //foreach (var alarm in alarms)
+            //{
+            //    Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
+            //}
         }
 
         #region Public Functions
@@ -1235,7 +1243,7 @@ namespace Mirle.Agv.Controller
         public void LoadComplete()
         {
             Send_Cmd136_TransferEventReport(EventType.LoadComplete);
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
+            theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;          
             Send_Cmd144_StatusChangeReport();
             //Thread.Sleep(1000);
             Send_Cmd132_TransferCompleteReport(0);
@@ -1348,10 +1356,21 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd139_PauseResponse(seqNum, replyCode, type);
         }
+        public void PauseComplete()
+        {
+            theVehicle.PauseStatus = VhStopSingle.StopSingleOn;
+            Send_Cmd144_StatusChangeReport();
+        }
+        public void ResumeComplete()
+        {
+            theVehicle.PauseStatus = VhStopSingle.StopSingleOff;
+            Send_Cmd144_StatusChangeReport();
+        }
         public void CancelAbortReply(ushort iSeqNum,int replyCode,string cancelCmdId, CMDCancelType actType)
         {
             Send_Cmd137_TransferCancelResponse(iSeqNum, replyCode, cancelCmdId, actType);
         }
+
         public bool IsConnected() => ClientAgent == null ? false : ClientAgent.IsConnection;
         #endregion
 
@@ -1591,6 +1610,8 @@ namespace Mirle.Agv.Controller
             }
         }
 
+       
+
         private void Receive_Cmd44_StatusRequest(object sender, TcpIpEventArgs e)
         {
             ID_44_STATUS_CHANGE_RESPONSE receive = (ID_44_STATUS_CHANGE_RESPONSE)e.objPacket; // Cmd43's object is empty
@@ -1726,27 +1747,27 @@ namespace Mirle.Agv.Controller
             switch (receive.EventType)
             {
                 case PauseEvent.Continue:
-                    if (theVehicle.VisitTransferStepsStatus != EnumThreadStatus.Pause)
-                    {
-                        replyCode = 1;
-                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
-                        return;
-                    }
-                    else
+                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.PauseComplete)
                     {
                         mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.PauseType, receive.ReserveInfos);
                     }
-                    break;
-                case PauseEvent.Pause:
-                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.None || theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Stop)
+                    else
                     {
                         replyCode = 1;
                         Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
                         return;
                     }
-                    else
-                    {                       
+                    break;
+                case PauseEvent.Pause:
+                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working && mainFlowHandler.IsMoveStep())
+                    {
                         mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.PauseType);
+                    }
+                    else
+                    {
+                        replyCode = 1;
+                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                        return;
                     }
                     break;
                 default:
@@ -1755,7 +1776,6 @@ namespace Mirle.Agv.Controller
 
             Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
         }
-
         public void Send_Cmd139_PauseResponse(ushort seqNum, int replyCode, PauseEvent eventType)
         {
             try
@@ -1803,7 +1823,7 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
+        }       
 
         public void Receive_Cmd36_TransferEventResponse(object sender, TcpIpEventArgs e)
         {

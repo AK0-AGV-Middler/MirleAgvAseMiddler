@@ -88,20 +88,39 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
+                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
 
                     MapBarcodeLine oneRow = new MapBarcodeLine();
                     oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                    lastIndesx++;
                     oneRow.HeadBarcode.LineId = oneRow.Id;
+                    lastIndesx++;
                     oneRow.HeadBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeHeadNum"]]);
+                    lastIndesx++;
                     oneRow.HeadBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["HeadX"]]);
+                    lastIndesx++;
                     oneRow.HeadBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["HeadY"]]);
+                    lastIndesx++;
                     oneRow.TailBarcode.LineId = oneRow.Id;
+                    lastIndesx++;
                     oneRow.TailBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeTailNum"]]);
+                    lastIndesx++;
                     oneRow.TailBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["TailX"]]);
+                    lastIndesx++;
                     oneRow.TailBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["TailY"]]);
+                    lastIndesx++;
                     oneRow.Offset.X = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
+                    lastIndesx++;
                     oneRow.Offset.Y = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
+                    lastIndesx++;
+                    oneRow.Material = oneRow.BarcodeMaterialParse(getThisRow[dicHeaderIndexes["Material"]]);
+                    lastIndesx++;
+
+                    lastReadBcrLineId = oneRow.Id;
+
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                      , $"LoadBarcodeLineCsv oneRow ok. [lastReadBcrLineId={lastReadBcrLineId}][lastIndesx={lastIndesx}]"));
 
 
 
@@ -118,13 +137,22 @@ namespace Mirle.Agv.Controller
                         count = -count;
                         for (int j = 0; j <= count; j += 3)
                         {
+                            lastIndesx = 0;
                             MapBarcode mapBarcode = new MapBarcode();
                             mapBarcode.Number = oneRow.TailBarcode.Number + j;
+                            lastIndesx++;
                             mapBarcode.Position.X = (j * oneRow.HeadBarcode.Position.X + (count - j) * oneRow.TailBarcode.Position.X) / count;
+                            lastIndesx++;
                             mapBarcode.Position.Y = (j * oneRow.HeadBarcode.Position.Y + (count - j) * oneRow.TailBarcode.Position.Y) / count;
+                            lastIndesx++;
                             mapBarcode.Offset.X = oneRow.Offset.X;
+                            lastIndesx++;
                             mapBarcode.Offset.Y = oneRow.Offset.Y;
+                            lastIndesx++;
                             mapBarcode.LineId = oneRow.Id;
+                            lastIndesx++;
+                            mapBarcode.Material = oneRow.Material;
+                            lastIndesx++;
 
                             lastReadBcrId = mapBarcode.Number.ToString();
                             TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
@@ -134,18 +162,30 @@ namespace Mirle.Agv.Controller
                     {
                         for (int j = 0; j <= count; j += 3)
                         {
+                            lastIndesx = 0;
                             MapBarcode mapBarcode = new MapBarcode();
                             mapBarcode.Number = oneRow.HeadBarcode.Number + j;
+                            lastIndesx++;
                             mapBarcode.Position.X = (j * oneRow.TailBarcode.Position.X + (count - j) * oneRow.HeadBarcode.Position.X) / count;
+                            lastIndesx++;
                             mapBarcode.Position.Y = (j * oneRow.TailBarcode.Position.Y + (count - j) * oneRow.HeadBarcode.Position.Y) / count;
+                            lastIndesx++;
                             mapBarcode.Offset.X = oneRow.Offset.X;
+                            lastIndesx++;
                             mapBarcode.Offset.Y = oneRow.Offset.Y;
+                            lastIndesx++;
                             mapBarcode.LineId = oneRow.Id;
-
+                            lastIndesx++;
+                            mapBarcode.Material = oneRow.Material;
+                            lastIndesx++;
                             lastReadBcrId = mapBarcode.Number.ToString();
                             TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
                         }
                     }
+
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}][lastIndesx={lastIndesx}]"));
+
                     lastReadBcrLineId = oneRow.Id;
                     TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
                 }
@@ -526,13 +566,16 @@ namespace Mirle.Agv.Controller
 
             #region In Section           
 
-            foreach (var insideAddress in mapSection.InsideAddresses)
+            if (!IsPositionInThisAddress(aPosition, location.LastAddress.Position))
             {
-                if (IsPositionInThisAddress(aPosition, insideAddress.Position))
+                foreach (var insideAddress in mapSection.InsideAddresses)
                 {
-                    location.LastAddress = insideAddress;
+                    if (IsPositionInThisAddress(aPosition, insideAddress.Position))
+                    {
+                        location.LastAddress = insideAddress;
+                    }
                 }
-            }
+            }           
 
             location.LastSection = mapSection;
 

@@ -1324,6 +1324,7 @@ namespace Mirle.Agv.View
                 {"Ah_Reset_Timeout", tbxResetAHTimeout_SV.Text}
             };
             plcAgent.WritePlcConfigToXML(dicSetValue);
+            
             FillPVToBatteryParamTbx();
             FillSVToBatteryParamTbx();
             dicSetValue.Clear();
@@ -1371,13 +1372,59 @@ namespace Mirle.Agv.View
         {
             if (chkFakeForking.Checked)
             {
-                if(this.plcAgent != null)
+                if (this.plcAgent != null)
                 {
                     this.plcAgent.IsFakeForking = chkFakeForking.Checked;
                 }
             }
         }
 
-      
+        private void DirectionalLight(object sender, EventArgs e)
+        {
+            bool CheckedStatus = ((CheckBox)sender).Checked;
+            switch (((CheckBox)sender).Name)
+            {
+                case "chkMoveFrontLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.Forward = true;
+                    else plcAgent.APLCVehicle.Forward = false;
+                    break;
+                case "chkMoveBackLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.Backward = true;
+                    else plcAgent.APLCVehicle.Backward = false;
+                    break;
+                case "chkSpinTurnLeftLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.SpinTurnLeft = true;
+                    else plcAgent.APLCVehicle.SpinTurnLeft = false;
+                    break;
+                case "chkSpinTurnRightLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.SpinTurnRight = true;
+                    else plcAgent.APLCVehicle.SpinTurnRight = false;
+                    break;
+                case "chkTraverseLeftLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.TraverseLeft = true;
+                    else plcAgent.APLCVehicle.TraverseLeft = false;
+                    break;
+                case "chkTraverseRightLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.TraverseRight = true;
+                    else plcAgent.APLCVehicle.TraverseRight = false;
+                    break;
+                case "chkSteeringFLLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.SteeringFL = true;
+                    else plcAgent.APLCVehicle.SteeringFL = false;
+                    break;
+                case "chkSteeringFRLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.SteeringFR = true;
+                    else plcAgent.APLCVehicle.SteeringFR = false;
+                    break;
+                case "chkSteeringBLLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.SteeringBL = true;
+                    else plcAgent.APLCVehicle.SteeringBL = false;
+                    break;
+                case "chkSteeringBRLight":
+                    if (CheckedStatus) plcAgent.APLCVehicle.SteeringBR = true;
+                    else plcAgent.APLCVehicle.SteeringBR = false;
+                    break;
+            }
+        }
     }
 }

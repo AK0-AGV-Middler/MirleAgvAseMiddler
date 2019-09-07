@@ -16,8 +16,7 @@ namespace Mirle.Agv.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
 
-        public MiddleAgent ThdMiddleAgent { get; set; }
-        public TransferStep CurTrasferStep { get; set; } = new EmptyTransferStep();
+        public MiddleAgent ThdMiddleAgent { get; set; }       
         public MapInfo TheMapInfo { get; set; } = new MapInfo();
         public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
         private AgvcTransCmd curAgvcTransCmd;
@@ -39,7 +38,8 @@ namespace Mirle.Agv.Model
                 curAgvcTransCmd = value;
             }
         }
-        public AgvcTransCmd LastCurAgvcTransCmd { get; set; } = new AgvcTransCmd();
+        public AgvcTransCmd LastAgvcTransCmd { get; set; } = new AgvcTransCmd();
+        public TransferStep CurTrasferStep { get; set; } = new EmptyTransferStep();
         public VehiclePosition CurVehiclePosition { get; set; } = new VehiclePosition();
         private EnumAutoState autoState = EnumAutoState.Manual;
         public EnumAutoState AutoState

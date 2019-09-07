@@ -35,7 +35,6 @@ namespace Mirle.Agv.Model.Tests
         public void Test001()
         {
             string temp = "Movi";
-            string temp2 = null;
             //return (ErrorStatus)Enum.Parse(typeof(ErrorStatus), v);
 
             var result1 = typeof(EnumMoveState);
@@ -52,7 +51,7 @@ namespace Mirle.Agv.Model.Tests
             AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
             List<string> aList = new List<string>();
             aList.Add("sec123");
-            agvcTransCmd.ToLoadSections = aList;
+            agvcTransCmd.ToLoadSectionIds = aList;
             PropertyInfo[] infos = agvcTransCmd.GetType().GetProperties();
 
             foreach (var info in infos)

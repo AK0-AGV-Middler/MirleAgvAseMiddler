@@ -171,6 +171,14 @@ namespace Mirle.Agv.Controller
                 int endSectionAngle = ComputeAngleInt(moveCmd.AddressPositions[trIndex], moveCmd.AddressPositions[trIndex + 1]);
                 int deltaAngle = endSectionAngle - startSectionAngle;
 
+                while (deltaAngle > 180 || deltaAngle <= -180)
+                {
+                    if (deltaAngle > 180)
+                        deltaAngle -= 360;
+                    else if (deltaAngle <= -180)
+                        deltaAngle += 360;
+                }
+
                 if (moveCmd.AddressActions[trIndex] == EnumAddressAction.TR350 || moveCmd.AddressActions[trIndex] == EnumAddressAction.TR50)
                     data.WheelAngle = -deltaAngle;
                 else
