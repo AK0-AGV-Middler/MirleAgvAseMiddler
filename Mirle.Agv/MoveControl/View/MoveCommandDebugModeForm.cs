@@ -22,6 +22,7 @@ namespace Mirle.Agv.View
         private MoveCommandData command;
         private MapInfo theMapInfo = new MapInfo();
         private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
+        private SimulateSettingAGVAngle settingAngleForm;
 
         private List<string> commandStringList = new List<string>();
         private List<string> reserveStringList = new List<string>();
@@ -430,6 +431,7 @@ namespace Mirle.Agv.View
         {
             button_SimulationModeChange.Text = moveControl.SimulationMode ? "開啟中" : "關閉中";
             button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
+            button_SimulationModeChange.Enabled = Vehicle.Instance.AutoState != EnumAutoState.Auto;
 
             foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
             {
@@ -888,12 +890,17 @@ namespace Mirle.Agv.View
             {
                 string str = theMapInfo.allMapAddresses[id].Position.X.ToString() + "," + theMapInfo.allMapAddresses[id].Position.Y.ToString();
                 listCmdAddressPositions.Items.Add(str);
+                tbC_Debug.SelectedIndex = 0;
 
                 if (moveControl.SimulationMode && simulationModeFirstDoubleClick)
                 {
                     simulationModeFirstDoubleClick = false;
                     moveControl.location.Real = new AGVPosition();
                     moveControl.location.Real.AGVAngle = 0;
+                    settingAngleForm = new SimulateSettingAGVAngle(moveControl);
+                    settingAngleForm.Show();
+                    settingAngleForm.TopMost = true;
+
                     moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position.DeepClone();
                     Vehicle.Instance.CurVehiclePosition.RealPosition = moveControl.location.Real.Position;
                     Vehicle.Instance.CurVehiclePosition.VehicleAngle = moveControl.location.Real.AGVAngle;
@@ -949,12 +956,17 @@ namespace Mirle.Agv.View
 
         private void button1_Click(object sender, EventArgs e)
         {
-            moveControl.test = EnumVehicleSafetyAction.Normal;
+            moveControl.VehclePause();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            moveControl.test = EnumVehicleSafetyAction.Stop;
+            moveControl.VehcleContinue();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            moveControl.VehcleCancel();
         }
     }
 }

@@ -40,6 +40,7 @@ namespace Mirle.Agv.View
             this.timer_UpdateData = new System.Windows.Forms.Timer(this.components);
             this.tbC_Debug = new System.Windows.Forms.TabControl();
             this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
+            this.button_AddReadPosition = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
             this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
@@ -141,7 +142,7 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
-            this.button_AddReadPosition = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -283,6 +284,17 @@ namespace Mirle.Agv.View
             this.tbP_CreateCommand.TabIndex = 0;
             this.tbP_CreateCommand.Text = "產生命令";
             this.tbP_CreateCommand.UseVisualStyleBackColor = true;
+            // 
+            // button_AddReadPosition
+            // 
+            this.button_AddReadPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_AddReadPosition.Location = new System.Drawing.Point(358, 564);
+            this.button_AddReadPosition.Name = "button_AddReadPosition";
+            this.button_AddReadPosition.Size = new System.Drawing.Size(82, 29);
+            this.button_AddReadPosition.TabIndex = 81;
+            this.button_AddReadPosition.Text = "Add";
+            this.button_AddReadPosition.UseVisualStyleBackColor = true;
+            this.button_AddReadPosition.Click += new System.EventHandler(this.button_AddReadPosition_Click);
             // 
             // label_LockResult
             // 
@@ -555,6 +567,7 @@ namespace Mirle.Agv.View
             // 
             // tbP_List
             // 
+            this.tbP_List.Controls.Add(this.button3);
             this.tbP_List.Controls.Add(this.label_LastIErrorTime);
             this.tbP_List.Controls.Add(this.label_LastIdealTime);
             this.tbP_List.Controls.Add(this.label_SensorState_Label);
@@ -653,22 +666,22 @@ namespace Mirle.Agv.View
             // button2
             // 
             this.button2.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button2.Location = new System.Drawing.Point(527, 482);
+            this.button2.Location = new System.Drawing.Point(832, 453);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(44, 24);
+            this.button2.Size = new System.Drawing.Size(82, 24);
             this.button2.TabIndex = 95;
-            this.button2.Text = "停";
+            this.button2.Text = "Continue";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button1.Location = new System.Drawing.Point(468, 482);
+            this.button1.Location = new System.Drawing.Point(770, 453);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(44, 24);
+            this.button1.Size = new System.Drawing.Size(59, 24);
             this.button1.TabIndex = 94;
-            this.button1.Text = "走";
+            this.button1.Text = "Pause";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -1222,16 +1235,16 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
-            // button_AddReadPosition
+            // button3
             // 
-            this.button_AddReadPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button_AddReadPosition.Location = new System.Drawing.Point(358, 564);
-            this.button_AddReadPosition.Name = "button_AddReadPosition";
-            this.button_AddReadPosition.Size = new System.Drawing.Size(82, 29);
-            this.button_AddReadPosition.TabIndex = 81;
-            this.button_AddReadPosition.Text = "Add";
-            this.button_AddReadPosition.UseVisualStyleBackColor = true;
-            this.button_AddReadPosition.Click += new System.EventHandler(this.button_AddReadPosition_Click);
+            this.button3.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button3.Location = new System.Drawing.Point(917, 453);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(62, 24);
+            this.button3.TabIndex = 103;
+            this.button3.Text = "Cancel";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // MoveCommandDebugModeForm
             // 
@@ -1378,5 +1391,6 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Label label_LastIErrorTime;
         private System.Windows.Forms.Label label_LastIdealTime;
         private System.Windows.Forms.Button button_AddReadPosition;
+        private System.Windows.Forms.Button button3;
     }
 }

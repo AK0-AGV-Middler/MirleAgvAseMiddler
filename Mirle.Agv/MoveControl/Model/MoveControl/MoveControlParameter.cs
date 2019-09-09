@@ -30,7 +30,6 @@ namespace Mirle.Agv.Model
         public bool PauseRequest { get; set; }
         public bool PauseAlready { get; set; }
         public bool CancelRequest { get; set; }
-        public bool ContinueRequest { get; set; }
         public bool CanPause { get; set; }
 
         public MoveControlParameter()

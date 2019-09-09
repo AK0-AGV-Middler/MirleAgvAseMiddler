@@ -194,29 +194,33 @@ namespace Mirle.Agv.View
             string lockResult = "";
 
             bool notLock = true;
+            bool skipLock = true;
 
             if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
             {
+                skipLock = false;
                 notLock = false;
                 lockResult = "Lock Result : AutoMode中!";
             }
             else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
                      Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
             {
+                skipLock = false;
                 notLock = false;
                 lockResult = "Lock Result : 主流程動作中!";
             }
             else if (moveControl.MoveState != EnumMoveState.Idle)
             {
+                skipLock = false;
                 notLock = false;
                 lockResult = "Lock Result : MoveState動作中!";
             }
-            else if (moveControl.IsCharging())
+            else if (button_Skip.Text != "強制\r\n手動" && moveControl.IsCharging())
             {
                 notLock = false;
                 lockResult = "Lock Result : Charging中!";
             }
-            else if (moveControl.ForkNotHome())
+            else if (button_Skip.Text != "強制\r\n手動" && moveControl.ForkNotHome())
             {
                 notLock = false;
                 lockResult = "Lock Result : Fork不在Home點!";
@@ -225,6 +229,23 @@ namespace Mirle.Agv.View
             label_LockResult.Text = lockResult;
 
             EnableDisableForm(notLock);
+
+            if (skipLock)
+            {
+                if (!gB_JogPitch_ElmoFunction.Enabled)
+                    gB_JogPitch_ElmoFunction.Enabled = true;
+
+                if (!button_Skip.Enabled)
+                    button_Skip.Enabled = true;
+            }
+            else
+            {
+                if (button_Skip.Text == "強制\r\n手動")
+                {
+                    button_Skip.Text = "一般\r\n模式";
+                    button_Skip.BackColor = (button_Skip.Text == "強制\r\n手動") ? Color.Red : Color.Transparent;
+                }
+            }
         }
 
         private void EnalbeDisableButton(bool flag)
@@ -862,6 +883,14 @@ namespace Mirle.Agv.View
 
             moveControl.elmoDriver.ElmoMove(EnumAxis.GX, 600, 300, EnumMoveType.Relative, 500, 500, 2000);
             moveControl.elmoDriver.ElmoMove(EnumAxis.GT, 90, 75, EnumMoveType.Absolute, realAcc, 165, 990);
+        }
+
+        private void button_Skip_Click(object sender, EventArgs e)
+        {
+            button_Skip.Enabled = false;
+            button_Skip.Text = (button_Skip.Text == "強制\r\n手動") ? "一般\r\n模式" : "強制\r\n手動";
+            button_Skip.BackColor = (button_Skip.Text == "強制\r\n手動") ? Color.Red : Color.Transparent;
+            button_Skip.Enabled = true;
         }
     }
 }

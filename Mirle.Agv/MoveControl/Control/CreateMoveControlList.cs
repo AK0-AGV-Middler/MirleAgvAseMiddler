@@ -46,7 +46,7 @@ namespace Mirle.Agv.Controller
             returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.Move];
             returnCommand.TriggerEncoder = realEncoder - (dirFlag ? returnCommand.SafetyDistance / 2 : -returnCommand.SafetyDistance / 2);
             returnCommand.CmdType = EnumCommandType.Move;
-            returnCommand.Distance = commandDistance * moveControlConfig.MoveCommandDistanceMagnification;
+            returnCommand.Distance = commandDistance * moveControlConfig.MoveCommandDistanceMagnification + moveControlConfig.MoveCommandDistanceConstant;
             returnCommand.Velocity = commandVelocity;
             returnCommand.DirFlag = dirFlag;
             returnCommand.WheelAngle = StartWheelAngle;
@@ -735,14 +735,22 @@ namespace Mirle.Agv.Controller
                         triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
 
                         // 插入減速指令.
-                        tempCommand = NewVChangeCommand(triggerPosition,
-                            data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                            moveControlConfig.EQ.Velocity, data.DirFlag);
+                        if (action == EnumAddressAction.End)
+                        {
+                            tempCommand = NewVChangeCommand(triggerPosition,
+                                data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
+                                moveControlConfig.EQ.Velocity, data.DirFlag, EnumVChangeType.EQ);
+                        }
+                        else
+                        {
+                            tempCommand = NewVChangeCommand(triggerPosition,
+                                data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
+                                moveControlConfig.EQ.Velocity, data.DirFlag, EnumVChangeType.Normal);
+                        }
+                        
                         moveCmdList.Add(tempCommand);
                     }
                 }
-
-                //data.TurnOutDistance = 0;
 
                 // 算出停止距離跟座標.
                 distance = GetSLowStopDistance();

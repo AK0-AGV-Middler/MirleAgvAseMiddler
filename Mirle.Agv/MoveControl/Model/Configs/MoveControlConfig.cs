@@ -19,11 +19,13 @@ namespace Mirle.Agv.Model.Configs
         public AxisData Turn { get; set; }
         public Dictionary<EnumCommandType, double> SafteyDistance { get; set; } = new Dictionary<EnumCommandType, double>();
         public double MoveCommandDistanceMagnification { get; set; }
+        public double MoveCommandDistanceConstant { get; set; }
         public double StartWheelAngleRange { get; set; }
         public int TurnTimeoutValue { get; set; }
         public int SlowStopTimeoutValue { get; set; }
         public int CSVLogInterval { get; set; }
         public int SecondCorrectionX { get; set; }
+        public int PauseDelateTime { get; set; }
         public double MoveStartWaitTime { get; set; }
         public double ReserveSafetyDistance { get; set; }
         public double NormalStopDistance { get; set; }

@@ -175,6 +175,8 @@ namespace Mirle.Agv.View
         private void InitialSoc()
         {
             mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
+            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            txtWatchLowPower.Text = $"High/Low : {(int)batterys.PortAutoChargeHighSoc}/{(int)batterys.PortAutoChargeLowSoc}";
         }
 
         private void InitialConnectionAndCstStatus()
@@ -681,7 +683,6 @@ namespace Mirle.Agv.View
             UpdateRtbTransferStep();
             UpdateLastAlarm();
         }
-
         private void UpdateLastAlarm()
         {
             var alarm = alarmHandler.LastAlarm;
@@ -840,9 +841,7 @@ namespace Mirle.Agv.View
             picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
             txtAskingReserve.Text = $"Asking : {middleAgent.GetAskingReserveSectionClone().Id}";
 
-            picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
-            txtWatchLowPower.Text = $"Soc/Gap : {(int)batterys.Percentage}/{(int)batterys.PortAutoChargeLowSoc}";
+            picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);           
         }
         private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
         {

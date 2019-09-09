@@ -30,12 +30,11 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AlarmForm));
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.rtbHistoryAlarms = new System.Windows.Forms.RichTextBox();
+            this.rtbHappeningAlarms = new System.Windows.Forms.RichTextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
-            this.rtbHappeningAlarms = new System.Windows.Forms.RichTextBox();
-            this.rtbHistoryAlarms = new System.Windows.Forms.RichTextBox();
-            this.btnTestSetAlarm = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -48,7 +47,6 @@
             this.tableLayoutPanel1.Controls.Add(this.rtbHistoryAlarms, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.rtbHappeningAlarms, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.btnTestSetAlarm, 1, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -57,6 +55,28 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 19.24883F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1311, 728);
             this.tableLayoutPanel1.TabIndex = 0;
+            // 
+            // rtbHistoryAlarms
+            // 
+            this.rtbHistoryAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbHistoryAlarms.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.rtbHistoryAlarms.ForeColor = System.Drawing.Color.OrangeRed;
+            this.rtbHistoryAlarms.Location = new System.Drawing.Point(658, 3);
+            this.rtbHistoryAlarms.Name = "rtbHistoryAlarms";
+            this.rtbHistoryAlarms.Size = new System.Drawing.Size(650, 581);
+            this.rtbHistoryAlarms.TabIndex = 36;
+            this.rtbHistoryAlarms.Text = "";
+            // 
+            // rtbHappeningAlarms
+            // 
+            this.rtbHappeningAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbHappeningAlarms.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.rtbHappeningAlarms.ForeColor = System.Drawing.Color.OrangeRed;
+            this.rtbHappeningAlarms.Location = new System.Drawing.Point(3, 3);
+            this.rtbHappeningAlarms.Name = "rtbHappeningAlarms";
+            this.rtbHappeningAlarms.Size = new System.Drawing.Size(649, 581);
+            this.rtbHappeningAlarms.TabIndex = 35;
+            this.rtbHappeningAlarms.Text = "";
             // 
             // panel1
             // 
@@ -92,40 +112,6 @@
             this.btnAlarmReset.UseVisualStyleBackColor = true;
             this.btnAlarmReset.Click += new System.EventHandler(this.btnAlarmReset_Click);
             // 
-            // rtbHappeningAlarms
-            // 
-            this.rtbHappeningAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbHappeningAlarms.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.rtbHappeningAlarms.ForeColor = System.Drawing.Color.OrangeRed;
-            this.rtbHappeningAlarms.Location = new System.Drawing.Point(3, 3);
-            this.rtbHappeningAlarms.Name = "rtbHappeningAlarms";
-            this.rtbHappeningAlarms.Size = new System.Drawing.Size(649, 581);
-            this.rtbHappeningAlarms.TabIndex = 35;
-            this.rtbHappeningAlarms.Text = "";
-            // 
-            // rtbHistoryAlarms
-            // 
-            this.rtbHistoryAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbHistoryAlarms.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.rtbHistoryAlarms.ForeColor = System.Drawing.Color.OrangeRed;
-            this.rtbHistoryAlarms.Location = new System.Drawing.Point(658, 3);
-            this.rtbHistoryAlarms.Name = "rtbHistoryAlarms";
-            this.rtbHistoryAlarms.Size = new System.Drawing.Size(650, 581);
-            this.rtbHistoryAlarms.TabIndex = 36;
-            this.rtbHistoryAlarms.Text = "";
-            // 
-            // btnTestSetAlarm
-            // 
-            this.btnTestSetAlarm.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnTestSetAlarm.ForeColor = System.Drawing.Color.Brown;
-            this.btnTestSetAlarm.Location = new System.Drawing.Point(658, 590);
-            this.btnTestSetAlarm.Name = "btnTestSetAlarm";
-            this.btnTestSetAlarm.Size = new System.Drawing.Size(155, 135);
-            this.btnTestSetAlarm.TabIndex = 8;
-            this.btnTestSetAlarm.Text = "Test SetAlarm";
-            this.btnTestSetAlarm.UseVisualStyleBackColor = true;
-            this.btnTestSetAlarm.Click += new System.EventHandler(this.btnTestSetAlarm_Click);
-            // 
             // AlarmForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -150,6 +136,5 @@
         private System.Windows.Forms.Button btnBuzzOff;
         private System.Windows.Forms.RichTextBox rtbHistoryAlarms;
         private System.Windows.Forms.RichTextBox rtbHappeningAlarms;
-        private System.Windows.Forms.Button btnTestSetAlarm;
     }
 }

@@ -92,6 +92,7 @@
             this.button_JogPitchHide = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
+            this.button_Skip = new System.Windows.Forms.Button();
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -196,7 +197,7 @@
             // 
             // button_JogPitch_ElmoReset
             // 
-            this.button_JogPitch_ElmoReset.Location = new System.Drawing.Point(190, 18);
+            this.button_JogPitch_ElmoReset.Location = new System.Drawing.Point(193, 18);
             this.button_JogPitch_ElmoReset.Name = "button_JogPitch_ElmoReset";
             this.button_JogPitch_ElmoReset.Size = new System.Drawing.Size(56, 53);
             this.button_JogPitch_ElmoReset.TabIndex = 114;
@@ -206,7 +207,7 @@
             // 
             // button_JogPitch_ElmoDisable
             // 
-            this.button_JogPitch_ElmoDisable.Location = new System.Drawing.Point(128, 18);
+            this.button_JogPitch_ElmoDisable.Location = new System.Drawing.Point(131, 18);
             this.button_JogPitch_ElmoDisable.Name = "button_JogPitch_ElmoDisable";
             this.button_JogPitch_ElmoDisable.Size = new System.Drawing.Size(56, 53);
             this.button_JogPitch_ElmoDisable.TabIndex = 113;
@@ -216,7 +217,7 @@
             // 
             // button_JogPitch_ElmoEnable
             // 
-            this.button_JogPitch_ElmoEnable.Location = new System.Drawing.Point(66, 18);
+            this.button_JogPitch_ElmoEnable.Location = new System.Drawing.Point(69, 18);
             this.button_JogPitch_ElmoEnable.Name = "button_JogPitch_ElmoEnable";
             this.button_JogPitch_ElmoEnable.Size = new System.Drawing.Size(56, 53);
             this.button_JogPitch_ElmoEnable.TabIndex = 112;
@@ -690,6 +691,7 @@
             // 
             // gB_JogPitch_ElmoFunction
             // 
+            this.gB_JogPitch_ElmoFunction.Controls.Add(this.button_Skip);
             this.gB_JogPitch_ElmoFunction.Controls.Add(this.button_JogPitch_ElmoEnable);
             this.gB_JogPitch_ElmoFunction.Controls.Add(this.button_JogPitch_ElmoDisable);
             this.gB_JogPitch_ElmoFunction.Controls.Add(this.button_JogPitch_ElmoReset);
@@ -781,6 +783,16 @@
             this.button1.Text = "Test";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button_Skip
+            // 
+            this.button_Skip.Location = new System.Drawing.Point(7, 18);
+            this.button_Skip.Name = "button_Skip";
+            this.button_Skip.Size = new System.Drawing.Size(56, 53);
+            this.button_Skip.TabIndex = 115;
+            this.button_Skip.Text = "一般\r\n模式\r\n";
+            this.button_Skip.UseVisualStyleBackColor = true;
+            this.button_Skip.Click += new System.EventHandler(this.button_Skip_Click);
             // 
             // JogPitchForm
             // 
@@ -885,5 +897,6 @@
         private System.Windows.Forms.Button button_JogPitchHide;
         private System.Windows.Forms.Label label_LockResult;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_Skip;
     }
 }

@@ -975,7 +975,7 @@ namespace Mirle.Agv.Controller
 
             //測UnloadAddressId 屬於 最後一個ToUnloadSection
             var lastSection = TheMapInfo.allMapSections[sectionIds[sectionIds.Count - 1]];
-            if (IsAddressIdInMapSection(lastAddressId, lastSection))
+            if (!IsAddressIdInMapSection(lastAddressId, lastSection))
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++,  [{note}] the Address {lastAddressId} is not in Section {lastSection.Id}"));
@@ -1994,9 +1994,16 @@ namespace Mirle.Agv.Controller
             StopMainFlowThreads();
             middleAgent.ClearAskReserve();
 
-            string cstId = "";
-            plcAgent.triggerCassetteIDReader(ref cstId);
-            theVehicle.ThePlcVehicle.CassetteId = cstId;
+            if (theVehicle.ThePlcVehicle.Loading)
+            {
+                string cstId = "";
+                plcAgent.triggerCassetteIDReader(ref cstId);
+                if (cstId == "ERROR")
+                {
+                    cstId = "";
+                }
+                theVehicle.ThePlcVehicle.CassetteId = cstId;
+            }            
             StartTrackPosition();
 
             var msg = $"MainFlow : Stop And Clear, [VisitTransferStepsStatus={VisitTransferStepsStatus}][WatchLowPowerStatus={WatchLowPowerStatus}][TrackPositionStatus={TrackPositionStatus}][AskReserveStatus={theVehicle.AskReserveStatus}]";
@@ -2207,7 +2214,7 @@ namespace Mirle.Agv.Controller
 
         public void Middler_OnCmdPauseEvent(ushort iSeqNum, PauseType pauseType)
         {
-            if (moveControlHandler.CanVehPause())
+            if (false/*moveControlHandler.CanVehPause()*/)
             {
                 if (IsMoveStep())
                 {

@@ -189,9 +189,9 @@ namespace Mirle.Agv.Controller
 
                     if ((reviseParameter.DirFlag && wheelAngle == 90) ||
                         (!reviseParameter.DirFlag && wheelAngle == -90))
-                        leftTheta = turnTheta;
-                    else
                         leftTheta = -turnTheta;
+                    else
+                        leftTheta = turnTheta;
 
                     double rightTheta = -leftTheta;
                     
