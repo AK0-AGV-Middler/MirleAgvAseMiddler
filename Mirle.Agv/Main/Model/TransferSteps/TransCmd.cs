@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Mirle.Agv.Controller;
 using Mirle.Agv.Model.Configs;
 
-namespace Mirle.Agv.Model.TransferCmds
+namespace Mirle.Agv.Model.TransferSteps
 {
     [Serializable]
     public abstract class TransferStep

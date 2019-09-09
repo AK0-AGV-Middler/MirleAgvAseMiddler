@@ -8,7 +8,7 @@ using Mirle.Agv.Controller;
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model.Configs;
 
-namespace Mirle.Agv.Model.TransferCmds
+namespace Mirle.Agv.Model.TransferSteps
 {
     [Serializable]
     public class MoveCmdInfo : TransferStep
@@ -560,6 +560,7 @@ namespace Mirle.Agv.Model.TransferCmds
         }
     }
 
+    [Serializable]
     public class MoveToChargerCmdInfo : MoveCmdInfo
     {
         public MoveToChargerCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)

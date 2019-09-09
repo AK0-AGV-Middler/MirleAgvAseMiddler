@@ -9,7 +9,7 @@ using Google.Protobuf.Collections;
 using System.Reflection;
 using Mirle.Agv.Controller.Tools;
 
-namespace Mirle.Agv.Model.TransferCmds
+namespace Mirle.Agv.Model.TransferSteps
 {
     [Serializable]
     public class AgvcTransCmd

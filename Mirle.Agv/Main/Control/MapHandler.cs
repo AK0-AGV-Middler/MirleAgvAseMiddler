@@ -1,5 +1,5 @@
 ﻿using Mirle.Agv.Model;
-using Mirle.Agv.Model.TransferCmds;
+using Mirle.Agv.Model.TransferSteps;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -92,36 +92,32 @@ namespace Mirle.Agv.Controller
                     string[] getThisRow = allRows[i].Split(',');
 
                     MapBarcodeLine oneRow = new MapBarcodeLine();
-                    oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
-                    lastIndesx++;
-                    oneRow.HeadBarcode.LineId = oneRow.Id;
-                    lastIndesx++;
-                    oneRow.HeadBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeHeadNum"]]);
-                    lastIndesx++;
-                    oneRow.HeadBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["HeadX"]]);
-                    lastIndesx++;
-                    oneRow.HeadBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["HeadY"]]);
-                    lastIndesx++;
-                    oneRow.TailBarcode.LineId = oneRow.Id;
-                    lastIndesx++;
-                    oneRow.TailBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeTailNum"]]);
-                    lastIndesx++;
-                    oneRow.TailBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["TailX"]]);
-                    lastIndesx++;
-                    oneRow.TailBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["TailY"]]);
-                    lastIndesx++;
-                    oneRow.Offset.X = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
-                    lastIndesx++;
-                    oneRow.Offset.Y = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
-                    lastIndesx++;
-                    oneRow.Material = oneRow.BarcodeMaterialParse(getThisRow[dicHeaderIndexes["Material"]]);
-                    lastIndesx++;
+                    try
+                    {
+                        oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                        oneRow.HeadBarcode.LineId = oneRow.Id;
+                        oneRow.HeadBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeHeadNum"]]);
+                        oneRow.HeadBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["HeadX"]]);
+                        oneRow.HeadBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["HeadY"]]);
+                        oneRow.TailBarcode.LineId = oneRow.Id;
+                        oneRow.TailBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeTailNum"]]);
+                        oneRow.TailBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["TailX"]]);
+                        oneRow.TailBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["TailY"]]);
+                        oneRow.Offset.X = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
+                        oneRow.Offset.Y = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
+                        oneRow.Material = oneRow.BarcodeMaterialParse(getThisRow[dicHeaderIndexes["Material"]]);
 
-                    lastReadBcrLineId = oneRow.Id;
+                        lastReadBcrLineId = oneRow.Id;
 
-                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , $"LoadBarcodeLineCsv oneRow ok. [lastReadBcrLineId={lastReadBcrLineId}][lastIndesx={lastIndesx}]"));
+                        loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                          , $"LoadBarcodeLineCsv oneRow ok. [lastReadBcrLineId={lastReadBcrLineId}]"));
 
+                    }
+                    catch (Exception ex)
+                    {
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load lineBarcode read oneRow. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
 
 
                     int count = oneRow.TailBarcode.Number - oneRow.HeadBarcode.Number;
@@ -134,52 +130,60 @@ namespace Mirle.Agv.Controller
                     }
                     if (count < 0)
                     {
-                        count = -count;
-                        for (int j = 0; j <= count; j += 3)
+                        try
                         {
-                            lastIndesx = 0;
-                            MapBarcode mapBarcode = new MapBarcode();
-                            mapBarcode.Number = oneRow.TailBarcode.Number + j;
-                            lastIndesx++;
-                            mapBarcode.Position.X = (j * oneRow.HeadBarcode.Position.X + (count - j) * oneRow.TailBarcode.Position.X) / count;
-                            lastIndesx++;
-                            mapBarcode.Position.Y = (j * oneRow.HeadBarcode.Position.Y + (count - j) * oneRow.TailBarcode.Position.Y) / count;
-                            lastIndesx++;
-                            mapBarcode.Offset.X = oneRow.Offset.X;
-                            lastIndesx++;
-                            mapBarcode.Offset.Y = oneRow.Offset.Y;
-                            lastIndesx++;
-                            mapBarcode.LineId = oneRow.Id;
-                            lastIndesx++;
-                            mapBarcode.Material = oneRow.Material;
-                            lastIndesx++;
+                            count = -count;
+                            for (int j = 0; j <= count; j += 3)
+                            {
+                                MapBarcode mapBarcode = new MapBarcode();
+                                mapBarcode.Number = oneRow.TailBarcode.Number + j;
+                                mapBarcode.Position.X = (j * oneRow.HeadBarcode.Position.X + (count - j) * oneRow.TailBarcode.Position.X) / count;
+                                mapBarcode.Position.Y = (j * oneRow.HeadBarcode.Position.Y + (count - j) * oneRow.TailBarcode.Position.Y) / count;
+                                mapBarcode.Offset.X = oneRow.Offset.X;
+                                mapBarcode.Offset.Y = oneRow.Offset.Y;
+                                mapBarcode.LineId = oneRow.Id;
+                                mapBarcode.Material = oneRow.Material;
 
-                            lastReadBcrId = mapBarcode.Number.ToString();
-                            TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
+                                lastReadBcrId = mapBarcode.Number.ToString();
+                                TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                         }
                     }
                     else
                     {
-                        for (int j = 0; j <= count; j += 3)
+                        try
                         {
-                            lastIndesx = 0;
-                            MapBarcode mapBarcode = new MapBarcode();
-                            mapBarcode.Number = oneRow.HeadBarcode.Number + j;
-                            lastIndesx++;
-                            mapBarcode.Position.X = (j * oneRow.TailBarcode.Position.X + (count - j) * oneRow.HeadBarcode.Position.X) / count;
-                            lastIndesx++;
-                            mapBarcode.Position.Y = (j * oneRow.TailBarcode.Position.Y + (count - j) * oneRow.HeadBarcode.Position.Y) / count;
-                            lastIndesx++;
-                            mapBarcode.Offset.X = oneRow.Offset.X;
-                            lastIndesx++;
-                            mapBarcode.Offset.Y = oneRow.Offset.Y;
-                            lastIndesx++;
-                            mapBarcode.LineId = oneRow.Id;
-                            lastIndesx++;
-                            mapBarcode.Material = oneRow.Material;
-                            lastIndesx++;
-                            lastReadBcrId = mapBarcode.Number.ToString();
-                            TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
+                            for (int j = 0; j <= count; j += 3)
+                            {
+                                lastIndesx = 0;
+                                MapBarcode mapBarcode = new MapBarcode();
+                                mapBarcode.Number = oneRow.HeadBarcode.Number + j;
+                                lastIndesx++;
+                                mapBarcode.Position.X = (j * oneRow.TailBarcode.Position.X + (count - j) * oneRow.HeadBarcode.Position.X) / count;
+                                lastIndesx++;
+                                mapBarcode.Position.Y = (j * oneRow.TailBarcode.Position.Y + (count - j) * oneRow.HeadBarcode.Position.Y) / count;
+                                lastIndesx++;
+                                mapBarcode.Offset.X = oneRow.Offset.X;
+                                lastIndesx++;
+                                mapBarcode.Offset.Y = oneRow.Offset.Y;
+                                lastIndesx++;
+                                mapBarcode.LineId = oneRow.Id;
+                                lastIndesx++;
+                                mapBarcode.Material = oneRow.Material;
+                                lastIndesx++;
+                                lastReadBcrId = mapBarcode.Number.ToString();
+                                TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                         }
                     }
 
@@ -196,7 +200,6 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
@@ -243,41 +246,33 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
-                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
-                    oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
-                    lastIndesx++;
-                    oneRow.Position.X = double.Parse(getThisRow[dicHeaderIndexes["PositionX"]]);
-                    lastIndesx++;
-                    oneRow.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["PositionY"]]);
-                    lastIndesx++;
-                    oneRow.IsWorkStation = bool.Parse(getThisRow[dicHeaderIndexes["IsWorkStation"]]);
-                    lastIndesx++;
-                    oneRow.CanLeftLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftLoad"]]);
-                    lastIndesx++;
-                    oneRow.CanLeftUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftUnload"]]);
-                    lastIndesx++;
-                    oneRow.CanRightLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanRightLoad"]]);
-                    lastIndesx++;
-                    oneRow.CanRightUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanRightUnload"]]);
-                    lastIndesx++;
-                    oneRow.IsCharger = bool.Parse(getThisRow[dicHeaderIndexes["IsCharger"]]);
-                    lastIndesx++;
-                    oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];
-                    lastIndesx++;
-                    oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicHeaderIndexes["ChargeDirection"]]);
-                    lastIndesx++;
-                    oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicHeaderIndexes["IsSegmentPoint"]]);
-                    lastIndesx++;
-                    oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
-                    lastIndesx++;
-                    oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
-                    lastIndesx++;
-                    oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
-                    lastIndesx++;
-                    oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
-                    lastIndesx++;
+                    try
+                    {
+                        oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                        oneRow.Position.X = double.Parse(getThisRow[dicHeaderIndexes["PositionX"]]);
+                        oneRow.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["PositionY"]]);
+                        oneRow.IsWorkStation = bool.Parse(getThisRow[dicHeaderIndexes["IsWorkStation"]]);
+                        oneRow.CanLeftLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftLoad"]]);
+                        oneRow.CanLeftUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanLeftUnload"]]);
+                        oneRow.CanRightLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanRightLoad"]]);
+                        oneRow.CanRightUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanRightUnload"]]);
+                        oneRow.IsCharger = bool.Parse(getThisRow[dicHeaderIndexes["IsCharger"]]);
+                        oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];
+                        oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicHeaderIndexes["ChargeDirection"]]);
+                        oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicHeaderIndexes["IsSegmentPoint"]]);
+                        oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
+                        oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
+                        oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
+                        oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
+
+                    }
+                    catch (Exception ex)
+                    {
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv read oneRow : [lastReadAdrId={lastReadAdrId}][lastIndesx={lastIndesx}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
 
                     lastReadAdrId = oneRow.Id;
                     TheMapInfo.allMapAddresses.Add(oneRow.Id, oneRow);
@@ -285,6 +280,7 @@ namespace Mirle.Agv.Controller
                     {
                         TheMapInfo.allCouples.Add(oneRow);
                     }
+
                 }
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -338,27 +334,26 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
-                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
                     MapSection oneRow = new MapSection();
-                    oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
-                    lastIndesx++;
-                    oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
-                    lastIndesx++;
-                    oneRow.InsideAddresses.Add(oneRow.HeadAddress);
-                    lastIndesx++;
-                    oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
-                    lastIndesx++;
-                    oneRow.InsideAddresses.Add(oneRow.TailAddress);
-                    lastIndesx++;
-                    oneRow.Distance = Math.Sqrt(GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position));
-                    lastIndesx++;
-                    oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
-                    lastIndesx++;
-                    oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
-                    lastIndesx++;
-                    oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
-                    lastIndesx++;
+                    try
+                    {
+                        oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                        oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
+                        oneRow.InsideAddresses.Add(oneRow.HeadAddress);
+                        oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
+                        oneRow.InsideAddresses.Add(oneRow.TailAddress);
+                        oneRow.Distance = Math.Sqrt(GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position));
+                        oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
+                        oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
+                        oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow : [lastReadSecId={lastReadSecId}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
 
                     lastReadSecId = oneRow.Id;
                     TheMapInfo.allMapSections.Add(oneRow.Id, oneRow);
@@ -375,7 +370,6 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv : [lastReadSecId={lastReadSecId}]"));
-
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
@@ -386,6 +380,8 @@ namespace Mirle.Agv.Controller
             {
                 foreach (var adr in TheMapInfo.allMapAddresses.Values)
                 {
+                    lastReadAdrId = adr.Id;
+                    lastReadSecId = adr.InsideSectionId;
                     if (TheMapInfo.allMapSections.ContainsKey(adr.InsideSectionId))
                     {
                         TheMapInfo.allMapSections[adr.InsideSectionId].InsideAddresses.Add(adr);
@@ -397,7 +393,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"AddInsideAddresses FAIL at Sec[{lastReadSecId}] and Adr[{lastReadAdrId}]" + ex.StackTrace));
             }
         }
 
@@ -439,23 +435,23 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
-                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
                     MapSectionBeamDisable oneRow = new MapSectionBeamDisable();
-                    oneRow.SectionId = getThisRow[dicHeaderIndexes["SectionId"]];
-                    lastIndesx++;
-                    oneRow.Min = double.Parse(getThisRow[dicHeaderIndexes["Min"]]);
-                    lastIndesx++;
-                    oneRow.Max = double.Parse(getThisRow[dicHeaderIndexes["Max"]]);
-                    lastIndesx++;
-                    oneRow.FrontDisable = bool.Parse(getThisRow[dicHeaderIndexes["FrontDisable"]]);
-                    lastIndesx++;
-                    oneRow.BackDisable = bool.Parse(getThisRow[dicHeaderIndexes["BackDisable"]]);
-                    lastIndesx++;
-                    oneRow.LeftDisable = bool.Parse(getThisRow[dicHeaderIndexes["LeftDisable"]]);
-                    lastIndesx++;
-                    oneRow.RightDisable = bool.Parse(getThisRow[dicHeaderIndexes["RightDisable"]]);
-                    lastIndesx++;
+                    try
+                    {
+                        oneRow.SectionId = getThisRow[dicHeaderIndexes["SectionId"]];
+                        oneRow.Min = double.Parse(getThisRow[dicHeaderIndexes["Min"]]);
+                        oneRow.Max = double.Parse(getThisRow[dicHeaderIndexes["Max"]]);
+                        oneRow.FrontDisable = bool.Parse(getThisRow[dicHeaderIndexes["FrontDisable"]]);
+                        oneRow.BackDisable = bool.Parse(getThisRow[dicHeaderIndexes["BackDisable"]]);
+                        oneRow.LeftDisable = bool.Parse(getThisRow[dicHeaderIndexes["LeftDisable"]]);
+                        oneRow.RightDisable = bool.Parse(getThisRow[dicHeaderIndexes["RightDisable"]]);
+                    }
+                    catch (Exception ex)
+                    {
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadBeamSensorDisable read oneRow, [SecId={oneRow.SectionId}][Max={(int)oneRow.Max}][Min={(int)oneRow.Min}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
 
                     AddMapSectionBeamDisableIntoList(oneRow);
                 }
@@ -467,7 +463,6 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadBeamSensorDisable [lastIndesx={lastIndesx}]"));
-
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
@@ -575,7 +570,7 @@ namespace Mirle.Agv.Controller
                         location.LastAddress = insideAddress;
                     }
                 }
-            }           
+            }
 
             location.LastSection = mapSection;
 

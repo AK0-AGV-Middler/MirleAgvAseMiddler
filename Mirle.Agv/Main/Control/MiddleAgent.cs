@@ -5,7 +5,7 @@ using Google.Protobuf.Collections;
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model;
 using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Model.TransferCmds;
+using Mirle.Agv.Model.TransferSteps;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -245,9 +245,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                string msg = $"[SEND] [SeqNum = {wrapper.SeqNum}][{(EnumCmdNum)wrapper.ID}]";
-                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                msg += " " + wrapper.ToString();
+                string msg = $"[SEND] [SeqNum = {wrapper.SeqNum}][{(EnumCmdNum)wrapper.ID}] {wrapper}";
                 OnCmdSendEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
@@ -268,9 +266,7 @@ namespace Mirle.Agv.Controller
         }
         private void RecieveCmmandLog(object sender, TcpIpEventArgs e)
         {
-            string msg = $"[RECV] [SeqNum = {e.iSeqNum}][{(EnumCmdNum)int.Parse(e.iPacketID)}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            msg += $"[ObjPacket = {e.objPacket}]";
+            string msg = $"[RECV] [SeqNum = {e.iSeqNum}][{(EnumCmdNum)int.Parse(e.iPacketID)}][ObjPacket = {e.objPacket}]";
             OnCmdReceiveEvent?.Invoke(this, msg);
             theLoggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 , msg));
@@ -280,7 +276,6 @@ namespace Mirle.Agv.Controller
             if (theVehicle.AutoState != EnumAutoState.Auto)
             {
                 var msg = $"Middler : Recieve Command Mediator +++FAIL+++, [AutoState={theVehicle.AutoState}]";
-                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
                 return;
@@ -651,7 +646,7 @@ namespace Mirle.Agv.Controller
                 queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
                 queGotReserveOkSections.Enqueue(aReserveOkSection);
                 mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Middler :GetReserveOk, [AskingReserveId = {askingReserveSection.Id}]");
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Middler : GetReserveOk, [AskingReserveId = {askingReserveSection.Id}]");
             }
             else
             {
@@ -1608,9 +1603,7 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
-
-       
+        }       
 
         private void Receive_Cmd44_StatusRequest(object sender, TcpIpEventArgs e)
         {

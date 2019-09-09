@@ -11,7 +11,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using System.Linq;
-using Mirle.Agv.Model.TransferCmds;
+using Mirle.Agv.Model.TransferSteps;
 using Mirle.Agv;
 using Mirle.Agv.Controller.Tools;
 using System.Reflection;
@@ -711,6 +711,7 @@ namespace Mirle.Agv.View
             switch (transferStep.GetTransferStepType())
             {
                 case EnumTransferStepType.Move:
+                case EnumTransferStepType.MoveToCharger:
                     UpdateMoveCmdInfo(transferStep);
                     break;
                 case EnumTransferStepType.Load:
@@ -883,8 +884,7 @@ namespace Mirle.Agv.View
                 return;
             }
 
-            var curTransferStep = mainFlowHandler.GetCurTransferStep();
-            if (curTransferStep.GetTransferStepType() != EnumTransferStepType.Move)
+            if (!mainFlowHandler.IsMoveStep())
             {
                 return;
             }
@@ -965,9 +965,6 @@ namespace Mirle.Agv.View
                 curVehPos.RealPosition = new MapPosition(posX, posY);
                 curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
 
-                var barNum = int.Parse(txtBarNum.Text);
-                var mapBar = theMapInfo.allMapBarcodes[barNum];
-                ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
             }
             catch (Exception ex)
             {
@@ -1095,58 +1092,6 @@ namespace Mirle.Agv.View
             mainFlowHandler.StopWatchLowPower();
         }
         #endregion
-
-        #region Fake Finished
-        private void btnMoveFinish_Click(object sender, EventArgs e)
-        {
-            if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Move)
-            {
-                mainFlowHandler.MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Success);
-            }
-            else
-            {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : btnMoveFinish_Click, [CurStepType={mainFlowHandler.GetCurrentTransferStepType()}");
-            }
-        }
-        private void btnLoadFinish_Click(object sender, EventArgs e)
-        {
-            if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Load)
-            {
-                var plcVeh = theVehicle.ThePlcVehicle;
-                plcVeh.Loading = true;
-                plcVeh.CassetteId = "FakeCst001";
-
-                var plcForkLoadCmd = mainFlowHandler.PlcForkLoadCommand;
-                mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, plcForkLoadCmd);
-                plcVeh.Robot.ExecutingCommand = null;
-            }
-            else
-            {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentTransferStepType()}");
-            }
-        }
-        private void btnUnloadFinish_Click(object sender, EventArgs e)
-        {
-            if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Unload)
-            {
-                var plcVeh = theVehicle.ThePlcVehicle;
-                plcVeh.Loading = false;
-                plcVeh.CassetteId = null;
-
-                var plcForkLoadCmd = mainFlowHandler.PlcForkUnloadCommand;
-                mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, plcForkLoadCmd);
-            }
-            else
-            {
-                RichTextBoxAppendHead(richTextBox1, $"MainForm : MainFlow.GetCurTransCmd().GetCommandType()={mainFlowHandler.GetCurrentTransferStepType()}");
-            }
-        }
-        private void btnTransferComplete_Click(object sender, EventArgs e)
-        {
-            middleAgent.LoadUnloadComplete();
-        }
-        #endregion
-
 
         private void btnAlarmReset_Click(object sender, EventArgs e)
         {
@@ -1325,6 +1270,16 @@ namespace Mirle.Agv.View
         private void btnReDraw_Click(object sender, EventArgs e)
         {
             ResetImageAndPb();
+        }
+
+        private void txtBarNum_TextChanged(object sender, EventArgs e)
+        {
+            var barNum = int.Parse(txtBarNum.Text);
+            if (theMapInfo.allMapBarcodes.ContainsKey(barNum))
+            {
+                var mapBar = theMapInfo.allMapBarcodes[barNum];
+                ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
+            }     
         }
     }
 }

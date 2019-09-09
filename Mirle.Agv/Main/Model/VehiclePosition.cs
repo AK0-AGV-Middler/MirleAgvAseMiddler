@@ -9,7 +9,7 @@ namespace Mirle.Agv.Model
         public MapSection LastSection { get; set; } = new MapSection();
         public MapAddress LastAddress { get; set; } = new MapAddress();
         public MapPosition BarcodePosition { get; set; } = new MapPosition();
-        private MapPosition realPosition;
+        private MapPosition realPosition = new MapPosition();
         public MapPosition RealPosition
         {
             get
@@ -25,9 +25,9 @@ namespace Mirle.Agv.Model
             }
             set
             {
-                if (realPosition == null)
+                if (value == null)
                 {
-                    realPosition = value;
+                    return;
                 }
                 if (SimpleDistance(value, realPosition) >= RealPositionRangeMm)
                 {
