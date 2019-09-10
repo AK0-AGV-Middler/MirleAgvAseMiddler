@@ -31,13 +31,10 @@ namespace Mirle.Agv.Model.TransferSteps
             CassetteId = "";
         }
 
-        public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum)
+        public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum)
         {
             CommandId = transRequest.CmdID;
-            if (!string.IsNullOrEmpty(transRequest.CSTID))
-            {
-                CassetteId = transRequest.CSTID;
-            }
+            CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID;
             SetCmdType(transRequest.ActType);
             SeqNum = aSeqNum;
         }
@@ -64,13 +61,13 @@ namespace Mirle.Agv.Model.TransferSteps
                 case ActiveType.Override:
                     CommandType = EnumAgvcTransCommandType.Override;
                     break;
-                case ActiveType.Home:                              
-                case ActiveType.Cstidrename:                   
-                case ActiveType.Mtlhome:                      
-                case ActiveType.Systemout:                   
-                case ActiveType.Systemin:                   
-                case ActiveType.Techingmove:                  
-                case ActiveType.Round:                  
+                case ActiveType.Home:
+                case ActiveType.Cstidrename:
+                case ActiveType.Mtlhome:
+                case ActiveType.Systemout:
+                case ActiveType.Systemin:
+                case ActiveType.Techingmove:
+                case ActiveType.Round:
                 default:
                     CommandType = EnumAgvcTransCommandType.Else;
                     break;
@@ -107,7 +104,7 @@ namespace Mirle.Agv.Model.TransferSteps
             {
                 ToUnloadSectionIds = guideSectionsToDestination.ToList();
             }
-        }        
+        }
 
         public AgvcTransCmd DeepClone()
         {
@@ -124,12 +121,12 @@ namespace Mirle.Agv.Model.TransferSteps
             agvcTransCmd.SeqNum = SeqNum;
 
             return agvcTransCmd;
+        }
     }
-}
 
     public class AgvcMoveCmd : AgvcTransCmd
     {
-        public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest,ushort aSeqNum) : base(transRequest,aSeqNum)
+        public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
             try
             {
@@ -148,7 +145,7 @@ namespace Mirle.Agv.Model.TransferSteps
     {
         public AgvcMoveToChargerCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
-            
+
         }
     }
 

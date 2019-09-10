@@ -339,8 +339,16 @@ namespace Mirle.Agv.Controller
                     try
                     {
                         oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
+                        if (!TheMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["FromAddress"]]))
+                        {
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, headAddress is not in the map : [secId={oneRow.Id}][headAddress={getThisRow[dicHeaderIndexes["FromAddress"]]}]"));
+                        }
                         oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.HeadAddress);
+                        if (!TheMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["ToAddress"]]))
+                        {
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, tailAddress is not in the map : [secId={oneRow.Id}][tailAddress={getThisRow[dicHeaderIndexes["ToAddress"]]}]"));
+                        }
                         oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.TailAddress);
                         oneRow.Distance = Math.Sqrt(GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position));
@@ -351,7 +359,7 @@ namespace Mirle.Agv.Controller
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow : [lastReadSecId={lastReadSecId}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail : [lastReadSecId={lastReadSecId}]"));
                         loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     }
 
@@ -568,6 +576,7 @@ namespace Mirle.Agv.Controller
                     if (IsPositionInThisAddress(aPosition, insideAddress.Position))
                     {
                         location.LastAddress = insideAddress;
+                        break;
                     }
                 }
             }

@@ -66,7 +66,7 @@ namespace Mirle.Agv.Controller
         public MiddleAgent(MainFlowHandler mainFlowHandler)
         {
             this.mainFlowHandler = mainFlowHandler;
-            middlerConfig = mainFlowHandler.MiddlerConfig;
+            middlerConfig = mainFlowHandler.GetMiddlerConfig();
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             loggerAgent = LoggerAgent.Instance;
 

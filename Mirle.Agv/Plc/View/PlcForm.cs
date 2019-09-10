@@ -737,8 +737,6 @@ namespace Mirle.Agv.View
 
         }
 
-
-
         private void btnBuzzerStop_Click(object sender, EventArgs e)
         {
             plcAgent.WritePLCBuzzserStop();

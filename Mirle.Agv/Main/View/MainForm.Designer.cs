@@ -66,8 +66,8 @@
             this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.ucBarPos = new Mirle.Agv.UcLabelTextBox();
-            this.txtBarNum = new System.Windows.Forms.TextBox();
+            this.ucUnloadPort = new Mirle.Agv.UcLabelTextBox();
+            this.ucLoadPort = new Mirle.Agv.UcLabelTextBox();
             this.rtbTransferStep = new System.Windows.Forms.RichTextBox();
             this.rtbAgvcTransCmd = new System.Windows.Forms.RichTextBox();
             this.gbReserve = new System.Windows.Forms.GroupBox();
@@ -104,7 +104,9 @@
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
+            this.ucBarPos = new Mirle.Agv.UcLabelTextBox();
             this.btnSemiAutoManual = new System.Windows.Forms.Button();
+            this.txtBarNum = new System.Windows.Forms.TextBox();
             this.gbVisitTransferSteps = new System.Windows.Forms.GroupBox();
             this.txtTransferStep = new System.Windows.Forms.Label();
             this.picVisitTransferSteps = new System.Windows.Forms.PictureBox();
@@ -135,8 +137,6 @@
             this.btnPauseAskReserve = new System.Windows.Forms.Button();
             this.btnAutoApplyReserveOnce = new System.Windows.Forms.Button();
             this.timeUpdateUI = new System.Windows.Forms.Timer(this.components);
-            this.ucLoadPort = new Mirle.Agv.UcLabelTextBox();
-            this.ucUnloadPort = new Mirle.Agv.UcLabelTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -576,23 +576,25 @@
             this.splitContainer2.SplitterDistance = 677;
             this.splitContainer2.TabIndex = 0;
             // 
-            // ucBarPos
+            // ucUnloadPort
             // 
-            this.ucBarPos.Location = new System.Drawing.Point(154, 228);
-            this.ucBarPos.Name = "ucBarPos";
-            this.ucBarPos.Size = new System.Drawing.Size(185, 26);
-            this.ucBarPos.TabIndex = 42;
-            this.ucBarPos.TagName = "Bar Pos";
-            this.ucBarPos.TagValue = "";
+            this.ucUnloadPort.Location = new System.Drawing.Point(218, 314);
+            this.ucUnloadPort.Name = "ucUnloadPort";
+            this.ucUnloadPort.Size = new System.Drawing.Size(200, 30);
+            this.ucUnloadPort.TabIndex = 57;
+            this.ucUnloadPort.TagName = "UnloadPort";
+            this.ucUnloadPort.TagValue = "";
+            this.ucUnloadPort.Visible = false;
             // 
-            // txtBarNum
+            // ucLoadPort
             // 
-            this.txtBarNum.Location = new System.Drawing.Point(174, 200);
-            this.txtBarNum.Name = "txtBarNum";
-            this.txtBarNum.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.txtBarNum.Size = new System.Drawing.Size(165, 22);
-            this.txtBarNum.TabIndex = 57;
-            this.txtBarNum.TextChanged += new System.EventHandler(this.txtBarNum_TextChanged);
+            this.ucLoadPort.Location = new System.Drawing.Point(218, 282);
+            this.ucLoadPort.Name = "ucLoadPort";
+            this.ucLoadPort.Size = new System.Drawing.Size(200, 30);
+            this.ucLoadPort.TabIndex = 4;
+            this.ucLoadPort.TagName = "LoadPort";
+            this.ucLoadPort.TagValue = "";
+            this.ucLoadPort.Visible = false;
             // 
             // rtbTransferStep
             // 
@@ -1003,6 +1005,15 @@
             this.radOffline.UseVisualStyleBackColor = true;
             this.radOffline.CheckedChanged += new System.EventHandler(this.radOffline_CheckedChanged);
             // 
+            // ucBarPos
+            // 
+            this.ucBarPos.Location = new System.Drawing.Point(154, 228);
+            this.ucBarPos.Name = "ucBarPos";
+            this.ucBarPos.Size = new System.Drawing.Size(185, 26);
+            this.ucBarPos.TabIndex = 42;
+            this.ucBarPos.TagName = "Bar Pos";
+            this.ucBarPos.TagValue = "";
+            // 
             // btnSemiAutoManual
             // 
             this.btnSemiAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -1012,8 +1023,16 @@
             this.btnSemiAutoManual.TabIndex = 56;
             this.btnSemiAutoManual.Text = "Semi - Auto/Manual";
             this.btnSemiAutoManual.UseVisualStyleBackColor = true;
-            this.btnSemiAutoManual.Visible = false;
             this.btnSemiAutoManual.Click += new System.EventHandler(this.btnSemiAutoManual_Click);
+            // 
+            // txtBarNum
+            // 
+            this.txtBarNum.Location = new System.Drawing.Point(174, 200);
+            this.txtBarNum.Name = "txtBarNum";
+            this.txtBarNum.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.txtBarNum.Size = new System.Drawing.Size(165, 22);
+            this.txtBarNum.TabIndex = 57;
+            this.txtBarNum.TextChanged += new System.EventHandler(this.txtBarNum_TextChanged);
             // 
             // gbVisitTransferSteps
             // 
@@ -1023,7 +1042,7 @@
             this.gbVisitTransferSteps.Controls.Add(this.btnResumeVisitTransferSteps);
             this.gbVisitTransferSteps.Controls.Add(this.btnStopVisitTransferSteps);
             this.gbVisitTransferSteps.Controls.Add(this.btnPauseVisitTransferSteps);
-            this.gbVisitTransferSteps.Location = new System.Drawing.Point(3, 12);
+            this.gbVisitTransferSteps.Location = new System.Drawing.Point(6, 13);
             this.gbVisitTransferSteps.Name = "gbVisitTransferSteps";
             this.gbVisitTransferSteps.Size = new System.Drawing.Size(165, 182);
             this.gbVisitTransferSteps.TabIndex = 43;
@@ -1051,7 +1070,6 @@
             // 
             // btnStartVisitTransferSteps
             // 
-            this.btnStartVisitTransferSteps.Enabled = false;
             this.btnStartVisitTransferSteps.Location = new System.Drawing.Point(6, 21);
             this.btnStartVisitTransferSteps.Name = "btnStartVisitTransferSteps";
             this.btnStartVisitTransferSteps.Size = new System.Drawing.Size(150, 23);
@@ -1062,7 +1080,6 @@
             // 
             // btnResumeVisitTransferSteps
             // 
-            this.btnResumeVisitTransferSteps.Enabled = false;
             this.btnResumeVisitTransferSteps.Location = new System.Drawing.Point(6, 79);
             this.btnResumeVisitTransferSteps.Name = "btnResumeVisitTransferSteps";
             this.btnResumeVisitTransferSteps.Size = new System.Drawing.Size(150, 23);
@@ -1073,7 +1090,6 @@
             // 
             // btnStopVisitTransferSteps
             // 
-            this.btnStopVisitTransferSteps.Enabled = false;
             this.btnStopVisitTransferSteps.Location = new System.Drawing.Point(6, 108);
             this.btnStopVisitTransferSteps.Name = "btnStopVisitTransferSteps";
             this.btnStopVisitTransferSteps.Size = new System.Drawing.Size(150, 23);
@@ -1084,7 +1100,6 @@
             // 
             // btnPauseVisitTransferSteps
             // 
-            this.btnPauseVisitTransferSteps.Enabled = false;
             this.btnPauseVisitTransferSteps.Location = new System.Drawing.Point(6, 50);
             this.btnPauseVisitTransferSteps.Name = "btnPauseVisitTransferSteps";
             this.btnPauseVisitTransferSteps.Size = new System.Drawing.Size(150, 23);
@@ -1101,7 +1116,7 @@
             this.gbTrackPosition.Controls.Add(this.btnResumeTrackPostiion);
             this.gbTrackPosition.Controls.Add(this.btnStopTrackPosition);
             this.gbTrackPosition.Controls.Add(this.btnPauseTrackPosition);
-            this.gbTrackPosition.Location = new System.Drawing.Point(174, 12);
+            this.gbTrackPosition.Location = new System.Drawing.Point(177, 12);
             this.gbTrackPosition.Name = "gbTrackPosition";
             this.gbTrackPosition.Size = new System.Drawing.Size(165, 182);
             this.gbTrackPosition.TabIndex = 42;
@@ -1129,7 +1144,6 @@
             // 
             // btnStartTrackPosition
             // 
-            this.btnStartTrackPosition.Enabled = false;
             this.btnStartTrackPosition.Location = new System.Drawing.Point(6, 21);
             this.btnStartTrackPosition.Name = "btnStartTrackPosition";
             this.btnStartTrackPosition.Size = new System.Drawing.Size(150, 23);
@@ -1140,7 +1154,6 @@
             // 
             // btnResumeTrackPostiion
             // 
-            this.btnResumeTrackPostiion.Enabled = false;
             this.btnResumeTrackPostiion.Location = new System.Drawing.Point(6, 79);
             this.btnResumeTrackPostiion.Name = "btnResumeTrackPostiion";
             this.btnResumeTrackPostiion.Size = new System.Drawing.Size(150, 23);
@@ -1151,7 +1164,6 @@
             // 
             // btnStopTrackPosition
             // 
-            this.btnStopTrackPosition.Enabled = false;
             this.btnStopTrackPosition.Location = new System.Drawing.Point(6, 108);
             this.btnStopTrackPosition.Name = "btnStopTrackPosition";
             this.btnStopTrackPosition.Size = new System.Drawing.Size(150, 23);
@@ -1162,7 +1174,6 @@
             // 
             // btnPauseTrackPosition
             // 
-            this.btnPauseTrackPosition.Enabled = false;
             this.btnPauseTrackPosition.Location = new System.Drawing.Point(6, 50);
             this.btnPauseTrackPosition.Name = "btnPauseTrackPosition";
             this.btnPauseTrackPosition.Size = new System.Drawing.Size(150, 23);
@@ -1257,7 +1268,7 @@
             this.gbAskReserve.Controls.Add(this.btnResumeAskReserve);
             this.gbAskReserve.Controls.Add(this.btnStopAskReserve);
             this.gbAskReserve.Controls.Add(this.btnPauseAskReserve);
-            this.gbAskReserve.Location = new System.Drawing.Point(345, 12);
+            this.gbAskReserve.Location = new System.Drawing.Point(348, 13);
             this.gbAskReserve.Name = "gbAskReserve";
             this.gbAskReserve.Size = new System.Drawing.Size(165, 182);
             this.gbAskReserve.TabIndex = 43;
@@ -1338,24 +1349,6 @@
             this.timeUpdateUI.Enabled = true;
             this.timeUpdateUI.Interval = 250;
             this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
-            // 
-            // ucLoadPort
-            // 
-            this.ucLoadPort.Location = new System.Drawing.Point(218, 282);
-            this.ucLoadPort.Name = "ucLoadPort";
-            this.ucLoadPort.Size = new System.Drawing.Size(200, 30);
-            this.ucLoadPort.TabIndex = 4;
-            this.ucLoadPort.TagName = "LoadPort";
-            this.ucLoadPort.TagValue = "";
-            // 
-            // ucUnloadPort
-            // 
-            this.ucUnloadPort.Location = new System.Drawing.Point(218, 314);
-            this.ucUnloadPort.Name = "ucUnloadPort";
-            this.ucUnloadPort.Size = new System.Drawing.Size(200, 30);
-            this.ucUnloadPort.TabIndex = 57;
-            this.ucUnloadPort.TagName = "UnloadPort";
-            this.ucUnloadPort.TagValue = "";
             // 
             // MainForm
             // 

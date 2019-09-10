@@ -31,6 +31,7 @@ namespace Mirle.Agv.Model
         public bool PauseAlready { get; set; }
         public bool CancelRequest { get; set; }
         public bool CanPause { get; set; }
+        public bool SecondCorrection { get; set; }
 
         public MoveControlParameter()
         {

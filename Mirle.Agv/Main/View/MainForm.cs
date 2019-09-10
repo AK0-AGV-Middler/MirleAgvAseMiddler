@@ -103,18 +103,28 @@ namespace Mirle.Agv.View
         {
             moveCommandDebugMode = new MoveCommandDebugModeForm(moveControlHandler, theMapInfo);
             moveCommandDebugMode.WindowState = FormWindowState.Normal;
+            moveCommandDebugMode.Show();
+            moveCommandDebugMode.Hide();
 
             middlerForm = new MiddlerForm(middleAgent);
             middlerForm.WindowState = FormWindowState.Normal;
+            middlerForm.Show();
+            middlerForm.Hide();
 
             alarmForm = new AlarmForm(mainFlowHandler);
-            middlerForm.WindowState = FormWindowState.Normal;
+            alarmForm.WindowState = FormWindowState.Normal;
+            alarmForm.Show();
+            alarmForm.Hide();
 
             plcForm = new PlcForm(mcProtocol, plcAgent);
             plcForm.WindowState = FormWindowState.Normal;
+            plcForm.Show();
+            plcForm.Hide();
 
             jogPitch = new JogPitchForm(moveControlHandler);
             jogPitch.WindowState = FormWindowState.Normal;
+            jogPitch.Show();
+            jogPitch.Hide();
 
             numPositionX.Maximum = decimal.MaxValue;
             numPositionY.Maximum = decimal.MaxValue;
@@ -169,7 +179,8 @@ namespace Mirle.Agv.View
             middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
-
+            mainFlowHandler.OnUpdateLoadPortEvent += MainFlowHandler_OnUpdateLoadPortEvent;
+            mainFlowHandler.OnUpdateUnloadPortEvent += MainFlowHandler_OnUpdateUnloadPortEvent;
         }
 
         private void InitialSoc()
@@ -182,8 +193,11 @@ namespace Mirle.Agv.View
         private void InitialConnectionAndCstStatus()
         {
             radOnline.Checked = middleAgent.IsConnected();
-            string cstid = "";
-            plcAgent.triggerCassetteIDReader(ref cstid);
+            if (theVehicle.ThePlcVehicle.Loading)
+            {
+                string cstid = "";
+                plcAgent.triggerCassetteIDReader(ref cstid);
+            }          
         }
 
         public delegate void RadioButtonCheckDel(RadioButton radioButton, bool isCheck);
@@ -222,6 +236,15 @@ namespace Mirle.Agv.View
             var msg = $"AlarmHandler : Reset All Alarms, [Count={alarms.Count}]";
             RichTextBoxAppendHead(richTextBox1, msg);
             btnAlarmReset.Enabled = true;
+        }
+
+        private void MainFlowHandler_OnUpdateUnloadPortEvent(object sender, string e)
+        {
+            ucUnloadPort.TagValue = e;
+        }
+        private void MainFlowHandler_OnUpdateLoadPortEvent(object sender, string e)
+        {
+            ucLoadPort.TagValue = e;
         }
 
         private void ShowMsgOnMainForm(object sender, string msg)
@@ -840,7 +863,7 @@ namespace Mirle.Agv.View
             txtTrackPosition.Text = mainFlowHandler.GetTransferStepsCount() > 0 ? "Cmd : " + posText : "NoCmd : " + posText;
 
             picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
-            txtAskingReserve.Text = $"Asking : {middleAgent.GetAskingReserveSectionClone().Id}";
+            txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSectionClone().Id}";
 
             picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);           
         }

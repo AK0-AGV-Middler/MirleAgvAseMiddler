@@ -20,14 +20,23 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                 case EnumTransferStepType.Move:
                 case EnumTransferStepType.MoveToCharger:
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
-                    if (mainFlowHandler.StopCharge())
+                    if (moveCmd.MovingSections.Count > 0)
                     {
-                        if (mainFlowHandler.CallMoveControlWork(moveCmd))
+                        if (mainFlowHandler.StopCharge())
                         {
-                            mainFlowHandler.PrepareForAskingReserve(moveCmd);
-                        }                        
-                    }                   
-                    break;
+                            if (mainFlowHandler.CallMoveControlWork(moveCmd))
+                            {
+                                mainFlowHandler.PrepareForAskingReserve(moveCmd);
+                            }
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        //原地移動
+                        mainFlowHandler.MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Success);
+                        break;
+                    }
                 case EnumTransferStepType.Load:
                     mainFlowHandler.SetTransCmdsStep(new Load());
                     mainFlowHandler.DoTransfer();
