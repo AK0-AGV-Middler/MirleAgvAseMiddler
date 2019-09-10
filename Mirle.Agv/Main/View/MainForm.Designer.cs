@@ -105,7 +105,6 @@
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
             this.ucBarPos = new Mirle.Agv.UcLabelTextBox();
-            this.btnSemiAutoManual = new System.Windows.Forms.Button();
             this.txtBarNum = new System.Windows.Forms.TextBox();
             this.gbVisitTransferSteps = new System.Windows.Forms.GroupBox();
             this.txtTransferStep = new System.Windows.Forms.Label();
@@ -137,6 +136,7 @@
             this.btnPauseAskReserve = new System.Windows.Forms.Button();
             this.btnAutoApplyReserveOnce = new System.Windows.Forms.Button();
             this.timeUpdateUI = new System.Windows.Forms.Timer(this.components);
+            this.btnSemiAutoManual = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -297,6 +297,7 @@
             this.工程師ToolStripMenuItem.Name = "工程師ToolStripMenuItem";
             this.工程師ToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
             this.工程師ToolStripMenuItem.Text = "工程師";
+            this.工程師ToolStripMenuItem.Click += new System.EventHandler(this.工程師ToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -1014,17 +1015,6 @@
             this.ucBarPos.TagName = "Bar Pos";
             this.ucBarPos.TagValue = "";
             // 
-            // btnSemiAutoManual
-            // 
-            this.btnSemiAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnSemiAutoManual.Location = new System.Drawing.Point(519, 252);
-            this.btnSemiAutoManual.Name = "btnSemiAutoManual";
-            this.btnSemiAutoManual.Size = new System.Drawing.Size(200, 65);
-            this.btnSemiAutoManual.TabIndex = 56;
-            this.btnSemiAutoManual.Text = "Semi - Auto/Manual";
-            this.btnSemiAutoManual.UseVisualStyleBackColor = true;
-            this.btnSemiAutoManual.Click += new System.EventHandler(this.btnSemiAutoManual_Click);
-            // 
             // txtBarNum
             // 
             this.txtBarNum.Location = new System.Drawing.Point(174, 200);
@@ -1350,6 +1340,18 @@
             this.timeUpdateUI.Interval = 250;
             this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
             // 
+            // btnSemiAutoManual
+            // 
+            this.btnSemiAutoManual.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSemiAutoManual.Location = new System.Drawing.Point(519, 252);
+            this.btnSemiAutoManual.Name = "btnSemiAutoManual";
+            this.btnSemiAutoManual.Size = new System.Drawing.Size(200, 65);
+            this.btnSemiAutoManual.TabIndex = 56;
+            this.btnSemiAutoManual.Text = "Semi - Auto/Manual";
+            this.btnSemiAutoManual.UseVisualStyleBackColor = true;
+            this.btnSemiAutoManual.Visible = false;
+            this.btnSemiAutoManual.Click += new System.EventHandler(this.btnSemiAutoManual_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1504,7 +1506,6 @@
         private System.Windows.Forms.Button btnPauseWatchLowPower;
         private System.Windows.Forms.NumericUpDown numSoc;
         private System.Windows.Forms.Button btnKeyInSoc;
-        private System.Windows.Forms.Button btnSemiAutoManual;
         private UcLabelTextBox ucBarPos;
         private System.Windows.Forms.TextBox txtBarNum;
         private System.Windows.Forms.GroupBox groupBox1;
@@ -1515,5 +1516,6 @@
         private UcLabelTextBox ucCharging;
         private UcLabelTextBox ucUnloadPort;
         private UcLabelTextBox ucLoadPort;
+        private System.Windows.Forms.Button btnSemiAutoManual;
     }
 }

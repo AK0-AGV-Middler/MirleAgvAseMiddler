@@ -1267,7 +1267,6 @@ namespace Mirle.Agv.View
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
             }
-
         }
 
         private void ucAddressImageItem_DoubleClick(object sender, MouseEventArgs e)
@@ -1303,6 +1302,28 @@ namespace Mirle.Agv.View
                 var mapBar = theMapInfo.allMapBarcodes[barNum];
                 ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
             }     
+        }
+
+        private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            switch (Vehicle.Instance.AutoState)
+            {
+                case EnumAutoState.Manual:
+                    {
+                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
+                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                        mainFlowHandler.StartWatchLowPower();
+                    }
+                    break;
+                case EnumAutoState.Auto:
+                default:
+                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
+                    mainFlowHandler.StopAndClear();
+                    mainFlowHandler.StopWatchLowPower();
+                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
+                    Vehicle.Instance.AutoState = EnumAutoState.Manual;
+                    break;
+            }
         }
     }
 }
