@@ -97,7 +97,7 @@ namespace Mirle.Agv.View
             ResetImageAndPb();
             InitialSoc();
             InitialConnectionAndCstStatus();
-        }        
+        }
 
         private void InitialForms()
         {
@@ -197,7 +197,7 @@ namespace Mirle.Agv.View
             {
                 string cstid = "";
                 plcAgent.triggerCassetteIDReader(ref cstid);
-            }          
+            }
         }
 
         public delegate void RadioButtonCheckDel(RadioButton radioButton, bool isCheck);
@@ -865,7 +865,7 @@ namespace Mirle.Agv.View
             picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
             txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSectionClone().Id}";
 
-            picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);           
+            picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);
         }
         private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
         {
@@ -949,6 +949,9 @@ namespace Mirle.Agv.View
             ucVehicleImage.FixToCenter();
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
+
+            //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
+            //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
         }
         private void UpdateCharginAndLoading()
         {
@@ -1120,6 +1123,7 @@ namespace Mirle.Agv.View
         {
             btnAlarmReset.Enabled = false;
             mainFlowHandler.ResetAllarms();
+            Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
         }
 
@@ -1130,6 +1134,7 @@ namespace Mirle.Agv.View
 
         private void btnAutoManual_Click(object sender, EventArgs e)
         {
+            btnAutoManual.Enabled = false;
             switch (Vehicle.Instance.AutoState)
             {
                 case EnumAutoState.Manual:
@@ -1149,6 +1154,9 @@ namespace Mirle.Agv.View
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
             }
+
+            Thread.Sleep(500);
+            btnAutoManual.Enabled = true;
         }
 
         private void btnStopAndClear_Click(object sender, EventArgs e)
@@ -1301,7 +1309,7 @@ namespace Mirle.Agv.View
             {
                 var mapBar = theMapInfo.allMapBarcodes[barNum];
                 ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
-            }     
+            }
         }
 
         private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1324,6 +1332,17 @@ namespace Mirle.Agv.View
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ucRealPosition.TagColor = Color.ForestGreen;
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ucRealPosition.TagColor = Color.OrangeRed;
         }
     }
 }

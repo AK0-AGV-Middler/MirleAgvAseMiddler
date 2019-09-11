@@ -673,39 +673,50 @@ namespace Mirle.Agv.Controller
             loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 , msg));
 
-            if (!IsAgvcTransferCommandEmpty())
+            try
             {
-                alarmHandler.SetAlarm(000001);
-                middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Agv already have a transfer command.");
-                return;
-            }
+                if (!IsAgvcTransferCommandEmpty())
+                {
+                    alarmHandler.SetAlarm(000001);
+                    middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Agv already have a transfer command.");
+                    return;
+                }
 
-            if (theVehicle.ThePlcVehicle.Loading)
-            {
-                var cstId = "";
-                plcAgent.triggerCassetteIDReader(ref cstId);
-            }
+                if (theVehicle.ThePlcVehicle.Loading)
+                {
+                    var cstId = "";
+                    plcAgent.triggerCassetteIDReader(ref cstId);
+                }
 
-            if (IsVehicleAlreadyHaveCstCannotLoad(agvcTransCmd.CommandType))
-            {
-                alarmHandler.SetAlarm(000016);
-                middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Agv already have a cst cannot load.");
-                return;
-            }
+                if (IsVehicleAlreadyHaveCstCannotLoad(agvcTransCmd.CommandType))
+                {
+                    alarmHandler.SetAlarm(000016);
+                    middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Agv already have a cst cannot load.");
+                    return;
+                }
 
-            if (IsVehicleHaveNoCstCannotUnload(agvcTransCmd.CommandType))
-            {
-                alarmHandler.SetAlarm(000017);
-                middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Agv have no cst cannot unload.");
-                return;
-            }
+                if (IsVehicleHaveNoCstCannotUnload(agvcTransCmd.CommandType))
+                {
+                    alarmHandler.SetAlarm(000017);
+                    middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Agv have no cst cannot unload.");
+                    return;
+                }
 
-            if (!IsAgvcCommandMatchTheMap(agvcTransCmd))
+                if (!IsAgvcCommandMatchTheMap(agvcTransCmd))
+                {
+                    alarmHandler.SetAlarm(000018);
+                    middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
+                    return;
+                }
+            }
+            catch (Exception ex)
             {
-                alarmHandler.SetAlarm(000018);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+
                 middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
                 return;
             }
+           
 
             try
             {
@@ -759,7 +770,7 @@ namespace Mirle.Agv.Controller
             {
                 if (!TheMapInfo.allMapSections.ContainsKey(toSectionIds[0]))
                 {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={agvcTransCmd.CommandType}][{agvcTransCmd.ToUnloadSectionIds[0]} is not in the map]";
+                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][{toSectionIds[0]} is not in the map]";
                     OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , msg));
@@ -767,7 +778,7 @@ namespace Mirle.Agv.Controller
                 }
                 if (!mapHandler.IsPositionInThisSection(moveFirstPosition, TheMapInfo.allMapSections[toSectionIds[0]]))
                 {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={agvcTransCmd.CommandType}][curPosition is not in first section {agvcTransCmd.ToUnloadSectionIds[0]}]";
+                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][curPosition is not in first section {toSectionIds[0]}]";
                     OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , msg));
@@ -775,7 +786,7 @@ namespace Mirle.Agv.Controller
                 }
                 if (!CheckSectionIdsAndAddressIds(toSectionIds, toAddressIds, endAddressId, commandType))
                 {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={agvcTransCmd.CommandType}]";
+                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}]";
                     OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , msg));
@@ -786,7 +797,7 @@ namespace Mirle.Agv.Controller
             {
                 if (!CheckInSituSectionIdAndAddressId(insituPosition, toSectionIds, toAddressIds, endAddressId, commandType))
                 {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={agvcTransCmd.CommandType}][InSitu]";
+                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][InSitu]";
                     OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , msg));

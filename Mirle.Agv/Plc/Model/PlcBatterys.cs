@@ -50,7 +50,6 @@ namespace Mirle.Agv.Model
         public uint Batterys_Charging_Time_Out { get; set; } = 10;
 
         public uint Charging_Off_Delay { get; set; } = 2;
-
         public bool Charging { get; set; }
         public bool CcModeFlag { get; set; } = false;
         public ushort CcModeCounter { get; set; } = 0;
