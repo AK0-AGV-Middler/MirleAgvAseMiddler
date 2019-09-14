@@ -187,16 +187,17 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                alarmHandler = new AlarmHandler(alarmConfig);
                 mapHandler = new MapHandler(mapConfig);
                 TheMapInfo = mapHandler.TheMapInfo;
-
-                moveControlHandler = new MoveControlHandler(TheMapInfo, alarmHandler);
-                alarmHandler = new AlarmHandler(alarmConfig);
 
                 middleAgent = new MiddleAgent(this);
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
                 plcAgent = new PlcAgent(mcProtocol, alarmHandler);
+
+                moveControlHandler = new MoveControlHandler(TheMapInfo, alarmHandler);
+
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
@@ -290,6 +291,7 @@ namespace Mirle.Agv.Controller
                 }
             }
             StartTrackPosition();
+            StartWatchLowPower();
         }
         private bool IsRealPositionEmpty()
         {
@@ -431,10 +433,10 @@ namespace Mirle.Agv.Controller
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
             middleAgent.NoCommand();
-            if (theVehicle.AutoState == EnumAutoState.Auto && IsWatchLowPowerStop())
-            {
-                StartWatchLowPower();
-            }
+            //if (theVehicle.AutoState == EnumAutoState.Auto && IsWatchLowPowerStop())
+            //{
+            //    StartWatchLowPower();
+            //}
 
             var msg = $"MainFlow : After Visit TransferSteps, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -461,11 +463,13 @@ namespace Mirle.Agv.Controller
 
                     WatchLowPowerStatus = EnumThreadStatus.Working;
 
-                    if (IsLowPower())
+                    if (theVehicle.AutoState == EnumAutoState.Auto && transferSteps.Count > 0)
                     {
-                        StartCharge();
-                    }
-
+                        if (IsLowPower())
+                        {
+                            StartCharge();
+                        }
+                    }                   
                 }
                 catch (Exception ex)
                 {
@@ -544,7 +548,7 @@ namespace Mirle.Agv.Controller
         }
         private bool IsLowPower()
         {
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.ThePlcVehicle.Batterys;           
             return batterys.Percentage <= batterys.PortAutoChargeLowSoc;
         }
         private bool IsHighPower()
@@ -716,14 +720,14 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
                 return;
             }
-           
+
 
             try
             {
                 middleAgent.ReplyTransferCommand(agvcTransCmd.SeqNum, 0, "");
                 this.agvcTransCmd = agvcTransCmd;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
-                StopWatchLowPower();
+                //StopWatchLowPower();
                 SetupTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
                 //開始尋訪 trasnferSteps as List<TrasnferStep> 裡的每一步MoveCmdInfo/LoadCmdInfo/UnloadCmdInfo
@@ -926,6 +930,8 @@ namespace Mirle.Agv.Controller
             return (commandTyp == EnumAgvcTransCommandType.Load || commandTyp == EnumAgvcTransCommandType.LoadUnload) && theVehicle.ThePlcVehicle.CassetteId != "";
         }
 
+        #region Convert AgvcTransferCommand to TransferSteps
+
         private void SetupTransferSteps()
         {
             transferSteps = new List<TransferStep>();
@@ -944,33 +950,24 @@ namespace Mirle.Agv.Controller
                 case EnumAgvcTransCommandType.LoadUnload:
                     ConvertAgvcLoadUnloadCmdIntoList(agvcTransCmd);
                     break;
-                case EnumAgvcTransCommandType.Home:
-                    ConvertAgvcHomeCmdIntoList(agvcTransCmd);
-                    break;
-                case EnumAgvcTransCommandType.Override:
-                    ConvertAgvcOverrideCmdIntoList(agvcTransCmd);
-                    break;
                 case EnumAgvcTransCommandType.MoveToCharger:
                     ConvertAgvcMoveToChargerCmdIntoList(agvcTransCmd);
                     break;
+                case EnumAgvcTransCommandType.Home:
+                    ConvertAgvcHomeCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCommandType.Override:               
+                    break;           
                 case EnumAgvcTransCommandType.Else:
                 default:
                     ConvertAgvcElseCmdIntoList(agvcTransCmd);
                     break;
             }
         }
-
-        #region Convert AgvcTransferCommand to TransferSteps
         private void ConvertAgvcElseCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
 
-        }
-        private void ConvertAgvcOverrideCmdIntoList(AgvcTransCmd agvcTransCmd)
-        {
-            //TODO: clone old transCmds
-            //TODO: separate transCmds into MLMU
-            //TODO: override move part.            
-        }
+        }       
         private void ConvertAgvcHomeCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
 
@@ -1017,6 +1014,8 @@ namespace Mirle.Agv.Controller
             moveCmd.SetupAddressPositions();
             moveCmd.SetupAddressActions();
             moveCmd.SetupSectionSpeedLimits();
+            moveCmd.SetupInfo();
+            OnMessageShowEvent(this, moveCmd.Info);
             return moveCmd;
         }
         private MoveCmdInfo GetMoveToUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
@@ -1032,6 +1031,8 @@ namespace Mirle.Agv.Controller
             moveCmd.SetupAddressPositions();
             moveCmd.SetupAddressActions();
             moveCmd.SetupSectionSpeedLimits();
+            moveCmd.SetupInfo();
+            OnMessageShowEvent(this, moveCmd.Info);
             return moveCmd;
         }
         private MoveCmdInfo GetMoveToNextUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
@@ -1048,6 +1049,25 @@ namespace Mirle.Agv.Controller
             moveCmd.SetupNextUnloadAddressPositions();
             moveCmd.SetupAddressActions();
             moveCmd.SetupSectionSpeedLimits();
+            moveCmd.SetupInfo();
+            OnMessageShowEvent(this, moveCmd.Info);
+            return moveCmd;
+        }
+        private MoveCmdInfo GetMoveToLoadCmdInfo(AgvcTransCmd agvcTransCmd)
+        {
+            MoveCmdInfo moveCmd = new MoveCmdInfo(this);
+            moveCmd.CmdId = agvcTransCmd.CommandId;
+            moveCmd.CstId = agvcTransCmd.CassetteId;
+            moveCmd.AddressIds = agvcTransCmd.ToLoadAddressIds;
+            moveCmd.SectionIds = agvcTransCmd.ToLoadSectionIds;
+            moveCmd.EndAddressId = agvcTransCmd.LoadAddressId;
+            moveCmd.SetupMovingSections();
+            moveCmd.MovingSectionsIndex = 0;
+            moveCmd.SetupAddressPositions();
+            moveCmd.SetupAddressActions();
+            moveCmd.SetupSectionSpeedLimits();
+            moveCmd.SetupInfo();
+            OnMessageShowEvent(this, moveCmd.Info);
             return moveCmd;
         }
         private LoadCmdInfo GetLoadCmdInfo(AgvcTransCmd agvcTransCmd)
@@ -1101,22 +1121,6 @@ namespace Mirle.Agv.Controller
             }
 
             return unloadCmd;
-        }
-        private MoveCmdInfo GetMoveToLoadCmdInfo(AgvcTransCmd agvcTransCmd)
-        {
-            MoveCmdInfo moveCmd = new MoveCmdInfo(this);
-            moveCmd.CmdId = agvcTransCmd.CommandId;
-            moveCmd.CstId = agvcTransCmd.CassetteId;
-            moveCmd.AddressIds = agvcTransCmd.ToLoadAddressIds;
-            moveCmd.SectionIds = agvcTransCmd.ToLoadSectionIds;
-            moveCmd.EndAddressId = agvcTransCmd.LoadAddressId;
-            moveCmd.SetupMovingSections();
-            moveCmd.MovingSectionsIndex = 0;
-            moveCmd.SetupAddressPositions();
-            moveCmd.SetupAddressActions();
-            moveCmd.SetupSectionSpeedLimits();
-
-            return moveCmd;
         }
         public AgvcTransCmd GetAgvcTransCmd()
         {
@@ -1276,7 +1280,7 @@ namespace Mirle.Agv.Controller
 
                 if (status == EnumMoveComplete.Fail)
                 {
-                    middleAgent.ClearGotReserveOkSections();
+                    middleAgent.ClearGotReserveOkSections(); //Already stop ask reserve and clear need and asking section(s)
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Finish, [FAIL]");
                     alarmHandler.SetAlarm(000006);
                     StopVisitTransferSteps();
@@ -1545,24 +1549,24 @@ namespace Mirle.Agv.Controller
 
         public bool CallMoveControlWork(MoveCmdInfo moveCmd)
         {
-            string msg = "MainFlow : Call Move Control Work";
-            msg += "[AddressPositions=";
-            for (int i = 0; i < moveCmd.AddressPositions.Count; i++)
-            {
-                msg += $"({(int)(moveCmd.AddressPositions[i].X)},{(int)(moveCmd.AddressPositions[i].Y)})";
-            }
-            msg += "]\n[AddressActions=";
-            for (int i = 0; i < moveCmd.AddressActions.Count; i++)
-            {
-                msg += $"({moveCmd.AddressActions[i]})";
-            }
-            msg += "]\n[SectionSpeedLimits=";
-            for (int i = 0; i < moveCmd.SectionSpeedLimits.Count; i++)
-            {
-                msg += $"({moveCmd.SectionSpeedLimits[i]})";
-            }
-            msg += "]";
-            OnMessageShowEvent?.Invoke(this, msg);
+            //string msg = "MainFlow : Call Move Control Work";
+            //msg += "[AddressPositions=";
+            //for (int i = 0; i < moveCmd.AddressPositions.Count; i++)
+            //{
+            //    msg += $"({(int)(moveCmd.AddressPositions[i].X)},{(int)(moveCmd.AddressPositions[i].Y)})";
+            //}
+            //msg += "]\n[AddressActions=";
+            //for (int i = 0; i < moveCmd.AddressActions.Count; i++)
+            //{
+            //    msg += $"({moveCmd.AddressActions[i]})";
+            //}
+            //msg += "]\n[SectionSpeedLimits=";
+            //for (int i = 0; i < moveCmd.SectionSpeedLimits.Count; i++)
+            //{
+            //    msg += $"({moveCmd.SectionSpeedLimits[i]})";
+            //}
+            //msg += "]";
+            //OnMessageShowEvent?.Invoke(this, msg);
 
             if (moveControlHandler.TransferMove(moveCmd.DeepClone()))
             {
@@ -1572,6 +1576,7 @@ namespace Mirle.Agv.Controller
             else
             {
                 OnMessageShowEvent?.Invoke(this, $"MainFlow : Call Move Control Work +++FAIL+++");
+                MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
                 return false;
             }
         }
@@ -1631,13 +1636,13 @@ namespace Mirle.Agv.Controller
                 vehiclePosition.BarcodePosition = theVehicle.CurVehiclePosition.BarcodePosition;
                 vehiclePosition.RealPosition = TheMapInfo.allMapAddresses[moveCmd.EndAddressId].Position;
                 vehiclePosition.LastAddress = TheMapInfo.allMapAddresses[moveCmd.EndAddressId].DeepClone();
-                vehiclePosition.LastSection = moveCmd.MovingSections[moveCmd.MovingSections.Count - 1].DeepClone();               
+                vehiclePosition.LastSection = moveCmd.MovingSections[moveCmd.MovingSections.Count - 1].DeepClone();
                 vehiclePosition.LastSection.Distance = Math.Sqrt(mapHandler.GetDistance(vehiclePosition.RealPosition, vehiclePosition.LastSection.HeadAddress.Position));
                 vehiclePosition.RealPositionRangeMm = theVehicle.CurVehiclePosition.RealPositionRangeMm;
                 vehiclePosition.VehicleAngle = theVehicle.CurVehiclePosition.VehicleAngle;
                 vehiclePosition.WheelAngle = theVehicle.CurVehiclePosition.WheelAngle;
                 theVehicle.CurVehiclePosition = vehiclePosition;
-               
+
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                       , $"MainFolw : UpdateLastAddressAfterArrival. [LastAddress = {theVehicle.CurVehiclePosition.LastAddress}][EndAddressId={moveCmd.EndAddressId}]"));
             }
@@ -1734,28 +1739,40 @@ namespace Mirle.Agv.Controller
 
         private void StartCharge()
         {
-            var msg = $"MainFlow : Start charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
-
             if (theVehicle.ThePlcVehicle.Batterys.Charging)
             {
+                var msg = $"MainFlow : Start charge+++FAIL+++, IsCharging [Charging={true}]";
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                      , msg));
+                OnMessageShowEvent?.Invoke(this, msg);
                 return;
             }
 
             if (IsHighPower())
             {
+                var msg = $"MainFlow : Start charge +++FAIL+++, IsHighPower [Percent={(int)theVehicle.ThePlcVehicle.Batterys.Percentage}][HighSoc={(int)theVehicle.ThePlcVehicle.Batterys.PortAutoChargeHighSoc}]";
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , $"MainFlow : Start Charge +++FAIL+++, IsHighPower [Percent={(int)theVehicle.ThePlcVehicle.Batterys.Percentage}][HighSoc={(int)theVehicle.ThePlcVehicle.Batterys.PortAutoChargeHighSoc}]"));
+                , msg));
+                OnMessageShowEvent?.Invoke(this, msg);
                 return;
             }
 
             if (!mapHandler.IsPositionInThisAddress(theVehicle.CurVehiclePosition.RealPosition, theVehicle.CurVehiclePosition.LastAddress.Position))
             {
+                var msg = $"MainFlow : Start charge fail, RealPos is not in LastAddress [Real=({(int)theVehicle.CurVehiclePosition.RealPosition.X},{(int)theVehicle.CurVehiclePosition.RealPosition.Y})][LastAddress={theVehicle.CurVehiclePosition.LastAddress.Id}]";
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , $"MainFlow : Start charge fail, RealPos is not in LastAddress [Real=({(int)theVehicle.CurVehiclePosition.RealPosition.X},{(int)theVehicle.CurVehiclePosition.RealPosition.Y})][LastAddress={theVehicle.CurVehiclePosition.LastAddress.Id}]"));
+                 , msg));
+                OnMessageShowEvent?.Invoke(this, msg);
                 return;
             }
+
+            {
+                var msg = $"MainFlow : Start charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
+                OnMessageShowEvent?.Invoke(this, msg);
+            }
+
 
             var address = theVehicle.CurVehiclePosition.LastAddress;
 
@@ -1892,6 +1909,7 @@ namespace Mirle.Agv.Controller
                 theVehicle.ThePlcVehicle.CassetteId = cstId;
             }
             StartTrackPosition();
+            StartWatchLowPower();
 
             var msg = $"MainFlow : Stop And Clear, [VisitTransferStepsStatus={VisitTransferStepsStatus}][WatchLowPowerStatus={WatchLowPowerStatus}][TrackPositionStatus={TrackPositionStatus}][AskReserveStatus={theVehicle.AskReserveStatus}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -2186,6 +2204,15 @@ namespace Mirle.Agv.Controller
 
         public void Middler_OnCmdCancelAbortEvent(ushort iSeqNum, string cmdId, CMDCancelType actType)
         {
+            {
+                middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
+                var msg = $"MainFlow : OnCmdCancelAbortEvent +++FALSE+++, Can not cancel or abort";
+                OnMessageShowEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , msg));
+                return;
+            }
+
             if (transferSteps.Count == 0)
             {
                 middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);

@@ -53,6 +53,10 @@ namespace Mirle.Agv.View
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
         {
             btnAlarmReset.Enabled = false;
+
+            var msgForHistoryAlarms = $"Alarm all reset. [Count ={alarms.Count}][LastAlarmId={alarms[alarms.Count - 1].Id}][{alarms[alarms.Count - 1].AlarmText}]";
+            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
+
             rtbHappeningAlarms.Clear();
             btnAlarmReset.Enabled = true;
         }
@@ -80,7 +84,7 @@ namespace Mirle.Agv.View
             else
             {
                 var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff] ");
-                msg = msg + Environment.NewLine;
+                msg = Environment.NewLine + msg + Environment.NewLine;
                 richTextBox.Text = string.Concat(timeStamp, msg, richTextBox.Text);
 
                 int RichTextBoxMaxLines = 10000;  // middlerConfig.RichTextBoxMaxLines;
@@ -105,6 +109,12 @@ namespace Mirle.Agv.View
             {
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.SendToBack();
+            this.Hide();
         }
     }
 }

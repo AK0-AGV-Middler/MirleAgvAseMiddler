@@ -88,7 +88,6 @@ namespace Mirle.Agv.Controller
 
                 for (int i = 0; i < nRows; i++)
                 {
-                    lastIndesx = 0;
                     string[] getThisRow = allRows[i].Split(',');
 
                     MapBarcodeLine oneRow = new MapBarcodeLine();
@@ -160,22 +159,14 @@ namespace Mirle.Agv.Controller
                         {
                             for (int j = 0; j <= count; j += 3)
                             {
-                                lastIndesx = 0;
                                 MapBarcode mapBarcode = new MapBarcode();
                                 mapBarcode.Number = oneRow.HeadBarcode.Number + j;
-                                lastIndesx++;
                                 mapBarcode.Position.X = (j * oneRow.TailBarcode.Position.X + (count - j) * oneRow.HeadBarcode.Position.X) / count;
-                                lastIndesx++;
                                 mapBarcode.Position.Y = (j * oneRow.TailBarcode.Position.Y + (count - j) * oneRow.HeadBarcode.Position.Y) / count;
-                                lastIndesx++;
                                 mapBarcode.Offset.X = oneRow.Offset.X;
-                                lastIndesx++;
                                 mapBarcode.Offset.Y = oneRow.Offset.Y;
-                                lastIndesx++;
                                 mapBarcode.LineId = oneRow.Id;
-                                lastIndesx++;
                                 mapBarcode.Material = oneRow.Material;
-                                lastIndesx++;
                                 lastReadBcrId = mapBarcode.Number.ToString();
                                 TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
                             }
@@ -188,7 +179,7 @@ namespace Mirle.Agv.Controller
                     }
 
                     loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}][lastIndesx={lastIndesx}]"));
+                     , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}]"));
 
                     lastReadBcrLineId = oneRow.Id;
                     TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
@@ -259,7 +250,7 @@ namespace Mirle.Agv.Controller
                         oneRow.CanRightLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanRightLoad"]]);
                         oneRow.CanRightUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanRightUnload"]]);
                         oneRow.IsCharger = bool.Parse(getThisRow[dicHeaderIndexes["IsCharger"]]);
-                        oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];
+                        oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];                      
                         oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicHeaderIndexes["ChargeDirection"]]);
                         oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicHeaderIndexes["IsSegmentPoint"]]);
                         oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
@@ -270,7 +261,7 @@ namespace Mirle.Agv.Controller
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv read oneRow : [lastReadAdrId={lastReadAdrId}][lastIndesx={lastIndesx}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv read oneRow : [lastReadAdrId={lastReadAdrId}]"));
                         loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     }
 
@@ -289,7 +280,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv : [lastReadAdrId={lastReadAdrId}][lastIndesx={lastIndesx}]"));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv : [lastReadAdrId={lastReadAdrId}]"));
 
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
@@ -470,7 +461,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadBeamSensorDisable [lastIndesx={lastIndesx}]"));
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }

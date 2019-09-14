@@ -636,7 +636,9 @@ namespace Mirle.Agv.Controller
 
             if (queNeedReserveSections.Count == 0)
             {
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Middler : queNeedReserveSections is Empty, [AskingReserveId = {askingReserveSection.Id}][Need Sections Count = {queNeedReserveSections.Count}]");
+                var msg = $"Middler : Get reserve ok  +++ERROR+++, queNeedReserveSections is Empty, [AskingReserveId = {askingReserveSection.Id}][Need Sections Count = {queNeedReserveSections.Count}]";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
                 return;
             }
 
@@ -646,11 +648,15 @@ namespace Mirle.Agv.Controller
                 queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
                 queGotReserveOkSections.Enqueue(aReserveOkSection);
                 mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Middler : GetReserveOk, [AskingReserveId = {askingReserveSection.Id}]");
+                var msg = $"Middler : Get reserve ok, [Id = {askingReserveSection.Id}]";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
             }
             else
             {
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Middler : Reserve ok ID unmatch, [AskingReserveId = {askingReserveSection.Id}][NeedReserveId = {needReserveSection.Id}]");
+                var msg = $"Middler : Get reserve ok  +++ERROR+++, ID unmatch, [AskingReserveId = {askingReserveSection.Id}][NeedReserveId = {needReserveSection.Id}]";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
             }
         }
         public void DequeueNeedReserveSections()
@@ -1749,7 +1755,7 @@ namespace Mirle.Agv.Controller
             ID_41_MODE_CHANGE_REQ receive = (ID_41_MODE_CHANGE_REQ)e.objPacket;
             //TODO: Auto/Manual
 
-            int replyCode = 0;
+            int replyCode = 1;
             Send_Cmd141_ModeChangeResponse(e.iSeqNum, replyCode);
         }
         public void Send_Cmd141_ModeChangeResponse(ushort seqNum, int replyCode)
@@ -1776,36 +1782,36 @@ namespace Mirle.Agv.Controller
         {
             int replyCode = 0;
             ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
-            //TODO: Pause/Continue+/Reserve
-            switch (receive.EventType)
-            {
-                case PauseEvent.Continue:
-                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.PauseComplete)
-                    {
-                        mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.PauseType, receive.ReserveInfos);
-                    }
-                    else
-                    {
-                        replyCode = 1;
-                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
-                        return;
-                    }
-                    break;
-                case PauseEvent.Pause:
-                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working && mainFlowHandler.IsMoveStep())
-                    {
-                        mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.PauseType);
-                    }
-                    else
-                    {
-                        replyCode = 1;
-                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
-                        return;
-                    }
-                    break;
-                default:
-                    break;
-            }
+            //switch (receive.EventType)
+            //{
+            //    case PauseEvent.Continue:
+            //        if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.PauseComplete)
+            //        {
+            //            mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.PauseType, receive.ReserveInfos);
+            //        }
+            //        else
+            //        {
+            //            replyCode = 1;
+            //            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+            //            return;
+            //        }
+            //        break;
+            //    case PauseEvent.Pause:
+            //        if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working && mainFlowHandler.IsMoveStep())
+            //        {
+            //            mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.PauseType);
+            //        }
+            //        else
+            //        {
+            //            replyCode = 1;
+            //            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+            //            return;
+            //        }
+            //        break;
+            //    default:
+            //        break;
+            //}
+            replyCode = 1;
 
             Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
         }

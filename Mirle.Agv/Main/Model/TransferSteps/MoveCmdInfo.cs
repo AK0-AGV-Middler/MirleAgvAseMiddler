@@ -25,6 +25,7 @@ namespace Mirle.Agv.Model.TransferSteps
         public string EndAddressId { get; set; } = "";
         public string StartAddressId { get; set; } = "";
         protected int HalfR2000Radius { get; set; } = 1000;
+        public string Info { get; set; } = "";
 
         public MoveCmdInfo() : this(new MainFlowHandler()) { }
         public MoveCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
@@ -166,8 +167,15 @@ namespace Mirle.Agv.Model.TransferSteps
                 if (MovingSections.Count > 0)
                 {
                     //AddFirstAction();
-                    var fisrtAction = MovingSections[0].Type == EnumSectionType.R2000 ? EnumAddressAction.R2000 : EnumAddressAction.ST;
-                    AddressActions.Add(fisrtAction);
+                    if (MovingSections[0].Type == EnumSectionType.R2000)
+                    {
+                        WheelAngle = 0;
+                        AddressActions.Add(EnumAddressAction.R2000);
+                    }
+                    else
+                    {
+                        AddressActions.Add(EnumAddressAction.ST);
+                    }
 
                     for (int i = 1; i < AddressPositions.Count - 1; i++)
                     {
@@ -183,9 +191,9 @@ namespace Mirle.Agv.Model.TransferSteps
                         EnumAddressAction addressAction = SetupAddressAction(preSection, nextSection, prePosition, curPosition, nextPosition, isTR50);
                         AddressActions.Add(addressAction);
                     }
-                }
 
-                AddressActions.Add(EnumAddressAction.End);
+                    AddressActions.Add(EnumAddressAction.End);
+                }
             }
             catch (Exception ex)
             {
@@ -194,8 +202,6 @@ namespace Mirle.Agv.Model.TransferSteps
 
             theVehicle.CurVehiclePosition.WheelAngle = WheelAngle;
         }
-
-        protected EnumAddressAction SetupAddressAction(MapSection mapSection) => mapSection.Type == EnumSectionType.R2000 ? EnumAddressAction.R2000 : EnumAddressAction.ST;
 
         protected EnumAddressAction SetupAddressAction(MapSection preSection, MapSection nextSection, MapPosition prePosition, MapPosition curPosition, MapPosition nextPosition, bool isTR50)
         {
@@ -208,12 +214,13 @@ namespace Mirle.Agv.Model.TransferSteps
                 else if (nextSection.Type == EnumSectionType.R2000)
                 {
                     //Action is R2000 or BR2000
+                    WheelAngle = 0;
                     MapVector vecCurToPre = new MapVector(prePosition.X - curPosition.X, prePosition.Y - curPosition.Y);
                     MapVector vecCurToNext = new MapVector(nextPosition.X - curPosition.X, nextPosition.Y - curPosition.Y);
                     var dotproduct = (vecCurToPre.DirX * vecCurToNext.DirX) + (vecCurToPre.DirY * vecCurToNext.DirY);
                     if (dotproduct > 0)
                     {
-                        //內積為銳角 => BR2000
+                        //內積為銳角 => BR2000                  
                         return EnumAddressAction.BR2000;
                     }
                     else
@@ -227,270 +234,341 @@ namespace Mirle.Agv.Model.TransferSteps
                     //確認左右轉(+-90度) 若不超過100則 TR系 若超過100則改為BTR系並將角度做負向處理=歸零
                     MapVector vecPreToCur = new MapVector(curPosition.X - prePosition.X, curPosition.Y - prePosition.Y);
                     MapVector vecCurToNext = new MapVector(nextPosition.X - curPosition.X, nextPosition.Y - curPosition.Y);
-                    if (vecPreToCur.DirX > 0)
+                    #region TR/BTR 3.0
+                    if (IsClockwise(vecPreToCur, vecCurToNext))
                     {
-                        //  pre -->-- cur, vecPreToCur向右
-                        if (vecCurToNext.DirY > 0)
+                        WheelAngle = WheelAngle - 90;
+                        if (WheelAngle < -100)
                         {
-                            //vecCurToNext向下
-                            //順時針
-                            WheelAngle += 90;
-                            if (WheelAngle > 100)
+                            //BTR
+                            WheelAngle = 0;
+                            if (isTR50)
                             {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
+                                return EnumAddressAction.BTR50;
                             }
                             else
                             {
-                                //TR系
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
+                                return EnumAddressAction.BTR350;
                             }
                         }
                         else
                         {
-                            //vecCurToNext向上
-                            //逆時針
-                            WheelAngle -= 90;
-                            if (WheelAngle < -100)
+                            //TR
+                            if (isTR50)
                             {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
+                                return EnumAddressAction.TR50;
                             }
                             else
                             {
-                                //TR系
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
-                            }
-                        }
-                    }
-                    else if (vecPreToCur.DirX < 0)
-                    {
-                        //  cur --<-- pre, vecPreToCur向左
-                        if (vecCurToNext.DirY > 0)
-                        {
-                            //vecCurToNext向下
-                            //逆時針
-                            WheelAngle -= 90;
-                            if (WheelAngle < -100)
-                            {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
-                            }
-                            else
-                            {
-                                //TR系
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //vecCurToNext向上
-                            //順時針
-                            WheelAngle += 90;
-                            if (WheelAngle > 100)
-                            {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
-                            }
-                            else
-                            {
-                                //TR系
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
-                            }
-                        }
-
-                    }
-                    else if (vecPreToCur.DirY > 0)
-                    {
-                        //vecPreToCur 向下
-                        if (vecCurToNext.DirX>0)
-                        {                           
-                            //逆時針
-                            WheelAngle -= 90;
-                            if (WheelAngle < -100)
-                            {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
-                            }
-                            else
-                            {
-                                //TR系
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //順時針
-                            WheelAngle += 90;
-                            if (WheelAngle > 100)
-                            {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
-                            }
-                            else
-                            {
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
+                                return EnumAddressAction.BTR350;
                             }
                         }
                     }
                     else
                     {
-                        //vecPreToCur 向上
-                        if (vecCurToNext.DirX > 0)
+                        //CounterClockwise
+                        WheelAngle = WheelAngle + 90;
+                        if (WheelAngle > 100)
                         {
-                            //順時針
-                            WheelAngle += 90;
-                            if (WheelAngle > 100)
+                            //BTR
+                            WheelAngle = 0;
+                            if (isTR50)
                             {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
+                                return EnumAddressAction.BTR50;
                             }
                             else
                             {
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
+                                return EnumAddressAction.BTR350;
                             }
                         }
                         else
                         {
-                            //逆時針
-                            WheelAngle -= 90;
-                            if (WheelAngle < -100)
+                            //TR
+                            if (isTR50)
                             {
-                                //BTR系
-                                WheelAngle = 0;
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.BTR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.BTR350;
-                                }
+                                return EnumAddressAction.TR50;
                             }
                             else
                             {
-                                //TR系
-                                if (isTR50)
-                                {
-                                    return EnumAddressAction.TR50;
-                                }
-                                else
-                                {
-                                    return EnumAddressAction.TR350;
-                                }
+                                return EnumAddressAction.BTR350;
                             }
                         }
                     }
+                    #endregion
+
+                    #region TR/BTR 2.0
+
+                    //if (vecPreToCur.DirX > 0)
+                    //{
+                    //    //  pre -->-- cur, vecPreToCur向右
+                    //    if (vecCurToNext.DirY > 0)
+                    //    {
+                    //        //vecCurToNext向下
+                    //        //順時針
+                    //        WheelAngle += 90;
+                    //        if (WheelAngle > 100)
+                    //        {
+                    //            //BTR系
+                    //            WheelAngle = 0;
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.BTR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.BTR350;
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //TR系
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.TR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.TR350;
+                    //            }
+                    //        }
+                    //    }
+                    //    else
+                    //    {   //vecCurToNext.DirY < 0
+                    //        //vecCurToNext向上
+                    //        //逆時針
+                    //        WheelAngle -= 90;
+                    //        if (WheelAngle < -100)
+                    //        {
+                    //            //BTR系
+                    //            WheelAngle = 0;
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.BTR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.BTR350;
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //TR系
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.TR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.TR350;
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //else if (vecPreToCur.DirX < 0)
+                    //{
+                    //    //  cur --<-- pre, vecPreToCur向左
+                    //    if (vecCurToNext.DirY > 0)
+                    //    {
+                    //        //vecCurToNext向下
+                    //        //逆時針
+                    //        WheelAngle += 90;
+                    //        if (WheelAngle > 100)
+                    //        {
+                    //            //BTR系
+                    //            WheelAngle = 0;
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.BTR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.BTR350;
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //TR系
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.TR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.TR350;
+                    //            }
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        //vecCurToNext向上
+                    //        //順時針
+                    //        WheelAngle -= 90;
+                    //        if (WheelAngle < -100)
+                    //        {
+                    //            //BTR系
+                    //            WheelAngle = 0;
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.BTR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.BTR350;
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //TR系
+                    //            if (isTR50)
+                    //            {
+                    //                return EnumAddressAction.TR50;
+                    //            }
+                    //            else
+                    //            {
+                    //                return EnumAddressAction.TR350;
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    // vecPreToCur.DirX == 0; pre to cur is vertical 
+
+                    //    if (vecPreToCur.DirY > 0)
+                    //    {
+                    //        //vecPreToCur 向下
+                    //        if (vecCurToNext.DirX > 0)
+                    //        {
+                    //            //逆時針
+                    //            WheelAngle -= 90;
+                    //            if (WheelAngle < -100)
+                    //            {
+                    //                //BTR系
+                    //                WheelAngle = 0;
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.BTR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.BTR350;
+                    //                }
+                    //            }
+                    //            else
+                    //            {
+                    //                //TR系
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.TR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.TR350;
+                    //                }
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //順時針
+                    //            WheelAngle += 90;
+                    //            if (WheelAngle > 100)
+                    //            {
+                    //                //BTR系
+                    //                WheelAngle = 0;
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.BTR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.BTR350;
+                    //                }
+                    //            }
+                    //            else
+                    //            {
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.TR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.TR350;
+                    //                }
+                    //            }
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        //vecPreToCur 向上
+                    //        if (vecCurToNext.DirX > 0)
+                    //        {
+                    //            //順時針
+                    //            WheelAngle += 90;
+                    //            if (WheelAngle > 100)
+                    //            {
+                    //                //BTR系
+                    //                WheelAngle = 0;
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.BTR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.BTR350;
+                    //                }
+                    //            }
+                    //            else
+                    //            {
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.TR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.TR350;
+                    //                }
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //逆時針
+                    //            WheelAngle -= 90;
+                    //            if (WheelAngle < -100)
+                    //            {
+                    //                //BTR系
+                    //                WheelAngle = 0;
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.BTR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.BTR350;
+                    //                }
+                    //            }
+                    //            else
+                    //            {
+                    //                //TR系
+                    //                if (isTR50)
+                    //                {
+                    //                    return EnumAddressAction.TR50;
+                    //                }
+                    //                else
+                    //                {
+                    //                    return EnumAddressAction.TR350;
+                    //                }
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    #endregion
+
                 }
             }
             else
             {
                 //R2000後只考慮ST/BST
+                WheelAngle = 0;
                 MapVector vecCurToPre = new MapVector(prePosition.X - curPosition.X, prePosition.Y - curPosition.Y);
                 MapVector vecCurToNext = new MapVector(nextPosition.X - curPosition.X, nextPosition.Y - curPosition.Y);
                 var dotproduct = (vecCurToPre.DirX * vecCurToNext.DirX) + (vecCurToPre.DirY * vecCurToNext.DirY);
@@ -503,6 +581,58 @@ namespace Mirle.Agv.Model.TransferSteps
                 {
                     return EnumAddressAction.ST;
                 }
+            }
+        }
+
+        private bool IsClockwise(MapVector vecPreToCur, MapVector vecCurToNext)
+        {
+            if (vecPreToCur.DirY < 0 && vecCurToNext.DirX > 0)
+            {
+                return true;
+            }
+            else if (vecPreToCur.DirX > 0 && vecCurToNext.DirY > 0)
+            {
+                return true;
+            }
+            else if (vecPreToCur.DirY > 0 && vecCurToNext.DirX < 0)
+            {
+                return true;
+            }
+            else if (vecPreToCur.DirX < 0 && vecCurToNext.DirY < 0)
+            {
+                return true;
+            }
+            else
+            {
+                //CounterClockwise
+                return false;
+            }
+        }
+
+        public void SetupInfo()
+        {
+            try
+            {
+                Info = Environment.NewLine + "[AddressPositions=";
+                foreach (var pos in AddressPositions)
+                {
+                    Info += $"({Convert.ToInt32(pos.X)},{Convert.ToInt32(pos.Y)})";
+                }
+                Info += "]" + Environment.NewLine + "[AddressActions=";
+                foreach (var act in AddressActions)
+                {
+                    Info += $"({act})";
+                }
+                Info += "]" + Environment.NewLine + "[SectionSpeedLimits=";
+                foreach (var speed in SectionSpeedLimits)
+                {
+                    Info += $"({Convert.ToInt32(speed)})";
+                }
+                Info += "]";
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -522,6 +652,7 @@ namespace Mirle.Agv.Model.TransferSteps
 
             return moveCmd;
         }
+
     }
 
     [Serializable]

@@ -51,7 +51,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.textBox1);
             this.splitContainer1.Size = new System.Drawing.Size(240, 30);
-            this.splitContainer1.SplitterDistance = 120;
+            this.splitContainer1.SplitterDistance = 96;
             this.splitContainer1.TabIndex = 0;
             // 
             // label1
@@ -60,7 +60,7 @@
             this.label1.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(120, 30);
+            this.label1.Size = new System.Drawing.Size(96, 30);
             this.label1.TabIndex = 0;
             this.label1.Text = "TagName";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -72,7 +72,7 @@
             this.textBox1.Location = new System.Drawing.Point(0, 0);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(116, 27);
+            this.textBox1.Size = new System.Drawing.Size(140, 27);
             this.textBox1.TabIndex = 0;
             this.textBox1.Text = "TagValue";
             this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;

@@ -35,6 +35,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -60,7 +61,7 @@
             // 
             this.rtbHistoryAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rtbHistoryAlarms.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.rtbHistoryAlarms.ForeColor = System.Drawing.Color.OrangeRed;
+            this.rtbHistoryAlarms.ForeColor = System.Drawing.Color.ForestGreen;
             this.rtbHistoryAlarms.Location = new System.Drawing.Point(658, 3);
             this.rtbHistoryAlarms.Name = "rtbHistoryAlarms";
             this.rtbHistoryAlarms.Size = new System.Drawing.Size(650, 581);
@@ -82,6 +83,7 @@
             // 
             this.panel1.Controls.Add(this.btnBuzzOff);
             this.panel1.Controls.Add(this.btnAlarmReset);
+            this.panel1.Controls.Add(this.button1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 590);
             this.panel1.Name = "panel1";
@@ -112,16 +114,29 @@
             this.btnAlarmReset.UseVisualStyleBackColor = true;
             this.btnAlarmReset.Click += new System.EventHandler(this.btnAlarmReset_Click);
             // 
+            // button1
+            // 
+            this.button1.Font = new System.Drawing.Font("微軟正黑體", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button1.ForeColor = System.Drawing.Color.Black;
+            this.button1.Location = new System.Drawing.Point(488, 0);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(158, 132);
+            this.button1.TabIndex = 8;
+            this.button1.Text = "X";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // AlarmForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(1311, 728);
+            this.ControlBox = false;
             this.Controls.Add(this.tableLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "AlarmForm";
-            this.Text = "AlarmView";
+            this.Text = "Alarms";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -136,5 +151,6 @@
         private System.Windows.Forms.Button btnBuzzOff;
         private System.Windows.Forms.RichTextBox rtbHistoryAlarms;
         private System.Windows.Forms.RichTextBox rtbHappeningAlarms;
+        private System.Windows.Forms.Button button1;
     }
 }

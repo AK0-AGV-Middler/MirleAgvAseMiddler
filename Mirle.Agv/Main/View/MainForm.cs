@@ -33,6 +33,7 @@ namespace Mirle.Agv.View
         private MCProtocol mcProtocol;
         private MoveCommandDebugModeForm moveCommandDebugMode;
         private JogPitchForm jogPitch;
+        private WarningForm warningForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
         private Panel panelRightUp;
@@ -48,13 +49,6 @@ namespace Mirle.Agv.View
         private string LastAgvcTransferCommandId { get; set; } = "";
         private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
         private int lastAlarmId = 0;
-
-        #region MouseDownCalculus
-
-        private Point mouseDownPbPoint;
-        private Point mouseDownScreenPoint;
-
-        #endregion
 
         #region PaintingItems
         private Image image;
@@ -73,6 +67,9 @@ namespace Mirle.Agv.View
         private UcVehicleImage ucVehicleImage = new UcVehicleImage();
         private MapPosition minPos = new MapPosition();
         private MapPosition maxPos = new MapPosition();
+
+        private Point mouseDownPbPoint;
+        private Point mouseDownScreenPoint;
 
         #endregion
 
@@ -125,6 +122,11 @@ namespace Mirle.Agv.View
             jogPitch.WindowState = FormWindowState.Normal;
             jogPitch.Show();
             jogPitch.Hide();
+
+            warningForm = new WarningForm();
+            warningForm.WindowState = FormWindowState.Normal;
+            warningForm.Show();
+            warningForm.Hide();
 
             numPositionX.Maximum = decimal.MaxValue;
             numPositionY.Maximum = decimal.MaxValue;
@@ -229,6 +231,13 @@ namespace Mirle.Agv.View
         {
             var msg = $"AlarmHandler : Set Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
             RichTextBoxAppendHead(richTextBox1, msg);
+
+            alarmForm.BringToFront();
+            alarmForm.Show();
+            //var warnMsg = $"[Id={alarm.Id}][Text={alarm.AlarmText}]" + Environment.NewLine + $"[{alarm.Description}]";
+            //warningForm.WarningMsg = warnMsg;
+            //warningForm.BringToFront();
+            //warningForm.Show();
         }
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
         {
@@ -236,6 +245,11 @@ namespace Mirle.Agv.View
             var msg = $"AlarmHandler : Reset All Alarms, [Count={alarms.Count}]";
             RichTextBoxAppendHead(richTextBox1, msg);
             btnAlarmReset.Enabled = true;
+
+            //alarmForm.SendToBack();
+            //alarmForm.Hide();
+            //warningForm.SendToBack();
+            //warningForm.Hide();
         }
 
         private void MainFlowHandler_OnUpdateUnloadPortEvent(object sender, string e)
@@ -855,12 +869,28 @@ namespace Mirle.Agv.View
             Vehicle theVehicle = Vehicle.Instance;
 
             picVisitTransferSteps.BackColor = GetThreadStatusColor(theVehicle.VisitTransferStepsStatus);
-            txtTransferStep.Text = "Step : " + mainFlowHandler.GetCurrentTransferStepType().ToString();
+            txtTransferStep.Text = mainFlowHandler.GetCurrentTransferStepType().ToString();
 
             picTrackPosition.BackColor = GetThreadStatusColor(theVehicle.TrackPositionStatus);
-            var realPos = Vehicle.Instance.CurVehiclePosition.RealPosition;
-            var posText = $"({(int)realPos.X},{(int)realPos.Y})";
-            txtTrackPosition.Text = mainFlowHandler.GetTransferStepsCount() > 0 ? "Cmd : " + posText : "NoCmd : " + posText;
+            //var realPos = Vehicle.Instance.CurVehiclePosition.RealPosition;
+            //var posText = $"({(int)realPos.X},{(int)realPos.Y})";
+            //txtTrackPosition.Text = mainFlowHandler.GetTransferStepsCount() > 0 ? "Cmd : " + posText : "NoCmd : " + posText;
+
+            if (mainFlowHandler.GetTransferStepsCount() > 0)
+            {
+                var stepIndex = mainFlowHandler.TransferStepsIndex;
+                var moveIndex = 0;
+                if (mainFlowHandler.IsMoveStep())
+                {
+                    var moveCmd = (MoveCmdInfo)mainFlowHandler.GetCurTransferStep();
+                    if (moveCmd.MovingSections.Count > 0)
+                    {
+                        moveIndex = moveCmd.MovingSectionsIndex;
+                    }
+
+                }
+                txtTrackPosition.Text = $"{stepIndex},{moveIndex}";
+            }
 
             picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
             txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSectionClone().Id}";
@@ -942,6 +972,9 @@ namespace Mirle.Agv.View
 
             var curSection = location.LastSection;
             ucMapSection.TagValue = curSection.Id;
+
+            var dis = location.LastSection.Distance;
+            ucDistance.TagValue = dis.ToString("F");
 
             ucVehicleImage.Hide();
 
@@ -1142,14 +1175,14 @@ namespace Mirle.Agv.View
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        mainFlowHandler.StartWatchLowPower();
+                        //mainFlowHandler.StartWatchLowPower();
                     }
                     break;
                 case EnumAutoState.Auto:
                 default:
                     Vehicle.Instance.AutoState = EnumAutoState.PreManual;
                     mainFlowHandler.StopAndClear();
-                    mainFlowHandler.StopWatchLowPower();
+                    //mainFlowHandler.StopWatchLowPower();
                     mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
@@ -1263,14 +1296,14 @@ namespace Mirle.Agv.View
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        mainFlowHandler.StartWatchLowPower();
+                        //mainFlowHandler.StartWatchLowPower();
                     }
                     break;
                 case EnumAutoState.Auto:
                 default:
                     Vehicle.Instance.AutoState = EnumAutoState.PreManual;
                     mainFlowHandler.StopAndClear();
-                    mainFlowHandler.StopWatchLowPower();
+                    //mainFlowHandler.StopWatchLowPower();
                     mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
@@ -1320,14 +1353,14 @@ namespace Mirle.Agv.View
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        mainFlowHandler.StartWatchLowPower();
+                        //mainFlowHandler.StartWatchLowPower();
                     }
                     break;
                 case EnumAutoState.Auto:
                 default:
                     Vehicle.Instance.AutoState = EnumAutoState.PreManual;
                     mainFlowHandler.StopAndClear();
-                    mainFlowHandler.StopWatchLowPower();
+                    //mainFlowHandler.StopWatchLowPower();
                     mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
@@ -1343,6 +1376,11 @@ namespace Mirle.Agv.View
         private void button2_Click(object sender, EventArgs e)
         {
             ucRealPosition.TagColor = Color.OrangeRed;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            alarmHandler.SetAlarm(6);
         }
     }
 }
