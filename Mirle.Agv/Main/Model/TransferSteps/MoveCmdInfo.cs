@@ -260,7 +260,7 @@ namespace Mirle.Agv.Model.TransferSteps
                             }
                             else
                             {
-                                return EnumAddressAction.BTR350;
+                                return EnumAddressAction.TR350;
                             }
                         }
                     }
@@ -290,7 +290,7 @@ namespace Mirle.Agv.Model.TransferSteps
                             }
                             else
                             {
-                                return EnumAddressAction.BTR350;
+                                return EnumAddressAction.TR350;
                             }
                         }
                     }

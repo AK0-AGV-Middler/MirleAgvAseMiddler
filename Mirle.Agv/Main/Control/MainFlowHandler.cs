@@ -1897,6 +1897,7 @@ namespace Mirle.Agv.Controller
             middleAgent.StopAskReserve();
             StopMainFlowThreads();
             middleAgent.ClearAskReserve();
+            theVehicle.CurVehiclePosition.WheelAngle = 0;
 
             if (theVehicle.ThePlcVehicle.Loading)
             {
