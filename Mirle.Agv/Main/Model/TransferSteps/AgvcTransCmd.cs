@@ -35,32 +35,26 @@ namespace Mirle.Agv.Model.TransferSteps
         {
             CommandId = transRequest.CmdID;
             CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID;
-            SetCmdType(transRequest.ActType);
+            CommandType = SetupCommandType(transRequest.ActType);
             SeqNum = aSeqNum;
         }
 
-        protected void SetCmdType(ActiveType activeType)
+        protected EnumAgvcTransCommandType SetupCommandType(ActiveType activeType)
         {
             switch (activeType)
             {
                 case ActiveType.Move:
-                    CommandType = EnumAgvcTransCommandType.Move;
-                    break;
+                    return EnumAgvcTransCommandType.Move;
                 case ActiveType.Load:
-                    CommandType = EnumAgvcTransCommandType.Load;
-                    break;
+                    return EnumAgvcTransCommandType.Load;
                 case ActiveType.Unload:
-                    CommandType = EnumAgvcTransCommandType.Unload;
-                    break;
+                    return EnumAgvcTransCommandType.Unload;
                 case ActiveType.Loadunload:
-                    CommandType = EnumAgvcTransCommandType.LoadUnload;
-                    break;
+                    return EnumAgvcTransCommandType.LoadUnload;
                 case ActiveType.Movetocharger:
-                    CommandType = EnumAgvcTransCommandType.MoveToCharger;
-                    break;
+                    return EnumAgvcTransCommandType.MoveToCharger;
                 case ActiveType.Override:
-                    CommandType = EnumAgvcTransCommandType.Override;
-                    break;
+                    return EnumAgvcTransCommandType.Override;
                 case ActiveType.Home:
                 case ActiveType.Cstidrename:
                 case ActiveType.Mtlhome:
@@ -69,8 +63,31 @@ namespace Mirle.Agv.Model.TransferSteps
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    CommandType = EnumAgvcTransCommandType.Else;
-                    break;
+                    return EnumAgvcTransCommandType.Else;
+            }
+        }
+
+        public ActiveType GetActiveType()
+        {
+            switch (CommandType)
+            {
+                case EnumAgvcTransCommandType.Move:
+                    return ActiveType.Move;
+                case EnumAgvcTransCommandType.Load:
+                    return ActiveType.Load;
+                case EnumAgvcTransCommandType.Unload:
+                    return ActiveType.Unload;
+                case EnumAgvcTransCommandType.LoadUnload:
+                    return ActiveType.Loadunload;
+                case EnumAgvcTransCommandType.Home:
+                    return ActiveType.Home;
+                case EnumAgvcTransCommandType.Override:
+                    return ActiveType.Override;
+                case EnumAgvcTransCommandType.MoveToCharger:
+                    return ActiveType.Movetocharger;
+                case EnumAgvcTransCommandType.Else:
+                default:
+                    return ActiveType.Mtlhome;
             }
         }
 
@@ -121,6 +138,14 @@ namespace Mirle.Agv.Model.TransferSteps
             agvcTransCmd.SeqNum = SeqNum;
 
             return agvcTransCmd;
+        }
+
+        public void ExchangeSectionsAndAddress(AgvcOverrideCmd agvcOverrideCmd)
+        {
+            ToLoadSectionIds = agvcOverrideCmd.ToLoadSectionIds;
+            ToLoadAddressIds = agvcOverrideCmd.ToLoadAddressIds;
+            ToUnloadSectionIds = agvcOverrideCmd.ToUnloadSectionIds;
+            ToUnloadAddressIds = agvcOverrideCmd.ToUnloadAddressIds;
         }
     }
 
@@ -214,10 +239,25 @@ namespace Mirle.Agv.Model.TransferSteps
     {
         public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
         {
-            SetToLoadSections(transRequest.GuideSectionsStartToLoad);
-            SetToLoadAddresses(transRequest.GuideAddressesStartToLoad);
-            SecToUnloadSections(transRequest.GuideSectionsToDestination);
-            SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
+            try
+            {
+                SetToLoadSections(transRequest.GuideSectionsStartToLoad);
+                SetToLoadAddresses(transRequest.GuideAddressesStartToLoad);
+                if (!string.IsNullOrEmpty(transRequest.LoadAdr))
+                {
+                    LoadAddressId = transRequest.LoadAdr;
+                }
+                SecToUnloadSections(transRequest.GuideSectionsToDestination);
+                SetToUnloadAddresses(transRequest.GuideAddressesToDestination);
+                if (!string.IsNullOrEmpty(transRequest.DestinationAdr))
+                {
+                    UnloadAddressId = transRequest.DestinationAdr;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
     }
 }

@@ -12,8 +12,8 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
-            TransferStep curTransCmd = mainFlowHandler.GetCurTransferStep();
-            EnumTransferStepType type = curTransCmd.GetTransferStepType();
+            TransferStep curTransferStep = mainFlowHandler.GetCurTransferStep();
+            EnumTransferStepType type = curTransferStep.GetTransferStepType();
 
             switch (type)
             {
@@ -23,7 +23,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     mainFlowHandler.DoTransfer();
                     break;
                 case EnumTransferStepType.Load:
-                    LoadCmdInfo loadCmdInfo = (LoadCmdInfo)curTransCmd;
+                    LoadCmdInfo loadCmdInfo = (LoadCmdInfo)curTransferStep;
                     mainFlowHandler.Load(loadCmdInfo);
                     break;
                 case EnumTransferStepType.Unload:

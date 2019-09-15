@@ -12,14 +12,14 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
     {
         public void DoTransfer(MainFlowHandler mainFlowHandler)
         {
-            TransferStep curTransCmd = mainFlowHandler.GetCurTransferStep();
-            EnumTransferStepType type = curTransCmd.GetTransferStepType();
+            TransferStep curTransferStep = mainFlowHandler.GetCurTransferStep();
+            EnumTransferStepType type = curTransferStep.GetTransferStepType();
 
             switch (type)
             {
                 case EnumTransferStepType.Move:
                 case EnumTransferStepType.MoveToCharger:
-                    MoveCmdInfo moveCmd = (MoveCmdInfo)curTransCmd;
+                    MoveCmdInfo moveCmd = (MoveCmdInfo)curTransferStep;
                     if (moveCmd.MovingSections.Count > 0)
                     {
                         if (mainFlowHandler.StopCharge())
@@ -27,7 +27,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                             if (mainFlowHandler.CallMoveControlWork(moveCmd))
                             {
                                 mainFlowHandler.PrepareForAskingReserve(moveCmd);
-                            }
+                            }                            
                         }
                         break;
                     }

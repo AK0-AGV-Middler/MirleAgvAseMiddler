@@ -126,7 +126,7 @@ namespace Mirle.Agv.Model
         }
 
         #region Comm Property
-        public VHActionStatus ActionStatus { get; set; }
+        public VHActionStatus ActionStatus { get; set; } = VHActionStatus.NoCommand;
         public VhStopSingle BlockingStatus { get; set; }
         public VhChargeStatus ChargeStatus { get; set; }
         public DriveDirction DrivingDirection { get; set; }

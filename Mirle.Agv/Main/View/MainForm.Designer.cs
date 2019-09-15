@@ -72,8 +72,6 @@
             this.btnKeyInPosition = new System.Windows.Forms.Button();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.ucUnloadPort = new Mirle.Agv.UcLabelTextBox();
-            this.ucLoadPort = new Mirle.Agv.UcLabelTextBox();
             this.rtbTransferStep = new System.Windows.Forms.RichTextBox();
             this.rtbAgvcTransCmd = new System.Windows.Forms.RichTextBox();
             this.gbReserve = new System.Windows.Forms.GroupBox();
@@ -104,7 +102,6 @@
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
-            this.button1 = new System.Windows.Forms.Button();
             this.ucBarPos = new Mirle.Agv.UcLabelTextBox();
             this.btnSemiAutoManual = new System.Windows.Forms.Button();
             this.txtBarNum = new System.Windows.Forms.TextBox();
@@ -548,8 +545,6 @@
             // 
             this.splitContainer2.Panel1.AutoScroll = true;
             this.splitContainer2.Panel1.Controls.Add(this.groupBox2);
-            this.splitContainer2.Panel1.Controls.Add(this.ucUnloadPort);
-            this.splitContainer2.Panel1.Controls.Add(this.ucLoadPort);
             this.splitContainer2.Panel1.Controls.Add(this.rtbTransferStep);
             this.splitContainer2.Panel1.Controls.Add(this.rtbAgvcTransCmd);
             this.splitContainer2.Panel1.Controls.Add(this.gbReserve);
@@ -566,7 +561,6 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
-            this.splitContainer2.Panel2.Controls.Add(this.button1);
             this.splitContainer2.Panel2.Controls.Add(this.ucBarPos);
             this.splitContainer2.Panel2.Controls.Add(this.btnSemiAutoManual);
             this.splitContainer2.Panel2.Controls.Add(this.txtBarNum);
@@ -662,28 +656,6 @@
             0,
             0,
             0});
-            // 
-            // ucUnloadPort
-            // 
-            this.ucUnloadPort.Location = new System.Drawing.Point(277, 430);
-            this.ucUnloadPort.Name = "ucUnloadPort";
-            this.ucUnloadPort.Size = new System.Drawing.Size(200, 30);
-            this.ucUnloadPort.TabIndex = 57;
-            this.ucUnloadPort.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucUnloadPort.TagName = "UnloadPort";
-            this.ucUnloadPort.TagValue = "";
-            this.ucUnloadPort.Visible = false;
-            // 
-            // ucLoadPort
-            // 
-            this.ucLoadPort.Location = new System.Drawing.Point(277, 394);
-            this.ucLoadPort.Name = "ucLoadPort";
-            this.ucLoadPort.Size = new System.Drawing.Size(200, 30);
-            this.ucLoadPort.TabIndex = 4;
-            this.ucLoadPort.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucLoadPort.TagName = "LoadPort";
-            this.ucLoadPort.TagValue = "";
-            this.ucLoadPort.Visible = false;
             // 
             // rtbTransferStep
             // 
@@ -1021,16 +993,6 @@
             this.radOffline.UseVisualStyleBackColor = true;
             this.radOffline.CheckedChanged += new System.EventHandler(this.radOffline_CheckedChanged);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(9, 301);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 58;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_1);
-            // 
             // ucBarPos
             // 
             this.ucBarPos.Location = new System.Drawing.Point(154, 228);
@@ -1246,7 +1208,6 @@
             // 
             // btnStartWatchLowPower
             // 
-            this.btnStartWatchLowPower.Enabled = false;
             this.btnStartWatchLowPower.Location = new System.Drawing.Point(6, 21);
             this.btnStartWatchLowPower.Name = "btnStartWatchLowPower";
             this.btnStartWatchLowPower.Size = new System.Drawing.Size(150, 23);
@@ -1257,7 +1218,6 @@
             // 
             // btnResumeWatchLowPower
             // 
-            this.btnResumeWatchLowPower.Enabled = false;
             this.btnResumeWatchLowPower.Location = new System.Drawing.Point(6, 79);
             this.btnResumeWatchLowPower.Name = "btnResumeWatchLowPower";
             this.btnResumeWatchLowPower.Size = new System.Drawing.Size(150, 23);
@@ -1268,7 +1228,6 @@
             // 
             // btnStopWatchLowPower
             // 
-            this.btnStopWatchLowPower.Enabled = false;
             this.btnStopWatchLowPower.Location = new System.Drawing.Point(6, 108);
             this.btnStopWatchLowPower.Name = "btnStopWatchLowPower";
             this.btnStopWatchLowPower.Size = new System.Drawing.Size(150, 23);
@@ -1279,7 +1238,6 @@
             // 
             // btnPauseWatchLowPower
             // 
-            this.btnPauseWatchLowPower.Enabled = false;
             this.btnPauseWatchLowPower.Location = new System.Drawing.Point(6, 50);
             this.btnPauseWatchLowPower.Name = "btnPauseWatchLowPower";
             this.btnPauseWatchLowPower.Size = new System.Drawing.Size(150, 23);
@@ -1539,11 +1497,8 @@
         private System.Windows.Forms.CheckBox ckBarcode;
         private System.Windows.Forms.Button btnReDraw;
         private UcLabelTextBox ucCharging;
-        private UcLabelTextBox ucUnloadPort;
-        private UcLabelTextBox ucLoadPort;
         private System.Windows.Forms.Button btnSemiAutoManual;
         private System.Windows.Forms.GroupBox groupBox2;
         private UcLabelTextBox ucDistance;
-        private System.Windows.Forms.Button button1;
     }
 }

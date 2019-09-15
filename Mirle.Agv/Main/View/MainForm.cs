@@ -181,8 +181,6 @@ namespace Mirle.Agv.View
             middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
-            mainFlowHandler.OnUpdateLoadPortEvent += MainFlowHandler_OnUpdateLoadPortEvent;
-            mainFlowHandler.OnUpdateUnloadPortEvent += MainFlowHandler_OnUpdateUnloadPortEvent;
         }
 
         private void InitialSoc()
@@ -229,7 +227,7 @@ namespace Mirle.Agv.View
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            var msg = $"AlarmHandler : Set Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
+            var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
             RichTextBoxAppendHead(richTextBox1, msg);
 
             alarmForm.BringToFront();
@@ -242,7 +240,7 @@ namespace Mirle.Agv.View
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
         {
             btnAlarmReset.Enabled = false;
-            var msg = $"AlarmHandler : Reset All Alarms, [Count={alarms.Count}]";
+            var msg = $"清除所有 Alarms, [Count={alarms.Count}]";
             RichTextBoxAppendHead(richTextBox1, msg);
             btnAlarmReset.Enabled = true;
 
@@ -250,15 +248,6 @@ namespace Mirle.Agv.View
             //alarmForm.Hide();
             //warningForm.SendToBack();
             //warningForm.Hide();
-        }
-
-        private void MainFlowHandler_OnUpdateUnloadPortEvent(object sender, string e)
-        {
-            ucUnloadPort.TagValue = e;
-        }
-        private void MainFlowHandler_OnUpdateLoadPortEvent(object sender, string e)
-        {
-            ucLoadPort.TagValue = e;
         }
 
         private void ShowMsgOnMainForm(object sender, string msg)
@@ -1176,15 +1165,27 @@ namespace Mirle.Agv.View
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
                         //mainFlowHandler.StartWatchLowPower();
+                        var msg = $"Manual 切換 Auto 成功";
+                        RichTextBoxAppendHead(richTextBox1, msg);
+                    }
+                    else
+                    {
+                        var msg = $"Manual 切換 Auto 失敗";
+                        RichTextBoxAppendHead(richTextBox1, msg);
                     }
                     break;
                 case EnumAutoState.Auto:
                 default:
-                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
-                    mainFlowHandler.StopAndClear();
-                    //mainFlowHandler.StopWatchLowPower();
-                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
-                    Vehicle.Instance.AutoState = EnumAutoState.Manual;
+                    {
+                        Vehicle.Instance.AutoState = EnumAutoState.PreManual;
+                        mainFlowHandler.StopAndClear();
+                        //mainFlowHandler.StopWatchLowPower();
+                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
+                        Vehicle.Instance.AutoState = EnumAutoState.Manual;
+                        var msg = $"Auto 切換 Manual 成功";
+                        RichTextBoxAppendHead(richTextBox1, msg);
+                    }
+
                     break;
             }
 
@@ -1365,22 +1366,6 @@ namespace Mirle.Agv.View
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
             }
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            ucRealPosition.TagColor = Color.ForestGreen;
-
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            ucRealPosition.TagColor = Color.OrangeRed;
-        }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            alarmHandler.SetAlarm(6);
         }
     }
 }

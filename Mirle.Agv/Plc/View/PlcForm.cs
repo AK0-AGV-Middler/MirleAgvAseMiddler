@@ -290,7 +290,7 @@ namespace Mirle.Agv.View
         private void IpcModeObjEnabled(bool status)
         {
             grpForkCommdAndStat.Enabled = status;
-            grpCastIDReader.Enabled = status;
+            //grpCastIDReader.Enabled = status;
             grpForkCycleRun.Enabled = status;
 
             //========================================================//
@@ -1322,7 +1322,7 @@ namespace Mirle.Agv.View
                 {"Ah_Reset_Timeout", tbxResetAHTimeout_SV.Text}
             };
             plcAgent.WritePlcConfigToXML(dicSetValue);
-            
+
             FillPVToBatteryParamTbx();
             FillSVToBatteryParamTbx();
             dicSetValue.Clear();
@@ -1423,6 +1423,24 @@ namespace Mirle.Agv.View
                     else plcAgent.APLCVehicle.SteeringBR = false;
                     break;
             }
+        }
+
+        private void btnCstIDSet_Click(object sender, EventArgs e)
+        {
+            string strCstID = txtCassetteID.Text;
+            if (strCstID=="")
+            {
+                this.plcAgent.APLCVehicle.CassetteId = "";
+            }
+            else
+            {
+                this.plcAgent.triggerCassetteIDReader(ref strCstID);
+            }
+        }
+
+        private void btnForce_ELMO_Servo_Off_Click(object sender, EventArgs e)
+        {
+            this.plcAgent.SetForcELMOServoOffOn();
         }
     }
 }

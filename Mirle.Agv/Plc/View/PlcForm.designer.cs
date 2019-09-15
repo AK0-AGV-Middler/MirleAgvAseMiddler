@@ -82,6 +82,7 @@
             this.label25 = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
             this.grpCastIDReader = new System.Windows.Forms.GroupBox();
+            this.btnCstIDSet = new System.Windows.Forms.Button();
             this.btnTriggerCassetteReader = new System.Windows.Forms.Button();
             this.label22 = new System.Windows.Forms.Label();
             this.txtCassetteID = new System.Windows.Forms.TextBox();
@@ -244,23 +245,31 @@
             this.tbxBatteryCellLowVoltage_SV = new System.Windows.Forms.TextBox();
             this.btnBatteryParamSet = new System.Windows.Forms.Button();
             this.tabSafety = new System.Windows.Forms.TabPage();
+            this.btnForce_ELMO_Servo_Off = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.panel9 = new System.Windows.Forms.Panel();
+            this.chkSteeringBRLight = new System.Windows.Forms.CheckBox();
+            this.chkSteeringBLLight = new System.Windows.Forms.CheckBox();
+            this.chkSteeringFRLight = new System.Windows.Forms.CheckBox();
+            this.chkSteeringFLLight = new System.Windows.Forms.CheckBox();
+            this.chkTraverseRightLight = new System.Windows.Forms.CheckBox();
+            this.chkTraverseLeftLight = new System.Windows.Forms.CheckBox();
+            this.chkSpinTurnRightLight = new System.Windows.Forms.CheckBox();
+            this.chkSpinTurnLeftLight = new System.Windows.Forms.CheckBox();
+            this.chkMoveBackLight = new System.Windows.Forms.CheckBox();
+            this.chkMoveFrontLight = new System.Windows.Forms.CheckBox();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.lblEMO = new System.Windows.Forms.Label();
+            this.lblBumperAlarm = new System.Windows.Forms.Label();
+            this.txtSafetyAction = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.pnlMove = new System.Windows.Forms.Panel();
             this.chkMoveRight = new System.Windows.Forms.CheckBox();
             this.chkMoveLeft = new System.Windows.Forms.CheckBox();
             this.chkMoveBack = new System.Windows.Forms.CheckBox();
             this.chkMoveFront = new System.Windows.Forms.CheckBox();
-            this.lblEMO = new System.Windows.Forms.Label();
-            this.lblBumperAlarm = new System.Windows.Forms.Label();
-            this.grpAutoSleep = new System.Windows.Forms.GroupBox();
-            this.btnBeamSensorAutoSleepSet = new System.Windows.Forms.Button();
-            this.rdoBeamSensorAutoSleepDisable = new System.Windows.Forms.RadioButton();
-            this.rdoBeamSensorAutoSleepEnable = new System.Windows.Forms.RadioButton();
-            this.txtSafetyAction = new System.Windows.Forms.TextBox();
-            this.label28 = new System.Windows.Forms.Label();
-            this.grpSafety = new System.Windows.Forms.GroupBox();
-            this.btnSafetySet = new System.Windows.Forms.Button();
-            this.rdoSafetyDisable = new System.Windows.Forms.RadioButton();
-            this.rdoSafetyEnable = new System.Windows.Forms.RadioButton();
+            this.panel5 = new System.Windows.Forms.Panel();
             this.label36 = new System.Windows.Forms.Label();
             this.label35 = new System.Windows.Forms.Label();
             this.label34 = new System.Windows.Forms.Label();
@@ -269,6 +278,14 @@
             this.lblNearDetect = new System.Windows.Forms.Label();
             this.lblFarDetect = new System.Windows.Forms.Label();
             this.lblNoDetect = new System.Windows.Forms.Label();
+            this.grpAutoSleep = new System.Windows.Forms.GroupBox();
+            this.btnBeamSensorAutoSleepSet = new System.Windows.Forms.Button();
+            this.rdoBeamSensorAutoSleepDisable = new System.Windows.Forms.RadioButton();
+            this.rdoBeamSensorAutoSleepEnable = new System.Windows.Forms.RadioButton();
+            this.grpSafety = new System.Windows.Forms.GroupBox();
+            this.btnSafetySet = new System.Windows.Forms.Button();
+            this.rdoSafetyDisable = new System.Windows.Forms.RadioButton();
+            this.rdoSafetyEnable = new System.Windows.Forms.RadioButton();
             this.grpR = new System.Windows.Forms.GroupBox();
             this.lblBumpDR = new System.Windows.Forms.Label();
             this.lblBumpUR = new System.Windows.Forms.Label();
@@ -332,21 +349,6 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
-            this.panel5 = new System.Windows.Forms.Panel();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.panel6 = new System.Windows.Forms.Panel();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.panel9 = new System.Windows.Forms.Panel();
-            this.chkSteeringBRLight = new System.Windows.Forms.CheckBox();
-            this.chkSteeringBLLight = new System.Windows.Forms.CheckBox();
-            this.chkSteeringFRLight = new System.Windows.Forms.CheckBox();
-            this.chkSteeringFLLight = new System.Windows.Forms.CheckBox();
-            this.chkTraverseRightLight = new System.Windows.Forms.CheckBox();
-            this.chkTraverseLeftLight = new System.Windows.Forms.CheckBox();
-            this.chkSpinTurnRightLight = new System.Windows.Forms.CheckBox();
-            this.chkSpinTurnLeftLight = new System.Windows.Forms.CheckBox();
-            this.chkMoveBackLight = new System.Windows.Forms.CheckBox();
-            this.chkMoveFrontLight = new System.Windows.Forms.CheckBox();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.palForkParams.SuspendLayout();
@@ -366,18 +368,18 @@
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabSafety.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.panel9.SuspendLayout();
+            this.panel6.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.pnlMove.SuspendLayout();
+            this.panel5.SuspendLayout();
             this.grpAutoSleep.SuspendLayout();
             this.grpSafety.SuspendLayout();
             this.grpR.SuspendLayout();
             this.grpL.SuspendLayout();
             this.grpB.SuspendLayout();
             this.grpF.SuspendLayout();
-            this.panel5.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            this.panel6.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.panel9.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabContol1
@@ -980,6 +982,7 @@
             // 
             // grpCastIDReader
             // 
+            this.grpCastIDReader.Controls.Add(this.btnCstIDSet);
             this.grpCastIDReader.Controls.Add(this.btnTriggerCassetteReader);
             this.grpCastIDReader.Controls.Add(this.label22);
             this.grpCastIDReader.Controls.Add(this.txtCassetteID);
@@ -989,6 +992,16 @@
             this.grpCastIDReader.TabIndex = 66;
             this.grpCastIDReader.TabStop = false;
             this.grpCastIDReader.Text = "Cassette ID Reader";
+            // 
+            // btnCstIDSet
+            // 
+            this.btnCstIDSet.Location = new System.Drawing.Point(149, 119);
+            this.btnCstIDSet.Name = "btnCstIDSet";
+            this.btnCstIDSet.Size = new System.Drawing.Size(93, 37);
+            this.btnCstIDSet.TabIndex = 54;
+            this.btnCstIDSet.Text = "CST ID Set";
+            this.btnCstIDSet.UseVisualStyleBackColor = true;
+            this.btnCstIDSet.Click += new System.EventHandler(this.btnCstIDSet_Click);
             // 
             // btnTriggerCassetteReader
             // 
@@ -2766,6 +2779,7 @@
             // 
             // tabSafety
             // 
+            this.tabSafety.Controls.Add(this.btnForce_ELMO_Servo_Off);
             this.tabSafety.Controls.Add(this.groupBox2);
             this.tabSafety.Controls.Add(this.panel6);
             this.tabSafety.Controls.Add(this.groupBox1);
@@ -2783,6 +2797,218 @@
             this.tabSafety.TabIndex = 3;
             this.tabSafety.Text = "Safety";
             this.tabSafety.UseVisualStyleBackColor = true;
+            // 
+            // btnForce_ELMO_Servo_Off
+            // 
+            this.btnForce_ELMO_Servo_Off.BackColor = System.Drawing.Color.Pink;
+            this.btnForce_ELMO_Servo_Off.Location = new System.Drawing.Point(936, 581);
+            this.btnForce_ELMO_Servo_Off.Name = "btnForce_ELMO_Servo_Off";
+            this.btnForce_ELMO_Servo_Off.Size = new System.Drawing.Size(315, 42);
+            this.btnForce_ELMO_Servo_Off.TabIndex = 89;
+            this.btnForce_ELMO_Servo_Off.Text = "Force ELMO Servo Off";
+            this.btnForce_ELMO_Servo_Off.UseVisualStyleBackColor = false;
+            this.btnForce_ELMO_Servo_Off.Click += new System.EventHandler(this.btnForce_ELMO_Servo_Off_Click);
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.panel9);
+            this.groupBox2.Location = new System.Drawing.Point(434, 411);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(130, 228);
+            this.groupBox2.TabIndex = 88;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Directional Light";
+            // 
+            // panel9
+            // 
+            this.panel9.Controls.Add(this.chkSteeringBRLight);
+            this.panel9.Controls.Add(this.chkSteeringBLLight);
+            this.panel9.Controls.Add(this.chkSteeringFRLight);
+            this.panel9.Controls.Add(this.chkSteeringFLLight);
+            this.panel9.Controls.Add(this.chkTraverseRightLight);
+            this.panel9.Controls.Add(this.chkTraverseLeftLight);
+            this.panel9.Controls.Add(this.chkSpinTurnRightLight);
+            this.panel9.Controls.Add(this.chkSpinTurnLeftLight);
+            this.panel9.Controls.Add(this.chkMoveBackLight);
+            this.panel9.Controls.Add(this.chkMoveFrontLight);
+            this.panel9.Location = new System.Drawing.Point(5, 18);
+            this.panel9.Name = "panel9";
+            this.panel9.Size = new System.Drawing.Size(119, 205);
+            this.panel9.TabIndex = 84;
+            // 
+            // chkSteeringBRLight
+            // 
+            this.chkSteeringBRLight.AutoSize = true;
+            this.chkSteeringBRLight.Location = new System.Drawing.Point(7, 184);
+            this.chkSteeringBRLight.Name = "chkSteeringBRLight";
+            this.chkSteeringBRLight.Size = new System.Drawing.Size(89, 20);
+            this.chkSteeringBRLight.TabIndex = 82;
+            this.chkSteeringBRLight.Text = "SteeringBR";
+            this.chkSteeringBRLight.UseVisualStyleBackColor = true;
+            this.chkSteeringBRLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSteeringBLLight
+            // 
+            this.chkSteeringBLLight.AutoSize = true;
+            this.chkSteeringBLLight.Location = new System.Drawing.Point(7, 164);
+            this.chkSteeringBLLight.Name = "chkSteeringBLLight";
+            this.chkSteeringBLLight.Size = new System.Drawing.Size(87, 20);
+            this.chkSteeringBLLight.TabIndex = 81;
+            this.chkSteeringBLLight.Text = "SteeringBL";
+            this.chkSteeringBLLight.UseVisualStyleBackColor = true;
+            this.chkSteeringBLLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSteeringFRLight
+            // 
+            this.chkSteeringFRLight.AutoSize = true;
+            this.chkSteeringFRLight.Location = new System.Drawing.Point(7, 144);
+            this.chkSteeringFRLight.Name = "chkSteeringFRLight";
+            this.chkSteeringFRLight.Size = new System.Drawing.Size(88, 20);
+            this.chkSteeringFRLight.TabIndex = 80;
+            this.chkSteeringFRLight.Text = "SteeringFR";
+            this.chkSteeringFRLight.UseVisualStyleBackColor = true;
+            this.chkSteeringFRLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSteeringFLLight
+            // 
+            this.chkSteeringFLLight.AutoSize = true;
+            this.chkSteeringFLLight.Location = new System.Drawing.Point(7, 124);
+            this.chkSteeringFLLight.Name = "chkSteeringFLLight";
+            this.chkSteeringFLLight.Size = new System.Drawing.Size(86, 20);
+            this.chkSteeringFLLight.TabIndex = 79;
+            this.chkSteeringFLLight.Text = "SteeringFL";
+            this.chkSteeringFLLight.UseVisualStyleBackColor = true;
+            this.chkSteeringFLLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkTraverseRightLight
+            // 
+            this.chkTraverseRightLight.AutoSize = true;
+            this.chkTraverseRightLight.Location = new System.Drawing.Point(7, 104);
+            this.chkTraverseRightLight.Name = "chkTraverseRightLight";
+            this.chkTraverseRightLight.Size = new System.Drawing.Size(104, 20);
+            this.chkTraverseRightLight.TabIndex = 78;
+            this.chkTraverseRightLight.Text = "TraverseRight";
+            this.chkTraverseRightLight.UseVisualStyleBackColor = true;
+            this.chkTraverseRightLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkTraverseLeftLight
+            // 
+            this.chkTraverseLeftLight.AutoSize = true;
+            this.chkTraverseLeftLight.Location = new System.Drawing.Point(7, 84);
+            this.chkTraverseLeftLight.Name = "chkTraverseLeftLight";
+            this.chkTraverseLeftLight.Size = new System.Drawing.Size(95, 20);
+            this.chkTraverseLeftLight.TabIndex = 77;
+            this.chkTraverseLeftLight.Text = "TraverseLeft";
+            this.chkTraverseLeftLight.UseVisualStyleBackColor = true;
+            this.chkTraverseLeftLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSpinTurnRightLight
+            // 
+            this.chkSpinTurnRightLight.AutoSize = true;
+            this.chkSpinTurnRightLight.Location = new System.Drawing.Point(7, 64);
+            this.chkSpinTurnRightLight.Name = "chkSpinTurnRightLight";
+            this.chkSpinTurnRightLight.Size = new System.Drawing.Size(107, 20);
+            this.chkSpinTurnRightLight.TabIndex = 76;
+            this.chkSpinTurnRightLight.Text = "SpinTurnRight";
+            this.chkSpinTurnRightLight.UseVisualStyleBackColor = true;
+            this.chkSpinTurnRightLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkSpinTurnLeftLight
+            // 
+            this.chkSpinTurnLeftLight.AutoSize = true;
+            this.chkSpinTurnLeftLight.Location = new System.Drawing.Point(7, 44);
+            this.chkSpinTurnLeftLight.Name = "chkSpinTurnLeftLight";
+            this.chkSpinTurnLeftLight.Size = new System.Drawing.Size(98, 20);
+            this.chkSpinTurnLeftLight.TabIndex = 75;
+            this.chkSpinTurnLeftLight.Text = "SpinTurnLeft";
+            this.chkSpinTurnLeftLight.UseVisualStyleBackColor = true;
+            this.chkSpinTurnLeftLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkMoveBackLight
+            // 
+            this.chkMoveBackLight.AutoSize = true;
+            this.chkMoveBackLight.Location = new System.Drawing.Point(7, 24);
+            this.chkMoveBackLight.Name = "chkMoveBackLight";
+            this.chkMoveBackLight.Size = new System.Drawing.Size(86, 20);
+            this.chkMoveBackLight.TabIndex = 74;
+            this.chkMoveBackLight.Text = "MoveBack";
+            this.chkMoveBackLight.UseVisualStyleBackColor = true;
+            this.chkMoveBackLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // chkMoveFrontLight
+            // 
+            this.chkMoveFrontLight.AutoSize = true;
+            this.chkMoveFrontLight.Location = new System.Drawing.Point(7, 4);
+            this.chkMoveFrontLight.Name = "chkMoveFrontLight";
+            this.chkMoveFrontLight.Size = new System.Drawing.Size(89, 20);
+            this.chkMoveFrontLight.TabIndex = 73;
+            this.chkMoveFrontLight.Text = "MoveFront";
+            this.chkMoveFrontLight.UseVisualStyleBackColor = true;
+            this.chkMoveFrontLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.lblEMO);
+            this.panel6.Controls.Add(this.lblBumperAlarm);
+            this.panel6.Controls.Add(this.txtSafetyAction);
+            this.panel6.Controls.Add(this.label28);
+            this.panel6.Location = new System.Drawing.Point(922, 416);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(339, 146);
+            this.panel6.TabIndex = 83;
+            // 
+            // lblEMO
+            // 
+            this.lblEMO.BackColor = System.Drawing.Color.LightGreen;
+            this.lblEMO.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblEMO.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblEMO.Location = new System.Drawing.Point(14, 98);
+            this.lblEMO.Name = "lblEMO";
+            this.lblEMO.Size = new System.Drawing.Size(315, 34);
+            this.lblEMO.TabIndex = 79;
+            this.lblEMO.Text = "EMO";
+            this.lblEMO.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblBumperAlarm
+            // 
+            this.lblBumperAlarm.BackColor = System.Drawing.Color.LightGreen;
+            this.lblBumperAlarm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblBumperAlarm.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblBumperAlarm.Location = new System.Drawing.Point(14, 55);
+            this.lblBumperAlarm.Name = "lblBumperAlarm";
+            this.lblBumperAlarm.Size = new System.Drawing.Size(315, 34);
+            this.lblBumperAlarm.TabIndex = 78;
+            this.lblBumperAlarm.Text = "Bumper Alarm";
+            this.lblBumperAlarm.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtSafetyAction
+            // 
+            this.txtSafetyAction.Enabled = false;
+            this.txtSafetyAction.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtSafetyAction.Location = new System.Drawing.Point(162, 11);
+            this.txtSafetyAction.Name = "txtSafetyAction";
+            this.txtSafetyAction.Size = new System.Drawing.Size(167, 35);
+            this.txtSafetyAction.TabIndex = 72;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label28.Location = new System.Drawing.Point(9, 14);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(147, 26);
+            this.label28.TabIndex = 71;
+            this.label28.Text = "Safety Action";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.pnlMove);
+            this.groupBox1.Location = new System.Drawing.Point(298, 413);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(121, 131);
+            this.groupBox1.TabIndex = 82;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Beam Sensor";
             // 
             // pnlMove
             // 
@@ -2839,136 +3065,20 @@
             this.chkMoveFront.UseVisualStyleBackColor = true;
             this.chkMoveFront.CheckedChanged += new System.EventHandler(this.chkMoveFront_CheckedChanged);
             // 
-            // lblEMO
+            // panel5
             // 
-            this.lblEMO.BackColor = System.Drawing.Color.LightGreen;
-            this.lblEMO.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblEMO.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblEMO.Location = new System.Drawing.Point(14, 98);
-            this.lblEMO.Name = "lblEMO";
-            this.lblEMO.Size = new System.Drawing.Size(315, 34);
-            this.lblEMO.TabIndex = 79;
-            this.lblEMO.Text = "EMO";
-            this.lblEMO.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblBumperAlarm
-            // 
-            this.lblBumperAlarm.BackColor = System.Drawing.Color.LightGreen;
-            this.lblBumperAlarm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblBumperAlarm.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblBumperAlarm.Location = new System.Drawing.Point(14, 55);
-            this.lblBumperAlarm.Name = "lblBumperAlarm";
-            this.lblBumperAlarm.Size = new System.Drawing.Size(315, 34);
-            this.lblBumperAlarm.TabIndex = 78;
-            this.lblBumperAlarm.Text = "Bumper Alarm";
-            this.lblBumperAlarm.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // grpAutoSleep
-            // 
-            this.grpAutoSleep.Controls.Add(this.btnBeamSensorAutoSleepSet);
-            this.grpAutoSleep.Controls.Add(this.rdoBeamSensorAutoSleepDisable);
-            this.grpAutoSleep.Controls.Add(this.rdoBeamSensorAutoSleepEnable);
-            this.grpAutoSleep.Location = new System.Drawing.Point(19, 543);
-            this.grpAutoSleep.Name = "grpAutoSleep";
-            this.grpAutoSleep.Size = new System.Drawing.Size(265, 77);
-            this.grpAutoSleep.TabIndex = 77;
-            this.grpAutoSleep.TabStop = false;
-            this.grpAutoSleep.Text = "Beam Sensor Auto Sleep";
-            // 
-            // btnBeamSensorAutoSleepSet
-            // 
-            this.btnBeamSensorAutoSleepSet.Location = new System.Drawing.Point(166, 38);
-            this.btnBeamSensorAutoSleepSet.Name = "btnBeamSensorAutoSleepSet";
-            this.btnBeamSensorAutoSleepSet.Size = new System.Drawing.Size(89, 30);
-            this.btnBeamSensorAutoSleepSet.TabIndex = 70;
-            this.btnBeamSensorAutoSleepSet.Text = "Set";
-            this.btnBeamSensorAutoSleepSet.UseVisualStyleBackColor = true;
-            this.btnBeamSensorAutoSleepSet.Click += new System.EventHandler(this.btnBeamSensorAutoSleepSet_Click);
-            // 
-            // rdoBeamSensorAutoSleepDisable
-            // 
-            this.rdoBeamSensorAutoSleepDisable.AutoSize = true;
-            this.rdoBeamSensorAutoSleepDisable.Location = new System.Drawing.Point(16, 22);
-            this.rdoBeamSensorAutoSleepDisable.Name = "rdoBeamSensorAutoSleepDisable";
-            this.rdoBeamSensorAutoSleepDisable.Size = new System.Drawing.Size(136, 20);
-            this.rdoBeamSensorAutoSleepDisable.TabIndex = 67;
-            this.rdoBeamSensorAutoSleepDisable.Text = "Auto Sleep  Disable";
-            this.rdoBeamSensorAutoSleepDisable.UseVisualStyleBackColor = true;
-            // 
-            // rdoBeamSensorAutoSleepEnable
-            // 
-            this.rdoBeamSensorAutoSleepEnable.AutoSize = true;
-            this.rdoBeamSensorAutoSleepEnable.Checked = true;
-            this.rdoBeamSensorAutoSleepEnable.Location = new System.Drawing.Point(16, 48);
-            this.rdoBeamSensorAutoSleepEnable.Name = "rdoBeamSensorAutoSleepEnable";
-            this.rdoBeamSensorAutoSleepEnable.Size = new System.Drawing.Size(130, 20);
-            this.rdoBeamSensorAutoSleepEnable.TabIndex = 68;
-            this.rdoBeamSensorAutoSleepEnable.TabStop = true;
-            this.rdoBeamSensorAutoSleepEnable.Text = "Auto Sleep Enable";
-            this.rdoBeamSensorAutoSleepEnable.UseVisualStyleBackColor = true;
-            // 
-            // txtSafetyAction
-            // 
-            this.txtSafetyAction.Enabled = false;
-            this.txtSafetyAction.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtSafetyAction.Location = new System.Drawing.Point(162, 11);
-            this.txtSafetyAction.Name = "txtSafetyAction";
-            this.txtSafetyAction.Size = new System.Drawing.Size(167, 35);
-            this.txtSafetyAction.TabIndex = 72;
-            // 
-            // label28
-            // 
-            this.label28.AutoSize = true;
-            this.label28.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label28.Location = new System.Drawing.Point(9, 14);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(147, 26);
-            this.label28.TabIndex = 71;
-            this.label28.Text = "Safety Action";
-            // 
-            // grpSafety
-            // 
-            this.grpSafety.Controls.Add(this.btnSafetySet);
-            this.grpSafety.Controls.Add(this.rdoSafetyDisable);
-            this.grpSafety.Controls.Add(this.rdoSafetyEnable);
-            this.grpSafety.Location = new System.Drawing.Point(19, 454);
-            this.grpSafety.Name = "grpSafety";
-            this.grpSafety.Size = new System.Drawing.Size(265, 77);
-            this.grpSafety.TabIndex = 69;
-            this.grpSafety.TabStop = false;
-            this.grpSafety.Text = "Safety";
-            // 
-            // btnSafetySet
-            // 
-            this.btnSafetySet.Location = new System.Drawing.Point(166, 38);
-            this.btnSafetySet.Name = "btnSafetySet";
-            this.btnSafetySet.Size = new System.Drawing.Size(89, 30);
-            this.btnSafetySet.TabIndex = 70;
-            this.btnSafetySet.Text = "Set";
-            this.btnSafetySet.UseVisualStyleBackColor = true;
-            this.btnSafetySet.Click += new System.EventHandler(this.btnSafetySet_Click);
-            // 
-            // rdoSafetyDisable
-            // 
-            this.rdoSafetyDisable.AutoSize = true;
-            this.rdoSafetyDisable.Location = new System.Drawing.Point(16, 22);
-            this.rdoSafetyDisable.Name = "rdoSafetyDisable";
-            this.rdoSafetyDisable.Size = new System.Drawing.Size(106, 20);
-            this.rdoSafetyDisable.TabIndex = 67;
-            this.rdoSafetyDisable.Text = "Safety Disable";
-            this.rdoSafetyDisable.UseVisualStyleBackColor = true;
-            // 
-            // rdoSafetyEnable
-            // 
-            this.rdoSafetyEnable.AutoSize = true;
-            this.rdoSafetyEnable.Checked = true;
-            this.rdoSafetyEnable.Location = new System.Drawing.Point(16, 48);
-            this.rdoSafetyEnable.Name = "rdoSafetyEnable";
-            this.rdoSafetyEnable.Size = new System.Drawing.Size(103, 20);
-            this.rdoSafetyEnable.TabIndex = 68;
-            this.rdoSafetyEnable.TabStop = true;
-            this.rdoSafetyEnable.Text = "Safety Enable";
-            this.rdoSafetyEnable.UseVisualStyleBackColor = true;
+            this.panel5.Controls.Add(this.label36);
+            this.panel5.Controls.Add(this.label35);
+            this.panel5.Controls.Add(this.label34);
+            this.panel5.Controls.Add(this.label33);
+            this.panel5.Controls.Add(this.lblSleep);
+            this.panel5.Controls.Add(this.lblNearDetect);
+            this.panel5.Controls.Add(this.lblFarDetect);
+            this.panel5.Controls.Add(this.lblNoDetect);
+            this.panel5.Location = new System.Drawing.Point(581, 416);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(318, 67);
+            this.panel5.TabIndex = 81;
             // 
             // label36
             // 
@@ -3053,6 +3163,94 @@
             this.lblNoDetect.TabIndex = 58;
             this.lblNoDetect.Text = "FUL";
             this.lblNoDetect.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // grpAutoSleep
+            // 
+            this.grpAutoSleep.Controls.Add(this.btnBeamSensorAutoSleepSet);
+            this.grpAutoSleep.Controls.Add(this.rdoBeamSensorAutoSleepDisable);
+            this.grpAutoSleep.Controls.Add(this.rdoBeamSensorAutoSleepEnable);
+            this.grpAutoSleep.Location = new System.Drawing.Point(19, 543);
+            this.grpAutoSleep.Name = "grpAutoSleep";
+            this.grpAutoSleep.Size = new System.Drawing.Size(265, 77);
+            this.grpAutoSleep.TabIndex = 77;
+            this.grpAutoSleep.TabStop = false;
+            this.grpAutoSleep.Text = "Beam Sensor Auto Sleep";
+            // 
+            // btnBeamSensorAutoSleepSet
+            // 
+            this.btnBeamSensorAutoSleepSet.Location = new System.Drawing.Point(166, 38);
+            this.btnBeamSensorAutoSleepSet.Name = "btnBeamSensorAutoSleepSet";
+            this.btnBeamSensorAutoSleepSet.Size = new System.Drawing.Size(89, 30);
+            this.btnBeamSensorAutoSleepSet.TabIndex = 70;
+            this.btnBeamSensorAutoSleepSet.Text = "Set";
+            this.btnBeamSensorAutoSleepSet.UseVisualStyleBackColor = true;
+            this.btnBeamSensorAutoSleepSet.Click += new System.EventHandler(this.btnBeamSensorAutoSleepSet_Click);
+            // 
+            // rdoBeamSensorAutoSleepDisable
+            // 
+            this.rdoBeamSensorAutoSleepDisable.AutoSize = true;
+            this.rdoBeamSensorAutoSleepDisable.Location = new System.Drawing.Point(16, 22);
+            this.rdoBeamSensorAutoSleepDisable.Name = "rdoBeamSensorAutoSleepDisable";
+            this.rdoBeamSensorAutoSleepDisable.Size = new System.Drawing.Size(136, 20);
+            this.rdoBeamSensorAutoSleepDisable.TabIndex = 67;
+            this.rdoBeamSensorAutoSleepDisable.Text = "Auto Sleep  Disable";
+            this.rdoBeamSensorAutoSleepDisable.UseVisualStyleBackColor = true;
+            // 
+            // rdoBeamSensorAutoSleepEnable
+            // 
+            this.rdoBeamSensorAutoSleepEnable.AutoSize = true;
+            this.rdoBeamSensorAutoSleepEnable.Checked = true;
+            this.rdoBeamSensorAutoSleepEnable.Location = new System.Drawing.Point(16, 48);
+            this.rdoBeamSensorAutoSleepEnable.Name = "rdoBeamSensorAutoSleepEnable";
+            this.rdoBeamSensorAutoSleepEnable.Size = new System.Drawing.Size(130, 20);
+            this.rdoBeamSensorAutoSleepEnable.TabIndex = 68;
+            this.rdoBeamSensorAutoSleepEnable.TabStop = true;
+            this.rdoBeamSensorAutoSleepEnable.Text = "Auto Sleep Enable";
+            this.rdoBeamSensorAutoSleepEnable.UseVisualStyleBackColor = true;
+            // 
+            // grpSafety
+            // 
+            this.grpSafety.Controls.Add(this.btnSafetySet);
+            this.grpSafety.Controls.Add(this.rdoSafetyDisable);
+            this.grpSafety.Controls.Add(this.rdoSafetyEnable);
+            this.grpSafety.Location = new System.Drawing.Point(19, 454);
+            this.grpSafety.Name = "grpSafety";
+            this.grpSafety.Size = new System.Drawing.Size(265, 77);
+            this.grpSafety.TabIndex = 69;
+            this.grpSafety.TabStop = false;
+            this.grpSafety.Text = "Safety";
+            // 
+            // btnSafetySet
+            // 
+            this.btnSafetySet.Location = new System.Drawing.Point(166, 38);
+            this.btnSafetySet.Name = "btnSafetySet";
+            this.btnSafetySet.Size = new System.Drawing.Size(89, 30);
+            this.btnSafetySet.TabIndex = 70;
+            this.btnSafetySet.Text = "Set";
+            this.btnSafetySet.UseVisualStyleBackColor = true;
+            this.btnSafetySet.Click += new System.EventHandler(this.btnSafetySet_Click);
+            // 
+            // rdoSafetyDisable
+            // 
+            this.rdoSafetyDisable.AutoSize = true;
+            this.rdoSafetyDisable.Location = new System.Drawing.Point(16, 22);
+            this.rdoSafetyDisable.Name = "rdoSafetyDisable";
+            this.rdoSafetyDisable.Size = new System.Drawing.Size(106, 20);
+            this.rdoSafetyDisable.TabIndex = 67;
+            this.rdoSafetyDisable.Text = "Safety Disable";
+            this.rdoSafetyDisable.UseVisualStyleBackColor = true;
+            // 
+            // rdoSafetyEnable
+            // 
+            this.rdoSafetyEnable.AutoSize = true;
+            this.rdoSafetyEnable.Checked = true;
+            this.rdoSafetyEnable.Location = new System.Drawing.Point(16, 48);
+            this.rdoSafetyEnable.Name = "rdoSafetyEnable";
+            this.rdoSafetyEnable.Size = new System.Drawing.Size(103, 20);
+            this.rdoSafetyEnable.TabIndex = 68;
+            this.rdoSafetyEnable.TabStop = true;
+            this.rdoSafetyEnable.Text = "Safety Enable";
+            this.rdoSafetyEnable.UseVisualStyleBackColor = true;
             // 
             // grpR
             // 
@@ -3199,6 +3397,7 @@
             this.lblEMOTotal.TabIndex = 67;
             this.lblEMOTotal.Text = "EMO-Total";
             this.lblEMOTotal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblEMOTotal.Visible = false;
             this.lblEMOTotal.DoubleClick += new System.EventHandler(this.lblEMO_DoubleClick);
             // 
             // lblBumpDL
@@ -3828,184 +4027,12 @@
             // 
             // labIPcStatusManual
             // 
+            this.labIPcStatusManual.Enabled = false;
             this.labIPcStatusManual.Location = new System.Drawing.Point(1277, 704);
             this.labIPcStatusManual.Name = "labIPcStatusManual";
             this.labIPcStatusManual.Size = new System.Drawing.Size(32, 20);
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
-            // 
-            // panel5
-            // 
-            this.panel5.Controls.Add(this.label36);
-            this.panel5.Controls.Add(this.label35);
-            this.panel5.Controls.Add(this.label34);
-            this.panel5.Controls.Add(this.label33);
-            this.panel5.Controls.Add(this.lblSleep);
-            this.panel5.Controls.Add(this.lblNearDetect);
-            this.panel5.Controls.Add(this.lblFarDetect);
-            this.panel5.Controls.Add(this.lblNoDetect);
-            this.panel5.Location = new System.Drawing.Point(581, 416);
-            this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(318, 67);
-            this.panel5.TabIndex = 81;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.pnlMove);
-            this.groupBox1.Location = new System.Drawing.Point(298, 413);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(121, 131);
-            this.groupBox1.TabIndex = 82;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Beam Sensor";
-            // 
-            // panel6
-            // 
-            this.panel6.Controls.Add(this.lblEMO);
-            this.panel6.Controls.Add(this.lblBumperAlarm);
-            this.panel6.Controls.Add(this.txtSafetyAction);
-            this.panel6.Controls.Add(this.label28);
-            this.panel6.Location = new System.Drawing.Point(922, 416);
-            this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(339, 146);
-            this.panel6.TabIndex = 83;
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.panel9);
-            this.groupBox2.Location = new System.Drawing.Point(434, 411);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(130, 228);
-            this.groupBox2.TabIndex = 88;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Directional Light";
-            // 
-            // panel9
-            // 
-            this.panel9.Controls.Add(this.chkSteeringBRLight);
-            this.panel9.Controls.Add(this.chkSteeringBLLight);
-            this.panel9.Controls.Add(this.chkSteeringFRLight);
-            this.panel9.Controls.Add(this.chkSteeringFLLight);
-            this.panel9.Controls.Add(this.chkTraverseRightLight);
-            this.panel9.Controls.Add(this.chkTraverseLeftLight);
-            this.panel9.Controls.Add(this.chkSpinTurnRightLight);
-            this.panel9.Controls.Add(this.chkSpinTurnLeftLight);
-            this.panel9.Controls.Add(this.chkMoveBackLight);
-            this.panel9.Controls.Add(this.chkMoveFrontLight);
-            this.panel9.Location = new System.Drawing.Point(5, 18);
-            this.panel9.Name = "panel9";
-            this.panel9.Size = new System.Drawing.Size(119, 205);
-            this.panel9.TabIndex = 84;
-            // 
-            // chkSteeringBRLight
-            // 
-            this.chkSteeringBRLight.AutoSize = true;
-            this.chkSteeringBRLight.Location = new System.Drawing.Point(7, 184);
-            this.chkSteeringBRLight.Name = "chkSteeringBRLight";
-            this.chkSteeringBRLight.Size = new System.Drawing.Size(89, 20);
-            this.chkSteeringBRLight.TabIndex = 82;
-            this.chkSteeringBRLight.Text = "SteeringBR";
-            this.chkSteeringBRLight.UseVisualStyleBackColor = true;
-            this.chkSteeringBRLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkSteeringBLLight
-            // 
-            this.chkSteeringBLLight.AutoSize = true;
-            this.chkSteeringBLLight.Location = new System.Drawing.Point(7, 164);
-            this.chkSteeringBLLight.Name = "chkSteeringBLLight";
-            this.chkSteeringBLLight.Size = new System.Drawing.Size(87, 20);
-            this.chkSteeringBLLight.TabIndex = 81;
-            this.chkSteeringBLLight.Text = "SteeringBL";
-            this.chkSteeringBLLight.UseVisualStyleBackColor = true;
-            this.chkSteeringBLLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkSteeringFRLight
-            // 
-            this.chkSteeringFRLight.AutoSize = true;
-            this.chkSteeringFRLight.Location = new System.Drawing.Point(7, 144);
-            this.chkSteeringFRLight.Name = "chkSteeringFRLight";
-            this.chkSteeringFRLight.Size = new System.Drawing.Size(88, 20);
-            this.chkSteeringFRLight.TabIndex = 80;
-            this.chkSteeringFRLight.Text = "SteeringFR";
-            this.chkSteeringFRLight.UseVisualStyleBackColor = true;
-            this.chkSteeringFRLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkSteeringFLLight
-            // 
-            this.chkSteeringFLLight.AutoSize = true;
-            this.chkSteeringFLLight.Location = new System.Drawing.Point(7, 124);
-            this.chkSteeringFLLight.Name = "chkSteeringFLLight";
-            this.chkSteeringFLLight.Size = new System.Drawing.Size(86, 20);
-            this.chkSteeringFLLight.TabIndex = 79;
-            this.chkSteeringFLLight.Text = "SteeringFL";
-            this.chkSteeringFLLight.UseVisualStyleBackColor = true;
-            this.chkSteeringFLLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkTraverseRightLight
-            // 
-            this.chkTraverseRightLight.AutoSize = true;
-            this.chkTraverseRightLight.Location = new System.Drawing.Point(7, 104);
-            this.chkTraverseRightLight.Name = "chkTraverseRightLight";
-            this.chkTraverseRightLight.Size = new System.Drawing.Size(104, 20);
-            this.chkTraverseRightLight.TabIndex = 78;
-            this.chkTraverseRightLight.Text = "TraverseRight";
-            this.chkTraverseRightLight.UseVisualStyleBackColor = true;
-            this.chkTraverseRightLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkTraverseLeftLight
-            // 
-            this.chkTraverseLeftLight.AutoSize = true;
-            this.chkTraverseLeftLight.Location = new System.Drawing.Point(7, 84);
-            this.chkTraverseLeftLight.Name = "chkTraverseLeftLight";
-            this.chkTraverseLeftLight.Size = new System.Drawing.Size(95, 20);
-            this.chkTraverseLeftLight.TabIndex = 77;
-            this.chkTraverseLeftLight.Text = "TraverseLeft";
-            this.chkTraverseLeftLight.UseVisualStyleBackColor = true;
-            this.chkTraverseLeftLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkSpinTurnRightLight
-            // 
-            this.chkSpinTurnRightLight.AutoSize = true;
-            this.chkSpinTurnRightLight.Location = new System.Drawing.Point(7, 64);
-            this.chkSpinTurnRightLight.Name = "chkSpinTurnRightLight";
-            this.chkSpinTurnRightLight.Size = new System.Drawing.Size(107, 20);
-            this.chkSpinTurnRightLight.TabIndex = 76;
-            this.chkSpinTurnRightLight.Text = "SpinTurnRight";
-            this.chkSpinTurnRightLight.UseVisualStyleBackColor = true;
-            this.chkSpinTurnRightLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkSpinTurnLeftLight
-            // 
-            this.chkSpinTurnLeftLight.AutoSize = true;
-            this.chkSpinTurnLeftLight.Location = new System.Drawing.Point(7, 44);
-            this.chkSpinTurnLeftLight.Name = "chkSpinTurnLeftLight";
-            this.chkSpinTurnLeftLight.Size = new System.Drawing.Size(98, 20);
-            this.chkSpinTurnLeftLight.TabIndex = 75;
-            this.chkSpinTurnLeftLight.Text = "SpinTurnLeft";
-            this.chkSpinTurnLeftLight.UseVisualStyleBackColor = true;
-            this.chkSpinTurnLeftLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkMoveBackLight
-            // 
-            this.chkMoveBackLight.AutoSize = true;
-            this.chkMoveBackLight.Location = new System.Drawing.Point(7, 24);
-            this.chkMoveBackLight.Name = "chkMoveBackLight";
-            this.chkMoveBackLight.Size = new System.Drawing.Size(86, 20);
-            this.chkMoveBackLight.TabIndex = 74;
-            this.chkMoveBackLight.Text = "MoveBack";
-            this.chkMoveBackLight.UseVisualStyleBackColor = true;
-            this.chkMoveBackLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
-            // 
-            // chkMoveFrontLight
-            // 
-            this.chkMoveFrontLight.AutoSize = true;
-            this.chkMoveFrontLight.Location = new System.Drawing.Point(7, 4);
-            this.chkMoveFrontLight.Name = "chkMoveFrontLight";
-            this.chkMoveFrontLight.Size = new System.Drawing.Size(89, 20);
-            this.chkMoveFrontLight.TabIndex = 73;
-            this.chkMoveFrontLight.Text = "MoveFront";
-            this.chkMoveFrontLight.UseVisualStyleBackColor = true;
-            this.chkMoveFrontLight.CheckedChanged += new System.EventHandler(this.DirectionalLight);
             // 
             // PlcForm
             // 
@@ -4025,6 +4052,7 @@
             this.Controls.Add(this.label19);
             this.Controls.Add(this.tabContol1);
             this.Name = "PlcForm";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PLCAgent";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PlcForm_FormClosing);
@@ -4058,8 +4086,16 @@
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tabSafety.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.panel9.ResumeLayout(false);
+            this.panel9.PerformLayout();
+            this.panel6.ResumeLayout(false);
+            this.panel6.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
             this.pnlMove.ResumeLayout(false);
             this.pnlMove.PerformLayout();
+            this.panel5.ResumeLayout(false);
+            this.panel5.PerformLayout();
             this.grpAutoSleep.ResumeLayout(false);
             this.grpAutoSleep.PerformLayout();
             this.grpSafety.ResumeLayout(false);
@@ -4068,14 +4104,6 @@
             this.grpL.ResumeLayout(false);
             this.grpB.ResumeLayout(false);
             this.grpF.ResumeLayout(false);
-            this.panel5.ResumeLayout(false);
-            this.panel5.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.panel6.ResumeLayout(false);
-            this.panel6.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.panel9.ResumeLayout(false);
-            this.panel9.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -4401,5 +4429,7 @@
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Button btnCstIDSet;
+        private System.Windows.Forms.Button btnForce_ELMO_Servo_Off;
     }
 }

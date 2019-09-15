@@ -182,9 +182,9 @@ namespace Mirle.Agv.Model
             dicPlcEmo.Add(aPlcEmo.PlcSignalTagId, aPlcEmo);
 
             //EMO-Total
-            aPlcEmo = new PlcEmo("Total");
-            listPlcEmo.Add(aPlcEmo);
-            dicPlcEmo.Add(aPlcEmo.PlcSignalTagId, aPlcEmo);
+            //aPlcEmo = new PlcEmo("Total");
+            //listPlcEmo.Add(aPlcEmo);
+            //dicPlcEmo.Add(aPlcEmo.PlcSignalTagId, aPlcEmo);
         }
 
         private void InitialPLCBeamSensor()
