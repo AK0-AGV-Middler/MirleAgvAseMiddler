@@ -49,6 +49,7 @@ namespace Mirle.Agv.View
         private string LastAgvcTransferCommandId { get; set; } = "";
         private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
         private int lastAlarmId = 0;
+        public bool IsAgvcConnect { get; set; } = false;
 
         #region PaintingItems
         private Image image;
@@ -107,6 +108,12 @@ namespace Mirle.Agv.View
             middlerForm.WindowState = FormWindowState.Normal;
             middlerForm.Show();
             middlerForm.Hide();
+
+            var middlerConfig = middleAgent.GetMiddlerConfig();
+            tstextClientName.Text = $"[{ middlerConfig.ClientName}]";
+            tstextRemoteIp.Text = $"[{middlerConfig.RemoteIp}]";
+            tstextRemotePort.Text = $"[{middlerConfig.RemotePort}]";
+            //this.Text = $"主畫面  Remote[{middlerConfig.RemoteIp}] [{middlerConfig.RemotePort}]";
 
             alarmForm = new AlarmForm(mainFlowHandler);
             alarmForm.WindowState = FormWindowState.Normal;
@@ -181,18 +188,21 @@ namespace Mirle.Agv.View
             middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
+            theVehicle.OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
         }
 
         private void InitialSoc()
         {
-            mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
             var batterys = theVehicle.ThePlcVehicle.Batterys;
             txtWatchLowPower.Text = $"High/Low : {(int)batterys.PortAutoChargeHighSoc}/{(int)batterys.PortAutoChargeLowSoc}";
+            var initialSoc = mainFlowHandler.InitialSoc;
+            mainFlowHandler.SetupVehicleSoc(initialSoc);
         }
 
         private void InitialConnectionAndCstStatus()
         {
-            radOnline.Checked = middleAgent.IsConnected();
+            IsAgvcConnect = middleAgent.IsConnected();
+            UpdateAgvcConnection();
             if (theVehicle.ThePlcVehicle.Loading)
             {
                 string cstid = "";
@@ -200,29 +210,9 @@ namespace Mirle.Agv.View
             }
         }
 
-        public delegate void RadioButtonCheckDel(RadioButton radioButton, bool isCheck);
-        public void RadioButtonCheck(RadioButton radioButton, bool isCheck)
-        {
-            if (radioButton.InvokeRequired)
-            {
-                RadioButtonCheckDel mydel = new RadioButtonCheckDel(RadioButtonCheck);
-                this.Invoke(mydel, new object[] { radioButton, isCheck });
-            }
-            else
-            {
-                radioButton.Checked = isCheck;
-            }
-        }
         private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
         {
-            if (isConnect)
-            {
-                RadioButtonCheck(radOnline, true);
-            }
-            else
-            {
-                RadioButtonCheck(radOffline, true);
-            }
+            IsAgvcConnect = isConnect;
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
@@ -230,6 +220,10 @@ namespace Mirle.Agv.View
             var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
             RichTextBoxAppendHead(richTextBox1, msg);
 
+            if (alarmForm.IsDisposed)
+            {
+                alarmForm = new AlarmForm(mainFlowHandler);
+            }
             alarmForm.BringToFront();
             alarmForm.Show();
             //var warnMsg = $"[Id={alarm.Id}][Text={alarm.AlarmText}]" + Environment.NewLine + $"[{alarm.Description}]";
@@ -237,11 +231,11 @@ namespace Mirle.Agv.View
             //warningForm.BringToFront();
             //warningForm.Show();
         }
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             btnAlarmReset.Enabled = false;
-            var msg = $"清除所有 Alarms, [Count={alarms.Count}]";
             RichTextBoxAppendHead(richTextBox1, msg);
+            Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
 
             //alarmForm.SendToBack();
@@ -250,9 +244,39 @@ namespace Mirle.Agv.View
             //warningForm.Hide();
         }
 
+        private void TheVehicle_OnBeamDisableChangeEvent(object sender, BeamDisableArgs e)
+        {
+            var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor開關 {DisableParse(!e.IsDisable)}";
+            ShowMsgOnMainForm(this, msg);
+            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+        }
+
+        private object DisableParse(bool v)
+        {
+            return v ? "打開" : "關閉";
+        }
+
+        private string EnumBeamDirectionParse(EnumBeamDirection direction)
+        {
+            switch (direction)
+            {
+                case EnumBeamDirection.Front:
+                    return "前方";
+                case EnumBeamDirection.Back:
+                    return "後方";
+                case EnumBeamDirection.Left:
+                    return "左方";
+                case EnumBeamDirection.Right:
+                    return "右方";
+                default:
+                    return "未知";
+            }
+        }
+
         private void ShowMsgOnMainForm(object sender, string msg)
         {
             RichTextBoxAppendHead(richTextBox1, msg);
+            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
         public void DrawBasicMap()
@@ -540,12 +564,8 @@ namespace Mirle.Agv.View
             var mdpy = mouseDownPbPoint.Y;
             var mouseDownPointInPosition = MapPositionExchange(new MapPosition(mouseDownPbPoint.X, mouseDownPbPoint.Y));
 
-            string msg = $"Position({mouseDownPointInPosition.X},{mouseDownPointInPosition.Y})";
-
             numPositionX.Value = (decimal)mouseDownPointInPosition.X;
             numPositionY.Value = (decimal)mouseDownPointInPosition.Y;
-
-            RenewUI(this, msg);
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
@@ -691,7 +711,7 @@ namespace Mirle.Agv.View
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
             ucSoc.TagValue = Vehicle.Instance.ThePlcVehicle.Batterys.Percentage.ToString("F2");
-            if (middleAgent.GetAskingReserveSectionClone().Id != LastAskingReserveSectionId)
+            if (!middleAgent.GetAskingReserveSectionClone().Id.Equals(LastAskingReserveSectionId))
             {
                 LastAskingReserveSectionId = middleAgent.GetAskingReserveSectionClone().Id;
                 lbxAskReserveSection.Items.Clear();
@@ -708,11 +728,27 @@ namespace Mirle.Agv.View
             UpdateRtbAgvcTransCmd();
             UpdateRtbTransferStep();
             UpdateLastAlarm();
+            UpdateAgvcConnection();
+        }
+        public void UpdateAgvcConnection()
+        {
+            if (IsAgvcConnect)
+            {
+                txtAgvcConnection.Text = "AGVC 連線中";
+                txtAgvcConnection.BackColor = Color.LightGreen;
+                radOnline.Checked = true;
+            }
+            else
+            {
+                txtAgvcConnection.Text = "AGVC 斷線";
+                txtAgvcConnection.BackColor = Color.Pink;
+                radOffline.Checked = true;
+            }
         }
         private void UpdateLastAlarm()
         {
             var alarm = alarmHandler.LastAlarm;
-            if (lastAlarmId != alarm.Id)
+            if (!lastAlarmId.Equals(alarm.Id))
             {
                 lastAlarmId = alarm.Id;
                 var msg = $"[{alarm.Id}]\n[{alarm.AlarmText}]";
@@ -760,7 +796,7 @@ namespace Mirle.Agv.View
 
             AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
-            if (agvcTransCmd.CommandId == LastAgvcTransferCommandId)
+            if (agvcTransCmd.CommandId.Equals(LastAgvcTransferCommandId))
             {
                 return;
             }
@@ -908,11 +944,11 @@ namespace Mirle.Agv.View
             switch (Vehicle.Instance.AutoState)
             {
                 case EnumAutoState.Manual:
-                    btnAutoManual.ForeColor = Color.OrangeRed;
+                    btnAutoManual.BackColor = Color.Pink;
                     break;
                 case EnumAutoState.Auto:
                 default:
-                    btnAutoManual.ForeColor = Color.ForestGreen;
+                    btnAutoManual.BackColor = Color.LightGreen;
                     break;
             }
 
@@ -952,6 +988,8 @@ namespace Mirle.Agv.View
 
             var realPos = location.RealPosition;
             ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
+            tstextRealPosX.Text = realPos.X.ToString("F2");
+            tstextRealPosY.Text = realPos.Y.ToString("F2");
 
             var barPos = location.BarcodePosition;
             ucBarcodePosition.TagValue = $"({(int)barPos.X},{(int)barPos.Y})";
@@ -971,6 +1009,8 @@ namespace Mirle.Agv.View
             ucVehicleImage.FixToCenter();
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
+
+           
 
             //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
             //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
@@ -1005,10 +1045,10 @@ namespace Mirle.Agv.View
         {
             try
             {
-                var curVehPos = Vehicle.Instance.CurVehiclePosition;
-                var posX = (int)numPositionX.Value;
-                var posY = (int)numPositionY.Value;
-                var tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
+                VehiclePosition curVehPos = Vehicle.Instance.CurVehiclePosition;
+                int posX = (int)numPositionX.Value;
+                int posY = (int)numPositionY.Value;
+                int tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
                 curVehPos.RealPositionRangeMm = 0;
                 curVehPos.RealPosition = new MapPosition(posX, posY);
                 curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
@@ -1160,19 +1200,21 @@ namespace Mirle.Agv.View
             switch (Vehicle.Instance.AutoState)
             {
                 case EnumAutoState.Manual:
-                    if (mainFlowHandler.SetManualToAuto())
+                    if (cbSimulationMode.Checked)
                     {
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        //mainFlowHandler.StartWatchLowPower();
-                        var msg = $"Manual 切換 Auto 成功";
-                        RichTextBoxAppendHead(richTextBox1, msg);
                     }
                     else
                     {
-                        var msg = $"Manual 切換 Auto 失敗";
-                        RichTextBoxAppendHead(richTextBox1, msg);
+                        if (mainFlowHandler.SetManualToAuto())
+                        {
+                            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
+                            Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                            //mainFlowHandler.StartWatchLowPower();
+                        }
                     }
+
                     break;
                 case EnumAutoState.Auto:
                 default:
@@ -1265,7 +1307,7 @@ namespace Mirle.Agv.View
 
         private void btnKeyInSoc_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.SetupFakeVehicleSoc(decimal.ToDouble(numSoc.Value));
+            mainFlowHandler.SetupVehicleSoc(decimal.ToDouble(numSoc.Value));
         }
 
         private void radOnline_CheckedChanged(object sender, EventArgs e)
@@ -1365,6 +1407,22 @@ namespace Mirle.Agv.View
                     mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                     Vehicle.Instance.AutoState = EnumAutoState.Manual;
                     break;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var anti = !IsAgvcConnect;
+            middleAgent.TriggerConnect(anti);
+        }
+
+        private void cbSimulationMode_CheckedChanged(object sender, EventArgs e)
+        {
+            moveCommandDebugMode.button_SimulationMode_Click(this, e);
+            plcForm.chkFakeForking.Checked = cbSimulationMode.Checked;
+            if (cbSimulationMode.Checked)
+            {
+                mainFlowHandler.SetupVehicleSoc(100);
             }
         }
     }

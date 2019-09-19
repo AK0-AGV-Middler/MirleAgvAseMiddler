@@ -9,16 +9,18 @@ namespace Mirle.Agv.Model
     public class ThetaSectionDeviation
     {
         public uint Count { get; set; }
+        public int Index { get; set; }
         public double Theta { get; set; }
         public double SectionDeviation { get; set; }
         public double BarcodeAngleInMap { get; set; }
         public double AGVAngleInMap { get; set; }
 
-        public ThetaSectionDeviation(double theta, double sectionDeviation, uint count)
+        public ThetaSectionDeviation(double theta, double sectionDeviation, uint count, int index = -1)
         {
             Theta = theta;
             SectionDeviation = sectionDeviation;
             Count = count;
+            Index = index;
         }
 
         public ThetaSectionDeviation()

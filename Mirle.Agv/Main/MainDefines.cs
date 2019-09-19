@@ -195,6 +195,14 @@ namespace Mirle.Agv
         Papper,
         None
     }
+
+    public enum EnumBeamDirection
+    {
+        Front,
+        Back,
+        Left,
+        Right
+    }
     #endregion
 
     /// <summary>

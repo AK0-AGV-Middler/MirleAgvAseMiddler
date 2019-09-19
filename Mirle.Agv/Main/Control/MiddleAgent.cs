@@ -54,9 +54,10 @@ namespace Mirle.Agv.Controller
             }
         }
         public EnumThreadStatus PreAskReserveStatus { get; private set; } = EnumThreadStatus.None;
+        public List<MapSection> NeedReserveSections { get; set; } = new List<MapSection>();
 
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
-        private ConcurrentQueue<MapSection> queGotReserveOkSections = new ConcurrentQueue<MapSection>();
+        private ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
         private MapSection askingReserveSection = new MapSection();
         //public bool IsPauseAskReserve { get; private set; } = false;
 
@@ -107,18 +108,7 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
-
-        public void OnlyConnect()
-        {
-            if (ClientAgent != null)
-            {
-                if (!ClientAgent.IsConnection)
-                {
-                    Task.Run(() => ClientAgent.clientConnection());
-                }
-            }
-        }
+        }        
 
         private static Google.Protobuf.IMessage unPackWrapperMsg(byte[] raw_data)
         {
@@ -137,14 +127,7 @@ namespace Mirle.Agv.Controller
         {
             return middlerConfig;
         }
-        public bool IsClientAgentNull() => ClientAgent == null;
-        public void StartClientAgent()
-        {
-            if (ClientAgent != null)
-            {
-                Task.Run(() => ClientAgent.start());
-            }
-        }
+        public bool IsClientAgentNull() => ClientAgent == null;       
         public void ReConnect()
         {
             try
@@ -167,7 +150,7 @@ namespace Mirle.Agv.Controller
                     loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Middler : Disconnect Stop, [IsNull={IsClientAgentNull()}][IsConnect={IsConnected()}]"));
 
                     ClientAgent.stop();
-                    ClientAgent = null;
+                    //ClientAgent = null;
                 }
                 else
                 {
@@ -185,7 +168,8 @@ namespace Mirle.Agv.Controller
             {
                 if (!ClientAgent.IsConnection)
                 {
-                    Task.Run(() => ClientAgent.clientConnection());
+                    //Task.Run(() => ClientAgent.clientConnection());
+                    Task.Run(() => ClientAgent.start());
                 }
                 else
                 {
@@ -214,7 +198,8 @@ namespace Mirle.Agv.Controller
         {
             TcpIpAgent agent = sender as TcpIpAgent;
             OnConnectionChangeEvent?.Invoke(this, agent.IsConnection);
-            OnMessageShowOnMainFormEvent?.Invoke(this, $"Middler : ClientAgent OnConnection Change Event, [AgentName={agent.Name}][IsConnect={agent.IsConnection}]");
+            var isConnect = agent.IsConnection ? "連線中" : "斷線";
+            OnMessageShowOnMainFormEvent?.Invoke(this, $"Middler : {agent.Name}與AGVC連線狀態改變 {isConnect}");
         }
         //protected void DoDisconnection(object sender, TcpIpEventArgs e)
         //{
@@ -238,15 +223,16 @@ namespace Mirle.Agv.Controller
         {
             if (!IsConnected())
             {
-                var msg = $"Middler : SendCommandWrapper +++FAIL+++ [SeqNum = {wrapper.SeqNum}][{(EnumCmdNum)wrapper.ID}] " + wrapper.ToString();
+                var msg = $"Middler : 斷線中，無法發送[{wrapper.SeqNum}][id {wrapper.ID}{(EnumCmdNum)wrapper.ID}]資訊";
                 OnCmdSendEvent?.Invoke(this, msg);
+                msg += wrapper.ToString();
                 loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
                 return;
             }
             else
             {
-                string msg = $"[SEND] [SeqNum = {wrapper.SeqNum}][{(EnumCmdNum)wrapper.ID}] {wrapper}";
+                string msg = $"[SEND] [SeqNum = {wrapper.SeqNum}][{wrapper.ID}][{(EnumCmdNum)wrapper.ID}] {wrapper}";
                 OnCmdSendEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
@@ -267,22 +253,23 @@ namespace Mirle.Agv.Controller
         }
         private void RecieveCmmandLog(object sender, TcpIpEventArgs e)
         {
-            string msg = $"[RECV] [SeqNum = {e.iSeqNum}][{(EnumCmdNum)int.Parse(e.iPacketID)}][ObjPacket = {e.objPacket}]";
+            string msg = $"[RECV] [SeqNum = {e.iSeqNum}][{e.iPacketID}][{(EnumCmdNum)int.Parse(e.iPacketID)}][ObjPacket = {e.objPacket}]";
             OnCmdReceiveEvent?.Invoke(this, msg);
             theLoggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 , msg));
         }
         private void RecieveCommandMediator(object sender, TcpIpEventArgs e)
         {
-            if (theVehicle.AutoState != EnumAutoState.Auto)
+            EnumCmdNum cmdNum = (EnumCmdNum)int.Parse(e.iPacketID);
+
+            if (theVehicle.AutoState != EnumAutoState.Auto && !IsApplyOnly(cmdNum))
             {
-                var msg = $"Middler : Recieve Command Mediator +++FAIL+++, [AutoState={theVehicle.AutoState}]";
+                var msg = $"Middler : 手動模式下，不接受AGVC命令";
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
                 return;
             }
 
-            EnumCmdNum cmdNum = (EnumCmdNum)int.Parse(e.iPacketID);
             switch (cmdNum)
             {
                 case EnumCmdNum.Cmd000_EmptyCommand:
@@ -384,6 +371,93 @@ namespace Mirle.Agv.Controller
             }
         }
 
+        private bool IsApplyOnly(EnumCmdNum cmdNum)
+        {
+            switch (cmdNum)
+            {
+                case EnumCmdNum.Cmd000_EmptyCommand:
+                    break;
+                case EnumCmdNum.Cmd31_TransferRequest:
+                    break;
+                case EnumCmdNum.Cmd32_TransferCompleteResponse:
+                    break;
+                case EnumCmdNum.Cmd33_ControlZoneCancelRequest:
+                    break;
+                case EnumCmdNum.Cmd35_CarrierIdRenameRequest:
+                    return true;
+                case EnumCmdNum.Cmd36_TransferEventResponse:
+                    break;
+                case EnumCmdNum.Cmd37_TransferCancelRequest:
+                    break;
+                case EnumCmdNum.Cmd39_PauseRequest:
+                    break;
+                case EnumCmdNum.Cmd41_ModeChange:
+                    break;
+                case EnumCmdNum.Cmd43_StatusRequest:
+                    return true;
+                case EnumCmdNum.Cmd44_StatusRequest:
+                    break;
+                case EnumCmdNum.Cmd45_PowerOnoffRequest:
+                    break;
+                case EnumCmdNum.Cmd51_AvoidRequest:
+                    break;
+                case EnumCmdNum.Cmd52_AvoidCompleteResponse:
+                    break;
+                case EnumCmdNum.Cmd71_RangeTeachRequest:
+                    break;
+                case EnumCmdNum.Cmd72_RangeTeachCompleteResponse:
+                    break;
+                case EnumCmdNum.Cmd74_AddressTeachResponse:
+                    break;
+                case EnumCmdNum.Cmd91_AlarmResetRequest:
+                    return true;
+                case EnumCmdNum.Cmd94_AlarmResponse:
+                    break;
+                case EnumCmdNum.Cmd131_TransferResponse:
+                    break;
+                case EnumCmdNum.Cmd132_TransferCompleteReport:
+                    break;
+                case EnumCmdNum.Cmd133_ControlZoneCancelResponse:
+                    break;
+                case EnumCmdNum.Cmd134_TransferEventReport:
+                    break;
+                case EnumCmdNum.Cmd135_CarrierIdRenameResponse:
+                    break;
+                case EnumCmdNum.Cmd136_TransferEventReport:
+                    break;
+                case EnumCmdNum.Cmd137_TransferCancelResponse:
+                    break;
+                case EnumCmdNum.Cmd139_PauseResponse:
+                    break;
+                case EnumCmdNum.Cmd141_ModeChangeResponse:
+                    break;
+                case EnumCmdNum.Cmd143_StatusResponse:
+                    break;
+                case EnumCmdNum.Cmd144_StatusReport:
+                    break;
+                case EnumCmdNum.Cmd145_PowerOnoffResponse:
+                    break;
+                case EnumCmdNum.Cmd151_AvoidResponse:
+                    break;
+                case EnumCmdNum.Cmd152_AvoidCompleteReport:
+                    break;
+                case EnumCmdNum.Cmd171_RangeTeachResponse:
+                    break;
+                case EnumCmdNum.Cmd172_RangeTeachCompleteReport:
+                    break;
+                case EnumCmdNum.Cmd174_AddressTeachReport:
+                    break;
+                case EnumCmdNum.Cmd191_AlarmResetResponse:
+                    break;
+                case EnumCmdNum.Cmd194_AlarmReport:
+                    break;
+                default:
+                    break;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Thd Ask Reserve
@@ -438,10 +512,10 @@ namespace Mirle.Agv.Controller
             thdAskReserve.IsBackground = true;
             thdAskReserve.Start();
             AskReserveStatus = EnumThreadStatus.Start;
-            var msg = $"Middler : 開始詢問通行權, [NeedReserveSectionIds={QueMapSectionsToString(queNeedReserveSections)}]";
+            var msg = $"Middler : 開始詢問通行權";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //         , msg));
         }
         public void PauseAskReserve()
         {
@@ -450,8 +524,8 @@ namespace Mirle.Agv.Controller
             AskReserveStatus = EnumThreadStatus.Pause;
             var msg = $"Middler : 暫停詢問通行權, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
         public void ResumeAskReserve()
         {
@@ -461,8 +535,8 @@ namespace Mirle.Agv.Controller
             PreAskReserveStatus = tempStatus;
             var msg = $"Middler : 恢復詢問通行權, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
 
         }
         public void StopAskReserve()
@@ -475,24 +549,27 @@ namespace Mirle.Agv.Controller
                 AskReserveStatus = EnumThreadStatus.Stop;
             }
 
+            ClearAskReserve();
+
             var msg = $"Middler : 停止詢問通行權, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-               , msg));
+            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //   , msg));
         }
         private void PreAskReserve()
         {
-            var msg = $"Middler :詢問通行權 前處理, [NeedReserveSectionIds={QueMapSectionsToString(queNeedReserveSections)}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
-
-            queGotReserveOkSections = new ConcurrentQueue<MapSection>();
+            queNeedReserveSections = new ConcurrentQueue<MapSection>(NeedReserveSections);
+            queReserveOkSections = new ConcurrentQueue<MapSection>();
             askingReserveSection = new MapSection();
             if (queNeedReserveSections.IsEmpty)
             {
                 StopAskReserve();
             }
+
+            var msg = $"Middler :詢問通行權 前處理[NeedReserveSectionIds={QueMapSectionsToString(queNeedReserveSections)}]";
+            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //    , msg));
         }
         private void AfterAskReserve(long total)
         {
@@ -500,10 +577,12 @@ namespace Mirle.Agv.Controller
             askingReserveSection = new MapSection();
             //queGotReserveOkSections = new ConcurrentQueue<MapSection>();   
             AskReserveStatus = EnumThreadStatus.None;
+            theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             var msg = $"MainFlow : 詢問通行權 後處理, [ThreadStatus={AskReserveStatus}][TotalSpendMs={total}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
+            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //    , msg));
         }
 
         private bool CanAskReserve()
@@ -530,7 +609,7 @@ namespace Mirle.Agv.Controller
         private int GetReserveOkSectionsTotalLength()
         {
             double result = 0;
-            List<MapSection> reserveOkSections = new List<MapSection>(queGotReserveOkSections);
+            List<MapSection> reserveOkSections = new List<MapSection>(queReserveOkSections);
             foreach (var item in reserveOkSections)
             {
                 result += item.Distance;
@@ -541,34 +620,34 @@ namespace Mirle.Agv.Controller
         public void ClearNeedReserveSections()
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>();
-            var msg = $"Middler : ClearNeedReserveSections, [QueCount={queNeedReserveSections.Count}]";
+            var msg = $"Middler : 清除未取得通行權路徑清單, 共[{queNeedReserveSections.Count}]筆";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
         public void ClearAskingReserveSection()
         {
             askingReserveSection = new MapSection();
-            var msg = $"Middler : ClearAskingReserveSection, [QueCount={queNeedReserveSections.Count}]";
+            var msg = $"Middler : 清除正在詢問通行權路徑[{askingReserveSection.Id}]。";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
         public void ClearGotReserveOkSections()
         {
-            queGotReserveOkSections = new ConcurrentQueue<MapSection>();
-            var msg = $"Middler : ClearGotReserveOkSections, [QueCount={queGotReserveOkSections.Count}]";
+            queReserveOkSections = new ConcurrentQueue<MapSection>();
+            var msg = $"Middler : 清除已取得通行權路徑清單, 共[{queReserveOkSections.Count}]筆";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
         public void SetupAskingReserveSection(MapSection askingReserveSection)
         {
             this.askingReserveSection = askingReserveSection.DeepClone();
             var msg = $"Middler : SetupAskingReserveSection, [AskingReserveSectionID={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
         public MapSection GetAskingReserveSectionClone()
         {
@@ -577,18 +656,19 @@ namespace Mirle.Agv.Controller
         public void SetupNeedReserveSections(MoveCmdInfo moveCmd)
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>(moveCmd.MovingSections.DeepClone());
-            var msg = $"Middler : SetupNeedReserveSectionsByMoveCmd, [QueCount={queNeedReserveSections.Count}]";
+
+            var msg = $"Middler : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
         public void SetupNeedReserveSections(List<MapSection> mapSections)
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>(mapSections.DeepClone());
-            var msg = $"Middler : SetupNeedReserveSectionsByList, [QueCount={queNeedReserveSections.Count}]";
+            var msg = $"Middler : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
         public List<MapSection> GetNeedReserveSections()
         {
@@ -596,34 +676,34 @@ namespace Mirle.Agv.Controller
         }
         public List<MapSection> GetReserveOkSections()
         {
-            return new List<MapSection>(queGotReserveOkSections);
+            return new List<MapSection>(queReserveOkSections);
         }
         public void DequeueGotReserveOkSections()
         {
-            if (queGotReserveOkSections.Count == 0)
+            if (queReserveOkSections.Count == 0)
             {
-                var msg = $"Middler : DequeueGotReserveOkSections +++FAIL+++, [QueCount={queGotReserveOkSections.Count}]";
+                var msg = $"Middler :可通行路徑數量為[{queReserveOkSections.Count}]，無法清除已通過的路徑。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //     , msg));
                 return;
             }
             else
             {
-                queGotReserveOkSections.TryDequeue(out MapSection passSection);
-                var msg = $"Middler : DequeueGotReserveOkSections +++Ok+++, [SectionId={passSection.Id}]";
+                queReserveOkSections.TryDequeue(out MapSection passSection);
+                var msg = $"Middler : 清除已通過路徑[{passSection.Id}]。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //     , msg));
             }
         }
         public void SetupReserveOkSections(List<MapSection> reserveOkSections)
         {
-            queGotReserveOkSections = new ConcurrentQueue<MapSection>(reserveOkSections);
-            var msg = $"Middler : SetupReserveOkSectionsByList, [QueCount={queGotReserveOkSections.Count}]";
+            queReserveOkSections = new ConcurrentQueue<MapSection>(reserveOkSections);
+            var msg = $"Middler : 更新可通行路徑列表[{QueMapSectionsToString(queReserveOkSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //     , msg));
         }
 
         public void OnGetReserveOk()
@@ -634,7 +714,7 @@ namespace Mirle.Agv.Controller
             {
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權失敗 , 未取得通行權路徑列表 is Empty";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
                 return;
             }
 
@@ -642,17 +722,17 @@ namespace Mirle.Agv.Controller
             if (needReserveSection.Id == askingReserveSection.Id)
             {
                 queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
-                queGotReserveOkSections.Enqueue(aReserveOkSection);
+                queReserveOkSections.Enqueue(aReserveOkSection);
                 mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權成功";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
             }
             else
             {
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權失敗, 未取得通行權路徑為{needReserveSection.Id}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
             }
         }
         public void DequeueNeedReserveSections()
@@ -661,16 +741,16 @@ namespace Mirle.Agv.Controller
             {
                 var msg = $"Middler : DequeueNeedReserveSections +++FAIL+++, [QueCount={queNeedReserveSections.Count}]";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //     , msg));
             }
             else
             {
                 queNeedReserveSections.TryDequeue(out MapSection dequeueSection);
                 var msg = $"Middler : DequeueNeedReserveSections +++Ok+++, [SectionId={dequeueSection.Id}]";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //     , msg));
 
             }
         }
@@ -1175,7 +1255,10 @@ namespace Mirle.Agv.Controller
 
         }
 
-
+        public void TriggerConnect(bool v)
+        {
+            OnConnectionChangeEvent?.Invoke(this, v);
+        }
 
         private string[] StringSpilter(string v)
         {
@@ -1189,7 +1272,7 @@ namespace Mirle.Agv.Controller
 
         public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort e)
         {
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
 
         public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
@@ -1200,7 +1283,7 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
         }
-        public void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
+        public void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             Send_Cmd194_AlarmReport("0", ErrorStatus.ErrReset);
 
@@ -1244,14 +1327,14 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd136_TransferEventReport(EventType.LoadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             //Thread.Sleep(1000);
             Send_Cmd132_TransferCompleteReport(0);
         }
         public void LoadCompleteInLoadunload()
         {
             Send_Cmd136_TransferEventReport(EventType.LoadComplete);
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void UnloadArrivals()
         {
@@ -1267,7 +1350,7 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             //Thread.Sleep(1000);
             Send_Cmd132_TransferCompleteReport(0);
         }
@@ -1293,7 +1376,7 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
             theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             //Thread.Sleep(1000);
             Send_Cmd132_TransferCompleteReport(0);
 
@@ -1326,12 +1409,12 @@ namespace Mirle.Agv.Controller
         public void NoCommand()
         {
             theVehicle.ActionStatus = VHActionStatus.NoCommand;
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void Commanding()
         {
             theVehicle.ActionStatus = VHActionStatus.Commanding;
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void ReplyTransferCommand(string cmdId, ActiveType type, ushort seqNum, int replyCode, string reason)
         {
@@ -1359,12 +1442,12 @@ namespace Mirle.Agv.Controller
         public void PauseComplete()
         {
             theVehicle.PauseStatus = VhStopSingle.StopSingleOn;
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void ResumeComplete()
         {
             theVehicle.PauseStatus = VhStopSingle.StopSingleOff;
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void CancelAbortReply(ushort iSeqNum, int replyCode, string cancelCmdId, CMDCancelType actType)
         {
@@ -1382,7 +1465,10 @@ namespace Mirle.Agv.Controller
             ShowTransferCmdToForm(agvcTransCmd);
             OnInstallTransferCommandEvent?.Invoke(this, agvcTransCmd);
         }
-
+        public void StatusChangeReport(string sender)
+        {
+            Send_Cmd144_StatusChangeReport(sender);
+        }
         private void ShowTransferCmdToForm(AgvcTransCmd agvcTransCmd)
         {
             var msg = $"收到{agvcTransCmd.CommandType},loadAdr={agvcTransCmd.LoadAddressId},unloadAdr={agvcTransCmd.UnloadAddressId}.";
@@ -1407,8 +1493,8 @@ namespace Mirle.Agv.Controller
                 msg += $"({adrId})";
             }
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
-
         public bool IsConnected() => ClientAgent == null ? false : ClientAgent.IsConnection;
         #endregion
 
@@ -1652,7 +1738,7 @@ namespace Mirle.Agv.Controller
         {
             ID_44_STATUS_CHANGE_RESPONSE receive = (ID_44_STATUS_CHANGE_RESPONSE)e.objPacket; // Cmd43's object is empty
         }
-        public void Send_Cmd144_StatusChangeReport()
+        public void Send_Cmd144_StatusChangeReport(string sender)
         {
             PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
 
@@ -1684,6 +1770,9 @@ namespace Mirle.Agv.Controller
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                 wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
+
+                var msg = $"[來源{sender}]144 Report. [路徑ID={vehLocation.LastSection.Id}][位置ID={vehLocation.LastAddress.Id}][路徑距離={(uint)vehLocation.LastSection.Distance}][座標({Convert.ToInt32(vehLocation.RealPosition.X)},{Convert.ToInt32(vehLocation.RealPosition.Y)})][Mode={theVehicle.ModeStatus}][Reserve={theVehicle.ReserveStatus}]";
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
 
                 SendCommandWrapper(wrappers);
             }
@@ -1909,12 +1998,21 @@ namespace Mirle.Agv.Controller
             if (receive.IsReserveSuccess == ReserveResult.Success)
             {
                 var msg = $"取得{askingReserveSection.Id}通行權成功";
+                theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
+                StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                 OnGetReserveOk();
             }
             else
             {
                 var msg = $"取得{askingReserveSection.Id}通行權失敗";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                if (mainFlowHandler.IsPauseByNoReserve())
+                {
+                    theVehicle.ReserveStatus = VhStopSingle.StopSingleOn;
+                    StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                }
+                var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
             }
 
@@ -2180,7 +2278,7 @@ namespace Mirle.Agv.Controller
             ID_32_TRANS_COMPLETE_RESPONSE receive = (ID_32_TRANS_COMPLETE_RESPONSE)e.objPacket;
             theVehicle.ActionStatus = receive.ReplyCode == 0 ? VHActionStatus.NoCommand : VHActionStatus.Commanding;
             theVehicle.CurAgvcTransCmd.CommandId = "";
-            Send_Cmd144_StatusChangeReport();
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void Send_Cmd132_TransferCompleteReport(int delay = 0)
         {
@@ -2237,8 +2335,10 @@ namespace Mirle.Agv.Controller
                 case ActiveType.Techingmove:
                 case ActiveType.Round:
                 default:
-                    OnMessageShowOnMainFormEvent?.Invoke(this, $"拒絕傳送指令: {transRequest.ActType}");
+                    var msg = $"拒絕傳送指令: {transRequest.ActType}";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                     Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.ActType, e.iSeqNum, 1, "Unknow command.");
+                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
                     return;
             }
 

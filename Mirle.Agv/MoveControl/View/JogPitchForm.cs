@@ -41,7 +41,7 @@ namespace Mirle.Agv.View
             InitializeComponent();
             ChangeMode(EnumJogPitchMode.Normal);
             agvRevise = new AgvMoveRevise(moveControl.ontimeReviseConfig, moveControl.elmoDriver,
-                                          moveControl.DriverSr2000List, null, null);
+                                          moveControl.DriverSr2000List);
 
             this.allAxis = new Mirle.Agv.JogPitchAxis[AxisList.Count()];
 

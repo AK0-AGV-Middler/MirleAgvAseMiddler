@@ -445,17 +445,7 @@ namespace Mirle.Agv.View
             {
                 RichTextBoxAppendHead(richTextBox1, "ClientAgent is not null");
             }
-        }
-
-        private void btnCreateInstance_Click(object sender, EventArgs e)
-        {
-            //if (middleAgent.IsClientAgentNull())
-            //{
-            //    middleAgent.CreatTcpIpClientAgent();
-            //    middleAgent.Connect();
-            //}
-            middleAgent.OnlyConnect();
-        }
+        }       
 
         private void btnDisConnect_Click(object sender, EventArgs e)
         {
@@ -483,6 +473,12 @@ namespace Mirle.Agv.View
         private void btnStop_Click(object sender, EventArgs e)
         {
             middleAgent.StopClientAgent();
+        }
+
+        private void btnHide_Click(object sender, EventArgs e)
+        {
+            this.SendToBack();
+            this.Hide();
         }
     }
 }

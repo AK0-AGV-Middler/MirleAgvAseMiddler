@@ -39,6 +39,7 @@ namespace Mirle.Agv.Controller
         private AlarmHandler alarmHandler;
 
         private ComputeFunction computeFunction = new ComputeFunction();
+        private PlcAgent plcAgent = null;
 
         public MoveControlParameter ControlData { get; private set; } = new MoveControlParameter();
         private Thread threadSCVLog;
@@ -57,12 +58,9 @@ namespace Mirle.Agv.Controller
         private const int debugFlowLogMaxLength = 10000;
 
         public string DebugFlowLog { get; set; }
-        public int WaitReseveIndex { get; set; }
         public double LoopTime { get; set; } = 0;
         private System.Diagnostics.Stopwatch loopTimeTimer = new System.Diagnostics.Stopwatch();
-
-        public string autoTime { get; set; } = "啟動時間 : ";
-        public string errorTime { get; set; } = "異常停止時間 : ";
+        public bool Reviseing { get; set; }
 
         private void SetDebugFlowLog(string functionName, string message)
         {
@@ -313,11 +311,12 @@ namespace Mirle.Agv.Controller
         }
         #endregion 
 
-        public MoveControlHandler(MapInfo theMapInfo, AlarmHandler alarmHandler)
+        public MoveControlHandler(MapInfo theMapInfo, AlarmHandler alarmHandler, PlcAgent plcAgent)
         {
             this.alarmHandler = alarmHandler;
             this.theMapInfo = theMapInfo;
-            ReadMoveControlConfigXML("MoveControlConfig.xml");
+            this.plcAgent = plcAgent;
+            ReadMoveControlConfigXML(@"D:\MoveControl\MoveControlConfig.xml");
             SetTRTimeToAngleRange();
             InitailSr2000(moveControlConfig.Sr2000ConfigPath);
             elmoDriver = new ElmoDriver(moveControlConfig.ElmoConfigPath, this.alarmHandler);
@@ -325,7 +324,7 @@ namespace Mirle.Agv.Controller
             ReadOntimeReviseConfigXML(moveControlConfig.OnTimeReviseConfigPath);
             createMoveControlList = new CreateMoveControlList(DriverSr2000List, moveControlConfig, this.alarmHandler);
 
-            agvRevise = new AgvMoveRevise(ontimeReviseConfig, elmoDriver, DriverSr2000List, moveControlConfig.Safety, this.alarmHandler);
+            agvRevise = new AgvMoveRevise(ontimeReviseConfig, elmoDriver, DriverSr2000List);
 
             loopTimeTimer.Reset();
             loopTimeTimer.Start();
@@ -443,6 +442,7 @@ namespace Mirle.Agv.Controller
                     case "OntimeReviseTheta":
                     case "UpdateDeltaPositionRange":
                     case "OneTimeRevise":
+                    case "VChangeSafetyDistance":
                         temp = ReadSafetyDataXML((XmlElement)item);
                         moveControlConfig.Safety.Add(
                             (EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name),
@@ -662,6 +662,12 @@ namespace Mirle.Agv.Controller
                     case "NormalStopDistance":
                         moveControlConfig.NormalStopDistance = double.Parse(item.InnerText);
                         break;
+                    case "VelocitySafetyRange":
+                        moveControlConfig.VelocitySafetyRange = double.Parse(item.InnerText);
+                        break;
+                    case "VChangeSafetyDistanceMagnification":
+                        moveControlConfig.VChangeSafetyDistanceMagnification = double.Parse(item.InnerText);
+                        break;
                     case "SafteyDistance":
                         ReadSafetyDistanceXML((XmlElement)item);
                         break;
@@ -677,6 +683,12 @@ namespace Mirle.Agv.Controller
                     default:
                         break;
                 }
+            }
+
+            if (moveControlConfig.Move.Velocity > 1000)
+            {
+                moveControlConfig.Move.Velocity = 1000;
+                WriteLog("MoveControl", "7", device, "", "推測速度超過1000 elmo drive會出問題, 強制降回1000!");
             }
         }
         #endregion
@@ -1002,13 +1014,13 @@ namespace Mirle.Agv.Controller
             // 此Barcode是多久之前的資料,基本上為正值(s).
             double deltaTime = ((double)location.ScanTime + (DateTime.Now - location.BarcodeGetDataTime).TotalMilliseconds) / 1000;
             // 真實Barcode回推的RealEncoder需要再加上這個時間*速度(Elmo速度本身就帶正負號).
-            realEncoder = realEncoder + location.XFLVelocity * deltaTime;
+            realEncoder = realEncoder + location.Velocity * deltaTime;
             // RealEncoder = elmoEncoder + offset + delta.
             location.Delta = realEncoder - (location.ElmoEncoder + location.Offset);
 
             if (location.Encoder != null && moveControlConfig.Safety[EnumMoveControlSafetyType.UpdateDeltaPositionRange].Enable)
             {
-                double deltaTimeDistance = Math.Abs(location.XFLVelocity) *
+                double deltaTimeDistance = Math.Abs(location.Velocity) *
                ((DateTime.Now - location.Barcode.GetDataTime).TotalMilliseconds + moveControlConfig.SleepTime + location.Barcode.ScanTime) / 1000;
                 double distance = Math.Sqrt(Math.Pow(location.Encoder.Position.X - location.Barcode.Position.X, 2) +
                                             Math.Pow(location.Encoder.Position.Y - location.Barcode.Position.Y, 2));
@@ -1020,6 +1032,116 @@ namespace Mirle.Agv.Controller
                         "mm,因此啟動EMS! Encoder ( " + location.Encoder.Position.X.ToString("0") + ", " + location.Encoder.Position.Y.ToString("0") +
                         " ), Barcoder ( " + location.Barcode.Position.X.ToString("0") + ", " + location.Barcode.Position.Y.ToString("0") +
                         " ), realEncoder : " + location.RealEncoder.ToString("0"));
+                }
+            }
+        }
+
+        private void UpdateThetaSectionDeviation()
+        {
+            AGVPosition agvPosition = null;
+
+            int index = -1;
+            for (int i = 0; i < DriverSr2000List.Count; i++)
+            {
+                agvPosition = DriverSr2000List[i].GetAGVPosition();
+
+                if (agvPosition != null)
+                {
+                    if (computeFunction.IsSameAngle(agvPosition.BarcodeAngleInMap, agvPosition.AGVAngle, ControlData.WheelAngle))
+                    {
+                        index = i;
+                        break;
+                    }
+                    else
+                        agvPosition = null;
+                }
+            }
+
+            if (agvPosition != null)
+            {
+                if (location.ThetaAndSectionDeviation == null ||
+                !(location.ThetaAndSectionDeviation.Count == agvPosition.Count && location.ThetaAndSectionDeviation.Index == index))
+                {
+                    double sectionDeviation = 0;
+                    double theta =
+                        agvPosition.AGVAngle + (command.SectionLineList[command.IndexOflisSectionLine].DirFlag ? 0 : 180) +
+                        ControlData.WheelAngle - command.SectionLineList[command.IndexOflisSectionLine].SectionAngle;
+
+                    while (theta > 180 || theta <= -180)
+                    {
+                        if (theta > 180)
+                            theta -= 360;
+                        else if (theta <= -180)
+                            theta += 360;
+                    }
+
+                    switch (command.SectionLineList[command.IndexOflisSectionLine].SectionAngle)
+                    {
+                        case 0:
+                            sectionDeviation = agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y;
+                            break;
+                        case 180:
+                            sectionDeviation = -(agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y);
+                            break;
+                        case 90:
+                            sectionDeviation = agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X;
+                            break;
+                        case -90:
+                            sectionDeviation = -(agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    location.ThetaAndSectionDeviation = new ThetaSectionDeviation(theta, sectionDeviation, agvPosition.Count, index);
+                }
+            }
+            else
+            {
+                location.ThetaAndSectionDeviation = null;
+            }
+        }
+
+        private void ThetaSectionDeviationSafetyCheck()
+        {
+            if (location.ThetaAndSectionDeviation == null)
+                return;
+
+            if (moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Enable)
+            {
+                if (Math.Abs(location.ThetaAndSectionDeviation.Theta) >
+                    moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range)
+                {
+                    EMSControl("角度偏差" + location.ThetaAndSectionDeviation.Theta.ToString("0.0") +
+                        "度,已超過安全設置的" +
+                        moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0") +
+                        "度,因此啟動EMS!");
+
+                    return;
+                }
+            }
+
+            if (moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Enable)
+            {
+                if (ControlData.WheelAngle != 0 && moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Enable)
+                {
+                    if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range)
+                    {
+                        EMSControl("橫移偏差" + location.ThetaAndSectionDeviation.SectionDeviation.ToString("0") +
+                            "mm,已超過安全設置的" +
+                            moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0") +
+                            "mm,因此啟動EMS!");
+                    }
+                }
+                else
+                {
+                    if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
+                    {
+                        EMSControl("軌道偏差" + location.ThetaAndSectionDeviation.SectionDeviation.ToString("0") +
+                            "mm,已超過安全設置的" +
+                            moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0") +
+                            "mm,因此啟動EMS!");
+                    }
                 }
             }
         }
@@ -1079,30 +1201,30 @@ namespace Mirle.Agv.Controller
             {
                 ElmoAxisFeedbackData elmoData = elmoDriver.ElmoGetFeedbackData(EnumAxis.XFL);
 
+                location.GTPosition = elmoDriver.ElmoGetPosition(EnumAxis.GT);
+                location.GTMoveCompelete = elmoDriver.MoveCompelete(EnumAxis.GT);
+                location.GXMoveCompelete = elmoDriver.MoveCompelete(EnumAxis.GX);
+
                 if (elmoData != null)
                 {
-                    location.XFLVelocity = elmoData.Feedback_Velocity;
-                    location.XRRVelocity = elmoDriver.ElmoGetVelocity(EnumAxis.XRR);
+                    location.Velocity = elmoDriver.ElmoGetVelocity(EnumAxis.GX);
                     location.ElmoGetDataTime = elmoData.GetDataTime;
                     // 此筆Elmo資料是多久之前的,基本上時間會是正值(s).
                     double deltaTime = ((DateTime.Now - location.ElmoGetDataTime).TotalMilliseconds + moveControlConfig.SleepTime / 2) / 1000;
                     // 真實Encoder需要再加上這個時間*速度(Elmo速度本身就帶正負號).
-                    location.ElmoEncoder = elmoData.Feedback_Position + location.XFLVelocity * deltaTime;
+                    location.ElmoEncoder = elmoData.Feedback_Position + location.Velocity * deltaTime;
                 }
             }
             else
             {
                 if (!simulationIsMoving)
                 {
-                    location.XFLVelocity = 0;
-                    location.XRRVelocity = 0;
+                    location.Velocity = 0;
                 }
                 else
                 {
-                    location.XFLVelocity = ControlData.DirFlag ? ControlData.VelocityCommand : -ControlData.VelocityCommand;
-                    location.XRRVelocity = ControlData.DirFlag ? ControlData.VelocityCommand : -ControlData.VelocityCommand;
-
-                    location.ElmoEncoder = location.ElmoEncoder + 0.005 * location.XFLVelocity;
+                    location.Velocity = ControlData.DirFlag ? ControlData.VelocityCommand : -ControlData.VelocityCommand;
+                    location.ElmoEncoder = location.ElmoEncoder + 0.005 * location.Velocity;
                 }
 
                 location.ElmoGetDataTime = DateTime.Now;
@@ -1191,8 +1313,14 @@ namespace Mirle.Agv.Controller
 
             if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error)
             {
-                if (MoveState != EnumMoveState.TR && MoveState != EnumMoveState.R2000 && newBarcodeData)
-                    UpdateDelta();
+                if (MoveState != EnumMoveState.TR && MoveState != EnumMoveState.R2000)
+                {
+                    UpdateThetaSectionDeviation();
+                    ThetaSectionDeviationSafetyCheck();
+
+                    if (newBarcodeData)
+                        UpdateDelta();
+                }
 
                 UpdateReal();
                 SafetyTurnOutAndLineBarcodeInterval(newBarcodeData);
@@ -1211,80 +1339,9 @@ namespace Mirle.Agv.Controller
         #endregion
 
         #region CommandControl
-        private void GetAccTimeAndDistance(double vel, double acc, double jerk, ref double time, ref double distance)
-        {
-            time = acc / jerk;
-            vel = Math.Abs(vel);
-            double deltaVelocity = time * acc / 2 * 2;
-            double lastDeltaVelocity;
-            double lastDeltaTime;
-
-            if (deltaVelocity == vel)
-            {
-                time = time * 2;
-            }
-            else if (deltaVelocity > vel)
-            {
-                deltaVelocity = vel / 2;
-                time = Math.Sqrt(deltaVelocity * 2 / jerk);
-                time = time * 2;
-            }
-            else
-            {
-                lastDeltaVelocity = vel - deltaVelocity;
-                lastDeltaTime = lastDeltaVelocity / acc;
-                time = 2 * time + lastDeltaTime;
-            }
-
-            distance = vel * time / 2;
-        }
-
-        private double GetTRStopTurnDec()
-        {
-            return 0;
-            double vel = (location.XFLVelocity + location.XRRVelocity) / 2;
-            double time = 0;
-            double distance = 0;
-            double nowEncoder = 0;
-
-            GetAccTimeAndDistance(vel, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk, ref time, ref distance);
-            nowEncoder = location.ElmoEncoder + (ControlData.DirFlag ? distance : -distance);
-            double deltaAngle = GetTRFlowAngleChange(nowEncoder);
-            double nowAngle = Math.Abs(ControlData.WheelAngle - elmoDriver.ElmoGetGTPosition());
-            double nowTurnVelocity = Math.Abs(elmoDriver.ElmoGetGTVelocity());
-            double decTime = 2 * Math.Abs(deltaAngle - nowAngle) / nowTurnVelocity;
-            return Math.Abs(deltaAngle - nowAngle) / decTime;
-        }
-
-        private double GetTRStartTurnAcc()
-        {
-            return 0;
-            double vel = moveControlConfig.TurnParameter[ControlData.NowAction].Velocity;
-            double time = 0;
-            double distance = 0;
-            double nowEncoder = 0;
-
-            GetAccTimeAndDistance(vel, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk, ref time, ref distance);
-            nowEncoder = location.ElmoEncoder + (ControlData.DirFlag ? distance : -distance);
-            double deltaAngle = GetTRFlowAngleChange(nowEncoder);
-            double nowAngle = Math.Abs(ControlData.WheelAngle - elmoDriver.ElmoGetGTPosition());
-
-            double nowTurnVelocity = Math.Abs(elmoDriver.ElmoGetGTVelocity());
-            double decTime = 2 * Math.Abs(deltaAngle - nowAngle) / nowTurnVelocity;
-            return Math.Abs(deltaAngle - nowAngle) / decTime;
-            //return Math.Abs(deltaAngle - nowAngle) * 2 / time / time;
-        }
-
-        private void GetTRStartTurnAccDecAngleWithSensorStop(ref double acc, ref double dec, ref double angle)
-        {
-            acc = 165;
-            dec = 165;
-            angle = 5;
-        }
-
         private bool IsInTRPath(EnumAddressAction type, double encoder, double startAngle, double targetAngle)
         {
-            double nowAngle = elmoDriver.ElmoGetGTPosition();
+            double nowAngle = location.GTPosition;
             nowAngle -= startAngle;
             targetAngle -= startAngle;
 
@@ -1314,8 +1371,6 @@ namespace Mirle.Agv.Controller
             MoveState = EnumMoveState.TR;
             ControlData.NowAction = type;
 
-            double xFLVelocity = Math.Abs(location.XFLVelocity);
-            double xRRVelocity = Math.Abs(location.XRRVelocity);
             double distance = r * 2;
             double simulationDisntace = r * Math.PI / 2;
 
@@ -1395,13 +1450,31 @@ namespace Mirle.Agv.Controller
             double r = moveControlConfig.TurnParameter[type].R;
             double safetyVelocityRange = moveControlConfig.TurnParameter[type].SafetyVelocityRange;
 
+
+            double changeToNextSectionLineWheelAngle = -1;//= ControlData.WheelAngle + (wheelAngle - ControlData.WheelAngle) / 9 * 8;
+
+            switch (ControlData.WheelAngle)
+            {
+                case 0:
+                    changeToNextSectionLineWheelAngle = (wheelAngle == 90) ? 80 : -80;
+                    break;
+                case 90:
+                    changeToNextSectionLineWheelAngle = 10;
+                    break;
+                case -90:
+                    changeToNextSectionLineWheelAngle = -10;
+                    break;
+                default:
+                    break;
+            }
+
             WriteLog("MoveControl", "7", device, "", "start, velocity : " + velocity.ToString("0") + ", r : " + r.ToString("0") +
-                ", 舵輪將旋轉至 " + wheelAngle.ToString("0") + "度!");
+                ", 舵輪將旋轉至 " + wheelAngle.ToString("0") + "度, 旋轉至 " + changeToNextSectionLineWheelAngle.ToString("0") + "!");
+
             MoveState = EnumMoveState.TR;
             ControlData.NowAction = type;
 
-            double xFLVelocity = Math.Abs(location.XFLVelocity);
-            double xRRVelocity = Math.Abs(location.XRRVelocity);
+            double agvVelocity = Math.Abs(location.Velocity);
             double distance = r * 2;
 
             ControlData.TurnStartEncoder = location.ElmoEncoder;
@@ -1428,40 +1501,41 @@ namespace Mirle.Agv.Controller
                 WriteLog("MoveControl", "4", device, "", " TR中 GT Moving~");
             }
 
-            if (xFLVelocity > velocity + safetyVelocityRange && xRRVelocity > velocity + safetyVelocityRange)
+            if (agvVelocity > velocity + safetyVelocityRange)
             { // 超速GG, 不該發生.
                 SendAlarmCode(152000);
-                EMSControl("超速.., XFL vel : " + xFLVelocity.ToString("0") + ", XRR vel : " + xRRVelocity.ToString("0"));
+                EMSControl("超速.., vel : " + agvVelocity.ToString("0"));
                 return;
             }
 
-            if (ControlData.SensorStop)
-            {
-                double acc = 0;
-                double dec = 0;
-                double angle = 0;
-                GetTRStartTurnAccDecAngleWithSensorStop(ref acc, ref dec, ref angle);
+            if (ControlData.SensorState == EnumVehicleSafetyAction.Stop)
+                WriteLog("MoveControl", "4", device, "", "?? TR中 ControlData.SensorStop true??");
 
-                elmoDriver.ElmoMove(EnumAxis.GT, angle, moveControlConfig.TurnParameter[type].AxisParameter.Velocity, EnumMoveType.Absolute,
-                                    acc, dec, moveControlConfig.TurnParameter[type].AxisParameter.Jerk);
+            //if (ControlData.SensorStop)
+            //{
+            //    double acc = 0;
+            //    double dec = 0;
+            //    double angle = 0;
+            //    GetTRStartTurnAccDecAngleWithSensorStop(ref acc, ref dec, ref angle);
+
+            //    elmoDriver.ElmoMove(EnumAxis.GT, angle, moveControlConfig.TurnParameter[type].AxisParameter.Velocity, EnumMoveType.Absolute,
+            //                        acc, dec, moveControlConfig.TurnParameter[type].AxisParameter.Jerk);
+            //}
+            //else
+            //{
+            if (Math.Abs(agvVelocity - velocity) <= safetyVelocityRange)
+            { // Normal
+                elmoDriver.ElmoMove(EnumAxis.GT, wheelAngle, moveControlConfig.TurnParameter[type].AxisParameter.Velocity, EnumMoveType.Absolute,
+                                    moveControlConfig.TurnParameter[type].AxisParameter.Acceleration,
+                                    moveControlConfig.TurnParameter[type].AxisParameter.Deceleration,
+                                    moveControlConfig.TurnParameter[type].AxisParameter.Jerk);
             }
             else
-            {
-                if (Math.Abs(xFLVelocity - velocity) <= safetyVelocityRange &&
-                    Math.Abs(xRRVelocity - velocity) <= safetyVelocityRange)
-                { // Normal
-                    elmoDriver.ElmoMove(EnumAxis.GT, wheelAngle, moveControlConfig.TurnParameter[type].AxisParameter.Velocity, EnumMoveType.Absolute,
-                                        moveControlConfig.TurnParameter[type].AxisParameter.Acceleration,
-                                        moveControlConfig.TurnParameter[type].AxisParameter.Deceleration,
-                                        moveControlConfig.TurnParameter[type].AxisParameter.Jerk);
-                }
-                else
-                { // 太慢 處理??
-                    SendAlarmCode(152003);
-                    EMSControl("速度過慢.., XFL vel : " + xFLVelocity.ToString("0") +
-                                                             ", XRR vel : " + xRRVelocity.ToString("0"));
-                }
+            { // 太慢 處理??
+                SendAlarmCode(152003);
+                EMSControl("速度過慢.., vel : " + agvVelocity.ToString("0"));
             }
+            //}
 
             while (!elmoDriver.WheelAngleCompare(wheelAngle, moveControlConfig.StartWheelAngleRange))
             {
@@ -1477,29 +1551,41 @@ namespace Mirle.Agv.Controller
                     return;
                 }
 
+                if (changeToNextSectionLineWheelAngle != -1)
+                {
+                    if ((ControlData.WheelAngle > wheelAngle && location.GTPosition < changeToNextSectionLineWheelAngle) ||
+                        (ControlData.WheelAngle < wheelAngle && location.GTPosition > changeToNextSectionLineWheelAngle))
+                    {
+                        changeToNextSectionLineWheelAngle = -1;
+                        command.IndexOflisSectionLine++;
+
+                        switch (wheelAngle)
+                        {
+                            case 0:
+                                BeamSensorOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
+                                DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
+                                break;
+                            case 90:
+                                BeamSensorOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right));
+                                DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right));
+                                break;
+                            case -90:
+                                BeamSensorOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left));
+                                DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left));
+                                break;
+                            default:
+                                EMSControl("switch (wheelAngle) default..EMS..");
+                                break;
+                        }
+
+                        WriteLog("MoveControl", "4", device, "", "Section Line + 1 !");
+                    }
+                }
+
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
 
-            command.IndexOflisSectionLine++;
-
-            switch (wheelAngle)
-            {
-                case 0:
-                    BeamSensorOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
-                    DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
-                    break;
-                case 90:
-                    BeamSensorOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right));
-                    DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right));
-                    break;
-                case -90:
-                    BeamSensorOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left));
-                    DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left));
-                    break;
-                default:
-                    EMSControl("switch (wheelAngle) default..EMS..");
-                    break;
-            }
+            //command.IndexOflisSectionLine++;
 
             ControlData.WheelAngle = wheelAngle;
             location.Delta = location.Delta + (ControlData.DirFlag ? (distance - (location.ElmoEncoder - ControlData.TurnStartEncoder)) :
@@ -1540,7 +1626,6 @@ namespace Mirle.Agv.Controller
                 outerWheelEncoder = location.ElmoEncoder;
             else
             {
-                WriteLog("MoveControl", "4", device, "", "R2000取得奇怪的wheelAngle : " + wheelAngle.ToString("0.0"));
                 EMSControl("R2000取得奇怪的wheelAngle");
                 return;
             }
@@ -1637,25 +1722,21 @@ namespace Mirle.Agv.Controller
 
             double velocity = moveControlConfig.TurnParameter[EnumAddressAction.R2000].Velocity;
             double safetyVelocityRange = moveControlConfig.TurnParameter[EnumAddressAction.R2000].SafetyVelocityRange;
-            double xFLVelocity = Math.Abs(location.XFLVelocity);
-            double xRRVelocity = Math.Abs(location.XRRVelocity);
+            double agvVelocity = Math.Abs(location.Velocity);
 
-            if (Math.Abs(xFLVelocity - velocity) <= safetyVelocityRange &&
-                Math.Abs(xRRVelocity - velocity) <= safetyVelocityRange)
+            if (Math.Abs(agvVelocity - velocity) <= safetyVelocityRange)
             { // Normal
             }
-            else if (xFLVelocity > velocity && xRRVelocity > velocity)
+            else if (agvVelocity > velocity)
             { // 超速GG, 不該發生.
                 SendAlarmCode(153000);
-                EMSControl("超速.., XFL vel : " + xFLVelocity.ToString("0") +
-                                                         ", XRR vel : " + xRRVelocity.ToString("0"));
+                EMSControl("超速.., vel : " + agvVelocity.ToString("0"));
                 return;
             }
             else
             { // 太慢 處理??
                 SendAlarmCode(153001);
-                EMSControl("速度過慢.., XFL vel : " + xFLVelocity.ToString("0") +
-                                                         ", XRR vel : " + xRRVelocity.ToString("0"));
+                EMSControl("速度過慢.., vel : " + agvVelocity.ToString("0"));
                 return;
             }
 
@@ -1680,7 +1761,6 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                WriteLog("MoveControl", "4", device, "", "R2000取得奇怪的wheelAngle : " + wheelAngle.ToString("0.0"));
                 EMSControl("R2000取得奇怪的wheelAngle");
                 return;
             }
@@ -1779,6 +1859,40 @@ namespace Mirle.Agv.Controller
             WriteLog("MoveControl", "7", device, "", " end.");
         }
 
+        private void SetVChangeSafetyParameter(double oldVelocity, double velocity)
+        {
+            if (velocity < oldVelocity)
+            {
+                double nowVelocity = elmoDriver.ElmoGetVelocity(EnumAxis.GX);
+
+                if (Math.Abs(nowVelocity) <= moveControlConfig.VelocitySafetyRange)
+                {
+                    double distance = computeFunction.GetAccDecDistance(
+                        0, velocity + moveControlConfig.Safety[EnumMoveControlSafetyType.VChangeSafetyDistance].Range,
+                        moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+
+                    ControlData.VChangeSafetyTargetEncoder = location.ElmoEncoder + (ControlData.DirFlag ? distance : -distance);
+                    ControlData.VChangeSafetyVelocity = velocity;
+                    ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.MoveStartSpeedLower;
+                }
+                else
+                {
+                    double vel = 0;
+                    double distance = computeFunction.GetDecDistanceOneJerk(oldVelocity, velocity,
+                                    moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk, ref vel) *
+                                    moveControlConfig.VChangeSafetyDistanceMagnification;
+
+                    ControlData.VChangeSafetyTargetEncoder = location.ElmoEncoder + (ControlData.DirFlag ? distance : -distance);
+                    ControlData.VChangeSafetyVelocity = vel;
+                    ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.SpeedLower;
+                    WriteLog("MoveControl", "7", device, "", "oldVelocity : " + oldVelocity.ToString("0") + ", velocity: " + velocity.ToString("0"));
+                    WriteLog("MoveControl", "7", device, "", ControlData.VChangeSafetyType.ToString() + ", distance : " + distance.ToString("0") + ", Velocity: " + vel.ToString("0"));
+                }
+            }
+            else
+                ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
+        }
+
         private void VchangeControl(double velocity, EnumVChangeType vChangeType, int TRWheelAngle = 0)
         {
             WriteLog("MoveControl", "7", device, "", " start, Velocity : " + velocity.ToString("0"));
@@ -1786,17 +1900,35 @@ namespace Mirle.Agv.Controller
             if (vChangeType != EnumVChangeType.SensorSlow)
                 ControlData.VelocityCommand = velocity;
 
-            if (velocity != ControlData.RealVelocity)
+            if (velocity != ControlData.RealVelocity && ControlData.SensorState != EnumVehicleSafetyAction.Stop)
             {
-                if (!ControlData.SensorSlow || velocity <= moveControlConfig.LowVelocity)
-                {
+                double oldVelocity = ControlData.RealVelocity;
+
+                if (ControlData.SensorState == EnumVehicleSafetyAction.Normal)
+                {   // 一般情況.
                     ControlData.RealVelocity = velocity;
                     agvRevise.SettingReviseData(velocity, ControlData.DirFlag);
+                    SetVChangeSafetyParameter(oldVelocity, velocity);
 
-                    if (!ControlData.SensorStop)
-                    {
-                        velocity /= moveControlConfig.Move.Velocity;
-                        elmoDriver.ElmoGroupVelocityChange(EnumAxis.GX, velocity);
+                    elmoDriver.ElmoGroupVelocityChange(EnumAxis.GX, velocity / moveControlConfig.Move.Velocity);
+                }
+                else
+                {   // 降速觸發中.
+                    if (velocity <= moveControlConfig.LowVelocity)
+                    {   // 需要降到lowSpeed或更慢的情況.
+                        ControlData.RealVelocity = velocity;
+                        agvRevise.SettingReviseData(velocity, ControlData.DirFlag);
+                        SetVChangeSafetyParameter(oldVelocity, velocity);
+
+                        elmoDriver.ElmoGroupVelocityChange(EnumAxis.GX, velocity / moveControlConfig.Move.Velocity);
+                    }
+                    else if (ControlData.RealVelocity < moveControlConfig.LowVelocity)
+                    {   // 需要升速且目前速度低於lowSpeed.
+                        ControlData.RealVelocity = moveControlConfig.LowVelocity;
+                        agvRevise.SettingReviseData(moveControlConfig.LowVelocity, ControlData.DirFlag);
+                        SetVChangeSafetyParameter(oldVelocity, moveControlConfig.LowVelocity);
+
+                        elmoDriver.ElmoGroupVelocityChange(EnumAxis.GX, moveControlConfig.LowVelocity / moveControlConfig.Move.Velocity);
                     }
                 }
             }
@@ -1855,8 +1987,12 @@ namespace Mirle.Agv.Controller
 
                 timer.Reset();
                 timer.Start();
-                Thread.Sleep(moveControlConfig.SleepTime * 2);
-                while (!elmoDriver.MoveCompelete(EnumAxis.GT) && !SimulationMode)
+                Thread.Sleep(moveControlConfig.SleepTime);
+                UpdatePosition();
+                Thread.Sleep(moveControlConfig.SleepTime);
+                UpdatePosition();
+
+                while (!location.GTMoveCompelete && !SimulationMode)
                 {
                     UpdatePosition();
                     SensorSafety();
@@ -1894,7 +2030,7 @@ namespace Mirle.Agv.Controller
 
             if (moveType == EnumMoveStartType.FirstMove)
             {
-                ControlData.TrigetEndEncoder = dirFlag ? distance : -distance;
+                ControlData.TrigetEndEncoder = location.RealEncoder + (dirFlag ? distance : -distance);
                 timer.Reset();
                 timer.Start();
                 while (timer.ElapsedMilliseconds < moveControlConfig.MoveStartWaitTime)
@@ -1922,7 +2058,7 @@ namespace Mirle.Agv.Controller
             }
             else if (moveType == EnumMoveStartType.ChangeDirFlagMove)
             {
-                ControlData.TrigetEndEncoder = ControlData.TrigetEndEncoder + (dirFlag ? distance : -distance);
+                ControlData.TrigetEndEncoder = location.RealEncoder + (dirFlag ? distance : -distance);
                 command.IndexOflisSectionLine++;
             }
 
@@ -1936,7 +2072,7 @@ namespace Mirle.Agv.Controller
 
             ControlData.RealVelocity = velocity;
 
-            ControlData.SensorState = GetBeamSensorState();
+            ControlData.SensorState = GetSensorState();
 
             if (ControlData.SensorState != EnumVehicleSafetyAction.Stop)
             {
@@ -1946,33 +2082,38 @@ namespace Mirle.Agv.Controller
                     elmoDriver.ElmoMove(EnumAxis.GX, -distance, velocity, EnumMoveType.Relative, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
 
                 simulationIsMoving = true;
+
+                if (ControlData.SensorState == EnumVehicleSafetyAction.LowSpeed)
+                {
+                    double vel = GetVChangeVelocity(moveControlConfig.LowVelocity);
+                    Command temp = createMoveControlList.NewVChangeCommand(null, 0, vel, ControlData.DirFlag, EnumVChangeType.SensorSlow);
+                    command.CommandList.Insert(command.IndexOfCmdList + 1, temp);
+                }
             }
             else
-                WriteLog("MoveControl", "7", device, "", "由於啟動時BeamSensor以觸發Stop,因此不啟動!");
+            {
+                WriteLog("MoveControl", "7", device, "", "由於啟動時 Sensor State 為Stop,因此不啟動!");
+            }
 
-            if (ControlData.SensorState == EnumVehicleSafetyAction.Stop)
-                ControlData.SensorStop = true;
-            else if (ControlData.SensorState == EnumVehicleSafetyAction.LowSpeed)
-                ControlData.SensorSlow = true;
 
             WriteLog("MoveControl", "7", device, "", "end");
         }
 
         private void SlowStopControl(MapPosition endPosition, int nextReserveIndex)
         {
-            WriteLog("MoveControl", "7", device, "", "start");
+            WriteLog("MoveControl", "7", device, "", "start, SensorState : " + ControlData.SensorState.ToString());
 
-            if (!ControlData.SensorStop)
-                elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+            //if (!ControlData.SensorStop)
+            elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
 
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
 
             timer.Reset();
             timer.Start();
-            while (!elmoDriver.MoveCompelete(EnumAxis.GX))
+            while (!location.GXMoveCompelete)
             {
                 UpdatePosition();
-                SensorSafety();
+                //SensorSafety();
 
                 if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue)
                 {
@@ -1997,41 +2138,6 @@ namespace Mirle.Agv.Controller
                     }
                 }
             }
-            else
-            {
-                for (int i = 1; i <= 3; i++)
-                {
-                    if (command.IndexOfCmdList + i < command.CommandList.Count)
-                    {
-                        if (command.CommandList[command.IndexOfCmdList + i].CmdType == EnumCommandType.Move)
-                            break;
-
-                        if (command.CommandList[command.IndexOfCmdList + i].Position != null)
-                        {
-                            if ((ControlData.DirFlag && location.RealEncoder > command.CommandList[command.IndexOfCmdList + i].TriggerEncoder) ||
-                               (!ControlData.DirFlag && location.RealEncoder < command.CommandList[command.IndexOfCmdList + i].TriggerEncoder))
-                            {
-                                WriteLog("MoveControl", "7", device, "", "Reserve Stop, 由於action : " + command.CommandList[command.IndexOfCmdList + i].CmdType.ToString() +
-                                                                     "的觸發點已超過目前位置,更改為立即觸發!");
-                                command.CommandList[command.IndexOfCmdList + i].Position = null;
-                            }
-                        }
-                    }
-                }
-
-                double distance = ControlData.TrigetEndEncoder - location.RealEncoder;
-
-                Command temp = createMoveControlList.NewMoveCommand(location.Real.Position, location.RealEncoder, Math.Abs(distance),
-                    moveControlConfig.Move.Velocity, ControlData.DirFlag, 0, EnumMoveStartType.ReserveStopMove, nextReserveIndex);
-                command.CommandList.Insert(command.IndexOfCmdList + 1, temp);
-
-                if (ControlData.VelocityCommand != moveControlConfig.Move.Velocity)
-                {
-                    double vel = GetVChangeVelocity(ControlData.VelocityCommand);
-                    temp = createMoveControlList.NewVChangeCommand(null, 0, vel, ControlData.DirFlag);
-                    command.CommandList.Insert(command.IndexOfCmdList + 2, temp);
-                }
-            }
 
             simulationIsMoving = false;
             WriteLog("MoveControl", "7", device, "", "end");
@@ -2054,8 +2160,11 @@ namespace Mirle.Agv.Controller
                 timer.Reset();
                 timer.Start();
 
-                Thread.Sleep(moveControlConfig.SleepTime * 2);
-                while (!elmoDriver.MoveCompelete(EnumAxis.GX))
+                Thread.Sleep(moveControlConfig.SleepTime);
+                UpdatePosition();
+                Thread.Sleep(moveControlConfig.SleepTime);
+                UpdatePosition();
+                while (!location.GXMoveCompelete)
                 {
                     UpdatePosition();
                     SensorSafety();
@@ -2080,50 +2189,22 @@ namespace Mirle.Agv.Controller
             WriteLog("MoveControl", "7", device, "", "Move Compelete !");
         }
 
-        private void StopControl()
-        {
-            WriteLog("MoveControl", "7", device, "", "start");
-            elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
-            elmoDriver.ElmoStop(EnumAxis.GT, moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
-
-            if (MoveState == EnumMoveState.R2000)
-            {
-                WriteLog("MoveControl", "7", device, "", "為R2000中的StopControl需停止虛擬軸.");
-                elmoDriver.ElmoStop(EnumAxis.VTFL);
-                elmoDriver.ElmoStop(EnumAxis.VTFR);
-                elmoDriver.ElmoStop(EnumAxis.VTRL);
-                elmoDriver.ElmoStop(EnumAxis.VTRR);
-                elmoDriver.ElmoStop(EnumAxis.VXFL);
-                elmoDriver.ElmoStop(EnumAxis.VXFR);
-                elmoDriver.ElmoStop(EnumAxis.VXRL);
-                elmoDriver.ElmoStop(EnumAxis.VXRR);
-            }
-
-            ControlData.MoveControlStop = false;
-            simulationIsMoving = false;
-            BeamSensorCloseAll();
-            DirLightCloseAll();
-
-            WriteLog("MoveControl", "7", device, "", "end");
-        }
-
         private void SensorStopControl()
         {
-            WriteLog("SensorStopControl", "7", device, "", "start, MoveState : " + MoveState.ToString());
+            WriteLog("MoveControl", "7", device, "", "start, MoveState : " + MoveState.ToString());
 
             switch (MoveState)
             {
                 case EnumMoveState.Moving:
-                    elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                    if (!location.GXMoveCompelete)
+                        elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
                     break;
                 case EnumMoveState.TR:
 
-                    WriteLog("SensorStopControl", "7", device, "", "EnumMoveState.TR ");
+                    WriteLog("MoveControl", "7", device, "", "EnumMoveState.TR ");
 
-                    double dec = GetTRStopTurnDec();
                     elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
-                    elmoDriver.ElmoStop(EnumAxis.GT, dec, moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Jerk);
-                    WriteLog("SensorStopControl", "7", device, "", dec.ToString("0.0"));
+                    elmoDriver.ElmoStop(EnumAxis.GT, moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Deceleration, moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Jerk);
 
                     if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.TRFlowStart].Enable)
                     {
@@ -2173,7 +2254,7 @@ namespace Mirle.Agv.Controller
                         timer.Reset();
                         timer.Start();
 
-                        while (!elmoDriver.MoveCompelete(EnumAxis.GX))
+                        while (!location.GXMoveCompelete)
                         {
                             UpdatePosition();
                             SensorSafety();
@@ -2198,7 +2279,9 @@ namespace Mirle.Agv.Controller
                     break;
             }
 
-            WriteLog("SensorStopControl", "7", device, "", "end");
+            SetVChangeSafetyParameter(Math.Abs(location.Velocity), 0);
+            simulationIsMoving = false;
+            WriteLog("MoveControl", "7", device, "", "end");
         }
 
         private void EMSControl(string emsResult)
@@ -2207,10 +2290,37 @@ namespace Mirle.Agv.Controller
             AGVStopResult = emsResult;
             WriteLog("MoveControl", "7", device, "", "EMS Stop : " + emsResult);
 
-            errorTime = "異常停止時間 : " + DateTime.Now.ToString("HH:mm:ss");
+            double stopDistance = computeFunction.GetAccDecDistance(Math.Abs(location.Velocity), 0,
+                                    moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk) *
+                                    moveControlConfig.VChangeSafetyDistanceMagnification;
+            double startStopEncoder = location.ElmoEncoder;
 
-            elmoDriver.ElmoStop(EnumAxis.GX);
-            elmoDriver.ElmoStop(EnumAxis.GT);
+            elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+            elmoDriver.ElmoStop(EnumAxis.GT, moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
+
+            while (!location.GXMoveCompelete && Math.Abs(startStopEncoder - location.ElmoEncoder) < stopDistance)
+            {
+                UpdatePosition();
+                Thread.Sleep(moveControlConfig.SleepTime);
+            }
+
+            if (!location.GXMoveCompelete)
+            {
+                try
+                {
+                    plcAgent.SetForcELMOServoOffOn();
+                    WriteLog("MoveControl", "7", device, "", "該停止的距離仍在移動,通知PLC斷Elmo驅動器的電源!");
+                }
+                catch
+                {
+                    WriteLog("MoveControl", "7", device, "", "該停止的距離仍在移動,通知PLC斷Elmo驅動器的電源,但跳Excption!");
+                }
+            }
+            else
+            {
+                elmoDriver.DisableMoveAxis();
+            }
+
             MoveState = EnumMoveState.Error;
             MoveFinished(EnumMoveComplete.Fail);
             ControlData.OntimeReviseFlag = false;
@@ -2250,13 +2360,11 @@ namespace Mirle.Agv.Controller
 
         private bool TriggerCommand(Command cmd)
         {
-            if (ControlData.SensorStop && (cmd.CmdType == EnumCommandType.Move || cmd.CmdType == EnumCommandType.End))
+            if (ControlData.SensorState == EnumVehicleSafetyAction.Stop && (cmd.CmdType == EnumCommandType.Move || cmd.CmdType == EnumCommandType.End))
                 return false;
 
-            if (cmd.ReserveNumber < command.ReserveList.Count && (cmd.ReserveNumber == -1 || command.ReserveList[cmd.ReserveNumber].GetReserve))
+            if (cmd.ReserveNumber < command.ReserveList.Count)// && (cmd.ReserveNumber == -1 || command.ReserveList[cmd.ReserveNumber].GetReserve))
             {
-                WaitReseveIndex = -1;
-
                 if (cmd.Position == null)
                 {
                     if (CheckGetNextReserve(cmd))
@@ -2315,8 +2423,6 @@ namespace Mirle.Agv.Controller
                     }
                 }
             }
-            else
-                WaitReseveIndex = cmd.ReserveNumber;
 
             return false;
         }
@@ -2326,11 +2432,6 @@ namespace Mirle.Agv.Controller
         {
             if (command.IndexOfCmdList < command.CommandList.Count && TriggerCommand(command.CommandList[command.IndexOfCmdList]))
             {
-                if (ControlData.SensorStop &&
-                    (command.CommandList[command.IndexOfCmdList].CmdType == EnumCommandType.Move ||
-                     command.CommandList[command.IndexOfCmdList].CmdType == EnumCommandType.End))
-                    return;
-
                 WriteLog("MoveControl", "7", device, "", "Barcode Position ( " + location.Barcode.Position.X.ToString("0") + ", " + location.Barcode.Position.Y.ToString("0") +
                                                          " ), Real Position ( " + location.Real.Position.X.ToString("0") + ", " + location.Real.Position.Y.ToString("0") +
                                                          " ), Encoder Position ( " + location.Encoder.Position.X.ToString("0") + ", " + location.Encoder.Position.Y.ToString("0") + " )");
@@ -2351,7 +2452,6 @@ namespace Mirle.Agv.Controller
                         if (ControlData.OntimeReviseFlag == false)
                         {
                             agvRevise.SettingReviseData(ControlData.VelocityCommand, ControlData.DirFlag);
-                            agvRevise.ResetOneTimeReivseParameter();
                             ControlData.OntimeReviseFlag = true;
                         }
 
@@ -2369,8 +2469,10 @@ namespace Mirle.Agv.Controller
                                            command.CommandList[command.IndexOfCmdList].MoveType);
                         break;
                     case EnumCommandType.SlowStop:
-                    case EnumCommandType.Stop:
                         SlowStopControl(command.CommandList[command.IndexOfCmdList].EndPosition, command.CommandList[command.IndexOfCmdList].NextReserveNumber);
+                        break;
+                    case EnumCommandType.Stop:
+                        ControlData.WaitReserveIndex = command.CommandList[command.IndexOfCmdList].NextReserveNumber;
                         break;
                     case EnumCommandType.End:
                         SecondCorrectionControl(command.CommandList[command.IndexOfCmdList].EndEncoder);
@@ -2379,18 +2481,13 @@ namespace Mirle.Agv.Controller
                         break;
                 }
 
-                //if (!ControlData.FlowStopRequeset && MoveState != EnumMoveState.Error)
-                //{
                 command.IndexOfCmdList++;
-                //    ExecuteCommandList();
-                //}
             }
         }
 
         private void MoveControlThread()
         {
             double[] reviseWheelAngle = new double[4];
-            string ontimeReviseEMSMessage;
             System.Diagnostics.Stopwatch waitDelateTime = new System.Diagnostics.Stopwatch();
 
             try
@@ -2405,38 +2502,31 @@ namespace Mirle.Agv.Controller
                         SensorSafety();
                     }
 
-                    if (ControlData.OntimeReviseFlag && !ControlData.MoveControlStop &&
-                             !ControlData.SensorStop && MoveState == EnumMoveState.Moving)
+                    if (MoveState == EnumMoveState.Moving && ControlData.OntimeReviseFlag)
                     {
-                        ontimeReviseEMSMessage = "";
-
-                        if (agvRevise.OntimeReviseByAGVPositionAndSection(ref reviseWheelAngle, ControlData.WheelAngle,
-                            location.XFLVelocity, location.ElmoEncoder,
-                            command.SectionLineList[command.IndexOflisSectionLine], ref ontimeReviseEMSMessage))
+                        if (agvRevise.OntimeReviseByAGVPositionAndSection(ref reviseWheelAngle, location.ThetaAndSectionDeviation,
+                            ControlData.WheelAngle, location.Velocity))
                         {
-                            if (ontimeReviseEMSMessage != "")
-                            {
-                                EMSControl(ontimeReviseEMSMessage);
-                                AGVStopResult = ontimeReviseEMSMessage;
-                            }
+                            if (location.GXMoveCompelete)
+                                //WriteLog("MoveControl", "7", device, "", "GX 停止中,因此不修正!");
+                                ;
+                            else if (!location.GTMoveCompelete)
+                                //WriteLog("MoveControl", "7", device, "", "GT 移動中,因此不修正!");
+                                ;
                             else
                             {
-                                if (ControlData.WheelAngle != 0)
-                                {
-                                    reviseWheelAngle[0] = ControlData.WheelAngle + (reviseWheelAngle[0] - ControlData.WheelAngle) * 1.5;
-                                    reviseWheelAngle[1] = ControlData.WheelAngle + (reviseWheelAngle[1] - ControlData.WheelAngle) * 1.5;
-                                    reviseWheelAngle[2] = ControlData.WheelAngle + (reviseWheelAngle[2] - ControlData.WheelAngle) * 1.5;
-                                    reviseWheelAngle[3] = ControlData.WheelAngle + (reviseWheelAngle[3] - ControlData.WheelAngle) * 1.5;
-                                }
-
                                 elmoDriver.ElmoMove(EnumAxis.GT, reviseWheelAngle[0], reviseWheelAngle[1], reviseWheelAngle[2], reviseWheelAngle[3],
                                                   ontimeReviseConfig.ThetaSpeed, EnumMoveType.Absolute, moveControlConfig.Turn.Acceleration,
                                                   moveControlConfig.Turn.Deceleration, moveControlConfig.Turn.Jerk);
+                                //WriteLog("MoveControl", "7", device, "", "ontime revise : " + reviseWheelAngle[0].ToString("0.0") +
+                                //                                         ", " + reviseWheelAngle[1].ToString("0.0") +
+                                //                                         ", " + reviseWheelAngle[2].ToString("0.0") +
+                                //                                         ", " + reviseWheelAngle[3].ToString("0.0"));
                             }
                         }
                     }
 
-                    if (elmoDriver.MoveCompelete(EnumAxis.GX))
+                    if (location.GXMoveCompelete && ControlData.SensorState == EnumVehicleSafetyAction.Stop)
                     {
                         if (ControlData.FlowStopRequeset)
                         {
@@ -2514,18 +2604,17 @@ namespace Mirle.Agv.Controller
                 return false;
         }
 
-        private bool GetBumperState()
+
+        private EnumVehicleSafetyAction GetBumperState()
         {
             if (SimulationMode)
-                return false;
+                return EnumVehicleSafetyAction.Normal;
 
             if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.Bumper].Enable)
-                return false;
+                return EnumVehicleSafetyAction.Normal;
 
-            return Vehicle.Instance.ThePlcVehicle.BumperAlarmStatus;
+            return Vehicle.Instance.ThePlcVehicle.BumperAlarmStatus ? EnumVehicleSafetyAction.Stop : EnumVehicleSafetyAction.Normal;
         }
-
-        public EnumVehicleSafetyAction test = EnumVehicleSafetyAction.Normal;
 
         private EnumVehicleSafetyAction GetBeamSensorState()
         {
@@ -2535,23 +2624,7 @@ namespace Mirle.Agv.Controller
             if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensor].Enable)
                 return EnumVehicleSafetyAction.Normal;
 
-            if (safetyData.TurningByPass || ControlData.SecondCorrection)
-                return EnumVehicleSafetyAction.Normal;
-
-            //return test;
             return Vehicle.Instance.ThePlcVehicle.VehicleSafetyAction;
-        }
-
-        private bool CheckNextCommandTrigger()
-        {
-            if (ControlData.DirFlag)
-            {
-                return location.RealEncoder > command.CommandList[command.IndexOfCmdList].TriggerEncoder;
-            }
-            else
-            {
-                return location.RealEncoder < command.CommandList[command.IndexOfCmdList].TriggerEncoder;
-            }
         }
 
         private double GetVChangeVelocity(double velocity)
@@ -2591,6 +2664,38 @@ namespace Mirle.Agv.Controller
             return returnVelocity;
         }
 
+        private bool CheckIndexOfCommandCanTrigger(int index)
+        {
+            bool dirFlag = true;
+
+            if (command.CommandList[index].CmdType == EnumCommandType.Move)
+                dirFlag = command.CommandList[index].DirFlag;
+            else
+                dirFlag = ControlData.DirFlag;
+
+            if (dirFlag)
+                return location.RealEncoder > command.CommandList[index].TriggerEncoder;
+            else
+                return location.RealEncoder < command.CommandList[index].TriggerEncoder;
+        }
+
+        private bool NextCommandIsXXX(EnumCommandType type, ref int index)
+        {
+            for (int i = command.IndexOfCmdList; i < command.CommandList.Count; i++)
+            {
+                if (command.CommandList[i].CmdType == type)
+                {
+                    index = i;
+                    return true;
+                }
+                else if (command.CommandList[i].Position != null)
+                    return false;
+
+            }
+
+            return false;
+        }
+
         private void SensorStartMove(EnumVehicleSafetyAction nowAction)
         {
             ///狀況1. 下筆命令是移動且無法觸發..當作二修.
@@ -2601,14 +2706,18 @@ namespace Mirle.Agv.Controller
             ///
             ///如果是 SlowVelocity 要加入降速.
             ///
+            int index = 0;
 
-            if (command.CommandList[command.IndexOfCmdList].CmdType == EnumCommandType.Move)
+            if (NextCommandIsXXX(EnumCommandType.Move, ref index))
             {
-                if (!CheckNextCommandTrigger())
+                if (!CheckIndexOfCommandCanTrigger(index))
                 { // 狀況1.
                     double targetEncoder = command.CommandList[command.IndexOfCmdList].TriggerEncoder +
                         (command.CommandList[command.IndexOfCmdList].DirFlag ? command.CommandList[command.IndexOfCmdList].SafetyDistance / 2 :
                                                               -command.CommandList[command.IndexOfCmdList].SafetyDistance / 2);
+
+                    WriteLog("MoveControl", "7", device, "", "下筆移動命令無法觸發,因此進行二修 : distance : " + (targetEncoder - location.RealEncoder).ToString("0") +
+                                                                   ", velocity : " + moveControlConfig.EQ.Velocity.ToString("0") + "!");
 
                     elmoDriver.ElmoMove(EnumAxis.GX, targetEncoder - location.RealEncoder, moveControlConfig.EQ.Velocity, EnumMoveType.Relative,
                          moveControlConfig.EQ.Acceleration, moveControlConfig.EQ.Deceleration, moveControlConfig.EQ.Jerk);
@@ -2617,35 +2726,46 @@ namespace Mirle.Agv.Controller
                     timer.Reset();
                     timer.Start();
 
-                    Thread.Sleep(moveControlConfig.SleepTime * 2);
-                    while (!elmoDriver.MoveCompelete(EnumAxis.GX))
+                    Thread.Sleep(moveControlConfig.SleepTime);
+                    UpdatePosition();
+                    Thread.Sleep(moveControlConfig.SleepTime);
+                    UpdatePosition();
+                    while (!location.GXMoveCompelete)
                     {
                         UpdatePosition();
                         Thread.Sleep(moveControlConfig.SleepTime);
 
                         if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue * 3)
                         {
-                            EMSControl("SecondCorrectionControl Timeout!");
+                            EMSControl("SensorStartMove Fake SecondCorrection Timeout!");
                             return;
                         }
                     }
                 }
-
-                if (nowAction == EnumVehicleSafetyAction.LowSpeed && command.IndexOfCmdList + 1 < command.CommandList.Count)
+                else
                 {
-                    if (command.CommandList[command.IndexOfCmdList + 1].CmdType != EnumCommandType.Vchange ||
-                        command.CommandList[command.IndexOfCmdList + 1].Velocity > moveControlConfig.LowVelocity)
-                    {
-                        double vel = GetVChangeVelocity(moveControlConfig.LowVelocity);
-                        Command temp = createMoveControlList.NewVChangeCommand(null, 0, vel, ControlData.DirFlag, EnumVChangeType.SensorSlow);
-                        command.CommandList.Insert(command.IndexOfCmdList + 1, temp);
-                    }
+                    WriteLog("MoveControl", "7", device, "", "下筆移動命令可以觸發,因此不插入移動命令!");
                 }
+
+                //if (nowAction == EnumVehicleSafetyAction.LowSpeed && command.IndexOfCmdList + 1 < command.CommandList.Count)
+                //{
+                //    if (command.CommandList[command.IndexOfCmdList + 1].CmdType != EnumCommandType.Vchange ||
+                //        command.CommandList[command.IndexOfCmdList + 1].Velocity > moveControlConfig.LowVelocity ||
+                //        command.CommandList[command.IndexOfCmdList + 1].Position != null)
+                //    {
+                //        double vel = GetVChangeVelocity(moveControlConfig.LowVelocity);
+                //        Command temp = createMoveControlList.NewVChangeCommand(null, 0, vel, ControlData.DirFlag, EnumVChangeType.SensorSlow);
+                //        command.CommandList.Insert(command.IndexOfCmdList + 1, temp);
+                //    }
+                //}
             }
-            else
+            else if (!NextCommandIsXXX(EnumCommandType.End, ref index))
             {
                 // 狀況3.
                 double distance = ControlData.TrigetEndEncoder - location.RealEncoder;
+
+                WriteLog("MoveControl", "7", device, "", "一般情況,插入移動命令 : distance : " +
+                    (ControlData.TrigetEndEncoder - location.RealEncoder).ToString("0") + "!");
 
                 Command temp = createMoveControlList.NewMoveCommand(null, 0, Math.Abs(distance),
                     moveControlConfig.Move.Velocity, ControlData.DirFlag, 0, EnumMoveStartType.SensorStopMove);
@@ -2664,23 +2784,15 @@ namespace Mirle.Agv.Controller
 
                 command.CommandList.Insert(command.IndexOfCmdList + 1, temp);
             }
+            else
+            {
+                WriteLog("MoveControl", "7", device, "", "二修可觸發,不做事情!");
+            }
         }
 
         private void SensorStartMoveTRAction()
         {
-            double acc = GetTRStartTurnAcc();
-            double distance = ControlData.TrigetEndEncoder - location.RealEncoder;
-            double vel = moveControlConfig.TurnParameter[ControlData.NowAction].Velocity;
-
-            elmoDriver.ElmoMove(EnumAxis.GX, distance, moveControlConfig.Move.Velocity, EnumMoveType.Relative,
-                     moveControlConfig.Move.Acceleration, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
-            VchangeControl(vel, EnumVChangeType.Normal);
-
-            elmoDriver.ElmoMove(EnumAxis.GT, command.CommandList[command.IndexOfCmdList].WheelAngle,
-                                moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Velocity,
-                                EnumMoveType.Absolute, acc,
-                                moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Deceleration,
-                                moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Jerk);
+            EMSControl("TR flow start 還未實作!");
         }
 
         private void SensorActionToNormal()
@@ -2692,7 +2804,7 @@ namespace Mirle.Agv.Controller
                     if (ControlData.VelocityCommand > moveControlConfig.LowVelocity/* && !elmoDriver.MoveCompelete(EnumAxis.GX)*/)
                     {
                         double vel = GetVChangeVelocity(ControlData.VelocityCommand);
-                        WriteLog("SensorStopControl", "7", device, "", "Sensor切換至Normal,速度提升至" + vel.ToString("0") + "!");
+                        WriteLog("MoveControl", "7", device, "", "Sensor切換至Normal,速度提升至" + vel.ToString("0") + "!");
                         Command temp = createMoveControlList.NewVChangeCommand(null, 0, vel, ControlData.DirFlag);
                         command.CommandList.Insert(command.IndexOfCmdList, temp);
                     }
@@ -2718,9 +2830,6 @@ namespace Mirle.Agv.Controller
                 default:
                     break;
             }
-
-            ControlData.SensorSlow = false;
-            ControlData.SensorStop = false;
         }
 
         private void SensorActionToSlow()
@@ -2731,12 +2840,12 @@ namespace Mirle.Agv.Controller
                     // 加入降速.
                     if (ControlData.VelocityCommand > moveControlConfig.LowVelocity)
                     {
-                        WriteLog("SensorStopControl", "7", device, "", "Sensor切換至LowSpeed,降速至300!");
+                        WriteLog("MoveControl", "7", device, "", "Sensor切換至LowSpeed,降速至300!");
                         Command temp = createMoveControlList.NewVChangeCommand(null, 0, moveControlConfig.LowVelocity, ControlData.DirFlag, EnumVChangeType.SensorSlow);
                         command.CommandList.Insert(command.IndexOfCmdList, temp);
                     }
                     else
-                        WriteLog("SensorStopControl", "7", device, "", "Sensor切換至LowSpeed,但目前速度小於等於300,不做降速!");
+                        WriteLog("MoveControl", "7", device, "", "Sensor切換至LowSpeed,但目前速度小於等於300,不做降速!");
 
                     break;
                 case EnumVehicleSafetyAction.Stop:
@@ -2758,9 +2867,6 @@ namespace Mirle.Agv.Controller
                 default:
                     break;
             }
-
-            ControlData.SensorSlow = true;
-            ControlData.SensorStop = false;
         }
 
         private void SensorActionToStop()
@@ -2777,9 +2883,6 @@ namespace Mirle.Agv.Controller
                 default:
                     break;
             }
-
-            ControlData.SensorSlow = false;
-            ControlData.SensorStop = true;
         }
 
         private void SensorAction(EnumVehicleSafetyAction beamsensorState)
@@ -2814,17 +2917,164 @@ namespace Mirle.Agv.Controller
                 return elmoDriver.CheckAxisNoError();
         }
 
+        private bool CheckAxisEnableAndLinked()
+        {
+            if (SimulationMode)
+                return true;
+
+            if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.CheckAxisState].Enable)
+                return true;
+            else
+                return elmoDriver.CheckAxisEnableAndLinked();
+        }
+
+        private void VChangeSafety()
+        {
+            if (!moveControlConfig.Safety[EnumMoveControlSafetyType.VChangeSafetyDistance].Enable)
+                return;
+
+            switch (ControlData.VChangeSafetyType)
+            {
+                case EnumVChangeSpeedLowerSafety.SpeedLower:
+                    if (ControlData.DirFlag && location.ElmoEncoder > ControlData.VChangeSafetyTargetEncoder ||
+                       !ControlData.DirFlag && location.ElmoEncoder < ControlData.VChangeSafetyTargetEncoder)
+                    {
+                        if (Math.Abs(location.Velocity) > moveControlConfig.VelocitySafetyRange + ControlData.VChangeSafetyVelocity)
+                        {
+                            WriteLog("MoveControl", "7", device, "", "降速指令未降速, 目前速度 : " + Math.Abs(location.Velocity).ToString("0") +
+                                                                           ", 安全速度 : " + ControlData.VChangeSafetyVelocity.ToString("0") + " !");
+                            EMSControl("降速指令未降速!");
+                        }
+                        else
+                        {
+                            WriteLog("MoveControl", "7", device, "", "降速變化正常,取消降速監控!");
+                            ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
+                        }
+                    }
+
+                    break;
+
+                case EnumVChangeSpeedLowerSafety.MoveStartSpeedLower:
+                    if (ControlData.DirFlag && location.ElmoEncoder > ControlData.VChangeSafetyTargetEncoder ||
+                       !ControlData.DirFlag && location.ElmoEncoder < ControlData.VChangeSafetyTargetEncoder)
+                    {
+                        if (Math.Abs(location.Velocity) > ControlData.VChangeSafetyVelocity + moveControlConfig.VelocitySafetyRange)
+                        {
+                            WriteLog("MoveControl", "7", device, "", "啟動VChange未降速, 目前速度 : " + Math.Abs(location.Velocity).ToString("0") +
+                                                                           ", 安全速度 : " + ControlData.VChangeSafetyVelocity.ToString("0") + " !");
+                            EMSControl("降速指令未降速!");
+                        }
+                        else
+                        {
+                            WriteLog("MoveControl", "7", device, "", "啟動VChange正常,取消降速監控!");
+                            ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
+                        }
+                    }
+
+                    break;
+
+                case EnumVChangeSpeedLowerSafety.None:
+                default:
+                    break;
+            }
+        }
+
+        private EnumVehicleSafetyAction GetSensorState()
+        {
+            EnumVehicleSafetyAction sensorState = EnumVehicleSafetyAction.Normal;
+            EnumVehicleSafetyAction beamSensorState = GetBeamSensorState();
+            EnumVehicleSafetyAction bumpSensorState = GetBumperState();
+
+            if (beamSensorState != ControlData.BeamSensorState)
+                WriteLog("MoveControl", "7", device, "", "BeamSensorState 從 " + ControlData.BeamSensorState.ToString() +
+                         " 變更為 " + beamSensorState.ToString() + " (原始資料,只受模擬模式或Disable BeamSensor功能影響)!");
+
+            if (bumpSensorState != ControlData.BumpSensorState)
+                WriteLog("MoveControl", "7", device, "", "BumpSensorState 從 " + ControlData.BumpSensorState.ToString() +
+                         " 變更為 " + bumpSensorState.ToString() + " (原始資料,只受模擬模式或Disable BumpSensor功能影響)!");
+
+            ControlData.BeamSensorState = beamSensorState;
+            ControlData.BumpSensorState = bumpSensorState;
+
+            if (safetyData.TurningByPass || ControlData.SecondCorrection)
+                beamSensorState = EnumVehicleSafetyAction.Normal;
+
+            if (ControlData.WaitReserveIndex != -1)
+            {
+                if (command.ReserveList[ControlData.WaitReserveIndex].GetReserve)
+                    ControlData.WaitReserveIndex = -1;
+            }
+
+            if (ControlData.FlowStopRequeset || ControlData.PauseRequest || ControlData.PauseAlready || ControlData.WaitReserveIndex != -1 ||
+                beamSensorState == EnumVehicleSafetyAction.Stop || bumpSensorState == EnumVehicleSafetyAction.Stop)
+                sensorState = EnumVehicleSafetyAction.Stop;
+            else if (beamSensorState == EnumVehicleSafetyAction.LowSpeed || bumpSensorState == EnumVehicleSafetyAction.LowSpeed)
+                sensorState = EnumVehicleSafetyAction.LowSpeed;
+            else
+                sensorState = EnumVehicleSafetyAction.Normal;
+
+
+            return sensorState;
+        }
+
+        private EnumVehicleSafetyAction ProcessSensorState(EnumVehicleSafetyAction sensorState)
+        {
+            if (SimulationMode)
+                return sensorState;
+
+            double nowVel = Math.Abs(elmoDriver.ElmoGetVelocity(EnumAxis.GX));
+            bool vChangeComplete = Math.Abs(nowVel - ControlData.RealVelocity) <= moveControlConfig.VelocitySafetyRange;
+
+            if (ControlData.SensorState == EnumVehicleSafetyAction.LowSpeed &&
+                sensorState == EnumVehicleSafetyAction.Normal)
+            {
+                if (!vChangeComplete || location.GXMoveCompelete)
+                    sensorState = EnumVehicleSafetyAction.LowSpeed;
+            }
+            else if (ControlData.SensorState == EnumVehicleSafetyAction.Normal &&
+                     sensorState == EnumVehicleSafetyAction.LowSpeed)
+            {
+                if (location.GXMoveCompelete)
+                {
+                    sensorState = EnumVehicleSafetyAction.Normal;
+                }
+                else if (!vChangeComplete && nowVel < ControlData.RealVelocity)
+                {
+                    sensorState = EnumVehicleSafetyAction.Stop;
+                    WriteLog("MoveControl", "7", device, "", "升速中觸發LowSpeed訊號,由於無法直接降速,因此變更訊號為Stop!");
+                }
+            }
+            else if (ControlData.SensorState == EnumVehicleSafetyAction.Stop &&
+                     sensorState != EnumVehicleSafetyAction.Stop)
+            {   // 停止->移動,如果還在動,延遲訊號.
+                if (!location.GXMoveCompelete)
+                    sensorState = EnumVehicleSafetyAction.Stop;
+            }
+            else if (ControlData.SensorState != EnumVehicleSafetyAction.Stop &&
+                     sensorState == EnumVehicleSafetyAction.Stop)
+            {   // 移動->停止,如果還沒動,延遲訊號.
+                if (location.GXMoveCompelete)
+                {
+                    sensorState = ControlData.SensorState;
+                    if (ControlData.FlowStopRequeset)
+                        WriteLog("MoveControl", "7", device, "", "FlowStopRequeset,但訊號被延遲!");
+                }
+            }
+
+            return sensorState;
+        }
+
+        private EnumVehicleSafetyAction UpdateSensorState()
+        {
+            EnumVehicleSafetyAction sensorState = GetSensorState();
+            return ProcessSensorState(sensorState);
+        }
+
         private void SensorSafety()
         {
             if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
                 return;
 
-            //if (IsCharging())
-            //{
-            //    SendAlarmCode(141000);
-            //    EMSControl("走行中出現Charging訊號!");
-            //}
-            //else
             if (ForkNotHome())
             {
                 SendAlarmCode(140000);
@@ -2836,29 +3086,14 @@ namespace Mirle.Agv.Controller
                 EMSControl("走行中Axis Error!");
             }
 
-            if (ControlData.FlowStopRequeset)
-            {
-                ControlData.MoveControlStop = true;
-            }
+            EnumVehicleSafetyAction sensorState = UpdateSensorState();
+            if (ControlData.SensorState != sensorState)
+                WriteLog("MoveControl", "7", device, "", "SensorState 從 " + ControlData.SensorState.ToString() +
+                         " 變更為 " + sensorState.ToString() + "!");
 
-            if (ControlData.MoveControlStop)
-            {
-                StopControl();
-            }
-
-            EnumVehicleSafetyAction beamsensorState = GetBeamSensorState();
-
-            bool bumperState = GetBumperState();
-
-            if (bumperState)
-                beamsensorState = EnumVehicleSafetyAction.Stop;
-
-            if (ControlData.PauseRequest || ControlData.PauseAlready)
-                beamsensorState = EnumVehicleSafetyAction.Stop;
-
-            SensorAction(beamsensorState);
-
-            ControlData.SensorState = beamsensorState;
+            SensorAction(sensorState);
+            ControlData.SensorState = sensorState;
+            VChangeSafety();
         }
         #endregion
 
@@ -3072,13 +3307,20 @@ namespace Mirle.Agv.Controller
             }
             else if (ControlData.CommandMoving)
             {
+                BeamSensorCloseAll();
+                DirLightCloseAll();
                 ControlData.CommandMoving = false;
+                ControlData.OntimeReviseFlag = false;
 
                 if (isAGVMCommand)
                     OnMoveFinished?.Invoke(this, status);
             }
             else
             {
+                BeamSensorCloseAll();
+                DirLightCloseAll();
+                ControlData.CommandMoving = false;
+                ControlData.OntimeReviseFlag = false;
                 WriteLog("MoveControl", "7", device, "", "error : no Command send MoveFinished, status : " + status.ToString());
             }
         }
@@ -3118,8 +3360,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                WriteLog("MoveControl", "4", device, "", "不該有R2000啟動動作.");
-                ControlData.MoveControlStop = true;
+                EMSControl("不該有R2000啟動動作.");
             }
 
             location.Encoder = new AGVPosition();
@@ -3132,8 +3373,8 @@ namespace Mirle.Agv.Controller
         private void ResetFlag()
         {
             ControlData.SensorState = EnumVehicleSafetyAction.Normal;
-            ControlData.SensorStop = false;
-            ControlData.SensorSlow = false;
+            ControlData.BeamSensorState = EnumVehicleSafetyAction.Normal;
+            ControlData.BumpSensorState = EnumVehicleSafetyAction.Normal;
             ControlData.OntimeReviseFlag = false;
             ControlData.PauseRequest = false;
             ControlData.PauseAlready = false;
@@ -3142,9 +3383,21 @@ namespace Mirle.Agv.Controller
             ControlData.FlowStop = false;
             ControlData.FlowClear = false;
             ControlData.SecondCorrection = false;
+            ControlData.RealVelocity = 0;
+
+            ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
             safetyData = new MoveControlSafetyData();
             AGVStopResult = "";
-            WaitReseveIndex = -1;
+
+            if (command.CommandList.Count != 0 && command.CommandList[0].CmdType == EnumCommandType.Move)
+            {
+                ControlData.WaitReserveIndex = command.CommandList[0].ReserveNumber;
+                ControlData.DirFlag = command.CommandList[0].DirFlag;
+                ControlData.WheelAngle = command.CommandList[0].WheelAngle;
+            }
+            else
+                ControlData.WaitReserveIndex = -1;
+
             safetyData.TurningByPass = false;
             ControlData.CommandMoving = true;
             ControlData.CanPause = true;
@@ -3156,11 +3409,9 @@ namespace Mirle.Agv.Controller
             });
         }
 
-        public bool TransferMove(MoveCmdInfo moveCmd)
+        public bool TransferMove(MoveCmdInfo moveCmd, ref string errorMessage)
         {
             WriteLog("MoveControl", "7", device, "", "start");
-
-            string errorMessage = "";
 
             if ((MoveState != EnumMoveState.Error && MoveState != EnumMoveState.Idle))
             {
@@ -3237,7 +3488,9 @@ namespace Mirle.Agv.Controller
 
             if (MoveState != EnumMoveState.Error && MoveState != EnumMoveState.Idle)
             {
-                ControlData.FlowStopRequeset = true;
+                if (!ControlData.FlowStop)
+                    ControlData.FlowStopRequeset = true;
+
                 ControlData.FlowClear = true;
             }
             else
@@ -3252,8 +3505,6 @@ namespace Mirle.Agv.Controller
             if (SimulationMode)
                 return false;
 
-            errorTime = "異常停止時間 : ";
-            autoTime = "啟動時間 : " + DateTime.Now.ToString("HH:mm:ss");
             return location.Real != null;
         }
 
@@ -3267,7 +3518,13 @@ namespace Mirle.Agv.Controller
                 return false;
             }
 
-            double vel = elmoDriver.ElmoGetVelocity(EnumAxis.GX);
+            double vel = 0;
+
+            if (SimulationMode)
+                vel = ControlData.RealVelocity;
+            else
+                vel = elmoDriver.ElmoGetVelocity(EnumAxis.GX);
+
             double decDistance = computeFunction.GetAccDecDistance(vel, 0, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
 
             WriteLog("MoveControl", "7", device, "", "目前車速為 : " + vel.ToString("0") + ", 預計需要 " + decDistance.ToString("0") + " mm才能停止");
@@ -3278,13 +3535,13 @@ namespace Mirle.Agv.Controller
 
             if (ControlData.DirFlag)
             {
-                return stopEncoder < command.SectionLineList[command.IndexOflisSectionLine].TransferPositionEnd &&
-                       stopEncoder > command.SectionLineList[command.IndexOflisSectionLine].TransferPositionStart;
+                return stopEncoder <= command.SectionLineList[command.IndexOflisSectionLine].TransferPositionEnd &&
+                       stopEncoder >= command.SectionLineList[command.IndexOflisSectionLine].TransferPositionStart;
             }
             else
             {
-                return stopEncoder > command.SectionLineList[command.IndexOflisSectionLine].TransferPositionEnd &&
-                       stopEncoder < command.SectionLineList[command.IndexOflisSectionLine].TransferPositionStart;
+                return stopEncoder >= command.SectionLineList[command.IndexOflisSectionLine].TransferPositionEnd &&
+                       stopEncoder <= command.SectionLineList[command.IndexOflisSectionLine].TransferPositionStart;
             }
         }
 
@@ -3412,7 +3669,7 @@ namespace Mirle.Agv.Controller
         public void StatusChange()
         {
             WriteLog("MoveControl", "7", device, "", "外部控制強制清除命令!");
-            ControlData.WheelAngle = 0;
+            //ControlData.WheelAngle = 0;
             MoveState = EnumMoveState.Idle;
         }
 
@@ -3580,6 +3837,18 @@ namespace Mirle.Agv.Controller
                     AddCSV(ref csvLog, "N/A");
                 }
 
+                logThetaDeviation = location.ThetaAndSectionDeviation;
+                if (logThetaDeviation != null)
+                {
+                    AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
+                    AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
+                }
+                else
+                {
+                    AddCSV(ref csvLog, "N/A");
+                    AddCSV(ref csvLog, "N/A");
+                }
+
                 //  SR2000
                 //  count	scanTime	X	Y	theta   BarcodeAngle    delta	theta   
                 for (int i = 0; i < 2; i++)
@@ -3598,7 +3867,7 @@ namespace Mirle.Agv.Controller
                                 AddCSV(ref csvLog, logAGVPosition.ScanTime.ToString("0"));
                                 AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0"));
                                 AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0"));
-                                AddCSV(ref csvLog, logAGVPosition.AGVAngle.ToString("0"));
+                                AddCSV(ref csvLog, logAGVPosition.AGVAngle.ToString("0.0"));
                                 AddCSV(ref csvLog, logAGVPosition.BarcodeAngleInMap.ToString("0"));
                             }
                             else
@@ -3633,7 +3902,6 @@ namespace Mirle.Agv.Controller
                                 AddCSV(ref csvLog, "N/A");
                                 AddCSV(ref csvLog, "N/A");
                             }
-
                         }
                     }
                     else

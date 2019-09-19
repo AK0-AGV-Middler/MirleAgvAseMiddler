@@ -324,6 +324,26 @@ namespace Mirle.Agv.Controller
             return returnMapPosition;
         }
 
+
+
+        public double GetDecDistanceOneJerk(double startVel, double decVelocity, double dec, double jerk, ref double vel)
+        {
+            double time = dec / jerk; // acc = 0 > acc的時間.
+            double deltaVelocity = time * dec / 2;
+
+            if (startVel - decVelocity >= deltaVelocity * 2)
+            {
+                vel = startVel - deltaVelocity;
+                double jerkDistance = startVel * time - jerk * Math.Pow(time, 3) / 6;
+                return jerkDistance ;
+            }
+            else
+            {
+                vel = decVelocity;
+                return GetAccDecDistance(startVel, decVelocity, dec, jerk);
+            }
+        }
+
         public double GetAccDecDistance(double startVel, double endVel, double accOrDec, double jerk)
         {
             if (startVel == endVel)

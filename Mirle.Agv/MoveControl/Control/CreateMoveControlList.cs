@@ -626,25 +626,25 @@ namespace Mirle.Agv.Controller
 
                 if (reserveIndex != -1 && CheckNotInTRTurn(oneceMoveCommand, reserveDataList, indexOfOneceMoveCommand, reserveIndex))
                 {
-                    if (reserveDataList[reserveIndex].Action == EnumAddressAction.BTR50 ||
-                        reserveDataList[reserveIndex].Action == EnumAddressAction.BTR350)
-                    {
-                        data.NextMoveCmdStartReserveNumber = reserveIndex + 1;
-                    }
-                    else
-                    {
-                        distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand, data.STDistance - data.TurnOutDistance - moveControlConfig.ReserveSafetyDistance);
-                        distance += moveControlConfig.ReserveSafetyDistance;
+                    //if (reserveDataList[reserveIndex].Action == EnumAddressAction.BTR50 ||
+                    //    reserveDataList[reserveIndex].Action == EnumAddressAction.BTR350)
+                    //{
+                    //    data.NextMoveCmdStartReserveNumber = reserveIndex + 1;
+                    //}
+                    //else
+                    //{
+                    distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand, data.STDistance - data.TurnOutDistance - moveControlConfig.ReserveSafetyDistance);
+                    distance += moveControlConfig.ReserveSafetyDistance;
 
-                        if (distance < data.STDistance - data.TurnOutDistance)
-                        {
-                            triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-                            tempCommand = NewStopCommand(triggerPosition, data.MoveStartEncoder +
-                                           (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                                                                                  data.DirFlag, reserveIndex + 1);
-                            moveCmdList.Add(tempCommand);
-                        }
+                    if (distance < data.STDistance - data.TurnOutDistance)
+                    {
+                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                        tempCommand = NewStopCommand(triggerPosition, data.MoveStartEncoder +
+                                       (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
+                                                                              data.DirFlag, reserveIndex + 1);
+                        moveCmdList.Add(tempCommand);
                     }
+                    //}
                 }
 
                 if (velocityCommand > data.NowVelocityCommand)
@@ -742,7 +742,7 @@ namespace Mirle.Agv.Controller
                                 data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                 moveControlConfig.EQ.Velocity, data.DirFlag, EnumVChangeType.Normal);
                         }
-                        
+
                         moveCmdList.Add(tempCommand);
                     }
                 }
@@ -1080,7 +1080,7 @@ namespace Mirle.Agv.Controller
             data.InsertIndex++;
 
             // 如果第一段Section速度比AGV Config速度慢且下一個不是VChange命令，插入VChange(立刻執行)指令.
-            if (oneceMoveCommand.SectionSpeedLimits[0] < moveControlConfig.Move.Velocity &&
+            if (/*oneceMoveCommand.SectionSpeedLimits[0] < moveControlConfig.Move.Velocity &&*/
                 (moveCmdList[data.InsertIndex].CmdType != EnumCommandType.Vchange || moveCmdList[data.InsertIndex].Position != null))
             {
                 tempCommand = NewVChangeCommand(null, 0, oneceMoveCommand.SectionSpeedLimits[0], data.DirFlag);
@@ -1249,7 +1249,7 @@ namespace Mirle.Agv.Controller
                 }
 
                 // 第一次入彎距離不夠,需直接後退.
-                if (data.TempDistance < data.TurnInOutDistance)
+                if (data.TempDistance + 1 < data.TurnInOutDistance)
                 {
                     if (moveCmd.AddressActions[data.Index] == EnumAddressAction.R2000)
                     {
@@ -1790,6 +1790,11 @@ namespace Mirle.Agv.Controller
                                 else
                                 {  // 降速.
                                     moveCmdList[lastVChangeCommandIndex].Velocity = (int)(tempNowVelocity);
+                                }
+
+                                if ((int)moveCmdList[lastVChangeCommandIndex].Velocity == 0)
+                                {
+                                    moveCmdList[lastVChangeCommandIndex].Velocity = moveCmdList[i].Velocity;
                                 }
                             }
 

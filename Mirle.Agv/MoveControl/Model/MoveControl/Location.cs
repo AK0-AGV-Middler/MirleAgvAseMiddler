@@ -20,8 +20,11 @@ namespace Mirle.Agv.Model
         public int ScanTime { get; set; }
         public DateTime BarcodeGetDataTime { get; set; }
         public DateTime ElmoGetDataTime { get; set; }
-        public double XFLVelocity { get; set; }
-        public double XRRVelocity { get; set; }
+        public double Velocity { get; set; }
+        public bool GXMoveCompelete { get; set; }
+        public bool GTMoveCompelete { get; set; }
+        public double GTPosition { get; set; }
+        public ThetaSectionDeviation ThetaAndSectionDeviation { get; set; }
 
         public Location()
         {
@@ -34,6 +37,7 @@ namespace Mirle.Agv.Model
             Offset = 0;
             IndexOfSr2000List = -1;
             LastBarcodeCount = 100;
+            ThetaAndSectionDeviation = null;
         }
     }
 }

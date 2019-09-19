@@ -43,12 +43,12 @@ namespace Mirle.Agv.Controller
 
         public void LoadMapInfo()
         {
-            LoadBarcodeLineCsv();
-            LoadAddressCsv();
-            LoadSectionCsv();
+            ReadBarcodeLineCsv();
+            ReadAddressCsv();
+            ReadSectionCsv();
         }
 
-        public void LoadBarcodeLineCsv()
+        public void ReadBarcodeLineCsv()
         {
             try
             {
@@ -185,6 +185,8 @@ namespace Mirle.Agv.Controller
                     TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
                 }
 
+                var BarcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
+                WriteBarcodeBackup(BarcodeBackupPath);
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"Load Barcode File Ok. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
             }
@@ -195,7 +197,15 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void LoadAddressCsv()
+        private void WriteBarcodeBackup(string barcodeBackupPath)
+        {
+            if (File.Exists(barcodeBackupPath))
+            {
+                File.Delete(barcodeBackupPath);
+            }
+        }
+
+        public void ReadAddressCsv()
         {
             try
             {
@@ -250,7 +260,7 @@ namespace Mirle.Agv.Controller
                         oneRow.CanRightLoad = bool.Parse(getThisRow[dicHeaderIndexes["CanRightLoad"]]);
                         oneRow.CanRightUnload = bool.Parse(getThisRow[dicHeaderIndexes["CanRightUnload"]]);
                         oneRow.IsCharger = bool.Parse(getThisRow[dicHeaderIndexes["IsCharger"]]);
-                        oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];                      
+                        oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];
                         oneRow.ChargeDirection = oneRow.ChargeDirectionParse(getThisRow[dicHeaderIndexes["ChargeDirection"]]);
                         oneRow.IsSegmentPoint = bool.Parse(getThisRow[dicHeaderIndexes["IsSegmentPoint"]]);
                         oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
@@ -286,7 +296,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void LoadSectionCsv()
+        public void ReadSectionCsv()
         {
             try
             {
@@ -490,6 +500,10 @@ namespace Mirle.Agv.Controller
 
                     return;
                 }
+                if (oneRow.Min == 0 && oneRow.Max == 0)
+                {
+                    oneRow.Max = mapSection.Distance;
+                }
 
                 mapSection.BeamSensorDisables.Add(oneRow);
             }
@@ -499,7 +513,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection)
+        public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection, ref VehiclePosition vehicleLocation)
         {
             MapSection mapSection = aSection.DeepClone();
             MapAddress myHeadAddr = mapSection.HeadAddress;
@@ -557,23 +571,22 @@ namespace Mirle.Agv.Controller
             }
             #endregion
 
-            #region In Section           
-
+            #region In Section        
             if (!IsPositionInThisAddress(aPosition, location.LastAddress.Position))
             {
                 foreach (var insideAddress in mapSection.InsideAddresses)
                 {
                     if (IsPositionInThisAddress(aPosition, insideAddress.Position))
                     {
-                        location.LastAddress = insideAddress;
+                        vehicleLocation.LastAddress = insideAddress;
                         break;
                     }
                 }
             }
 
-            location.LastSection = mapSection;
+            vehicleLocation.LastSection = mapSection;
 
-            location.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, mapSection.HeadAddress.Position));
+            vehicleLocation.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, mapSection.HeadAddress.Position));
             return true;
             #endregion
         }

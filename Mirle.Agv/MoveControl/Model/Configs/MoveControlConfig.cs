@@ -29,6 +29,8 @@ namespace Mirle.Agv.Model.Configs
         public double MoveStartWaitTime { get; set; }
         public double ReserveSafetyDistance { get; set; }
         public double NormalStopDistance { get; set; }
+        public double VelocitySafetyRange { get; set; }
+        public double VChangeSafetyDistanceMagnification { get; set; }
         public Dictionary<EnumMoveControlSafetyType, SafetyData> Safety { get; set; } = new Dictionary<EnumMoveControlSafetyType, SafetyData>();
         public Dictionary<EnumSensorSafetyType, SafetyData> SensorByPass { get; set; } = new Dictionary<EnumSensorSafetyType, SafetyData>();
 

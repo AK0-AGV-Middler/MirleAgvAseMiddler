@@ -14,6 +14,7 @@ using System.Xml;
 using Mirle.Agv.View;
 using System.Runtime.CompilerServices;
 using Mirle.Agv.Model.Configs;
+using System.IO;
 
 namespace Mirle.Agv.Controller
 {
@@ -47,7 +48,7 @@ namespace Mirle.Agv.Controller
         private Logger chargerPIOLogger;
 
         private Logger BatteryLogger;
-        private Logger BatteryPercentage;
+        //private Logger BatteryPercentage;
 
         public PlcVehicle APLCVehicle;
 
@@ -312,7 +313,7 @@ namespace Mirle.Agv.Controller
             chargerPIOLogger = loggerAgent.GetLooger("ChargerPIO");
 
             BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");
-            BatteryPercentage = LoggerAgent.Instance.GetLooger("BatteryPercentage");
+            //BatteryPercentage = LoggerAgent.Instance.GetLooger("BatteryPercentage");
 
         }
 
@@ -767,7 +768,12 @@ namespace Mirle.Agv.Controller
                                 case "BatterySOH_Form_Plc":
                                     this.APLCVehicle.Batterys.BatterySOHFormPlc = aMCProtocol.get_ItemByTag("BatterySOH_Form_Plc").AsUInt16;
                                     break;
-
+                                case "DoubleStoreSensor(L)":
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(L) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(L)").AsBoolean}"));
+                                    break;
+                                case "DoubleStoreSensor(R)":
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(R) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(R)").AsBoolean}"));
+                                    break;
                             }
                         }
                     }
@@ -1091,7 +1097,8 @@ namespace Mirle.Agv.Controller
                     {
                         this.beforeBatteryPercentageInteger = currPercentage;
                         OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
-                        LogPlcMsg(loggerAgent, new LogFormat("BatteryPercentage", "1", functionName, this.PlcId, "", $"Percentage = {currPercentage}"));
+                        //LogPlcMsg(loggerAgent, new LogFormat("BatteryPercentage", "1", functionName, this.PlcId, "", $"Percentage = {currPercentage}"));
+                        BatteryPercentageWriteLog(currPercentage);
                     }
 
                     //IPC Auto、Manual 初始化
@@ -2294,6 +2301,39 @@ namespace Mirle.Agv.Controller
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             if (this.APLCVehicle.Robot.ExecutingCommand == null)
             {
+                if (this.IsFakeForking)
+                {
+                    this.APLCVehicle.Robot.ExecutingCommand = aForkCommand;
+                    System.Threading.Thread.Sleep(3000);
+                    if (this.APLCVehicle.Batterys.Charging == true)
+                    {
+                        System.Threading.Thread.Sleep(27000);
+                    }
+
+                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
+                    {
+                        this.APLCVehicle.Loading = true;
+                        //this.APLCVehicle.CassetteId = "CA0070";
+                        APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
+                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
+                    }
+                    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
+                    {
+                        this.APLCVehicle.CassetteId = "";
+                        this.APLCVehicle.Loading = false;
+                    }
+                    else
+                    {
+
+                    }
+
+                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                    //clearExecutingForkCommandFlag = true;
+                    this.APLCVehicle.Robot.ExecutingCommand = null;
+                    return true;
+                }
+
                 if (aForkCommand.ForkCommandState == EnumForkCommandState.Queue)
                 {
                     this.APLCVehicle.Robot.ExecutingCommand = aForkCommand;
@@ -2389,37 +2429,38 @@ namespace Mirle.Agv.Controller
                         {
                             case EnumForkCommandState.Queue:
 
-                                if (this.IsFakeForking)
-                                {
-                                    System.Threading.Thread.Sleep(3000);
-                                    if (this.APLCVehicle.Batterys.Charging == true)
-                                    {
-                                        System.Threading.Thread.Sleep(27000);
-                                    }
+                                //if (this.IsFakeForking)
+                                //{
+                                //    System.Threading.Thread.Sleep(3000);
+                                //    if (this.APLCVehicle.Batterys.Charging == true)
+                                //    {
+                                //        System.Threading.Thread.Sleep(27000);
+                                //    }
 
-                                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
-                                    {
-                                        this.APLCVehicle.Loading = true;
-                                        this.APLCVehicle.CassetteId = "CA0070";
-                                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
-                                    }
-                                    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
-                                    {
-                                        this.APLCVehicle.CassetteId = "";
-                                        this.APLCVehicle.Loading = false;
+                                //    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
+                                //    {
+                                //        this.APLCVehicle.Loading = true;
+                                //        //this.APLCVehicle.CassetteId = "CA0070";
+                                //        APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
+                                //        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
+                                //    }
+                                //    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
+                                //    {
+                                //        this.APLCVehicle.CassetteId = "";
+                                //        this.APLCVehicle.Loading = false;
 
-                                    }
-                                    else
-                                    {
+                                //    }
+                                //    else
+                                //    {
 
-                                    }
+                                //    }
 
-                                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
-                                    clearExecutingForkCommandFlag = true;
+                                //    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                //    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                                //    clearExecutingForkCommandFlag = true;
 
-                                    break;
-                                }
+                                //    break;
+                                //}
 
                                 //送出指令                              
                                 if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
@@ -2749,6 +2790,14 @@ namespace Mirle.Agv.Controller
             get
             {
                 return strlogMsg;
+            }
+        }
+        private void BatteryPercentageWriteLog(ushort value)
+        {
+            string strDirectoryFullPath = Path.Combine(Environment.CurrentDirectory, "Log", "BatteryPercentage.log");
+            using (StreamWriter sw = new StreamWriter(strDirectoryFullPath))
+            {
+                sw.Write(value.ToString());
             }
         }
         private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)

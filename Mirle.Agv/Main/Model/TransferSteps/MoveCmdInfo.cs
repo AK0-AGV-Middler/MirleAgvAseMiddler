@@ -94,7 +94,8 @@ namespace Mirle.Agv.Model.TransferSteps
                     for (int i = 0; i < MovingSections.Count - 1; i++)
                     {
                         MapAddress mapAddress = MovingSections[i].CmdDirection == EnumPermitDirection.Backward ? MovingSections[i].HeadAddress : MovingSections[i].TailAddress;
-                        AddressPositions.Add(mapAddress.Position.DeepClone());
+                        var pos = mapAddress.Position;                        
+                        AddressPositions.Add(mapAddress.Position);
                     }
                 }
 
@@ -120,7 +121,7 @@ namespace Mirle.Agv.Model.TransferSteps
                     for (int i = 0; i < MovingSections.Count - 1; i++)
                     {
                         MapAddress mapAddress = MovingSections[i].CmdDirection == EnumPermitDirection.Backward ? MovingSections[i].HeadAddress : MovingSections[i].TailAddress;
-                        AddressPositions.Add(mapAddress.Position.DeepClone());
+                        AddressPositions.Add(mapAddress.Position);
                     }
                 }
 
@@ -629,6 +630,9 @@ namespace Mirle.Agv.Model.TransferSteps
                     Info += $"({Convert.ToInt32(speed)})";
                 }
                 Info += "]";
+
+                //LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", Info));
+
             }
             catch (Exception ex)
             {

@@ -7,6 +7,7 @@ using Mirle.Agv.Model.TransferSteps;
 using TcpIpClientSample;
 using Mirle.Agv.Model.Configs;
 using Mirle.Agv.Controller;
+using System.Reflection;
 
 namespace Mirle.Agv.Model
 {
@@ -16,7 +17,7 @@ namespace Mirle.Agv.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
 
-        public MiddleAgent ThdMiddleAgent { get; set; }       
+        public MiddleAgent ThdMiddleAgent { get; set; }
         public MapInfo TheMapInfo { get; set; } = new MapInfo();
         public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
         private AgvcTransCmd curAgvcTransCmd;
@@ -60,7 +61,7 @@ namespace Mirle.Agv.Model
                     }
                     if (ThdMiddleAgent != null && value != EnumAutoState.PreManual)
                     {
-                        ThdMiddleAgent.Send_Cmd144_StatusChangeReport();
+                        ThdMiddleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -72,6 +73,7 @@ namespace Mirle.Agv.Model
         public bool HasAlarm { get; set; } = false;
         public bool HasWarn { get; set; } = false;
 
+        public event EventHandler<BeamDisableArgs> OnBeamDisableChangeEvent;
         private bool frontBeamDisable = false;
         public bool FrontBeamDisable
         {
@@ -82,9 +84,11 @@ namespace Mirle.Agv.Model
                 {
                     frontBeamDisable = value;
                     ThePlcVehicle.FrontBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Front, value));
                 }
             }
         }
+
         private bool backBeamDisable = false;
         public bool BackBeamDisable
         {
@@ -95,6 +99,7 @@ namespace Mirle.Agv.Model
                 {
                     backBeamDisable = value;
                     ThePlcVehicle.BackBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Back, value));
                 }
             }
         }
@@ -108,6 +113,7 @@ namespace Mirle.Agv.Model
                 {
                     leftBeamDisable = value;
                     ThePlcVehicle.LeftBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Left, value));
                 }
             }
         }
@@ -121,6 +127,7 @@ namespace Mirle.Agv.Model
                 {
                     rightBeamDisable = value;
                     ThePlcVehicle.RightBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Right, value));
                 }
             }
         }

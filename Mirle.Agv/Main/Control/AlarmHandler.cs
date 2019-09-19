@@ -53,7 +53,7 @@ namespace Mirle.Agv.Controller
 
         public event EventHandler<Alarm> OnSetAlarmEvent;
         public event EventHandler<Alarm> OnPlcResetOneAlarmEvent;
-        public event EventHandler<List<Alarm>> OnResetAllAlarmsEvent;
+        public event EventHandler<string> OnResetAllAlarmsEvent;
 
         private AlarmConfig alarmConfig;
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
@@ -223,21 +223,18 @@ namespace Mirle.Agv.Controller
             try
             {
                 DateTime timeStamp = DateTime.Now;
-                List<Alarm> resetAlarms = new List<Alarm>();
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
                 lock (dicHappeningAlarms)
                 {
-                    resetAlarms = dicHappeningAlarms.Values.ToList();
                     dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
                     HasAlarm = false;
                     HasWarn = false;
-                    LastAlarm = new Alarm();
-                    OnResetAllAlarmsEvent?.Invoke(this, resetAlarms);
+                    LastAlarm = new Alarm();                   
                 }
                 sw.Stop();
-                var msg = $"AlarmHandler : Reset All Alarms, [Count={resetAlarms.Count}][TimeMs={sw.ElapsedMilliseconds}][ResetTime={timeStamp.ToString("yyyy/MM/DD_HH/mm/ss.fff")}]";
-
+                var msg = $"清除所有警報，花費{sw.ElapsedMilliseconds}毫秒";
+                OnResetAllAlarmsEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("AlarmHistory", new LogFormat("AlarmHistory", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
             }

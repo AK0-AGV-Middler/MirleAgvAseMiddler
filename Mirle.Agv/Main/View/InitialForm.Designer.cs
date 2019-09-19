@@ -75,7 +75,7 @@
             // 
             // Label4
             // 
-            this.Label4.BackColor = System.Drawing.Color.DarkGreen;
+            this.Label4.BackColor = System.Drawing.Color.LightGreen;
             this.Label4.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.Label4.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.Label4.Location = new System.Drawing.Point(419, 1);

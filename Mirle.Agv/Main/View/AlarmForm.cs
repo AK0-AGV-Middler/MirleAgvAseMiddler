@@ -13,6 +13,7 @@ using Mirle.Agv.Model;
 using Mirle.Agv.Controller;
 using Mirle.Agv.Controller.Tools;
 using System.Reflection;
+using System.Threading;
 
 namespace Mirle.Agv.View
 {
@@ -50,22 +51,19 @@ namespace Mirle.Agv.View
             RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
         }
 
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, List<Alarm> alarms)
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             btnAlarmReset.Enabled = false;
 
-            var msgForHistoryAlarms = $"Alarm all reset. [Count ={alarms.Count}][LastAlarmId={alarms[alarms.Count - 1].Id}][{alarms[alarms.Count - 1].AlarmText}]";
-            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
-
+            RichTextBoxAppendHead(rtbHistoryAlarms, msg);
             rtbHappeningAlarms.Clear();
+            Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
         }
 
         private void btnAlarmReset_Click(object sender, EventArgs e)
         {
-            btnAlarmReset.Enabled = false;
             mainFlowHandler.ResetAllarms();
-            btnAlarmReset.Enabled = true;
         }
 
         private void btnBuzzOff_Click(object sender, EventArgs e)

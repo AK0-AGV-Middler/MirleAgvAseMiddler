@@ -127,7 +127,8 @@ namespace Mirle.Agv
         OntimeReviseSectionDeviationLine,
         OntimeReviseSectionDeviationHorizontal,
         UpdateDeltaPositionRange,
-        OneTimeRevise
+        OneTimeRevise,
+        VChangeSafetyDistance
     }
 
     public enum EnumSensorSafetyType
@@ -175,6 +176,13 @@ namespace Mirle.Agv
         CanReviseSectionDeviation,
         ReviseSectionDeviation,
         ReviseSectionDeviationTurnZero
+    }
+
+    public enum EnumVChangeSpeedLowerSafety
+    {
+        None,
+        SpeedLower,
+        MoveStartSpeedLower
     }
     #endregion
 }

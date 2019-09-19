@@ -500,13 +500,12 @@ namespace Mirle.Agv.Controller
 
                         tempFeedbackData.ErrorCode = Convert.ToInt32(ncBulkRead[i].usLastEmcyErrorCode.usVar.ToString(), 10);
 
-                        if (tempFeedbackData.ErrorCode != 0)
+                        if (tempFeedbackData.ErrorCode != 0 && tempFeedbackData.ErrorCode != allAxisList[i].FeedbackData.ErrorCode)
                             WriteLog("Elmo", "2", device, "", "Axis : " + allAxisList[i].Config.ID.ToString() + ", Error code :  " + tempFeedbackData.ErrorCode.ToString());
 
                         tempFeedbackData.Count = count;
                         tempFeedbackData.GetDataTime = GetDataTime;
-
-
+                        
                         if (allAxisList[i].NeedAssignLastCommandPosition && tempFeedbackData.StandStill)
                         {
                             allAxisList[i].LastCommandPosition = tempFeedbackData.Feedback_Position;
@@ -952,7 +951,14 @@ namespace Mirle.Agv.Controller
                         Math.Abs(distance_FR - allAxis[EnumAxis.TFR].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_RL - allAxis[EnumAxis.TRL].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_RR - allAxis[EnumAxis.TRR].LastCommandPosition) < 0.1)
+                    {
+                        WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance_FL : " + distance_FL.ToString("0.00") +
+                                    ", distance_FR : " + distance_FR.ToString("0.00") +
+                                    ", distance_RL : " + distance_RL.ToString("0.00") +
+                                    ", distance_RR : " + distance_RR.ToString("0.00") +
+                                    ", by pass !");
                         return;
+                    }
                     //}
                 }
 
@@ -978,7 +984,7 @@ namespace Mirle.Agv.Controller
                 allAxis[axis].GroupAxis.MoveLinearAbsolute(
                               (float)velocity, (float)acceleration, (float)deceleration, (float)jerk,
                               realArray,
-                              MC_BUFFERED_MODE_ENUM.MC_ABORTING_MODE,
+                              MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE,// MC_ABORTING_MODE
                               MC_COORD_SYSTEM_ENUM.MC_ACS_COORD,
                               NC_TRANSITION_MODE_ENUM.MC_TM_NONE_MODE,
                               Transition, 1, 1);
@@ -1254,7 +1260,7 @@ namespace Mirle.Agv.Controller
 
                 WriteLog("Elmo", "5", device, memberName, axis.ToString() + " VChange : " + velocityRatio.ToString("0.00"));
                 allAxis[axis].GroupAxis.GroupSetOverride((float)velocityRatio, 1, 1, 0); // acc, jerk 先不調整, 調整的位置估算太難做.
-                allAxis[axis].GroupAxis.Execute = 1;
+                //allAxis[axis].GroupAxis.Execute = 1;
             }
             catch (MMCException ex)
             {
@@ -1263,46 +1269,7 @@ namespace Mirle.Agv.Controller
             }
         }
         #endregion
-        public double ElmoGetGTPosition([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
-        {
-            try
-            {
-                if (!connected)
-                    return -1;
-
-                return (allAxis[EnumAxis.TFL].FeedbackData.Feedback_Position +
-                        allAxis[EnumAxis.TFR].FeedbackData.Feedback_Position +
-                        allAxis[EnumAxis.TRL].FeedbackData.Feedback_Position +
-                        allAxis[EnumAxis.TRR].FeedbackData.Feedback_Position) / 4;
-            }
-            catch (Exception ex)
-            {
-                SendAlarmCode(100003);
-                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
-                return -1;
-            }
-        }
-
-        public double ElmoGetGTVelocity([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
-        {
-            try
-            {
-                if (!connected)
-                    return -1;
-
-                return (allAxis[EnumAxis.TFL].FeedbackData.Feedback_Velocity +
-                        allAxis[EnumAxis.TFR].FeedbackData.Feedback_Velocity +
-                        allAxis[EnumAxis.TRL].FeedbackData.Feedback_Velocity +
-                        allAxis[EnumAxis.TRR].FeedbackData.Feedback_Velocity) / 4;
-            }
-            catch (Exception ex)
-            {
-                SendAlarmCode(100003);
-                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
-                return -1;
-            }
-        }
-
+        
         // 對外開放 讀取position, 只能轉向4實體和 走行"前左","後右"
         public double ElmoGetPosition(EnumAxis axis, bool hasTimeOffset = false,
                                      [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
@@ -1311,18 +1278,17 @@ namespace Mirle.Agv.Controller
             {
                 if (!connected)
                     return -1;
+                
+                if (allAxis[axis].Config.IsGroup)
+                {
+                    double position = 0;
+                    for (int i = 0; i < allAxis[axis].Config.GroupOrder.Count; i++)
+                        position += allAxis[allAxis[axis].Config.GroupOrder[i]].FeedbackData.Feedback_Position;
 
-                //if (axis != EnumAxis.XFL && axis != EnumAxis.XRR &&
-                //    axis != EnumAxis.TFL && axis != EnumAxis.TFR && axis != EnumAxis.TRL && axis != EnumAxis.TRR)
-                //    return -1;
-
-                //   if (hasTimeOffset)
-                //   {
-                //       return allAxis[axis].FeedbackData.Feedback_Position +
-                //(DateTime.Now - allAxis[axis].FeedbackData.GetDataTime).TotalMilliseconds / 1000 * allAxis[axis].FeedbackData.Feedback_Velocity;
-                //   }
-                //   else
-                return allAxis[axis].FeedbackData.Feedback_Position;
+                    return position / allAxis[axis].Config.GroupOrder.Count;
+                }
+                else
+                    return allAxis[axis].FeedbackData.Feedback_Position;
             }
             catch (Exception ex)
             {
@@ -1469,6 +1435,20 @@ namespace Mirle.Agv.Controller
             for (int i = 0; i < MAX_AXIS; i++)
             {
                 if (!allAxisList[i].Config.IsGroup && allAxisList[i].FeedbackData.ErrorStop)
+                    return false;
+            }
+
+            return true;
+        }
+
+        public bool CheckAxisEnableAndLinked()
+        {
+            for (int i = 0; i < MAX_AXIS; i++)
+            {
+                if (allAxisList[i].FeedbackData.Disable)
+                    return false;
+
+                if (allAxisList[i].Config.IsVirtualDevice && !allAxisList[i].Linking)
                     return false;
             }
 

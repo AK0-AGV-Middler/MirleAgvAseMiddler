@@ -27,14 +27,12 @@ namespace Mirle.Agv.Model.TransferSteps
 
         public AgvcTransCmd()
         {
-            CommandId = "";
-            CassetteId = "";
         }
 
         public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum)
         {
-            CommandId = transRequest.CmdID;
-            CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID;
+            CommandId = transRequest.CmdID.Trim();
+            CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID.Trim();
             CommandType = SetupCommandType(transRequest.ActType);
             SeqNum = aSeqNum;
         }

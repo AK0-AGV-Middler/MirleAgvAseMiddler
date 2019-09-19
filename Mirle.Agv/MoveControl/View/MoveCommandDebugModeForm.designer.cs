@@ -68,15 +68,23 @@ namespace Mirle.Agv.View
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.tbP_List = new System.Windows.Forms.TabPage();
-            this.label_LastIErrorTime = new System.Windows.Forms.Label();
-            this.label_LastIdealTime = new System.Windows.Forms.Label();
+            this.label_FlowStop = new System.Windows.Forms.Label();
+            this.label_Psuse = new System.Windows.Forms.Label();
+            this.label_WaitReserveIndex = new System.Windows.Forms.Label();
+            this.label_BeamState = new System.Windows.Forms.Label();
+            this.label_BumpState = new System.Windows.Forms.Label();
+            this.label_FlowStop_Label = new System.Windows.Forms.Label();
+            this.label_Psuse_Label = new System.Windows.Forms.Label();
+            this.label_WaitReserveIndex_Label = new System.Windows.Forms.Label();
+            this.label_BeamState_Label = new System.Windows.Forms.Label();
+            this.label_BumpState_Label = new System.Windows.Forms.Label();
+            this.button3 = new System.Windows.Forms.Button();
             this.label_SensorState_Label = new System.Windows.Forms.Label();
             this.label_LoopTime_Label = new System.Windows.Forms.Label();
             this.label_LoopTime = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.label_SensorState = new System.Windows.Forms.Label();
-            this.label_WaitReserve = new System.Windows.Forms.Label();
             this.label_AlarmMessage = new System.Windows.Forms.Label();
             this.label_AlarmMessageName = new System.Windows.Forms.Label();
             this.label_MoveCommandID = new System.Windows.Forms.Label();
@@ -142,7 +150,6 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
-            this.button3 = new System.Windows.Forms.Button();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -200,7 +207,7 @@ namespace Mirle.Agv.View
             // 
             // button_SendList
             // 
-            this.button_SendList.Location = new System.Drawing.Point(985, 475);
+            this.button_SendList.Location = new System.Drawing.Point(1104, 475);
             this.button_SendList.Name = "button_SendList";
             this.button_SendList.Size = new System.Drawing.Size(173, 36);
             this.button_SendList.TabIndex = 44;
@@ -313,6 +320,7 @@ namespace Mirle.Agv.View
             this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
             this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_CreateCommandState.TabIndex = 78;
+            this.ucLabelTB_CreateCommandState.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_CreateCommandState.TagName = "label1";
             this.ucLabelTB_CreateCommandState.TagValue = "";
             // 
@@ -323,6 +331,7 @@ namespace Mirle.Agv.View
             this.ucLabelTB_CreateCommand_BarcodePosition.Name = "ucLabelTB_CreateCommand_BarcodePosition";
             this.ucLabelTB_CreateCommand_BarcodePosition.Size = new System.Drawing.Size(332, 27);
             this.ucLabelTB_CreateCommand_BarcodePosition.TabIndex = 77;
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_CreateCommand_BarcodePosition.TagName = "label1";
             this.ucLabelTB_CreateCommand_BarcodePosition.TagValue = "";
             // 
@@ -567,16 +576,23 @@ namespace Mirle.Agv.View
             // 
             // tbP_List
             // 
+            this.tbP_List.Controls.Add(this.label_FlowStop);
+            this.tbP_List.Controls.Add(this.label_Psuse);
+            this.tbP_List.Controls.Add(this.label_WaitReserveIndex);
+            this.tbP_List.Controls.Add(this.label_BeamState);
+            this.tbP_List.Controls.Add(this.label_BumpState);
+            this.tbP_List.Controls.Add(this.label_FlowStop_Label);
+            this.tbP_List.Controls.Add(this.label_Psuse_Label);
+            this.tbP_List.Controls.Add(this.label_WaitReserveIndex_Label);
+            this.tbP_List.Controls.Add(this.label_BeamState_Label);
+            this.tbP_List.Controls.Add(this.label_BumpState_Label);
             this.tbP_List.Controls.Add(this.button3);
-            this.tbP_List.Controls.Add(this.label_LastIErrorTime);
-            this.tbP_List.Controls.Add(this.label_LastIdealTime);
             this.tbP_List.Controls.Add(this.label_SensorState_Label);
             this.tbP_List.Controls.Add(this.label_LoopTime_Label);
             this.tbP_List.Controls.Add(this.label_LoopTime);
             this.tbP_List.Controls.Add(this.button2);
             this.tbP_List.Controls.Add(this.button1);
             this.tbP_List.Controls.Add(this.label_SensorState);
-            this.tbP_List.Controls.Add(this.label_WaitReserve);
             this.tbP_List.Controls.Add(this.label_AlarmMessage);
             this.tbP_List.Controls.Add(this.label_AlarmMessageName);
             this.tbP_List.Controls.Add(this.label_MoveCommandID);
@@ -608,45 +624,144 @@ namespace Mirle.Agv.View
             this.tbP_List.Text = "CommandList資料";
             this.tbP_List.UseVisualStyleBackColor = true;
             // 
-            // label_LastIErrorTime
+            // label_FlowStop
             // 
-            this.label_LastIErrorTime.AutoSize = true;
-            this.label_LastIErrorTime.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_LastIErrorTime.ForeColor = System.Drawing.Color.Black;
-            this.label_LastIErrorTime.Location = new System.Drawing.Point(213, 487);
-            this.label_LastIErrorTime.Name = "label_LastIErrorTime";
-            this.label_LastIErrorTime.Size = new System.Drawing.Size(138, 19);
-            this.label_LastIErrorTime.TabIndex = 102;
-            this.label_LastIErrorTime.Text = "異常停止時間 : ";
+            this.label_FlowStop.AutoSize = true;
+            this.label_FlowStop.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_FlowStop.ForeColor = System.Drawing.Color.Red;
+            this.label_FlowStop.Location = new System.Drawing.Point(544, 508);
+            this.label_FlowStop.Name = "label_FlowStop";
+            this.label_FlowStop.Size = new System.Drawing.Size(45, 19);
+            this.label_FlowStop.TabIndex = 113;
+            this.label_FlowStop.Text = "State";
             // 
-            // label_LastIdealTime
+            // label_Psuse
             // 
-            this.label_LastIdealTime.AutoSize = true;
-            this.label_LastIdealTime.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_LastIdealTime.ForeColor = System.Drawing.Color.Black;
-            this.label_LastIdealTime.Location = new System.Drawing.Point(17, 487);
-            this.label_LastIdealTime.Name = "label_LastIdealTime";
-            this.label_LastIdealTime.Size = new System.Drawing.Size(100, 19);
-            this.label_LastIdealTime.TabIndex = 100;
-            this.label_LastIdealTime.Text = "啟動時間 : ";
+            this.label_Psuse.AutoSize = true;
+            this.label_Psuse.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_Psuse.ForeColor = System.Drawing.Color.Red;
+            this.label_Psuse.Location = new System.Drawing.Point(445, 508);
+            this.label_Psuse.Name = "label_Psuse";
+            this.label_Psuse.Size = new System.Drawing.Size(45, 19);
+            this.label_Psuse.TabIndex = 112;
+            this.label_Psuse.Text = "State";
+            // 
+            // label_WaitReserveIndex
+            // 
+            this.label_WaitReserveIndex.AutoSize = true;
+            this.label_WaitReserveIndex.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_WaitReserveIndex.ForeColor = System.Drawing.Color.Red;
+            this.label_WaitReserveIndex.Location = new System.Drawing.Point(339, 508);
+            this.label_WaitReserveIndex.Name = "label_WaitReserveIndex";
+            this.label_WaitReserveIndex.Size = new System.Drawing.Size(45, 19);
+            this.label_WaitReserveIndex.TabIndex = 111;
+            this.label_WaitReserveIndex.Text = "State";
+            // 
+            // label_BeamState
+            // 
+            this.label_BeamState.AutoSize = true;
+            this.label_BeamState.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_BeamState.ForeColor = System.Drawing.Color.Red;
+            this.label_BeamState.Location = new System.Drawing.Point(229, 508);
+            this.label_BeamState.Name = "label_BeamState";
+            this.label_BeamState.Size = new System.Drawing.Size(45, 19);
+            this.label_BeamState.TabIndex = 110;
+            this.label_BeamState.Text = "State";
+            // 
+            // label_BumpState
+            // 
+            this.label_BumpState.AutoSize = true;
+            this.label_BumpState.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_BumpState.ForeColor = System.Drawing.Color.Red;
+            this.label_BumpState.Location = new System.Drawing.Point(148, 508);
+            this.label_BumpState.Name = "label_BumpState";
+            this.label_BumpState.Size = new System.Drawing.Size(45, 19);
+            this.label_BumpState.TabIndex = 109;
+            this.label_BumpState.Text = "State";
+            // 
+            // label_FlowStop_Label
+            // 
+            this.label_FlowStop_Label.AutoSize = true;
+            this.label_FlowStop_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_FlowStop_Label.ForeColor = System.Drawing.Color.Black;
+            this.label_FlowStop_Label.Location = new System.Drawing.Point(529, 482);
+            this.label_FlowStop_Label.Name = "label_FlowStop_Label";
+            this.label_FlowStop_Label.Size = new System.Drawing.Size(79, 19);
+            this.label_FlowStop_Label.TabIndex = 108;
+            this.label_FlowStop_Label.Text = "FlowStop";
+            // 
+            // label_Psuse_Label
+            // 
+            this.label_Psuse_Label.AutoSize = true;
+            this.label_Psuse_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_Psuse_Label.ForeColor = System.Drawing.Color.Black;
+            this.label_Psuse_Label.Location = new System.Drawing.Point(445, 482);
+            this.label_Psuse_Label.Name = "label_Psuse_Label";
+            this.label_Psuse_Label.Size = new System.Drawing.Size(51, 19);
+            this.label_Psuse_Label.TabIndex = 107;
+            this.label_Psuse_Label.Text = "Pause";
+            // 
+            // label_WaitReserveIndex_Label
+            // 
+            this.label_WaitReserveIndex_Label.AutoSize = true;
+            this.label_WaitReserveIndex_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_WaitReserveIndex_Label.ForeColor = System.Drawing.Color.Black;
+            this.label_WaitReserveIndex_Label.Location = new System.Drawing.Point(312, 482);
+            this.label_WaitReserveIndex_Label.Name = "label_WaitReserveIndex_Label";
+            this.label_WaitReserveIndex_Label.Size = new System.Drawing.Size(107, 19);
+            this.label_WaitReserveIndex_Label.TabIndex = 106;
+            this.label_WaitReserveIndex_Label.Text = "Wait Reserve";
+            // 
+            // label_BeamState_Label
+            // 
+            this.label_BeamState_Label.AutoSize = true;
+            this.label_BeamState_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_BeamState_Label.ForeColor = System.Drawing.Color.Black;
+            this.label_BeamState_Label.Location = new System.Drawing.Point(229, 482);
+            this.label_BeamState_Label.Name = "label_BeamState_Label";
+            this.label_BeamState_Label.Size = new System.Drawing.Size(51, 19);
+            this.label_BeamState_Label.TabIndex = 105;
+            this.label_BeamState_Label.Text = "Beam";
+            // 
+            // label_BumpState_Label
+            // 
+            this.label_BumpState_Label.AutoSize = true;
+            this.label_BumpState_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_BumpState_Label.ForeColor = System.Drawing.Color.Black;
+            this.label_BumpState_Label.Location = new System.Drawing.Point(148, 482);
+            this.label_BumpState_Label.Name = "label_BumpState_Label";
+            this.label_BumpState_Label.Size = new System.Drawing.Size(53, 19);
+            this.label_BumpState_Label.TabIndex = 104;
+            this.label_BumpState_Label.Text = "Bump";
+            // 
+            // button3
+            // 
+            this.button3.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button3.Location = new System.Drawing.Point(851, 477);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(62, 24);
+            this.button3.TabIndex = 103;
+            this.button3.Text = "Cancel";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // label_SensorState_Label
             // 
             this.label_SensorState_Label.AutoSize = true;
             this.label_SensorState_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.label_SensorState_Label.ForeColor = System.Drawing.Color.Black;
-            this.label_SensorState_Label.Location = new System.Drawing.Point(766, 484);
+            this.label_SensorState_Label.Location = new System.Drawing.Point(30, 482);
             this.label_SensorState_Label.Name = "label_SensorState_Label";
-            this.label_SensorState_Label.Size = new System.Drawing.Size(99, 19);
+            this.label_SensorState_Label.Size = new System.Drawing.Size(94, 19);
             this.label_SensorState_Label.TabIndex = 98;
-            this.label_SensorState_Label.Text = "SensorState:";
+            this.label_SensorState_Label.Text = "SensorState";
             // 
             // label_LoopTime_Label
             // 
             this.label_LoopTime_Label.AutoSize = true;
             this.label_LoopTime_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.label_LoopTime_Label.ForeColor = System.Drawing.Color.Black;
-            this.label_LoopTime_Label.Location = new System.Drawing.Point(601, 484);
+            this.label_LoopTime_Label.Location = new System.Drawing.Point(936, 482);
             this.label_LoopTime_Label.Name = "label_LoopTime_Label";
             this.label_LoopTime_Label.Size = new System.Drawing.Size(84, 19);
             this.label_LoopTime_Label.TabIndex = 97;
@@ -657,7 +772,7 @@ namespace Mirle.Agv.View
             this.label_LoopTime.AutoSize = true;
             this.label_LoopTime.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.label_LoopTime.ForeColor = System.Drawing.Color.Red;
-            this.label_LoopTime.Location = new System.Drawing.Point(688, 484);
+            this.label_LoopTime.Location = new System.Drawing.Point(1023, 482);
             this.label_LoopTime.Name = "label_LoopTime";
             this.label_LoopTime.Size = new System.Drawing.Size(56, 19);
             this.label_LoopTime.TabIndex = 96;
@@ -666,7 +781,7 @@ namespace Mirle.Agv.View
             // button2
             // 
             this.button2.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button2.Location = new System.Drawing.Point(832, 453);
+            this.button2.Location = new System.Drawing.Point(766, 477);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(82, 24);
             this.button2.TabIndex = 95;
@@ -677,7 +792,7 @@ namespace Mirle.Agv.View
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button1.Location = new System.Drawing.Point(770, 453);
+            this.button1.Location = new System.Drawing.Point(704, 477);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(59, 24);
             this.button1.TabIndex = 94;
@@ -690,22 +805,11 @@ namespace Mirle.Agv.View
             this.label_SensorState.AutoSize = true;
             this.label_SensorState.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.label_SensorState.ForeColor = System.Drawing.Color.Red;
-            this.label_SensorState.Location = new System.Drawing.Point(869, 484);
+            this.label_SensorState.Location = new System.Drawing.Point(56, 508);
             this.label_SensorState.Name = "label_SensorState";
             this.label_SensorState.Size = new System.Drawing.Size(45, 19);
             this.label_SensorState.TabIndex = 93;
             this.label_SensorState.Text = "State";
-            // 
-            // label_WaitReserve
-            // 
-            this.label_WaitReserve.AutoSize = true;
-            this.label_WaitReserve.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_WaitReserve.ForeColor = System.Drawing.Color.Red;
-            this.label_WaitReserve.Location = new System.Drawing.Point(1175, 484);
-            this.label_WaitReserve.Name = "label_WaitReserve";
-            this.label_WaitReserve.Size = new System.Drawing.Size(102, 19);
-            this.label_WaitReserve.TabIndex = 89;
-            this.label_WaitReserve.Text = "WaitReserve";
             // 
             // label_AlarmMessage
             // 
@@ -759,91 +863,100 @@ namespace Mirle.Agv.View
             // 
             // ucLabelTB_EncoderPosition
             // 
-            this.ucLabelTB_EncoderPosition.Location = new System.Drawing.Point(512, 566);
+            this.ucLabelTB_EncoderPosition.Location = new System.Drawing.Point(512, 568);
             this.ucLabelTB_EncoderPosition.Margin = new System.Windows.Forms.Padding(37, 33, 37, 33);
             this.ucLabelTB_EncoderPosition.Name = "ucLabelTB_EncoderPosition";
             this.ucLabelTB_EncoderPosition.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_EncoderPosition.TabIndex = 88;
+            this.ucLabelTB_EncoderPosition.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_EncoderPosition.TagName = "label1";
             this.ucLabelTB_EncoderPosition.TagValue = "";
             // 
             // ucLabelTB_Velocity
             // 
-            this.ucLabelTB_Velocity.Location = new System.Drawing.Point(512, 514);
+            this.ucLabelTB_Velocity.Location = new System.Drawing.Point(512, 532);
             this.ucLabelTB_Velocity.Margin = new System.Windows.Forms.Padding(22, 21, 22, 21);
             this.ucLabelTB_Velocity.Name = "ucLabelTB_Velocity";
             this.ucLabelTB_Velocity.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_Velocity.TabIndex = 83;
+            this.ucLabelTB_Velocity.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_Velocity.TagName = "label1";
             this.ucLabelTB_Velocity.TagValue = "";
             // 
             // ucLabelTB_EncoderOffset
             // 
-            this.ucLabelTB_EncoderOffset.Location = new System.Drawing.Point(1027, 514);
+            this.ucLabelTB_EncoderOffset.Location = new System.Drawing.Point(1027, 515);
             this.ucLabelTB_EncoderOffset.Margin = new System.Windows.Forms.Padding(13);
             this.ucLabelTB_EncoderOffset.Name = "ucLabelTB_EncoderOffset";
             this.ucLabelTB_EncoderOffset.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_EncoderOffset.TabIndex = 82;
+            this.ucLabelTB_EncoderOffset.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_EncoderOffset.TagName = "label1";
             this.ucLabelTB_EncoderOffset.TagValue = "";
             // 
             // ucLabelTB_ElmoEncoder
             // 
-            this.ucLabelTB_ElmoEncoder.Location = new System.Drawing.Point(767, 514);
+            this.ucLabelTB_ElmoEncoder.Location = new System.Drawing.Point(767, 532);
             this.ucLabelTB_ElmoEncoder.Margin = new System.Windows.Forms.Padding(13);
             this.ucLabelTB_ElmoEncoder.Name = "ucLabelTB_ElmoEncoder";
             this.ucLabelTB_ElmoEncoder.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_ElmoEncoder.TabIndex = 81;
+            this.ucLabelTB_ElmoEncoder.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_ElmoEncoder.TagName = "label1";
             this.ucLabelTB_ElmoEncoder.TagValue = "";
             // 
             // ucLabelTtB_CommandListState
             // 
-            this.ucLabelTtB_CommandListState.Location = new System.Drawing.Point(768, 566);
+            this.ucLabelTtB_CommandListState.Location = new System.Drawing.Point(768, 568);
             this.ucLabelTtB_CommandListState.Margin = new System.Windows.Forms.Padding(13);
             this.ucLabelTtB_CommandListState.Name = "ucLabelTtB_CommandListState";
             this.ucLabelTtB_CommandListState.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTtB_CommandListState.TabIndex = 79;
+            this.ucLabelTtB_CommandListState.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTtB_CommandListState.TagName = "label1";
             this.ucLabelTtB_CommandListState.TagValue = "";
             // 
             // ucLabelTB_BarcodePosition
             // 
-            this.ucLabelTB_BarcodePosition.Location = new System.Drawing.Point(257, 566);
+            this.ucLabelTB_BarcodePosition.Location = new System.Drawing.Point(257, 568);
             this.ucLabelTB_BarcodePosition.Margin = new System.Windows.Forms.Padding(8);
             this.ucLabelTB_BarcodePosition.Name = "ucLabelTB_BarcodePosition";
             this.ucLabelTB_BarcodePosition.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_BarcodePosition.TabIndex = 50;
+            this.ucLabelTB_BarcodePosition.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_BarcodePosition.TagName = "label1";
             this.ucLabelTB_BarcodePosition.TagValue = "";
             // 
             // ucLabelTB_RealPosition
             // 
-            this.ucLabelTB_RealPosition.Location = new System.Drawing.Point(7, 566);
+            this.ucLabelTB_RealPosition.Location = new System.Drawing.Point(7, 568);
             this.ucLabelTB_RealPosition.Margin = new System.Windows.Forms.Padding(8);
             this.ucLabelTB_RealPosition.Name = "ucLabelTB_RealPosition";
             this.ucLabelTB_RealPosition.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_RealPosition.TabIndex = 49;
+            this.ucLabelTB_RealPosition.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_RealPosition.TagName = "label1";
             this.ucLabelTB_RealPosition.TagValue = "";
             // 
             // ucLabelTB_Delta
             // 
-            this.ucLabelTB_Delta.Location = new System.Drawing.Point(257, 514);
+            this.ucLabelTB_Delta.Location = new System.Drawing.Point(257, 532);
             this.ucLabelTB_Delta.Margin = new System.Windows.Forms.Padding(8);
             this.ucLabelTB_Delta.Name = "ucLabelTB_Delta";
             this.ucLabelTB_Delta.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_Delta.TabIndex = 48;
+            this.ucLabelTB_Delta.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_Delta.TagName = "label1";
             this.ucLabelTB_Delta.TagValue = "";
             // 
             // ucLabelTB_RealEncoder
             // 
-            this.ucLabelTB_RealEncoder.Location = new System.Drawing.Point(7, 514);
+            this.ucLabelTB_RealEncoder.Location = new System.Drawing.Point(7, 532);
             this.ucLabelTB_RealEncoder.Margin = new System.Windows.Forms.Padding(5);
             this.ucLabelTB_RealEncoder.Name = "ucLabelTB_RealEncoder";
             this.ucLabelTB_RealEncoder.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_RealEncoder.TabIndex = 47;
+            this.ucLabelTB_RealEncoder.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTB_RealEncoder.TagName = "label1";
             this.ucLabelTB_RealEncoder.TagValue = "";
             // 
@@ -854,6 +967,7 @@ namespace Mirle.Agv.View
             this.ucLabelTextBox1.Name = "ucLabelTextBox1";
             this.ucLabelTextBox1.Size = new System.Drawing.Size(13, 13);
             this.ucLabelTextBox1.TabIndex = 37;
+            this.ucLabelTextBox1.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLabelTextBox1.TagName = "label1";
             this.ucLabelTextBox1.TagValue = "";
             // 
@@ -1235,17 +1349,6 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
-            // button3
-            // 
-            this.button3.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button3.Location = new System.Drawing.Point(917, 453);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(62, 24);
-            this.button3.TabIndex = 103;
-            this.button3.Text = "Cancel";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
             // MoveCommandDebugModeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1333,7 +1436,6 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Button button_CSVListShowAll;
         private System.Windows.Forms.Button button_CSVListDisViewRang;
         private System.Windows.Forms.TabPage tP_Admin;
-        private System.Windows.Forms.Button button_SimulationModeChange;
         private System.Windows.Forms.Label label_SimulationMode;
         private System.Windows.Forms.CheckBox cB_GetAllReserve;
         private UcLabelTextBox ucLabelTB_Velocity;
@@ -1380,17 +1482,25 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcode2ID;
         private UcLabelTextBox ucLabelTB_EncoderPosition;
         private System.Windows.Forms.TextBox tbxLogView_MoveControlDebugMessage;
-        private System.Windows.Forms.Label label_WaitReserve;
         private System.Windows.Forms.Label label_SensorState;
         private System.Windows.Forms.Label label_LockResult;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Label label_LoopTime;
-        private System.Windows.Forms.Label label_LoopTime_Label;
         private System.Windows.Forms.Label label_SensorState_Label;
-        private System.Windows.Forms.Label label_LastIErrorTime;
-        private System.Windows.Forms.Label label_LastIdealTime;
         private System.Windows.Forms.Button button_AddReadPosition;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Label label_LoopTime_Label;
+        private System.Windows.Forms.Label label_LoopTime;
+        private System.Windows.Forms.Label label_FlowStop;
+        private System.Windows.Forms.Label label_Psuse;
+        private System.Windows.Forms.Label label_WaitReserveIndex;
+        private System.Windows.Forms.Label label_BeamState;
+        private System.Windows.Forms.Label label_BumpState;
+        private System.Windows.Forms.Label label_FlowStop_Label;
+        private System.Windows.Forms.Label label_Psuse_Label;
+        private System.Windows.Forms.Label label_WaitReserveIndex_Label;
+        private System.Windows.Forms.Label label_BeamState_Label;
+        private System.Windows.Forms.Label label_BumpState_Label;
+        public System.Windows.Forms.Button button_SimulationModeChange;
     }
 }

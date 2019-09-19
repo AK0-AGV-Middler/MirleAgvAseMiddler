@@ -4413,7 +4413,6 @@
         private System.Windows.Forms.Label label90;
         private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_PV;
         private System.Windows.Forms.TextBox tbxBatteryCellLowVoltage_SV;
-        private System.Windows.Forms.CheckBox chkFakeForking;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Panel panel9;
         private System.Windows.Forms.CheckBox chkSteeringBRLight;
@@ -4431,5 +4430,6 @@
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.Button btnCstIDSet;
         private System.Windows.Forms.Button btnForce_ELMO_Servo_Off;
+        public System.Windows.Forms.CheckBox chkFakeForking;
     }
 }

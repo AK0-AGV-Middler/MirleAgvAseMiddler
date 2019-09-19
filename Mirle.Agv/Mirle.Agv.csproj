@@ -95,7 +95,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="TCPIPTrxControl, Version=1.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="TCPIPTrxControl, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>OutsideDll\TCPIPTrxControl.dll</HintPath>
     </Reference>
@@ -104,6 +104,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Main\Model\BeamDisableArgs.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="Main\Model\Map\MapVector.cs" />
     <Compile Include="MoveControl\Control\AgvMoveRevise.cs" />

@@ -103,6 +103,9 @@ namespace Mirle.Agv.View
                     case EnumMoveControlSafetyType.OneTimeRevise:
                         temp.SetLabelString("一次修正 : ", "一次性修正距離,多少會修完 :");
                         break;
+                    case EnumMoveControlSafetyType.VChangeSafetyDistance:
+                        temp.SetLabelString("降速保護 : ", "多少距離檢查一次速度變化 :");
+                        break;
                     default:
                         break;
                 }
@@ -235,7 +238,7 @@ namespace Mirle.Agv.View
             foreach (var valuePair in theMapInfo.allMapAddresses)
             {
                 MapAddress mapAddress = valuePair.Value;
-                MapPosition mapPosition = mapAddress.Position.DeepClone();
+                MapPosition mapPosition = mapAddress.Position;
                 string txtPosition = $"{mapPosition.X},{mapPosition.Y}";
                 listMapAddressPositions.Items.Add(txtPosition);
             }
@@ -327,6 +330,29 @@ namespace Mirle.Agv.View
             ShowMoveCommandList(null);
         }
 
+        private void SetStateWithColor(Label label, EnumVehicleSafetyAction state)
+        {
+            label.Text = state.ToString();
+
+            switch (state)
+            {
+                case EnumVehicleSafetyAction.Normal:
+                    label.ForeColor = System.Drawing.Color.Green;
+                    break;
+
+                case EnumVehicleSafetyAction.LowSpeed:
+                    label.ForeColor = System.Drawing.Color.Yellow;
+                    break;
+
+                case EnumVehicleSafetyAction.Stop:
+                    label.ForeColor = System.Drawing.Color.Red;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         private void Timer_Update_CommandList()
         {
             string nowCommandID = moveControl.MoveCommandID;
@@ -343,7 +369,7 @@ namespace Mirle.Agv.View
 
             ucLabelTB_RealEncoder.TagValue = moveControl.location.RealEncoder.ToString("0.0");
             ucLabelTB_Delta.TagValue = moveControl.location.Delta.ToString("0.0");
-            ucLabelTB_Velocity.TagValue = moveControl.location.XFLVelocity.ToString("0");
+            ucLabelTB_Velocity.TagValue = moveControl.location.Velocity.ToString("0");
             ucLabelTB_ElmoEncoder.TagValue = moveControl.location.ElmoEncoder.ToString("0");
             ucLabelTB_EncoderOffset.TagValue = moveControl.location.Offset.ToString("0");
 
@@ -368,11 +394,18 @@ namespace Mirle.Agv.View
 
             ucLabelTtB_CommandListState.TagValue = moveControl.MoveState.ToString();
 
-            label_WaitReserve.Text = "Wait index : " + (moveControl.WaitReseveIndex == -1 ? "" : moveControl.WaitReseveIndex.ToString());
-            label_SensorState.Text = moveControl.ControlData.SensorState.ToString();
+            SetStateWithColor(label_SensorState, moveControl.ControlData.SensorState);
+            SetStateWithColor(label_BeamState, moveControl.ControlData.BeamSensorState);
+            SetStateWithColor(label_BumpState, moveControl.ControlData.BumpSensorState);
 
-            label_LastIdealTime.Text = moveControl.autoTime;
-            label_LastIErrorTime.Text = moveControl.errorTime;
+            label_WaitReserveIndex.Text = moveControl.ControlData.WaitReserveIndex.ToString("0");
+            label_WaitReserveIndex.ForeColor = label_WaitReserveIndex.Text == "-1" ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+
+            label_Psuse.Text = (moveControl.ControlData.PauseRequest || moveControl.ControlData.PauseAlready) ? "Pause" : "Normal";
+            label_Psuse.ForeColor = (label_Psuse.Text == "Normal") ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+
+            label_FlowStop.Text = (moveControl.ControlData.FlowStop || moveControl.ControlData.FlowStopRequeset) ? "Stop" : "Normal";
+            label_FlowStop.ForeColor = (label_FlowStop.Text == "Normal") ? System.Drawing.Color.Green : System.Drawing.Color.Red;
 
             try
             {
@@ -544,8 +577,8 @@ namespace Mirle.Agv.View
         {
             try
             {
-                int x = Int32.Parse(tB_PositionX.Text);
-                int y = Int32.Parse(tB_PositionY.Text);
+                double x = double.Parse(tB_PositionX.Text);
+                double y = double.Parse(tB_PositionY.Text);
 
                 string txtPosition = $"{x.ToString()},{y.ToString()}";
                 listCmdAddressPositions.Items.Add(txtPosition);
@@ -824,7 +857,7 @@ namespace Mirle.Agv.View
         #endregion
 
         #region tabPage Admin
-        private void button_SimulationMode_Click(object sender, EventArgs e)
+        public void button_SimulationMode_Click(object sender, EventArgs e)
         {
             button_SimulationModeChange.Enabled = false;
             moveControl.SimulationMode = (button_SimulationModeChange.Text == "關閉中");
@@ -895,7 +928,7 @@ namespace Mirle.Agv.View
                     settingAngleForm.Show();
                     settingAngleForm.TopMost = true;
 
-                    moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position.DeepClone();
+                    moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position;
                     Vehicle.Instance.CurVehiclePosition.RealPosition = moveControl.location.Real.Position;
                     Vehicle.Instance.CurVehiclePosition.VehicleAngle = moveControl.location.Real.AGVAngle;
                 }
