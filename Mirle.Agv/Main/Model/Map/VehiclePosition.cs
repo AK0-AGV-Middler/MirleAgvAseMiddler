@@ -14,14 +14,7 @@ namespace Mirle.Agv.Model
         {
             get
             {
-                if (realPosition == null)
-                {
-                    return new MapPosition();
-                }
-                else
-                {
-                    return realPosition;
-                }
+                return realPosition;                
             }
             set
             {
@@ -35,6 +28,7 @@ namespace Mirle.Agv.Model
                 }
             }
         }
+        //public MapPosition RealPosition { get; set; } = new MapPosition();
         public double VehicleAngle { get; set; } = 0;
         public int WheelAngle { get; set; } = 0;
         public int RealPositionRangeMm { get; set; } = 5;

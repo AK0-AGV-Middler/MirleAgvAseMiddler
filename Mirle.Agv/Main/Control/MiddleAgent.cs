@@ -370,7 +370,6 @@ namespace Mirle.Agv.Controller
                     break;
             }
         }
-
         private bool IsApplyOnly(EnumCmdNum cmdNum)
         {
             switch (cmdNum)
@@ -1993,8 +1992,7 @@ namespace Mirle.Agv.Controller
         public void Receive_Cmd36_TransferEventResponse(object sender, TcpIpEventArgs e)
         {
             ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
-            //Get reserve, block, 
-
+            //Get reserve, block,        
             if (receive.IsReserveSuccess == ReserveResult.Success)
             {
                 var msg = $"取得{askingReserveSection.Id}通行權成功";
@@ -2011,9 +2009,9 @@ namespace Mirle.Agv.Controller
                 {
                     theVehicle.ReserveStatus = VhStopSingle.StopSingleOn;
                     StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                    var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                 }
-                var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
-                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
             }
 
             //if (receive.IsBlockPass == PassType.Pass)

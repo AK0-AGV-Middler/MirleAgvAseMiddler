@@ -185,8 +185,7 @@ namespace Mirle.Agv.Controller
                     TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
                 }
 
-                var BarcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
-                WriteBarcodeBackup(BarcodeBackupPath);
+                WriteBarcodeBackup();
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"Load Barcode File Ok. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
             }
@@ -197,12 +196,29 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void WriteBarcodeBackup(string barcodeBackupPath)
+        private void WriteBarcodeBackup()
         {
-            if (File.Exists(barcodeBackupPath))
+            var directionName = Path.GetDirectoryName(BarcodePath);
+            if (!Directory.Exists(directionName))
             {
-                File.Delete(barcodeBackupPath);
+                Directory.CreateDirectory(directionName);
             }
+
+            var barcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
+
+            string titleRow = "Id,BarcodeHeadNum,HeadX,HeadY,BarcodeTailNum,TailX,TailY,OffsetX,OffsetY,Material";
+            File.WriteAllText(barcodeBackupPath,titleRow);
+
+            List<string> barcodeLineInfos = new List<string>();
+            barcodeLineInfos.Add(Environment.NewLine);
+            foreach (var  item in TheMapInfo.allMapBarcodeLines.Values)
+            {
+                var head = item.HeadBarcode;
+                var tail = item.TailBarcode;
+                var barcodeLineInfo = string.Format("{0},{1},{2:F2},{3:F2},{4},{5:F2},{6:F2},{7:F2},{8:F2},{9}", item.Id, head.Number, head.Position.X, head.Position.Y, tail.Number, tail.Position.X, tail.Position.Y, item.Offset.X, item.Offset.Y, item.Material);
+                barcodeLineInfos.Add(barcodeLineInfo);
+            }
+            File.AppendAllLines(barcodeBackupPath, barcodeLineInfos);
         }
 
         public void ReadAddressCsv()
@@ -571,7 +587,7 @@ namespace Mirle.Agv.Controller
             }
             #endregion
 
-            #region In Section        
+            #region In Section    
             if (!IsPositionInThisAddress(aPosition, location.LastAddress.Position))
             {
                 foreach (var insideAddress in mapSection.InsideAddresses)
@@ -586,7 +602,8 @@ namespace Mirle.Agv.Controller
 
             vehicleLocation.LastSection = mapSection;
 
-            vehicleLocation.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, mapSection.HeadAddress.Position));
+            vehicleLocation.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, mapSection.HeadAddress.Position));           
+            
             return true;
             #endregion
         }

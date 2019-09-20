@@ -1004,7 +1004,6 @@ namespace Mirle.Agv.View
             ucDistance.TagValue = dis.ToString("F");
 
             ucVehicleImage.Hide();
-
             ucVehicleImage.Location = MapPixelExchange(realPos);
             ucVehicleImage.FixToCenter();
             ucVehicleImage.Show();
@@ -1380,11 +1379,18 @@ namespace Mirle.Agv.View
 
         private void txtBarNum_TextChanged(object sender, EventArgs e)
         {
-            var barNum = int.Parse(txtBarNum.Text);
-            if (theMapInfo.allMapBarcodes.ContainsKey(barNum))
+            try
             {
-                var mapBar = theMapInfo.allMapBarcodes[barNum];
-                ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
+                var barNum = int.Parse(txtBarNum.Text);
+                if (theMapInfo.allMapBarcodes.ContainsKey(barNum))
+                {
+                    var mapBar = theMapInfo.allMapBarcodes[barNum];
+                    ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 

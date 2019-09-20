@@ -104,7 +104,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main\Model\BeamDisableArgs.cs" />
+    <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
+    <Compile Include="Main\Model\Map\ChargeInfo.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="Main\Model\Map\MapVector.cs" />
     <Compile Include="MoveControl\Control\AgvMoveRevise.cs" />
@@ -272,7 +273,7 @@
       <DependentUpon>MiddlerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Main\Control\MainFlowHandler.cs" />
-    <Compile Include="Main\Model\VehiclePosition.cs" />
+    <Compile Include="Main\Model\Map\VehiclePosition.cs" />
     <Compile Include="Main\Model\Vehicle.cs" />
     <Compile Include="Main\Control\MiddleAgent.cs" />
     <Compile Include="Main\Model\TransferSteps\AgvcTransCmd.cs" />

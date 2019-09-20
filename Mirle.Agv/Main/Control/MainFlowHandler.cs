@@ -787,7 +787,7 @@ namespace Mirle.Agv.Controller
                     //    , msg));
                     return false;
                 }
-                VehiclePosition vehiclePosition = new VehiclePosition();
+                VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
                 if (!mapHandler.IsPositionInThisSection(moveFirstPosition, TheMapInfo.allMapSections[toSectionIds[0]], ref vehiclePosition))
                 {
                     var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][curPosition is not in first section {toSectionIds[0]}]";
@@ -1246,7 +1246,7 @@ namespace Mirle.Agv.Controller
             {
                 var curPos = theVehicle.CurVehiclePosition.RealPosition;
                 var reserveOkSection = middleAgent.GetReserveOkSections()[0];
-                VehiclePosition vehiclePosition = new VehiclePosition();
+                VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
                 if (!mapHandler.IsPositionInThisSection(curPos, reserveOkSection, ref vehiclePosition))
                 {
                     return false;
@@ -1977,7 +1977,7 @@ namespace Mirle.Agv.Controller
             {
                 try
                 {
-                    VehiclePosition vehiclePosition = new VehiclePosition();
+                    VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
                     if (mapHandler.IsPositionInThisSection(gxPosition, movingSections[searchingSectionIndex], ref vehiclePosition))
                     {
                         theVehicle.CurVehiclePosition = vehiclePosition;
@@ -2091,7 +2091,7 @@ namespace Mirle.Agv.Controller
             foreach (var item in TheMapInfo.allMapSections)
             {
                 MapSection mapSection = item.Value;
-                VehiclePosition vehiclePosition = new VehiclePosition();
+                VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
                 if (mapHandler.IsPositionInThisSection(gxPosition, mapSection, ref vehiclePosition))
                 {
                     isInMap = true;
@@ -2141,7 +2141,7 @@ namespace Mirle.Agv.Controller
 
                 if (IsHighPower())
                 {
-                    var msg = $"車子抵達{address.Id},充電方向為{address.PioDirection},因SOC為{percentage} > {highPercentage}(高水位門檻值), 故暫不充電";
+                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage} > {highPercentage}(高水位門檻值), 故暫不充電";
                     //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     //, msg));
                     OnMessageShowEvent?.Invoke(this, msg);
@@ -2149,7 +2149,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    var msg = $"車子抵達{address.Id},充電方向為{address.PioDirection},因SOC為{percentage} < {highPercentage}(高水位門檻值), 故送出充電信號";
+                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage} < {highPercentage}(高水位門檻值), 故送出充電信號";
                     loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , msg));
                     OnMessageShowEvent?.Invoke(this, msg);
@@ -2489,7 +2489,7 @@ namespace Mirle.Agv.Controller
         public void ResetAllarms()
         {
             alarmHandler.ResetAllAlarms();
-            //plcAgent.WritePLCAlarmReset();
+            plcAgent.WritePLCAlarmReset();
         }
 
         public void SetupTestAgvcTransferCmd()

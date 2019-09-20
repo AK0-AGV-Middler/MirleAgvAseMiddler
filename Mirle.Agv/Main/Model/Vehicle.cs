@@ -137,7 +137,7 @@ namespace Mirle.Agv.Model
         public VhStopSingle BlockingStatus { get; set; }
         public VhChargeStatus ChargeStatus { get; set; }
         public DriveDirction DrivingDirection { get; set; }
-        public VHModeStatus ModeStatus { get; set; }
+        public VHModeStatus ModeStatus { get; set; } = VHModeStatus.Manual;
         public VhStopSingle ObstacleStatus { get; set; }
         public int ObstDistance { get; set; }
         public string ObstVehicleID { get; set; } = "";
@@ -155,7 +155,6 @@ namespace Mirle.Agv.Model
         public PauseEvent Cmd139EventType { get; set; }
         public string TeachingFromAddress { get; internal set; } = "";
         public string TeachingToAddress { get; internal set; } = "";
-
         #endregion
 
         private Vehicle()

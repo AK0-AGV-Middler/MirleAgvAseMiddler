@@ -940,26 +940,13 @@ namespace Mirle.Agv.Controller
 
                 if (axis == EnumAxis.GT)
                 {
-                    //if (MoveCompelete(axis))
-                    //{
-                    //    if (WheelAngleCompare(distance_FL, distance_FR, distance_RL, distance_RR, 0.1))
-                    //        return;
-                    //}
-                    //else
-                    //{
                     if (Math.Abs(distance_FL - allAxis[EnumAxis.TFL].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_FR - allAxis[EnumAxis.TFR].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_RL - allAxis[EnumAxis.TRL].LastCommandPosition) < 0.1 &&
                         Math.Abs(distance_RR - allAxis[EnumAxis.TRR].LastCommandPosition) < 0.1)
                     {
-                        WriteLog("Elmo", "5", device, memberName, axis.ToString() + " distance_FL : " + distance_FL.ToString("0.00") +
-                                    ", distance_FR : " + distance_FR.ToString("0.00") +
-                                    ", distance_RL : " + distance_RL.ToString("0.00") +
-                                    ", distance_RR : " + distance_RR.ToString("0.00") +
-                                    ", by pass !");
                         return;
                     }
-                    //}
                 }
 
                 double sqrt = Math.Sqrt(allAxis[axis].Config.GroupOrder.Count());

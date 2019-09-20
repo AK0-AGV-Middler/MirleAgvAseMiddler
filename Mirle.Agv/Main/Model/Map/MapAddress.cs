@@ -18,7 +18,7 @@ namespace Mirle.Agv.Model
         public bool CanRightLoad { get; set; }
         public bool CanRightUnload { get; set; }
         public bool IsCharger { get; set; }
-        public string CouplerId { get; set; } = "None";
+        public string CouplerId { get; set; } = "";
         public EnumChargeDirection ChargeDirection { get; set; } = EnumChargeDirection.None;
         public bool IsSegmentPoint { get; set; }
         public bool CanSpin { get; set; }

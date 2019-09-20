@@ -1027,7 +1027,8 @@ namespace Mirle.Agv.Controller
                     tempDistance = Math.Sqrt(Math.Pow(data.LastNode.X - oneceMoveCommand.AddressPositions[i].X, 2) +
                                              Math.Pow(data.LastNode.Y - oneceMoveCommand.AddressPositions[i].Y, 2));
                     data.CommandDistance += tempDistance;
-                    data.STDistance += tempDistance;
+                    if (data.LastAction != EnumAddressAction.R2000)
+                        data.STDistance += tempDistance;
 
                     switch (oneceMoveCommand.AddressActions[i])
                     {
@@ -1768,7 +1769,21 @@ namespace Mirle.Agv.Controller
 
                     case EnumCommandType.Vchange:
                         if (moveCmdList[i].Position != null)
+                        {
+                            if (lastVChangeCommandIndex != -1)
+                            {
+                                if ((dirFlag && moveCmdList[i].TriggerEncoder < lastVChangeEncoder) ||
+                                   (!dirFlag && moveCmdList[i].TriggerEncoder > lastVChangeEncoder))
+                                {
+                                    moveCmdList.RemoveAt(lastVChangeCommandIndex);
+                                    ProcessVChangeCommand(ref moveCmdList);
+                                    return;
+                                }
+                            }
+
+
                             nowEncoder = moveCmdList[i].TriggerEncoder;
+                        }
 
                         tempNowVelocity = GetNowVelocity(nowVelocity, nowVelocityCommand, Math.Abs(nowEncoder - lastVChangeEncoder));
 
