@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props')" />
+  <Import Project="..\packages\NUnit.3.11.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -8,10 +10,28 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Mirle.Agv</RootNamespace>
     <AssemblyName>Mirle.Agv</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,7 +52,38 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>VehHasCarrier.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ClsMCProtocol">
+      <HintPath>OutsideDll\ClsMCProtocol.dll</HintPath>
+    </Reference>
+    <Reference Include="Communication">
+      <HintPath>OutsideDll\Communication.dll</HintPath>
+    </Reference>
+    <Reference Include="ElmoMotionControlComponents.Common.EASComponents">
+      <HintPath>OutsideDll\ElmoMotionControlComponents.Common.EASComponents.dll</HintPath>
+    </Reference>
+    <Reference Include="ElmoMotionControlComponents.Drive.EASComponents">
+      <HintPath>OutsideDll\ElmoMotionControlComponents.Drive.EASComponents.dll</HintPath>
+    </Reference>
+    <Reference Include="ElmoMotionControlComponents.GMAS.MMCLibDotNET">
+      <HintPath>OutsideDll\ElmoMotionControlComponents.GMAS.MMCLibDotNET.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLL\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <Reference Include="Keyence.AutoID.SDK">
+      <HintPath>OutsideDll\Keyence.AutoID.SDK.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.11.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.11.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Stateless">
+      <HintPath>DLL\Stateless.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -44,59 +95,220 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="TCPIPTrxControl, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>OutsideDll\TCPIPTrxControl.dll</HintPath>
+    </Reference>
+    <Reference Include="VncClientControlCommon">
+      <HintPath>OutsideDll\VncClientControlCommon.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Control\Handler\BatteryHandler.cs" />
-    <Compile Include="Control\Interface\BmsInterface.cs" />
-    <Compile Include="Control\Handler\CoupleHandler.cs" />
-    <Compile Include="Control\Interface\ElmoInterface.cs" />
-    <Compile Include="Control\Interface\MapBarcodeInterface.cs" />
-    <Compile Include="Control\Handler\MoveControlHandler.cs" />
-    <Compile Include="Control\Interface\PlcInterface.cs" />
-    <Compile Include="Control\Tools\AgvcConnecter.cs" />
-    <Compile Include="Control\Tools\ConfigHandler.cs" />
-    <Compile Include="Control\Tools\CsvHandler.cs" />
-    <Compile Include="Control\Tools\Logger.cs" />
-    <Compile Include="Control\Tools\XmlHandler.cs" />
-    <Compile Include="Model\Alarm.cs" />
-    <Compile Include="Defines.cs" />
-    <Compile Include="Model\MapPosition.cs" />
-    <Compile Include="Model\PlcLoadingSensor.cs" />
-    <Compile Include="Model\PlcRobot.cs" />
-    <Compile Include="Model\PlcStage.cs" />
-    <Compile Include="View\Form1.cs">
+    <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
+    <Compile Include="Main\Model\Map\ChargeInfo.cs" />
+    <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
+    <Compile Include="Main\Model\Map\MapVector.cs" />
+    <Compile Include="MoveControl\Control\AgvMoveRevise.cs" />
+    <Compile Include="MoveControl\Control\ComputeFunction.cs" />
+    <Compile Include="MoveControl\Control\CreateMoveControlList.cs" />
+    <Compile Include="MoveControl\Control\Sr2000Driver.cs" />
+    <Compile Include="MoveControl\Control\ElmoDriver.cs" />
+    <Compile Include="Main\Control\LoggerAgent.cs" />
+    <Compile Include="Main\Control\AlarmHandler.cs" />
+    <Compile Include="Main\Control\TransfereCmdSteps\Idle.cs" />
+    <Compile Include="Main\Control\TransfereCmdSteps\ITransferCmdStep.cs" />
+    <Compile Include="Main\Control\TransfereCmdSteps\Load.cs" />
+    <Compile Include="Main\Control\TransfereCmdSteps\Move.cs" />
+    <Compile Include="Main\Control\TransfereCmdSteps\Unload.cs" />
+    <Compile Include="Main\Control\IComplete.cs" />
+    <Compile Include="MoveControl\Control\MoveControlHandler.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\MoveCommandData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\OneTimeReviseParameter.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\TRTimeToAngleRange.cs" />
+    <Compile Include="MoveControl\MoveControlDefine.cs" />
+    <Compile Include="MoveControl\View\SimulateSettingAGVAngle.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="View\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="MoveControl\View\SimulateSettingAGVAngle.Designer.cs">
+      <DependentUpon>SimulateSettingAGVAngle.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\Bettery.cs" />
-    <Compile Include="Control\Handler\MainFlowHandler.cs" />
-    <Compile Include="Model\PartialJob.cs" />
-    <Compile Include="Model\Carrier.cs" />
-    <Compile Include="Model\VehLocation.cs" />
-    <Compile Include="Model\Vehicle.cs" />
-    <Compile Include="Control\Interface\MiddleInterface.cs" />
-    <Compile Include="Model\AgvcCmd.cs" />
-    <Compile Include="Model\Report.cs" />
-    <Compile Include="Model\TransCmdInfo.cs" />
-    <Compile Include="Model\MapBarcodeReader.cs" />
-    <Compile Include="Model\ElmoCmd.cs" />
-    <Compile Include="Model\PlcBeam.cs" />
-    <Compile Include="Model\Coupler.cs" />
-    <Compile Include="Model\PlcEmo.cs" />
-    <Compile Include="Model\PlcPortPio.cs" />
+    <Compile Include="Plc\Control\PlcAgent.cs" />
+    <Compile Include="Main\Control\InitialEventArgs.cs" />
+    <Compile Include="Main\Control\Tools\CassetteIDReader.cs" />
+    <Compile Include="Main\Control\Tools\ConfigHandler.cs" />
+    <Compile Include="Main\Control\Tools\CsvHandler.cs" />
+    <Compile Include="Main\Control\Tools\Logger\LogBasicConfigs.cs" />
+    <Compile Include="Main\Control\Tools\Logger\LogFormat.cs" />
+    <Compile Include="Main\Control\Tools\Logger\Logger.cs" />
+    <Compile Include="Main\Control\Tools\Logger\LogType.cs" />
+    <Compile Include="Main\Control\Tools\XmlHandler.cs" />
+    <Compile Include="Main\Model\Agvmessage.cs" />
+    <Compile Include="Main\Model\Alarm.cs" />
+    <Compile Include="Main\MainDefines.cs" />
+    <Compile Include="Main\Model\Configs\AlarmConfig.cs" />
+    <Compile Include="Main\Model\Configs\MainFlowConfig.cs" />
+    <Compile Include="Main\Model\Configs\MapConfig.cs" />
+    <Compile Include="Main\Model\Configs\MiddlerConfig.cs" />
+    <Compile Include="Main\Model\Map\MapBarcode.cs" />
+    <Compile Include="Main\Model\Map\MapInfo.cs" />
+    <Compile Include="Main\Model\Map\MapPosition.cs" />
+    <Compile Include="Main\Model\Map\MapBarcodeLine.cs" />
+    <Compile Include="MoveControl\Model\Configs\ElmoSingleAxisConfig.cs" />
+    <Compile Include="MoveControl\Model\Configs\MoveControlConfig.cs" />
+    <Compile Include="MoveControl\Model\Configs\OntimeReviseConfig.cs" />
+    <Compile Include="MoveControl\Model\Configs\Sr2000Config.cs" />
+    <Compile Include="MoveControl\Model\Elmo\AxisInfo.cs" />
+    <Compile Include="MoveControl\Model\Elmo\ElmoAxisFeedbackData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\AddToCommandListData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\AGVTurnParameter.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\AxisData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\BreakDownMoveCommandData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\Command.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\EncoderPositionData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\MoveControlParameter.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\MoveControlSafetyData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\OneMoveCommand.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\Location.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\ReserveData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\SafetyData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\SectionLine.cs" />
+    <Compile Include="MoveControl\Model\SR2000\AGVPosition.cs" />
+    <Compile Include="MoveControl\Model\SR2000\BarcodeData.cs" />
+    <Compile Include="MoveControl\Model\SR2000\ReviseData.cs" />
+    <Compile Include="MoveControl\Model\SR2000\SectionDeviationTheta.cs" />
+    <Compile Include="MoveControl\Model\SR2000\SpeedAndMaxTheta.cs" />
+    <Compile Include="MoveControl\Model\SR2000\Sr2000Info.cs" />
+    <Compile Include="MoveControl\Model\SR2000\Sr2000ReadData.cs" />
+    <Compile Include="Plc\Model\BatteryCell.cs" />
+    <Compile Include="Plc\Model\PlcBatterys.cs" />
+    <Compile Include="Plc\Model\PlcBeamSensor.cs" />
+    <Compile Include="Plc\Model\PlcBumper.cs" />
+    <Compile Include="Plc\Model\PlcConfig.cs" />
+    <Compile Include="Plc\Model\PlcEmo.cs" />
+    <Compile Include="Plc\Model\PlcForkCommand.cs" />
+    <Compile Include="Plc\Model\PlcRobot.cs" />
+    <Compile Include="Plc\Model\PlcVehicle.cs" />
+    <Compile Include="Main\Model\TransferSteps\EmptyTransCmd.cs" />
+    <Compile Include="Main\Model\TransferSteps\LoadCmdInfo.cs" />
+    <Compile Include="Main\Model\TransferSteps\MoveCmdInfo.cs" />
+    <Compile Include="Main\Model\TransferSteps\TransCmd.cs" />
+    <Compile Include="Main\Model\TransferSteps\UnloadCmdInfo.cs" />
+    <Compile Include="Plc\PlcDefine.cs" />
+    <Compile Include="UcThreadPad.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UcThreadPad.Designer.cs">
+      <DependentUpon>UcThreadPad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\SensorByPassInformation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\SensorByPassInformation.Designer.cs">
+      <DependentUpon>SensorByPassInformation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcVehicleImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcVehicleImage.Designer.cs">
+      <DependentUpon>UcVehicleImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MoveControl\View\JogPitchForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\JogPitchForm.designer.cs">
+      <DependentUpon>JogPitchForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MoveControl\View\MoveCommandDebugModeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\MoveCommandDebugModeForm.designer.cs">
+      <DependentUpon>MoveCommandDebugModeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\SafetyInformation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\SafetyInformation.Designer.cs">
+      <DependentUpon>SafetyInformation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcAddressImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcAddressImage.Designer.cs">
+      <DependentUpon>UcAddressImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\AlarmForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\AlarmForm.Designer.cs">
+      <DependentUpon>AlarmForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plc\View\PlcForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plc\View\PlcForm.designer.cs">
+      <DependentUpon>PlcForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\JogPitchAxis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\JogPitchAxis.designer.cs">
+      <DependentUpon>JogPitchAxis.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcSectionImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcSectionImage.Designer.cs">
+      <DependentUpon>UcSectionImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcLabelTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcLabelTextBox.Designer.cs">
+      <DependentUpon>UcLabelTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\MiddlerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\MiddlerForm.Designer.cs">
+      <DependentUpon>MiddlerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\Control\MainFlowHandler.cs" />
+    <Compile Include="Main\Model\Map\VehiclePosition.cs" />
+    <Compile Include="Main\Model\Vehicle.cs" />
+    <Compile Include="Main\Control\MiddleAgent.cs" />
+    <Compile Include="Main\Model\TransferSteps\AgvcTransCmd.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Model\MapAddress.cs" />
-    <Compile Include="Model\MapSection.cs" />
-    <Compile Include="Control\Handler\MapHandler.cs" />
-    <Compile Include="View\LoginForm.cs">
+    <Compile Include="Main\Model\Map\MapAddress.cs" />
+    <Compile Include="Main\Model\Map\MapSection.cs" />
+    <Compile Include="Main\Control\MapHandler.cs" />
+    <Compile Include="Main\View\InitialForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="View\LoginForm.Designer.cs">
+    <Compile Include="Main\View\InitialForm.Designer.cs">
+      <DependentUpon>InitialForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\LoginForm.Designer.cs">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Main\View\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\WarningForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\WarningForm.Designer.cs">
+      <DependentUpon>WarningForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="MoveControl\View\SimulateSettingAGVAngle.resx">
+      <DependentUpon>SimulateSettingAGVAngle.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -105,7 +317,59 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="UcThreadPad.resx">
+      <DependentUpon>UcThreadPad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\UserControls\SensorByPassInformation.resx">
+      <DependentUpon>SensorByPassInformation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\UcVehicleImage.resx">
+      <DependentUpon>UcVehicleImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\AlarmForm.resx">
+      <DependentUpon>AlarmForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\JogPitchForm.resx">
+      <DependentUpon>JogPitchForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\MoveCommandDebugModeForm.resx">
+      <DependentUpon>MoveCommandDebugModeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plc\View\PlcForm.resx">
+      <DependentUpon>PlcForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\UserControls\JogPitchAxis.resx">
+      <DependentUpon>JogPitchAxis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\UserControls\SafetyInformation.resx">
+      <DependentUpon>SafetyInformation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\ucAddressImage.resx">
+      <DependentUpon>UcAddressImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\UcLabelTextBox.resx">
+      <DependentUpon>UcLabelTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\MiddlerForm.resx">
+      <DependentUpon>MiddlerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\InitialForm.resx">
+      <DependentUpon>InitialForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\UcSectionImage.resx">
+      <DependentUpon>UcSectionImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\WarningForm.resx">
+      <DependentUpon>WarningForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Main\Model\agvmessage.proto" />
+    <None Include="OutsideDll\TCPIPTrxControl.dll.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -115,10 +379,56 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Resource\Close_32x32.png" />
+    <None Include="Resource\Mirle_Home.JPG" />
+    <None Include="Resource\Mirle_LOGO.jpg" />
+    <None Include="Resource\Mirle_口號.JPG" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="OutsideDll\Google.Protobuf.dll" />
+    <Content Include="OutsideDll\Google.Protobuf.xml" />
+    <Content Include="OutsideDll\Logrila.Logging.dll" />
+    <Content Include="OutsideDll\NLog.dll" />
+    <Content Include="OutsideDll\NLog.xml" />
+    <Content Include="OutsideDll\Stateless.dll" />
+    <Content Include="OutsideDll\Stateless.xml" />
+    <Content Include="OutsideDll\TCPIPTrxControl.dll" />
+    <Content Include="OutsideDll\TCPIPTrxControl.pdb" />
+    <Content Include="Resource\AlarmForm.ico" />
+    <Content Include="Resource\CommuForm.ico" />
+    <Content Include="Resource\MainForm.ico" />
+    <Content Include="Resource\VehHasCarrier.ico" />
+    <Content Include="VehHasCarrier.ico" />
+    <None Include="Resource\VehHasNoCarrier.jpg" />
+    <None Include="Resource\VehHasCarrier.jpg" />
+    <None Include="Resource\Idle_16x16.png" />
+    <None Include="Resource\CrossHair_16x16.png" />
+    <None Include="Resource\Bulb_Red_32x32.png" />
+    <None Include="Resource\Bulb_Green_32x32.png" />
+    <None Include="Resource\Bulb_Blue_32x32.png" />
+    <None Include="Resource\Auto_16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 和 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>此專案參考這部電腦上所缺少的 NuGet 套件。請啟用 NuGet 套件還原，以下載該套件。如需詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的檔案是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.11.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props'))" />
+  </Target>
 </Project>
