@@ -3710,7 +3710,7 @@ namespace Mirle.Agv.Controller
                 return false;
             }
 
-            if (command.IndexOfReserveList > command.ReserveList.Count)
+            if (command.IndexOfReserveList >= command.ReserveList.Count)
             {
                 WriteLog("MoveControl", "7", device, "", "Reserve已經全部取得,但收到Reserve.. 座標" +
                          "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ) !");

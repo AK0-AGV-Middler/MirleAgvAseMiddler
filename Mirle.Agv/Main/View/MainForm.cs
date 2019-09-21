@@ -20,8 +20,6 @@ namespace Mirle.Agv.View
 {
     public partial class MainForm : Form
     {
-        private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
-        private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
         private MoveControlHandler moveControlHandler;
         private MiddleAgent middleAgent;
@@ -476,9 +474,7 @@ namespace Mirle.Agv.View
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mainFlowHandler.StopVisitTransferSteps();
-            ShutdownEvent.Set();
-            PauseEvent.Set();
+            mainFlowHandler.StopAndClear();
 
             Application.Exit();
             Environment.Exit(Environment.ExitCode);
@@ -1430,6 +1426,11 @@ namespace Mirle.Agv.View
             {
                 mainFlowHandler.SetupVehicleSoc(100);
             }
+        }
+
+        private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

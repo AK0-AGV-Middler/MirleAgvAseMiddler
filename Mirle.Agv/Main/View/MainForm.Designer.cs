@@ -223,6 +223,7 @@
             this.關閉ToolStripMenuItem.Name = "關閉ToolStripMenuItem";
             this.關閉ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             this.關閉ToolStripMenuItem.Text = "關閉";
+            this.關閉ToolStripMenuItem.Click += new System.EventHandler(this.關閉ToolStripMenuItem_Click);
             // 
             // 語言ToolStripMenuItem
             // 
@@ -1414,6 +1415,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.ControlBox = false;
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
