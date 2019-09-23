@@ -124,13 +124,26 @@
     <Compile Include="MoveControl\Control\MoveControlHandler.cs" />
     <Compile Include="MoveControl\Model\MoveControl\MoveCommandData.cs" />
     <Compile Include="MoveControl\Model\MoveControl\OneTimeReviseParameter.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\SimulateState.cs" />
     <Compile Include="MoveControl\Model\MoveControl\TRTimeToAngleRange.cs" />
     <Compile Include="MoveControl\MoveControlDefine.cs" />
+    <Compile Include="MoveControl\View\MoveControlSimulateStateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\MoveControlSimulateStateForm.Designer.cs">
+      <DependentUpon>MoveControlSimulateStateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MoveControl\View\SimulateSettingAGVAngle.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MoveControl\View\SimulateSettingAGVAngle.Designer.cs">
       <DependentUpon>SimulateSettingAGVAngle.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MoveControl\View\SimulateSettingAGVAngleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\SimulateSettingAGVAngleForm.Designer.cs">
+      <DependentUpon>SimulateSettingAGVAngleForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Plc\Control\PlcAgent.cs" />
     <Compile Include="Main\Control\InitialEventArgs.cs" />
@@ -306,8 +319,14 @@
     <Compile Include="Main\View\WarningForm.Designer.cs">
       <DependentUpon>WarningForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="MoveControl\View\MoveControlSimulateStateForm.resx">
+      <DependentUpon>MoveControlSimulateStateForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MoveControl\View\SimulateSettingAGVAngle.resx">
       <DependentUpon>SimulateSettingAGVAngle.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\SimulateSettingAGVAngleForm.resx">
+      <DependentUpon>SimulateSettingAGVAngleForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
