@@ -2051,6 +2051,11 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
+                    alarmHandler.SetAlarm(000011);
+                    var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({(int)gxPosition.X},{(int)gxPosition.Y})]";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                         , msg));
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
                 finally
@@ -2062,6 +2067,10 @@ namespace Mirle.Agv.Controller
             if (searchingSectionIndex == movingSections.Count)
             {
                 alarmHandler.SetAlarm(000011);
+                var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({(int)gxPosition.X},{(int)gxPosition.Y})]";
+                OnMessageShowEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
             }
         }
 
@@ -2167,7 +2176,7 @@ namespace Mirle.Agv.Controller
 
             if (!isInMap)
             {
-                var msg = $"MainFlow : Update VehiclePosition Without MoveCmd +++Get Lost+++, [Position=({(int)gxPosition.X},{(int)gxPosition.Y})]";
+                var msg = $"MainFlow : 無命令下，車輛迷航, [Position=({(int)gxPosition.X},{(int)gxPosition.Y})]";
                 //OnMessageShowEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));

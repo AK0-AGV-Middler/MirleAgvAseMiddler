@@ -207,11 +207,11 @@ namespace Mirle.Agv.Controller
             var barcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
 
             string titleRow = "Id,BarcodeHeadNum,HeadX,HeadY,BarcodeTailNum,TailX,TailY,OffsetX,OffsetY,Material";
-            File.WriteAllText(barcodeBackupPath,titleRow);
+            File.WriteAllText(barcodeBackupPath, titleRow);
 
             List<string> barcodeLineInfos = new List<string>();
             barcodeLineInfos.Add(Environment.NewLine);
-            foreach (var  item in TheMapInfo.allMapBarcodeLines.Values)
+            foreach (var item in TheMapInfo.allMapBarcodeLines.Values)
             {
                 var head = item.HeadBarcode;
                 var tail = item.TailBarcode;
@@ -531,81 +531,137 @@ namespace Mirle.Agv.Controller
 
         public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection, ref VehiclePosition vehicleLocation)
         {
-            MapSection mapSection = aSection.DeepClone();
-            MapAddress myHeadAddr = mapSection.HeadAddress;
-            MapAddress myTailAddr = mapSection.TailAddress;
-
-            switch (aSection.Type)
+            try
             {
-                case EnumSectionType.Vertical:
-                    {
-                        if ((int)aSection.HeadAddress.Position.Y > (int)aSection.TailAddress.Position.Y)
-                        {
-                            myHeadAddr = aSection.TailAddress;
-                            myTailAddr = aSection.HeadAddress;
-                        }
-                    }
-                    break;
-                case EnumSectionType.Horizontal:
-                case EnumSectionType.R2000:
-                    {
-                        if ((int)aSection.HeadAddress.Position.X > (int)aSection.TailAddress.Position.X)
-                        {
-                            myHeadAddr = aSection.TailAddress;
-                            myTailAddr = aSection.HeadAddress;
-                        }
-                    }
-                    break;
-                case EnumSectionType.None:
-                default:
-                    break;
-            }
-
-            VehiclePosition location = theVehicle.CurVehiclePosition;
-
-
-            #region Not in Section
-            //Position 在 Head 西方過遠
-            if (aPosition.X + AddressAreaMm < myHeadAddr.Position.X)
-            {
-                return false;
-            }
-            //Position 在 Tail 東方過遠
-            if (aPosition.X > myTailAddr.Position.X + AddressAreaMm)
-            {
-                return false;
-            }
-            //Position 在 Head 北方過遠
-            if (aPosition.Y < myHeadAddr.Position.Y - AddressAreaMm)
-            {
-                return false;
-            }
-            //Position 在 Tail 南方過遠
-            if (aPosition.Y - AddressAreaMm > myTailAddr.Position.Y)
-            {
-                return false;
-            }
-            #endregion
-
-            #region In Section    
-            if (!IsPositionInThisAddress(aPosition, location.LastAddress.Position))
-            {
-                foreach (var insideAddress in mapSection.InsideAddresses)
+                //當前Pos還在當前Address範圍內則不更新位置
+                if (IsPositionInThisAddress(vehicleLocation.RealPosition, vehicleLocation.LastAddress.Position))
                 {
-                    if (IsPositionInThisAddress(aPosition, insideAddress.Position))
+                    return true;
+                }
+
+                #region NotInSection 2019.09.23
+                double secMinX, secMaxX, secMinY, secMaxY;
+
+                if (aSection.HeadAddress.Position.X >= aSection.TailAddress.Position.X)
+                {
+                    secMaxX = aSection.HeadAddress.Position.X + AddressAreaMm;
+                    secMinX = aSection.TailAddress.Position.X - AddressAreaMm;
+                }
+                else
+                {
+                    secMaxX = aSection.TailAddress.Position.X + AddressAreaMm;
+                    secMinX = aSection.HeadAddress.Position.X - AddressAreaMm;
+                }
+
+                if (aSection.HeadAddress.Position.Y >= aSection.TailAddress.Position.Y)
+                {
+                    secMaxY = aSection.HeadAddress.Position.Y + AddressAreaMm;
+                    secMinY = aSection.TailAddress.Position.Y - AddressAreaMm;
+                }
+                else
+                {
+                    secMaxY = aSection.TailAddress.Position.Y + AddressAreaMm;
+                    secMinY = aSection.HeadAddress.Position.Y - AddressAreaMm;
+                }
+
+                #region Not in Section
+                if (!(aPosition.X <= secMaxX && aPosition.X >= secMinX && aPosition.Y <= secMaxY && aPosition.Y >= secMinY))
+                {
+                    var msg = string.Format("Position({0:F2},{1:F2})不在[{2}]Section[{3}]內，MinX={4:F2},MaxX={5:F2},MinY={6:F2},MaxY={7:F2}。", aPosition.X, aPosition.Y, aSection.Type, aSection.Id, secMinX, secMaxX, secMinY, secMaxY);
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                            , msg));
+
+                    return false;
+                }
+                #endregion
+
+
+                #endregion
+
+                #region NotInSection 2019.09.19
+
+                //MapAddress myHeadAddr = aSection.HeadAddress;
+                //MapAddress myTailAddr = aSection.TailAddress;
+
+                //switch (aSection.Type)
+                //{
+                //    case EnumSectionType.Vertical:
+                //        {
+                //            if ((int)aSection.HeadAddress.Position.Y > (int)aSection.TailAddress.Position.Y)
+                //            {
+                //                myHeadAddr = aSection.TailAddress;
+                //                myTailAddr = aSection.HeadAddress;
+                //            }
+                //        }
+                //        break;
+                //    case EnumSectionType.Horizontal:
+                //    case EnumSectionType.R2000:
+                //        {
+                //            if ((int)aSection.HeadAddress.Position.X > (int)aSection.TailAddress.Position.X)
+                //            {
+                //                myHeadAddr = aSection.TailAddress;
+                //                myTailAddr = aSection.HeadAddress;
+                //            }
+                //        }
+                //        break;
+                //    case EnumSectionType.None:
+                //    default:
+                //        break;
+                //}
+
+
+
+                //#region Not in Section
+                ////Position 在 Head 西方過遠
+                //if (aPosition.X + AddressAreaMm < myHeadAddr.Position.X)
+                //{
+                //    return false;
+                //}
+                ////Position 在 Tail 東方過遠
+                //if (aPosition.X > myTailAddr.Position.X + AddressAreaMm)
+                //{
+                //    return false;
+                //}
+                ////Position 在 Head 北方過遠
+                //if (aPosition.Y < myHeadAddr.Position.Y - AddressAreaMm)
+                //{
+                //    return false;
+                //}
+                ////Position 在 Tail 南方過遠
+                //if (aPosition.Y - AddressAreaMm > myTailAddr.Position.Y)
+                //{
+                //    return false;
+                //}
+                //#endregion
+
+                #endregion
+
+                #region In Section    
+                if (!IsPositionInThisAddress(aPosition, vehicleLocation.LastAddress.Position))
+                {
+                    foreach (var insideAddress in aSection.InsideAddresses)
                     {
-                        vehicleLocation.LastAddress = insideAddress;
-                        break;
+                        if (IsPositionInThisAddress(aPosition, insideAddress.Position))
+                        {
+                            vehicleLocation.LastAddress = insideAddress;
+                            break;
+                        }
                     }
                 }
+
+                vehicleLocation.LastSection = aSection;
+
+                vehicleLocation.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, aSection.HeadAddress.Position));
+
+                return true;
+                #endregion
+
             }
-
-            vehicleLocation.LastSection = mapSection;
-
-            vehicleLocation.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, mapSection.HeadAddress.Position));           
-            
-            return true;
-            #endregion
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return false;
+            }
         }
 
         private double GetVectorRatio(MapPosition aPosition, MapSection mapSection)
