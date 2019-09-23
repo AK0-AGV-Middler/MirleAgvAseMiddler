@@ -2275,7 +2275,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage} > {lowPercentage}(自動充電門檻值), 故送出充電信號";
+                    var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage} < {lowPercentage}(自動充電門檻值), 故送出充電信號";
                     //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     //     , msg));
                     OnMessageShowEvent?.Invoke(this, msg);
