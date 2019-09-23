@@ -218,16 +218,19 @@ namespace Mirle.Agv.View
             var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
             RichTextBoxAppendHead(richTextBox1, msg);
 
-            if (alarmForm.IsDisposed)
+            if (alarm.Level == EnumAlarmLevel.Alarm)
             {
-                alarmForm = new AlarmForm(mainFlowHandler);
+                if (alarmForm.IsDisposed)
+                {
+                    alarmForm = new AlarmForm(mainFlowHandler);
+                }
+                alarmForm.BringToFront();
+                alarmForm.Show();
+                //var warnMsg = $"[Id={alarm.Id}][Text={alarm.AlarmText}]" + Environment.NewLine + $"[{alarm.Description}]";
+                //warningForm.WarningMsg = warnMsg;
+                //warningForm.BringToFront();
+                //warningForm.Show();
             }
-            alarmForm.BringToFront();
-            alarmForm.Show();
-            //var warnMsg = $"[Id={alarm.Id}][Text={alarm.AlarmText}]" + Environment.NewLine + $"[{alarm.Description}]";
-            //warningForm.WarningMsg = warnMsg;
-            //warningForm.BringToFront();
-            //warningForm.Show();
         }
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
@@ -1005,7 +1008,7 @@ namespace Mirle.Agv.View
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
 
-           
+
 
             //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
             //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
