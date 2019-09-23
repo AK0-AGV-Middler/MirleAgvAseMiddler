@@ -2262,8 +2262,8 @@ namespace Mirle.Agv.Controller
             var address = theVehicle.CurVehiclePosition.LastAddress;
             var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
             var lowPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeLowSoc;
-
-            if (address.IsCharger)
+            var pos = theVehicle.CurVehiclePosition.RealPosition;
+            if (address.IsCharger && mapHandler.IsPositionInThisAddress(pos,address.Position))
             {
                 if (theVehicle.ThePlcVehicle.Batterys.Charging)
                 {
