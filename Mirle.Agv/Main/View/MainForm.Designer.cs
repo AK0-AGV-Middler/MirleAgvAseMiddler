@@ -132,6 +132,8 @@
             this.tstextRemotePort = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btnMoveOk = new System.Windows.Forms.Button();
+            this.btnLoadOk = new System.Windows.Forms.Button();
             this.ucCharging = new Mirle.Agv.UcLabelTextBox();
             this.ucSoc = new Mirle.Agv.UcLabelTextBox();
             this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
@@ -582,6 +584,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
+            this.splitContainer2.Panel2.Controls.Add(this.btnLoadOk);
+            this.splitContainer2.Panel2.Controls.Add(this.btnMoveOk);
             this.splitContainer2.Panel2.Controls.Add(this.ucBarPos);
             this.splitContainer2.Panel2.Controls.Add(this.btnSemiAutoManual);
             this.splitContainer2.Panel2.Controls.Add(this.txtBarNum);
@@ -1299,6 +1303,28 @@
             this.tstextRealPosY.Size = new System.Drawing.Size(89, 17);
             this.tstextRealPosY.Text = "tstextRealPosY";
             // 
+            // btnMoveOk
+            // 
+            this.btnMoveOk.Location = new System.Drawing.Point(6, 200);
+            this.btnMoveOk.Name = "btnMoveOk";
+            this.btnMoveOk.Size = new System.Drawing.Size(67, 33);
+            this.btnMoveOk.TabIndex = 58;
+            this.btnMoveOk.Text = "MoveOk";
+            this.btnMoveOk.UseVisualStyleBackColor = true;
+            this.btnMoveOk.Visible = false;
+            this.btnMoveOk.Click += new System.EventHandler(this.btnMoveOk_Click);
+            // 
+            // btnLoadOk
+            // 
+            this.btnLoadOk.Location = new System.Drawing.Point(6, 239);
+            this.btnLoadOk.Name = "btnLoadOk";
+            this.btnLoadOk.Size = new System.Drawing.Size(67, 33);
+            this.btnLoadOk.TabIndex = 59;
+            this.btnLoadOk.Text = "LoadOk";
+            this.btnLoadOk.UseVisualStyleBackColor = true;
+            this.btnLoadOk.Visible = false;
+            this.btnLoadOk.Click += new System.EventHandler(this.btnLoadOk_Click);
+            // 
             // ucCharging
             // 
             this.ucCharging.Location = new System.Drawing.Point(7, 127);
@@ -1584,5 +1610,7 @@
         private System.Windows.Forms.ToolStripStatusLabel tstextRemotePort;
         private System.Windows.Forms.ToolStripStatusLabel tstextRealPosX;
         private System.Windows.Forms.ToolStripStatusLabel tstextRealPosY;
+        private System.Windows.Forms.Button btnLoadOk;
+        private System.Windows.Forms.Button btnMoveOk;
     }
 }

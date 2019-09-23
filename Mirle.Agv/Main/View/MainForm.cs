@@ -1435,5 +1435,18 @@ namespace Mirle.Agv.View
         {
             this.Close();
         }
+
+        private void btnMoveOk_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Success);
+        }
+
+        private void btnLoadOk_Click(object sender, EventArgs e)
+        {
+            theVehicle.ThePlcVehicle.Loading = true;
+            theVehicle.ThePlcVehicle.CassetteId = "CA0070";
+            PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load,"1", EnumStageDirection.Left,false, 100);
+            mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
+        }
     }
 }

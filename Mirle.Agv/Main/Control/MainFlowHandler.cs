@@ -1142,7 +1142,7 @@ namespace Mirle.Agv.Controller
                 this.agvcTransCmd = CombineAgvcTransferCommandAndOverrideCommand(agvcTransCmd, agvcOverrideCmd);
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 //StopWatchLowPower();
-                SetupTransferSteps();
+                SetupOverrideTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
                 theVehicle.CurTrasferStep = GetCurTransferStep();
                 GoNextTransferStep = true;
