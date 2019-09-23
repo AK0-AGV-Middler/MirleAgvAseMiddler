@@ -86,13 +86,14 @@
             this.rB_JogPitch_MoveVelocity_300 = new System.Windows.Forms.RadioButton();
             this.rB_JogPitch_MoveVelocity_50 = new System.Windows.Forms.RadioButton();
             this.gB_JogPitch_ElmoFunction = new System.Windows.Forms.GroupBox();
+            this.button_Skip = new System.Windows.Forms.Button();
             this.gB_JogPitch_JogPitch = new System.Windows.Forms.GroupBox();
             this.button_JogPitch_Home = new System.Windows.Forms.Button();
             this.button_JogPitch_ChangeFormSize = new System.Windows.Forms.Button();
             this.button_JogPitchHide = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
-            this.button_Skip = new System.Windows.Forms.Button();
+            this.label_SR2000Connected = new System.Windows.Forms.Label();
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -227,6 +228,7 @@
             // 
             // gB_JogPitch_Sr2000
             // 
+            this.gB_JogPitch_Sr2000.Controls.Add(this.label_SR2000Connected);
             this.gB_JogPitch_Sr2000.Controls.Add(this.label_JogPitch_Sr2000R);
             this.gB_JogPitch_Sr2000.Controls.Add(this.label_JogPitch_Sr2000L);
             this.gB_JogPitch_Sr2000.Controls.Add(this.tB_JogPitch_Theta_R);
@@ -702,6 +704,16 @@
             this.gB_JogPitch_ElmoFunction.TabStop = false;
             this.gB_JogPitch_ElmoFunction.Text = "Elmo功能";
             // 
+            // button_Skip
+            // 
+            this.button_Skip.Location = new System.Drawing.Point(7, 18);
+            this.button_Skip.Name = "button_Skip";
+            this.button_Skip.Size = new System.Drawing.Size(56, 53);
+            this.button_Skip.TabIndex = 115;
+            this.button_Skip.Text = "一般\r\n模式\r\n";
+            this.button_Skip.UseVisualStyleBackColor = true;
+            this.button_Skip.Click += new System.EventHandler(this.button_Skip_Click);
+            // 
             // gB_JogPitch_JogPitch
             // 
             this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_Home);
@@ -784,15 +796,15 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button_Skip
+            // label_SR2000Connected
             // 
-            this.button_Skip.Location = new System.Drawing.Point(7, 18);
-            this.button_Skip.Name = "button_Skip";
-            this.button_Skip.Size = new System.Drawing.Size(56, 53);
-            this.button_Skip.TabIndex = 115;
-            this.button_Skip.Text = "一般\r\n模式\r\n";
-            this.button_Skip.UseVisualStyleBackColor = true;
-            this.button_Skip.Click += new System.EventHandler(this.button_Skip_Click);
+            this.label_SR2000Connected.AutoSize = true;
+            this.label_SR2000Connected.Font = new System.Drawing.Font("新細明體", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_SR2000Connected.ForeColor = System.Drawing.Color.Red;
+            this.label_SR2000Connected.Location = new System.Drawing.Point(5, 79);
+            this.label_SR2000Connected.Name = "label_SR2000Connected";
+            this.label_SR2000Connected.Size = new System.Drawing.Size(0, 35);
+            this.label_SR2000Connected.TabIndex = 136;
             // 
             // JogPitchForm
             // 
@@ -898,5 +910,6 @@
         private System.Windows.Forms.Label label_LockResult;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button_Skip;
+        private System.Windows.Forms.Label label_SR2000Connected;
     }
 }

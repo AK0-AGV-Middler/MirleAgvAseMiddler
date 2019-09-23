@@ -42,6 +42,7 @@ namespace Mirle.Agv.Controller
         private PlcAgent plcAgent = null;
 
         public MoveControlParameter ControlData { get; private set; } = new MoveControlParameter();
+        public SimulateState FakeState { get; set; } = new SimulateState();
         private Thread threadSCVLog;
         public bool DebugCSVMode { get; set; } = false;
         public List<string[]> deubgCsvLogList = new List<string[]>();
@@ -61,6 +62,8 @@ namespace Mirle.Agv.Controller
         public double LoopTime { get; set; } = 0;
         private System.Diagnostics.Stopwatch loopTimeTimer = new System.Diagnostics.Stopwatch();
         public bool Reviseing { get; set; }
+        public bool SR2000Connected { get; private set; } = false;
+        private bool closeMoveControl = false;
 
         private void SetDebugFlowLog(string functionName, string message)
         {
@@ -334,6 +337,50 @@ namespace Mirle.Agv.Controller
 
             threadSCVLog = new Thread(WriteLogCSV);
             threadSCVLog.Start();
+        }
+
+        public void CloseMoveControlHandler()
+        {
+            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+
+            closeMoveControl = true;
+
+            StopAndClear();
+            timer.Reset();
+            timer.Start();
+            Thread.Sleep(moveControlConfig.SleepTime);
+            while (MoveState != EnumMoveState.Idle)
+            {
+                if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue * 5)
+                {
+                    ControlData.MoveControlThread.Abort();
+                    EMSControl("StopAndClear time out !");
+                }
+
+                Thread.Sleep(moveControlConfig.SleepTime);
+            }
+
+            if (!elmoDriver.MoveCompelete(EnumAxis.GT) || !elmoDriver.MoveCompelete(EnumAxis.GX))
+            {
+                try
+                {
+                    plcAgent.SetForcELMOServoOffOn();
+                    WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電!");
+                }
+                catch
+                {
+                    WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電,但跳Excption!");
+                }
+            }
+            else
+            {
+                elmoDriver.DisableAllAxis();
+            }
+
+            foreach (Sr2000Driver sr2000 in DriverSr2000List)
+            {
+                sr2000.Disconnect();
+            }
         }
 
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
@@ -721,6 +768,9 @@ namespace Mirle.Agv.Controller
             {
                 sr2000Config = ConvertXmlElementToSr2000Config((XmlElement)item);
                 driverSr2000 = new Sr2000Driver(sr2000Config, theMapInfo, i, alarmHandler);
+                if (!driverSr2000.GetConnect())
+                    SR2000Connected = false;
+
                 DriverSr2000List.Add(driverSr2000);
                 i++;
             }
@@ -1229,7 +1279,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    location.Velocity = ControlData.DirFlag ? ControlData.VelocityCommand : -ControlData.VelocityCommand;
+                    location.Velocity = ControlData.DirFlag ? ControlData.RealVelocity : -ControlData.RealVelocity;
                     location.ElmoEncoder = location.ElmoEncoder + 0.005 * location.Velocity;
                 }
 
@@ -2353,6 +2403,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
+                WriteLog("MoveControl", "7", device, "", "EMS正常停止,Disable走行軸!");
                 elmoDriver.DisableMoveAxis();
             }
 
@@ -2608,6 +2659,9 @@ namespace Mirle.Agv.Controller
                         MoveState = EnumMoveState.Idle;
                     }
 
+                    if (MoveState == EnumMoveState.Idle && closeMoveControl)
+                        break;
+
                     Thread.Sleep(moveControlConfig.SleepTime);
                 }
             }
@@ -2620,47 +2674,48 @@ namespace Mirle.Agv.Controller
         #region 障礙物檢知
         public bool IsCharging()
         {
-            if (SimulationMode)
+            if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.Charging].Enable)
                 return false;
 
-            if (moveControlConfig.SensorByPass[EnumSensorSafetyType.Charging].Enable)
-                return Vehicle.Instance.ThePlcVehicle.Batterys.Charging;
+            if (SimulationMode)
+                return FakeState.IsCharging;
             else
-                return false;
+                return Vehicle.Instance.ThePlcVehicle.Batterys.Charging;
         }
 
         public bool ForkNotHome()
         {
-            if (SimulationMode)
+
+            if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.ForkHome].Enable)
                 return false;
 
-            if (moveControlConfig.SensorByPass[EnumSensorSafetyType.ForkHome].Enable)
-                return !Vehicle.Instance.ThePlcVehicle.Robot.ForkHome || Vehicle.Instance.ThePlcVehicle.Robot.ForkBusy;
+            if (SimulationMode)
+                return FakeState.ForkNotHome;
             else
-                return false;
+                return !Vehicle.Instance.ThePlcVehicle.Robot.ForkHome || Vehicle.Instance.ThePlcVehicle.Robot.ForkBusy;
         }
 
 
         private EnumVehicleSafetyAction GetBumperState()
         {
-            if (SimulationMode)
-                return EnumVehicleSafetyAction.Normal;
-
             if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.Bumper].Enable)
                 return EnumVehicleSafetyAction.Normal;
 
-            return Vehicle.Instance.ThePlcVehicle.BumperAlarmStatus ? EnumVehicleSafetyAction.Stop : EnumVehicleSafetyAction.Normal;
+            if (SimulationMode)
+                return FakeState.BumpSensorState;
+            else
+                return Vehicle.Instance.ThePlcVehicle.BumperAlarmStatus ? EnumVehicleSafetyAction.Stop : EnumVehicleSafetyAction.Normal;
         }
 
         private EnumVehicleSafetyAction GetBeamSensorState()
         {
-            if (SimulationMode)
-                return EnumVehicleSafetyAction.Normal;
-
             if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensor].Enable)
                 return EnumVehicleSafetyAction.Normal;
 
-            return Vehicle.Instance.ThePlcVehicle.VehicleSafetyAction;
+            if (SimulationMode)
+                return FakeState.BeamSensorState;
+            else
+                return Vehicle.Instance.ThePlcVehicle.VehicleSafetyAction;
         }
 
         private double GetVChangeVelocity(double velocity)
@@ -2944,11 +2999,11 @@ namespace Mirle.Agv.Controller
 
         private bool CheckAxisNoError()
         {
-            if (SimulationMode)
-                return true;
-
             if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.CheckAxisState].Enable)
                 return true;
+
+            if (SimulationMode)
+                return FakeState.AxisNormal;
             else
                 return elmoDriver.CheckAxisNoError();
         }
@@ -3121,15 +3176,17 @@ namespace Mirle.Agv.Controller
                 SendAlarmCode(142000);
                 EMSControl("走行中Axis Error!");
             }
+            else
+            {
+                EnumVehicleSafetyAction sensorState = UpdateSensorState();
+                if (ControlData.SensorState != sensorState)
+                    WriteLog("MoveControl", "7", device, "", "SensorState 從 " + ControlData.SensorState.ToString() +
+                             " 變更為 " + sensorState.ToString() + "!");
 
-            EnumVehicleSafetyAction sensorState = UpdateSensorState();
-            if (ControlData.SensorState != sensorState)
-                WriteLog("MoveControl", "7", device, "", "SensorState 從 " + ControlData.SensorState.ToString() +
-                         " 變更為 " + sensorState.ToString() + "!");
-
-            SensorAction(sensorState);
-            ControlData.SensorState = sensorState;
-            VChangeSafety();
+                SensorAction(sensorState);
+                ControlData.SensorState = sensorState;
+                VChangeSafety();
+            }
         }
         #endregion
 
@@ -3448,9 +3505,16 @@ namespace Mirle.Agv.Controller
         {
             WriteLog("MoveControl", "7", device, "", "start");
 
-            if ((MoveState != EnumMoveState.Error && MoveState != EnumMoveState.Idle))
+            if (closeMoveControl)
+            {
+                WriteLog("MoveControl", "7", device, "", "程式關閉中,拒絕Debug Form命令.");
+                errorMessage = "程式關閉中,拒絕Debug Form命令.";
+                return false;
+            }
+            else if ((MoveState != EnumMoveState.Error && MoveState != EnumMoveState.Idle))
             {
                 WriteLog("MoveControl", "7", device, "", "移動中,因此無視~!");
+                errorMessage = "移動中,因此無視~!";
                 return false;
             }
             else if (IsCharging())
@@ -3537,7 +3601,7 @@ namespace Mirle.Agv.Controller
 
         public bool IsLocationRealNotNull()
         {
-            if (SimulationMode)
+            if (!elmoDriver.CheckAxisNoError())
                 return false;
 
             return location.Real != null;
@@ -3628,7 +3692,12 @@ namespace Mirle.Agv.Controller
 
         public MoveCommandData CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd, ref string errorMessage)
         {
-            if (Vehicle.Instance.AutoState == EnumAutoState.Auto)
+            if (closeMoveControl)
+            {
+                errorMessage = "程式關閉中,拒絕Debug Form命令.";
+                return null;
+            }
+            else if (Vehicle.Instance.AutoState == EnumAutoState.Auto)
             {
                 errorMessage = "Auto Mode,拒絕Debug Form命令.";
                 return null;
@@ -3706,31 +3775,43 @@ namespace Mirle.Agv.Controller
             if (MoveState == EnumMoveState.Idle)
             {
                 WriteLog("MoveControl", "7", device, "", "Idle情況不該收到Reserve.. 座標" +
-                         "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ) !");
+                         "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString("0") + " ) !");
                 return false;
             }
 
-            if (command.IndexOfReserveList > command.ReserveList.Count)
+            if (command.IndexOfReserveList >= command.ReserveList.Count)
             {
                 WriteLog("MoveControl", "7", device, "", "Reserve已經全部取得,但收到Reserve.. 座標" +
-                         "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ) !");
+                         "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString("0") + " ) !");
                 return false;
             }
 
             //if (command.ReserveList[command.IndexOfReserveList].Position.X == mapPosition.X &&
             //    command.ReserveList[command.IndexOfReserveList].Position.Y == mapPosition.Y)
             //{
+            if (!(command.ReserveList[command.IndexOfReserveList].Position.X == mapPosition.X &&
+                  command.ReserveList[command.IndexOfReserveList].Position.Y == mapPosition.Y))
+            {
+                WriteLog("MoveControl", "7", device, "", "取得Reserve node錯誤 : Reserve node : ( " +
+                                            command.ReserveList[command.IndexOfReserveList].Position.X.ToString("0") + ", " +
+                                            command.ReserveList[command.IndexOfReserveList].Position.Y.ToString("0") + " ), 取得 postion : ( " +
+                                            mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString("0") + " ) !");
+            }
+
             command.ReserveList[command.IndexOfReserveList].GetReserve = true;
             command.IndexOfReserveList++;
             WriteLog("MoveControl", "7", device, "", "取得Reserve node : index = " + command.IndexOfReserveList.ToString() +
-                     "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ) !");
+                     "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString("0") + " ) !");
+
+
             return true;
             //}
             //else
             //{
             //    WriteLog("MoveControl", "7", device, "", "Reserve node 跳號或無此Reserve,座標 : ( "
             //        + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ), 跳過 index = " + command.IndexOfReserveList.ToString() +
-            //             "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ) !");
+            //             "( " + command.ReserveList[command.IndexOfReserveList].Position.X.ToString("0") + ", " +
+            //                    command.ReserveList[command.IndexOfReserveList].Position.Y.ToString("0") + " ) !");
             //    return false;
             //}
         }

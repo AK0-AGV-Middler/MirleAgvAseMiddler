@@ -20,8 +20,6 @@ namespace Mirle.Agv.View
 {
     public partial class MainForm : Form
     {
-        private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
-        private ManualResetEvent PauseEvent = new ManualResetEvent(true);
         private MainFlowHandler mainFlowHandler;
         private MoveControlHandler moveControlHandler;
         private MiddleAgent middleAgent;
@@ -220,16 +218,19 @@ namespace Mirle.Agv.View
             var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
             RichTextBoxAppendHead(richTextBox1, msg);
 
-            if (alarmForm.IsDisposed)
+            if (alarm.Level == EnumAlarmLevel.Alarm)
             {
-                alarmForm = new AlarmForm(mainFlowHandler);
+                if (alarmForm.IsDisposed)
+                {
+                    alarmForm = new AlarmForm(mainFlowHandler);
+                }
+                alarmForm.BringToFront();
+                alarmForm.Show();
+                //var warnMsg = $"[Id={alarm.Id}][Text={alarm.AlarmText}]" + Environment.NewLine + $"[{alarm.Description}]";
+                //warningForm.WarningMsg = warnMsg;
+                //warningForm.BringToFront();
+                //warningForm.Show();
             }
-            alarmForm.BringToFront();
-            alarmForm.Show();
-            //var warnMsg = $"[Id={alarm.Id}][Text={alarm.AlarmText}]" + Environment.NewLine + $"[{alarm.Description}]";
-            //warningForm.WarningMsg = warnMsg;
-            //warningForm.BringToFront();
-            //warningForm.Show();
         }
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
@@ -476,9 +477,7 @@ namespace Mirle.Agv.View
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mainFlowHandler.StopVisitTransferSteps();
-            ShutdownEvent.Set();
-            PauseEvent.Set();
+            mainFlowHandler.StopAndClear();
 
             Application.Exit();
             Environment.Exit(Environment.ExitCode);
@@ -1009,7 +1008,7 @@ namespace Mirle.Agv.View
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
 
-           
+
 
             //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
             //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
@@ -1430,6 +1429,24 @@ namespace Mirle.Agv.View
             {
                 mainFlowHandler.SetupVehicleSoc(100);
             }
+        }
+
+        private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnMoveOk_Click(object sender, EventArgs e)
+        {
+            mainFlowHandler.MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Success);
+        }
+
+        private void btnLoadOk_Click(object sender, EventArgs e)
+        {
+            theVehicle.ThePlcVehicle.Loading = true;
+            theVehicle.ThePlcVehicle.CassetteId = "CA0070";
+            PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load,"1", EnumStageDirection.Left,false, 100);
+            mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
         }
     }
 }

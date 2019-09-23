@@ -37,7 +37,7 @@ namespace Mirle.Agv.Model
         public EnumVChangeSpeedLowerSafety VChangeSafetyType { get; set; }
         public double VChangeSafetyTargetEncoder { get; set; }
         public double VChangeSafetyVelocity { get; set; }
-
+        
         public MoveControlParameter()
         {
             VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;

@@ -71,6 +71,7 @@ namespace Mirle.Agv.View
             }
 
             cB_JogPitch_SelectAxis.SelectedIndex = AxisList.Count() - 2;
+            label_SR2000Connected.Text = moveControl.SR2000Connected ? "" : "SR2000連線失敗!";
         }
 
         private MoveControlHandler moveControl = null;
@@ -193,37 +194,32 @@ namespace Mirle.Agv.View
 
             string lockResult = "";
 
-            bool notLock = true;
-            bool skipLock = true;
+            bool notLock = false;
+            bool skipLock = false;
 
-            if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
-            {
-                skipLock = false;
-                notLock = false;
+            if (!moveControl.elmoDriver.Connected)
+                lockResult = "Lock Result : Elmo drive連線失敗!";
+            else if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
                 lockResult = "Lock Result : AutoMode中!";
-            }
             else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
                      Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
-            {
-                skipLock = false;
-                notLock = false;
                 lockResult = "Lock Result : 主流程動作中!";
-            }
             else if (moveControl.MoveState != EnumMoveState.Idle)
-            {
-                skipLock = false;
-                notLock = false;
                 lockResult = "Lock Result : MoveState動作中!";
-            }
             else if (button_Skip.Text != "強制\r\n手動" && moveControl.IsCharging())
             {
-                notLock = false;
+                skipLock = true;
                 lockResult = "Lock Result : Charging中!";
             }
             else if (button_Skip.Text != "強制\r\n手動" && moveControl.ForkNotHome())
             {
-                notLock = false;
+                skipLock = true;
                 lockResult = "Lock Result : Fork不在Home點!";
+            }
+            else
+            {
+                skipLock = true;
+                notLock = true;
             }
 
             label_LockResult.Text = lockResult;

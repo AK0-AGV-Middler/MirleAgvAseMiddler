@@ -33,7 +33,7 @@ namespace Mirle.Agv.Controller
         private List<AxisInfo> allAxisList = new List<AxisInfo>();
 
         private List<ElmoSingleAxisConfig> elmoAxisConfig = new List<ElmoSingleAxisConfig>();
-        private bool connected = false;
+        public bool Connected { get; private set; } = false;
         private MMCBulkRead bulkRead;
         private NC_BULKREAD_PRESET_5[] ncBulkRead;
 
@@ -77,7 +77,7 @@ namespace Mirle.Agv.Controller
 
                 if (Connect())
                 {
-                    connected = true;
+                    Connected = true;
                     SetAllAxis();
                     Thread.Sleep(100);
                     DisableAllAxis();
@@ -97,7 +97,7 @@ namespace Mirle.Agv.Controller
                 WriteLog("Elmo", "1", device, "", "Excption : " + ex.ToString());
                 WriteLog("Error", "1", device, "", "Elmo 連線失敗, Excption : " + ex.ToString());
                 SendAlarmCode(100000);
-                connected = false;
+                Connected = false;
             }
         }
 
@@ -470,7 +470,7 @@ namespace Mirle.Agv.Controller
             ElmoAxisFeedbackData tempFeedbackData;
             DateTime GetDataTime;
 
-            while (connected)
+            while (Connected)
             {
                 scanTimeTimer.Reset();
                 scanTimeTimer.Start();
@@ -505,7 +505,7 @@ namespace Mirle.Agv.Controller
 
                         tempFeedbackData.Count = count;
                         tempFeedbackData.GetDataTime = GetDataTime;
-                        
+
                         if (allAxisList[i].NeedAssignLastCommandPosition && tempFeedbackData.StandStill)
                         {
                             allAxisList[i].LastCommandPosition = tempFeedbackData.Feedback_Position;
@@ -573,7 +573,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return;
 
                 if (!allAxis[axis].Config.IsVirtualDevice)
@@ -674,7 +674,7 @@ namespace Mirle.Agv.Controller
         private void DisableAxis(EnumAxis axis,
             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            if (!connected)
+            if (!Connected)
                 return;
 
             if (allAxis[axis].Config.IsGroup)
@@ -688,7 +688,7 @@ namespace Mirle.Agv.Controller
         private void EnableAxis(EnumAxis axis,
             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            if (!connected)
+            if (!Connected)
                 return;
 
             if (allAxis[axis].Config.IsGroup)
@@ -903,7 +903,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return false;
 
                 return Math.Abs(allAxis[EnumAxis.TFL].FeedbackData.Feedback_Position - angle_FL) < range &&
@@ -1163,7 +1163,7 @@ namespace Mirle.Agv.Controller
                              double acceleration = -1, double deceleration = -1, double jerk = -1,
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            if (!connected)
+            if (!Connected)
                 return;
 
             if (acceleration == -1)
@@ -1196,7 +1196,7 @@ namespace Mirle.Agv.Controller
                             double velocity, EnumMoveType type, double acceleration = -1, double deceleration = -1, double jerk = -1,
                             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            if (!connected || !allAxis[axis].Config.IsGroup)
+            if (!Connected || !allAxis[axis].Config.IsGroup)
                 return;
 
             if (acceleration == -1)
@@ -1218,7 +1218,7 @@ namespace Mirle.Agv.Controller
         public void ElmoStop(EnumAxis axis, double deceleration = -1, double jerk = -1,
                             [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            if (!connected)
+            if (!Connected)
                 return;
 
             if (deceleration == -1)
@@ -1239,7 +1239,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected || /*allAxis[axis].FeedbackData.Disable || */!allAxis[axis].Config.IsGroup)
+                if (!Connected || /*allAxis[axis].FeedbackData.Disable || */!allAxis[axis].Config.IsGroup)
                     return;
 
                 if (velocityRatio > 1 || velocityRatio < 0)
@@ -1256,16 +1256,16 @@ namespace Mirle.Agv.Controller
             }
         }
         #endregion
-        
+
         // 對外開放 讀取position, 只能轉向4實體和 走行"前左","後右"
         public double ElmoGetPosition(EnumAxis axis, bool hasTimeOffset = false,
                                      [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return -1;
-                
+
                 if (allAxis[axis].Config.IsGroup)
                 {
                     double position = 0;
@@ -1290,7 +1290,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return -1;
 
                 if (allAxis[axis].Config.IsGroup)
@@ -1316,7 +1316,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return true;
 
                 return allAxis[axis].FeedbackData.Disable;
@@ -1333,7 +1333,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return null;
 
                 return allAxis[axis].FeedbackData;
@@ -1350,7 +1350,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return true;
 
                 if (allAxis[axis].Config.IsGroup)
@@ -1375,7 +1375,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return true;
 
                 for (int i = 0; i < MAX_AXIS; i++)
@@ -1401,7 +1401,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                if (!connected)
+                if (!Connected)
                     return true;
 
                 if (allAxis[axis].Config.IsVirtualDevice)

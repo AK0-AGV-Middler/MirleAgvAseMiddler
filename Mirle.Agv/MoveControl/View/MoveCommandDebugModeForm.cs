@@ -16,7 +16,8 @@ namespace Mirle.Agv.View
         private MoveCommandData command;
         private MapInfo theMapInfo = new MapInfo();
         private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
-        private SimulateSettingAGVAngle settingAngleForm;
+        private SimulateSettingAGVAngleForm settingAngleForm;
+        private MoveControlSimulateStateForm simulateStateForm;
 
         private List<string> commandStringList = new List<string>();
         private List<string> reserveStringList = new List<string>();
@@ -290,35 +291,22 @@ namespace Mirle.Agv.View
 
             ucLabelTB_CreateCommandState.TagValue = moveControl.MoveState.ToString();
 
-            bool buttonEnable = true;
+            bool buttonEnable = false;
             string lockResult = "";
 
             if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
-            {
-                buttonEnable = false;
                 lockResult = "Lock Result : AutoMode中!";
-            }
             else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
                      Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
-            {
-                buttonEnable = false;
                 lockResult = "Lock Result : 主流程動作中!";
-            }
             else if (moveControl.MoveState != EnumMoveState.Idle)
-            {
-                buttonEnable = false;
                 lockResult = "Lock Result : MoveState動作中!";
-            }
             else if (moveControl.IsCharging())
-            {
-                buttonEnable = false;
                 lockResult = "Lock Result : Charging中!";
-            }
             else if (moveControl.ForkNotHome())
-            {
-                buttonEnable = false;
                 lockResult = "Lock Result : Fork不在Home點!";
-            }
+            else
+                buttonEnable = true;
 
             button_DebugModeSend.Enabled = buttonEnable;
             label_LockResult.Text = lockResult;
@@ -458,7 +446,7 @@ namespace Mirle.Agv.View
         {
             button_SimulationModeChange.Text = moveControl.SimulationMode ? "開啟中" : "關閉中";
             button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
-            button_SimulationModeChange.Enabled = Vehicle.Instance.AutoState != EnumAutoState.Auto;
+            button_SimulationModeChange.Enabled = !moveControl.elmoDriver.Connected;
 
             foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
             {
@@ -861,6 +849,7 @@ namespace Mirle.Agv.View
         {
             button_SimulationModeChange.Enabled = false;
             moveControl.SimulationMode = (button_SimulationModeChange.Text == "關閉中");
+            button_SimulateState.Visible = moveControl.SimulationMode;
             simulationModeFirstDoubleClick = moveControl.SimulationMode;
             button_SimulationModeChange.Text = (button_SimulationModeChange.Text == "關閉中") ? "開啟中" : "關閉中";
             button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
@@ -924,7 +913,7 @@ namespace Mirle.Agv.View
                     simulationModeFirstDoubleClick = false;
                     moveControl.location.Real = new AGVPosition();
                     moveControl.location.Real.AGVAngle = 0;
-                    settingAngleForm = new SimulateSettingAGVAngle(moveControl);
+                    settingAngleForm = new SimulateSettingAGVAngleForm(moveControl);
                     settingAngleForm.Show();
                     settingAngleForm.TopMost = true;
 
@@ -937,18 +926,27 @@ namespace Mirle.Agv.View
 
         private bool IsAddress(MapPosition now)
         {
+            MapPosition tempPosition = null;
+
             foreach (var valuePair in theMapInfo.allMapAddresses)
             {
-                if (Math.Abs(now.X - valuePair.Value.Position.X) <= 10 &&
-                    Math.Abs(now.X - valuePair.Value.Position.Y) <= 10)
+                if (Math.Abs(now.X - valuePair.Value.Position.X) <= 15 &&
+                    Math.Abs(now.Y - valuePair.Value.Position.Y) <= 15)
                 {
-                    string str = valuePair.Value.Position.X.ToString() + "," + valuePair.Value.Position.Y.ToString();
-                    listCmdAddressPositions.Items.Add(str);
-                    return true;
+                    if (tempPosition == null || Math.Abs(Math.Pow(valuePair.Value.Position.X - now.X, 2) + Math.Pow(valuePair.Value.Position.Y - now.Y, 2)) <
+                                                Math.Abs(Math.Pow(tempPosition.X - now.X, 2) + Math.Pow(tempPosition.Y - now.Y, 2)))
+                        tempPosition = valuePair.Value.Position.DeepClone();
                 }
             }
 
-            return false;
+            if (tempPosition != null)
+            {
+                string str = tempPosition.X.ToString() + "," + tempPosition.Y.ToString();
+                listCmdAddressPositions.Items.Add(str);
+                return true;
+            }
+            else
+                return false;
         }
 
         private void FindPositionBySection(MapPosition now)
@@ -956,14 +954,14 @@ namespace Mirle.Agv.View
             foreach (var valuePair in theMapInfo.allMapSections)
             {
                 if (valuePair.Value.HeadAddress.Position.X == valuePair.Value.TailAddress.Position.X &&
-                     Math.Abs(valuePair.Value.HeadAddress.Position.X - now.X) <= 10)
+                     Math.Abs(valuePair.Value.HeadAddress.Position.X - now.X) <= 15)
                 {
                     string str = valuePair.Value.HeadAddress.Position.X.ToString() + "," + now.Y.ToString();
                     listCmdAddressPositions.Items.Add(str);
                     return;
                 }
                 else if (valuePair.Value.HeadAddress.Position.Y == valuePair.Value.TailAddress.Position.Y &&
-                     Math.Abs(valuePair.Value.HeadAddress.Position.Y - now.Y) <= 10)
+                     Math.Abs(valuePair.Value.HeadAddress.Position.Y - now.Y) <= 15)
                 {
                     string str = now.X.ToString() + "," + valuePair.Value.HeadAddress.Position.Y.ToString();
                     listCmdAddressPositions.Items.Add(str);
@@ -981,19 +979,10 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void button_SimulateState_Click(object sender, EventArgs e)
         {
-            moveControl.VehclePause();
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            moveControl.VehcleContinue();
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            moveControl.VehcleCancel();
+            simulateStateForm = new MoveControlSimulateStateForm(moveControl);
+            simulateStateForm.Show();
         }
     }
 }
