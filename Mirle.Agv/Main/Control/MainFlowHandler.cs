@@ -1299,6 +1299,39 @@ namespace Mirle.Agv.Controller
                     break;
             }
         }
+        private void SetupOverrideTransferSteps()
+        {
+            transferSteps = new List<TransferStep>();
+
+            switch (agvcTransCmd.CommandType)
+            {
+                case EnumAgvcTransCommandType.Move:
+                    ConvertAgvcMoveCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCommandType.Load:
+                    ConvertAgvcLoadCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCommandType.Unload:
+                    ConvertAgvcUnloadCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCommandType.LoadUnload:
+                    ConvertOverrideAgvcLoadUnloadCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCommandType.MoveToCharger:
+                    ConvertAgvcMoveToChargerCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCommandType.Home:
+                    ConvertAgvcHomeCmdIntoList(agvcTransCmd);
+                    break;
+                case EnumAgvcTransCommandType.Override:
+                    break;
+                case EnumAgvcTransCommandType.Else:
+                default:
+                    ConvertAgvcElseCmdIntoList(agvcTransCmd);
+                    break;
+            }
+        }
+
         private void ConvertAgvcElseCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
 
@@ -1312,6 +1345,18 @@ namespace Mirle.Agv.Controller
             ConvertAgvcLoadCmdIntoList(agvcTransCmd);
             ConvertAgvcNextUnloadCmdIntoList(agvcTransCmd);
         }
+        private void ConvertOverrideAgvcLoadUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            ConvertAgvcLoadCmdIntoList(agvcTransCmd);
+            if (agvcTransCmd.ToLoadAddressIds.Count == 0)
+            {
+                ConvertOverrideAgvcNextUnloadCmdIntoList(agvcTransCmd);
+            }
+            else
+            {
+                ConvertAgvcNextUnloadCmdIntoList(agvcTransCmd);
+            }            
+        }
         private void ConvertAgvcUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
             MoveCmdInfo moveCmd = GetMoveToUnloadCmdInfo(agvcTransCmd);
@@ -1323,6 +1368,14 @@ namespace Mirle.Agv.Controller
         private void ConvertAgvcNextUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
             MoveCmdInfo moveCmd = GetMoveToNextUnloadCmdInfo(agvcTransCmd);
+            transferSteps.Add(moveCmd);
+
+            UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
+            transferSteps.Add(unloadCmd);
+        }
+        private void ConvertOverrideAgvcNextUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
+        {
+            MoveCmdInfo moveCmd = GetMoveToUnloadCmdInfo(agvcTransCmd);
             transferSteps.Add(moveCmd);
 
             UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
@@ -1409,6 +1462,7 @@ namespace Mirle.Agv.Controller
             }
             return moveCmd;
         }
+
         private MoveCmdInfo GetMoveToLoadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             MoveCmdInfo moveCmd = new MoveCmdInfo(this);
