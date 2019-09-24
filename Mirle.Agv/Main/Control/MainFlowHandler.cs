@@ -1219,7 +1219,7 @@ namespace Mirle.Agv.Controller
 
             var vehicleStop = moveControlHandler.ControlData.SensorState;
 
-            if (waitReserveIndex > 0 && vehicleStop == EnumVehicleSafetyAction.Stop)
+            if (waitReserveIndex > -1 && vehicleStop == EnumVehicleSafetyAction.Stop)
             {
                 return true;
             }

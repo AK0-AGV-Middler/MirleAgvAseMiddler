@@ -108,7 +108,7 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }        
+        }
 
         private static Google.Protobuf.IMessage unPackWrapperMsg(byte[] raw_data)
         {
@@ -127,7 +127,7 @@ namespace Mirle.Agv.Controller
         {
             return middlerConfig;
         }
-        public bool IsClientAgentNull() => ClientAgent == null;       
+        public bool IsClientAgentNull() => ClientAgent == null;
         public void ReConnect()
         {
             try
@@ -477,7 +477,6 @@ namespace Mirle.Agv.Controller
                     #endregion
 
                     AskReserveStatus = EnumThreadStatus.Working;
-
                     if (CanAskReserve())
                     {
                         queNeedReserveSections.TryPeek(out MapSection needReserveSection);

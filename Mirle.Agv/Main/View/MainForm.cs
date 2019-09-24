@@ -1427,8 +1427,12 @@ namespace Mirle.Agv.View
             plcForm.chkFakeForking.Checked = cbSimulationMode.Checked;
             if (cbSimulationMode.Checked)
             {
-                mainFlowHandler.SetupVehicleSoc(100);
+                mainFlowHandler.SetupVehicleSoc(100);               
             }
+
+            btnLoadOk.Visible = cbSimulationMode.Checked;
+            btnMoveOk.Visible = cbSimulationMode.Checked;
+            btnUnloadOk.Visible = cbSimulationMode.Checked;
         }
 
         private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1446,6 +1450,14 @@ namespace Mirle.Agv.View
             theVehicle.ThePlcVehicle.Loading = true;
             theVehicle.ThePlcVehicle.CassetteId = "CA0070";
             PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load,"1", EnumStageDirection.Left,false, 100);
+            mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
+        }
+
+        private void btnUnloadOk_Click(object sender, EventArgs e)
+        {
+            theVehicle.ThePlcVehicle.Loading = false;
+            theVehicle.ThePlcVehicle.CassetteId = "";
+            PlcForkCommand forkCommand = new PlcForkCommand(6, EnumForkCommand.Unload, "1", EnumStageDirection.Left, false, 100);
             mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
         }
     }
