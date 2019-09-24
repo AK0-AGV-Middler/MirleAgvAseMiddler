@@ -2095,21 +2095,21 @@ namespace Mirle.Agv.Controller
 
         private void UpdateVehiclePositionByMoveCmd(MoveCmdInfo curTransCmd, MapPosition gxPosition)
         {
-            List<MapSection> movingSections = curTransCmd.MovingSections;
+            List<MapSection> moveCmdSections = GetMapSection(curTransCmd);          
             int searchingSectionIndex = curTransCmd.MovingSectionsIndex;
 
-            while (searchingSectionIndex < movingSections.Count)
+            while (searchingSectionIndex < moveCmdSections.Count)
             {
                 try
                 {
                     VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();                    
-                    if (mapHandler.IsPositionInThisSection(gxPosition, movingSections[searchingSectionIndex], ref vehiclePosition))
+                    if (mapHandler.IsPositionInThisSection(gxPosition, moveCmdSections[searchingSectionIndex], ref vehiclePosition))
                     {
                         theVehicle.CurVehiclePosition = vehiclePosition;
 
                         curTransCmd.MovingSectionsIndex = searchingSectionIndex;
 
-                        UpdateMiddlerGotReserveOkSections(movingSections[searchingSectionIndex].Id);
+                        UpdateMiddlerGotReserveOkSections(moveCmdSections[searchingSectionIndex].Id);
 
                         UpdatePlcVehicleBeamSensor();
 
@@ -2135,7 +2135,7 @@ namespace Mirle.Agv.Controller
                 }
             }
 
-            if (searchingSectionIndex == movingSections.Count)
+            if (searchingSectionIndex == moveCmdSections.Count)
             {
                 alarmHandler.SetAlarm(000011);
                 var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({(int)gxPosition.X},{(int)gxPosition.Y})]";
@@ -2143,6 +2143,17 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
             }
+        }
+
+        private List<MapSection> GetMapSection(MoveCmdInfo curTransCmd)
+        {
+            List<MapSection> result = new List<MapSection>();
+            var ids = curTransCmd.SectionIds;
+            foreach (var id in ids)
+            {
+                result.Add(TheMapInfo.allMapSections[id]);
+            }
+            return result;
         }
 
         private void UpdateLastAddressAfterArrival(MoveCmdInfo moveCmd)

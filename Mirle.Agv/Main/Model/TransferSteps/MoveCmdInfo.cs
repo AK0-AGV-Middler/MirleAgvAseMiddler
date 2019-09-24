@@ -64,6 +64,8 @@ namespace Mirle.Agv.Model.TransferSteps
             if (IsDuelStartPosition)
             {
                 MovingSections.RemoveAt(0);
+                SectionIds.RemoveAt(0);
+                AddressIds.RemoveAt(0);
             }
 
             //RebuildLastSectionForInsideEndAddress();
