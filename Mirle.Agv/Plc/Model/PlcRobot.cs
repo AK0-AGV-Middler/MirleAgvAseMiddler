@@ -13,7 +13,7 @@ namespace Mirle.Agv.Model
         public bool ForkBusy { get; set; }
         public bool ForkFinish { get; set; }
         public bool ForkHome { get; set; } = true;//20190807_Rudy 新增ForkHome
-
+        public bool ForkNG { get; set; } = false;
 
         private ushort currentCommandNo = 0;
         public ushort CurrentCommandNo
@@ -25,5 +25,17 @@ namespace Mirle.Agv.Model
             }
         }
         public PlcForkCommand ExecutingCommand { get; set; } = null;
+        
+
+        public double ForkAlignmentP { get; set; } = 0f;
+        public double ForkAlignmentY { get; set; } = 0f;
+        public double ForkAlignmentPhi { get; set; } = 0f;
+        public double ForkAlignmentF { get; set; } = 0f;
+        public int ForkAlignmentCode { get; set; } = 0;
+        public double ForkAlignmentC { get; set; } = 0f;
+        public double ForkAlignmentB { get; set; } = 0f;
+
+
+
     }
 }

@@ -15,6 +15,7 @@ using Mirle.Agv.View;
 using System.Runtime.CompilerServices;
 using Mirle.Agv.Model.Configs;
 using System.IO;
+using System.Text;
 
 namespace Mirle.Agv.Controller
 {
@@ -46,11 +47,14 @@ namespace Mirle.Agv.Controller
         private Logger errLogger;
         private Logger portPIOLogger;
         private Logger chargerPIOLogger;
+        private Logger plcJogPitchLogger;
 
         private Logger BatteryLogger;
         //private Logger BatteryPercentage;
 
         public PlcVehicle APLCVehicle;
+
+        public EnumVehicleSafetyAction VehicleSafetyAction_Old { get; set; } = EnumVehicleSafetyAction.Normal;
 
         private PlcForkCommand eventForkCommand; //發event前 先把executing commnad reference先放過來, 避免外部exevnt處理時發生null問題
         private bool clearExecutingForkCommandFlag = false;
@@ -311,6 +315,7 @@ namespace Mirle.Agv.Controller
             errLogger = loggerAgent.GetLooger("Error");
             portPIOLogger = loggerAgent.GetLooger("PortPIO");
             chargerPIOLogger = loggerAgent.GetLooger("ChargerPIO");
+            plcJogPitchLogger = loggerAgent.GetLooger("plcJogPitchLogger");
 
             BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");
             //BatteryPercentage = LoggerAgent.Instance.GetLooger("BatteryPercentage");
@@ -720,16 +725,33 @@ namespace Mirle.Agv.Controller
                                 case "ForkReady":
                                     this.APLCVehicle.Robot.ForkReady = aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkReady = {this.APLCVehicle.Robot.ForkReady}"));
-
+                                    
                                     break;
                                 case "ForkBusy":
                                     this.APLCVehicle.Robot.ForkBusy = aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkBusy = {this.APLCVehicle.Robot.ForkBusy}"));
 
                                     break;
+                                case "ForkCommandNG":
+                                    this.APLCVehicle.Robot.ForkNG = aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean;
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandNG = {this.APLCVehicle.Robot.ForkNG}"));
+                                    
+                                    //紀錄 Fork alignment value 
+                                    if (this.APLCVehicle.Robot.ForkNG == true)
+                                    {
+                                        RecordForkAlignmentValue("ForkCommandNG");
+                                    }
+
+                                    break;
                                 case "ForkCommandFinish":
                                     this.APLCVehicle.Robot.ForkFinish = aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandFinish = {this.APLCVehicle.Robot.ForkFinish}"));
+                                    
+                                    //紀錄 Fork alignment value 
+                                    if (this.APLCVehicle.Robot.ForkFinish == true)
+                                    {
+                                        RecordForkAlignmentValue("ForkCommandFinish");
+                                    }
 
                                     break;
                                 case "StageLoading":
@@ -768,12 +790,29 @@ namespace Mirle.Agv.Controller
                                 case "BatterySOH_Form_Plc":
                                     this.APLCVehicle.Batterys.BatterySOHFormPlc = aMCProtocol.get_ItemByTag("BatterySOH_Form_Plc").AsUInt16;
                                     break;
-                                case "DoubleStoreSensor(L)":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(L) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(L)").AsBoolean}"));
+                                case "ForkAlignmentResultP":
+                                    this.APLCVehicle.Robot.ForkAlignmentP = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultP").AsUInt32, 2, 2);
                                     break;
-                                case "DoubleStoreSensor(R)":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(R) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(R)").AsBoolean}"));
+                                case "ForkAlignmentResultY":
+                                    this.APLCVehicle.Robot.ForkAlignmentY = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultY").AsUInt32, 2, 2);
                                     break;
+                                case "ForkAlignmentResultPhi":
+                                    this.APLCVehicle.Robot.ForkAlignmentPhi = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultPhi").AsUInt32, 2, 2);
+                                    break;
+                                case "ForkAlignmentResultF":
+                                    this.APLCVehicle.Robot.ForkAlignmentF = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultF").AsUInt32, 2, 2);
+                                    break;
+                                case "ForkAlignmentResultCode":
+                                    this.APLCVehicle.Robot.ForkAlignmentCode = aMCProtocol.get_ItemByTag("ForkAlignmentResultCode").AsUInt16;
+                                    break;
+                                case "ForkAlignmentResultC":
+                                    this.APLCVehicle.Robot.ForkAlignmentC = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultC").AsUInt32, 2, 2);
+                                    break;
+                                case "ForkAlignmentResultB":
+                                    this.APLCVehicle.Robot.ForkAlignmentB = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultB").AsUInt32, 2, 2);
+                                    break;
+
+
                             }
                         }
                     }
@@ -900,9 +939,42 @@ namespace Mirle.Agv.Controller
             return returnValue;
         }
 
+
+        #region 特殊 Log 紀錄
+        //紀錄 Fork alignment value 
+        private void RecordForkAlignmentValue(String status)
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            String strLog = new StringBuilder().Append(status)
+                    .Append(", Fork alignment value - P: ").Append(APLCVehicle.Robot.ForkAlignmentP)
+                    .Append(", Y: ").Append(APLCVehicle.Robot.ForkAlignmentY)
+                    .Append(", Phi: ").Append(APLCVehicle.Robot.ForkAlignmentPhi)
+                    .Append(", F: ").Append(APLCVehicle.Robot.ForkAlignmentF)
+                    .Append(", Code: ").Append(APLCVehicle.Robot.ForkAlignmentCode)
+                    .Append(", C: ").Append(APLCVehicle.Robot.ForkAlignmentC)
+                    .Append(", B: ").Append(APLCVehicle.Robot.ForkAlignmentB)
+                    .ToString();
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog));
+        }
+
+        private void RecordSafetyValueChanged()
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            String strLog = new StringBuilder()
+                    .Append("Safety Status Change: ").Append(APLCVehicle.VehicleSafetyAction)
+                    .ToString();
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog));
+
+        }
+
+        #endregion
+        
+
         private void MCProtocol_OnConnectEvent(String message)
         {
-            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
             plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is connected");
             this.boolConnectionState = true;
 
@@ -1234,7 +1306,13 @@ namespace Mirle.Agv.Controller
                         }
                     }
 
-
+                    // 紀錄 AGV 車子 Safety 狀態變化
+                    if (VehicleSafetyAction_Old != this.APLCVehicle.VehicleSafetyAction)
+                    {
+                        VehicleSafetyAction_Old = this.APLCVehicle.VehicleSafetyAction;
+                        RecordSafetyValueChanged();
+                    }
+                    
                 }
                 catch (Exception ex)
                 {
@@ -2301,39 +2379,6 @@ namespace Mirle.Agv.Controller
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             if (this.APLCVehicle.Robot.ExecutingCommand == null)
             {
-                if (this.IsFakeForking)
-                {
-                    this.APLCVehicle.Robot.ExecutingCommand = aForkCommand;
-                    System.Threading.Thread.Sleep(3000);
-                    if (this.APLCVehicle.Batterys.Charging == true)
-                    {
-                        System.Threading.Thread.Sleep(27000);
-                    }
-
-                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
-                    {
-                        this.APLCVehicle.Loading = true;
-                        //this.APLCVehicle.CassetteId = "CA0070";
-                        APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
-                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
-                    }
-                    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
-                    {
-                        this.APLCVehicle.CassetteId = "";
-                        this.APLCVehicle.Loading = false;
-                    }
-                    else
-                    {
-
-                    }
-
-                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
-                    //clearExecutingForkCommandFlag = true;
-                    this.APLCVehicle.Robot.ExecutingCommand = null;
-                    return true;
-                }
-
                 if (aForkCommand.ForkCommandState == EnumForkCommandState.Queue)
                 {
                     this.APLCVehicle.Robot.ExecutingCommand = aForkCommand;
@@ -2429,38 +2474,38 @@ namespace Mirle.Agv.Controller
                         {
                             case EnumForkCommandState.Queue:
 
-                                //if (this.IsFakeForking)
-                                //{
-                                //    System.Threading.Thread.Sleep(3000);
-                                //    if (this.APLCVehicle.Batterys.Charging == true)
-                                //    {
-                                //        System.Threading.Thread.Sleep(27000);
-                                //    }
+                                if (this.IsFakeForking)
+                                {
+                                    System.Threading.Thread.Sleep(3000);
+                                    if (this.APLCVehicle.Batterys.Charging == true)
+                                    {
+                                        System.Threading.Thread.Sleep(27000);
+                                    }
 
-                                //    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
-                                //    {
-                                //        this.APLCVehicle.Loading = true;
-                                //        //this.APLCVehicle.CassetteId = "CA0070";
-                                //        APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
-                                //        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
-                                //    }
-                                //    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
-                                //    {
-                                //        this.APLCVehicle.CassetteId = "";
-                                //        this.APLCVehicle.Loading = false;
+                                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
+                                    {
+                                        this.APLCVehicle.Loading = true;
+                                        //this.APLCVehicle.CassetteId = "CA0070";
+                                        APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
+                                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
+                                    }
+                                    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
+                                    {
+                                        this.APLCVehicle.CassetteId = "";
+                                        this.APLCVehicle.Loading = false;
 
-                                //    }
-                                //    else
-                                //    {
+                                    }
+                                    else
+                                    {
 
-                                //    }
+                                    }
 
-                                //    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                //    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
-                                //    clearExecutingForkCommandFlag = true;
+                                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                                    clearExecutingForkCommandFlag = true;
 
-                                //    break;
-                                //}
+                                    break;
+                                }
 
                                 //送出指令                              
                                 if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
@@ -2664,6 +2709,7 @@ namespace Mirle.Agv.Controller
                         }
                         bComdIsNullReqForkComdOK = true;
                         bComdIsNullReqComdFinishAck = true;
+                        
                     }
                     else
                     {
@@ -2693,6 +2739,7 @@ namespace Mirle.Agv.Controller
                 }
                 System.Threading.Thread.Sleep(5);
             }
+
         }
         private bool bComdIsNullReqForkComdOK = false, bComdIsNullReqComdFinishAck = false;
 

@@ -397,6 +397,14 @@ namespace Mirle.Agv.View
                 tbxReason_PV.Text = "Null";
             }
 
+            tbxAlignmentP_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentP.ToString();
+            tbxAlignmentY_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentY.ToString();
+            tbxAlignmentPhi_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentPhi.ToString();
+            tbxAlignmentF_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentF.ToString();
+            tbxAlignmentCode_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentCode.ToString();
+            tbxAlignmentC_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentC.ToString();
+            tbxAlignmentB_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentB.ToString();
+            
 
             if (this.plcAgent.APLCVehicle.Robot.ForkHome)
                 lblForkHome.BackColor = Color.LightGreen;
