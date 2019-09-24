@@ -26,6 +26,7 @@ namespace Mirle.Agv.Model.TransferSteps
         public string StartAddressId { get; set; } = "";
         protected int HalfR2000Radius { get; set; } = 1000;
         public string Info { get; set; } = "";
+        public bool IsDuelStartPosition { get; set; } = false;
 
         public MoveCmdInfo() : this(new MainFlowHandler()) { }
         public MoveCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
@@ -58,7 +59,28 @@ namespace Mirle.Agv.Model.TransferSteps
                 }
             }
 
+            CheckIsDuelStartPosition();
+
+            if (IsDuelStartPosition)
+            {
+                MovingSections.RemoveAt(0);
+            }
+
             //RebuildLastSectionForInsideEndAddress();
+        }
+
+        private void CheckIsDuelStartPosition()
+        {
+            var curLocation = theVehicle.CurVehiclePosition;
+            MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[1]];
+            if (mainFlowHandler.IsPositionInThisAddress(curLocation.RealPosition, mapAddress.Position))
+            {                             
+                if (mainFlowHandler.IsAddressInThisSection(MovingSections[0], mapAddress) && mainFlowHandler.IsAddressInThisSection(MovingSections[1], mapAddress))
+                {
+                    IsDuelStartPosition = true;
+                    mainFlowHandler.LogDuel();
+                }
+            }           
         }
 
         public void SetupAddressPositions()
@@ -139,11 +161,11 @@ namespace Mirle.Agv.Model.TransferSteps
             SectionSpeedLimits = new List<double>();
             try
             {
-                if (SectionIds.Count > 0)
+                if (MovingSections.Count > 0)
                 {
-                    for (int i = 0; i < SectionIds.Count; i++)
+                    for (int i = 0; i < MovingSections.Count; i++)
                     {
-                        MapSection mapSection = theMapInfo.allMapSections[SectionIds[i]];
+                        MapSection mapSection = theMapInfo.allMapSections[MovingSections[i].Id];
                         double SpeedLimit = mapSection.Speed;
                         SectionSpeedLimits.Add(SpeedLimit);
                     }

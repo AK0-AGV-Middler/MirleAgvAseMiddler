@@ -2721,13 +2721,17 @@ namespace Mirle.Agv.Controller
         private double GetVChangeVelocity(double velocity)
         {
             double nextVChangeDistance = -1;
+            int index = -1;
 
             for (int i = command.IndexOfCmdList; i < command.CommandList.Count; i++)
             {
                 if (command.CommandList[i].CmdType == EnumCommandType.Vchange)
                 {
                     if (command.CommandList[i].Position != null)
+                    {
                         nextVChangeDistance = Math.Abs(location.RealEncoder - command.CommandList[i].TriggerEncoder);
+                        index = i;
+                    }                       
 
                     break;
                 }
@@ -2751,8 +2755,15 @@ namespace Mirle.Agv.Controller
                 WriteLog("MoveControl", "7", device, "", "---GetVChangeVelocity 出問題, returnVelocity < 0.............................!");
                 return velocity;
             }
-
-            return returnVelocity;
+            if (returnVelocity==0)
+            {
+                return command.CommandList[index].Velocity;
+            }
+            else
+            {
+                return returnVelocity;
+            }
+            
         }
 
         private bool CheckIndexOfCommandCanTrigger(int index)

@@ -479,7 +479,7 @@ namespace Mirle.Agv.Controller
 
             nowVelocity = GetNowVelocity(nowVelocity, moveCommandVelocity, firstVChangeDistance);
 
-            tempNowVelocity = GetNowVelocity(nowVelocity, firstVChangeVelocity, secondVChangeDistance - firstVChangeVelocity);
+            tempNowVelocity = GetNowVelocity(nowVelocity, firstVChangeVelocity, secondVChangeDistance - firstVChangeDistance);
 
             if (tempNowVelocity != firstVChangeVelocity)
             {

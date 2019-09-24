@@ -26,7 +26,7 @@ namespace Mirle.Agv.Controller
         private string lastReadBcrId = "";
         private string lastReadAdrId = "";
         private string lastReadSecId = "";
-        private int lastIndesx = 0;
+     
 
         public MapHandler(MapConfig mapConfig)
         {
