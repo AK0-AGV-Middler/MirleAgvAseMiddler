@@ -103,6 +103,7 @@
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
+            this.btnUnloadOk = new System.Windows.Forms.Button();
             this.btnLoadOk = new System.Windows.Forms.Button();
             this.btnMoveOk = new System.Windows.Forms.Button();
             this.ucBarPos = new Mirle.Agv.UcLabelTextBox();
@@ -145,7 +146,7 @@
             this.tstextRemotePort = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
-            this.btnUnloadOk = new System.Windows.Forms.Button();
+            this.ucCstId = new Mirle.Agv.UcLabelTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -602,15 +603,17 @@
             // 
             // gbPerformanceCounter
             // 
+            this.gbPerformanceCounter.Controls.Add(this.ucCstId);
             this.gbPerformanceCounter.Controls.Add(this.btnKeyInSoc);
             this.gbPerformanceCounter.Controls.Add(this.ucCharging);
             this.gbPerformanceCounter.Controls.Add(this.numSoc);
             this.gbPerformanceCounter.Controls.Add(this.ucSoc);
+            this.gbPerformanceCounter.Controls.Add(this.ucLoading);
             this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterRam);
             this.gbPerformanceCounter.Controls.Add(this.ucPerformanceCounterCpu);
             this.gbPerformanceCounter.Location = new System.Drawing.Point(218, 74);
             this.gbPerformanceCounter.Name = "gbPerformanceCounter";
-            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 239);
+            this.gbPerformanceCounter.Size = new System.Drawing.Size(200, 310);
             this.gbPerformanceCounter.TabIndex = 10;
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
@@ -618,7 +621,7 @@
             // btnKeyInSoc
             // 
             this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnKeyInSoc.Location = new System.Drawing.Point(6, 205);
+            this.btnKeyInSoc.Location = new System.Drawing.Point(6, 273);
             this.btnKeyInSoc.Name = "btnKeyInSoc";
             this.btnKeyInSoc.Size = new System.Drawing.Size(191, 28);
             this.btnKeyInSoc.TabIndex = 40;
@@ -628,7 +631,7 @@
             // 
             // ucCharging
             // 
-            this.ucCharging.Location = new System.Drawing.Point(7, 127);
+            this.ucCharging.Location = new System.Drawing.Point(6, 113);
             this.ucCharging.Name = "ucCharging";
             this.ucCharging.Size = new System.Drawing.Size(187, 30);
             this.ucCharging.TabIndex = 3;
@@ -639,7 +642,7 @@
             // numSoc
             // 
             this.numSoc.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.numSoc.Location = new System.Drawing.Point(6, 172);
+            this.numSoc.Location = new System.Drawing.Point(6, 240);
             this.numSoc.Name = "numSoc";
             this.numSoc.Size = new System.Drawing.Size(191, 27);
             this.numSoc.TabIndex = 41;
@@ -652,7 +655,7 @@
             // 
             // ucSoc
             // 
-            this.ucSoc.Location = new System.Drawing.Point(7, 91);
+            this.ucSoc.Location = new System.Drawing.Point(7, 81);
             this.ucSoc.Name = "ucSoc";
             this.ucSoc.Size = new System.Drawing.Size(187, 30);
             this.ucSoc.TabIndex = 2;
@@ -662,7 +665,7 @@
             // 
             // ucPerformanceCounterRam
             // 
-            this.ucPerformanceCounterRam.Location = new System.Drawing.Point(7, 55);
+            this.ucPerformanceCounterRam.Location = new System.Drawing.Point(6, 49);
             this.ucPerformanceCounterRam.Name = "ucPerformanceCounterRam";
             this.ucPerformanceCounterRam.Size = new System.Drawing.Size(187, 30);
             this.ucPerformanceCounterRam.TabIndex = 1;
@@ -857,7 +860,6 @@
             this.gbVehicleLocation.Controls.Add(this.ucDistance);
             this.gbVehicleLocation.Controls.Add(this.numPositionX);
             this.gbVehicleLocation.Controls.Add(this.btnKeyInPosition);
-            this.gbVehicleLocation.Controls.Add(this.ucLoading);
             this.gbVehicleLocation.Controls.Add(this.ucRealPosition);
             this.gbVehicleLocation.Controls.Add(this.ucBarcodePosition);
             this.gbVehicleLocation.Controls.Add(this.ucMapAddress);
@@ -926,9 +928,9 @@
             // 
             // ucLoading
             // 
-            this.ucLoading.Location = new System.Drawing.Point(0, 181);
+            this.ucLoading.Location = new System.Drawing.Point(7, 149);
             this.ucLoading.Name = "ucLoading";
-            this.ucLoading.Size = new System.Drawing.Size(194, 26);
+            this.ucLoading.Size = new System.Drawing.Size(187, 26);
             this.ucLoading.TabIndex = 5;
             this.ucLoading.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLoading.TagName = "Loading";
@@ -1021,6 +1023,17 @@
             this.radOffline.Text = "DisConnect";
             this.radOffline.UseVisualStyleBackColor = true;
             this.radOffline.CheckedChanged += new System.EventHandler(this.radOffline_CheckedChanged);
+            // 
+            // btnUnloadOk
+            // 
+            this.btnUnloadOk.Location = new System.Drawing.Point(6, 278);
+            this.btnUnloadOk.Name = "btnUnloadOk";
+            this.btnUnloadOk.Size = new System.Drawing.Size(67, 33);
+            this.btnUnloadOk.TabIndex = 60;
+            this.btnUnloadOk.Text = "UnloadOk";
+            this.btnUnloadOk.UseVisualStyleBackColor = true;
+            this.btnUnloadOk.Visible = false;
+            this.btnUnloadOk.Click += new System.EventHandler(this.btnUnloadOk_Click);
             // 
             // btnLoadOk
             // 
@@ -1437,16 +1450,15 @@
             this.tstextRealPosY.Size = new System.Drawing.Size(89, 17);
             this.tstextRealPosY.Text = "tstextRealPosY";
             // 
-            // btnUnloadOk
+            // ucCstId
             // 
-            this.btnUnloadOk.Location = new System.Drawing.Point(6, 278);
-            this.btnUnloadOk.Name = "btnUnloadOk";
-            this.btnUnloadOk.Size = new System.Drawing.Size(67, 33);
-            this.btnUnloadOk.TabIndex = 60;
-            this.btnUnloadOk.Text = "UnloadOk";
-            this.btnUnloadOk.UseVisualStyleBackColor = true;
-            this.btnUnloadOk.Visible = false;
-            this.btnUnloadOk.Click += new System.EventHandler(this.btnUnloadOk_Click);
+            this.ucCstId.Location = new System.Drawing.Point(7, 181);
+            this.ucCstId.Name = "ucCstId";
+            this.ucCstId.Size = new System.Drawing.Size(187, 26);
+            this.ucCstId.TabIndex = 42;
+            this.ucCstId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucCstId.TagName = "CstId";
+            this.ucCstId.TagValue = "";
             // 
             // MainForm
             // 
@@ -1626,5 +1638,6 @@
         private System.Windows.Forms.Button btnLoadOk;
         private System.Windows.Forms.Button btnMoveOk;
         private System.Windows.Forms.Button btnUnloadOk;
+        private UcLabelTextBox ucCstId;
     }
 }

@@ -199,6 +199,20 @@ namespace Mirle.Agv.Model.TransferSteps
                     }
                     else
                     {
+                        if (MovingSections[0].Type== EnumSectionType.Horizontal)
+                        {
+                            if (VehicleHeadAngle==90|| VehicleHeadAngle==-90)
+                            {
+                                WheelAngle = 90;
+                            }
+                        }
+                        else
+                        {
+                            if (VehicleHeadAngle == 0 || VehicleHeadAngle == -180)
+                            {
+                                WheelAngle = 90;
+                            }
+                        }
                         AddressActions.Add(EnumAddressAction.ST);
                     }
 

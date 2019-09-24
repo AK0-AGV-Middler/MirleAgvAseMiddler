@@ -1018,6 +1018,7 @@ namespace Mirle.Agv.View
             var loading = !string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId);
             ucLoading.TagValue = loading ? "Yes" : "No";
             ucVehicleImage.Loading = loading;
+            ucCstId.TagValue = loading ? theVehicle.ThePlcVehicle.CassetteId : "";
 
             var charging = theVehicle.ThePlcVehicle.Batterys.Charging;
             ucCharging.TagValue = charging ? "Yes" : "No";

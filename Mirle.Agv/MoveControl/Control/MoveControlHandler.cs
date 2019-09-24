@@ -62,7 +62,7 @@ namespace Mirle.Agv.Controller
         public double LoopTime { get; set; } = 0;
         private System.Diagnostics.Stopwatch loopTimeTimer = new System.Diagnostics.Stopwatch();
         public bool Reviseing { get; set; }
-        public bool SR2000Connected { get; private set; } = false;
+        public bool SR2000Connected { get; private set; } = true;
         private bool closeMoveControl = false;
 
         private void SetDebugFlowLog(string functionName, string message)
@@ -1922,9 +1922,7 @@ namespace Mirle.Agv.Controller
         {
             if (velocity < oldVelocity)
             {
-                double nowVelocity = elmoDriver.ElmoGetVelocity(EnumAxis.GX);
-
-                if (Math.Abs(nowVelocity) <= moveControlConfig.VelocitySafetyRange)
+                if (Math.Abs(location.Velocity) <= moveControlConfig.VelocitySafetyRange)
                 {
                     double distance = computeFunction.GetAccDecDistance(
                         0, velocity + moveControlConfig.Safety[EnumMoveControlSafetyType.VChangeSafetyDistance].Range,
@@ -1936,20 +1934,20 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    bool vChangeComplete = Math.Abs(Math.Abs(nowVelocity) - ControlData.RealVelocity) <= moveControlConfig.VelocitySafetyRange;
+                    bool vChangeComplete = Math.Abs(Math.Abs(location.Velocity) - ControlData.RealVelocity) <= moveControlConfig.VelocitySafetyRange;
 
                     double vel = 0;
                     double distance = 0;
 
-                    if (!vChangeComplete && Math.Abs(nowVelocity) < ControlData.RealVelocity)
+                    if (!vChangeComplete && Math.Abs(location.Velocity) < ControlData.RealVelocity)
                     {
-                        vel = Math.Abs(nowVelocity);
+                        vel = Math.Abs(location.Velocity);
                         distance = computeFunction.GetDecDistanceOneJerk(oldVelocity, velocity,
                                    moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk, ref vel) *
                                    moveControlConfig.VChangeSafetyDistanceMagnification;
 
                         distance = distance * 2;
-                        vel = Math.Abs(nowVelocity);
+                        vel = Math.Abs(location.Velocity);
                         ControlData.VChangeSafetyTargetEncoder = location.ElmoEncoder + (ControlData.DirFlag ? distance : -distance);
                         ControlData.VChangeSafetyVelocity = vel;
                     }
@@ -2026,10 +2024,10 @@ namespace Mirle.Agv.Controller
                         DirLightTurn(turnLeft ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right);
                         break;
                     case 90:
-                        DirLightTurn(ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
+                        DirLightTurn(ControlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right);
                         break;
                     case -90:
-                        DirLightTurn(ControlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right);
+                        DirLightTurn(ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
                         break;
                     default:
                         EMSControl("switch (TRWheelAngle) default..EMS.");
@@ -2558,6 +2556,7 @@ namespace Mirle.Agv.Controller
                         break;
                     case EnumCommandType.Stop:
                         ControlData.WaitReserveIndex = command.CommandList[command.IndexOfCmdList].NextReserveNumber;
+                        WriteLog("MoveControl", "7", device, "", "因為取得Reserve index = " + ControlData.WaitReserveIndex.ToString() + ", 因此停車 !");
                         break;
                     case EnumCommandType.End:
                         SecondCorrectionControl(command.CommandList[command.IndexOfCmdList].EndEncoder);
@@ -2728,10 +2727,7 @@ namespace Mirle.Agv.Controller
                 if (command.CommandList[i].CmdType == EnumCommandType.Vchange)
                 {
                     if (command.CommandList[i].Position != null)
-                    {
-                        nextVChangeDistance = Math.Abs(location.RealEncoder - command.CommandList[i].TriggerEncoder);
                         index = i;
-                    }                       
 
                     break;
                 }
@@ -2741,6 +2737,8 @@ namespace Mirle.Agv.Controller
 
             if (nextVChangeDistance == -1)
                 return velocity;
+
+            nextVChangeDistance = Math.Abs(location.RealEncoder - command.CommandList[index].TriggerEncoder);
 
             double returnVelocity = createMoveControlList.GetFirstVChangeCommandVelocity(moveControlConfig.Move.Velocity, 0,
                 velocity, nextVChangeDistance);
@@ -2755,15 +2753,11 @@ namespace Mirle.Agv.Controller
                 WriteLog("MoveControl", "7", device, "", "---GetVChangeVelocity 出問題, returnVelocity < 0.............................!");
                 return velocity;
             }
-            if (returnVelocity==0)
-            {
+
+            if (returnVelocity == 0)
                 return command.CommandList[index].Velocity;
-            }
             else
-            {
                 return returnVelocity;
-            }
-            
         }
 
         private bool CheckIndexOfCommandCanTrigger(int index)
@@ -3098,13 +3092,16 @@ namespace Mirle.Agv.Controller
             ControlData.BeamSensorState = beamSensorState;
             ControlData.BumpSensorState = bumpSensorState;
 
-            if (safetyData.TurningByPass || ControlData.SecondCorrection)
+            if (beamSensorState != EnumVehicleSafetyAction.Normal && (safetyData.TurningByPass || ControlData.SecondCorrection || !CanStopInNextTurn()))
                 beamSensorState = EnumVehicleSafetyAction.Normal;
 
             if (ControlData.WaitReserveIndex != -1)
             {
                 if (command.ReserveList[ControlData.WaitReserveIndex].GetReserve)
+                {
+                    WriteLog("MoveControl", "7", device, "", "取得Reserve index = " + ControlData.WaitReserveIndex.ToString() + ", WaitReserveIndex 變回 -1 !");
                     ControlData.WaitReserveIndex = -1;
+                }
             }
 
             if (ControlData.FlowStopRequeset || ControlData.PauseRequest || ControlData.PauseAlready || ControlData.WaitReserveIndex != -1 ||
@@ -3618,11 +3615,80 @@ namespace Mirle.Agv.Controller
             return location.Real != null;
         }
 
+        private bool CanStopInNextTurn()
+        {
+            int index = -1;
+
+            for (int i = command.IndexOfCmdList; i < command.CommandList.Count; i++)
+            {
+                if (command.CommandList[i].CmdType == EnumCommandType.SlowStop)
+                    break;
+                else if (command.CommandList[i].CmdType == EnumCommandType.TR)
+                {
+                    if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorTR].Enable)
+                        index = i;
+
+                    break;
+                }
+                else if (command.CommandList[i].CmdType == EnumCommandType.R2000)
+                {
+                    if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorR2000].Enable)
+                        index = i;
+
+                    break;
+                }
+            }
+
+            if (index == -1)
+                return true;
+
+            double vel = 0;
+
+            if (SimulationMode)
+                vel = ControlData.RealVelocity;
+            else
+                vel = elmoDriver.ElmoGetVelocity(EnumAxis.GX);
+
+            bool vChangeComplete = Math.Abs(Math.Abs(location.Velocity) - ControlData.RealVelocity) <= moveControlConfig.VelocitySafetyRange;
+
+            double distance = 0;
+
+            if (!vChangeComplete && Math.Abs(location.Velocity) < ControlData.RealVelocity)
+            {
+                double tempVel = Math.Abs(location.Velocity);
+                distance = computeFunction.GetDecDistanceOneJerk(location.Velocity, 0,
+                           moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk, ref tempVel) *
+                           moveControlConfig.VChangeSafetyDistanceMagnification;
+
+                distance = distance * 2;
+            }
+
+            double decDistance = computeFunction.GetAccDecDistance(vel, 0, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+            double accDistance = computeFunction.GetAccDecDistance(0, command.CommandList[index].Velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+            double safetyDistance = moveControlConfig.TurnParameter[command.CommandList[index].TurnType].VChangeSafetyDistance;
+            double allDistance = decDistance + accDistance + safetyDistance + distance;
+
+            WriteLog("MoveControl", "7", device, "", "目前車速為 : " + vel.ToString("0") + ", 預計需要 " + allDistance.ToString("0") + " mm才能停止");
+            double stopEncoder = location.RealEncoder + (ControlData.DirFlag ? allDistance : -allDistance);
+
+            WriteLog("MoveControl", "7", device, "", "目前RealEncoder : " + location.RealEncoder.ToString("0") +
+                                                      ", 預計停止RealEncoder : " + stopEncoder.ToString("0") + "!");
+
+            if (ControlData.DirFlag)
+            {
+                return stopEncoder <= command.CommandList[index].TriggerEncoder;
+            }
+            else
+            {
+                return stopEncoder >= command.CommandList[index].TriggerEncoder;
+            }
+        }
+
         private bool CanPauseNow()
         {
             WriteLog("MoveControl", "7", device, "", "開始判斷目前位置是否可以Pause!");
 
-            if (!ControlData.CanPause)
+            if (!ControlData.CanPause || !CanStopInNextTurn())
             {
                 WriteLog("MoveControl", "7", device, "", "因為在R2000和TR中,所以無法Pause!");
                 return false;

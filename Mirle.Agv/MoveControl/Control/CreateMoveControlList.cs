@@ -73,6 +73,7 @@ namespace Mirle.Agv.Controller
             returnCommand.TriggerEncoder = realEncoder;
             returnCommand.Position = position;
             returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.R2000];
+            returnCommand.TurnType = EnumAddressAction.R2000;
             returnCommand.CmdType = EnumCommandType.R2000;
             returnCommand.DirFlag = dirFlag;
             returnCommand.WheelAngle = wheelAngle;
