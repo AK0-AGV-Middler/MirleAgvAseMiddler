@@ -193,8 +193,6 @@ namespace Mirle.Agv.View
         {
             var batterys = theVehicle.ThePlcVehicle.Batterys;
             txtWatchLowPower.Text = $"High/Low : {(int)batterys.PortAutoChargeHighSoc}/{(int)batterys.PortAutoChargeLowSoc}";
-            var initialSoc = mainFlowHandler.InitialSoc;
-            mainFlowHandler.SetupVehicleSoc(initialSoc);
         }
 
         private void InitialConnectionAndCstStatus()
@@ -1460,6 +1458,16 @@ namespace Mirle.Agv.View
             theVehicle.ThePlcVehicle.CassetteId = "";
             PlcForkCommand forkCommand = new PlcForkCommand(6, EnumForkCommand.Unload, "1", EnumStageDirection.Left, false, 100);
             mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
+        }
+
+        private void timer_SetupInitialSoc_Tick(object sender, EventArgs e)
+        {
+            if (plcAgent.IsFirstMeterAhGet)
+            {
+                var initialSoc = mainFlowHandler.InitialSoc;
+                mainFlowHandler.SetupVehicleSoc(initialSoc);
+                timer_SetupInitialSoc.Enabled = false;
+            }
         }
     }
 }

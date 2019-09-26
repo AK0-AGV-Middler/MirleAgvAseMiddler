@@ -68,10 +68,12 @@
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
+            this.ucCstId = new Mirle.Agv.UcLabelTextBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.ucCharging = new Mirle.Agv.UcLabelTextBox();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
             this.ucSoc = new Mirle.Agv.UcLabelTextBox();
+            this.ucLoading = new Mirle.Agv.UcLabelTextBox();
             this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
             this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
             this.rtbTransferStep = new System.Windows.Forms.RichTextBox();
@@ -94,7 +96,6 @@
             this.ucDistance = new Mirle.Agv.UcLabelTextBox();
             this.numPositionX = new System.Windows.Forms.NumericUpDown();
             this.btnKeyInPosition = new System.Windows.Forms.Button();
-            this.ucLoading = new Mirle.Agv.UcLabelTextBox();
             this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
@@ -146,7 +147,7 @@
             this.tstextRemotePort = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
-            this.ucCstId = new Mirle.Agv.UcLabelTextBox();
+            this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -618,6 +619,16 @@
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
             // 
+            // ucCstId
+            // 
+            this.ucCstId.Location = new System.Drawing.Point(7, 181);
+            this.ucCstId.Name = "ucCstId";
+            this.ucCstId.Size = new System.Drawing.Size(187, 26);
+            this.ucCstId.TabIndex = 42;
+            this.ucCstId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucCstId.TagName = "CstId";
+            this.ucCstId.TagValue = "";
+            // 
             // btnKeyInSoc
             // 
             this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -662,6 +673,16 @@
             this.ucSoc.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucSoc.TagName = "SOC";
             this.ucSoc.TagValue = "";
+            // 
+            // ucLoading
+            // 
+            this.ucLoading.Location = new System.Drawing.Point(7, 149);
+            this.ucLoading.Name = "ucLoading";
+            this.ucLoading.Size = new System.Drawing.Size(187, 26);
+            this.ucLoading.TabIndex = 5;
+            this.ucLoading.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucLoading.TagName = "Loading";
+            this.ucLoading.TagValue = "";
             // 
             // ucPerformanceCounterRam
             // 
@@ -925,16 +946,6 @@
             this.btnKeyInPosition.Text = "鍵入車輛位置";
             this.btnKeyInPosition.UseVisualStyleBackColor = true;
             this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click);
-            // 
-            // ucLoading
-            // 
-            this.ucLoading.Location = new System.Drawing.Point(7, 149);
-            this.ucLoading.Name = "ucLoading";
-            this.ucLoading.Size = new System.Drawing.Size(187, 26);
-            this.ucLoading.TabIndex = 5;
-            this.ucLoading.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucLoading.TagName = "Loading";
-            this.ucLoading.TagValue = "";
             // 
             // ucRealPosition
             // 
@@ -1450,15 +1461,10 @@
             this.tstextRealPosY.Size = new System.Drawing.Size(89, 17);
             this.tstextRealPosY.Text = "tstextRealPosY";
             // 
-            // ucCstId
+            // timer_SetupInitialSoc
             // 
-            this.ucCstId.Location = new System.Drawing.Point(7, 181);
-            this.ucCstId.Name = "ucCstId";
-            this.ucCstId.Size = new System.Drawing.Size(187, 26);
-            this.ucCstId.TabIndex = 42;
-            this.ucCstId.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucCstId.TagName = "CstId";
-            this.ucCstId.TagValue = "";
+            this.timer_SetupInitialSoc.Interval = 50;
+            this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
             // MainForm
             // 
@@ -1639,5 +1645,6 @@
         private System.Windows.Forms.Button btnMoveOk;
         private System.Windows.Forms.Button btnUnloadOk;
         private UcLabelTextBox ucCstId;
+        private System.Windows.Forms.Timer timer_SetupInitialSoc;
     }
 }

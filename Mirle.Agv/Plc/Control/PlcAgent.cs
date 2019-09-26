@@ -65,8 +65,6 @@ namespace Mirle.Agv.Controller
 
         private Thread TestThread = null;
 
-
-
         private UInt16 beforeBatteryPercentageInteger = 0;
         private UInt32 alarmReadIndex = 0;
 
@@ -947,7 +945,6 @@ namespace Mirle.Agv.Controller
             }
             return returnValue;
         }
-
 
         #region 特殊 Log 紀錄
         //紀錄 Fork alignment value 

@@ -220,8 +220,7 @@ namespace Mirle.Agv.Controller
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 theVehicle.CurVehiclePosition.RealPositionRangeMm = mainFlowConfig.RealPositionRangeMm;
                 theVehicle.TheMapInfo = TheMapInfo;
-                theVehicle.ThdMiddleAgent = middleAgent;
-                //SetupVehicleSoc(GetInitialBatteryPercentage("BatteryPercentage.log"));
+                theVehicle.ThdMiddleAgent = middleAgent;                /
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "台車"));
             }
@@ -2617,8 +2616,9 @@ namespace Mirle.Agv.Controller
 
         public void SetupVehicleSoc(double percentage)
         {
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
-            batterys.SetCcModeAh(batterys.MeterAh + batterys.AhWorkingRange * (100.0 - percentage) / 100.00, false);
+            //var batterys = theVehicle.ThePlcVehicle.Batterys;
+            //batterys.SetCcModeAh(batterys.MeterAh + batterys.AhWorkingRange * (100.0 - percentage) / 100.00, false);
+            plcAgent.setSOC(percentage);
         }
 
         private void GetInitialSoc(string v)
