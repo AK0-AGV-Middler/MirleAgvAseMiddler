@@ -1515,13 +1515,13 @@ namespace Mirle.Agv.Controller
             switch (ControlData.WheelAngle)
             {
                 case 0:
-                    changeToNextSectionLineWheelAngle = (wheelAngle == 90) ? 80 : -80;
+                    changeToNextSectionLineWheelAngle = (wheelAngle == 90) ? 45 : -45;
                     break;
                 case 90:
-                    changeToNextSectionLineWheelAngle = 10;
+                    changeToNextSectionLineWheelAngle = 45;
                     break;
                 case -90:
-                    changeToNextSectionLineWheelAngle = -10;
+                    changeToNextSectionLineWheelAngle = -45;
                     break;
                 default:
                     break;
@@ -2630,8 +2630,9 @@ namespace Mirle.Agv.Controller
                     if (ControlData.FlowStop && ControlData.FlowClear)
                     {
                         WriteLog("MoveControl", "7", device, "", "AGV已經停止 State 切換成 Idle!");
+                        BeamSensorCloseAll();
+                        DirLightCloseAll();
                         elmoDriver.DisableMoveAxis();
-                        MoveFinished(EnumMoveComplete.Fail);
                         MoveState = EnumMoveState.Idle;
                         ControlData.FlowStop = false;
                         ControlData.FlowClear = false;
@@ -3668,11 +3669,11 @@ namespace Mirle.Agv.Controller
             double safetyDistance = moveControlConfig.TurnParameter[command.CommandList[index].TurnType].VChangeSafetyDistance;
             double allDistance = decDistance + accDistance + safetyDistance + distance;
 
-            WriteLog("MoveControl", "7", device, "", "目前車速為 : " + vel.ToString("0") + ", 預計需要 " + allDistance.ToString("0") + " mm才能停止");
+            //WriteLog("MoveControl", "7", device, "", "目前車速為 : " + vel.ToString("0") + ", 預計需要 " + allDistance.ToString("0") + " mm才能停止");
             double stopEncoder = location.RealEncoder + (ControlData.DirFlag ? allDistance : -allDistance);
 
-            WriteLog("MoveControl", "7", device, "", "目前RealEncoder : " + location.RealEncoder.ToString("0") +
-                                                      ", 預計停止RealEncoder : " + stopEncoder.ToString("0") + "!");
+            //WriteLog("MoveControl", "7", device, "", "目前RealEncoder : " + location.RealEncoder.ToString("0") +
+            //                                          ", 預計停止RealEncoder : " + stopEncoder.ToString("0") + "!");
 
             if (ControlData.DirFlag)
             {

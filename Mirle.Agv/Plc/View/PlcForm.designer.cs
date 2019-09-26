@@ -32,6 +32,24 @@
             this.tabContol1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+            this.tbxAlignmentB_AV = new System.Windows.Forms.TextBox();
+            this.tbxAlignmentC_AV = new System.Windows.Forms.TextBox();
+            this.tbxAlignmentCode_AV = new System.Windows.Forms.TextBox();
+            this.tbxAlignmentF_AV = new System.Windows.Forms.TextBox();
+            this.tbxAlignmentPhi_AV = new System.Windows.Forms.TextBox();
+            this.tbxAlignmentY_AV = new System.Windows.Forms.TextBox();
+            this.label91 = new System.Windows.Forms.Label();
+            this.label92 = new System.Windows.Forms.Label();
+            this.label93 = new System.Windows.Forms.Label();
+            this.label94 = new System.Windows.Forms.Label();
+            this.tbxAlignmentP_AV = new System.Windows.Forms.TextBox();
+            this.label95 = new System.Windows.Forms.Label();
+            this.label96 = new System.Windows.Forms.Label();
+            this.label97 = new System.Windows.Forms.Label();
+            this.label98 = new System.Windows.Forms.Label();
+            this.label99 = new System.Windows.Forms.Label();
             this.chkFakeForking = new System.Windows.Forms.CheckBox();
             this.palForkParams = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -349,26 +367,10 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
-            this.panel7 = new System.Windows.Forms.Panel();
-            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.tbxAlignmentB_AV = new System.Windows.Forms.TextBox();
-            this.tbxAlignmentC_AV = new System.Windows.Forms.TextBox();
-            this.tbxAlignmentCode_AV = new System.Windows.Forms.TextBox();
-            this.tbxAlignmentF_AV = new System.Windows.Forms.TextBox();
-            this.tbxAlignmentPhi_AV = new System.Windows.Forms.TextBox();
-            this.tbxAlignmentY_AV = new System.Windows.Forms.TextBox();
-            this.label91 = new System.Windows.Forms.Label();
-            this.label92 = new System.Windows.Forms.Label();
-            this.label93 = new System.Windows.Forms.Label();
-            this.label94 = new System.Windows.Forms.Label();
-            this.tbxAlignmentP_AV = new System.Windows.Forms.TextBox();
-            this.label95 = new System.Windows.Forms.Label();
-            this.label96 = new System.Windows.Forms.Label();
-            this.label97 = new System.Windows.Forms.Label();
-            this.label98 = new System.Windows.Forms.Label();
-            this.label99 = new System.Windows.Forms.Label();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.panel7.SuspendLayout();
+            this.tableLayoutPanel4.SuspendLayout();
             this.palForkParams.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -398,8 +400,6 @@
             this.grpL.SuspendLayout();
             this.grpB.SuspendLayout();
             this.grpF.SuspendLayout();
-            this.panel7.SuspendLayout();
-            this.tableLayoutPanel4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabContol1
@@ -441,6 +441,222 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fork";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.tableLayoutPanel4);
+            this.panel7.Location = new System.Drawing.Point(967, 355);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(322, 257);
+            this.panel7.TabIndex = 70;
+            // 
+            // tableLayoutPanel4
+            // 
+            this.tableLayoutPanel4.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.tableLayoutPanel4.ColumnCount = 2;
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 71F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentB_AV, 1, 7);
+            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentC_AV, 1, 6);
+            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentCode_AV, 1, 5);
+            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentF_AV, 1, 4);
+            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentPhi_AV, 1, 3);
+            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentY_AV, 1, 2);
+            this.tableLayoutPanel4.Controls.Add(this.label91, 0, 2);
+            this.tableLayoutPanel4.Controls.Add(this.label92, 0, 1);
+            this.tableLayoutPanel4.Controls.Add(this.label93, 0, 3);
+            this.tableLayoutPanel4.Controls.Add(this.label94, 0, 4);
+            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentP_AV, 1, 1);
+            this.tableLayoutPanel4.Controls.Add(this.label95, 0, 5);
+            this.tableLayoutPanel4.Controls.Add(this.label96, 0, 7);
+            this.tableLayoutPanel4.Controls.Add(this.label97, 0, 6);
+            this.tableLayoutPanel4.Controls.Add(this.label98, 0, 0);
+            this.tableLayoutPanel4.Controls.Add(this.label99, 1, 0);
+            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+            this.tableLayoutPanel4.RowCount = 8;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(322, 257);
+            this.tableLayoutPanel4.TabIndex = 0;
+            // 
+            // tbxAlignmentB_AV
+            // 
+            this.tbxAlignmentB_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAlignmentB_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxAlignmentB_AV.Location = new System.Drawing.Point(76, 228);
+            this.tbxAlignmentB_AV.Name = "tbxAlignmentB_AV";
+            this.tbxAlignmentB_AV.ReadOnly = true;
+            this.tbxAlignmentB_AV.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxAlignmentB_AV.Size = new System.Drawing.Size(242, 27);
+            this.tbxAlignmentB_AV.TabIndex = 87;
+            // 
+            // tbxAlignmentC_AV
+            // 
+            this.tbxAlignmentC_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAlignmentC_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxAlignmentC_AV.Location = new System.Drawing.Point(76, 196);
+            this.tbxAlignmentC_AV.Name = "tbxAlignmentC_AV";
+            this.tbxAlignmentC_AV.ReadOnly = true;
+            this.tbxAlignmentC_AV.Size = new System.Drawing.Size(242, 27);
+            this.tbxAlignmentC_AV.TabIndex = 86;
+            // 
+            // tbxAlignmentCode_AV
+            // 
+            this.tbxAlignmentCode_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAlignmentCode_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxAlignmentCode_AV.Location = new System.Drawing.Point(76, 164);
+            this.tbxAlignmentCode_AV.Name = "tbxAlignmentCode_AV";
+            this.tbxAlignmentCode_AV.ReadOnly = true;
+            this.tbxAlignmentCode_AV.Size = new System.Drawing.Size(242, 27);
+            this.tbxAlignmentCode_AV.TabIndex = 85;
+            // 
+            // tbxAlignmentF_AV
+            // 
+            this.tbxAlignmentF_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAlignmentF_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxAlignmentF_AV.Location = new System.Drawing.Point(76, 132);
+            this.tbxAlignmentF_AV.Name = "tbxAlignmentF_AV";
+            this.tbxAlignmentF_AV.ReadOnly = true;
+            this.tbxAlignmentF_AV.Size = new System.Drawing.Size(242, 27);
+            this.tbxAlignmentF_AV.TabIndex = 84;
+            // 
+            // tbxAlignmentPhi_AV
+            // 
+            this.tbxAlignmentPhi_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAlignmentPhi_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxAlignmentPhi_AV.Location = new System.Drawing.Point(76, 100);
+            this.tbxAlignmentPhi_AV.Name = "tbxAlignmentPhi_AV";
+            this.tbxAlignmentPhi_AV.ReadOnly = true;
+            this.tbxAlignmentPhi_AV.Size = new System.Drawing.Size(242, 27);
+            this.tbxAlignmentPhi_AV.TabIndex = 83;
+            // 
+            // tbxAlignmentY_AV
+            // 
+            this.tbxAlignmentY_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAlignmentY_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxAlignmentY_AV.Location = new System.Drawing.Point(76, 68);
+            this.tbxAlignmentY_AV.Name = "tbxAlignmentY_AV";
+            this.tbxAlignmentY_AV.ReadOnly = true;
+            this.tbxAlignmentY_AV.Size = new System.Drawing.Size(242, 27);
+            this.tbxAlignmentY_AV.TabIndex = 82;
+            // 
+            // label91
+            // 
+            this.label91.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label91.AutoSize = true;
+            this.label91.Location = new System.Drawing.Point(4, 74);
+            this.label91.Name = "label91";
+            this.label91.Size = new System.Drawing.Size(65, 13);
+            this.label91.TabIndex = 81;
+            this.label91.Text = "Y";
+            this.label91.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label92
+            // 
+            this.label92.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label92.AutoSize = true;
+            this.label92.Location = new System.Drawing.Point(4, 42);
+            this.label92.Name = "label92";
+            this.label92.Size = new System.Drawing.Size(65, 13);
+            this.label92.TabIndex = 73;
+            this.label92.Text = "P";
+            this.label92.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label93
+            // 
+            this.label93.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label93.AutoSize = true;
+            this.label93.Location = new System.Drawing.Point(4, 106);
+            this.label93.Name = "label93";
+            this.label93.Size = new System.Drawing.Size(65, 13);
+            this.label93.TabIndex = 74;
+            this.label93.Text = "Phi (Theta)";
+            this.label93.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label94
+            // 
+            this.label94.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label94.AutoSize = true;
+            this.label94.Location = new System.Drawing.Point(4, 138);
+            this.label94.Name = "label94";
+            this.label94.Size = new System.Drawing.Size(65, 13);
+            this.label94.TabIndex = 76;
+            this.label94.Text = "Barcode F";
+            this.label94.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tbxAlignmentP_AV
+            // 
+            this.tbxAlignmentP_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxAlignmentP_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxAlignmentP_AV.Location = new System.Drawing.Point(76, 36);
+            this.tbxAlignmentP_AV.Name = "tbxAlignmentP_AV";
+            this.tbxAlignmentP_AV.ReadOnly = true;
+            this.tbxAlignmentP_AV.Size = new System.Drawing.Size(242, 27);
+            this.tbxAlignmentP_AV.TabIndex = 80;
+            // 
+            // label95
+            // 
+            this.label95.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label95.AutoSize = true;
+            this.label95.Location = new System.Drawing.Point(4, 170);
+            this.label95.Name = "label95";
+            this.label95.Size = new System.Drawing.Size(65, 13);
+            this.label95.TabIndex = 75;
+            this.label95.Text = "Barcode";
+            this.label95.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label96
+            // 
+            this.label96.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label96.AutoSize = true;
+            this.label96.Location = new System.Drawing.Point(4, 234);
+            this.label96.Name = "label96";
+            this.label96.Size = new System.Drawing.Size(65, 13);
+            this.label96.TabIndex = 79;
+            this.label96.Text = "Barcode B";
+            this.label96.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label97
+            // 
+            this.label97.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label97.AutoSize = true;
+            this.label97.Location = new System.Drawing.Point(4, 202);
+            this.label97.Name = "label97";
+            this.label97.Size = new System.Drawing.Size(65, 13);
+            this.label97.TabIndex = 78;
+            this.label97.Text = "Barcode C";
+            this.label97.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label98
+            // 
+            this.label98.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label98.AutoSize = true;
+            this.label98.Location = new System.Drawing.Point(4, 10);
+            this.label98.Name = "label98";
+            this.label98.Size = new System.Drawing.Size(65, 13);
+            this.label98.TabIndex = 73;
+            this.label98.Text = "Name";
+            this.label98.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label99
+            // 
+            this.label99.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label99.AutoSize = true;
+            this.label99.Location = new System.Drawing.Point(76, 10);
+            this.label99.Name = "label99";
+            this.label99.Size = new System.Drawing.Size(242, 13);
+            this.label99.TabIndex = 73;
+            this.label99.Text = "Alignment Value";
+            this.label99.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // chkFakeForking
             // 
@@ -4055,222 +4271,6 @@
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
             // 
-            // panel7
-            // 
-            this.panel7.Controls.Add(this.tableLayoutPanel4);
-            this.panel7.Location = new System.Drawing.Point(967, 355);
-            this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(322, 257);
-            this.panel7.TabIndex = 70;
-            // 
-            // tableLayoutPanel4
-            // 
-            this.tableLayoutPanel4.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-            this.tableLayoutPanel4.ColumnCount = 2;
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 71F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentB_AV, 1, 7);
-            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentC_AV, 1, 6);
-            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentCode_AV, 1, 5);
-            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentF_AV, 1, 4);
-            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentPhi_AV, 1, 3);
-            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentY_AV, 1, 2);
-            this.tableLayoutPanel4.Controls.Add(this.label91, 0, 2);
-            this.tableLayoutPanel4.Controls.Add(this.label92, 0, 1);
-            this.tableLayoutPanel4.Controls.Add(this.label93, 0, 3);
-            this.tableLayoutPanel4.Controls.Add(this.label94, 0, 4);
-            this.tableLayoutPanel4.Controls.Add(this.tbxAlignmentP_AV, 1, 1);
-            this.tableLayoutPanel4.Controls.Add(this.label95, 0, 5);
-            this.tableLayoutPanel4.Controls.Add(this.label96, 0, 7);
-            this.tableLayoutPanel4.Controls.Add(this.label97, 0, 6);
-            this.tableLayoutPanel4.Controls.Add(this.label98, 0, 0);
-            this.tableLayoutPanel4.Controls.Add(this.label99, 1, 0);
-            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel4.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
-            this.tableLayoutPanel4.RowCount = 8;
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(322, 257);
-            this.tableLayoutPanel4.TabIndex = 0;
-            // 
-            // tbxAlignmentB_AV
-            // 
-            this.tbxAlignmentB_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAlignmentB_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxAlignmentB_AV.Location = new System.Drawing.Point(76, 228);
-            this.tbxAlignmentB_AV.Name = "tbxAlignmentB_AV";
-            this.tbxAlignmentB_AV.ReadOnly = true;
-            this.tbxAlignmentB_AV.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbxAlignmentB_AV.Size = new System.Drawing.Size(242, 27);
-            this.tbxAlignmentB_AV.TabIndex = 87;
-            // 
-            // tbxAlignmentC_AV
-            // 
-            this.tbxAlignmentC_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAlignmentC_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxAlignmentC_AV.Location = new System.Drawing.Point(76, 196);
-            this.tbxAlignmentC_AV.Name = "tbxAlignmentC_AV";
-            this.tbxAlignmentC_AV.ReadOnly = true;
-            this.tbxAlignmentC_AV.Size = new System.Drawing.Size(242, 27);
-            this.tbxAlignmentC_AV.TabIndex = 86;
-            // 
-            // tbxAlignmentCode_AV
-            // 
-            this.tbxAlignmentCode_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAlignmentCode_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxAlignmentCode_AV.Location = new System.Drawing.Point(76, 164);
-            this.tbxAlignmentCode_AV.Name = "tbxAlignmentCode_AV";
-            this.tbxAlignmentCode_AV.ReadOnly = true;
-            this.tbxAlignmentCode_AV.Size = new System.Drawing.Size(242, 27);
-            this.tbxAlignmentCode_AV.TabIndex = 85;
-            // 
-            // tbxAlignmentF_AV
-            // 
-            this.tbxAlignmentF_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAlignmentF_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxAlignmentF_AV.Location = new System.Drawing.Point(76, 132);
-            this.tbxAlignmentF_AV.Name = "tbxAlignmentF_AV";
-            this.tbxAlignmentF_AV.ReadOnly = true;
-            this.tbxAlignmentF_AV.Size = new System.Drawing.Size(242, 27);
-            this.tbxAlignmentF_AV.TabIndex = 84;
-            // 
-            // tbxAlignmentPhi_AV
-            // 
-            this.tbxAlignmentPhi_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAlignmentPhi_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxAlignmentPhi_AV.Location = new System.Drawing.Point(76, 100);
-            this.tbxAlignmentPhi_AV.Name = "tbxAlignmentPhi_AV";
-            this.tbxAlignmentPhi_AV.ReadOnly = true;
-            this.tbxAlignmentPhi_AV.Size = new System.Drawing.Size(242, 27);
-            this.tbxAlignmentPhi_AV.TabIndex = 83;
-            // 
-            // tbxAlignmentY_AV
-            // 
-            this.tbxAlignmentY_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAlignmentY_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxAlignmentY_AV.Location = new System.Drawing.Point(76, 68);
-            this.tbxAlignmentY_AV.Name = "tbxAlignmentY_AV";
-            this.tbxAlignmentY_AV.ReadOnly = true;
-            this.tbxAlignmentY_AV.Size = new System.Drawing.Size(242, 27);
-            this.tbxAlignmentY_AV.TabIndex = 82;
-            // 
-            // label91
-            // 
-            this.label91.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label91.AutoSize = true;
-            this.label91.Location = new System.Drawing.Point(4, 74);
-            this.label91.Name = "label91";
-            this.label91.Size = new System.Drawing.Size(65, 13);
-            this.label91.TabIndex = 81;
-            this.label91.Text = "Y";
-            this.label91.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label92
-            // 
-            this.label92.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label92.AutoSize = true;
-            this.label92.Location = new System.Drawing.Point(4, 42);
-            this.label92.Name = "label92";
-            this.label92.Size = new System.Drawing.Size(65, 13);
-            this.label92.TabIndex = 73;
-            this.label92.Text = "P";
-            this.label92.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label93
-            // 
-            this.label93.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label93.AutoSize = true;
-            this.label93.Location = new System.Drawing.Point(4, 106);
-            this.label93.Name = "label93";
-            this.label93.Size = new System.Drawing.Size(65, 13);
-            this.label93.TabIndex = 74;
-            this.label93.Text = "Phi (Theta)";
-            this.label93.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label94
-            // 
-            this.label94.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label94.AutoSize = true;
-            this.label94.Location = new System.Drawing.Point(4, 138);
-            this.label94.Name = "label94";
-            this.label94.Size = new System.Drawing.Size(65, 13);
-            this.label94.TabIndex = 76;
-            this.label94.Text = "Barcode F";
-            this.label94.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // tbxAlignmentP_AV
-            // 
-            this.tbxAlignmentP_AV.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbxAlignmentP_AV.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxAlignmentP_AV.Location = new System.Drawing.Point(76, 36);
-            this.tbxAlignmentP_AV.Name = "tbxAlignmentP_AV";
-            this.tbxAlignmentP_AV.ReadOnly = true;
-            this.tbxAlignmentP_AV.Size = new System.Drawing.Size(242, 27);
-            this.tbxAlignmentP_AV.TabIndex = 80;
-            // 
-            // label95
-            // 
-            this.label95.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label95.AutoSize = true;
-            this.label95.Location = new System.Drawing.Point(4, 170);
-            this.label95.Name = "label95";
-            this.label95.Size = new System.Drawing.Size(65, 13);
-            this.label95.TabIndex = 75;
-            this.label95.Text = "Barcode";
-            this.label95.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label96
-            // 
-            this.label96.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label96.AutoSize = true;
-            this.label96.Location = new System.Drawing.Point(4, 234);
-            this.label96.Name = "label96";
-            this.label96.Size = new System.Drawing.Size(65, 13);
-            this.label96.TabIndex = 79;
-            this.label96.Text = "Barcode B";
-            this.label96.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label97
-            // 
-            this.label97.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label97.AutoSize = true;
-            this.label97.Location = new System.Drawing.Point(4, 202);
-            this.label97.Name = "label97";
-            this.label97.Size = new System.Drawing.Size(65, 13);
-            this.label97.TabIndex = 78;
-            this.label97.Text = "Barcode C";
-            this.label97.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label98
-            // 
-            this.label98.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label98.AutoSize = true;
-            this.label98.Location = new System.Drawing.Point(4, 10);
-            this.label98.Name = "label98";
-            this.label98.Size = new System.Drawing.Size(65, 13);
-            this.label98.TabIndex = 73;
-            this.label98.Text = "Name";
-            this.label98.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label99
-            // 
-            this.label99.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label99.AutoSize = true;
-            this.label99.Location = new System.Drawing.Point(76, 10);
-            this.label99.Name = "label99";
-            this.label99.Size = new System.Drawing.Size(242, 13);
-            this.label99.TabIndex = 73;
-            this.label99.Text = "Alignment Value";
-            this.label99.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -4297,6 +4297,9 @@
             this.tabContol1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            this.panel7.ResumeLayout(false);
+            this.tableLayoutPanel4.ResumeLayout(false);
+            this.tableLayoutPanel4.PerformLayout();
             this.palForkParams.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
@@ -4341,9 +4344,6 @@
             this.grpL.ResumeLayout(false);
             this.grpB.ResumeLayout(false);
             this.grpF.ResumeLayout(false);
-            this.panel7.ResumeLayout(false);
-            this.tableLayoutPanel4.ResumeLayout(false);
-            this.tableLayoutPanel4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -513,6 +513,7 @@ namespace Mirle.Agv.Controller
 
             double accDistance = 0;
             double decDistance = 0;
+            double accDecDistance = 0;
 
             decDistance = computeFunction.GetAccDecDistance(tragetVel, endVel, dec, jerk);
             accDistance = computeFunction.GetAccDecDistance(startVel, tragetVel, acc, jerk);
@@ -524,14 +525,17 @@ namespace Mirle.Agv.Controller
             accDistance = 0;
             //tempVel = (startVel < endVel) ? startVel : endVel;
             tempVel = startVel;
+            double vel = 0;
 
-            for (; accDistance + decDistance < distance; tempVel += 5)
+            for (; accDistance + decDistance + accDecDistance < distance; tempVel += 5)
             {
+                accDecDistance = computeFunction.GetDecDistanceOneJerk(tempVel, endVel,
+                           moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk, ref vel);
                 decDistance = computeFunction.GetAccDecDistance(tempVel, endVel, dec, jerk);
                 accDistance = computeFunction.GetAccDecDistance(startVel, tempVel, acc, jerk);
             }
 
-            return decDistance;
+            return decDistance + accDecDistance;
         }
 
         private int GetReserveIndex(List<ReserveData> reserveDataList, MapPosition position)

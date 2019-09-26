@@ -1047,10 +1047,11 @@ namespace Mirle.Agv.View
                 VehiclePosition curVehPos = Vehicle.Instance.CurVehiclePosition;
                 int posX = (int)numPositionX.Value;
                 int posY = (int)numPositionY.Value;
-                int tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
-                curVehPos.RealPositionRangeMm = 0;
-                curVehPos.RealPosition = new MapPosition(posX, posY);
-                curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
+                curVehPos.SetRealPos(new MapPosition(posX, posY));
+                //int tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
+                //curVehPos.RealPositionRangeMm = 0;
+                //curVehPos.RealPosition = new MapPosition(posX, posY);
+                //curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
 
             }
             catch (Exception ex)

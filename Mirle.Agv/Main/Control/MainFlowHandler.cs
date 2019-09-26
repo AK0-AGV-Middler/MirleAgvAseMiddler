@@ -89,8 +89,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         public EnumThreadStatus PreTrackPositionStatus { get; private set; } = EnumThreadStatus.None;
 
         private Thread thdWatchLowPower;
@@ -233,6 +231,8 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        
 
         private void EventInitial()
         {
@@ -1137,6 +1137,7 @@ namespace Mirle.Agv.Controller
                 if (moveControlHandler.VehclePause())
                 {
                     moveControlHandler.VehcleCancel();
+                    Thread.Sleep(1500);
                 }
                 else
                 {
@@ -2242,14 +2243,14 @@ namespace Mirle.Agv.Controller
                 {
                     isInMap = true;
                     theVehicle.CurVehiclePosition = vehiclePosition;
-                    if (mapSection.Type == EnumSectionType.Horizontal)
-                    {
-                        theVehicle.CurVehiclePosition.RealPosition.Y = mapSection.HeadAddress.Position.Y;
-                    }
-                    else if (mapSection.Type == EnumSectionType.Vertical)
-                    {
-                        theVehicle.CurVehiclePosition.RealPosition.X = mapSection.HeadAddress.Position.X;
-                    }
+                    //if (mapSection.Type == EnumSectionType.Horizontal)
+                    //{
+                    //    theVehicle.CurVehiclePosition.RealPosition.Y = mapSection.HeadAddress.Position.Y;
+                    //}
+                    //else if (mapSection.Type == EnumSectionType.Vertical)
+                    //{
+                    //    theVehicle.CurVehiclePosition.RealPosition.X = mapSection.HeadAddress.Position.X;
+                    //}
 
                     UpdatePlcVehicleBeamSensor();
 
@@ -2905,6 +2906,11 @@ namespace Mirle.Agv.Controller
             var msg = "DuelStartSectionHappend";
             OnMessageShowEvent?.Invoke(this, msg);
             loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+        }
+
+        public int GetCurWheelAngle()
+        {
+            return moveControlHandler.ControlData.WheelAngle;
         }
 
     }

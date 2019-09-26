@@ -22,10 +22,13 @@ namespace Mirle.Agv.Model
                 {
                     return;
                 }
-                if (SimpleDistance(value, realPosition) >= RealPositionRangeMm)
+                lock (realPosition)
                 {
-                    realPosition = value;
-                }
+                    if (SimpleDistance(value, realPosition) >= RealPositionRangeMm)
+                    {
+                        realPosition = value;
+                    }
+                }               
             }
         }
         //public MapPosition RealPosition { get; set; } = new MapPosition();
@@ -36,6 +39,11 @@ namespace Mirle.Agv.Model
         private int SimpleDistance(MapPosition aPos, MapPosition bPos)
         {
             return (int)(Math.Abs(aPos.X - bPos.X) + Math.Abs(aPos.Y - bPos.Y));
+        }
+
+        public void SetRealPos(MapPosition mapPosition)
+        {
+            realPosition = mapPosition;
         }
 
     }

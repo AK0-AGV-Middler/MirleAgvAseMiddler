@@ -51,6 +51,7 @@ namespace Mirle.Agv.Controller
 
         private Logger BatteryLogger;
         //private Logger BatteryPercentage;
+        public Boolean IsFirstMeterAhGet { get; set; } = false;
 
         public PlcVehicle APLCVehicle;
 
@@ -599,6 +600,7 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "MeterAH":
                                     this.APLCVehicle.Batterys.MeterAh = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
+                                    IsFirstMeterAhGet = true;
                                     break;
                                 case "FullChargeIndex":
                                     //if (this.APLCVehicle.Batterys.FullChargeIndex == 0)
@@ -1174,10 +1176,10 @@ namespace Mirle.Agv.Controller
                     UInt16 currPercentage = Convert.ToUInt16(this.APLCVehicle.Batterys.Percentage);
                     if (currPercentage != this.beforeBatteryPercentageInteger)
                     {
-                        this.beforeBatteryPercentageInteger = currPercentage;
-                        OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
-                        //LogPlcMsg(loggerAgent, new LogFormat("BatteryPercentage", "1", functionName, this.PlcId, "", $"Percentage = {currPercentage}"));
+                        this.beforeBatteryPercentageInteger = currPercentage;                        
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Percentage = {currPercentage}"));
                         BatteryPercentageWriteLog(currPercentage);
+                        OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
                     }
 
                     //IPC Auto、Manual 初始化
@@ -2142,6 +2144,12 @@ namespace Mirle.Agv.Controller
             return result;
         }
 
+        public void setSOC(double SOC)
+        {
+            this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.MeterAh + this.APLCVehicle.Batterys.AhWorkingRange * (100.0 - SOC) / 100.00, false);
+
+        }
+
         public Boolean WriteIPCStatus(EnumIPCStatus aEnumIPCStatus)
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
@@ -2400,6 +2408,8 @@ namespace Mirle.Agv.Controller
                         this.APLCVehicle.Loading = true;
                         //this.APLCVehicle.CassetteId = "CA0070";
                         APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {APLCVehicle.CassetteId}"));
+                       
                         OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
                     }
                     else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
@@ -2470,16 +2480,17 @@ namespace Mirle.Agv.Controller
 
         public void triggerCassetteIDReader(ref string CassetteID)
         {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
             string strCassetteID = "ERROR";
             this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
             this.APLCVehicle.CassetteId = strCassetteID;
             CassetteID = strCassetteID;
-            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
-
-
-            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CassetteId) + " Success"));
 
+            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
+
+            
         }
 
 
@@ -2725,6 +2736,8 @@ namespace Mirle.Agv.Controller
                                         String cassetteID = "ERROR";
                                         this.aCassetteIDReader.ReadBarcode(ref cassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
                                         this.APLCVehicle.CassetteId = cassetteID;
+                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {this.APLCVehicle.CassetteId}"));
+
                                         OnCassetteIDReadFinishEvent?.Invoke(this, cassetteID);
                                     }
                                     else

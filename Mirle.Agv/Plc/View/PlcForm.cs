@@ -978,7 +978,8 @@ namespace Mirle.Agv.View
 
         private void btnSOCSet_Click(object sender, EventArgs e)
         {
-            plcAgent.APLCVehicle.Batterys.SetCcModeAh(plcAgent.APLCVehicle.Batterys.MeterAh + plcAgent.APLCVehicle.Batterys.AhWorkingRange * (100.0 - Convert.ToDouble(txtSOCSet.Text)) / 100.00, false);
+            //plcAgent.APLCVehicle.Batterys.SetCcModeAh(plcAgent.APLCVehicle.Batterys.MeterAh + plcAgent.APLCVehicle.Batterys.AhWorkingRange * (100.0 - Convert.ToDouble(txtSOCSet.Text)) / 100.00, false);
+            plcAgent.setSOC(Convert.ToDouble(txtSOCSet.Text));
         }
 
         private void lblEMO_DoubleClick(object sender, EventArgs e)

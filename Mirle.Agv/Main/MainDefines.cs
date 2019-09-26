@@ -212,16 +212,26 @@ namespace Mirle.Agv
     {
         public static T DeepClone<T>(this T item)
         {
-            if (item != null)
+            try
             {
-                using (var stream = new MemoryStream())
+                if (item != null)
                 {
-                    var formatter = new BinaryFormatter();
-                    formatter.Serialize(stream, item);
-                    stream.Seek(0, SeekOrigin.Begin);
-                    var result = (T)formatter.Deserialize(stream);
-                    return result;
+                    using (var stream = new MemoryStream())
+                    {
+                        var formatter = new BinaryFormatter();
+                        lock (item)
+                        {
+                            formatter.Serialize(stream, item);
+                        }
+                        stream.Seek(0, SeekOrigin.Begin);
+                        var result = (T)formatter.Deserialize(stream);
+                        return result;
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                return default(T);
             }
 
             return default(T);

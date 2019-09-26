@@ -94,7 +94,7 @@ namespace Mirle.Agv.Model.TransferSteps
                 if (MovingSections.Count > 0)
                 {
                     //Setup first position inside MovingSections[0];
-                    var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition;
+                    var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition.DeepClone();
 
                     switch (MovingSections[0].Type)
                     {
@@ -184,7 +184,7 @@ namespace Mirle.Agv.Model.TransferSteps
             //PreMethod = SetupAddressPosition
 
             VehicleHeadAngle = (int)theVehicle.CurVehiclePosition.VehicleAngle; //車頭方向角度(0,90,180,-90)            
-            WheelAngle = theVehicle.CurVehiclePosition.WheelAngle;
+            WheelAngle = mainFlowHandler.GetCurWheelAngle();
 
             AddressActions = new List<EnumAddressAction>();
             try
@@ -239,7 +239,7 @@ namespace Mirle.Agv.Model.TransferSteps
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
-            theVehicle.CurVehiclePosition.WheelAngle = WheelAngle;
+            //theVehicle.CurVehiclePosition.WheelAngle = WheelAngle;
         }
 
         protected EnumAddressAction SetupAddressAction(MapSection preSection, MapSection nextSection, MapPosition prePosition, MapPosition curPosition, MapPosition nextPosition, bool isTR50)
