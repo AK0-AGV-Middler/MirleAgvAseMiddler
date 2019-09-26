@@ -1163,7 +1163,7 @@ namespace Mirle.Agv.Controller
                                                           moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
                         tempDouble = tempDouble + 100;
                         //if (TurnOutSafetyDistance)
-                        //    tempDouble = tempDouble + moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
+                        //tempDouble = tempDouble + moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
 
                         data.TurnOutSafetyDistance.Add(action, tempDouble);
                     }

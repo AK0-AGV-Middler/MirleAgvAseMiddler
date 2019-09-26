@@ -2262,8 +2262,8 @@ namespace Mirle.Agv.Controller
             }
 
             elmoDriver.DisableMoveAxis();
-            MoveFinished(EnumMoveComplete.Success);
             MoveState = EnumMoveState.Idle;
+            MoveFinished(EnumMoveComplete.Success);
             ControlData.SecondCorrection = false;
             WriteLog("MoveControl", "7", device, "", "end");
             WriteLog("MoveControl", "7", device, "", "Move Compelete !");
@@ -2307,10 +2307,10 @@ namespace Mirle.Agv.Controller
 
                         elmoDriver.DisableMoveAxis();
                         AGVStopResult = "TR Flow Start Disable!";
+                        MoveState = EnumMoveState.Error;
                         MoveFinished(EnumMoveComplete.Fail);
                         BeamSensorCloseAll();
                         DirLightCloseAll();
-                        MoveState = EnumMoveState.Error;
                     }
 
                     break;
@@ -2350,10 +2350,10 @@ namespace Mirle.Agv.Controller
 
                         elmoDriver.DisableMoveAxis();
                         AGVStopResult = "R2000 Flow Start Disable!";
+                        MoveState = EnumMoveState.Error;
                         MoveFinished(EnumMoveComplete.Fail);
                         BeamSensorCloseAll();
                         DirLightCloseAll();
-                        MoveState = EnumMoveState.Error;
                     }
 
                     break;
@@ -2655,8 +2655,9 @@ namespace Mirle.Agv.Controller
                         ControlData.PauseAlready = false;
                         ControlData.CancelRequest = false;
                         WriteLog("MoveControl", "7", device, "", "AGV已Pause完成,Cancel!");
-                        MoveFinished(EnumMoveComplete.Cancel);
                         MoveState = EnumMoveState.Idle;
+                        MoveFinished(EnumMoveComplete.Cancel);
+                        WriteLog("MoveControl", "7", device, "", "AGV已Pause完成,Cancel已完成!");
                     }
 
                     if (MoveState == EnumMoveState.Idle && closeMoveControl)

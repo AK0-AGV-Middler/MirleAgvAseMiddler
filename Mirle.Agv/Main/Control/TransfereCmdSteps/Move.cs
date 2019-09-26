@@ -22,14 +22,22 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransferStep;
                     if (moveCmd.MovingSections.Count > 0)
                     {
-                        if (mainFlowHandler.StopCharge())
+                        if (!mainFlowHandler.IsOverrideCanceling)
                         {
-                            mainFlowHandler.IsOverrideStopMove = false;
-                            if (mainFlowHandler.CallMoveControlWork(moveCmd))
+                            if (mainFlowHandler.StopCharge())
                             {
-                                mainFlowHandler.PrepareForAskingReserve(moveCmd);
-                            }                            
+                                if (mainFlowHandler.CallMoveControlWork(moveCmd))
+                                {
+                                    mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
+                                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
+                                }
+                            }
                         }
+                        else
+                        {
+                            mainFlowHandler.GoNextTransferStep = true;
+                        }
+                        
                         break;
                     }
                     else

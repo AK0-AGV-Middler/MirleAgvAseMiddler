@@ -60,7 +60,6 @@ namespace Mirle.Agv
         Load,
         Unload,
         LoadUnload,
-        Home,
         Override,
         MoveToCharger,
         Else

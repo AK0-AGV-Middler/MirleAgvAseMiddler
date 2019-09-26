@@ -35,6 +35,7 @@ namespace Mirle.Agv.Model
         public double VehicleAngle { get; set; } = 0;
         public int WheelAngle { get; set; } = 0;
         public int RealPositionRangeMm { get; set; } = 15;
+        public bool IsMoveEnd { get; set; } = false;
 
         private int SimpleDistance(MapPosition aPos, MapPosition bPos)
         {

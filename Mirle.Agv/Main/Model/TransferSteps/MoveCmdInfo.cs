@@ -27,6 +27,7 @@ namespace Mirle.Agv.Model.TransferSteps
         protected int HalfR2000Radius { get; set; } = 1000;
         public string Info { get; set; } = "";
         public bool IsDuelStartPosition { get; set; } = false;
+        public bool IsLoadPortToUnloadPort { get; set; } = false;
 
         public MoveCmdInfo() : this(new MainFlowHandler()) { }
         public MoveCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
@@ -59,14 +60,14 @@ namespace Mirle.Agv.Model.TransferSteps
                 }
             }
 
-            CheckIsDuelStartPosition();
+            //CheckIsDuelStartPosition();
 
-            if (IsDuelStartPosition)
-            {
-                MovingSections.RemoveAt(0);
-                SectionIds.RemoveAt(0);
-                AddressIds.RemoveAt(0);
-            }
+            //if (IsDuelStartPosition)
+            //{
+            //    MovingSections.RemoveAt(0);
+            //    SectionIds.RemoveAt(0);
+            //    AddressIds.RemoveAt(0);
+            //}
 
             //RebuildLastSectionForInsideEndAddress();
         }
@@ -76,13 +77,13 @@ namespace Mirle.Agv.Model.TransferSteps
             var curLocation = theVehicle.CurVehiclePosition;
             MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[1]];
             if (mainFlowHandler.IsPositionInThisAddress(curLocation.RealPosition, mapAddress.Position))
-            {                             
+            {
                 if (mainFlowHandler.IsAddressInThisSection(MovingSections[0], mapAddress) && mainFlowHandler.IsAddressInThisSection(MovingSections[1], mapAddress))
                 {
                     IsDuelStartPosition = true;
                     mainFlowHandler.LogDuel();
                 }
-            }           
+            }
         }
 
         public void SetupAddressPositions()
@@ -118,7 +119,7 @@ namespace Mirle.Agv.Model.TransferSteps
                     for (int i = 0; i < MovingSections.Count - 1; i++)
                     {
                         MapAddress mapAddress = MovingSections[i].CmdDirection == EnumPermitDirection.Backward ? MovingSections[i].HeadAddress : MovingSections[i].TailAddress;
-                        var pos = mapAddress.Position;                        
+                        var pos = mapAddress.Position;
                         AddressPositions.Add(mapAddress.Position);
                     }
                 }
@@ -181,11 +182,6 @@ namespace Mirle.Agv.Model.TransferSteps
 
         public void SetupAddressActions()
         {
-            //PreMethod = SetupAddressPosition
-
-            VehicleHeadAngle = (int)theVehicle.CurVehiclePosition.VehicleAngle; //車頭方向角度(0,90,180,-90)            
-            WheelAngle = mainFlowHandler.GetCurWheelAngle();
-
             AddressActions = new List<EnumAddressAction>();
             try
             {
@@ -199,20 +195,37 @@ namespace Mirle.Agv.Model.TransferSteps
                     }
                     else
                     {
-                        if (MovingSections[0].Type== EnumSectionType.Horizontal)
+                        if (MovingSections[0].Type == EnumSectionType.Horizontal)
                         {
-                            if (VehicleHeadAngle==90|| VehicleHeadAngle==-90)
+                            if (IsLoadPortToUnloadPort)
                             {
-                                WheelAngle = 90;
+                                WheelAngle = 0;
+                                VehicleHeadAngle = 0;
+                            }
+                            else
+                            {
+                                if (VehicleHeadAngle == 90 || VehicleHeadAngle == -90)
+                                {
+                                    WheelAngle = 90;
+                                }
                             }
                         }
                         else
                         {
-                            if (VehicleHeadAngle == 0 || VehicleHeadAngle == -180)
+                            if (IsLoadPortToUnloadPort)
                             {
-                                WheelAngle = 90;
+                                WheelAngle = 0;
+                                VehicleHeadAngle = 90;
+                            }
+                            else
+                            {
+                                if (VehicleHeadAngle == 0 || VehicleHeadAngle == -180)
+                                {
+                                    WheelAngle = 90;
+                                }
                             }
                         }
+
                         AddressActions.Add(EnumAddressAction.ST);
                     }
 

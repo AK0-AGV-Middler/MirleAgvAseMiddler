@@ -22,7 +22,6 @@ namespace Mirle.Agv.Controller
     public class MiddleAgent
     {
         #region Events
-
         public event EventHandler<string> OnMessageShowOnMainFormEvent;
         public event EventHandler<AgvcTransCmd> OnInstallTransferCommandEvent;
         public event EventHandler<AgvcOverrideCmd> OnOverrideCommandEvent;
@@ -30,7 +29,6 @@ namespace Mirle.Agv.Controller
         public event EventHandler<string> OnCmdSendEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<bool> OnGetBlockPassEvent;
-
         #endregion
 
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
@@ -62,7 +60,6 @@ namespace Mirle.Agv.Controller
         //public bool IsPauseAskReserve { get; private set; } = false;
 
         public TcpIpAgent ClientAgent { get; private set; }
-
         private MapSection lastReportSection = new MapSection();
 
         public MiddleAgent(MainFlowHandler mainFlowHandler)
@@ -1321,19 +1318,38 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd136_CstIdReadReport(result);
         }
-        public void LoadComplete()
+        public void TransferComplete(EnumAgvcTransCommandType type)
         {
-            Send_Cmd136_TransferEventReport(EventType.LoadComplete);
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
-            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-            //Thread.Sleep(1000);
+            switch (type)
+            {
+                case EnumAgvcTransCommandType.Move:
+                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusMove;
+                    break;
+                case EnumAgvcTransCommandType.Load:
+                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
+                    break;
+                case EnumAgvcTransCommandType.Unload:
+                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
+                    break;
+                case EnumAgvcTransCommandType.LoadUnload:
+                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
+                    break;
+                case EnumAgvcTransCommandType.MoveToCharger:
+                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusMoveToCharger;
+                    break;
+                case EnumAgvcTransCommandType.Override:
+                case EnumAgvcTransCommandType.Else:
+                default:
+                    break;
+            }
+
             Send_Cmd132_TransferCompleteReport(0);
         }
-        public void LoadCompleteInLoadunload()
+        public void LoadComplete()
         {
-            Send_Cmd136_TransferEventReport(EventType.LoadComplete);
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-        }
+            Send_Cmd136_TransferEventReport(EventType.LoadComplete);           
+        }        
         public void UnloadArrivals()
         {
             theVehicle.Cmd134EventType = EventType.UnloadArrivals;
@@ -1346,39 +1362,15 @@ namespace Mirle.Agv.Controller
         }
         public void UnloadComplete()
         {
-            Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-            //Thread.Sleep(1000);
-            Send_Cmd132_TransferCompleteReport(0);
+            Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
         }
         public void MoveComplete()
         {
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
             Send_Cmd134_TransferEventReport();
             Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
-            //Thread.Sleep(1000);
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusMove;
-            Send_Cmd132_TransferCompleteReport(0);
-        }
-        public void MoveToChargerComplete()
-        {
-            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
-            Send_Cmd134_TransferEventReport();
-            Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
-            //Thread.Sleep(1000);
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusMoveToCharger;
-            Send_Cmd132_TransferCompleteReport(0);
-        }
-        public void LoadUnloadComplete()
-        {
-            Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
-            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-            //Thread.Sleep(1000);
-            Send_Cmd132_TransferCompleteReport(0);
-
-        }
+        }        
         public bool IsAskReserveAlive()
         {
             return (thdAskReserve != null) && (thdAskReserve.IsAlive);

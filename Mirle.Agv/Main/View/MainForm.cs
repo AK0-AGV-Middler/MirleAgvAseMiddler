@@ -1008,8 +1008,6 @@ namespace Mirle.Agv.View
             ucVehicleImage.Show();
             ucVehicleImage.BringToFront();
 
-
-
             //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
             //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
         }
@@ -1085,7 +1083,6 @@ namespace Mirle.Agv.View
                 }
             }
         }
-
 
         #region Thd Visit TransferSteps
         private void btnStartVisitTransferSteps_Click(object sender, EventArgs e)
@@ -1202,6 +1199,7 @@ namespace Mirle.Agv.View
                 case EnumAutoState.Manual:
                     if (cbSimulationMode.Checked)
                     {
+                        mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
                     }
@@ -1209,6 +1207,7 @@ namespace Mirle.Agv.View
                     {
                         if (mainFlowHandler.SetManualToAuto())
                         {
+                            mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                             mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                             Vehicle.Instance.AutoState = EnumAutoState.Auto;
                             //mainFlowHandler.StartWatchLowPower();

@@ -77,8 +77,6 @@ namespace Mirle.Agv.Model.TransferSteps
                     return ActiveType.Unload;
                 case EnumAgvcTransCommandType.LoadUnload:
                     return ActiveType.Loadunload;
-                case EnumAgvcTransCommandType.Home:
-                    return ActiveType.Home;
                 case EnumAgvcTransCommandType.Override:
                     return ActiveType.Override;
                 case EnumAgvcTransCommandType.MoveToCharger:

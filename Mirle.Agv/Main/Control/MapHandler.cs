@@ -26,7 +26,7 @@ namespace Mirle.Agv.Controller
         private string lastReadBcrId = "";
         private string lastReadAdrId = "";
         private string lastReadSecId = "";
-     
+
 
         public MapHandler(MapConfig mapConfig)
         {
@@ -368,7 +368,7 @@ namespace Mirle.Agv.Controller
                         }
                         oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.TailAddress);
-                        oneRow.Distance = Math.Sqrt(GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position));
+                        oneRow.Distance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
                         oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
                         oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
                         oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
@@ -651,7 +651,7 @@ namespace Mirle.Agv.Controller
 
                 vehicleLocation.LastSection = aSection;
 
-                vehicleLocation.LastSection.Distance = Math.Sqrt(GetDistance(aPosition, aSection.HeadAddress.Position));
+                vehicleLocation.LastSection.Distance = GetDistance(aPosition, aSection.HeadAddress.Position);
 
                 return true;
                 #endregion
@@ -682,7 +682,7 @@ namespace Mirle.Agv.Controller
         {
             var diffX = Math.Abs(aPosition.X - bPosition.X);
             var diffY = Math.Abs(aPosition.Y - bPosition.Y);
-            return (diffX * diffX) + (diffY * diffY);
+            return Math.Sqrt((diffX * diffX) + (diffY * diffY));
         }
     }
 

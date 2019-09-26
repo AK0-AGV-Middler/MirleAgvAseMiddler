@@ -20,27 +20,7 @@ namespace Mirle.Agv.Model
         public MiddleAgent ThdMiddleAgent { get; set; }
         public MapInfo TheMapInfo { get; set; } = new MapInfo();
         public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
-        private AgvcTransCmd curAgvcTransCmd;
-        public AgvcTransCmd CurAgvcTransCmd
-        {
-            get
-            {
-                if (curAgvcTransCmd == null)
-                {
-                    return new AgvcTransCmd();
-                }
-                else
-                {
-                    return curAgvcTransCmd;
-                }
-            }
-            set
-            {
-                curAgvcTransCmd = value;
-            }
-        }
-        public AgvcTransCmd LastAgvcTransCmd { get; set; } = new AgvcTransCmd();
-        public TransferStep CurTrasferStep { get; set; } = new EmptyTransferStep();
+        public AgvcTransCmd CurAgvcTransCmd { get; set; } = new AgvcTransCmd();
         public VehiclePosition CurVehiclePosition { get; set; } = new VehiclePosition();
         private EnumAutoState autoState = EnumAutoState.Manual;
         public EnumAutoState AutoState
