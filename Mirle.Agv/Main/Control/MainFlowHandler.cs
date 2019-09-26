@@ -220,7 +220,7 @@ namespace Mirle.Agv.Controller
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 theVehicle.CurVehiclePosition.RealPositionRangeMm = mainFlowConfig.RealPositionRangeMm;
                 theVehicle.TheMapInfo = TheMapInfo;
-                theVehicle.ThdMiddleAgent = middleAgent;                /
+                theVehicle.ThdMiddleAgent = middleAgent;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "台車"));
             }
