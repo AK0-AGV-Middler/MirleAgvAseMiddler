@@ -419,6 +419,7 @@ namespace Mirle.Agv.Controller
         }
         private void AfterVisitTransferSteps(long total)
         {
+            middleAgent.TransferComplete(lastAgvcTransCmd.CommandType);
             VisitTransferStepsStatus = EnumThreadStatus.None;
             lastAgvcTransCmd = agvcTransCmd;
             agvcTransCmd = new AgvcTransCmd();
@@ -428,7 +429,6 @@ namespace Mirle.Agv.Controller
             theVehicle.CurAgvcTransCmd = agvcTransCmd;
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
-            middleAgent.TransferComplete(lastAgvcTransCmd.CommandType);
             middleAgent.NoCommand();
             var msg = $"MainFlow : 搬送步驟 後處理, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -591,11 +591,11 @@ namespace Mirle.Agv.Controller
                     }
                     else
                     {
-                        if (!CmdEndVehiclePosition.IsMoveEnd)
+                        if (theVehicle.AutoState == EnumAutoState.Manual)
                         {
                             //無搬送命令時，比對當前Position與全地圖Sections確定section-distance
                             UpdateVehiclePositionNoMoveCmd(position);
-                        }
+                        }                        
                     }
                 }
                 catch (Exception ex)
@@ -1480,7 +1480,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
                 moveCmd.EndAddressId = agvcTransCmd.UnloadAddressId;
                 moveCmd.StartAddressId = agvcTransCmd.LoadAddressId;
-                moveCmd.IsLoadPortToUnloadPort = true;               
+                moveCmd.IsLoadPortToUnloadPort = true;
                 moveCmd.SetupMovingSections();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupNextUnloadAddressPositions();
@@ -2138,7 +2138,7 @@ namespace Mirle.Agv.Controller
             VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
             foreach (var item in TheMapInfo.allMapSections)
             {
-                MapSection mapSection = item.Value;             
+                MapSection mapSection = item.Value;
                 if (mapHandler.IsPositionInThisSection(gxPosition, mapSection, ref vehiclePosition))
                 {
                     isInMap = true;

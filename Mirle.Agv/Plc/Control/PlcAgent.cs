@@ -598,7 +598,10 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "MeterAH":
                                     this.APLCVehicle.Batterys.MeterAh = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
-                                    IsFirstMeterAhGet = true;
+                                    if (APLCVehicle.Batterys.MeterAh != 0.0)
+                                    {
+                                        IsFirstMeterAhGet = true;
+                                    }
                                     break;
                                 case "FullChargeIndex":
                                     //if (this.APLCVehicle.Batterys.FullChargeIndex == 0)
@@ -725,7 +728,7 @@ namespace Mirle.Agv.Controller
                                 case "ForkReady":
                                     this.APLCVehicle.Robot.ForkReady = aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkReady = {this.APLCVehicle.Robot.ForkReady}"));
-                                    
+
                                     break;
                                 case "ForkBusy":
                                     this.APLCVehicle.Robot.ForkBusy = aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean;
@@ -735,7 +738,7 @@ namespace Mirle.Agv.Controller
                                 case "ForkCommandNG":
                                     this.APLCVehicle.Robot.ForkNG = aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandNG = {this.APLCVehicle.Robot.ForkNG}"));
-                                    
+
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkNG == true)
                                     {
@@ -746,7 +749,7 @@ namespace Mirle.Agv.Controller
                                 case "ForkCommandFinish":
                                     this.APLCVehicle.Robot.ForkFinish = aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandFinish = {this.APLCVehicle.Robot.ForkFinish}"));
-                                    
+
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkFinish == true)
                                     {
@@ -976,7 +979,7 @@ namespace Mirle.Agv.Controller
         }
 
         #endregion
-        
+
 
         private void MCProtocol_OnConnectEvent(String message)
         {
@@ -1173,7 +1176,7 @@ namespace Mirle.Agv.Controller
                     UInt16 currPercentage = Convert.ToUInt16(this.APLCVehicle.Batterys.Percentage);
                     if (currPercentage != this.beforeBatteryPercentageInteger)
                     {
-                        this.beforeBatteryPercentageInteger = currPercentage;                        
+                        this.beforeBatteryPercentageInteger = currPercentage;
                         LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Percentage = {currPercentage}"));
                         BatteryPercentageWriteLog(currPercentage);
                         OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
@@ -1318,7 +1321,7 @@ namespace Mirle.Agv.Controller
                         VehicleSafetyAction_Old = this.APLCVehicle.VehicleSafetyAction;
                         RecordSafetyValueChanged();
                     }
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -2144,7 +2147,7 @@ namespace Mirle.Agv.Controller
         public void setSOC(double SOC)
         {
             this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.MeterAh + this.APLCVehicle.Batterys.AhWorkingRange * (100.0 - SOC) / 100.00, false);
-
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", "PlcAgent:setSOC", PlcId, "", $"SOC = {SOC}"));
         }
 
         public Boolean WriteIPCStatus(EnumIPCStatus aEnumIPCStatus)
@@ -2406,7 +2409,7 @@ namespace Mirle.Agv.Controller
                         //this.APLCVehicle.CassetteId = "CA0070";
                         APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
                         LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {APLCVehicle.CassetteId}"));
-                       
+
                         OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
                     }
                     else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
@@ -2487,7 +2490,7 @@ namespace Mirle.Agv.Controller
 
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
 
-            
+
         }
 
 
@@ -2759,7 +2762,7 @@ namespace Mirle.Agv.Controller
                         }
                         bComdIsNullReqForkComdOK = true;
                         bComdIsNullReqComdFinishAck = true;
-                        
+
                     }
                     else
                     {

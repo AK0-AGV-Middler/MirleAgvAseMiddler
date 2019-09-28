@@ -193,6 +193,7 @@ namespace Mirle.Agv.View
         {
             var batterys = theVehicle.ThePlcVehicle.Batterys;
             txtWatchLowPower.Text = $"High/Low : {(int)batterys.PortAutoChargeHighSoc}/{(int)batterys.PortAutoChargeLowSoc}";
+            timer_SetupInitialSoc.Enabled = true;
         }
 
         private void InitialConnectionAndCstStatus()
@@ -1223,6 +1224,8 @@ namespace Mirle.Agv.View
                         Vehicle.Instance.AutoState = EnumAutoState.Manual;
                         var msg = $"Auto 切換 Manual 成功";
                         RichTextBoxAppendHead(richTextBox1, msg);
+                        mainFlowHandler.CmdEndVehiclePosition = theVehicle.CurVehiclePosition;
+                        mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = true;
                     }
 
                     break;
