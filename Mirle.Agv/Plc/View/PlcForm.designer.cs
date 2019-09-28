@@ -1,6 +1,6 @@
 ﻿namespace Mirle.Agv.View
 {
-    partial class btnBeamSensorSignalSet
+    partial class PlcForm
     {
         /// <summary>
         /// Required designer variable.

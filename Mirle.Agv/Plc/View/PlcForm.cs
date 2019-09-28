@@ -9,13 +9,13 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.View
 {
-    public partial class btnBeamSensorSignalSet : Form
+    public partial class PlcForm : Form
     {
         private MCProtocol mcProtocol;
         private PlcAgent plcAgent;
         private EnumAutoState IpcAutoState;
 
-        public btnBeamSensorSignalSet(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
+        public PlcForm(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
         {
             InitializeComponent();
             //mcProtocol = new MCProtocol();
