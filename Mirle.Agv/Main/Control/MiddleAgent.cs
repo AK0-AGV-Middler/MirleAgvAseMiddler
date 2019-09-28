@@ -1898,38 +1898,46 @@ namespace Mirle.Agv.Controller
         {
             int replyCode = 0;
             ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
-            //switch (receive.EventType)
-            //{
-            //    case PauseEvent.Continue:
-            //        if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.PauseComplete)
-            //        {
-            //            mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.PauseType, receive.ReserveInfos);
-            //        }
-            //        else
-            //        {
-            //            replyCode = 1;
-            //            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
-            //            return;
-            //        }
-            //        break;
-            //    case PauseEvent.Pause:
-            //        if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working && mainFlowHandler.IsMoveStep())
-            //        {
-            //            mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.PauseType);
-            //        }
-            //        else
-            //        {
-            //            replyCode = 1;
-            //            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
-            //            return;
-            //        }
-            //        break;
-            //    default:
-            //        break;
-            //}
-            replyCode = 1;
 
-            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+            var msg = $"Middler : 收到[{receive.EventType}]命令。";
+            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+
+            switch (receive.EventType)
+            {
+                case PauseEvent.Continue:
+                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.PauseComplete)
+                    {
+                        mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.EventType, receive.ReserveInfos);
+                    }
+                    else
+                    {
+                        var ngMsg = $"Middler : 車輛不在[{EnumThreadStatus.PauseComplete}]狀態，拒絕[{receive.EventType}]命令，";
+                        OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
+                        replyCode = 1;
+                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                        return;
+                    }
+                    break;
+                case PauseEvent.Pause:
+                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working && mainFlowHandler.IsMoveStep())
+                    {                        
+                        mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.EventType);
+                    }
+                    else
+                    {
+                        var ngMsg = $"Middler : 車輛不在[移動中]狀態，拒絕[{receive.EventType}]命令，";
+                        OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
+                        replyCode = 1;
+                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                        return;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            //replyCode = 1;
+            //Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
         }
         public void Send_Cmd139_PauseResponse(ushort seqNum, int replyCode, PauseEvent eventType)
         {
@@ -1954,8 +1962,26 @@ namespace Mirle.Agv.Controller
 
         public void Receive_Cmd37_TransferCancelRequest(object sender, TcpIpEventArgs e)
         {
+            int replyCode = 0;
             ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
-            mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
+            var msg = $"Middler : 收到[{receive.ActType}]命令。";
+            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+
+            switch (receive.ActType)
+            {               
+                case CMDCancelType.CmdCancel:
+                case CMDCancelType.CmdAbort:
+                    mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
+                    break;
+                case CMDCancelType.CmdNone:
+                case CMDCancelType.CmdCancelIdMismatch:                   
+                case CMDCancelType.CmdCancelIdReadFailed:                   
+                default:
+                    replyCode = 1;
+                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
+                    break;
+            }
+
         }
         public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode, string cmdID, CMDCancelType actType)
         {

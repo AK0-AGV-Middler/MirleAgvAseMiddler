@@ -361,7 +361,7 @@ namespace Mirle.Agv.Controller
             thdVisitTransferSteps.Start();
             VisitTransferStepsStatus = EnumThreadStatus.Start;
 
-            var msg = $"MainFlow : 開始搬送步驟, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
+            var msg = $"MainFlow : 開始搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //     , msg));
@@ -372,7 +372,7 @@ namespace Mirle.Agv.Controller
             VisitTransferStepsStatusBeforePause = VisitTransferStepsStatus;
             VisitTransferStepsStatus = EnumThreadStatus.Pause;
 
-            var msg = $"MainFlow : 暫停搬送步驟, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
+            var msg = $"MainFlow : 暫停搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
@@ -381,7 +381,7 @@ namespace Mirle.Agv.Controller
         {
             visitTransferStepsPauseEvent.Set();
             VisitTransferStepsStatus = VisitTransferStepsStatusBeforePause;
-            var msg = $"MainFlow : 恢復搬送步驟, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
+            var msg = $"MainFlow : 恢復搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
@@ -400,7 +400,7 @@ namespace Mirle.Agv.Controller
                 VisitTransferStepsStatus = EnumThreadStatus.Stop;
             }
 
-            var msg = $"MainFlow : 停止搬送步驟, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
+            var msg = $"MainFlow : 停止搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //  , msg));
@@ -412,7 +412,7 @@ namespace Mirle.Agv.Controller
             GoNextTransferStep = true;
             //middleAgent.Commanding();
 
-            var msg = $"MainFlow : 搬送步驟 前處理, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
+            var msg = $"MainFlow : 搬送流程 前處理, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
@@ -430,7 +430,7 @@ namespace Mirle.Agv.Controller
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
             middleAgent.NoCommand();
-            var msg = $"MainFlow : 搬送步驟 後處理, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
+            var msg = $"MainFlow : 搬送流程 後處理, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
@@ -595,7 +595,7 @@ namespace Mirle.Agv.Controller
                         {
                             //無搬送命令時，比對當前Position與全地圖Sections確定section-distance
                             UpdateVehiclePositionNoMoveCmd(position);
-                        }                        
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1224,41 +1224,6 @@ namespace Mirle.Agv.Controller
                 return false;
             }
             #endregion
-
-
-            #region IsPauseByNoReserve 1.0
-            var needReserveSectionsCount = middleAgent.GetNeedReserveSections().Count;
-            if (needReserveSectionsCount == 0)
-            {
-                return false;
-            }
-
-            var getReserveOkSectionsCount = middleAgent.GetReserveOkSections().Count;
-            if (getReserveOkSectionsCount > 1)
-            {
-                return false;
-            }
-            else if (getReserveOkSectionsCount == 1)
-            {
-                var curPos = theVehicle.CurVehiclePosition.RealPosition;
-                var reserveOkSection = middleAgent.GetReserveOkSections()[0];
-                VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
-                if (!mapHandler.IsPositionInThisSection(curPos, reserveOkSection, ref vehiclePosition))
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                //getReserveOkSectionsCount = 0
-                return true;
-            }
-            #endregion
-
         }
 
         #region Convert AgvcTransferCommand to TransferSteps
@@ -1733,10 +1698,11 @@ namespace Mirle.Agv.Controller
             {
                 if (status == EnumMoveComplete.Fail)
                 {
-                    middleAgent.PauseAskReserve();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動完成[異常]");
                     alarmHandler.SetAlarm(000006);
+
                     PauseVisitTransferSteps();
+                    middleAgent.PauseAskReserve();
                     return;
                 }
 
@@ -1745,13 +1711,16 @@ namespace Mirle.Agv.Controller
                     if (IsOverridePauseing)
                     {
                         IsOverridePauseing = false;
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受 Override且暫停移動");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受 Override且暫停移動確認");
                         return;
                     }
-                    VisitTransferStepsStatus = EnumThreadStatus.PauseComplete;
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動暫停");
-                    middleAgent.PauseComplete();
-                    return;
+                    else
+                    {
+                        VisitTransferStepsStatus = EnumThreadStatus.PauseComplete;
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動暫停確認");
+                        middleAgent.PauseComplete();
+                        return;
+                    }                   
                 }
 
                 if (status == EnumMoveComplete.Cancel)
@@ -1759,11 +1728,15 @@ namespace Mirle.Agv.Controller
                     if (IsOverrideCanceling)
                     {
                         IsOverrideCanceling = false;
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受 Override且取消移動");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受 Override且移動取消確認");
                         return;
                     }
-
-                    middleAgent.ClearAskReserve();
+                    else
+                    {
+                        middleAgent.ClearAskReserve();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動取消確認");
+                        return;
+                    }
                 }
 
                 #region EnumMoveComplete.Success
@@ -2657,59 +2630,72 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void Middler_OnCmdPauseEvent(ushort iSeqNum, PauseType pauseType)
+        public void Middler_OnCmdPauseEvent(ushort iSeqNum, PauseEvent type)
         {
-            if (false/*moveControlHandler.CanVehPause()*/)
+            PauseVisitTransferSteps();
+            middleAgent.PauseAskReserve();
+            if (moveControlHandler.VehclePause())
             {
-                if (IsMoveStep())
-                {
-                    middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Pause);
-                    PauseVisitTransferSteps();
-                    middleAgent.PauseAskReserve();
-                    moveControlHandler.VehclePause();
-                }
-                else
-                {
-                    middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Pause);
-                }
+                var msg = $"MainFlow : 接受[{type}]命令。";
+                OnMessageShowEvent(this, msg);
+                middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Pause);
             }
             else
             {
+                var msg = $"MainFlow : MoveController拒絕[{type}]命令。";
+                OnMessageShowEvent(this, msg);
                 middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Pause);
+                middleAgent.ResumeAskReserve();
+                ResumeVisitTransferSteps();              
             }
         }
 
-        public void Middler_OnCmdResumeEvent(ushort iSeqNum, PauseType pauseType, RepeatedField<ReserveInfo> reserveInfos)
+        public void Middler_OnCmdResumeEvent(ushort iSeqNum, PauseEvent type, RepeatedField<ReserveInfo> reserveInfos)
         {
-            if (pauseType == PauseType.Reserve)
-            {
-                List<MapSection> reserveOkSections = new List<MapSection>();
-                foreach (var reserveInfo in reserveInfos)
-                {
-                    if (TheMapInfo.allMapSections.ContainsKey(reserveInfo.ReserveSectionID))
-                    {
-                        UpdateMiddlerNeedReserveSections(reserveInfo.ReserveSectionID);
-                        var reserveOkSection = TheMapInfo.allMapSections[reserveInfo.ReserveSectionID];
-                        reserveOkSection.CmdDirection = reserveInfo.DriveDirction == DriveDirction.DriveDirForward ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
-                        reserveOkSections.Add(reserveOkSection);
-                        UpdateMoveControlReserveOkPositions(reserveOkSection);
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : ResumeReserveOk, [ReserveOkSectionId = {reserveOkSection.Id}]");
-                    }
-                    else
-                    {
-                        middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Continue);
-                    }
-                }
-                middleAgent.ClearAskingReserveSection();
-                middleAgent.SetupReserveOkSections(reserveOkSections);
-            }
+            //if (pauseType == PauseType.Reserve)
+            //{
+            //    List<MapSection> reserveOkSections = new List<MapSection>();
+            //    foreach (var reserveInfo in reserveInfos)
+            //    {
+            //        if (TheMapInfo.allMapSections.ContainsKey(reserveInfo.ReserveSectionID))
+            //        {
+            //            UpdateMiddlerNeedReserveSections(reserveInfo.ReserveSectionID);
+            //            var reserveOkSection = TheMapInfo.allMapSections[reserveInfo.ReserveSectionID];
+            //            reserveOkSection.CmdDirection = reserveInfo.DriveDirction == DriveDirction.DriveDirForward ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
+            //            reserveOkSections.Add(reserveOkSection);
+            //            UpdateMoveControlReserveOkPositions(reserveOkSection);
+            //            OnMessageShowEvent?.Invoke(this, $"MainFlow : ResumeReserveOk, [ReserveOkSectionId = {reserveOkSection.Id}]");
+            //        }
+            //        else
+            //        {
+            //            middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Continue);
+            //        }
+            //    }
+            //    middleAgent.ClearAskingReserveSection();
+            //    middleAgent.SetupReserveOkSections(reserveOkSections);
+            //}
 
-            middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
-            ResumeVisitTransferSteps();
-            middleAgent.ResumeAskReserve();
-            moveControlHandler.VehcleContinue();
-            middleAgent.ResumeComplete();
+            if (IsMoveControllPause())
+            {
+                var msg = $"MainFlow : 接受[{type}]命令。";
+                OnMessageShowEvent(this, msg);
+                middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
+                moveControlHandler.VehcleContinue();
+                ResumeVisitTransferSteps();
+                middleAgent.ResumeAskReserve();               
+                middleAgent.ResumeComplete();
+                var msg2 = $"MainFlow : 接受[{type}]命令確認。";
+                OnMessageShowEvent(this, msg2);
+            }
+            else
+            {
+                var msg = $"MainFlow : MoveController拒絕[{type}]命令。";
+                OnMessageShowEvent(this, msg);
+                middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Continue);
+            }          
         }
+
+        private bool IsMoveControllPause() => moveControlHandler.ControlData.PauseRequest || moveControlHandler.ControlData.PauseAlready;
 
         private void UpdateMiddlerNeedReserveSections(string reserveSectionID)
         {
@@ -2724,59 +2710,70 @@ namespace Mirle.Agv.Controller
 
         public void Middler_OnCmdCancelAbortEvent(ushort iSeqNum, string cmdId, CMDCancelType actType)
         {
+            if (IsMoveControllPause())
             {
+                var msg = $"MainFlow : 接受[{actType}]命令。";
+                OnMessageShowEvent(this, msg);
+                middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
+
+                moveControlHandler.VehcleCancel();
+                middleAgent.StopAskReserve();
+                middleAgent.ClearAskReserve();
+                StopVisitTransferSteps();               
+                var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
+                OnMessageShowEvent(this, msg2);
+            }
+            else
+            {
+                var msg = $"MainFlow : MoveController拒絕[{actType}]命令。";
+                OnMessageShowEvent(this, msg);
                 middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
-                var msg = $"MainFlow : OnCmdCancelAbortEvent +++FALSE+++, Can not cancel or abort";
-                OnMessageShowEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //    , msg));
-                return;
             }
 
-            if (transferSteps.Count == 0)
-            {
-                middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
-                var msg = $"MainFlow : OnCmdCancelAbortEvent +++FALSE+++, [transferSteps={transferSteps.Count}][CmdId={cmdId}][Type={actType}]";
-                OnMessageShowEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , msg));
-                return;
-            }
+            //if (transferSteps.Count == 0)
+            //{
+            //    middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
+            //    var msg = $"MainFlow : OnCmdCancelAbortEvent +++FALSE+++, [transferSteps={transferSteps.Count}][CmdId={cmdId}][Type={actType}]";
+            //    OnMessageShowEvent?.Invoke(this, msg);
+            //    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //        , msg));
+            //    return;
+            //}
 
-            if (agvcTransCmd.CommandId != cmdId)
-            {
-                middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
-                var msg = $"MainFlow : OnCmdCancelAbortEvent  +++FALSE+++, [TransferCmdId={agvcTransCmd.CommandId}][CancelAbortCmdId={cmdId}][Type={actType}]";
-                OnMessageShowEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , msg));
-                return;
-            }
+            //if (agvcTransCmd.CommandId != cmdId)
+            //{
+            //    middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
+            //    var msg = $"MainFlow : OnCmdCancelAbortEvent  +++FALSE+++, [TransferCmdId={agvcTransCmd.CommandId}][CancelAbortCmdId={cmdId}][Type={actType}]";
+            //    OnMessageShowEvent?.Invoke(this, msg);
+            //    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //        , msg));
+            //    return;
+            //}
 
-            middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
-            StopAndClear();
-            switch (actType)
-            {
-                case CMDCancelType.CmdNone:
-                    break;
-                case CMDCancelType.CmdCancel:
-                    middleAgent.CancelComplete();
-                    break;
-                case CMDCancelType.CmdAbort:
-                    middleAgent.AbortComplete();
-                    break;
-                case CMDCancelType.CmdCancelIdMismatch:
-                    break;
-                case CMDCancelType.CmdCancelIdReadFailed:
-                    break;
-                default:
-                    break;
-            }
+            //middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
+            //StopAndClear();
+            //switch (actType)
+            //{
+            //    case CMDCancelType.CmdNone:
+            //        break;
+            //    case CMDCancelType.CmdCancel:
+            //        middleAgent.CancelComplete();
+            //        break;
+            //    case CMDCancelType.CmdAbort:
+            //        middleAgent.AbortComplete();
+            //        break;
+            //    case CMDCancelType.CmdCancelIdMismatch:
+            //        break;
+            //    case CMDCancelType.CmdCancelIdReadFailed:
+            //        break;
+            //    default:
+            //        break;
+            //}
 
-            if (theVehicle.AutoState == EnumAutoState.Auto && IsWatchLowPowerStop())
-            {
-                StartWatchLowPower();
-            }
+            //if (theVehicle.AutoState == EnumAutoState.Auto && IsWatchLowPowerStop())
+            //{
+            //    StartWatchLowPower();
+            //}
         }
 
         public bool IsPositionInThisAddress(MapPosition realPosition, MapPosition addressPosition)
