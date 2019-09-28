@@ -14,8 +14,8 @@ namespace Mirle.Agv.Model
         public EnumVehicleSide VehicleSide { get; set; } = EnumVehicleSide.None;
         public Label FormLabel { get; set; } = null;
         public bool Disable { get; set; }  // true代表本顆Sensor的signal不會被拿來做判斷Safety Action
-        public bool FarSignal { get; set; }
-        public bool NearSignal { get; set; }
+        public bool FarSignal { get; set; } //B接點
+        public bool NearSignal { get; set; } //B接點
         public bool ReadSleepSignal { get; set; }
         public bool WriteSleepSignal { get; set; }
         public bool BeforeWriteSleep { get; set; }

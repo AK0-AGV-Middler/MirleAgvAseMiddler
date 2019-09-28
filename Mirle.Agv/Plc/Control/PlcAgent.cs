@@ -407,6 +407,16 @@ namespace Mirle.Agv.Controller
                         case "Battery_Cell_Low_Voltage":
                             this.APLCVehicle.Batterys.Battery_Cell_Low_Voltage = Convert.ToDouble(childItem.InnerText);
                             break;
+                        case "Beam_Sensor_Disable_Normal_Speed":
+                            if (childItem.InnerText.ToLower() != "true")
+                            {
+                                this.APLCVehicle.BeamSensorDisableNormalSpeed = false;
+                            }
+                            else
+                            {
+                                this.APLCVehicle.BeamSensorDisableNormalSpeed = true;
+                            }
+                            break;
                     }
 
                 }
@@ -598,9 +608,24 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "MeterAH":
                                     this.APLCVehicle.Batterys.MeterAh = this.DECToDouble(oColParam.Item(i).AsUInt32, 2);
-                                    if (APLCVehicle.Batterys.MeterAh != 0.0)
+                                    if (this.APLCVehicle.Batterys.MeterAh != 0.0)
                                     {
-                                        IsFirstMeterAhGet = true;
+                                        if (IsFirstMeterAhGet == false)
+                                        {
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Set IsFirstMeterAhGet = true"));
+                                            IsFirstMeterAhGet = true;
+                                        }
+                                        else
+                                        {
+                                            //第一次讀到非0電表值 過後   都會跑到這邊
+                                        }    
+                                    }
+                                    else
+                                    {
+                                        if (IsFirstMeterAhGet == false)
+                                        {
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "MeterAH data change but new value is 0.0"));
+                                        }
                                     }
                                     break;
                                 case "FullChargeIndex":
@@ -728,7 +753,7 @@ namespace Mirle.Agv.Controller
                                 case "ForkReady":
                                     this.APLCVehicle.Robot.ForkReady = aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkReady = {this.APLCVehicle.Robot.ForkReady}"));
-
+                                    
                                     break;
                                 case "ForkBusy":
                                     this.APLCVehicle.Robot.ForkBusy = aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean;
@@ -738,7 +763,7 @@ namespace Mirle.Agv.Controller
                                 case "ForkCommandNG":
                                     this.APLCVehicle.Robot.ForkNG = aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandNG = {this.APLCVehicle.Robot.ForkNG}"));
-
+                                    
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkNG == true)
                                     {
@@ -749,7 +774,7 @@ namespace Mirle.Agv.Controller
                                 case "ForkCommandFinish":
                                     this.APLCVehicle.Robot.ForkFinish = aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandFinish = {this.APLCVehicle.Robot.ForkFinish}"));
-
+                                    
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkFinish == true)
                                     {
@@ -980,6 +1005,10 @@ namespace Mirle.Agv.Controller
 
         #endregion
 
+        public void SimulationPLCConnect()
+        {
+            MCProtocol_OnConnectEvent("");
+        }
 
         private void MCProtocol_OnConnectEvent(String message)
         {
@@ -1176,7 +1205,7 @@ namespace Mirle.Agv.Controller
                     UInt16 currPercentage = Convert.ToUInt16(this.APLCVehicle.Batterys.Percentage);
                     if (currPercentage != this.beforeBatteryPercentageInteger)
                     {
-                        this.beforeBatteryPercentageInteger = currPercentage;
+                        this.beforeBatteryPercentageInteger = currPercentage;                        
                         LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Percentage = {currPercentage}"));
                         BatteryPercentageWriteLog(currPercentage);
                         OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
@@ -1234,8 +1263,7 @@ namespace Mirle.Agv.Controller
                             Boolean leftSleepFlag = false;
                             Boolean rightSleepFlag = false;
 
-                            //順便決定beam sensor sleep的範圍
-                            EnumVehicleSafetyAction result = EnumVehicleSafetyAction.Normal;
+                            //順便決定beam sensor sleep的範圍                            
                             if (APLCVehicle.BeamSensorAutoSleep)
                             {
                                 frontSleepFlag = (!APLCVehicle.MoveFront) || APLCVehicle.FrontBeamSensorDisable || APLCVehicle.SafetyDisable;
@@ -1287,30 +1315,80 @@ namespace Mirle.Agv.Controller
                                 this.SetBeamSensorSleepOff(EnumVehicleSide.Right);
                             }
 
-                            if (APLCVehicle.MoveFront == true)
-                            {
-                                //前方
-                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listFrontBeamSensor, this.APLCVehicle.FrontBeamSensorDisable);
-                            }
+                            EnumVehicleSafetyAction result = EnumVehicleSafetyAction.Normal;
+                            if (!this.APLCVehicle.BeamSensorDisableNormalSpeed)
+                            {   
+                                if (APLCVehicle.MoveFront == true)
+                                {
+                                    //前方
+                                    result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listFrontBeamSensor, this.APLCVehicle.FrontBeamSensorDisable);
+                                }
 
-                            if (APLCVehicle.MoveBack == true)
-                            {
-                                //後方
-                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listBackBeamSensor, this.APLCVehicle.BackBeamSensorDisable);
-                            }
+                                if (APLCVehicle.MoveBack == true)
+                                {
+                                    //後方
+                                    result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listBackBeamSensor, this.APLCVehicle.BackBeamSensorDisable);
+                                }
 
-                            if (APLCVehicle.MoveLeft == true)
-                            {
-                                //左方
-                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listLeftBeamSensor, this.APLCVehicle.LeftBeamSensorDisable);
-                            }
+                                if (APLCVehicle.MoveLeft == true)
+                                {
+                                    //左方
+                                    result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listLeftBeamSensor, this.APLCVehicle.LeftBeamSensorDisable);
+                                }
 
-                            if (APLCVehicle.MoveRight == true)
-                            {
-                                //右方
-                                result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listRightBeamSensor, this.APLCVehicle.RightBeamSensorDisable);
+                                if (APLCVehicle.MoveRight == true)
+                                {
+                                    //右方
+                                    result = decideSafetyActionBySideBeamSensor(result, APLCVehicle.listRightBeamSensor, this.APLCVehicle.RightBeamSensorDisable);
+                                }
                             }
+                            else
+                            {
+                                //BeamSensorDisableNormalSpeed == false => 判斷重寫
+                                EnumVehicleSafetyAction frontResult = EnumVehicleSafetyAction.Normal;
+                                EnumVehicleSafetyAction backResult = EnumVehicleSafetyAction.Normal;
+                                EnumVehicleSafetyAction leftResult = EnumVehicleSafetyAction.Normal;
+                                EnumVehicleSafetyAction rightResult = EnumVehicleSafetyAction.Normal;
+                                if (APLCVehicle.MoveFront == true)
+                                {
+                                    //前方
+                                    frontResult = decideSafetyActionBySideBeamSensorDisableSpeedNormal(APLCVehicle.listFrontBeamSensor, this.APLCVehicle.FrontBeamSensorDisable);
+                                }
 
+                                if (APLCVehicle.MoveBack == true)
+                                {
+                                    //後方
+                                    backResult = decideSafetyActionBySideBeamSensorDisableSpeedNormal(APLCVehicle.listBackBeamSensor, this.APLCVehicle.BackBeamSensorDisable);
+                                }
+
+                                if (APLCVehicle.MoveLeft == true)
+                                {
+                                    //左方
+                                    leftResult = decideSafetyActionBySideBeamSensorDisableSpeedNormal(APLCVehicle.listLeftBeamSensor, this.APLCVehicle.LeftBeamSensorDisable);
+                                }
+
+                                if (APLCVehicle.MoveRight == true)
+                                {
+                                    //右方
+                                    rightResult = decideSafetyActionBySideBeamSensorDisableSpeedNormal(APLCVehicle.listRightBeamSensor, this.APLCVehicle.RightBeamSensorDisable);
+                                }
+
+                                if (frontResult == EnumVehicleSafetyAction.Stop || backResult == EnumVehicleSafetyAction.Stop || leftResult == EnumVehicleSafetyAction.Stop || rightResult == EnumVehicleSafetyAction.Stop)
+                                {
+                                    result = EnumVehicleSafetyAction.Stop;
+                                }
+                                else
+                                {
+                                    if (frontResult == EnumVehicleSafetyAction.LowSpeed || backResult == EnumVehicleSafetyAction.LowSpeed || leftResult == EnumVehicleSafetyAction.LowSpeed || rightResult == EnumVehicleSafetyAction.LowSpeed)
+                                    {
+                                        result = EnumVehicleSafetyAction.LowSpeed;
+                                    }
+                                    else
+                                    {
+                                        result = EnumVehicleSafetyAction.Normal;
+                                    }
+                                }
+                            }
                             this.APLCVehicle.VehicleSafetyAction = result;
                         }
                     }
@@ -1321,7 +1399,7 @@ namespace Mirle.Agv.Controller
                         VehicleSafetyAction_Old = this.APLCVehicle.VehicleSafetyAction;
                         RecordSafetyValueChanged();
                     }
-
+                    
                 }
                 catch (Exception ex)
                 {
@@ -1349,7 +1427,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                if (this.DetectSideBeamSensorDisable(listBeamSensor))
+                if (this.DetectSingleSideBeamSensorDisable(listBeamSensor))
                 {
                     //最多只能LowSpeed
                     //只須看near
@@ -1381,6 +1459,38 @@ namespace Mirle.Agv.Controller
                     }
                 }
             }
+            return result;
+        }
+
+        private EnumVehicleSafetyAction decideSafetyActionBySideBeamSensorDisableSpeedNormal(List<PlcBeamSensor> listBeamSensor, Boolean SideBeamSensorDisable)
+        {
+            EnumVehicleSafetyAction result = EnumVehicleSafetyAction.Normal;
+
+            if (SideBeamSensorDisable)
+            {
+                return result;
+            }
+            else
+            {
+                if (this.DetectSideBeamSensorNear(listBeamSensor))
+                {
+                    //非disable的beam sensor  其中有一顆以上打到東西
+                    result = EnumVehicleSafetyAction.Stop;
+                }
+                else
+                {
+                    //非disable的beam sensor都沒有打到東西
+                    if (this.DetectSideBeamSensorFar(listBeamSensor))
+                    {
+                        result = EnumVehicleSafetyAction.LowSpeed;
+                    }
+                    else
+                    {
+                        //維持
+                    }
+                }
+            }
+
             return result;
         }
 
@@ -1603,7 +1713,12 @@ namespace Mirle.Agv.Controller
             return farFlag;
         }
 
-        private Boolean DetectSideBeamSensorDisable(List<PlcBeamSensor> listBeamSensor)
+        /// <summary>
+        /// 偵測單顆Beamsensor被關掉暫時不看(比如當單顆sensor壞掉或是沒調整好)
+        /// </summary>
+        /// <param name="listBeamSensor"></param>
+        /// <returns></returns>
+        private Boolean DetectSingleSideBeamSensorDisable(List<PlcBeamSensor> listBeamSensor)
         {
             Boolean disableFlag = false;
             foreach (PlcBeamSensor aPLCBeamSensor in listBeamSensor)
@@ -2146,8 +2261,13 @@ namespace Mirle.Agv.Controller
 
         public void setSOC(double SOC)
         {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", OldCCModeAH = " + APLCVehicle.Batterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.Batterys.MeterAh.ToString()));
             this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.MeterAh + this.APLCVehicle.Batterys.AhWorkingRange * (100.0 - SOC) / 100.00, false);
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", "PlcAgent:setSOC", PlcId, "", $"SOC = {SOC}"));
+            //CcModeAh
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", NewCCModeAH = " + APLCVehicle.Batterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.Batterys.MeterAh.ToString()));
+
         }
 
         public Boolean WriteIPCStatus(EnumIPCStatus aEnumIPCStatus)
@@ -2409,7 +2529,7 @@ namespace Mirle.Agv.Controller
                         //this.APLCVehicle.CassetteId = "CA0070";
                         APLCVehicle.CassetteId = APLCVehicle.FakeCassetteId;
                         LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {APLCVehicle.CassetteId}"));
-
+                       
                         OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
                     }
                     else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
@@ -2490,7 +2610,7 @@ namespace Mirle.Agv.Controller
 
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
 
-
+            
         }
 
 
@@ -2762,7 +2882,7 @@ namespace Mirle.Agv.Controller
                         }
                         bComdIsNullReqForkComdOK = true;
                         bComdIsNullReqComdFinishAck = true;
-
+                        
                     }
                     else
                     {

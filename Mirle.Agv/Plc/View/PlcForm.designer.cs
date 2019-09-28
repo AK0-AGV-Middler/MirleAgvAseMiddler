@@ -1,6 +1,6 @@
 ﻿namespace Mirle.Agv.View
 {
-    partial class PlcForm
+    partial class btnBeamSensorSignalSet
     {
         /// <summary>
         /// Required designer variable.
@@ -367,6 +367,13 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
+            this.chkBeamSensorDisableNormalSpeed = new System.Windows.Forms.CheckBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.lblBeamSensorSelect = new System.Windows.Forms.Label();
+            this.chkBeamSensorFarSet = new System.Windows.Forms.CheckBox();
+            this.chkBeamSensorNearSet = new System.Windows.Forms.CheckBox();
+            this.btnSimulationPLCConnect = new System.Windows.Forms.Button();
+            this.btnSaveBeamSensorDisableNormalSpeed = new System.Windows.Forms.Button();
             this.tabContol1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel7.SuspendLayout();
@@ -400,6 +407,7 @@
             this.grpL.SuspendLayout();
             this.grpB.SuspendLayout();
             this.grpF.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabContol1
@@ -3016,6 +3024,10 @@
             // 
             // tabSafety
             // 
+            this.tabSafety.Controls.Add(this.btnSaveBeamSensorDisableNormalSpeed);
+            this.tabSafety.Controls.Add(this.btnSimulationPLCConnect);
+            this.tabSafety.Controls.Add(this.groupBox3);
+            this.tabSafety.Controls.Add(this.chkBeamSensorDisableNormalSpeed);
             this.tabSafety.Controls.Add(this.btnForce_ELMO_Servo_Off);
             this.tabSafety.Controls.Add(this.groupBox2);
             this.tabSafety.Controls.Add(this.panel6);
@@ -3240,7 +3252,7 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.pnlMove);
-            this.groupBox1.Location = new System.Drawing.Point(298, 413);
+            this.groupBox1.Location = new System.Drawing.Point(300, 462);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(121, 131);
             this.groupBox1.TabIndex = 82;
@@ -3542,6 +3554,7 @@
             this.lblBeamSensorRDR.TabIndex = 54;
             this.lblBeamSensorRDR.Text = "RDR";
             this.lblBeamSensorRDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRDR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorRDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRDL
@@ -3555,6 +3568,7 @@
             this.lblBeamSensorRDL.TabIndex = 53;
             this.lblBeamSensorRDL.Text = "RDL";
             this.lblBeamSensorRDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRDL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorRDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRUC
@@ -3568,6 +3582,7 @@
             this.lblBeamSensorRUC.TabIndex = 52;
             this.lblBeamSensorRUC.Text = "RUC";
             this.lblBeamSensorRUC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRUC.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorRUC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRUR
@@ -3581,6 +3596,7 @@
             this.lblBeamSensorRUR.TabIndex = 51;
             this.lblBeamSensorRUR.Text = "RUR";
             this.lblBeamSensorRUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRUR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorRUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorRUL
@@ -3594,6 +3610,7 @@
             this.lblBeamSensorRUL.TabIndex = 50;
             this.lblBeamSensorRUL.Text = "RUL";
             this.lblBeamSensorRUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorRUL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorRUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // pnlR
@@ -3672,6 +3689,7 @@
             this.lblBeamSensorLDR.TabIndex = 54;
             this.lblBeamSensorLDR.Text = "LDR";
             this.lblBeamSensorLDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLDR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorLDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLDL
@@ -3685,6 +3703,7 @@
             this.lblBeamSensorLDL.TabIndex = 53;
             this.lblBeamSensorLDL.Text = "LDL";
             this.lblBeamSensorLDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLDL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorLDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLUC
@@ -3698,6 +3717,7 @@
             this.lblBeamSensorLUC.TabIndex = 52;
             this.lblBeamSensorLUC.Text = "LUC";
             this.lblBeamSensorLUC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLUC.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorLUC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLUR
@@ -3711,6 +3731,7 @@
             this.lblBeamSensorLUR.TabIndex = 51;
             this.lblBeamSensorLUR.Text = "LUR";
             this.lblBeamSensorLUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLUR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorLUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorLUL
@@ -3724,6 +3745,7 @@
             this.lblBeamSensorLUL.TabIndex = 50;
             this.lblBeamSensorLUL.Text = "LUL";
             this.lblBeamSensorLUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorLUL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorLUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // pnlL
@@ -3885,6 +3907,7 @@
             this.lblBeamSensorBDR.TabIndex = 54;
             this.lblBeamSensorBDR.Text = "BDR";
             this.lblBeamSensorBDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBDR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorBDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBDL
@@ -3898,6 +3921,7 @@
             this.lblBeamSensorBDL.TabIndex = 53;
             this.lblBeamSensorBDL.Text = "BDL";
             this.lblBeamSensorBDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBDL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorBDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBDC
@@ -3911,6 +3935,7 @@
             this.lblBeamSensorBDC.TabIndex = 52;
             this.lblBeamSensorBDC.Text = "BDC";
             this.lblBeamSensorBDC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBDC.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorBDC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBUR
@@ -3924,6 +3949,7 @@
             this.lblBeamSensorBUR.TabIndex = 51;
             this.lblBeamSensorBUR.Text = "BUR";
             this.lblBeamSensorBUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBUR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorBUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorBUL
@@ -3937,6 +3963,7 @@
             this.lblBeamSensorBUL.TabIndex = 50;
             this.lblBeamSensorBUL.Text = "BUL";
             this.lblBeamSensorBUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorBUL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorBUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // pnlB
@@ -4098,6 +4125,7 @@
             this.lblBeamSensorFDR.TabIndex = 54;
             this.lblBeamSensorFDR.Text = "FDR";
             this.lblBeamSensorFDR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFDR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorFDR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFDL
@@ -4111,6 +4139,7 @@
             this.lblBeamSensorFDL.TabIndex = 53;
             this.lblBeamSensorFDL.Text = "FDL";
             this.lblBeamSensorFDL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFDL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorFDL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFDC
@@ -4124,6 +4153,7 @@
             this.lblBeamSensorFDC.TabIndex = 52;
             this.lblBeamSensorFDC.Text = "FDC";
             this.lblBeamSensorFDC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFDC.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorFDC.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFUR
@@ -4137,6 +4167,7 @@
             this.lblBeamSensorFUR.TabIndex = 51;
             this.lblBeamSensorFUR.Text = "FUR";
             this.lblBeamSensorFUR.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFUR.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorFUR.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // lblBeamSensorFUL
@@ -4150,6 +4181,7 @@
             this.lblBeamSensorFUL.TabIndex = 50;
             this.lblBeamSensorFUL.Text = "FUL";
             this.lblBeamSensorFUL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBeamSensorFUL.Click += new System.EventHandler(this.lblBeamSensor_Click);
             this.lblBeamSensorFUL.DoubleClick += new System.EventHandler(this.lblBeamSensor_DoubleClick);
             // 
             // pnlF
@@ -4271,7 +4303,83 @@
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
             // 
-            // PlcForm
+            // chkBeamSensorDisableNormalSpeed
+            // 
+            this.chkBeamSensorDisableNormalSpeed.AutoSize = true;
+            this.chkBeamSensorDisableNormalSpeed.Location = new System.Drawing.Point(19, 423);
+            this.chkBeamSensorDisableNormalSpeed.Name = "chkBeamSensorDisableNormalSpeed";
+            this.chkBeamSensorDisableNormalSpeed.Size = new System.Drawing.Size(231, 20);
+            this.chkBeamSensorDisableNormalSpeed.TabIndex = 90;
+            this.chkBeamSensorDisableNormalSpeed.Text = "Beam Sensor Disable Normal Speed";
+            this.chkBeamSensorDisableNormalSpeed.UseVisualStyleBackColor = true;
+            this.chkBeamSensorDisableNormalSpeed.CheckedChanged += new System.EventHandler(this.chkBeamSensorDisableNormalSpeed_CheckedChanged);
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.chkBeamSensorNearSet);
+            this.groupBox3.Controls.Add(this.chkBeamSensorFarSet);
+            this.groupBox3.Controls.Add(this.lblBeamSensorSelect);
+            this.groupBox3.Location = new System.Drawing.Point(581, 500);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(318, 73);
+            this.groupBox3.TabIndex = 91;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Beam Sensor Signal Simulate Set";
+            // 
+            // lblBeamSensorSelect
+            // 
+            this.lblBeamSensorSelect.BackColor = System.Drawing.Color.LightGreen;
+            this.lblBeamSensorSelect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblBeamSensorSelect.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblBeamSensorSelect.Location = new System.Drawing.Point(12, 23);
+            this.lblBeamSensorSelect.Name = "lblBeamSensorSelect";
+            this.lblBeamSensorSelect.Size = new System.Drawing.Size(63, 34);
+            this.lblBeamSensorSelect.TabIndex = 71;
+            this.lblBeamSensorSelect.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // chkBeamSensorFarSet
+            // 
+            this.chkBeamSensorFarSet.AutoSize = true;
+            this.chkBeamSensorFarSet.Location = new System.Drawing.Point(97, 32);
+            this.chkBeamSensorFarSet.Name = "chkBeamSensorFarSet";
+            this.chkBeamSensorFarSet.Size = new System.Drawing.Size(84, 20);
+            this.chkBeamSensorFarSet.TabIndex = 75;
+            this.chkBeamSensorFarSet.Text = "Far Detect";
+            this.chkBeamSensorFarSet.UseVisualStyleBackColor = true;
+            this.chkBeamSensorFarSet.Click += new System.EventHandler(this.chkBeamSensorFarSet_CheckedChanged);
+            // 
+            // chkBeamSensorNearSet
+            // 
+            this.chkBeamSensorNearSet.AutoSize = true;
+            this.chkBeamSensorNearSet.Location = new System.Drawing.Point(197, 32);
+            this.chkBeamSensorNearSet.Name = "chkBeamSensorNearSet";
+            this.chkBeamSensorNearSet.Size = new System.Drawing.Size(95, 20);
+            this.chkBeamSensorNearSet.TabIndex = 76;
+            this.chkBeamSensorNearSet.Text = "Near Detect";
+            this.chkBeamSensorNearSet.UseVisualStyleBackColor = true;
+            this.chkBeamSensorNearSet.Click += new System.EventHandler(this.chkBeamSensorNearSet_CheckedChanged);
+            // 
+            // btnSimulationPLCConnect
+            // 
+            this.btnSimulationPLCConnect.Location = new System.Drawing.Point(593, 581);
+            this.btnSimulationPLCConnect.Name = "btnSimulationPLCConnect";
+            this.btnSimulationPLCConnect.Size = new System.Drawing.Size(181, 30);
+            this.btnSimulationPLCConnect.TabIndex = 92;
+            this.btnSimulationPLCConnect.Text = "PLC Connect Simulation";
+            this.btnSimulationPLCConnect.UseVisualStyleBackColor = true;
+            this.btnSimulationPLCConnect.Click += new System.EventHandler(this.btnSimulationPLCConnect_Click);
+            // 
+            // btnSaveBeamSensorDisableNormalSpeed
+            // 
+            this.btnSaveBeamSensorDisableNormalSpeed.Location = new System.Drawing.Point(256, 418);
+            this.btnSaveBeamSensorDisableNormalSpeed.Name = "btnSaveBeamSensorDisableNormalSpeed";
+            this.btnSaveBeamSensorDisableNormalSpeed.Size = new System.Drawing.Size(79, 30);
+            this.btnSaveBeamSensorDisableNormalSpeed.TabIndex = 93;
+            this.btnSaveBeamSensorDisableNormalSpeed.Text = "Save";
+            this.btnSaveBeamSensorDisableNormalSpeed.UseVisualStyleBackColor = true;
+            this.btnSaveBeamSensorDisableNormalSpeed.Click += new System.EventHandler(this.btnSaveBeamSensorDisableNormalSpeed_Click);
+            // 
+            // btnBeamSensorSignalSet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -4288,7 +4396,7 @@
             this.Controls.Add(this.txtTriggerEvent);
             this.Controls.Add(this.label19);
             this.Controls.Add(this.tabContol1);
-            this.Name = "PlcForm";
+            this.Name = "btnBeamSensorSignalSet";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PLCAgent";
@@ -4326,6 +4434,7 @@
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tabSafety.ResumeLayout(false);
+            this.tabSafety.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.panel9.ResumeLayout(false);
             this.panel9.PerformLayout();
@@ -4344,6 +4453,8 @@
             this.grpL.ResumeLayout(false);
             this.grpB.ResumeLayout(false);
             this.grpF.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -4689,5 +4800,12 @@
         private System.Windows.Forms.Label label97;
         private System.Windows.Forms.Label label98;
         private System.Windows.Forms.Label label99;
+        private System.Windows.Forms.CheckBox chkBeamSensorDisableNormalSpeed;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Label lblBeamSensorSelect;
+        private System.Windows.Forms.CheckBox chkBeamSensorNearSet;
+        private System.Windows.Forms.CheckBox chkBeamSensorFarSet;
+        private System.Windows.Forms.Button btnSimulationPLCConnect;
+        private System.Windows.Forms.Button btnSaveBeamSensorDisableNormalSpeed;
     }
 }

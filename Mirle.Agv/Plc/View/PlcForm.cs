@@ -9,13 +9,13 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.View
 {
-    public partial class PlcForm : Form
+    public partial class btnBeamSensorSignalSet : Form
     {
         private MCProtocol mcProtocol;
         private PlcAgent plcAgent;
         private EnumAutoState IpcAutoState;
 
-        public PlcForm(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
+        public btnBeamSensorSignalSet(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
         {
             InitializeComponent();
             //mcProtocol = new MCProtocol();
@@ -331,6 +331,8 @@ namespace Mirle.Agv.View
         private EnumAutoState beforeIpcAutoState;
         private void timGUIRefresh_Tick(object sender, EventArgs e)
         {
+            chkBeamSensorDisableNormalSpeed.Checked = this.plcAgent.APLCVehicle.BeamSensorDisableNormalSpeed;
+            
             labIPcStatus.Text = Enum.GetName(typeof(EnumAutoState), Vehicle.Instance.AutoState);
             if (IpcAutoState == EnumAutoState.Auto)
             {
@@ -693,8 +695,12 @@ namespace Mirle.Agv.View
                     else
                     {
                         aBeamSensor.FormLabel.BackColor = this.lblNearDetect.BackColor;
-
                     }
+                }
+
+                if( aBeamSensor==lblBeamSensorSelect.Tag)
+                {
+                    lblBeamSensorSelect.BackColor = aBeamSensor.FormLabel.BackColor;
                 }
 
             }
@@ -863,6 +869,48 @@ namespace Mirle.Agv.View
             aPlcBeamSensor.Disable = !aPlcBeamSensor.Disable;
         }
 
+        private void lblBeamSensor_Click(object sender, EventArgs e)
+        {
+            PlcBeamSensor aPlcBeamSensor = (PlcBeamSensor)((Label)sender).Tag;
+            lblBeamSensorSelect.Text = ((Label)sender).Text;
+            lblBeamSensorSelect.Tag = aPlcBeamSensor;
+            lblBeamSensorSelect.BackColor = ((Label)sender).BackColor;
+
+            chkBeamSensorFarSet.Checked = !aPlcBeamSensor.FarSignal;
+            chkBeamSensorNearSet.Checked = !aPlcBeamSensor.NearSignal;
+        }
+
+        private void chkBeamSensorFarSet_CheckedChanged(object sender, EventArgs e)
+        {
+            if (lblBeamSensorSelect.Tag != null)
+            {
+                PlcBeamSensor aPlcBeamSensor = (PlcBeamSensor)lblBeamSensorSelect.Tag;
+                if (chkBeamSensorFarSet.Checked)
+                {
+                    aPlcBeamSensor.FarSignal = false;
+                }
+                else
+                {
+                    aPlcBeamSensor.FarSignal = true;
+                }
+            }
+        }
+
+        private void chkBeamSensorNearSet_CheckedChanged(object sender, EventArgs e)
+        {
+            if (lblBeamSensorSelect.Tag != null)
+            {
+                PlcBeamSensor aPlcBeamSensor = (PlcBeamSensor)lblBeamSensorSelect.Tag;
+                if (chkBeamSensorNearSet.Checked)
+                {
+                    aPlcBeamSensor.NearSignal = false;
+                }
+                else
+                {
+                    aPlcBeamSensor.NearSignal = true;
+                }
+            }
+        }
 
         private void chkMoveFront_CheckedChanged(object sender, EventArgs e)
         {
@@ -1450,6 +1498,39 @@ namespace Mirle.Agv.View
         private void btnForce_ELMO_Servo_Off_Click(object sender, EventArgs e)
         {
             this.plcAgent.SetForcELMOServoOffOn();
+        }
+
+        private void chkBeamSensorDisableNormalSpeed_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBeamSensorDisableNormalSpeed.Checked)
+            {
+                this.plcAgent.APLCVehicle.BeamSensorDisableNormalSpeed = true;
+            }
+            else
+            {
+                this.plcAgent.APLCVehicle.BeamSensorDisableNormalSpeed = false;
+            }
+        }
+
+        private void btnSimulationPLCConnect_Click(object sender, EventArgs e)
+        {
+            btnSimulationPLCConnect.Enabled = false;
+            this.plcAgent.SimulationPLCConnect();
+        }
+
+        private void btnSaveBeamSensorDisableNormalSpeed_Click(object sender, EventArgs e)
+        {
+
+            string strSaveBeamSensorDisableNormalSpeed = "";
+            if (chkBeamSensorDisableNormalSpeed.Checked) strSaveBeamSensorDisableNormalSpeed = "true"; else strSaveBeamSensorDisableNormalSpeed = "false";
+
+
+            Dictionary<string, string> dicSetValue = new Dictionary<string, string>()
+            {
+                {"Beam_Sensor_Disable_Normal_Speed",strSaveBeamSensorDisableNormalSpeed},
+                
+            };
+            plcAgent.WritePlcConfigToXML(dicSetValue);
         }
     }
 }

@@ -65,8 +65,10 @@ namespace Mirle.Agv.Model
 
         public bool SafetyDisable { get; set; }
         public EnumVehicleSafetyAction VehicleSafetyAction { get; set; } = EnumVehicleSafetyAction.Normal;
+        //BeamSensorDisableNormalSpeed
+        public Boolean BeamSensorDisableNormalSpeed { get; set; } = false;
 
-        public  int BatteryCellNum = 17;
+        public int BatteryCellNum = 17;
 
         public PlcVehicle()
         {
