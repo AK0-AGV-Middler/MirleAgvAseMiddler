@@ -124,6 +124,10 @@ namespace Mirle.Agv.Controller
         public PlcForkCommand PlcForkLoadCommand { get; set; }
         public PlcForkCommand PlcForkUnloadCommand { get; set; }
         public double InitialSoc { get; set; } = 70;
+        public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Noraml;
+        public bool IsCancelByCstIdRead { get; set; } = false;
+        public bool NeedRename { get; set; } = false;
+        public bool IsStopAndClear { get; set; } = false;
         #endregion
 
         public MainFlowHandler()
@@ -192,7 +196,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                alarmHandler = new AlarmHandler(alarmConfig);
+                alarmHandler = new AlarmHandler(this);
                 mapHandler = new MapHandler(mapConfig);
                 TheMapInfo = mapHandler.TheMapInfo;
                 mcProtocol = new MCProtocol();
@@ -419,7 +423,17 @@ namespace Mirle.Agv.Controller
         }
         private void AfterVisitTransferSteps(long total)
         {
-            middleAgent.TransferComplete(lastAgvcTransCmd.CommandType);
+            if (IsStopAndClear)
+            {
+                IsStopAndClear = false;
+                theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
+                middleAgent.TransferComplete(EnumAgvcTransCommandType.Else);
+            }
+            else
+            {
+                middleAgent.TransferComplete(agvcTransCmd.CommandType);
+            }
+            
             VisitTransferStepsStatus = EnumThreadStatus.None;
             lastAgvcTransCmd = agvcTransCmd;
             agvcTransCmd = new AgvcTransCmd();
@@ -1687,6 +1701,12 @@ namespace Mirle.Agv.Controller
                 alarmHandler.SetAlarm(000005);
                 return false;
             }
+            else if (ReadResult == EnumCstIdReadResult.Mismatch)
+            {
+                //CassetteId missmatch
+                alarmHandler.SetAlarm(000005);
+                return false;
+            }
             else
             {
                 return true;
@@ -1737,8 +1757,8 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動完成[異常]");
                     alarmHandler.SetAlarm(000006);
 
-                    PauseVisitTransferSteps();
-                    middleAgent.PauseAskReserve();
+                    //PauseVisitTransferSteps();
+                    //middleAgent.PauseAskReserve();
                     return;
                 }
 
@@ -1813,14 +1833,25 @@ namespace Mirle.Agv.Controller
             {
                 if (forkCommand.ForkCommandType == EnumForkCommand.Load)
                 {
-                    if (!CanCassetteIdRead())
+                    middleAgent.LoadComplete();
+                    if (theVehicle.ThePlcVehicle.CassetteId == agvcTransCmd.CassetteId)
                     {
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot命令完成,[Type={forkCommand.ForkCommandType}] [CanCassetteIdRead={CanCassetteIdRead()}]");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");                   
+                        VisitNextTransferStep();
+                    }
+                    else
+                    {
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成，貨物ID讀取異常。");
+                        if (IsCancelByCstIdRead)
+                        {                         
+                            StopAndClear();
+                        }
+                        else
+                        {
+                            middleAgent.IsCancelByCstIdRead = true;
+                        }
                         return;
                     }
-
-                    middleAgent.LoadComplete();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");
                 }
                 else /*if (forkCommand.ForkCommandType == EnumForkCommand.Unload)*/
                 {
@@ -1834,9 +1865,8 @@ namespace Mirle.Agv.Controller
 
                     middleAgent.UnloadComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨完成");
+                    VisitNextTransferStep();
                 }
-
-                VisitNextTransferStep();
             }
             catch (Exception ex)
             {
@@ -1964,6 +1994,7 @@ namespace Mirle.Agv.Controller
         public MoveControlHandler GetMoveControlHandler() => moveControlHandler;
         public PlcAgent GetPlcAgent() => plcAgent;
         public MCProtocol GetMcProtocol() => mcProtocol;
+        public AlarmConfig GetAlarmConfig() => alarmConfig;
         #endregion
 
         public bool CallMoveControlWork(MoveCmdInfo moveCmd)
@@ -2389,28 +2420,33 @@ namespace Mirle.Agv.Controller
 
         public void StopAndClear()
         {
+            IsStopAndClear = true;
             PauseMainFlowThreads();
             middleAgent.PauseAskReserve();
             StopVehicle();
             middleAgent.StopAskReserve();
             StopMainFlowThreads();
             middleAgent.ClearAskReserve();
-            theVehicle.CurVehiclePosition.WheelAngle = 0;
+            theVehicle.CurVehiclePosition.WheelAngle = moveControlHandler.ControlData.WheelAngle;
+            IsCancelByCstIdRead = false;
+            middleAgent.IsCancelByCstIdRead = false;
 
-            if (theVehicle.ThePlcVehicle.Loading)
+            if (NeedRename)
             {
-                string cstId = "";
-                plcAgent.triggerCassetteIDReader(ref cstId);
-                if (cstId == "ERROR")
-                {
-                    cstId = "";
-                }
-                theVehicle.ThePlcVehicle.CassetteId = cstId;
+                NeedRename = false;
+                theVehicle.ThePlcVehicle.CassetteId = theVehicle.ThePlcVehicle.RenameCassetteId;
             }
-            StartTrackPosition();
-            StartWatchLowPower();
+            else
+            {
+                if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
+                {
+                    string cstId = "";
+                    plcAgent.triggerCassetteIDReader(ref cstId);
+                }
+            }           
+            ReadResult = EnumCstIdReadResult.Noraml;
 
-            var msg = $"MainFlow : Stop And Clear, [VisitTransferStepsStatus={VisitTransferStepsStatus}][WatchLowPowerStatus={WatchLowPowerStatus}][TrackPositionStatus={TrackPositionStatus}][AskReserveStatus={theVehicle.AskReserveStatus}]";
+            var msg = $"MainFlow : Stop And Clear";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //     , msg));
@@ -2586,40 +2622,48 @@ namespace Mirle.Agv.Controller
 
         private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
         {
-            if (cstId == "ERROR")
+            try
             {
-                //Id Read Fail
-                theVehicle.ThePlcVehicle.CassetteId = "";
-                middleAgent.CstIdRead(EnumCstIdReadResult.Fail);
-                var msg = $"Cst讀取失敗";
-                OnMessageShowEvent?.Invoke(this, msg);
-            }
-            else if (!IsAgvcTransferCommandEmpty())
-            {
-                if (agvcTransCmd.CassetteId != cstId)
+                if (!theVehicle.ThePlcVehicle.Loading)
                 {
-                    //Id Read Mismatch
-                    theVehicle.ThePlcVehicle.CassetteId = cstId;
-                    middleAgent.CstIdRead(EnumCstIdReadResult.Mismatch);
-                    var msg = $"Cst讀取結果{cstId}，命令資訊{agvcTransCmd.CassetteId}，不相符";
+                    var msg = $"貨物ID讀取失敗";
                     OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Fail;
+                    alarmHandler.SetAlarm(000003);
+                }
+                else if (string.IsNullOrEmpty(cstId))
+                {
+                    var msg = $"貨物ID讀取失敗";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Fail;
+                    alarmHandler.SetAlarm(000004);
+                }
+                else if (cstId == "ERROR")
+                {
+                    var msg = $"貨物ID讀取失敗";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Fail;
+                    alarmHandler.SetAlarm(000005);
+                }
+                else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != cstId)
+                {
+                    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合"; ;
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Mismatch;
+                    alarmHandler.SetAlarm(000028);
                 }
                 else
                 {
-                    //Id Read Normal
-                    theVehicle.ThePlcVehicle.CassetteId = cstId;
-                    middleAgent.CstIdRead(EnumCstIdReadResult.Noraml);
-                    var msg = $"Cst讀取結果{cstId}成功";
+                    var msg = $"貨物ID[{cstId}]讀取成功";
                     OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Noraml;
                 }
+                middleAgent.CstIdRead(ReadResult);
             }
-            else
+            catch (Exception ex)
             {
-                //Id Read Normal
-                theVehicle.ThePlcVehicle.CassetteId = cstId;
-                middleAgent.CstIdRead(EnumCstIdReadResult.Noraml);
-                var msg = $"Cst讀取結果{cstId}成功";
-                OnMessageShowEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
 
@@ -2842,6 +2886,12 @@ namespace Mirle.Agv.Controller
         public int GetCurVehicleAngle()
         {
             return (int)theVehicle.CurVehiclePosition.VehicleAngle; //車頭方向角度(0,90,180,-90)  
+        }
+
+        public void PauseByAlarmSet()
+        {
+            middleAgent.PauseAskReserve();
+            PauseVisitTransferSteps();
         }
     }
 }

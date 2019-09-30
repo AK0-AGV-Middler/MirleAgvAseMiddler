@@ -58,8 +58,11 @@ namespace Mirle.Agv.Controller
         private ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
         private MapSection askingReserveSection = new MapSection();
         //public bool IsPauseAskReserve { get; private set; } = false;
+        private EnumCstIdReadResult readResult = EnumCstIdReadResult.Noraml;
 
         public TcpIpAgent ClientAgent { get; private set; }
+        public bool IsCancelByCstIdRead { get; set; } = false;
+
         private MapSection lastReportSection = new MapSection();
 
         public MiddleAgent(MainFlowHandler mainFlowHandler)
@@ -644,9 +647,9 @@ namespace Mirle.Agv.Controller
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //     , msg));
         }
-        public MapSection GetAskingReserveSectionClone()
+        public MapSection GetAskingReserveSection()
         {
-            return askingReserveSection.DeepClone();
+            return askingReserveSection;
         }
         public void SetupNeedReserveSections(MoveCmdInfo moveCmd)
         {
@@ -1316,6 +1319,7 @@ namespace Mirle.Agv.Controller
         }
         public void CstIdRead(EnumCstIdReadResult result)
         {
+            readResult = result;
             Send_Cmd136_CstIdReadReport(result);
         }
         public void TransferComplete(EnumAgvcTransCommandType type)
@@ -1348,8 +1352,8 @@ namespace Mirle.Agv.Controller
         public void LoadComplete()
         {
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-            Send_Cmd136_TransferEventReport(EventType.LoadComplete);           
-        }        
+            Send_Cmd136_TransferEventReport(EventType.LoadComplete);
+        }
         public void UnloadArrivals()
         {
             theVehicle.Cmd134EventType = EventType.UnloadArrivals;
@@ -1370,7 +1374,7 @@ namespace Mirle.Agv.Controller
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
             Send_Cmd134_TransferEventReport();
             Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
-        }        
+        }
         public bool IsAskReserveAlive()
         {
             return (thdAskReserve != null) && (thdAskReserve.IsAlive);
@@ -1920,7 +1924,7 @@ namespace Mirle.Agv.Controller
                     break;
                 case PauseEvent.Pause:
                     if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working && mainFlowHandler.IsMoveStep())
-                    {                        
+                    {
                         mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.EventType);
                     }
                     else
@@ -1968,14 +1972,14 @@ namespace Mirle.Agv.Controller
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
 
             switch (receive.ActType)
-            {               
+            {
                 case CMDCancelType.CmdCancel:
                 case CMDCancelType.CmdAbort:
                     mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
                     break;
                 case CMDCancelType.CmdNone:
-                case CMDCancelType.CmdCancelIdMismatch:                   
-                case CMDCancelType.CmdCancelIdReadFailed:                   
+                case CMDCancelType.CmdCancelIdMismatch:
+                case CMDCancelType.CmdCancelIdReadFailed:
                 default:
                     replyCode = 1;
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
@@ -2008,33 +2012,70 @@ namespace Mirle.Agv.Controller
 
         public void Receive_Cmd36_TransferEventResponse(object sender, TcpIpEventArgs e)
         {
-            ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
-            //Get reserve, block,        
-            if (receive.IsReserveSuccess == ReserveResult.Success)
+            try
             {
-                var msg = $"取得{askingReserveSection.Id}通行權成功";
-                theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
-                StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                OnGetReserveOk();
-            }
-            else
-            {
-                var msg = $"取得{askingReserveSection.Id}通行權失敗";
-                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                if (mainFlowHandler.IsPauseByNoReserve())
+                ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
+                if (receive.EventType == EventType.ReserveReq)
                 {
-                    theVehicle.ReserveStatus = VhStopSingle.StopSingleOn;
-                    StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                    var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
-                    OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                    if (receive.IsReserveSuccess == ReserveResult.Success)
+                    {
+                        var msg = $"取得{askingReserveSection.Id}通行權成功";
+                        theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
+                        StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                        OnGetReserveOk();
+                    }
+                    else
+                    {
+                        var msg = $"取得{askingReserveSection.Id}通行權失敗";
+                        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                        if (mainFlowHandler.IsPauseByNoReserve())
+                        {
+                            theVehicle.ReserveStatus = VhStopSingle.StopSingleOn;
+                            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                            var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
+                            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                        }
+                    }
                 }
-            }
+                else if (receive.EventType == EventType.Bcrread)
+                {
+                    theVehicle.ThePlcVehicle.RenameCassetteId = string.IsNullOrEmpty(receive.RenameCarrierID) ? "" : receive.RenameCarrierID;
+                    mainFlowHandler.NeedRename = !string.IsNullOrEmpty(receive.RenameCarrierID);
 
-            //if (receive.IsBlockPass == PassType.Pass)
-            //{
-            //    OnGetBlockPassEvent?.Invoke(this, true);
-            //}
+                    switch (receive.ReplyActiveType)
+                    {
+                        case CMDCancelType.CmdCancel:
+                        case CMDCancelType.CmdAbort:
+                        case CMDCancelType.CmdCancelIdMismatch:
+                        case CMDCancelType.CmdCancelIdReadFailed:
+                            {
+                                if (IsCancelByCstIdRead)
+                                {
+                                    mainFlowHandler.StopAndClear();
+                                }
+                                else
+                                {
+                                    mainFlowHandler.IsCancelByCstIdRead = true;
+                                }
+                            }
+                            return;
+                        case CMDCancelType.CmdNone:
+                        default:
+                            return;
+                    }
+                }
+                else
+                {
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
@@ -2085,56 +2126,56 @@ namespace Mirle.Agv.Controller
             }
 
         }
-        public void Send_Cmd136_RequestBlock(string requestBlockID)
-        {
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+        //public void Send_Cmd136_RequestBlock(string requestBlockID)
+        //{
+        //    VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
 
-            try
-            {
-                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType = EventType.BlockReq;
-                iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
-                iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
+        //    try
+        //    {
+        //        ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
+        //        iD_136_TRANS_EVENT_REP.EventType = EventType.BlockReq;
+        //        iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
+        //        iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+        //        iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+        //        iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
+        //        iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
 
-                WrapperMessage wrappers = new WrapperMessage();
-                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+        //        WrapperMessage wrappers = new WrapperMessage();
+        //        wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+        //        wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                SendCommandWrapper(wrappers);
-            }
-            catch (Exception ex)
-            {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
-        public void Send_Cmd136_ReleaseBlock(string releaseBlockAdrID)
-        {
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+        //        SendCommandWrapper(wrappers);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+        //    }
+        //}
+        //public void Send_Cmd136_ReleaseBlock(string releaseBlockAdrID)
+        //{
+        //    VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
 
-            try
-            {
-                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType = EventType.BlockRelease;
-                iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
-                iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
+        //    try
+        //    {
+        //        ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
+        //        iD_136_TRANS_EVENT_REP.EventType = EventType.BlockRelease;
+        //        iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+        //        iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
+        //        iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+        //        iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
+        //        iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
 
-                WrapperMessage wrappers = new WrapperMessage();
-                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+        //        WrapperMessage wrappers = new WrapperMessage();
+        //        wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+        //        wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                SendCommandWrapper(wrappers);
-            }
-            catch (Exception ex)
-            {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
+        //        SendCommandWrapper(wrappers);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+        //    }
+        //}
         public void Send_Cmd136_AskReserve()
         {
             var msg = $"嘗試取得{askingReserveSection.Id}通行權";

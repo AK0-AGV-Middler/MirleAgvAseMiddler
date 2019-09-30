@@ -16,6 +16,7 @@ namespace Mirle.Agv.Model
         public bool Loading { get; set; }
         public string CassetteId { get; set; } = "";
         public string FakeCassetteId { get; set; } = "";
+        public string RenameCassetteId { get; set; } = "";
 
         //以下屬性會影響方向燈,語音和Beam sensor sleep
         public bool Forward { get; set; }

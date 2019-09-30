@@ -706,15 +706,19 @@ namespace Mirle.Agv.View
 
         private void timeUpdateUI_Tick(object sender, EventArgs e)
         {
+            //try
+            //{
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
             ucSoc.TagValue = Vehicle.Instance.ThePlcVehicle.Batterys.Percentage.ToString("F2");
-            if (!middleAgent.GetAskingReserveSectionClone().Id.Equals(LastAskingReserveSectionId))
+            if (middleAgent.GetAskingReserveSection().Id != LastAskingReserveSectionId)
             {
-                LastAskingReserveSectionId = middleAgent.GetAskingReserveSectionClone().Id;
+                LastAskingReserveSectionId = middleAgent.GetAskingReserveSection().Id;
                 lbxAskReserveSection.Items.Clear();
                 lbxAskReserveSection.Items.Add(LastAskingReserveSectionId);
             }
+
+
             UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
             UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
 
@@ -727,6 +731,11 @@ namespace Mirle.Agv.View
             UpdateRtbTransferStep();
             UpdateLastAlarm();
             UpdateAgvcConnection();
+            //}
+            //catch (Exception ex)
+            //{
+            //    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            //}
         }
         public void UpdateAgvcConnection()
         {
@@ -916,7 +925,7 @@ namespace Mirle.Agv.View
             }
 
             picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
-            txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSectionClone().Id}";
+            txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSection().Id}";
 
             picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);
         }
@@ -1429,7 +1438,7 @@ namespace Mirle.Agv.View
             plcForm.chkFakeForking.Checked = cbSimulationMode.Checked;
             if (cbSimulationMode.Checked)
             {
-                mainFlowHandler.SetupVehicleSoc(100);               
+                mainFlowHandler.SetupVehicleSoc(100);
             }
 
             btnLoadOk.Visible = cbSimulationMode.Checked;
@@ -1451,7 +1460,7 @@ namespace Mirle.Agv.View
         {
             theVehicle.ThePlcVehicle.Loading = true;
             theVehicle.ThePlcVehicle.CassetteId = "CA0070";
-            PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load,"1", EnumStageDirection.Left,false, 100);
+            PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load, "1", EnumStageDirection.Left, false, 100);
             mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
         }
 

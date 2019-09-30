@@ -55,12 +55,14 @@ namespace Mirle.Agv.Controller
         public event EventHandler<Alarm> OnPlcResetOneAlarmEvent;
         public event EventHandler<string> OnResetAllAlarmsEvent;
 
+        private MainFlowHandler mainFlowHandler;
         private AlarmConfig alarmConfig;
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
 
-        public AlarmHandler(AlarmConfig alarmConfig)
+        public AlarmHandler(MainFlowHandler mainFlowHandler)
         {
-            this.alarmConfig = alarmConfig;
+            this.mainFlowHandler = mainFlowHandler;
+            this.alarmConfig = mainFlowHandler.GetAlarmConfig();
             LoadAlarmFile();
         }
 
@@ -168,6 +170,7 @@ namespace Mirle.Agv.Controller
                     switch (alarm.Level)
                     {
                         case EnumAlarmLevel.Alarm:
+                            mainFlowHandler.PauseByAlarmSet();
                             HasAlarm = true;
                             break;
                         case EnumAlarmLevel.Warn:

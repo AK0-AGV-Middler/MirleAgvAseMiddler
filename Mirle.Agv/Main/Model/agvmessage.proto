@@ -414,11 +414,13 @@ message Timestamp {
   }
 
   message ID_36_TRANS_EVENT_RESPONSE {
-	ReserveResult Is_Reserve_Success = 1;
-	PassType Is_Block_Pass = 2;
-	string RenameCarrierID = 3;
-	CMDCancelType ReplyActiveType = 4;
-	int32 ReplyCode = 5;	
+    EventType EventType = 1;
+	ReserveResult Is_Reserve_Success = 2;
+	PassType Is_Block_Pass = 3;
+	string RenameCarrierID = 4;
+	CMDCancelType ReplyActiveType = 5;
+	int32 ReplyCode = 6;	
+
   }
 
   message ID_37_TRANS_CANCEL_REQUEST {
