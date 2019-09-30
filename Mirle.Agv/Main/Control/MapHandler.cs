@@ -265,6 +265,7 @@ namespace Mirle.Agv.Controller
                 {
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
+                    MapAddressOffset offset = new MapAddressOffset();
                     try
                     {
                         oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
@@ -282,7 +283,21 @@ namespace Mirle.Agv.Controller
                         oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
                         oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
                         oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
-                        oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
+                        if (dicHeaderIndexes.ContainsKey("InsideSectionId"))
+                        {
+                            oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
+                        }                       
+                        if (dicHeaderIndexes.ContainsKey("OffsetX"))
+                        {
+                            offset.OffsetX = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
+                            offset.OffsetY = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
+                            offset.OffsetTheta = double.Parse(getThisRow[dicHeaderIndexes["OffsetTheta"]]);                          
+                        }
+                        oneRow.AddressOffset = offset;
+                        if (dicHeaderIndexes.ContainsKey("VehicleHeadAngle"))
+                        {
+                            oneRow.VehicleHeadAngle = double.Parse(getThisRow[dicHeaderIndexes["VehicleHeadAngle"]]);
+                        }
 
                     }
                     catch (Exception ex)

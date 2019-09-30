@@ -22,8 +22,8 @@ namespace Mirle.Agv.Model.TransferSteps
         public List<string> AddressIds { get; set; } = new List<string>();
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
-        public string EndAddressId { get; set; } = "";
-        public string StartAddressId { get; set; } = "";
+        public MapAddress StartAddress { get; set; } = new MapAddress();
+        public MapAddress EndAddress { get; set; } = new MapAddress();
         protected int HalfR2000Radius { get; set; } = 1000;
         public string Info { get; set; } = "";
         public bool IsDuelStartPosition { get; set; } = false;
@@ -48,7 +48,7 @@ namespace Mirle.Agv.Model.TransferSteps
                     MovingSections.Add(mapSection);
                 }
 
-                var endAddress = theMapInfo.allMapAddresses[EndAddressId].DeepClone();
+                var endAddress = theMapInfo.allMapAddresses[EndAddress.Id].DeepClone();
                 var endSection = MovingSections[MovingSections.Count - 1];
                 if (endSection.CmdDirection == EnumPermitDirection.Forward)
                 {
@@ -124,7 +124,7 @@ namespace Mirle.Agv.Model.TransferSteps
                     }
                 }
 
-                var endPosition = theMapInfo.allMapAddresses[EndAddressId].Position;
+                var endPosition = theMapInfo.allMapAddresses[EndAddress.Id].Position;
                 AddressPositions.Add(endPosition);
             }
             catch (Exception ex)
@@ -140,7 +140,7 @@ namespace Mirle.Agv.Model.TransferSteps
             {
                 if (MovingSections.Count > 0)
                 {
-                    var firstPosition = theMapInfo.allMapAddresses[StartAddressId].Position;
+                    var firstPosition = theMapInfo.allMapAddresses[StartAddress.Id].Position;
                     AddressPositions.Add(firstPosition);
 
                     for (int i = 0; i < MovingSections.Count - 1; i++)
@@ -150,7 +150,7 @@ namespace Mirle.Agv.Model.TransferSteps
                     }
                 }
 
-                var endPosition = theMapInfo.allMapAddresses[EndAddressId].Position;
+                var endPosition = theMapInfo.allMapAddresses[EndAddress.Id].Position;
                 AddressPositions.Add(endPosition);
             }
             catch (Exception ex)

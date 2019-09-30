@@ -104,6 +104,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
     <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
     <Compile Include="Main\Model\Map\ChargeInfo.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />

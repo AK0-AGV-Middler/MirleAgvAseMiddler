@@ -1392,7 +1392,19 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToUnloadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
-                moveCmd.EndAddressId = agvcTransCmd.UnloadAddressId;
+                if (IsPositionInThisAddress(theVehicle.CurVehiclePosition.RealPosition, theVehicle.CurVehiclePosition.LastAddress.Position))
+                {
+                    moveCmd.StartAddress = theVehicle.CurVehiclePosition.LastAddress;
+                }
+                else
+                {
+                    MapAddress startAddress = new MapAddress();
+                    startAddress.Id = "StartAddress";
+                    startAddress.Position = theVehicle.CurVehiclePosition.RealPosition;
+                    startAddress.AddressOffset = new MapAddressOffset();
+                    moveCmd.StartAddress = startAddress;
+                }
+                moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSections();
@@ -1418,7 +1430,19 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToUnloadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
-                moveCmd.EndAddressId = agvcTransCmd.UnloadAddressId;
+                if (IsPositionInThisAddress(theVehicle.CurVehiclePosition.RealPosition, theVehicle.CurVehiclePosition.LastAddress.Position))
+                {
+                    moveCmd.StartAddress = theVehicle.CurVehiclePosition.LastAddress;
+                }
+                else
+                {
+                    MapAddress startAddress = new MapAddress();
+                    startAddress.Id = "StartAddress";
+                    startAddress.Position = theVehicle.CurVehiclePosition.RealPosition;
+                    startAddress.AddressOffset = new MapAddressOffset();
+                    moveCmd.StartAddress = startAddress;
+                }
+                moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSections();
@@ -1443,8 +1467,8 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToUnloadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
-                moveCmd.EndAddressId = agvcTransCmd.UnloadAddressId;
-                moveCmd.StartAddressId = agvcTransCmd.LoadAddressId;
+                moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
+                moveCmd.StartAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddressId];
                 moveCmd.IsLoadPortToUnloadPort = true;
                 moveCmd.SetupMovingSections();
                 moveCmd.MovingSectionsIndex = 0;
@@ -1469,7 +1493,19 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToLoadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToLoadSectionIds;
-                moveCmd.EndAddressId = agvcTransCmd.LoadAddressId;
+                if (IsPositionInThisAddress(theVehicle.CurVehiclePosition.RealPosition, theVehicle.CurVehiclePosition.LastAddress.Position))
+                {
+                    moveCmd.StartAddress = theVehicle.CurVehiclePosition.LastAddress;
+                }
+                else
+                {
+                    MapAddress startAddress = new MapAddress();
+                    startAddress.Id = "StartAddress";
+                    startAddress.Position = theVehicle.CurVehiclePosition.RealPosition;
+                    startAddress.AddressOffset = new MapAddressOffset();
+                    moveCmd.StartAddress = startAddress;
+                }
+                moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddressId];
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSections();
@@ -1720,7 +1756,7 @@ namespace Mirle.Agv.Controller
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動暫停確認");
                         middleAgent.PauseComplete();
                         return;
-                    }                   
+                    }
                 }
 
                 if (status == EnumMoveComplete.Cancel)
@@ -1998,7 +2034,7 @@ namespace Mirle.Agv.Controller
                 catch (Exception ex)
                 {
                     alarmHandler.SetAlarm(000011);
-                    var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({(int)gxPosition.X},{(int)gxPosition.Y})]";
+                    var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({gxPosition.X:F2},{gxPosition.Y:F2})]";
                     OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , msg));
@@ -2013,7 +2049,7 @@ namespace Mirle.Agv.Controller
             if (searchingSectionIndex == moveCmdSections.Count)
             {
                 alarmHandler.SetAlarm(000011);
-                var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({(int)gxPosition.X},{(int)gxPosition.Y})]";
+                var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({gxPosition.X:F2},{gxPosition.Y:F2})]";
                 OnMessageShowEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
@@ -2037,8 +2073,8 @@ namespace Mirle.Agv.Controller
             {
                 CmdEndVehiclePosition.IsMoveEnd = true;
                 CmdEndVehiclePosition.BarcodePosition = theVehicle.CurVehiclePosition.BarcodePosition;
-                CmdEndVehiclePosition.RealPosition = TheMapInfo.allMapAddresses[moveCmd.EndAddressId].Position;
-                CmdEndVehiclePosition.LastAddress = TheMapInfo.allMapAddresses[moveCmd.EndAddressId];
+                CmdEndVehiclePosition.RealPosition = TheMapInfo.allMapAddresses[moveCmd.EndAddress.Id].Position;
+                CmdEndVehiclePosition.LastAddress = TheMapInfo.allMapAddresses[moveCmd.EndAddress.Id];
                 CmdEndVehiclePosition.LastSection = TheMapInfo.allMapSections[moveCmd.SectionIds[moveCmd.SectionIds.Count - 1]];
                 CmdEndVehiclePosition.LastSection.Distance = mapHandler.GetDistance(CmdEndVehiclePosition.RealPosition, CmdEndVehiclePosition.LastSection.HeadAddress.Position);
                 CmdEndVehiclePosition.RealPositionRangeMm = theVehicle.CurVehiclePosition.RealPositionRangeMm;
@@ -2047,12 +2083,12 @@ namespace Mirle.Agv.Controller
                 theVehicle.CurVehiclePosition = CmdEndVehiclePosition;
 
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddressId}，位置更新。"));
+                      , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新。"));
             }
             catch (Exception ex)
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                         , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddressId}，位置更新失敗。"));
+                         , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新失敗。"));
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
@@ -2646,7 +2682,7 @@ namespace Mirle.Agv.Controller
                 OnMessageShowEvent(this, msg);
                 middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Pause);
                 middleAgent.ResumeAskReserve();
-                ResumeVisitTransferSteps();              
+                ResumeVisitTransferSteps();
             }
         }
 
@@ -2682,7 +2718,7 @@ namespace Mirle.Agv.Controller
                 middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
                 moveControlHandler.VehcleContinue();
                 ResumeVisitTransferSteps();
-                middleAgent.ResumeAskReserve();               
+                middleAgent.ResumeAskReserve();
                 middleAgent.ResumeComplete();
                 var msg2 = $"MainFlow : 接受[{type}]命令確認。";
                 OnMessageShowEvent(this, msg2);
@@ -2692,7 +2728,7 @@ namespace Mirle.Agv.Controller
                 var msg = $"MainFlow : MoveController拒絕[{type}]命令。";
                 OnMessageShowEvent(this, msg);
                 middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Continue);
-            }          
+            }
         }
 
         private bool IsMoveControllPause() => moveControlHandler.ControlData.PauseRequest || moveControlHandler.ControlData.PauseAlready;
@@ -2719,7 +2755,7 @@ namespace Mirle.Agv.Controller
                 moveControlHandler.VehcleCancel();
                 middleAgent.StopAskReserve();
                 middleAgent.ClearAskReserve();
-                StopVisitTransferSteps();               
+                StopVisitTransferSteps();
                 var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
                 OnMessageShowEvent(this, msg2);
             }
