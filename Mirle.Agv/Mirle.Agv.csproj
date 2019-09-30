@@ -206,6 +206,7 @@
     <Compile Include="Main\Model\TransferSteps\MoveCmdInfo.cs" />
     <Compile Include="Main\Model\TransferSteps\TransCmd.cs" />
     <Compile Include="Main\Model\TransferSteps\UnloadCmdInfo.cs" />
+    <Compile Include="Plc\Model\VehicleCorrectValue.cs" />
     <Compile Include="Plc\PlcDefine.cs" />
     <Compile Include="UcThreadPad.cs">
       <SubType>UserControl</SubType>

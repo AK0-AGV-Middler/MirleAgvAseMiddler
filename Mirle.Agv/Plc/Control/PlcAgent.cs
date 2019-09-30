@@ -54,6 +54,7 @@ namespace Mirle.Agv.Controller
         public Boolean IsFirstMeterAhGet { get; set; } = false;
 
         public PlcVehicle APLCVehicle;
+        public VehicleCorrectValue AVehicleCorrectValue = new VehicleCorrectValue();
 
         public EnumVehicleSafetyAction VehicleSafetyAction_Old { get; set; } = EnumVehicleSafetyAction.Normal;
 
@@ -767,7 +768,8 @@ namespace Mirle.Agv.Controller
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkNG == true)
                                     {
-                                        RecordForkAlignmentValue("ForkCommandNG");
+                                        RecordForkAndVeihcleCorrectValue("ForkCommandNG");
+                                        ClearForkAndVehicleCorrectValue();
                                     }
 
                                     break;
@@ -778,7 +780,8 @@ namespace Mirle.Agv.Controller
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkFinish == true)
                                     {
-                                        RecordForkAlignmentValue("ForkCommandFinish");
+                                        RecordForkAndVeihcleCorrectValue("ForkCommandFinish");
+                                        ClearForkAndVehicleCorrectValue();
                                     }
 
                                     break;
@@ -976,11 +979,11 @@ namespace Mirle.Agv.Controller
 
         #region 特殊 Log 紀錄
         //紀錄 Fork alignment value 
-        private void RecordForkAlignmentValue(String status)
+        private void RecordForkAndVeihcleCorrectValue(String status)
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
 
-            String strLog = new StringBuilder().Append(status)
+            String strLog1 = new StringBuilder().Append(status)
                     .Append(", Fork alignment value - P: ").Append(APLCVehicle.Robot.ForkAlignmentP)
                     .Append(", Y: ").Append(APLCVehicle.Robot.ForkAlignmentY)
                     .Append(", Phi: ").Append(APLCVehicle.Robot.ForkAlignmentPhi)
@@ -989,7 +992,23 @@ namespace Mirle.Agv.Controller
                     .Append(", C: ").Append(APLCVehicle.Robot.ForkAlignmentC)
                     .Append(", B: ").Append(APLCVehicle.Robot.ForkAlignmentB)
                     .ToString();
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog));
+            
+            String strLog2 = new StringBuilder().Append(status)
+                    .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
+                    .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
+                    .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
+                    .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
+                    .ToString();
+
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
+
+            if (status.Equals("ForkCommandNG"))
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "Empty", strLog1));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "Empty", strLog2));
+            }
+            
         }
 
         private void RecordSafetyValueChanged()
@@ -3380,6 +3399,47 @@ namespace Mirle.Agv.Controller
             {
                 WriteDirectionalLight(EnumDirectionalLightType.SteerFL);
             }
+
+        }
+
+
+
+        public Boolean SetVehiclePositionValue(String deltaX, String deltaY, String theta, String vehicleHead)
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            try
+            {
+                this.AVehicleCorrectValue.VehicleDeltaX = deltaX;
+                this.AVehicleCorrectValue.VehicleDeltaY = deltaY;
+                this.AVehicleCorrectValue.VehicleTheta = theta;
+                this.AVehicleCorrectValue.VehicleHead = vehicleHead;
+            }catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "9", functionName, this.PlcId, "", ex.ToString()));
+            }
+            return true;
+
+        }
+
+
+        /// <summary>
+        /// 清除紀錄值
+        /// </summary>
+        private void ClearForkAndVehicleCorrectValue()
+        {
+            this.AVehicleCorrectValue.VehicleDeltaX = "";
+            this.AVehicleCorrectValue.VehicleDeltaY = "";
+            this.AVehicleCorrectValue.VehicleTheta = "";
+            this.AVehicleCorrectValue.VehicleHead = "";
+
+
+            this.APLCVehicle.Robot.ForkAlignmentP = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentY = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentPhi = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentF = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentCode = 0;
+            this.APLCVehicle.Robot.ForkAlignmentC = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentB = 0f;
 
         }
 
