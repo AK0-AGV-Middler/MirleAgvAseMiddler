@@ -96,8 +96,6 @@ namespace Mirle.Agv.Controller
         private Thread thdWatchLowPower;
         private ManualResetEvent watchLowPowerShutdownEvent = new ManualResetEvent(false);
 
-
-
         private ManualResetEvent watchLowPowerPauseEvent = new ManualResetEvent(true);
         private EnumThreadStatus watchLowPowerStatus = EnumThreadStatus.None;
         public EnumThreadStatus WatchLowPowerStatus
@@ -294,6 +292,8 @@ namespace Mirle.Agv.Controller
             }
             StartTrackPosition();
             StartWatchLowPower();
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"讀取到的電量為{InitialSoc}"));
+
         }
         private bool IsRealPositionEmpty()
         {

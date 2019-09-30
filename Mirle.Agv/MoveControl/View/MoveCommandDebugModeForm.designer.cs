@@ -148,6 +148,7 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
+            this.Button_AutoCreate = new System.Windows.Forms.Button();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -254,6 +255,7 @@ namespace Mirle.Agv.View
             // 
             // tbP_CreateCommand
             // 
+            this.tbP_CreateCommand.Controls.Add(this.Button_AutoCreate);
             this.tbP_CreateCommand.Controls.Add(this.button_AddReadPosition);
             this.tbP_CreateCommand.Controls.Add(this.label_LockResult);
             this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
@@ -313,7 +315,7 @@ namespace Mirle.Agv.View
             // 
             // ucLabelTB_CreateCommandState
             // 
-            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(658, 554);
+            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(494, 557);
             this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8);
             this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
             this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
@@ -1324,6 +1326,18 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
+            // Button_AutoCreate
+            // 
+            this.Button_AutoCreate.AutoEllipsis = true;
+            this.Button_AutoCreate.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.Button_AutoCreate.Location = new System.Drawing.Point(777, 547);
+            this.Button_AutoCreate.Name = "Button_AutoCreate";
+            this.Button_AutoCreate.Size = new System.Drawing.Size(179, 40);
+            this.Button_AutoCreate.TabIndex = 82;
+            this.Button_AutoCreate.Text = "自動產生動作速度";
+            this.Button_AutoCreate.UseVisualStyleBackColor = true;
+            this.Button_AutoCreate.Click += new System.EventHandler(this.Button_AutoCreate_Click);
+            // 
             // MoveCommandDebugModeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1475,5 +1489,6 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Label label_BeamState_Label;
         private System.Windows.Forms.Label label_BumpState_Label;
         private System.Windows.Forms.Button button_SimulateState;
+        private System.Windows.Forms.Button Button_AutoCreate;
     }
 }

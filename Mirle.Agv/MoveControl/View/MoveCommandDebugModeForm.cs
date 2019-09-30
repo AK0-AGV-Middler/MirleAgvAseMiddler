@@ -18,6 +18,7 @@ namespace Mirle.Agv.View
         private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
         private SimulateSettingAGVAngleForm settingAngleForm;
         private MoveControlSimulateStateForm simulateStateForm;
+        private ComputeFunction computeFunction = new ComputeFunction();
 
         private List<string> commandStringList = new List<string>();
         private List<string> reserveStringList = new List<string>();
@@ -592,7 +593,8 @@ namespace Mirle.Agv.View
 
             for (int i = 0; i < listCmdSpeedLimits.Items.Count; i++)
             {
-                double limit = (double)listCmdSpeedLimits.Items[i];
+                //double limit = (double)listCmdSpeedLimits.Items[i];
+                double limit = double.Parse(listCmdSpeedLimits.Items[i].ToString());
                 moveCmdInfo.SectionSpeedLimits.Add(limit);
             }
         }
@@ -648,29 +650,36 @@ namespace Mirle.Agv.View
 
         private void button_DebugModeSend_Click(object sender, EventArgs e)
         {
-            string errorMessage = "";
-            SetPositions();
-            SetActions();
-            SetSpeedLimits();
-
-            tbC_Debug.SelectedIndex = 1;
-
-            if (moveControl.MoveState != EnumMoveState.Idle)
+            try
             {
-                MessageBox.Show("動作命令中!");
-                return;
+                string errorMessage = "";
+                SetPositions();
+                SetActions();
+                SetSpeedLimits();
+
+                tbC_Debug.SelectedIndex = 1;
+
+                if (moveControl.MoveState != EnumMoveState.Idle)
+                {
+                    MessageBox.Show("動作命令中!");
+                    return;
+                }
+
+                command = moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo, ref errorMessage);
+
+                if (command != null)
+                {
+                    moveCmdInfo = null;
+                    button_SendList.Enabled = true;
+                    ShowList();
+                }
+                else
+                    MessageBox.Show("List 產生失敗!\n" + errorMessage);
             }
-
-            command = moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo, ref errorMessage);
-
-            if (command != null)
+            catch
             {
-                moveCmdInfo = null;
-                button_SendList.Enabled = true;
-                ShowList();
+                MessageBox.Show("List 產生失敗 (Excption)!");
             }
-            else
-                MessageBox.Show("List 產生失敗!\n" + errorMessage);
         }
         #endregion
 
@@ -984,5 +993,213 @@ namespace Mirle.Agv.View
             simulateStateForm = new MoveControlSimulateStateForm(moveControl);
             simulateStateForm.Show();
         }
+
+        private bool IsSectionR2000(MapPosition start, MapPosition end)
+        {
+            foreach (var valuePair in theMapInfo.allMapSections)
+            {
+                if ((valuePair.Value.HeadAddress.Position.X == start.X && valuePair.Value.HeadAddress.Position.Y == start.Y) &&
+                    (valuePair.Value.TailAddress.Position.X == end.X && valuePair.Value.TailAddress.Position.Y == end.Y))
+                    return valuePair.Value.Type == EnumSectionType.R2000;
+                else if ((valuePair.Value.HeadAddress.Position.X == end.X && valuePair.Value.HeadAddress.Position.Y == end.Y) &&
+                         (valuePair.Value.TailAddress.Position.X == start.X && valuePair.Value.TailAddress.Position.Y == start.Y))
+                    return valuePair.Value.Type == EnumSectionType.R2000;
+            }
+
+            return false;
+        }
+
+        private bool IsTR50(MapPosition temp)
+        {
+            foreach (var valuePair in theMapInfo.allMapAddresses)
+            {
+                if (temp.X == valuePair.Value.Position.X && temp.Y == valuePair.Value.Position.Y)
+                    return valuePair.Value.IsTR50;
+            }
+
+            return true;
+        }
+
+        public void GetSectionSpeed(ref MoveCmdInfo moveCmdInfo)
+        {
+            moveCmdInfo.SectionSpeedLimits = new List<double>();
+
+            for (int i = 0; i < moveCmdInfo.AddressActions.Count - 1; i++)
+            {
+                if (moveCmdInfo.AddressActions[i] == EnumAddressAction.R2000 ||
+                    moveCmdInfo.AddressActions[i] == EnumAddressAction.BR2000)
+                    moveCmdInfo.SectionSpeedLimits.Add(moveControl.moveControlConfig.TurnParameter[EnumAddressAction.R2000].Velocity);
+
+                else
+                    moveCmdInfo.SectionSpeedLimits.Add(400);
+            }
+        }
+
+        public MoveCmdInfo GetPositionAction(ref string errorMessage)
+        {
+            int lastSectionAngle = 0;
+            int thisSectionAngle = 0;
+            int newWheelAngle = 0;
+
+            if (listCmdAddressPositions.Items.Count < 2)
+            {
+                errorMessage = "只有" + listCmdAddressPositions.Items.Count.ToString() + "個點,別鬧了!";
+                return null;
+            }
+
+            MoveCmdInfo tempMoveCmdInfo = new MoveCmdInfo();
+            BreakDownMoveCommandData data = new BreakDownMoveCommandData();
+
+            for (int i = 0; i < listCmdAddressPositions.Items.Count; i++)
+            {
+                string positionPair = (string)listCmdAddressPositions.Items[i];
+                string[] posXY = positionPair.Split(',');
+                var posX = float.Parse(posXY[0]);
+                var posY = float.Parse(posXY[1]);
+                tempMoveCmdInfo.AddressPositions.Add(new MapPosition(posX, posY));
+            }
+
+            if (tempMoveCmdInfo.AddressPositions[0].X == tempMoveCmdInfo.AddressPositions[1].X &&
+                tempMoveCmdInfo.AddressPositions[0].Y == tempMoveCmdInfo.AddressPositions[1].Y)
+            {
+                errorMessage = "有相同Position!";
+                return null;
+            }
+
+            lastSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]);
+
+            if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]))
+                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
+            else
+                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
+
+            if (!computeFunction.GetDirFlagWheelAngle(tempMoveCmdInfo, ref data, moveControl.location.Real, moveControl.ControlData.WheelAngle, ref errorMessage))
+                return null;
+
+            if (tempMoveCmdInfo.AddressActions[0] == EnumAddressAction.R2000)
+            {
+                data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1], ref errorMessage);
+
+                if (data.AGVAngleInMap == -1)
+                    return null;
+            }
+
+            for (int i = 1; i < tempMoveCmdInfo.AddressPositions.Count - 1; i++)
+            {
+                if (tempMoveCmdInfo.AddressPositions[i].X == tempMoveCmdInfo.AddressPositions[i + 1].X &&
+                    tempMoveCmdInfo.AddressPositions[i].Y == tempMoveCmdInfo.AddressPositions[i + 1].Y)
+                {
+                    errorMessage = "有相同Position!";
+                    return null;
+                }
+
+                thisSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]);
+
+                if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]))
+                {
+                    if (Math.Abs(thisSectionAngle - lastSectionAngle) % 360 == 45)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
+                    }
+                    else if (Math.Abs(thisSectionAngle - (lastSectionAngle - 180)) % 360 == 45)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.BR2000);
+                        data.DirFlag = !data.DirFlag;
+                    }
+                    else
+                    {
+                        errorMessage = "奇怪角度R2000!";
+                        return null;
+                    }
+
+                    data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
+
+                    if (data.AGVAngleInMap == -1)
+                        return null;
+                }
+                else if (tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.BR2000)
+                {
+                    if ((thisSectionAngle - data.AGVAngleInMap) % 360 == 0)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.ST : EnumAddressAction.BST);
+                    }
+                    else if ((thisSectionAngle - data.AGVAngleInMap) % 180 == 0)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.BST : EnumAddressAction.ST);
+                        data.DirFlag = !data.DirFlag;
+                    }
+                    else
+                    {
+                        errorMessage = "R2000後不能接橫移!";
+                        return null;
+                    }
+                }
+                else if (thisSectionAngle == lastSectionAngle)
+                {
+                    tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
+                }
+                else
+                {
+                    newWheelAngle = computeFunction.GetTurnWheelAngle(data.WheelAngle, tempMoveCmdInfo.AddressPositions[i - 1],
+                        tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
+
+                    if (newWheelAngle != -1)
+                    {
+                        data.WheelAngle = newWheelAngle;
+                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.TR50 : EnumAddressAction.TR350);
+                    }
+                    else
+                    {
+                        data.WheelAngle = 0;
+                        data.DirFlag = !data.DirFlag;
+                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350);
+                    }
+                }
+
+                if (tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.BR2000)
+                {
+                    lastSectionAngle = data.AGVAngleInMap;
+
+                    if (!data.DirFlag)
+                    {
+                        if (lastSectionAngle > 0)
+                            lastSectionAngle -= 180;
+                        else
+                            lastSectionAngle += 180;
+                    }
+                }
+                else
+                    lastSectionAngle = thisSectionAngle;
+            }
+
+            tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.End);
+
+            return tempMoveCmdInfo;
+        }
+
+        private void Button_AutoCreate_Click(object sender, EventArgs e)
+        {
+            string errorMessage = "";
+            MoveCmdInfo tempMoveCmdInfo = GetPositionAction(ref errorMessage);
+
+            if (tempMoveCmdInfo == null)
+            {
+                MessageBox.Show(errorMessage);
+                return;
+            }
+
+            GetSectionSpeed(ref tempMoveCmdInfo);
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+
+            for (int i = 0; i < tempMoveCmdInfo.AddressActions.Count - 1; i++)
+            {
+                listCmdAddressActions.Items.Add(tempMoveCmdInfo.AddressActions[i].ToString());
+                listCmdSpeedLimits.Items.Add(tempMoveCmdInfo.SectionSpeedLimits[i].ToString());
+            }
+
+            listCmdAddressActions.Items.Add(tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1].ToString());
+        }
+
     }
 }
