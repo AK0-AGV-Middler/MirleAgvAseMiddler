@@ -1677,12 +1677,12 @@ namespace Mirle.Agv.Controller
                     return;
                 }
 
-                MapPosition pos = reserveOkSection.CmdDirection == EnumPermitDirection.Forward
-                    ? reserveOkSection.TailAddress.Position
-                    : reserveOkSection.HeadAddress.Position;
+                MapAddress address = reserveOkSection.CmdDirection == EnumPermitDirection.Forward
+                    ? reserveOkSection.TailAddress
+                    : reserveOkSection.HeadAddress;
 
-                bool updateResult = moveControlHandler.AddReservedMapPosition(pos);
-                OnMessageShowEvent?.Invoke(this, $"延攬通行權{aReserveOkSection.Id}成功，下一個可行終點為({Convert.ToInt32(pos.X)},{Convert.ToInt32(pos.Y)})。");
+                bool updateResult = moveControlHandler.AddReservedMapPosition(address.Position);
+                OnMessageShowEvent?.Invoke(this, $"延攬通行權{aReserveOkSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
             }
             catch (Exception ex)
             {
@@ -2153,7 +2153,7 @@ namespace Mirle.Agv.Controller
 
                 if (IsHighPower())
                 {
-                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage} > {highPercentage}(高水位門檻值), 故暫不充電";
+                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} > {highPercentage:F2}(高水位門檻值), 故暫不充電";
                     //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     //, msg));
                     OnMessageShowEvent?.Invoke(this, msg);
@@ -2161,7 +2161,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage} < {highPercentage}(高水位門檻值), 故送出充電信號";
+                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} < {highPercentage:F2}(高水位門檻值), 故送出充電信號";
                     loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , msg));
                     OnMessageShowEvent?.Invoke(this, msg);
@@ -2233,7 +2233,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage} < {lowPercentage}(自動充電門檻值), 故送出充電信號";
+                    var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage:F2} < {lowPercentage:F2}(自動充電門檻值), 故送出充電信號";
                     //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     //     , msg));
                     OnMessageShowEvent?.Invoke(this, msg);
