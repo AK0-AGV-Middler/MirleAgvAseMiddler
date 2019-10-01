@@ -40,6 +40,7 @@ namespace Mirle.Agv.View
             this.timer_UpdateData = new System.Windows.Forms.Timer(this.components);
             this.tbC_Debug = new System.Windows.Forms.TabControl();
             this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
+            this.Button_AutoCreate = new System.Windows.Forms.Button();
             this.button_AddReadPosition = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
             this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
@@ -148,7 +149,6 @@ namespace Mirle.Agv.View
             this.button_SimulationModeChange = new System.Windows.Forms.Button();
             this.label_SimulationMode = new System.Windows.Forms.Label();
             this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
-            this.Button_AutoCreate = new System.Windows.Forms.Button();
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -292,14 +292,26 @@ namespace Mirle.Agv.View
             this.tbP_CreateCommand.Text = "產生命令";
             this.tbP_CreateCommand.UseVisualStyleBackColor = true;
             // 
+            // Button_AutoCreate
+            // 
+            this.Button_AutoCreate.AutoEllipsis = true;
+            this.Button_AutoCreate.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.Button_AutoCreate.Location = new System.Drawing.Point(777, 547);
+            this.Button_AutoCreate.Name = "Button_AutoCreate";
+            this.Button_AutoCreate.Size = new System.Drawing.Size(179, 40);
+            this.Button_AutoCreate.TabIndex = 82;
+            this.Button_AutoCreate.Text = "自動產生動作速度";
+            this.Button_AutoCreate.UseVisualStyleBackColor = true;
+            this.Button_AutoCreate.Click += new System.EventHandler(this.Button_AutoCreate_Click);
+            // 
             // button_AddReadPosition
             // 
             this.button_AddReadPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.button_AddReadPosition.Location = new System.Drawing.Point(358, 564);
             this.button_AddReadPosition.Name = "button_AddReadPosition";
-            this.button_AddReadPosition.Size = new System.Drawing.Size(82, 29);
+            this.button_AddReadPosition.Size = new System.Drawing.Size(125, 29);
             this.button_AddReadPosition.TabIndex = 81;
-            this.button_AddReadPosition.Text = "Add";
+            this.button_AddReadPosition.Text = "Add目前位置";
             this.button_AddReadPosition.UseVisualStyleBackColor = true;
             this.button_AddReadPosition.Click += new System.EventHandler(this.button_AddReadPosition_Click);
             // 
@@ -1325,18 +1337,6 @@ namespace Mirle.Agv.View
             this.tbxLogView_MoveControlDebugMessage.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
             this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
-            // 
-            // Button_AutoCreate
-            // 
-            this.Button_AutoCreate.AutoEllipsis = true;
-            this.Button_AutoCreate.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.Button_AutoCreate.Location = new System.Drawing.Point(777, 547);
-            this.Button_AutoCreate.Name = "Button_AutoCreate";
-            this.Button_AutoCreate.Size = new System.Drawing.Size(179, 40);
-            this.Button_AutoCreate.TabIndex = 82;
-            this.Button_AutoCreate.Text = "自動產生動作速度";
-            this.Button_AutoCreate.UseVisualStyleBackColor = true;
-            this.Button_AutoCreate.Click += new System.EventHandler(this.Button_AutoCreate_Click);
             // 
             // MoveCommandDebugModeForm
             // 

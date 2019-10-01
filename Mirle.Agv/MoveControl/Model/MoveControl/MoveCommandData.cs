@@ -17,6 +17,14 @@ namespace Mirle.Agv.Model
         public List<ReserveData> ReserveList { get; set; }
         public int IndexOfReserveList { get; set; }
 
+        public MapPosition End { get; set; }
+        public double EndOffsetX { get; set; }
+        public double EndOffsetY { get; set; }
+        public double EndOffsetTheta { get; set; }
+        public double StartOffsetX { get; set; }
+        public double StartOffsetY { get; set; }
+        public double StartOffsetTheta { get; set; }
+        
         public MoveCommandData()
         {
             CommandList = new List<Command>();

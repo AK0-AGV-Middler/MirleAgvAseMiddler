@@ -162,6 +162,9 @@ namespace Mirle.Agv.View
                     case EnumSensorSafetyType.TRPathMonitoring:
                         tempSensor.SetLabelString("監控TR軌跡 : ");
                         break;
+                    case EnumSensorSafetyType.EndPositionOffset:
+                        tempSensor.SetLabelString("終點offset : ");
+                        break;
                     default:
                         break;
                 }
@@ -856,6 +859,9 @@ namespace Mirle.Agv.View
         #region tabPage Admin
         public void button_SimulationMode_Click(object sender, EventArgs e)
         {
+            if (!button_SimulationModeChange.Enabled)
+                return;
+
             button_SimulationModeChange.Enabled = false;
             moveControl.SimulationMode = (button_SimulationModeChange.Text == "關閉中");
             button_SimulateState.Visible = moveControl.SimulationMode;

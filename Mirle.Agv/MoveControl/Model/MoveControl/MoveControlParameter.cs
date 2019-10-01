@@ -37,7 +37,10 @@ namespace Mirle.Agv.Model
         public EnumVChangeSpeedLowerSafety VChangeSafetyType { get; set; }
         public double VChangeSafetyTargetEncoder { get; set; }
         public double VChangeSafetyVelocity { get; set; }
-        
+
+        public double SectionDeviationOffset { get; set; }
+        public bool EQVChange { get; set; }
+
         public MoveControlParameter()
         {
             VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
@@ -53,6 +56,7 @@ namespace Mirle.Agv.Model
             FlowClear = false;
             WaitReserveIndex = -1;
             CommandMoving = false;
+            EQVChange = false;
             SensorState = EnumVehicleSafetyAction.Normal;
             BeamSensorState = EnumVehicleSafetyAction.Normal;
             BumpSensorState = EnumVehicleSafetyAction.Normal;

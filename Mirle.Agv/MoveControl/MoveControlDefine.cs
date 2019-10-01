@@ -142,7 +142,8 @@ namespace Mirle.Agv
         R2000FlowStat,
         Bumper,
         CheckAxisState,
-        TRPathMonitoring
+        TRPathMonitoring,
+        EndPositionOffset
     }
 
     public enum EnumMoveStartType

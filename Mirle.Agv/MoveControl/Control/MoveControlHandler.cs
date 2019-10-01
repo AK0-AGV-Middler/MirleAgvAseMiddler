@@ -521,6 +521,7 @@ namespace Mirle.Agv.Controller
                     case "Bumper":
                     case "CheckAxisState":
                     case "TRPathMonitoring":
+                    case "EndPositionOffset":
                         temp.Enable = (item.InnerText == "Enable");
                         moveControlConfig.SensorByPass.Add(
                             (EnumSensorSafetyType)Enum.Parse(typeof(EnumSensorSafetyType), item.Name),
@@ -1135,15 +1136,19 @@ namespace Mirle.Agv.Controller
                     {
                         case 0:
                             sectionDeviation = agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y;
+                            ControlData.SectionDeviationOffset = command.EndOffsetY;
                             break;
                         case 180:
                             sectionDeviation = -(agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y);
+                            ControlData.SectionDeviationOffset = -command.EndOffsetY;
                             break;
                         case 90:
                             sectionDeviation = agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X;
+                            ControlData.SectionDeviationOffset = command.EndOffsetX;
                             break;
                         case -90:
                             sectionDeviation = -(agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X);
+                            ControlData.SectionDeviationOffset = -command.EndOffsetX;
                             break;
                         default:
                             break;
@@ -1376,6 +1381,12 @@ namespace Mirle.Agv.Controller
                 {
                     UpdateThetaSectionDeviation();
                     ThetaSectionDeviationSafetyCheck();
+
+                    if (location.ThetaAndSectionDeviation != null && ControlData.EQVChange)
+                    {
+                        location.ThetaAndSectionDeviation.SectionDeviation += ControlData.SectionDeviationOffset;
+                        location.ThetaAndSectionDeviation.Theta += command.EndOffsetTheta;
+                    }
 
                     if (newBarcodeData)
                         UpdateDelta();
@@ -1922,7 +1933,7 @@ namespace Mirle.Agv.Controller
         {
             if (velocity < oldVelocity)
             {
-                if (Math.Abs(location.Velocity) <= moveControlConfig.VelocitySafetyRange)
+                if (Math.Abs(location.Velocity) <= moveControlConfig.VelocitySafetyRange && velocity != 0)
                 {
                     double distance = computeFunction.GetAccDecDistance(
                         0, velocity + moveControlConfig.Safety[EnumMoveControlSafetyType.VChangeSafetyDistance].Range,
@@ -2041,7 +2052,12 @@ namespace Mirle.Agv.Controller
                 if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorR2000].Enable)
                     safetyData.TurningByPass = true;
 
-                DirLightTurn(ControlData.WheelAngle == -1 ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right);
+                DirLightTurn(ControlData.WheelAngle == -1 ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
+            }
+            else if (vChangeType == EnumVChangeType.EQ)
+            {
+                if (moveControlConfig.SensorByPass[EnumSensorSafetyType.EndPositionOffset].Enable)
+                    ControlData.EQVChange = true;
             }
 
             WriteLog("MoveControl", "7", device, "", "end");
@@ -2231,6 +2247,8 @@ namespace Mirle.Agv.Controller
 
             WriteLog("MoveControl", "7", device, "", "nowEncoder : " + location.RealEncoder.ToString("0") + ", endEncoder : " + endEncoder.ToString("0"));
 
+            double endEncoderDelta = location.RealEncoder - endEncoder;
+
             if (Math.Abs(endEncoder - location.RealEncoder) > moveControlConfig.SecondCorrectionX)
             {
                 elmoDriver.ElmoMove(EnumAxis.GX, endEncoder - location.RealEncoder, moveControlConfig.EQ.Velocity, EnumMoveType.Relative,
@@ -2262,6 +2280,29 @@ namespace Mirle.Agv.Controller
             }
 
             elmoDriver.DisableMoveAxis();
+
+            bool newBarcode = UpdateSR2000();
+
+            try
+            {
+                if (newBarcode)
+                {
+                    double deltaX = location.Barcode.Position.X - command.End.X;
+                    double deltaY = location.Barcode.Position.Y - command.End.Y;
+                    double theta = location.Barcode.AGVAngle - location.Real.AGVAngle;
+                    plcAgent.SetVehiclePositionValue(deltaX.ToString("0.0"), deltaY.ToString("0.0"), theta.ToString("0.00"), location.Real.AGVAngle.ToString("0"), endEncoderDelta.ToString("0.0"));
+                    WriteLog("MoveControl", "7", device, "", "send plc : x = " + deltaX.ToString("0.0") + ", y = " +
+                                                              deltaY.ToString("0.0") + ", theta = " + theta.ToString("0.00") + ", AGV車頭方向 = " +
+                                                              location.Real.AGVAngle.ToString("0") + ", 二修距離 = " + endEncoderDelta.ToString("0.0"));
+                }
+                else
+                    WriteLog("MoveControl", "7", device, "", "send plc : 讀取不到Barcode!");
+            }
+            catch (Exception ex)
+            {
+                WriteLog("MoveControl", "7", device, "", "send plc : Excption : " + ex.ToString() + " !");
+            }
+
             MoveState = EnumMoveState.Idle;
             MoveFinished(EnumMoveComplete.Success);
             ControlData.SecondCorrection = false;
@@ -2371,6 +2412,7 @@ namespace Mirle.Agv.Controller
             WriteLog("MoveControl", "7", device, "", "start");
             AGVStopResult = emsResult;
             WriteLog("MoveControl", "7", device, "", "EMS Stop : " + emsResult);
+            WriteLog("Error", "7", device, "", "EMS Stop : " + emsResult);
             MoveState = EnumMoveState.Error;
 
             double stopDistance = computeFunction.GetAccDecDistance(Math.Abs(location.Velocity), 0,
@@ -2588,8 +2630,8 @@ namespace Mirle.Agv.Controller
 
                     if (MoveState == EnumMoveState.Moving && ControlData.OntimeReviseFlag)
                     {
-                        if (agvRevise.OntimeReviseByAGVPositionAndSection(ref reviseWheelAngle, location.ThetaAndSectionDeviation,
-                            ControlData.WheelAngle, location.Velocity))
+                        if (agvRevise.OntimeReviseByAGVPositionAndSection(ref reviseWheelAngle,
+                            location.ThetaAndSectionDeviation, ControlData.WheelAngle, location.Velocity))
                         {
                             if (location.GXMoveCompelete)
                                 //WriteLog("MoveControl", "7", device, "", "GX 停止中,因此不修正!");
@@ -2739,6 +2781,12 @@ namespace Mirle.Agv.Controller
 
             if (nextVChangeDistance == -1)
                 return velocity;
+            else if (ControlData.SensorState == EnumVehicleSafetyAction.LowSpeed)
+            {
+                if (command.CommandList[index].Velocity > velocity && velocity == moveControlConfig.LowVelocity)
+                    return velocity;
+            }
+
 
             nextVChangeDistance = Math.Abs(location.RealEncoder - command.CommandList[index].TriggerEncoder);
 
@@ -3403,6 +3451,9 @@ namespace Mirle.Agv.Controller
         {
             WriteLog("MoveControl", "7", device, "", "status : " + status.ToString());
 
+            if (status == EnumMoveComplete.Fail)
+                WriteLog("Error", "7", device, "", "status : " + status.ToString());
+
             if (status == EnumMoveComplete.Pause)
             {
                 if (isAGVMCommand)
@@ -3486,6 +3537,7 @@ namespace Mirle.Agv.Controller
             ControlData.FlowClear = false;
             ControlData.SecondCorrection = false;
             ControlData.RealVelocity = 0;
+            ControlData.EQVChange = false;
 
             ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
             safetyData = new MoveControlSafetyData();
