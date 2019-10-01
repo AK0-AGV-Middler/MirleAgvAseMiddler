@@ -1275,14 +1275,27 @@ namespace Mirle.Agv.Controller
 
         public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
+            if (alarm.Level== EnumAlarmLevel.Alarm)
+            {
+                theVehicle.ErrorStatus = VhStopSingle.StopSingleOn;
+                Send_Cmd144_StatusChangeReport(sender as string);
+            }
             Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrSet);
         }
         public void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
         {
+            if (!alarmHandler.HasAlarm)
+            {
+                theVehicle.ErrorStatus = VhStopSingle.StopSingleOff;
+                Send_Cmd144_StatusChangeReport(sender as string);
+            }
             Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
         }
         public void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
+
+            theVehicle.ErrorStatus = VhStopSingle.StopSingleOff;
+            Send_Cmd144_StatusChangeReport(sender as string);
             Send_Cmd194_AlarmReport("0", ErrorStatus.ErrReset);
 
             //foreach (var alarm in alarms)
@@ -1976,10 +1989,12 @@ namespace Mirle.Agv.Controller
                 case CMDCancelType.CmdCancel:
                 case CMDCancelType.CmdAbort:
                     mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
-                    break;
-                case CMDCancelType.CmdNone:
+                    break;               
                 case CMDCancelType.CmdCancelIdMismatch:
                 case CMDCancelType.CmdCancelIdReadFailed:
+                    //mainFlowHandler.Middler_OnCmdCarrierIdReadCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType,receive.);
+                    //break;
+                case CMDCancelType.CmdNone:
                 default:
                     replyCode = 1;
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
@@ -2049,19 +2064,12 @@ namespace Mirle.Agv.Controller
                         case CMDCancelType.CmdAbort:
                         case CMDCancelType.CmdCancelIdMismatch:
                         case CMDCancelType.CmdCancelIdReadFailed:
-                            {
-                                if (IsCancelByCstIdRead)
-                                {
-                                    mainFlowHandler.StopAndClear();
-                                }
-                                else
-                                {
-                                    mainFlowHandler.IsCancelByCstIdRead = true;
-                                }
-                            }
+                            mainFlowHandler.IsCancelByCstIdRead = true;
+                            mainFlowHandler.IsBcrReadReply = true;
                             return;
                         case CMDCancelType.CmdNone:
                         default:
+                            mainFlowHandler.IsBcrReadReply = true;
                             return;
                     }
                 }

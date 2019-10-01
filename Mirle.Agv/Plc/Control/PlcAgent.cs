@@ -992,13 +992,29 @@ namespace Mirle.Agv.Controller
                     .Append(", C: ").Append(APLCVehicle.Robot.ForkAlignmentC)
                     .Append(", B: ").Append(APLCVehicle.Robot.ForkAlignmentB)
                     .ToString();
-            
-            String strLog2 = new StringBuilder().Append(status)
+
+            String strLog2 = "";
+            if (AVehicleCorrectValue.otherMessage.Equals(""))
+            {
+                strLog2 = new StringBuilder().Append(status)
+                                    .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
+                                    .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
+                                    .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
+                                    .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
+                                    .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
+                                    .ToString();
+            }else
+            {
+                strLog2 = new StringBuilder().Append(status)
                     .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
                     .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
                     .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
                     .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
+                    .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
+                    .Append(", other: ").Append(AVehicleCorrectValue.VehicleHead)
                     .ToString();
+            }
+            
 
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
@@ -2664,6 +2680,7 @@ namespace Mirle.Agv.Controller
                         {
                             case EnumForkCommandState.Queue:
 
+                                #region Not used
                                 //if (this.IsFakeForking)
                                 //{
                                 //    System.Threading.Thread.Sleep(3000);
@@ -2696,6 +2713,7 @@ namespace Mirle.Agv.Controller
 
                                 //    break;
                                 //}
+                                #endregion
 
                                 //送出指令                              
                                 if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
@@ -3404,7 +3422,7 @@ namespace Mirle.Agv.Controller
 
 
 
-        public Boolean SetVehiclePositionValue(String deltaX, String deltaY, String theta, String vehicleHead)
+        public void SetVehiclePositionValue(String deltaX, String deltaY, String theta, String vehicleHead, String vehicleTwiceReviseDistance, String otherMessage = "")
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             try
@@ -3413,12 +3431,13 @@ namespace Mirle.Agv.Controller
                 this.AVehicleCorrectValue.VehicleDeltaY = deltaY;
                 this.AVehicleCorrectValue.VehicleTheta = theta;
                 this.AVehicleCorrectValue.VehicleHead = vehicleHead;
-            }catch (Exception ex)
+                this.AVehicleCorrectValue.VehicleTwiceReviseDistance = vehicleTwiceReviseDistance;
+                this.AVehicleCorrectValue.otherMessage = otherMessage;
+            }
+            catch (Exception ex)
             {
                 LogPlcMsg(loggerAgent, new LogFormat("Error", "9", functionName, this.PlcId, "", ex.ToString()));
             }
-            return true;
-
         }
 
 
@@ -3431,7 +3450,8 @@ namespace Mirle.Agv.Controller
             this.AVehicleCorrectValue.VehicleDeltaY = "";
             this.AVehicleCorrectValue.VehicleTheta = "";
             this.AVehicleCorrectValue.VehicleHead = "";
-
+            this.AVehicleCorrectValue.VehicleTwiceReviseDistance = "";
+            this.AVehicleCorrectValue.otherMessage = "";
 
             this.APLCVehicle.Robot.ForkAlignmentP = 0f;
             this.APLCVehicle.Robot.ForkAlignmentY = 0f;

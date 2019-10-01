@@ -128,6 +128,7 @@ namespace Mirle.Agv.Controller
         public bool IsCancelByCstIdRead { get; set; } = false;
         public bool NeedRename { get; set; } = false;
         public bool IsStopAndClear { get; set; } = false;
+        public bool IsBcrReadReply { get; set; } = false;
         #endregion
 
         public MainFlowHandler()
@@ -1680,38 +1681,38 @@ namespace Mirle.Agv.Controller
 
             return result;
         }
-        private bool CanCassetteIdRead()
-        {
-            var plcVeh = theVehicle.ThePlcVehicle;
-            // 判斷當前貨物的ID是否可正確讀取 若否 則發送報告
-            if (!plcVeh.Loading)
-            {
-                alarmHandler.SetAlarm(000003);
-                return false;
-            }
-            else if (string.IsNullOrEmpty(plcVeh.CassetteId))
-            {
-                //CassetteId is null or Empty
-                alarmHandler.SetAlarm(000004);
-                return false;
-            }
-            else if (plcVeh.CassetteId == "ERROR")
-            {
-                //CassetteId is Error
-                alarmHandler.SetAlarm(000005);
-                return false;
-            }
-            else if (ReadResult == EnumCstIdReadResult.Mismatch)
-            {
-                //CassetteId missmatch
-                alarmHandler.SetAlarm(000005);
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
+        //private bool CanCassetteIdRead()
+        //{
+        //    var plcVeh = theVehicle.ThePlcVehicle;
+        //    // 判斷當前貨物的ID是否可正確讀取 若否 則發送報告
+        //    if (!plcVeh.Loading)
+        //    {
+        //        alarmHandler.SetAlarm(000003);
+        //        return false;
+        //    }
+        //    else if (string.IsNullOrEmpty(plcVeh.CassetteId))
+        //    {
+        //        //CassetteId is null or Empty
+        //        alarmHandler.SetAlarm(000004);
+        //        return false;
+        //    }
+        //    else if (plcVeh.CassetteId == "ERROR")
+        //    {
+        //        //CassetteId is Error
+        //        alarmHandler.SetAlarm(000005);
+        //        return false;
+        //    }
+        //    else if (ReadResult == EnumCstIdReadResult.Mismatch)
+        //    {
+        //        //CassetteId missmatch
+        //        alarmHandler.SetAlarm(000005);
+        //        return false;
+        //    }
+        //    else
+        //    {
+        //        return true;
+        //    }
+        //}
         public bool IsAgvcTransferCommandEmpty()
         {
             return agvcTransCmd.CommandId == "";
@@ -1834,24 +1835,44 @@ namespace Mirle.Agv.Controller
                 if (forkCommand.ForkCommandType == EnumForkCommand.Load)
                 {
                     middleAgent.LoadComplete();
-                    if (theVehicle.ThePlcVehicle.CassetteId == agvcTransCmd.CassetteId)
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+                    while (!IsBcrReadReply)
                     {
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");                   
-                        VisitNextTransferStep();
-                    }
-                    else
-                    {
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成，貨物ID讀取異常。");
-                        if (IsCancelByCstIdRead)
-                        {                         
-                            StopAndClear();
-                        }
-                        else
+                        try
                         {
-                            middleAgent.IsCancelByCstIdRead = true;
+                            if (IsCancelByCstIdRead)
+                            {
+                                OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成，貨物ID讀取異常。");
+                                StopAndClear();
+                            }
+                            else
+                            {
+                                OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");
+                                VisitNextTransferStep();
+                            }
+
+                            sw.Stop();
+                            if (sw.ElapsedMilliseconds > 5 * 60 * 1000)
+                            {
+                                alarmHandler.SetAlarm(000029);
+                                break;
+                            }
+                            else
+                            {
+                                sw.Start();
+                            }
                         }
-                        return;
+                        catch (Exception ex)
+                        {
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        }
+
+                        SpinWait.SpinUntil(() => false, mainFlowConfig.WatchLowPowerSleepTimeMs);
                     }
+
+                    IsBcrReadReply = false;
+
                 }
                 else /*if (forkCommand.ForkCommandType == EnumForkCommand.Unload)*/
                 {

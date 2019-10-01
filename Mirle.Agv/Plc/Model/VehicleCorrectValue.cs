@@ -13,5 +13,7 @@ namespace Mirle.Agv.Model
         public string VehicleDeltaY { get; set; } = "";
         public string VehicleTheta { get; set; } = "";
         public string VehicleHead { get; set; } = "";
+        public string VehicleTwiceReviseDistance { get; set; } = "";
+        public string otherMessage { get; set; } = "";
     }
 }
