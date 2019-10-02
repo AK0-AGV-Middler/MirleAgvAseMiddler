@@ -412,6 +412,7 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
+            this.btnFakeInterlockError = new System.Windows.Forms.Button();
             this.tabPlcOperation.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel7.SuspendLayout();
@@ -478,6 +479,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.btnFakeInterlockError);
             this.tabPage2.Controls.Add(this.panel7);
             this.tabPage2.Controls.Add(this.chkFakeForking);
             this.tabPage2.Controls.Add(this.palForkParams);
@@ -1277,7 +1279,7 @@
             this.grpCastIDReader.Controls.Add(this.txtCassetteID);
             this.grpCastIDReader.Location = new System.Drawing.Point(643, 22);
             this.grpCastIDReader.Name = "grpCastIDReader";
-            this.grpCastIDReader.Size = new System.Drawing.Size(286, 286);
+            this.grpCastIDReader.Size = new System.Drawing.Size(286, 166);
             this.grpCastIDReader.TabIndex = 66;
             this.grpCastIDReader.TabStop = false;
             this.grpCastIDReader.Text = "Cassette ID Reader";
@@ -4892,6 +4894,16 @@
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
             // 
+            // btnFakeInterlockError
+            // 
+            this.btnFakeInterlockError.Location = new System.Drawing.Point(643, 196);
+            this.btnFakeInterlockError.Name = "btnFakeInterlockError";
+            this.btnFakeInterlockError.Size = new System.Drawing.Size(143, 37);
+            this.btnFakeInterlockError.TabIndex = 56;
+            this.btnFakeInterlockError.Text = "FakeInterlockError";
+            this.btnFakeInterlockError.UseVisualStyleBackColor = true;
+            this.btnFakeInterlockError.Click += new System.EventHandler(this.btnFakeInterlockError_Click);
+            // 
             // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -5365,5 +5377,6 @@
         private System.Windows.Forms.Label lblTSpeedNormal;
         private System.Windows.Forms.Label lblTSpeedFast;
         private System.Windows.Forms.Label lblAGVMode;
+        private System.Windows.Forms.Button btnFakeInterlockError;
     }
 }

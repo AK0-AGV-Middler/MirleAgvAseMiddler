@@ -942,6 +942,12 @@ namespace Mirle.Agv.Controller
                 LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
             }
         }
+
+        public void triggerForkCommandInterlockErrorEvent()
+        {
+            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+        }
+            
         private void ccModeAHSet()
         {
 

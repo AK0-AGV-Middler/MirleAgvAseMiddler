@@ -1530,5 +1530,10 @@ namespace Mirle.Agv.View
             };
             plcAgent.WritePlcConfigToXML(dicSetValue);
         }
+
+        private void btnFakeInterlockError_Click(object sender, EventArgs e)
+        {
+            plcAgent.triggerForkCommandInterlockErrorEvent();
+        }
     }
 }
