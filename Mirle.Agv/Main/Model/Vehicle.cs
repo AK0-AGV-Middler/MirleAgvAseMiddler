@@ -121,13 +121,11 @@ namespace Mirle.Agv.Model
         public VhStopSingle ObstacleStatus { get; set; }
         public int ObstDistance { get; set; }
         public string ObstVehicleID { get; set; } = "";
-        public VhStopSingle PauseStatus { get; set; }
         public VhPowerStatus PowerStatus { get; set; }
         public VhStopSingle ReserveStatus { get; set; }
         public string StoppedBlockID { get; set; } = "";
         public VhStopSingle ErrorStatus { get; set; }
         public ActiveType Cmd131ActType { get; set; }
-        public CompleteStatus CompleteStatus { get; set; }
         public uint CmdPowerConsume { get; set; }
         public int CmdDistance { get; set; }
         public EventType Cmd134EventType { get; set; }

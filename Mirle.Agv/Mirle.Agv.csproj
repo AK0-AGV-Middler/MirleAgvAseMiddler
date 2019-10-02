@@ -200,6 +200,7 @@
     <Compile Include="Plc\Model\PlcConfig.cs" />
     <Compile Include="Plc\Model\PlcEmo.cs" />
     <Compile Include="Plc\Model\PlcForkCommand.cs" />
+    <Compile Include="Plc\Model\PlcOperation.cs" />
     <Compile Include="Plc\Model\PlcRobot.cs" />
     <Compile Include="Plc\Model\PlcVehicle.cs" />
     <Compile Include="Main\Model\TransferSteps\EmptyTransCmd.cs" />

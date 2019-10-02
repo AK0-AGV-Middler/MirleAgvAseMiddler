@@ -114,5 +114,11 @@ namespace Mirle.Agv.View
             this.SendToBack();
             this.Hide();
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var id = Convert.ToInt32(num1.Value);
+            alarmHandler.SetAlarm(id);
+        }
     }
 }

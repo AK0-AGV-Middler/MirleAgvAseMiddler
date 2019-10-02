@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.tabContol1 = new System.Windows.Forms.TabControl();
+            this.tabPlcOperation = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.panel7 = new System.Windows.Forms.Panel();
@@ -100,6 +100,7 @@
             this.label25 = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
             this.grpCastIDReader = new System.Windows.Forms.GroupBox();
+            this.txtCassetteIDSet = new System.Windows.Forms.TextBox();
             this.btnCstIDSet = new System.Windows.Forms.Button();
             this.btnTriggerCassetteReader = new System.Windows.Forms.Button();
             this.label22 = new System.Windows.Forms.Label();
@@ -263,6 +264,13 @@
             this.tbxBatteryCellLowVoltage_SV = new System.Windows.Forms.TextBox();
             this.btnBatteryParamSet = new System.Windows.Forms.Button();
             this.tabSafety = new System.Windows.Forms.TabPage();
+            this.btnSaveBeamSensorDisableNormalSpeed = new System.Windows.Forms.Button();
+            this.btnSimulationPLCConnect = new System.Windows.Forms.Button();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.chkBeamSensorNearSet = new System.Windows.Forms.CheckBox();
+            this.chkBeamSensorFarSet = new System.Windows.Forms.CheckBox();
+            this.lblBeamSensorSelect = new System.Windows.Forms.Label();
+            this.chkBeamSensorDisableNormalSpeed = new System.Windows.Forms.CheckBox();
             this.btnForce_ELMO_Servo_Off = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.panel9 = new System.Windows.Forms.Panel();
@@ -355,6 +363,43 @@
             this.lblBeamSensorFUR = new System.Windows.Forms.Label();
             this.lblBeamSensorFUL = new System.Windows.Forms.Label();
             this.pnlF = new System.Windows.Forms.Panel();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.grpOperateStatus = new System.Windows.Forms.GroupBox();
+            this.lblAGVMode = new System.Windows.Forms.Label();
+            this.lblPlcMode = new System.Windows.Forms.Label();
+            this.lblVehicleModeManual = new System.Windows.Forms.Label();
+            this.lblVehicleModeAuto = new System.Windows.Forms.Label();
+            this.lblPlcModeManual = new System.Windows.Forms.Label();
+            this.lblPlcModeAuto = new System.Windows.Forms.Label();
+            this.grpVehicleMode = new System.Windows.Forms.GroupBox();
+            this.lblMSpeed10 = new System.Windows.Forms.Label();
+            this.lblMSpeed50 = new System.Windows.Forms.Label();
+            this.lblMSpeed100 = new System.Windows.Forms.Label();
+            this.lblMSpeed300 = new System.Windows.Forms.Label();
+            this.lblTSpeedSlow = new System.Windows.Forms.Label();
+            this.lblTSpeedNormal = new System.Windows.Forms.Label();
+            this.lblTSpeedFast = new System.Windows.Forms.Label();
+            this.lblMSpeed = new System.Windows.Forms.Label();
+            this.lblTSpeed = new System.Windows.Forms.Label();
+            this.lblDistanceMm = new System.Windows.Forms.Label();
+            this.label101 = new System.Windows.Forms.Label();
+            this.lblMoveDistance = new System.Windows.Forms.Label();
+            this.lblOperationRevise = new System.Windows.Forms.Label();
+            this.lblOperationStop = new System.Windows.Forms.Label();
+            this.lblOperationWheelRight = new System.Windows.Forms.Label();
+            this.lblOperationMoveFront = new System.Windows.Forms.Label();
+            this.lblOperationMoveBack = new System.Windows.Forms.Label();
+            this.lblOperationWheelLeft = new System.Windows.Forms.Label();
+            this.lblOperation = new System.Windows.Forms.Label();
+            this.lblVehicleOperationMode = new System.Windows.Forms.Label();
+            this.lblVehicleOperationModeSpinTurn = new System.Windows.Forms.Label();
+            this.lblVehicleOperationModeTBWheel = new System.Windows.Forms.Label();
+            this.lblVehicleOperationModeTFWheel = new System.Windows.Forms.Label();
+            this.lblVehicleOperationModeNormal = new System.Windows.Forms.Label();
+            this.grpElmoFunction = new System.Windows.Forms.GroupBox();
+            this.lblElmoAllReset = new System.Windows.Forms.Label();
+            this.lblElmoDisable = new System.Windows.Forms.Label();
+            this.lblElmoEnable = new System.Windows.Forms.Label();
             this.timGUIRefresh = new System.Windows.Forms.Timer(this.components);
             this.label19 = new System.Windows.Forms.Label();
             this.txtTriggerEvent = new System.Windows.Forms.TextBox();
@@ -367,14 +412,7 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
-            this.chkBeamSensorDisableNormalSpeed = new System.Windows.Forms.CheckBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.lblBeamSensorSelect = new System.Windows.Forms.Label();
-            this.chkBeamSensorFarSet = new System.Windows.Forms.CheckBox();
-            this.chkBeamSensorNearSet = new System.Windows.Forms.CheckBox();
-            this.btnSimulationPLCConnect = new System.Windows.Forms.Button();
-            this.btnSaveBeamSensorDisableNormalSpeed = new System.Windows.Forms.Button();
-            this.tabContol1.SuspendLayout();
+            this.tabPlcOperation.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel7.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
@@ -395,6 +433,7 @@
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabSafety.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panel9.SuspendLayout();
             this.panel6.SuspendLayout();
@@ -407,21 +446,25 @@
             this.grpL.SuspendLayout();
             this.grpB.SuspendLayout();
             this.grpF.SuspendLayout();
-            this.groupBox3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
+            this.grpOperateStatus.SuspendLayout();
+            this.grpVehicleMode.SuspendLayout();
+            this.grpElmoFunction.SuspendLayout();
             this.SuspendLayout();
             // 
-            // tabContol1
+            // tabPlcOperation
             // 
-            this.tabContol1.Controls.Add(this.tabPage1);
-            this.tabContol1.Controls.Add(this.tabPage2);
-            this.tabContol1.Controls.Add(this.tabPage3);
-            this.tabContol1.Controls.Add(this.tabSafety);
-            this.tabContol1.Font = new System.Drawing.Font("新細明體", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tabContol1.Location = new System.Drawing.Point(12, 35);
-            this.tabContol1.Name = "tabContol1";
-            this.tabContol1.SelectedIndex = 0;
-            this.tabContol1.Size = new System.Drawing.Size(1297, 670);
-            this.tabContol1.TabIndex = 0;
+            this.tabPlcOperation.Controls.Add(this.tabPage1);
+            this.tabPlcOperation.Controls.Add(this.tabPage2);
+            this.tabPlcOperation.Controls.Add(this.tabPage3);
+            this.tabPlcOperation.Controls.Add(this.tabSafety);
+            this.tabPlcOperation.Controls.Add(this.tabPage4);
+            this.tabPlcOperation.Font = new System.Drawing.Font("新細明體", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tabPlcOperation.Location = new System.Drawing.Point(12, 35);
+            this.tabPlcOperation.Name = "tabPlcOperation";
+            this.tabPlcOperation.SelectedIndex = 0;
+            this.tabPlcOperation.Size = new System.Drawing.Size(1297, 670);
+            this.tabPlcOperation.TabIndex = 0;
             // 
             // tabPage1
             // 
@@ -1227,6 +1270,7 @@
             // 
             // grpCastIDReader
             // 
+            this.grpCastIDReader.Controls.Add(this.txtCassetteIDSet);
             this.grpCastIDReader.Controls.Add(this.btnCstIDSet);
             this.grpCastIDReader.Controls.Add(this.btnTriggerCassetteReader);
             this.grpCastIDReader.Controls.Add(this.label22);
@@ -1237,6 +1281,13 @@
             this.grpCastIDReader.TabIndex = 66;
             this.grpCastIDReader.TabStop = false;
             this.grpCastIDReader.Text = "Cassette ID Reader";
+            // 
+            // txtCassetteIDSet
+            // 
+            this.txtCassetteIDSet.Location = new System.Drawing.Point(24, 124);
+            this.txtCassetteIDSet.Name = "txtCassetteIDSet";
+            this.txtCassetteIDSet.Size = new System.Drawing.Size(119, 23);
+            this.txtCassetteIDSet.TabIndex = 55;
             // 
             // btnCstIDSet
             // 
@@ -3047,6 +3098,82 @@
             this.tabSafety.Text = "Safety";
             this.tabSafety.UseVisualStyleBackColor = true;
             // 
+            // btnSaveBeamSensorDisableNormalSpeed
+            // 
+            this.btnSaveBeamSensorDisableNormalSpeed.Location = new System.Drawing.Point(256, 418);
+            this.btnSaveBeamSensorDisableNormalSpeed.Name = "btnSaveBeamSensorDisableNormalSpeed";
+            this.btnSaveBeamSensorDisableNormalSpeed.Size = new System.Drawing.Size(79, 30);
+            this.btnSaveBeamSensorDisableNormalSpeed.TabIndex = 93;
+            this.btnSaveBeamSensorDisableNormalSpeed.Text = "Save";
+            this.btnSaveBeamSensorDisableNormalSpeed.UseVisualStyleBackColor = true;
+            this.btnSaveBeamSensorDisableNormalSpeed.Click += new System.EventHandler(this.btnSaveBeamSensorDisableNormalSpeed_Click);
+            // 
+            // btnSimulationPLCConnect
+            // 
+            this.btnSimulationPLCConnect.Location = new System.Drawing.Point(593, 581);
+            this.btnSimulationPLCConnect.Name = "btnSimulationPLCConnect";
+            this.btnSimulationPLCConnect.Size = new System.Drawing.Size(181, 30);
+            this.btnSimulationPLCConnect.TabIndex = 92;
+            this.btnSimulationPLCConnect.Text = "PLC Connect Simulation";
+            this.btnSimulationPLCConnect.UseVisualStyleBackColor = true;
+            this.btnSimulationPLCConnect.Click += new System.EventHandler(this.btnSimulationPLCConnect_Click);
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.chkBeamSensorNearSet);
+            this.groupBox3.Controls.Add(this.chkBeamSensorFarSet);
+            this.groupBox3.Controls.Add(this.lblBeamSensorSelect);
+            this.groupBox3.Location = new System.Drawing.Point(581, 500);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(318, 73);
+            this.groupBox3.TabIndex = 91;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Beam Sensor Signal Simulate Set";
+            // 
+            // chkBeamSensorNearSet
+            // 
+            this.chkBeamSensorNearSet.AutoSize = true;
+            this.chkBeamSensorNearSet.Location = new System.Drawing.Point(197, 32);
+            this.chkBeamSensorNearSet.Name = "chkBeamSensorNearSet";
+            this.chkBeamSensorNearSet.Size = new System.Drawing.Size(95, 20);
+            this.chkBeamSensorNearSet.TabIndex = 76;
+            this.chkBeamSensorNearSet.Text = "Near Detect";
+            this.chkBeamSensorNearSet.UseVisualStyleBackColor = true;
+            this.chkBeamSensorNearSet.Click += new System.EventHandler(this.chkBeamSensorNearSet_CheckedChanged);
+            // 
+            // chkBeamSensorFarSet
+            // 
+            this.chkBeamSensorFarSet.AutoSize = true;
+            this.chkBeamSensorFarSet.Location = new System.Drawing.Point(97, 32);
+            this.chkBeamSensorFarSet.Name = "chkBeamSensorFarSet";
+            this.chkBeamSensorFarSet.Size = new System.Drawing.Size(84, 20);
+            this.chkBeamSensorFarSet.TabIndex = 75;
+            this.chkBeamSensorFarSet.Text = "Far Detect";
+            this.chkBeamSensorFarSet.UseVisualStyleBackColor = true;
+            this.chkBeamSensorFarSet.Click += new System.EventHandler(this.chkBeamSensorFarSet_CheckedChanged);
+            // 
+            // lblBeamSensorSelect
+            // 
+            this.lblBeamSensorSelect.BackColor = System.Drawing.Color.LightGreen;
+            this.lblBeamSensorSelect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblBeamSensorSelect.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblBeamSensorSelect.Location = new System.Drawing.Point(12, 23);
+            this.lblBeamSensorSelect.Name = "lblBeamSensorSelect";
+            this.lblBeamSensorSelect.Size = new System.Drawing.Size(63, 34);
+            this.lblBeamSensorSelect.TabIndex = 71;
+            this.lblBeamSensorSelect.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // chkBeamSensorDisableNormalSpeed
+            // 
+            this.chkBeamSensorDisableNormalSpeed.AutoSize = true;
+            this.chkBeamSensorDisableNormalSpeed.Location = new System.Drawing.Point(19, 423);
+            this.chkBeamSensorDisableNormalSpeed.Name = "chkBeamSensorDisableNormalSpeed";
+            this.chkBeamSensorDisableNormalSpeed.Size = new System.Drawing.Size(231, 20);
+            this.chkBeamSensorDisableNormalSpeed.TabIndex = 90;
+            this.chkBeamSensorDisableNormalSpeed.Text = "Beam Sensor Disable Normal Speed";
+            this.chkBeamSensorDisableNormalSpeed.UseVisualStyleBackColor = true;
+            this.chkBeamSensorDisableNormalSpeed.CheckedChanged += new System.EventHandler(this.chkBeamSensorDisableNormalSpeed_CheckedChanged);
+            // 
             // btnForce_ELMO_Servo_Off
             // 
             this.btnForce_ELMO_Servo_Off.BackColor = System.Drawing.Color.Pink;
@@ -4192,6 +4319,468 @@
             this.pnlF.TabIndex = 69;
             this.pnlF.DoubleClick += new System.EventHandler(this.pnlF_DoubleClick);
             // 
+            // tabPage4
+            // 
+            this.tabPage4.BackColor = System.Drawing.Color.Transparent;
+            this.tabPage4.Controls.Add(this.grpOperateStatus);
+            this.tabPage4.Controls.Add(this.grpVehicleMode);
+            this.tabPage4.Controls.Add(this.grpElmoFunction);
+            this.tabPage4.Location = new System.Drawing.Point(4, 23);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(1289, 643);
+            this.tabPage4.TabIndex = 4;
+            this.tabPage4.Text = "JogStatus";
+            // 
+            // grpOperateStatus
+            // 
+            this.grpOperateStatus.Controls.Add(this.lblAGVMode);
+            this.grpOperateStatus.Controls.Add(this.lblPlcMode);
+            this.grpOperateStatus.Controls.Add(this.lblVehicleModeManual);
+            this.grpOperateStatus.Controls.Add(this.lblVehicleModeAuto);
+            this.grpOperateStatus.Controls.Add(this.lblPlcModeManual);
+            this.grpOperateStatus.Controls.Add(this.lblPlcModeAuto);
+            this.grpOperateStatus.Location = new System.Drawing.Point(53, 25);
+            this.grpOperateStatus.Name = "grpOperateStatus";
+            this.grpOperateStatus.Size = new System.Drawing.Size(388, 172);
+            this.grpOperateStatus.TabIndex = 3;
+            this.grpOperateStatus.TabStop = false;
+            this.grpOperateStatus.Text = "Operate Status";
+            // 
+            // lblAGVMode
+            // 
+            this.lblAGVMode.AutoSize = true;
+            this.lblAGVMode.BackColor = System.Drawing.Color.Transparent;
+            this.lblAGVMode.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblAGVMode.Location = new System.Drawing.Point(21, 54);
+            this.lblAGVMode.Name = "lblAGVMode";
+            this.lblAGVMode.Size = new System.Drawing.Size(112, 21);
+            this.lblAGVMode.TabIndex = 8;
+            this.lblAGVMode.Text = "AGV Mode";
+            // 
+            // lblPlcMode
+            // 
+            this.lblPlcMode.AutoSize = true;
+            this.lblPlcMode.BackColor = System.Drawing.Color.Transparent;
+            this.lblPlcMode.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblPlcMode.Location = new System.Drawing.Point(21, 116);
+            this.lblPlcMode.Name = "lblPlcMode";
+            this.lblPlcMode.Size = new System.Drawing.Size(106, 21);
+            this.lblPlcMode.TabIndex = 7;
+            this.lblPlcMode.Text = "PLC Mode";
+            // 
+            // lblVehicleModeManual
+            // 
+            this.lblVehicleModeManual.AutoSize = true;
+            this.lblVehicleModeManual.BackColor = System.Drawing.Color.Transparent;
+            this.lblVehicleModeManual.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblVehicleModeManual.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblVehicleModeManual.Location = new System.Drawing.Point(233, 54);
+            this.lblVehicleModeManual.Name = "lblVehicleModeManual";
+            this.lblVehicleModeManual.Size = new System.Drawing.Size(79, 23);
+            this.lblVehicleModeManual.TabIndex = 6;
+            this.lblVehicleModeManual.Text = "Manual";
+            // 
+            // lblVehicleModeAuto
+            // 
+            this.lblVehicleModeAuto.AutoSize = true;
+            this.lblVehicleModeAuto.BackColor = System.Drawing.Color.Transparent;
+            this.lblVehicleModeAuto.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblVehicleModeAuto.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblVehicleModeAuto.Location = new System.Drawing.Point(144, 54);
+            this.lblVehicleModeAuto.Name = "lblVehicleModeAuto";
+            this.lblVehicleModeAuto.Size = new System.Drawing.Size(55, 23);
+            this.lblVehicleModeAuto.TabIndex = 5;
+            this.lblVehicleModeAuto.Text = "Auto";
+            // 
+            // lblPlcModeManual
+            // 
+            this.lblPlcModeManual.AutoSize = true;
+            this.lblPlcModeManual.BackColor = System.Drawing.Color.Transparent;
+            this.lblPlcModeManual.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblPlcModeManual.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblPlcModeManual.Location = new System.Drawing.Point(233, 114);
+            this.lblPlcModeManual.Name = "lblPlcModeManual";
+            this.lblPlcModeManual.Size = new System.Drawing.Size(79, 23);
+            this.lblPlcModeManual.TabIndex = 4;
+            this.lblPlcModeManual.Text = "Manual";
+            // 
+            // lblPlcModeAuto
+            // 
+            this.lblPlcModeAuto.AutoSize = true;
+            this.lblPlcModeAuto.BackColor = System.Drawing.Color.Transparent;
+            this.lblPlcModeAuto.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblPlcModeAuto.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblPlcModeAuto.Location = new System.Drawing.Point(144, 114);
+            this.lblPlcModeAuto.Name = "lblPlcModeAuto";
+            this.lblPlcModeAuto.Size = new System.Drawing.Size(55, 23);
+            this.lblPlcModeAuto.TabIndex = 3;
+            this.lblPlcModeAuto.Text = "Auto";
+            // 
+            // grpVehicleMode
+            // 
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed10);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed50);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed100);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed300);
+            this.grpVehicleMode.Controls.Add(this.lblTSpeedSlow);
+            this.grpVehicleMode.Controls.Add(this.lblTSpeedNormal);
+            this.grpVehicleMode.Controls.Add(this.lblTSpeedFast);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed);
+            this.grpVehicleMode.Controls.Add(this.lblTSpeed);
+            this.grpVehicleMode.Controls.Add(this.lblDistanceMm);
+            this.grpVehicleMode.Controls.Add(this.label101);
+            this.grpVehicleMode.Controls.Add(this.lblMoveDistance);
+            this.grpVehicleMode.Controls.Add(this.lblOperationRevise);
+            this.grpVehicleMode.Controls.Add(this.lblOperationStop);
+            this.grpVehicleMode.Controls.Add(this.lblOperationWheelRight);
+            this.grpVehicleMode.Controls.Add(this.lblOperationMoveFront);
+            this.grpVehicleMode.Controls.Add(this.lblOperationMoveBack);
+            this.grpVehicleMode.Controls.Add(this.lblOperationWheelLeft);
+            this.grpVehicleMode.Controls.Add(this.lblOperation);
+            this.grpVehicleMode.Controls.Add(this.lblVehicleOperationMode);
+            this.grpVehicleMode.Controls.Add(this.lblVehicleOperationModeSpinTurn);
+            this.grpVehicleMode.Controls.Add(this.lblVehicleOperationModeTBWheel);
+            this.grpVehicleMode.Controls.Add(this.lblVehicleOperationModeTFWheel);
+            this.grpVehicleMode.Controls.Add(this.lblVehicleOperationModeNormal);
+            this.grpVehicleMode.Location = new System.Drawing.Point(53, 234);
+            this.grpVehicleMode.Name = "grpVehicleMode";
+            this.grpVehicleMode.Size = new System.Drawing.Size(669, 381);
+            this.grpVehicleMode.TabIndex = 2;
+            this.grpVehicleMode.TabStop = false;
+            this.grpVehicleMode.Text = "Vehicle Operation";
+            // 
+            // lblMSpeed10
+            // 
+            this.lblMSpeed10.AutoSize = true;
+            this.lblMSpeed10.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed10.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed10.Location = new System.Drawing.Point(401, 154);
+            this.lblMSpeed10.Name = "lblMSpeed10";
+            this.lblMSpeed10.Size = new System.Drawing.Size(34, 23);
+            this.lblMSpeed10.TabIndex = 29;
+            this.lblMSpeed10.Text = "10";
+            // 
+            // lblMSpeed50
+            // 
+            this.lblMSpeed50.AutoSize = true;
+            this.lblMSpeed50.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed50.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed50.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed50.Location = new System.Drawing.Point(321, 154);
+            this.lblMSpeed50.Name = "lblMSpeed50";
+            this.lblMSpeed50.Size = new System.Drawing.Size(34, 23);
+            this.lblMSpeed50.TabIndex = 28;
+            this.lblMSpeed50.Text = "50";
+            // 
+            // lblMSpeed100
+            // 
+            this.lblMSpeed100.AutoSize = true;
+            this.lblMSpeed100.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed100.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed100.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed100.Location = new System.Drawing.Point(233, 154);
+            this.lblMSpeed100.Name = "lblMSpeed100";
+            this.lblMSpeed100.Size = new System.Drawing.Size(45, 23);
+            this.lblMSpeed100.TabIndex = 27;
+            this.lblMSpeed100.Text = "100";
+            // 
+            // lblMSpeed300
+            // 
+            this.lblMSpeed300.AutoSize = true;
+            this.lblMSpeed300.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed300.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed300.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed300.Location = new System.Drawing.Point(144, 154);
+            this.lblMSpeed300.Name = "lblMSpeed300";
+            this.lblMSpeed300.Size = new System.Drawing.Size(45, 23);
+            this.lblMSpeed300.TabIndex = 26;
+            this.lblMSpeed300.Text = "300";
+            // 
+            // lblTSpeedSlow
+            // 
+            this.lblTSpeedSlow.AutoSize = true;
+            this.lblTSpeedSlow.BackColor = System.Drawing.Color.Transparent;
+            this.lblTSpeedSlow.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblTSpeedSlow.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblTSpeedSlow.Location = new System.Drawing.Point(339, 114);
+            this.lblTSpeedSlow.Name = "lblTSpeedSlow";
+            this.lblTSpeedSlow.Size = new System.Drawing.Size(56, 23);
+            this.lblTSpeedSlow.TabIndex = 25;
+            this.lblTSpeedSlow.Text = "Slow";
+            // 
+            // lblTSpeedNormal
+            // 
+            this.lblTSpeedNormal.AutoSize = true;
+            this.lblTSpeedNormal.BackColor = System.Drawing.Color.Transparent;
+            this.lblTSpeedNormal.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblTSpeedNormal.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblTSpeedNormal.Location = new System.Drawing.Point(233, 114);
+            this.lblTSpeedNormal.Name = "lblTSpeedNormal";
+            this.lblTSpeedNormal.Size = new System.Drawing.Size(78, 23);
+            this.lblTSpeedNormal.TabIndex = 24;
+            this.lblTSpeedNormal.Text = "Normal";
+            // 
+            // lblTSpeedFast
+            // 
+            this.lblTSpeedFast.AutoSize = true;
+            this.lblTSpeedFast.BackColor = System.Drawing.Color.Transparent;
+            this.lblTSpeedFast.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblTSpeedFast.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblTSpeedFast.Location = new System.Drawing.Point(144, 114);
+            this.lblTSpeedFast.Name = "lblTSpeedFast";
+            this.lblTSpeedFast.Size = new System.Drawing.Size(49, 23);
+            this.lblTSpeedFast.TabIndex = 23;
+            this.lblTSpeedFast.Text = "Fast";
+            // 
+            // lblMSpeed
+            // 
+            this.lblMSpeed.AutoSize = true;
+            this.lblMSpeed.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed.Location = new System.Drawing.Point(38, 154);
+            this.lblMSpeed.Name = "lblMSpeed";
+            this.lblMSpeed.Size = new System.Drawing.Size(89, 21);
+            this.lblMSpeed.TabIndex = 22;
+            this.lblMSpeed.Text = "M Speed";
+            // 
+            // lblTSpeed
+            // 
+            this.lblTSpeed.AutoSize = true;
+            this.lblTSpeed.BackColor = System.Drawing.Color.Transparent;
+            this.lblTSpeed.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblTSpeed.Location = new System.Drawing.Point(44, 114);
+            this.lblTSpeed.Name = "lblTSpeed";
+            this.lblTSpeed.Size = new System.Drawing.Size(83, 21);
+            this.lblTSpeed.TabIndex = 21;
+            this.lblTSpeed.Text = "T Speed";
+            // 
+            // lblDistanceMm
+            // 
+            this.lblDistanceMm.AutoSize = true;
+            this.lblDistanceMm.BackColor = System.Drawing.Color.Transparent;
+            this.lblDistanceMm.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblDistanceMm.Location = new System.Drawing.Point(140, 347);
+            this.lblDistanceMm.Name = "lblDistanceMm";
+            this.lblDistanceMm.Size = new System.Drawing.Size(120, 21);
+            this.lblDistanceMm.TabIndex = 20;
+            this.lblDistanceMm.Text = "000000  mm";
+            // 
+            // label101
+            // 
+            this.label101.AutoSize = true;
+            this.label101.BackColor = System.Drawing.Color.Transparent;
+            this.label101.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label101.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label101.Location = new System.Drawing.Point(144, 347);
+            this.label101.Name = "label101";
+            this.label101.Size = new System.Drawing.Size(2, 23);
+            this.label101.TabIndex = 18;
+            // 
+            // lblMoveDistance
+            // 
+            this.lblMoveDistance.AutoSize = true;
+            this.lblMoveDistance.BackColor = System.Drawing.Color.Transparent;
+            this.lblMoveDistance.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMoveDistance.Location = new System.Drawing.Point(40, 347);
+            this.lblMoveDistance.Name = "lblMoveDistance";
+            this.lblMoveDistance.Size = new System.Drawing.Size(87, 21);
+            this.lblMoveDistance.TabIndex = 17;
+            this.lblMoveDistance.Text = "Distance";
+            // 
+            // lblOperationRevise
+            // 
+            this.lblOperationRevise.AutoSize = true;
+            this.lblOperationRevise.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationRevise.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationRevise.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationRevise.Location = new System.Drawing.Point(144, 304);
+            this.lblOperationRevise.Name = "lblOperationRevise";
+            this.lblOperationRevise.Size = new System.Drawing.Size(72, 23);
+            this.lblOperationRevise.TabIndex = 16;
+            this.lblOperationRevise.Text = "Revise";
+            // 
+            // lblOperationStop
+            // 
+            this.lblOperationStop.AutoSize = true;
+            this.lblOperationStop.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationStop.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationStop.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationStop.Location = new System.Drawing.Point(301, 204);
+            this.lblOperationStop.Name = "lblOperationStop";
+            this.lblOperationStop.Size = new System.Drawing.Size(52, 23);
+            this.lblOperationStop.TabIndex = 15;
+            this.lblOperationStop.Text = "Stop";
+            // 
+            // lblOperationWheelRight
+            // 
+            this.lblOperationWheelRight.AutoSize = true;
+            this.lblOperationWheelRight.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationWheelRight.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationWheelRight.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationWheelRight.Location = new System.Drawing.Point(412, 204);
+            this.lblOperationWheelRight.Name = "lblOperationWheelRight";
+            this.lblOperationWheelRight.Size = new System.Drawing.Size(123, 23);
+            this.lblOperationWheelRight.TabIndex = 14;
+            this.lblOperationWheelRight.Text = "Wheel Right";
+            // 
+            // lblOperationMoveFront
+            // 
+            this.lblOperationMoveFront.AutoSize = true;
+            this.lblOperationMoveFront.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationMoveFront.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationMoveFront.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationMoveFront.Location = new System.Drawing.Point(144, 255);
+            this.lblOperationMoveFront.Name = "lblOperationMoveFront";
+            this.lblOperationMoveFront.Size = new System.Drawing.Size(117, 23);
+            this.lblOperationMoveFront.TabIndex = 13;
+            this.lblOperationMoveFront.Text = "Move Front";
+            // 
+            // lblOperationMoveBack
+            // 
+            this.lblOperationMoveBack.AutoSize = true;
+            this.lblOperationMoveBack.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationMoveBack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationMoveBack.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationMoveBack.Location = new System.Drawing.Point(301, 255);
+            this.lblOperationMoveBack.Name = "lblOperationMoveBack";
+            this.lblOperationMoveBack.Size = new System.Drawing.Size(114, 23);
+            this.lblOperationMoveBack.TabIndex = 12;
+            this.lblOperationMoveBack.Text = "Move Back";
+            // 
+            // lblOperationWheelLeft
+            // 
+            this.lblOperationWheelLeft.AutoSize = true;
+            this.lblOperationWheelLeft.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationWheelLeft.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationWheelLeft.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationWheelLeft.Location = new System.Drawing.Point(144, 204);
+            this.lblOperationWheelLeft.Name = "lblOperationWheelLeft";
+            this.lblOperationWheelLeft.Size = new System.Drawing.Size(112, 23);
+            this.lblOperationWheelLeft.TabIndex = 11;
+            this.lblOperationWheelLeft.Text = "Wheel Left";
+            // 
+            // lblOperation
+            // 
+            this.lblOperation.AutoSize = true;
+            this.lblOperation.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperation.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperation.Location = new System.Drawing.Point(29, 204);
+            this.lblOperation.Name = "lblOperation";
+            this.lblOperation.Size = new System.Drawing.Size(98, 21);
+            this.lblOperation.TabIndex = 10;
+            this.lblOperation.Text = "Operation";
+            // 
+            // lblVehicleOperationMode
+            // 
+            this.lblVehicleOperationMode.AutoSize = true;
+            this.lblVehicleOperationMode.BackColor = System.Drawing.Color.Transparent;
+            this.lblVehicleOperationMode.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblVehicleOperationMode.Location = new System.Drawing.Point(66, 63);
+            this.lblVehicleOperationMode.Name = "lblVehicleOperationMode";
+            this.lblVehicleOperationMode.Size = new System.Drawing.Size(61, 21);
+            this.lblVehicleOperationMode.TabIndex = 9;
+            this.lblVehicleOperationMode.Text = "Mode";
+            // 
+            // lblVehicleOperationModeSpinTurn
+            // 
+            this.lblVehicleOperationModeSpinTurn.AutoSize = true;
+            this.lblVehicleOperationModeSpinTurn.BackColor = System.Drawing.Color.Transparent;
+            this.lblVehicleOperationModeSpinTurn.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblVehicleOperationModeSpinTurn.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblVehicleOperationModeSpinTurn.Location = new System.Drawing.Point(517, 61);
+            this.lblVehicleOperationModeSpinTurn.Name = "lblVehicleOperationModeSpinTurn";
+            this.lblVehicleOperationModeSpinTurn.Size = new System.Drawing.Size(101, 23);
+            this.lblVehicleOperationModeSpinTurn.TabIndex = 6;
+            this.lblVehicleOperationModeSpinTurn.Text = "Spin Turn";
+            // 
+            // lblVehicleOperationModeTBWheel
+            // 
+            this.lblVehicleOperationModeTBWheel.AutoSize = true;
+            this.lblVehicleOperationModeTBWheel.BackColor = System.Drawing.Color.Transparent;
+            this.lblVehicleOperationModeTBWheel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblVehicleOperationModeTBWheel.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblVehicleOperationModeTBWheel.Location = new System.Drawing.Point(388, 61);
+            this.lblVehicleOperationModeTBWheel.Name = "lblVehicleOperationModeTBWheel";
+            this.lblVehicleOperationModeTBWheel.Size = new System.Drawing.Size(102, 23);
+            this.lblVehicleOperationModeTBWheel.TabIndex = 5;
+            this.lblVehicleOperationModeTBWheel.Text = "TB Wheel";
+            // 
+            // lblVehicleOperationModeTFWheel
+            // 
+            this.lblVehicleOperationModeTFWheel.AutoSize = true;
+            this.lblVehicleOperationModeTFWheel.BackColor = System.Drawing.Color.Transparent;
+            this.lblVehicleOperationModeTFWheel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblVehicleOperationModeTFWheel.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblVehicleOperationModeTFWheel.Location = new System.Drawing.Point(258, 61);
+            this.lblVehicleOperationModeTFWheel.Name = "lblVehicleOperationModeTFWheel";
+            this.lblVehicleOperationModeTFWheel.Size = new System.Drawing.Size(95, 23);
+            this.lblVehicleOperationModeTFWheel.TabIndex = 4;
+            this.lblVehicleOperationModeTFWheel.Text = "TF wheel";
+            // 
+            // lblVehicleOperationModeNormal
+            // 
+            this.lblVehicleOperationModeNormal.AutoSize = true;
+            this.lblVehicleOperationModeNormal.BackColor = System.Drawing.Color.Transparent;
+            this.lblVehicleOperationModeNormal.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblVehicleOperationModeNormal.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblVehicleOperationModeNormal.Location = new System.Drawing.Point(144, 61);
+            this.lblVehicleOperationModeNormal.Name = "lblVehicleOperationModeNormal";
+            this.lblVehicleOperationModeNormal.Size = new System.Drawing.Size(78, 23);
+            this.lblVehicleOperationModeNormal.TabIndex = 3;
+            this.lblVehicleOperationModeNormal.Text = "Normal";
+            // 
+            // grpElmoFunction
+            // 
+            this.grpElmoFunction.BackColor = System.Drawing.Color.Transparent;
+            this.grpElmoFunction.Controls.Add(this.lblElmoAllReset);
+            this.grpElmoFunction.Controls.Add(this.lblElmoDisable);
+            this.grpElmoFunction.Controls.Add(this.lblElmoEnable);
+            this.grpElmoFunction.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.grpElmoFunction.Location = new System.Drawing.Point(487, 25);
+            this.grpElmoFunction.Name = "grpElmoFunction";
+            this.grpElmoFunction.Size = new System.Drawing.Size(235, 185);
+            this.grpElmoFunction.TabIndex = 1;
+            this.grpElmoFunction.TabStop = false;
+            this.grpElmoFunction.Text = "Elmo Status";
+            // 
+            // lblElmoAllReset
+            // 
+            this.lblElmoAllReset.AutoSize = true;
+            this.lblElmoAllReset.BackColor = System.Drawing.Color.Transparent;
+            this.lblElmoAllReset.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblElmoAllReset.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblElmoAllReset.Location = new System.Drawing.Point(78, 121);
+            this.lblElmoAllReset.Name = "lblElmoAllReset";
+            this.lblElmoAllReset.Size = new System.Drawing.Size(94, 23);
+            this.lblElmoAllReset.TabIndex = 2;
+            this.lblElmoAllReset.Text = "All Reset";
+            // 
+            // lblElmoDisable
+            // 
+            this.lblElmoDisable.AutoSize = true;
+            this.lblElmoDisable.BackColor = System.Drawing.Color.Transparent;
+            this.lblElmoDisable.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblElmoDisable.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblElmoDisable.Location = new System.Drawing.Point(78, 36);
+            this.lblElmoDisable.Name = "lblElmoDisable";
+            this.lblElmoDisable.Size = new System.Drawing.Size(79, 23);
+            this.lblElmoDisable.TabIndex = 0;
+            this.lblElmoDisable.Text = "Disable";
+            // 
+            // lblElmoEnable
+            // 
+            this.lblElmoEnable.AutoSize = true;
+            this.lblElmoEnable.BackColor = System.Drawing.Color.Transparent;
+            this.lblElmoEnable.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblElmoEnable.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblElmoEnable.Location = new System.Drawing.Point(78, 77);
+            this.lblElmoEnable.Name = "lblElmoEnable";
+            this.lblElmoEnable.Size = new System.Drawing.Size(73, 23);
+            this.lblElmoEnable.TabIndex = 1;
+            this.lblElmoEnable.Text = "Enable";
+            // 
             // timGUIRefresh
             // 
             this.timGUIRefresh.Interval = 250;
@@ -4303,83 +4892,7 @@
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
             // 
-            // chkBeamSensorDisableNormalSpeed
-            // 
-            this.chkBeamSensorDisableNormalSpeed.AutoSize = true;
-            this.chkBeamSensorDisableNormalSpeed.Location = new System.Drawing.Point(19, 423);
-            this.chkBeamSensorDisableNormalSpeed.Name = "chkBeamSensorDisableNormalSpeed";
-            this.chkBeamSensorDisableNormalSpeed.Size = new System.Drawing.Size(231, 20);
-            this.chkBeamSensorDisableNormalSpeed.TabIndex = 90;
-            this.chkBeamSensorDisableNormalSpeed.Text = "Beam Sensor Disable Normal Speed";
-            this.chkBeamSensorDisableNormalSpeed.UseVisualStyleBackColor = true;
-            this.chkBeamSensorDisableNormalSpeed.CheckedChanged += new System.EventHandler(this.chkBeamSensorDisableNormalSpeed_CheckedChanged);
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.chkBeamSensorNearSet);
-            this.groupBox3.Controls.Add(this.chkBeamSensorFarSet);
-            this.groupBox3.Controls.Add(this.lblBeamSensorSelect);
-            this.groupBox3.Location = new System.Drawing.Point(581, 500);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(318, 73);
-            this.groupBox3.TabIndex = 91;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Beam Sensor Signal Simulate Set";
-            // 
-            // lblBeamSensorSelect
-            // 
-            this.lblBeamSensorSelect.BackColor = System.Drawing.Color.LightGreen;
-            this.lblBeamSensorSelect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblBeamSensorSelect.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblBeamSensorSelect.Location = new System.Drawing.Point(12, 23);
-            this.lblBeamSensorSelect.Name = "lblBeamSensorSelect";
-            this.lblBeamSensorSelect.Size = new System.Drawing.Size(63, 34);
-            this.lblBeamSensorSelect.TabIndex = 71;
-            this.lblBeamSensorSelect.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // chkBeamSensorFarSet
-            // 
-            this.chkBeamSensorFarSet.AutoSize = true;
-            this.chkBeamSensorFarSet.Location = new System.Drawing.Point(97, 32);
-            this.chkBeamSensorFarSet.Name = "chkBeamSensorFarSet";
-            this.chkBeamSensorFarSet.Size = new System.Drawing.Size(84, 20);
-            this.chkBeamSensorFarSet.TabIndex = 75;
-            this.chkBeamSensorFarSet.Text = "Far Detect";
-            this.chkBeamSensorFarSet.UseVisualStyleBackColor = true;
-            this.chkBeamSensorFarSet.Click += new System.EventHandler(this.chkBeamSensorFarSet_CheckedChanged);
-            // 
-            // chkBeamSensorNearSet
-            // 
-            this.chkBeamSensorNearSet.AutoSize = true;
-            this.chkBeamSensorNearSet.Location = new System.Drawing.Point(197, 32);
-            this.chkBeamSensorNearSet.Name = "chkBeamSensorNearSet";
-            this.chkBeamSensorNearSet.Size = new System.Drawing.Size(95, 20);
-            this.chkBeamSensorNearSet.TabIndex = 76;
-            this.chkBeamSensorNearSet.Text = "Near Detect";
-            this.chkBeamSensorNearSet.UseVisualStyleBackColor = true;
-            this.chkBeamSensorNearSet.Click += new System.EventHandler(this.chkBeamSensorNearSet_CheckedChanged);
-            // 
-            // btnSimulationPLCConnect
-            // 
-            this.btnSimulationPLCConnect.Location = new System.Drawing.Point(593, 581);
-            this.btnSimulationPLCConnect.Name = "btnSimulationPLCConnect";
-            this.btnSimulationPLCConnect.Size = new System.Drawing.Size(181, 30);
-            this.btnSimulationPLCConnect.TabIndex = 92;
-            this.btnSimulationPLCConnect.Text = "PLC Connect Simulation";
-            this.btnSimulationPLCConnect.UseVisualStyleBackColor = true;
-            this.btnSimulationPLCConnect.Click += new System.EventHandler(this.btnSimulationPLCConnect_Click);
-            // 
-            // btnSaveBeamSensorDisableNormalSpeed
-            // 
-            this.btnSaveBeamSensorDisableNormalSpeed.Location = new System.Drawing.Point(256, 418);
-            this.btnSaveBeamSensorDisableNormalSpeed.Name = "btnSaveBeamSensorDisableNormalSpeed";
-            this.btnSaveBeamSensorDisableNormalSpeed.Size = new System.Drawing.Size(79, 30);
-            this.btnSaveBeamSensorDisableNormalSpeed.TabIndex = 93;
-            this.btnSaveBeamSensorDisableNormalSpeed.Text = "Save";
-            this.btnSaveBeamSensorDisableNormalSpeed.UseVisualStyleBackColor = true;
-            this.btnSaveBeamSensorDisableNormalSpeed.Click += new System.EventHandler(this.btnSaveBeamSensorDisableNormalSpeed_Click);
-            // 
-            // btnBeamSensorSignalSet
+            // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -4395,14 +4908,14 @@
             this.Controls.Add(this.btnAlarmReset);
             this.Controls.Add(this.txtTriggerEvent);
             this.Controls.Add(this.label19);
-            this.Controls.Add(this.tabContol1);
-            this.Name = "btnBeamSensorSignalSet";
+            this.Controls.Add(this.tabPlcOperation);
+            this.Name = "PlcForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PLCAgent";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PlcForm_FormClosing);
             this.Load += new System.EventHandler(this.frmPLCAgent_Load);
-            this.tabContol1.ResumeLayout(false);
+            this.tabPlcOperation.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.panel7.ResumeLayout(false);
@@ -4435,6 +4948,8 @@
             this.tableLayoutPanel1.PerformLayout();
             this.tabSafety.ResumeLayout(false);
             this.tabSafety.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.panel9.ResumeLayout(false);
             this.panel9.PerformLayout();
@@ -4453,8 +4968,13 @@
             this.grpL.ResumeLayout(false);
             this.grpB.ResumeLayout(false);
             this.grpF.ResumeLayout(false);
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.grpOperateStatus.ResumeLayout(false);
+            this.grpOperateStatus.PerformLayout();
+            this.grpVehicleMode.ResumeLayout(false);
+            this.grpVehicleMode.PerformLayout();
+            this.grpElmoFunction.ResumeLayout(false);
+            this.grpElmoFunction.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -4462,7 +4982,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TabControl tabContol1;
+        private System.Windows.Forms.TabControl tabPlcOperation;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage3;
@@ -4807,5 +5327,43 @@
         private System.Windows.Forms.CheckBox chkBeamSensorFarSet;
         private System.Windows.Forms.Button btnSimulationPLCConnect;
         private System.Windows.Forms.Button btnSaveBeamSensorDisableNormalSpeed;
+        private System.Windows.Forms.TextBox txtCassetteIDSet;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.GroupBox grpElmoFunction;
+        private System.Windows.Forms.Label lblElmoAllReset;
+        private System.Windows.Forms.Label lblElmoEnable;
+        private System.Windows.Forms.Label lblElmoDisable;
+        private System.Windows.Forms.GroupBox grpOperateStatus;
+        private System.Windows.Forms.Label lblPlcMode;
+        private System.Windows.Forms.Label lblVehicleModeManual;
+        private System.Windows.Forms.Label lblVehicleModeAuto;
+        private System.Windows.Forms.Label lblPlcModeManual;
+        private System.Windows.Forms.Label lblPlcModeAuto;
+        private System.Windows.Forms.GroupBox grpVehicleMode;
+        private System.Windows.Forms.Label label101;
+        private System.Windows.Forms.Label lblMoveDistance;
+        private System.Windows.Forms.Label lblOperationRevise;
+        private System.Windows.Forms.Label lblOperationStop;
+        private System.Windows.Forms.Label lblOperationWheelRight;
+        private System.Windows.Forms.Label lblOperationMoveFront;
+        private System.Windows.Forms.Label lblOperationMoveBack;
+        private System.Windows.Forms.Label lblOperationWheelLeft;
+        private System.Windows.Forms.Label lblOperation;
+        private System.Windows.Forms.Label lblVehicleOperationMode;
+        private System.Windows.Forms.Label lblVehicleOperationModeSpinTurn;
+        private System.Windows.Forms.Label lblVehicleOperationModeTBWheel;
+        private System.Windows.Forms.Label lblVehicleOperationModeTFWheel;
+        private System.Windows.Forms.Label lblVehicleOperationModeNormal;
+        private System.Windows.Forms.Label lblDistanceMm;
+        private System.Windows.Forms.Label lblMSpeed;
+        private System.Windows.Forms.Label lblTSpeed;
+        private System.Windows.Forms.Label lblMSpeed10;
+        private System.Windows.Forms.Label lblMSpeed50;
+        private System.Windows.Forms.Label lblMSpeed100;
+        private System.Windows.Forms.Label lblMSpeed300;
+        private System.Windows.Forms.Label lblTSpeedSlow;
+        private System.Windows.Forms.Label lblTSpeedNormal;
+        private System.Windows.Forms.Label lblTSpeedFast;
+        private System.Windows.Forms.Label lblAGVMode;
     }
 }

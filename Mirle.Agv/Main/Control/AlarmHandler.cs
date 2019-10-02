@@ -170,7 +170,6 @@ namespace Mirle.Agv.Controller
                     switch (alarm.Level)
                     {
                         case EnumAlarmLevel.Alarm:
-                            mainFlowHandler.PauseByAlarmSet();
                             HasAlarm = true;
                             break;
                         case EnumAlarmLevel.Warn:

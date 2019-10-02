@@ -14,7 +14,7 @@ namespace Mirle.Agv.Model.TransferSteps
     [Serializable]
     public class AgvcTransCmd
     {
-        public EnumAgvcTransCommandType CommandType { get; set; }
+        public EnumAgvcTransCommandType CommandType { get; set; } = EnumAgvcTransCommandType.Else;
         public List<string> ToLoadSectionIds { get; set; } = new List<string>();
         public List<string> ToUnloadSectionIds { get; set; } = new List<string>();
         public List<string> ToLoadAddressIds { get; set; } = new List<string>();
@@ -24,6 +24,8 @@ namespace Mirle.Agv.Model.TransferSteps
         public string CassetteId { get; set; } = "";
         public string CommandId { get; set; } = "";
         public ushort SeqNum { get; set; }
+        public CompleteStatus CompleteStatus { get; set; }
+        public VhStopSingle PauseStatus { get; set; } = VhStopSingle.StopSingleOff;
 
         public AgvcTransCmd()
         {
@@ -35,6 +37,43 @@ namespace Mirle.Agv.Model.TransferSteps
             CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID.Trim();
             CommandType = SetupCommandType(transRequest.ActType);
             SeqNum = aSeqNum;
+            CompleteStatus = SetupCompleteStatus(transRequest.ActType);
+        }
+
+        protected CompleteStatus SetupCompleteStatus(ActiveType actType)
+        {
+            switch (actType)
+            {
+                case ActiveType.Move:
+                    return CompleteStatus.CmpStatusMove;
+                case ActiveType.Load:
+                    return CompleteStatus.CmpStatusLoad;
+                case ActiveType.Unload:
+                    return CompleteStatus.CmpStatusUnload;
+                case ActiveType.Loadunload:
+                    return CompleteStatus.CmpStatusLoadunload;
+                case ActiveType.Home:
+                    break;
+                case ActiveType.Override:
+                    break;
+                case ActiveType.Cstidrename:
+                    break;
+                case ActiveType.Mtlhome:
+                    break;
+                case ActiveType.Movetocharger:
+                    return CompleteStatus.CmpStatusMoveToCharger;
+                case ActiveType.Systemout:
+                    break;
+                case ActiveType.Systemin:
+                    break;
+                case ActiveType.Techingmove:
+                    break;
+                case ActiveType.Round:
+                    break;
+                default:
+                    break;
+            }
+            return CompleteStatus.CmpStatusVehicleAbort;
         }
 
         protected EnumAgvcTransCommandType SetupCommandType(ActiveType activeType)

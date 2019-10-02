@@ -29,11 +29,6 @@ namespace Mirle.Agv.View
             //plcAgent = new PlcAgent(mcProtocol, null);
             //一些Form Control要給進去Entity物件
             FormControlAddToEnityClass();
-            //this.plcAgent.OnForkCommandExecutingEvent += PLCAgent_OnForkCommandExecutingEvent;
-            //this.plcAgent.OnForkCommandFinishEvent += PLCAgent_OnForkCommandFinishEvent;
-            //this.plcAgent.OnForkCommandErrorEvent += PLCAgent_OnForkCommandErrorEvent;
-            //this.plcAgent.OnCassetteIDReadFinishEvent += PLCAgent_OnCassetteIDReadFinishEvent;
-            //OnCassetteIDReadFinishEvent
             EventInitial();
 
 
@@ -62,6 +57,7 @@ namespace Mirle.Agv.View
             plcAgent.OnForkCommandExecutingEvent += PlcAgent_OnForkCommandExecutingEvent;
             plcAgent.OnForkCommandFinishEvent += PlcAgent_OnForkCommandFinishEvent;
             plcAgent.OnForkCommandErrorEvent += PlcAgent_OnForkCommandErrorEvent;
+            plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
             plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
             plcAgent.OnIpcAutoManualChangeEvent += PlcAgent_OnIpcAutoManualChangeEvent;
         }
@@ -140,6 +136,11 @@ namespace Mirle.Agv.View
         private void PlcAgent_OnForkCommandFinishEvent(Object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandFinishEvent";
+        }
+
+        private void PlcAgent_OnForkCommandInterlockErrorEvent(Object sender, PlcForkCommand aForkCommand)
+        {
+            triggerEvent = "OnForkCommandInterlockErrorEvent";
         }
 
         private void PlcAgent_OnCassetteIDReadFinishEvent(Object sender, String cassetteID)
@@ -1425,12 +1426,9 @@ namespace Mirle.Agv.View
 
         private void chkFakeForking_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkFakeForking.Checked)
+            if (this.plcAgent != null)
             {
-                if (this.plcAgent != null)
-                {
-                    this.plcAgent.IsFakeForking = chkFakeForking.Checked;
-                }
+                this.plcAgent.IsFakeForking = chkFakeForking.Checked;
             }
         }
 
@@ -1484,14 +1482,14 @@ namespace Mirle.Agv.View
 
         private void btnCstIDSet_Click(object sender, EventArgs e)
         {
-            string strCstID = txtCassetteID.Text;
+            string strCstID = txtCassetteIDSet.Text;
             if (strCstID=="")
             {
                 this.plcAgent.APLCVehicle.CassetteId = "";
             }
             else
             {
-                this.plcAgent.triggerCassetteIDReader(ref strCstID);
+                this.plcAgent.testTriggerCassetteIDReader(ref strCstID);
             }
         }
 

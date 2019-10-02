@@ -25,7 +25,7 @@ namespace Mirle.Agv.Model
         public EnumPioDirection PioDirection { get; set; } = EnumPioDirection.None;
         public bool IsTR50 { get; set; }
         public string InsideSectionId { get; set; }
-        public MapAddressOffset AddressOffset { get; set; }
+        public MapAddressOffset AddressOffset { get; set; } = new MapAddressOffset();
         public double VehicleHeadAngle { get; set; }
 
         public EnumChargeDirection ChargeDirectionParse(string v)

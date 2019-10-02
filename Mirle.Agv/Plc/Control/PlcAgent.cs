@@ -63,6 +63,7 @@ namespace Mirle.Agv.Controller
 
         private Thread plcOtherControlThread = null;
         private Thread plcForkCommandControlThread = null;
+        private Thread plcOperationThread = null;
 
         private Thread TestThread = null;
 
@@ -76,6 +77,7 @@ namespace Mirle.Agv.Controller
         public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
         public event EventHandler<UInt16> OnBatteryPercentageChangeEvent;
         public event EventHandler<string> OnCassetteIDReadFinishEvent;
+        public event EventHandler<PlcForkCommand> OnForkCommandInterlockErrorEvent;
 
         public event EventHandler<EnumAutoState> OnIpcAutoManualChangeEvent;
 
@@ -785,6 +787,52 @@ namespace Mirle.Agv.Controller
                                     }
 
                                     break;
+                                case "ForkPrePioFail":
+                                    this.APLCVehicle.Robot.ForkPrePioFail = aMCProtocol.get_ItemByTag("ForkPrePioFail").AsBoolean;
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPrePioFail = {this.APLCVehicle.Robot.ForkPrePioFail}"));
+
+                                    if (this.APLCVehicle.Robot.ForkPrePioFail == true)
+                                    {
+                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Reset plc alarm and warn."));
+                                        WritePLCAlarmReset();
+
+                                        Task.Run(() =>
+                                        {
+                                            Thread.Sleep(1500);
+                                            long lStartMilliseconds = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                                            long lEndMilliseconds = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                                            while (true)
+                                            {
+                                                if (aMCProtocol.get_ItemByTag("PLCWarningStatus").AsBoolean == false && aMCProtocol.get_ItemByTag("PLCAlarmStatus").AsBoolean == false)
+                                                {
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent."));
+                                                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                    OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+
+                                                    break;
+                                                }
+                                                lEndMilliseconds = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                                                if (lEndMilliseconds - lStartMilliseconds > 2000)
+                                                {
+                                                    break;
+                                                }
+                                                Thread.Sleep(10);
+                                            }
+                                            
+                                        });
+                                    }
+                                    break;
+
+                                case "ForkBusyFail":
+                                    this.APLCVehicle.Robot.ForkBusyFail = aMCProtocol.get_ItemByTag("ForkBusyFail").AsBoolean;
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkBusyFail = {this.APLCVehicle.Robot.ForkBusyFail}"));
+                                    break;
+
+                                case "ForkPostPioFail":
+                                    this.APLCVehicle.Robot.ForkBusyFail = aMCProtocol.get_ItemByTag("ForkPostPioFail").AsBoolean;
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPostPioFail = {this.APLCVehicle.Robot.ForkPostPioFail}"));
+                                    break;
+
                                 case "StageLoading":
                                     this.APLCVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"StageLoading = {this.APLCVehicle.Loading}"));
@@ -850,7 +898,32 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ForkAlignmentB = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultB").AsUInt32, 2, 2);
                                     break;
 
+                                case "PLCOperateMode":
+                                    this.APLCVehicle.JogOperation.ModeOperation = aMCProtocol.get_ItemByTag("PLCOperateMode").AsBoolean;
+                                    break;
 
+                                case "PLCVehicleMode":
+                                    this.APLCVehicle.JogOperation.ModeVehicle = aMCProtocol.get_ItemByTag("PLCVehicleMode").AsBoolean;
+                                    break;
+
+                                case "PLCJogElmoFunction":
+                                    this.APLCVehicle.JogOperation.JogElmoFunction = (EnumJogElmoFunction)aMCProtocol.get_ItemByTag("PLCJogElmoFunction").AsUInt16;
+                                    break;
+                                case "PLCJogRunMode":
+                                    this.APLCVehicle.JogOperation.JogRunMode = (EnumJogRunMode)aMCProtocol.get_ItemByTag("PLCJogRunMode").AsUInt16;
+                                    break;
+                                case "PLCJogTurnSpeed":
+                                    this.APLCVehicle.JogOperation.JogTurnSpeed = (EnumJogTurnSpeed)aMCProtocol.get_ItemByTag("PLCJogTurnSpeed").AsUInt16;
+                                    break;
+                                case "PLCJogMoveVelocity":
+                                    this.APLCVehicle.JogOperation.JogMoveVelocity = (EnumJogMoveVelocity)aMCProtocol.get_ItemByTag("PLCJogMoveVelocity").AsUInt16;
+                                    break;
+                                case "PLCJogMoveOntimeRevise":
+                                    this.APLCVehicle.JogOperation.JogMoveOntimeRevise = aMCProtocol.get_ItemByTag("PLCJogMoveOntimeRevise").AsBoolean;
+                                    break;
+                                case "PLCJogMaxDistance":
+                                    this.APLCVehicle.JogOperation.JogMaxDistance = this.DECToDouble(aMCProtocol.get_ItemByTag("PLCJogMaxDistance").AsUInt32, 2, 2);
+                                    break;
                             }
                         }
                     }
@@ -1015,7 +1088,6 @@ namespace Mirle.Agv.Controller
                     .ToString();
             }
             
-
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
 
@@ -2648,6 +2720,20 @@ namespace Mirle.Agv.Controller
             
         }
 
+        public void testTriggerCassetteIDReader(ref string CassetteID)
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
+            string strCassetteID = CassetteID;
+            //this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
+            this.APLCVehicle.CassetteId = strCassetteID;
+            //CassetteID = strCassetteID;
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "testTriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CassetteId) + " Success"));
+
+            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
+
+
+        }
 
         public void ClearExecutingForkCommand()
         {
@@ -3462,6 +3548,63 @@ namespace Mirle.Agv.Controller
             this.APLCVehicle.Robot.ForkAlignmentB = 0f;
 
         }
+
+
+        private void plcOperationRun()
+        {
+            while (true)
+            {
+                if (this.APLCVehicle.JogOperation.ModeOperation == true)
+                {
+
+                    switch (this.APLCVehicle.JogOperation.JogElmoFunction)
+                    {
+                        case EnumJogElmoFunction.Enable:
+                            
+                            //this.jogPitchForm.button_JogPitch_ElmoEnable_Click
+                            break;
+                        case EnumJogElmoFunction.Disable:
+                            break;
+                        case EnumJogElmoFunction.All_Reset:
+                            break;
+                        default:
+
+                            break;
+                    }
+
+                    switch (this.APLCVehicle.JogOperation.JogRunMode)
+                    {
+                        case EnumJogRunMode.Stop:
+                            break;
+                        case EnumJogRunMode.Normal:
+                            break;
+                        case EnumJogRunMode.ForwardWheel:
+                            break;
+                        case EnumJogRunMode.BackwardWheel:
+                            break;
+                        case EnumJogRunMode.SpinTurn:
+                            break;
+                        default:
+                            break;
+                    }
+
+
+                }
+                else
+                {
+                    // Do: Clear all operation
+                }
+
+
+
+
+                Thread.Sleep(1);
+                // endWhile
+            }
+            
+
+        }
+
 
 
     }

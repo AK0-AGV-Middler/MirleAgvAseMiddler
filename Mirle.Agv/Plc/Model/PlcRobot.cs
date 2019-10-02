@@ -14,7 +14,10 @@ namespace Mirle.Agv.Model
         public bool ForkFinish { get; set; }
         public bool ForkHome { get; set; } = true;//20190807_Rudy 新增ForkHome
         public bool ForkNG { get; set; } = false;
-
+        public bool ForkPrePioFail { get; set; } = false;
+        public bool ForkBusyFail { get; set; } = false;
+        public bool ForkPostPioFail { get; set; } = false;
+        
         private ushort currentCommandNo = 0;
         public ushort CurrentCommandNo
         {

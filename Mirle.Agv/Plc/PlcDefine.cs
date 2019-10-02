@@ -94,5 +94,42 @@ namespace Mirle.Agv
         Teaching = 9
 
     }
+
+
+    public enum EnumJogElmoFunction
+    {
+        No_Use = 0,
+        Enable = 1,
+        Disable = 2,
+        All_Reset = 3
+    }
+
+    public enum EnumJogRunMode
+    {
+        No_Use = 0,
+        Normal = 1,
+        ForwardWheel = 2,
+        BackwardWheel = 3,
+        SpinTurn = 4,
+        Stop = 99
+
+    }
+    public enum EnumJogTurnSpeed
+    {
+        No_Use = 0,
+        Low = 1,
+        Medium = 2,
+        High = 3
+    }
+
+    public enum EnumJogMoveVelocity
+    {
+        No_Use = 0,
+        Ten = 1,
+        Fifty = 2,
+        OneHundred = 3,
+        ThreeHundred = 4
+    }
+
     #endregion
 }

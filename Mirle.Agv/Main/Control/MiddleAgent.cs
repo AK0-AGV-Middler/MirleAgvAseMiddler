@@ -1275,27 +1275,29 @@ namespace Mirle.Agv.Controller
 
         public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            if (alarm.Level== EnumAlarmLevel.Alarm)
+            if (theVehicle.ErrorStatus == VhStopSingle.StopSingleOff && alarmHandler.HasAlarm)
             {
                 theVehicle.ErrorStatus = VhStopSingle.StopSingleOn;
-                Send_Cmd144_StatusChangeReport(sender as string);
+                StatusChangeReport(sender as string);
             }
             Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrSet);
         }
         public void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
         {
-            if (!alarmHandler.HasAlarm)
+            if (theVehicle.ErrorStatus == VhStopSingle.StopSingleOn && !alarmHandler.HasAlarm)
             {
                 theVehicle.ErrorStatus = VhStopSingle.StopSingleOff;
-                Send_Cmd144_StatusChangeReport(sender as string);
+                StatusChangeReport(sender as string);
             }
             Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
         }
         public void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
-
-            theVehicle.ErrorStatus = VhStopSingle.StopSingleOff;
-            Send_Cmd144_StatusChangeReport(sender as string);
+            if (theVehicle.ErrorStatus== VhStopSingle.StopSingleOn)
+            {
+                theVehicle.ErrorStatus = VhStopSingle.StopSingleOff;
+                StatusChangeReport(sender as string);
+            }         
             Send_Cmd194_AlarmReport("0", ErrorStatus.ErrReset);
 
             //foreach (var alarm in alarms)
@@ -1335,31 +1337,8 @@ namespace Mirle.Agv.Controller
             readResult = result;
             Send_Cmd136_CstIdReadReport(result);
         }
-        public void TransferComplete(EnumAgvcTransCommandType type)
+        public void TransferComplete()
         {
-            switch (type)
-            {
-                case EnumAgvcTransCommandType.Move:
-                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusMove;
-                    break;
-                case EnumAgvcTransCommandType.Load:
-                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoad;
-                    break;
-                case EnumAgvcTransCommandType.Unload:
-                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusUnload;
-                    break;
-                case EnumAgvcTransCommandType.LoadUnload:
-                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusLoadunload;
-                    break;
-                case EnumAgvcTransCommandType.MoveToCharger:
-                    theVehicle.CompleteStatus = CompleteStatus.CmpStatusMoveToCharger;
-                    break;
-                case EnumAgvcTransCommandType.Override:
-                case EnumAgvcTransCommandType.Else:
-                default:
-                    break;
-            }
-
             Send_Cmd132_TransferCompleteReport(0);
         }
         public void LoadComplete()
@@ -1382,37 +1361,13 @@ namespace Mirle.Agv.Controller
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete);
         }
-        public void MoveComplete()
+        public void MoveArrival()
         {
             theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
             Send_Cmd134_TransferEventReport();
             Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
         }
-        public bool IsAskReserveAlive()
-        {
-            return (thdAskReserve != null) && (thdAskReserve.IsAlive);
-        }
-        public void ErrorComplete()
-        {
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
-
-            Send_Cmd132_TransferCompleteReport();
-        }
-        public void AbortComplete()
-        {
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusAbort;
-            Send_Cmd132_TransferCompleteReport();
-        }
-        public void CancelComplete()
-        {
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusCancel;
-            Send_Cmd132_TransferCompleteReport();
-        }
-        public void InterLockError()
-        {
-            theVehicle.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
-            Send_Cmd132_TransferCompleteReport();
-        }
+        public bool IsAskReserveAlive() => (thdAskReserve != null) && thdAskReserve.IsAlive;
         public void NoCommand()
         {
             theVehicle.ActionStatus = VHActionStatus.NoCommand;
@@ -1429,32 +1384,22 @@ namespace Mirle.Agv.Controller
         }
         public void ChargHandshaking()
         {
-            //theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusHandshaking;
-            Send_Cmd144_StatusChangeReport(VhChargeStatus.ChargeStatusHandshaking);
+            theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusHandshaking;
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void Charging()
         {
-            //theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusCharging;
-            Send_Cmd144_StatusChangeReport(VhChargeStatus.ChargeStatusCharging);
+            theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusCharging;
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void ChargeOff()
         {
-            //theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
-            Send_Cmd144_StatusChangeReport(VhChargeStatus.ChargeStatusNone);
+            theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
+            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void PauseReply(ushort seqNum, int replyCode, PauseEvent type)
         {
             Send_Cmd139_PauseResponse(seqNum, replyCode, type);
-        }
-        public void PauseComplete()
-        {
-            theVehicle.PauseStatus = VhStopSingle.StopSingleOn;
-            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-        }
-        public void ResumeComplete()
-        {
-            theVehicle.PauseStatus = VhStopSingle.StopSingleOff;
-            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
         public void CancelAbortReply(ushort iSeqNum, int replyCode, string cancelCmdId, CMDCancelType actType)
         {
@@ -1747,12 +1692,12 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd144_StatusChangeReport(string sender)
         {
-            PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
-
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
-
             try
             {
+                PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
+                VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
+
                 ID_144_STATUS_CHANGE_REP iD_144_STATUS_CHANGE_REP = new ID_144_STATUS_CHANGE_REP();
                 iD_144_STATUS_CHANGE_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_144_STATUS_CHANGE_REP.CurrentSecID = vehLocation.LastSection.Id;
@@ -1764,7 +1709,7 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.ObstacleStatus = theVehicle.ObstacleStatus;
                 iD_144_STATUS_CHANGE_REP.ReserveStatus = theVehicle.ReserveStatus;
                 iD_144_STATUS_CHANGE_REP.BlockingStatus = theVehicle.BlockingStatus;
-                iD_144_STATUS_CHANGE_REP.PauseStatus = theVehicle.PauseStatus;
+                iD_144_STATUS_CHANGE_REP.PauseStatus = agvcTransCmd.PauseStatus;
                 iD_144_STATUS_CHANGE_REP.ErrorStatus = theVehicle.ErrorStatus;
                 iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
                 iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
@@ -1789,46 +1734,6 @@ namespace Mirle.Agv.Controller
             }
 
         }
-        public void Send_Cmd144_StatusChangeReport(VhChargeStatus chargeStatus)
-        {
-            PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
-
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
-
-            try
-            {
-                ID_144_STATUS_CHANGE_REP iD_144_STATUS_CHANGE_REP = new ID_144_STATUS_CHANGE_REP();
-                iD_144_STATUS_CHANGE_REP.CurrentAdrID = vehLocation.LastAddress.Id;
-                iD_144_STATUS_CHANGE_REP.CurrentSecID = vehLocation.LastSection.Id;
-                iD_144_STATUS_CHANGE_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
-                iD_144_STATUS_CHANGE_REP.ModeStatus = theVehicle.ModeStatus;
-                iD_144_STATUS_CHANGE_REP.ActionStatus = theVehicle.ActionStatus;
-                iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
-                iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(!string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId));
-                iD_144_STATUS_CHANGE_REP.ObstacleStatus = theVehicle.ObstacleStatus;
-                iD_144_STATUS_CHANGE_REP.ReserveStatus = theVehicle.ReserveStatus;
-                iD_144_STATUS_CHANGE_REP.BlockingStatus = theVehicle.BlockingStatus;
-                iD_144_STATUS_CHANGE_REP.PauseStatus = theVehicle.PauseStatus;
-                iD_144_STATUS_CHANGE_REP.ErrorStatus = theVehicle.ErrorStatus;
-                iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
-                iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
-                iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
-                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
-                iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
-                iD_144_STATUS_CHANGE_REP.ChargeStatus = chargeStatus;
-
-
-                WrapperMessage wrappers = new WrapperMessage();
-                wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
-                wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
-
-                SendCommandWrapper(wrappers);
-            }
-            catch (Exception ex)
-            {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
 
         private void Receive_Cmd43_StatusRequest(object sender, TcpIpEventArgs e)
         {
@@ -1840,12 +1745,12 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
-
-            PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
-
             try
             {
+                VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+                PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
+                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
+
                 ID_143_STATUS_RESPONSE iD_143_STATUS_RESPONSE = new ID_143_STATUS_RESPONSE();
                 iD_143_STATUS_RESPONSE.ActionStatus = theVehicle.ActionStatus;
                 iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage;
@@ -1863,7 +1768,7 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.ObstacleStatus = theVehicle.ObstacleStatus;
                 iD_143_STATUS_RESPONSE.ObstDistance = theVehicle.ObstDistance;
                 iD_143_STATUS_RESPONSE.ObstVehicleID = theVehicle.ObstVehicleID;
-                iD_143_STATUS_RESPONSE.PauseStatus = theVehicle.PauseStatus;
+                iD_143_STATUS_RESPONSE.PauseStatus = agvcTransCmd.PauseStatus;
                 iD_143_STATUS_RESPONSE.PowerStatus = theVehicle.PowerStatus;
                 iD_143_STATUS_RESPONSE.ReserveStatus = theVehicle.ReserveStatus;
                 iD_143_STATUS_RESPONSE.SecDistance = (uint)vehLocation.LastSection.Distance;
@@ -1913,48 +1818,60 @@ namespace Mirle.Agv.Controller
 
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
-            int replyCode = 0;
-            ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
-
-            var msg = $"Middler : 收到[{receive.EventType}]命令。";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-
-            switch (receive.EventType)
+            try
             {
-                case PauseEvent.Continue:
-                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.PauseComplete)
-                    {
-                        mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.EventType, receive.ReserveInfos);
-                    }
-                    else
-                    {
-                        var ngMsg = $"Middler : 車輛不在[{EnumThreadStatus.PauseComplete}]狀態，拒絕[{receive.EventType}]命令，";
-                        OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
-                        replyCode = 1;
-                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
-                        return;
-                    }
-                    break;
-                case PauseEvent.Pause:
-                    if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working && mainFlowHandler.IsMoveStep())
-                    {
-                        mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.EventType);
-                    }
-                    else
-                    {
-                        var ngMsg = $"Middler : 車輛不在[移動中]狀態，拒絕[{receive.EventType}]命令，";
-                        OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
-                        replyCode = 1;
-                        Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
-                        return;
-                    }
-                    break;
-                default:
-                    break;
-            }
+                int replyCode = 0;
+                ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
 
-            //replyCode = 1;
-            //Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                var msg = $"Middler : 收到[{receive.EventType}]命令。";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+
+                if (theVehicle.ActionStatus == VHActionStatus.NoCommand)
+                {
+                    replyCode = 1;
+                    Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                    var ngMsg = $"Middler : 車輛無命令，拒絕[{receive.EventType}]命令，";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
+                    return;
+                }
+
+                switch (receive.EventType)
+                {
+                    case PauseEvent.Continue:
+                        if (mainFlowHandler.IsVisitTransferStepsPause())
+                        {
+                            mainFlowHandler.Middler_OnCmdResumeEvent(e.iSeqNum, receive.EventType, receive.ReserveInfos);
+                        }
+                        else
+                        {
+                            var ngMsg = $"Middler : 車輛不在[暫停]狀態，拒絕[{PauseEvent.Continue}]命令，";
+                            OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
+                            replyCode = 1;
+                            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                        }
+                        break;
+                    case PauseEvent.Pause:
+                        if (theVehicle.VisitTransferStepsStatus == EnumThreadStatus.Working)
+                        {
+                            mainFlowHandler.Middler_OnCmdPauseEvent(e.iSeqNum, receive.EventType);
+                        }
+                        else
+                        {
+                            var ngMsg = $"Middler : 車輛不在[運作中]狀態，拒絕[{PauseEvent.Pause}]命令，";
+                            OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
+                            replyCode = 1;
+                            Send_Cmd139_PauseResponse(e.iSeqNum, replyCode, receive.EventType);
+                            return;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         public void Send_Cmd139_PauseResponse(ushort seqNum, int replyCode, PauseEvent eventType)
         {
@@ -1979,28 +1896,58 @@ namespace Mirle.Agv.Controller
 
         public void Receive_Cmd37_TransferCancelRequest(object sender, TcpIpEventArgs e)
         {
-            int replyCode = 0;
-            ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
-            var msg = $"Middler : 收到[{receive.ActType}]命令。";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-
-            switch (receive.ActType)
+            try
             {
-                case CMDCancelType.CmdCancel:
-                case CMDCancelType.CmdAbort:
-                    mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
-                    break;               
-                case CMDCancelType.CmdCancelIdMismatch:
-                case CMDCancelType.CmdCancelIdReadFailed:
-                    //mainFlowHandler.Middler_OnCmdCarrierIdReadCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType,receive.);
-                    //break;
-                case CMDCancelType.CmdNone:
-                default:
+                int replyCode = 0;
+                ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
+
+                var msg = $"Middler : 收到[{receive.ActType}]命令。";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+
+                if (theVehicle.ActionStatus == VHActionStatus.NoCommand)
+                {
                     replyCode = 1;
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
-                    break;
-            }
+                    var ngMsg = $"Middler : 車輛無命令，拒絕[{receive.ActType}]命令，";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
+                    return;
+                }
 
+                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
+                if (agvcTransCmd.CommandId != receive.CmdID)
+                {
+                    replyCode = 1;
+                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
+                    var ngMsg = $"Middler : 當前搬送命令ID({agvcTransCmd.CommandId})與收到取消命令ID({receive.CmdID})不合，拒絕[{receive.ActType}]命令，";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
+                    return;
+                }
+
+                switch (receive.ActType)
+                {
+                    case CMDCancelType.CmdCancel:
+                    case CMDCancelType.CmdAbort:
+                        mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
+                        break;
+                    case CMDCancelType.CmdCancelIdMismatch:
+                    case CMDCancelType.CmdCancelIdReadFailed:
+                        if (IsCancelByCstIdRead)
+                        {
+                            // mainFlowHandler.Middler_OnCmdCarrierIdReadCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType,receive.);
+                        }
+                        break;
+                    //break;
+                    case CMDCancelType.CmdNone:
+                    default:
+                        replyCode = 1;
+                        Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode, string cmdID, CMDCancelType actType)
         {
@@ -2029,6 +1976,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
                 ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
                 if (receive.EventType == EventType.ReserveReq)
                 {
@@ -2064,6 +2012,7 @@ namespace Mirle.Agv.Controller
                         case CMDCancelType.CmdAbort:
                         case CMDCancelType.CmdCancelIdMismatch:
                         case CMDCancelType.CmdCancelIdReadFailed:
+                            agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(receive.ReplyActiveType, agvcTransCmd.CompleteStatus);
                             mainFlowHandler.IsCancelByCstIdRead = true;
                             mainFlowHandler.IsBcrReadReply = true;
                             return;
@@ -2077,14 +2026,34 @@ namespace Mirle.Agv.Controller
                 {
 
                 }
-
-
             }
             catch (Exception ex)
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        private CompleteStatus GetCancelCompleteStatus(CMDCancelType replyActiveType, CompleteStatus completeStatus)
+        {
+            switch (replyActiveType)
+            {
+                case CMDCancelType.CmdNone:
+                    break;
+                case CMDCancelType.CmdCancel:
+                    return CompleteStatus.CmpStatusCancel;
+                case CMDCancelType.CmdAbort:
+                    return CompleteStatus.CmpStatusAbort;
+                case CMDCancelType.CmdCancelIdMismatch:
+                    return CompleteStatus.CmpStatusIdmisMatch;
+                case CMDCancelType.CmdCancelIdReadFailed:
+                    return CompleteStatus.CmpStatusIdreadFailed;
+                default:
+                    break;
+            }
+
+            return completeStatus;
+        }
+
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
             VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
@@ -2346,16 +2315,18 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd132_TransferCompleteReport(int delay = 0)
         {
-            var msg = $"命令結束，結束狀態{theVehicle.CompleteStatus}，命令編號{theVehicle.CurAgvcTransCmd.CommandId}";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
-
             try
             {
+                VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
+
+                var msg = $"命令結束，結束狀態{agvcTransCmd.CompleteStatus}，命令編號{agvcTransCmd.CommandId}";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+
                 ID_132_TRANS_COMPLETE_REPORT iD_132_TRANS_COMPLETE_REPORT = new ID_132_TRANS_COMPLETE_REPORT();
-                iD_132_TRANS_COMPLETE_REPORT.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
+                iD_132_TRANS_COMPLETE_REPORT.CmdID = agvcTransCmd.CommandId;
                 iD_132_TRANS_COMPLETE_REPORT.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
-                iD_132_TRANS_COMPLETE_REPORT.CmpStatus = theVehicle.CompleteStatus;
+                iD_132_TRANS_COMPLETE_REPORT.CmpStatus = agvcTransCmd.CompleteStatus;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = vehLocation.LastSection.Id;
                 iD_132_TRANS_COMPLETE_REPORT.SecDistance = (uint)vehLocation.LastSection.Distance;

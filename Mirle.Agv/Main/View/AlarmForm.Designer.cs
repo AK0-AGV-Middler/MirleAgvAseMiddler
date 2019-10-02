@@ -36,8 +36,11 @@
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.num1 = new System.Windows.Forms.NumericUpDown();
+            this.button2 = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.num1)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -81,6 +84,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button2);
+            this.panel1.Controls.Add(this.num1);
             this.panel1.Controls.Add(this.btnBuzzOff);
             this.panel1.Controls.Add(this.btnAlarmReset);
             this.panel1.Controls.Add(this.button1);
@@ -126,6 +131,28 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // num1
+            // 
+            this.num1.Location = new System.Drawing.Point(332, 3);
+            this.num1.Maximum = new decimal(new int[] {
+            300000,
+            0,
+            0,
+            0});
+            this.num1.Name = "num1";
+            this.num1.Size = new System.Drawing.Size(112, 22);
+            this.num1.TabIndex = 9;
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(332, 31);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(112, 27);
+            this.button2.TabIndex = 10;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // AlarmForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -139,6 +166,7 @@
             this.Text = "Alarms";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.num1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -152,5 +180,7 @@
         private System.Windows.Forms.RichTextBox rtbHistoryAlarms;
         private System.Windows.Forms.RichTextBox rtbHappeningAlarms;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.NumericUpDown num1;
+        private System.Windows.Forms.Button button2;
     }
 }

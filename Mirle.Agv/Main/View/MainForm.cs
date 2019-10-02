@@ -30,7 +30,7 @@ namespace Mirle.Agv.View
         private PlcAgent plcAgent;
         private MCProtocol mcProtocol;
         private MoveCommandDebugModeForm moveCommandDebugMode;
-        private JogPitchForm jogPitch;
+        private JogPitchForm jogPitchForm;
         private WarningForm warningForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
@@ -123,10 +123,10 @@ namespace Mirle.Agv.View
             plcForm.Show();
             plcForm.Hide();
 
-            jogPitch = new JogPitchForm(moveControlHandler);
-            jogPitch.WindowState = FormWindowState.Normal;
-            jogPitch.Show();
-            jogPitch.Hide();
+            jogPitchForm = new JogPitchForm(moveControlHandler);
+            jogPitchForm.WindowState = FormWindowState.Normal;
+            jogPitchForm.Show();
+            jogPitchForm.Hide();
 
             warningForm = new WarningForm();
             warningForm.WindowState = FormWindowState.Normal;
@@ -526,12 +526,12 @@ namespace Mirle.Agv.View
 
         private void JogPage_Click(object sender, EventArgs e)
         {
-            if (jogPitch.IsDisposed)
+            if (jogPitchForm.IsDisposed)
             {
-                jogPitch = new JogPitchForm(moveControlHandler);
+                jogPitchForm = new JogPitchForm(moveControlHandler);
             }
-            jogPitch.BringToFront();
-            jogPitch.Show();
+            jogPitchForm.BringToFront();
+            jogPitchForm.Show();
         }
 
         public delegate void DelRenewUI(Control control, string msg);
@@ -1439,6 +1439,7 @@ namespace Mirle.Agv.View
             if (cbSimulationMode.Checked)
             {
                 mainFlowHandler.SetupVehicleSoc(100);
+
             }
 
             btnLoadOk.Visible = cbSimulationMode.Checked;
@@ -1459,7 +1460,7 @@ namespace Mirle.Agv.View
         private void btnLoadOk_Click(object sender, EventArgs e)
         {
             theVehicle.ThePlcVehicle.Loading = true;
-            theVehicle.ThePlcVehicle.CassetteId = "CA0070";
+            //theVehicle.ThePlcVehicle.CassetteId = "CA0070";
             PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load, "1", EnumStageDirection.Left, false, 100);
             mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
         }
