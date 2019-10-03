@@ -14,6 +14,7 @@ namespace Mirle.Agv.Controller
         private AlarmHandler alarmHandler;
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
         private string device = "MoveControl";
+        private List<VChangeData> vChangeList;
 
         private const int AllowableTheta = 10;
         public bool TurnOutSafetyDistance { get; set; } = false;
@@ -41,7 +42,7 @@ namespace Mirle.Agv.Controller
             returnCommand.SafetyDistance = moveControlConfig.SafteyDistance[EnumCommandType.Move];
             returnCommand.TriggerEncoder = realEncoder - (dirFlag ? returnCommand.SafetyDistance / 2 : -returnCommand.SafetyDistance / 2);
             returnCommand.CmdType = EnumCommandType.Move;
-            returnCommand.Distance = commandDistance * moveControlConfig.MoveCommandDistanceMagnification + moveControlConfig.MoveCommandDistanceConstant;
+            returnCommand.Distance = commandDistance;
             returnCommand.Velocity = commandVelocity;
             returnCommand.DirFlag = dirFlag;
             returnCommand.WheelAngle = StartWheelAngle;
@@ -68,7 +69,6 @@ namespace Mirle.Agv.Controller
 
         private Command NewR2000Command(MapPosition position, double realEncoder, bool dirFlag, int wheelAngle, EnumAddressAction type)
         {
-
             Command returnCommand = new Command();
             returnCommand.TriggerEncoder = realEncoder;
             returnCommand.Position = position;
@@ -160,6 +160,90 @@ namespace Mirle.Agv.Controller
             returnCommand.DirFlag = dirFlag;
 
             return returnCommand;
+        }
+
+        private void AddToVChangeList(ref List<Command> moveCmdList, Command command, AddToCommandListData data)
+        {
+            double startEncoder = 0;
+            double startVelocity = 0;
+            double endEncoder = 0;
+            double velocityCommand = command.Velocity;
+            VChangeData temp;
+
+            if (command.Position != null)
+                startEncoder = command.TriggerEncoder;
+            else
+            {
+                for (int i = moveCmdList.Count - 1; i >= 0; i--)
+                {
+                    if (moveCmdList[i].Position != null)
+                    {
+                        double deltaEncoder = 0;
+
+                        if (moveCmdList[i].CmdType == EnumCommandType.TR)
+                            deltaEncoder = moveControlConfig.TurnParameter[moveCmdList[i].TurnType].R * 2;
+                        else if (moveCmdList[i].CmdType == EnumCommandType.R2000)
+                            deltaEncoder = moveControlConfig.TurnParameter[EnumAddressAction.R2000].R * Math.Sqrt(2);
+                        else if (moveCmdList[i].CmdType == EnumCommandType.Move)
+                            deltaEncoder = moveCmdList[i].SafetyDistance / 2;
+
+                        startEncoder = moveCmdList[i].TriggerEncoder + (data.DirFlag ? deltaEncoder : -deltaEncoder);
+                        break;
+                    }
+                }
+            }
+
+            if (vChangeList.Count != 0)
+                startVelocity = vChangeList[vChangeList.Count - 1].VelocityCommand;
+
+            if (startVelocity == velocityCommand)
+                endEncoder = startEncoder;
+            else
+            {
+                double distance = GetAccDecDistanceFormMove(startVelocity, command.Velocity);
+                endEncoder = startEncoder + (data.DirFlag ? distance : -distance);
+            }
+
+            if (vChangeList.Count > 0 &&
+               ((data.DirFlag && vChangeList[vChangeList.Count - 1].EndEncoder > startEncoder) ||
+               (!data.DirFlag && vChangeList[vChangeList.Count - 1].EndEncoder < startEncoder)))
+            {
+                double velocity = 0;
+                double distance = GetVChangeDistance(vChangeList[vChangeList.Count - 1].StartVelocity, velocityCommand,
+                    vChangeList[vChangeList.Count - 1].VelocityCommand, Math.Abs(vChangeList[vChangeList.Count - 1].StartEncoder - startEncoder), ref velocity);
+
+                OverRrideLastVChangeCommand(ref moveCmdList, data, velocity);
+            }
+
+            temp = new VChangeData(startEncoder, startVelocity, endEncoder, velocityCommand, command.VChangeType);
+            vChangeList.Add(temp);
+            data.NowVelocityCommand = temp.VelocityCommand;
+        }
+
+        private void AddCommandToCommandList(ref List<Command> moveCmdList, Command command, AddToCommandListData data)
+        {
+            if (command.CmdType == EnumCommandType.Vchange)
+                AddToVChangeList(ref moveCmdList, command, data);
+
+            if (command.Position == null)
+            {
+                moveCmdList.Add(command);
+            }
+            else
+            {
+                int inserIndex = data.StartMoveIndex;
+                for (; inserIndex < moveCmdList.Count; inserIndex++)
+                {
+                    if (moveCmdList[inserIndex].Position != null)
+                    {
+                        if ((data.DirFlag && command.TriggerEncoder < moveCmdList[inserIndex].TriggerEncoder) ||
+                           (!data.DirFlag && command.TriggerEncoder > moveCmdList[inserIndex].TriggerEncoder))
+                            break;
+                    }
+                }
+
+                moveCmdList.Insert(inserIndex, command);
+            }
         }
         #endregion
 
@@ -479,6 +563,185 @@ namespace Mirle.Agv.Controller
         }
         #endregion
 
+        public double GetAccDecDistanceFormMove(double startVel, double endVel)
+        {
+            double accOrDec = 0;
+            double jerk = moveControlConfig.Move.Jerk;
+
+            if (startVel > endVel)
+                accOrDec = moveControlConfig.Move.Deceleration;
+            else if (startVel < endVel)
+                accOrDec = moveControlConfig.Move.Acceleration;
+
+            return computeFunction.GetAccDecDistance(startVel, endVel, accOrDec, jerk);
+        }
+
+        private int FindLastVChangeCommand(List<Command> moveCmdList)
+        {
+            for (int i = moveCmdList.Count - 1; i >= 0; i--)
+            {
+                if (moveCmdList[i].CmdType == EnumCommandType.Vchange)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private void OverRrideLastVChangeCommand(ref List<Command> moveCmdList, AddToCommandListData data, double velocity, EnumVChangeType type = EnumVChangeType.Normal, int wheelAngle = 0)
+        {
+            int index = FindLastVChangeCommand(moveCmdList);
+
+            if (index != -1)
+            {
+                moveCmdList[index].Velocity = velocity;
+                moveCmdList[index].VChangeType = type;
+                moveCmdList[index].WheelAngle = wheelAngle;
+                vChangeList[vChangeList.Count - 1].VelocityCommand = velocity;
+                double distance = GetAccDecDistanceFormMove(vChangeList[vChangeList.Count - 1].StartVelocity, vChangeList[vChangeList.Count - 1].VelocityCommand);
+                vChangeList[vChangeList.Count - 1].EndEncoder = vChangeList[vChangeList.Count - 1].StartEncoder + (data.DirFlag ? distance : -distance);
+            }
+        }
+
+        private void OverRrideLastVChangeCommand(ref List<Command> moveCmdList, AddToCommandListData data, double velocity)
+        {
+            int index = FindLastVChangeCommand(moveCmdList);
+
+            if (index != -1)
+            {
+                moveCmdList[index].Velocity = velocity;
+                vChangeList[vChangeList.Count - 1].VelocityCommand = velocity;
+                double distance = GetAccDecDistanceFormMove(vChangeList[vChangeList.Count - 1].StartVelocity, vChangeList[vChangeList.Count - 1].VelocityCommand);
+                vChangeList[vChangeList.Count - 1].EndEncoder = vChangeList[vChangeList.Count - 1].StartEncoder + (data.DirFlag ? distance : -distance);
+            }
+        }
+
+        private void RemoveLastVChangeCommand(ref List<Command> moveCmdList)
+        {
+            int index = FindLastVChangeCommand(moveCmdList);
+
+            if (index != -1)
+                moveCmdList.RemoveAt(index);
+        }
+
+        private void ProcessVChangeCommand(ref List<Command> moveCmdList, ref Command command, AddToCommandListData data, MapPosition position)
+        {
+            MapPosition triggerPosition;
+            if (vChangeList.Count == 0)
+                return;
+
+            VChangeData lastVChange = vChangeList[vChangeList.Count - 1];
+            double distanceToPosition = command.TriggerEncoder;
+            double distance;
+            double triggerEncoder;
+
+            if (lastVChange.VelocityCommand == command.Velocity)
+            {
+                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distanceToPosition);
+                command.TriggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distanceToPosition : -(data.CommandDistance - distanceToPosition));
+                command.Position = triggerPosition;
+            }
+            else
+            {
+                distance = GetAccDecDistanceFormMove(lastVChange.VelocityCommand, command.Velocity) + distanceToPosition;
+                triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
+
+                if ((data.DirFlag && triggerEncoder > lastVChange.EndEncoder) ||
+                    (!data.DirFlag && triggerEncoder < lastVChange.EndEncoder))
+                { // 正常情況.
+                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                        command.TriggerEncoder = triggerEncoder;
+                        command.Position = triggerPosition;
+                }
+                else
+                { // 上次速度命令無法執行完.
+                    distance = GetAccDecDistanceFormMove(lastVChange.StartVelocity, command.Velocity) + distanceToPosition;
+                    triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
+
+                    if ((data.DirFlag && triggerEncoder > lastVChange.StartEncoder + 200) ||
+                        (!data.DirFlag && triggerEncoder < lastVChange.StartEncoder - 200))
+                    { // 上次變速命令可以執行,但是需要修改速度.
+                        double velocity = 0;
+                        double realDistance = Math.Abs((data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : data.CommandDistance)) - lastVChange.StartEncoder) - distanceToPosition;
+                        distance = GetVChangeDistance(lastVChange.StartVelocity, command.Velocity, lastVChange.VelocityCommand, realDistance, ref velocity) + distanceToPosition;
+                        triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
+                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                        command.TriggerEncoder = triggerEncoder;
+                        command.Position = triggerPosition;
+                        OverRrideLastVChangeCommand(ref moveCmdList, data, velocity);
+                        data.NowVelocityCommand = velocity;
+                    }
+                    else
+                    { // 上次速度命令無法執行.
+                        if (lastVChange.Type == EnumVChangeType.TurnOut)
+                        {
+                            int index = FindLastVChangeCommand(moveCmdList);
+                            command.VChangeType = EnumVChangeType.TurnOut;
+                            command.TriggerEncoder = moveCmdList[index].TriggerEncoder;
+                            command.Position = moveCmdList[index].Position;
+                            RemoveLastVChangeCommand(ref moveCmdList);
+                            vChangeList.RemoveAt(vChangeList.Count - 1);
+                        }
+                        else
+                        {
+                            RemoveLastVChangeCommand(ref moveCmdList);
+                            vChangeList.RemoveAt(vChangeList.Count - 1);
+                            ProcessVChangeCommand(ref moveCmdList, ref command, data, position);
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool ProcessStopCommand(ref List<Command> moveCmdList, ref Command command, AddToCommandListData data, MapPosition position, double nextVelocity)
+        {
+            MapPosition triggerPosition;
+            VChangeData lastVChange;
+            double distanceToPosition = command.TriggerEncoder;
+            double distance;
+            double triggerEncoder;
+
+            for (int i = vChangeList.Count - 1; i >= 0; i--)
+            {
+                lastVChange = vChangeList[i];
+
+                distance = GetAccDecDistanceFormMove(lastVChange.VelocityCommand, 0) +
+                           GetAccDecDistanceFormMove(0, nextVelocity) + distanceToPosition;
+                triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
+
+                if ((data.DirFlag && triggerEncoder > lastVChange.EndEncoder) ||
+                    (!data.DirFlag && triggerEncoder < lastVChange.EndEncoder))
+                { // 正常情況.
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                    command.TriggerEncoder = triggerEncoder;
+                    command.Position = triggerPosition;
+                    return distance < data.STDistance - data.TurnOutDistance;
+                }
+                else
+                { // 上次速度命令無法執行完.
+                    distance = GetAccDecDistanceFormMove(lastVChange.StartVelocity, 0) +
+                               GetAccDecDistanceFormMove(0, nextVelocity) + distanceToPosition;
+
+                    triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
+
+                    if ((data.DirFlag && triggerEncoder > lastVChange.StartEncoder) ||
+                        (!data.DirFlag && triggerEncoder < lastVChange.StartEncoder))
+                    { // 上次變速命令可以執行,但是需要修改速度.
+                        double velocity = 0;
+                        distance = GetVChangeDistance(lastVChange.StartVelocity, 0, lastVChange.VelocityCommand, data.CommandDistance - data.TurnOutDistance - distanceToPosition, ref velocity) +
+                                   GetAccDecDistanceFormMove(0, nextVelocity) + distanceToPosition;
+                        triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
+                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                        command.TriggerEncoder = triggerEncoder;
+                        command.Position = triggerPosition;
+                        data.NowVelocityCommand = velocity;
+                        return distance < data.STDistance - data.TurnOutDistance;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public double GetFirstVChangeCommandVelocity(double moveCommandVelocity,
             double firstVChangeDistance, double firstVChangeVelocity, double secondVChangeDistance)
         {
@@ -506,24 +769,22 @@ namespace Mirle.Agv.Controller
 
         public double GetSLowStopDistance()
         {
-            double jerk = moveControlConfig.Move.Jerk;
-            double dec = moveControlConfig.Move.Deceleration;
-            return computeFunction.GetAccDecDistance(moveControlConfig.EQ.Velocity, 0, dec, jerk);
+            return GetAccDecDistanceFormMove(moveControlConfig.EQ.Velocity, 0);
         }
 
-        public double GetVChangeDistance(double startVel, double endVel, double tragetVel, double distance)
+        public double GetVChangeDistance(double startVel, double endVel, double targetVel, double distance, ref double velocity)
         {
             double jerk = moveControlConfig.Move.Jerk;
             double acc = moveControlConfig.Move.Acceleration;
             double dec = moveControlConfig.Move.Deceleration;
-            double tempVel = 0;
+            velocity = targetVel;
 
             double accDistance = 0;
             double decDistance = 0;
             double accDecDistance = 0;
 
-            decDistance = computeFunction.GetAccDecDistance(tragetVel, endVel, dec, jerk);
-            accDistance = computeFunction.GetAccDecDistance(startVel, tragetVel, acc, jerk);
+            decDistance = GetAccDecDistanceFormMove(targetVel, endVel);
+            accDistance = GetAccDecDistanceFormMove(startVel, targetVel);
 
             if (accDistance + decDistance < distance)
                 return decDistance;
@@ -531,15 +792,15 @@ namespace Mirle.Agv.Controller
             decDistance = 0;
             accDistance = 0;
             //tempVel = (startVel < endVel) ? startVel : endVel;
-            tempVel = startVel;
+            velocity = startVel;
             double vel = 0;
 
-            for (; accDistance + decDistance + accDecDistance < distance; tempVel += 5)
+            for (; accDistance + decDistance + accDecDistance < distance; velocity += 5)
             {
-                accDecDistance = computeFunction.GetDecDistanceOneJerk(tempVel, endVel,
+                accDecDistance = computeFunction.GetDecDistanceOneJerk(velocity, endVel,
                            moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk, ref vel);
-                decDistance = computeFunction.GetAccDecDistance(tempVel, endVel, dec, jerk);
-                accDistance = computeFunction.GetAccDecDistance(startVel, tempVel, acc, jerk);
+                decDistance = GetAccDecDistanceFormMove(velocity, endVel);
+                accDistance = GetAccDecDistanceFormMove(startVel, velocity);
             }
 
             return decDistance + accDecDistance;
@@ -593,7 +854,7 @@ namespace Mirle.Agv.Controller
                     double distance = Math.Sqrt(Math.Pow(oneceMoveCommand.AddressPositions[i].X - reserveDataList[reserveIndex].Position.X, 2) +
                                                 Math.Pow(oneceMoveCommand.AddressPositions[i].Y - reserveDataList[reserveIndex].Position.Y, 2));
 
-                    accDistance = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].Velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
+                    accDistance = GetAccDecDistanceFormMove(0, moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].Velocity);
 
                     totalDistance = moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].R +
                                     moveControlConfig.TurnParameter[oneceMoveCommand.AddressActions[i]].VChangeSafetyDistance +
@@ -624,8 +885,6 @@ namespace Mirle.Agv.Controller
                      ref List<Command> moveCmdList, List<ReserveData> reserveDataList, ref AddToCommandListData data,
                      OneceMoveCommand oneceMoveCommand, int indexOfOneceMoveCommand, ref string errorMessage)
         {
-            MapPosition triggerPosition;
-            double distance;
             Command tempCommand;
             double r = moveControlConfig.TurnParameter[EnumAddressAction.TR350].R;
             double velocity = moveControlConfig.TurnParameter[EnumAddressAction.TR350].Velocity;
@@ -639,79 +898,25 @@ namespace Mirle.Agv.Controller
             {
                 int reserveIndex = GetReserveIndex(reserveDataList, position);
 
-                //if (reserveIndex != -1 && CheckNotInTRTurn(oneceMoveCommand, reserveDataList, indexOfOneceMoveCommand, reserveIndex))
-                //{
-                //    //if (reserveDataList[reserveIndex].Action == EnumAddressAction.BTR50 ||
-                //    //    reserveDataList[reserveIndex].Action == EnumAddressAction.BTR350)
-                //    //{
-                //    //    data.NextMoveCmdStartReserveNumber = reserveIndex + 1;
-                //    //}
-                //    //else
-                //    //{
-                //    distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand, data.STDistance - data.TurnOutDistance - moveControlConfig.ReserveSafetyDistance);
-                //    distance += moveControlConfig.ReserveSafetyDistance;
-
-                //    if (distance < data.STDistance - data.TurnOutDistance)
-                //    {
-                //        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-                //        tempCommand = NewStopCommand(triggerPosition, data.MoveStartEncoder +
-                //                       (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                //                                                              data.DirFlag, reserveIndex + 1);
-                //        moveCmdList.Add(tempCommand);
-                //    }
-                //    //}
-                //}
-
                 if (velocityCommand > data.NowVelocityCommand)
                 {
-                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, 0);
-                    tempCommand = NewVChangeCommand(triggerPosition, data.MoveStartEncoder +
+                    tempCommand = NewVChangeCommand(position, data.MoveStartEncoder +
                                    (data.DirFlag ? data.CommandDistance : -data.CommandDistance), velocityCommand, data.DirFlag);
-                    moveCmdList.Add(tempCommand);
-
-                    data.NowVelocityCommand = velocityCommand;
+                    AddCommandToCommandList(ref moveCmdList, tempCommand, data);
                 }
                 else if (velocityCommand < data.NowVelocityCommand)
                 {
-                    distance = GetVChangeDistance(data.NowVelocity, velocityCommand, data.NowVelocityCommand, data.STDistance);
-
-                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-                    tempCommand = NewVChangeCommand(triggerPosition, data.MoveStartEncoder +
-                                   (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                                   velocityCommand, data.DirFlag);
-                    moveCmdList.Add(tempCommand);
-
-                    data.NowVelocityCommand = velocityCommand;
+                    tempCommand = NewVChangeCommand(null, 0, velocityCommand, data.DirFlag);
+                    ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
+                    AddCommandToCommandList(ref moveCmdList, tempCommand, data);
                 }
 
-                if (reserveIndex != -1)
+                if (reserveIndex != -1 && CheckNotInTRTurn(oneceMoveCommand, reserveDataList, indexOfOneceMoveCommand, reserveIndex))
                 {
-                    double accDistance = computeFunction.GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
-                    distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand,
-                        data.STDistance - vChangeSafetyDistance - data.TurnOutDistance - r - accDistance - moveControlConfig.ReserveSafetyDistance);
-                    distance = distance + vChangeSafetyDistance + r + accDistance + moveControlConfig.ReserveSafetyDistance;
+                    tempCommand = NewStopCommand(null, vChangeSafetyDistance + r + moveControlConfig.ReserveSafetyDistance, data.DirFlag, reserveIndex + 1);
 
-                    if (distance < data.STDistance - data.TurnOutDistance)
-                    {
-                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-
-                        tempCommand = NewStopCommand(triggerPosition,
-                            data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                            data.DirFlag, reserveIndex + 1);
-
-                        int inserIndex = data.InsertIndex;
-                        for (; inserIndex < moveCmdList.Count; inserIndex++)
-                        {
-                            if (moveCmdList[inserIndex].Position != null)
-                            {
-                                if ((data.DirFlag && tempCommand.TriggerEncoder < moveCmdList[inserIndex].TriggerEncoder) ||
-                                   (!data.DirFlag && tempCommand.TriggerEncoder > moveCmdList[inserIndex].TriggerEncoder))
-                                    break;
-                            }
-                        }
-
-                        moveCmdList.Insert(inserIndex, tempCommand);
-                    }
+                    if (ProcessStopCommand(ref moveCmdList, ref tempCommand, data, position, velocity))
+                        AddCommandToCommandList(ref moveCmdList, tempCommand, data);
                 }
             }
 
@@ -728,68 +933,22 @@ namespace Mirle.Agv.Controller
             // 距離非常短,不做加速到站前減速,改為直接用80速度慢慢走,在停止(和正常情況相比會缺少VChange command).
             if (data.CommandDistance < 2 * GetSLowStopDistance())
             {
-                // 取得停止距離(vel:80->0),和座標點.
-                distance = GetVChangeDistance(data.NowVelocity, 0, moveControlConfig.EQ.Velocity, data.STDistance);
-                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-
-                // 直接塞入降速至80命令和SlowStop命令
-                tempCommand = NewVChangeCommand(null, 0, moveControlConfig.EQ.Velocity, data.DirFlag);
-                moveCmdList.Add(tempCommand);
-
+                OverRrideLastVChangeCommand(ref moveCmdList, data, moveControlConfig.EQ.Velocity);
+                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, GetSLowStopDistance());
                 tempCommand = NewSlowStopCommand(triggerPosition, data.MoveStartEncoder +
-                                              (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
+                                              (data.DirFlag ? data.CommandDistance - GetSLowStopDistance() : -(data.CommandDistance - GetSLowStopDistance())),
                                                data.DirFlag);
-                moveCmdList.Add(tempCommand);
+                AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
             else
             { // 距離不會太短之情況.
-              // 算出直接減速距離是否足夠.
-                distance = computeFunction.GetAccDecDistance(data.NowVelocity, 0, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
 
-                // 需要直接減速.
-                if (distance > data.STDistance - data.TurnOutDistance - moveControlConfig.EQ.Distance)
-                {
-                    tempCommand = NewVChangeCommand(null, 0, moveControlConfig.EQ.Velocity, data.DirFlag);
-                    moveCmdList.Add(tempCommand);
-                }
-                else
-                {
-                    if (data.NowVelocityCommand > moveControlConfig.EQ.Velocity)
-                    { // 需要降速.
-                      // 算出減速距離跟減速座標.
-                        if (action == EnumAddressAction.End)
-                        {
-                            distance = GetVChangeDistance(data.NowVelocity, moveControlConfig.EQ.Velocity, data.NowVelocityCommand,
-                                                          data.STDistance - moveControlConfig.EQ.Distance - data.TurnOutDistance);
-
-                            distance = distance + moveControlConfig.EQ.Distance;
-                        }
-                        else
-                        {
-                            distance = GetVChangeDistance(data.NowVelocity, moveControlConfig.EQ.Velocity, data.NowVelocityCommand,
-                                                          data.STDistance - moveControlConfig.NormalStopDistance - data.TurnOutDistance);
-
-                            distance = distance + moveControlConfig.NormalStopDistance;
-                        }
-
-                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-
-                        // 插入減速指令.
-                        if (action == EnumAddressAction.End)
-                        {
-                            tempCommand = NewVChangeCommand(triggerPosition,
-                                data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                                moveControlConfig.EQ.Velocity, data.DirFlag, EnumVChangeType.EQ);
-                        }
-                        else
-                        {
-                            tempCommand = NewVChangeCommand(triggerPosition,
-                                data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                                moveControlConfig.EQ.Velocity, data.DirFlag, EnumVChangeType.Normal);
-                        }
-
-                        moveCmdList.Add(tempCommand);
-                    }
+                if (data.NowVelocityCommand > moveControlConfig.EQ.Velocity)
+                { // 需要降速.
+                    distance = (action == EnumAddressAction.End ? moveControlConfig.EQ.Distance : moveControlConfig.NormalStopDistance) + GetSLowStopDistance();
+                    tempCommand = NewVChangeCommand(null, distance, moveControlConfig.EQ.Velocity, data.DirFlag, (action == EnumAddressAction.End ? EnumVChangeType.EQ : EnumVChangeType.Normal));
+                    ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
+                    AddCommandToCommandList(ref moveCmdList, tempCommand, data);
                 }
 
                 // 算出停止距離跟座標.
@@ -800,20 +959,19 @@ namespace Mirle.Agv.Controller
                 tempCommand = NewSlowStopCommand(triggerPosition,
                                 data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                 data.DirFlag);
-                moveCmdList.Add(tempCommand);
+                AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
             // 插入關修正命令.
             tempCommand = NewReviseCloseCommand(null, 0, data.DirFlag);
-            moveCmdList.Add(tempCommand);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
 
             // 是終點.
             if (action == EnumAddressAction.End)
             {
                 // 二修命令.
-                tempCommand = NewEndCommand(position, data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : -data.CommandDistance),
-                                                      data.DirFlag);
-                moveCmdList.Add(tempCommand);
+                tempCommand = NewEndCommand(position, data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : -data.CommandDistance), data.DirFlag);
+                AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
             data.TurnOutDistance = 0;
@@ -827,8 +985,6 @@ namespace Mirle.Agv.Controller
             double velocity = moveControlConfig.TurnParameter[action].Velocity;
             double vChangeSafetyDistance = moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
             double closeReviseDistance = moveControlConfig.TurnParameter[action].CloseReviseDistance;
-            double trVChangeDistance = 0;
-            double distance;
             MapPosition triggerPosition;
             Command tempCommand;
 
@@ -837,61 +993,17 @@ namespace Mirle.Agv.Controller
             if (data.NowWheelAngle == -1)
                 return false;
 
-            int reserveIndex = GetReserveIndex(reserveDataList, position);
+            double distance = GetAccDecDistanceFormMove(data.NowVelocity, velocity);
 
-            //if (reserveIndex != -1)
-            //{
-            //    double accDistance = computeFunction.GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
-            //    distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand,
-            //        data.STDistance - vChangeSafetyDistance - data.TurnOutDistance - r - accDistance - moveControlConfig.ReserveSafetyDistance);
-            //    distance = distance + vChangeSafetyDistance + r + accDistance + moveControlConfig.ReserveSafetyDistance;
-
-            //    if (distance < data.STDistance - data.TurnOutDistance)
-            //    {
-            //        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-
-            //        tempCommand = NewStopCommand(triggerPosition,
-            //            data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-            //            data.DirFlag, reserveIndex + 1);
-            //        moveCmdList.Add(tempCommand);
-            //    }
-            //}
-
-            // 需要降速.
-            if (data.NowVelocityCommand > velocity)
+            if (distance + 2 * moveControlConfig.TurnParameter[action].VChangeSafetyDistance + moveControlConfig.TurnParameter[action].R > data.STDistance - data.TurnOutDistance)
             {
-                distance = computeFunction.GetAccDecDistance(data.NowVelocity, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
-
-                // 啟動且距離非常短
-                if (data.NowVelocity == 0 && distance + 2 * moveControlConfig.TurnParameter[action].VChangeSafetyDistance + moveControlConfig.TurnParameter[action].R > data.STDistance - data.TurnOutDistance)
-                {
-                    tempCommand = NewVChangeCommand(null, 0, velocity, data.DirFlag, EnumVChangeType.TRTurn, data.NowWheelAngle);
-                    moveCmdList.Add(tempCommand);
-                }
-                else
-                {
-                    trVChangeDistance = GetVChangeDistance(data.NowVelocity, velocity, data.NowVelocityCommand,
-                        data.STDistance - vChangeSafetyDistance - r - data.TurnOutDistance);
-                    trVChangeDistance = trVChangeDistance + vChangeSafetyDistance + r;
-
-                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, trVChangeDistance);
-
-                    tempCommand = NewVChangeCommand(triggerPosition,
-                        data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - trVChangeDistance : -(data.CommandDistance - trVChangeDistance)),
-                        velocity, data.DirFlag, EnumVChangeType.TRTurn, data.NowWheelAngle);
-                    moveCmdList.Add(tempCommand);
-                }
+                OverRrideLastVChangeCommand(ref moveCmdList, data, velocity, EnumVChangeType.TRTurn, data.NowWheelAngle);
             }
             else
             {
-                trVChangeDistance = vChangeSafetyDistance + r;
-
-                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, trVChangeDistance);
-
-                tempCommand = NewVChangeCommand(triggerPosition,
-                    data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - trVChangeDistance : -(data.CommandDistance - trVChangeDistance)),
-                    velocity, data.DirFlag, EnumVChangeType.TRTurn, data.NowWheelAngle);
-                moveCmdList.Add(tempCommand);
+                tempCommand = NewVChangeCommand(null, r + vChangeSafetyDistance, velocity, data.DirFlag, EnumVChangeType.TRTurn, data.NowWheelAngle);
+                ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
+                AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
             distance = closeReviseDistance + r;
@@ -901,57 +1013,29 @@ namespace Mirle.Agv.Controller
                                  data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                  data.DirFlag, action);
 
-            if (distance > trVChangeDistance && trVChangeDistance != 0 && moveCmdList.Count > 0)
-                moveCmdList.Insert(moveCmdList.Count - 1, tempCommand);
-            else
-                moveCmdList.Add(tempCommand);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
 
             triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, r);
 
             tempCommand = NewTRCommand(triggerPosition, data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - r : -(data.CommandDistance - r)),
                                        data.DirFlag, data.NowWheelAngle, action);
 
-            moveCmdList.Add(tempCommand);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
+
+            int reserveIndex = GetReserveIndex(reserveDataList, position);
 
             if (reserveIndex != -1)
             {
-                double accDistance = computeFunction.GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
-                distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand,
-                    data.STDistance - vChangeSafetyDistance - data.TurnOutDistance - r - accDistance - moveControlConfig.ReserveSafetyDistance);
-                distance = distance + vChangeSafetyDistance + r + accDistance + moveControlConfig.ReserveSafetyDistance;
+                tempCommand = NewStopCommand(null, vChangeSafetyDistance + r + moveControlConfig.ReserveSafetyDistance, data.DirFlag, reserveIndex + 1);
 
-                if (distance < data.STDistance - data.TurnOutDistance)
-                {
-                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-
-                    tempCommand = NewStopCommand(triggerPosition,
-                        data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                        data.DirFlag, reserveIndex + 1);
-
-                    int inserIndex = data.InsertIndex;
-                    for (; inserIndex < moveCmdList.Count; inserIndex++)
-                    {
-                        if (moveCmdList[inserIndex].Position != null)
-                        {
-                            if ((data.DirFlag && tempCommand.TriggerEncoder < moveCmdList[inserIndex].TriggerEncoder) ||
-                               (!data.DirFlag && tempCommand.TriggerEncoder > moveCmdList[inserIndex].TriggerEncoder))
-                                break;
-                        }
-                    }
-
-                    moveCmdList.Insert(inserIndex, tempCommand);
-                }
+                if (ProcessStopCommand(ref moveCmdList, ref tempCommand, data, position, velocity))
+                    AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
-            if (velocityCommand < moveControlConfig.Move.Velocity)
-                tempCommand = NewVChangeCommand(null, 0, velocityCommand, data.DirFlag);
-            else
-                tempCommand = NewVChangeCommand(null, 0, moveControlConfig.Move.Velocity, data.DirFlag);
-
-            moveCmdList.Add(tempCommand);
-
+            tempCommand = NewVChangeCommand(null, 0, velocityCommand, data.DirFlag, EnumVChangeType.TurnOut);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             tempCommand = NewReviseOpenCommand();
-            moveCmdList.Add(tempCommand);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             data.NowVelocity = velocity;
             data.TurnOutDistance = r;
             data.STDistance = 0;
@@ -967,8 +1051,6 @@ namespace Mirle.Agv.Controller
             double velocity = moveControlConfig.TurnParameter[action].Velocity;
             double vChangeSafetyDistance = moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
             double closeReviseDistance = moveControlConfig.TurnParameter[action].CloseReviseDistance;
-            double r2000VChangeDistance = 0;
-            double distance;
             MapPosition triggerPosition;
             Command tempCommand;
             int wheelAngle = 0;
@@ -983,61 +1065,18 @@ namespace Mirle.Agv.Controller
 
             data.AGVAngleInMap = newAgvAngle;
 
-            int reserveIndex = GetReserveIndex(reserveDataList, position);
 
-            //if (reserveIndex != -1)
-            //{
-            //    double accDistance = computeFunction.GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
-            //    distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand,
-            //        data.STDistance - vChangeSafetyDistance - data.TurnOutDistance - accDistance - moveControlConfig.ReserveSafetyDistance);
-            //    distance = distance + vChangeSafetyDistance + accDistance + moveControlConfig.ReserveSafetyDistance;
+            double distance = GetAccDecDistanceFormMove(data.NowVelocity, velocity);
 
-            //    if (distance < data.STDistance - data.TurnOutDistance)
-            //    {
-            //        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-
-            //        tempCommand = NewStopCommand(triggerPosition,
-            //            data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-            //            data.DirFlag, reserveIndex + 1);
-            //        moveCmdList.Add(tempCommand);
-            //    }
-            //}
-
-            // 需要降速.
-            if (data.NowVelocityCommand > velocity)
+            if (distance + 2 * moveControlConfig.TurnParameter[action].VChangeSafetyDistance > data.STDistance - data.TurnOutDistance)
             {
-                distance = computeFunction.GetAccDecDistance(data.NowVelocity, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
-
-                // 啟動且距離非常短
-                if (data.NowVelocity == 0 && distance + 2 * moveControlConfig.TurnParameter[action].VChangeSafetyDistance > data.STDistance - data.TurnOutDistance)
-                {
-                    tempCommand = NewVChangeCommand(null, 0, velocity, data.DirFlag, EnumVChangeType.R2000Turn);
-                    moveCmdList.Add(tempCommand);
-                }
-                else
-                {
-                    r2000VChangeDistance = GetVChangeDistance(data.NowVelocity, velocity, data.NowVelocityCommand,
-                        data.STDistance - vChangeSafetyDistance - data.TurnOutDistance);
-                    r2000VChangeDistance = r2000VChangeDistance + vChangeSafetyDistance;
-
-                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, r2000VChangeDistance);
-
-                    tempCommand = NewVChangeCommand(triggerPosition,
-                        data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - r2000VChangeDistance : -(data.CommandDistance - r2000VChangeDistance)),
-                        velocity, data.DirFlag, EnumVChangeType.R2000Turn);
-                    moveCmdList.Add(tempCommand);
-                }
+                OverRrideLastVChangeCommand(ref moveCmdList, data, velocity, EnumVChangeType.R2000Turn, wheelAngle);
             }
             else
             {
-                r2000VChangeDistance = vChangeSafetyDistance;
-
-                triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, r2000VChangeDistance);
-
-                tempCommand = NewVChangeCommand(triggerPosition,
-                    data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - r2000VChangeDistance : -(data.CommandDistance - r2000VChangeDistance)),
-                    velocity, data.DirFlag, EnumVChangeType.R2000Turn);
-                moveCmdList.Add(tempCommand);
+                tempCommand = NewVChangeCommand(null, vChangeSafetyDistance, velocity, data.DirFlag, EnumVChangeType.R2000Turn, wheelAngle);
+                ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
+                AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
             distance = closeReviseDistance;
@@ -1047,70 +1086,40 @@ namespace Mirle.Agv.Controller
                                  data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
                                  data.DirFlag, action);
 
-            if (distance > r2000VChangeDistance && r2000VChangeDistance != 0 && moveCmdList.Count > 0)
-                moveCmdList.Insert(moveCmdList.Count - 1, tempCommand);
-            else
-                moveCmdList.Add(tempCommand);
+
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
 
             triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, 0);
 
             tempCommand = NewR2000Command(triggerPosition, data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : -data.CommandDistance),
                                        data.DirFlag, wheelAngle, action);
 
-            moveCmdList.Add(tempCommand);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
+
+            int reserveIndex = GetReserveIndex(reserveDataList, position);
 
             if (reserveIndex != -1)
             {
-                double accDistance = computeFunction.GetAccDecDistance(0, velocity, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk);
-                distance = GetVChangeDistance(data.NowVelocity, 0, data.NowVelocityCommand,
-                    data.STDistance - vChangeSafetyDistance - data.TurnOutDistance - accDistance - moveControlConfig.ReserveSafetyDistance);
-                distance = distance + vChangeSafetyDistance + accDistance + moveControlConfig.ReserveSafetyDistance + 300;
+                tempCommand = NewStopCommand(null, vChangeSafetyDistance + moveControlConfig.ReserveSafetyDistance, data.DirFlag, reserveIndex + 1);
 
-                if (distance < data.STDistance - data.TurnOutDistance)
-                {
-                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-
-                    tempCommand = NewStopCommand(triggerPosition,
-                        data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance)),
-                        data.DirFlag, reserveIndex + 1);
-
-                    int inserIndex = data.InsertIndex;
-                    for (; inserIndex < moveCmdList.Count; inserIndex++)
-                    {
-                        if (moveCmdList[inserIndex].Position != null)
-                        {
-                            if ((data.DirFlag && tempCommand.TriggerEncoder < moveCmdList[inserIndex].TriggerEncoder) ||
-                               (!data.DirFlag && tempCommand.TriggerEncoder > moveCmdList[inserIndex].TriggerEncoder))
-                                break;
-                        }
-                    }
-
-                    moveCmdList.Insert(inserIndex, tempCommand);
-                }
+                if (ProcessStopCommand(ref moveCmdList, ref tempCommand, data, position, velocity))
+                    AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
-            if (nextVelocityCommand != 0 && nextVelocityCommand != velocityCommand)
-            {
-                tempCommand = NewVChangeCommand(null, 0, nextVelocityCommand, data.DirFlag);
-                data.NowVelocityCommand = nextVelocityCommand;
-                moveCmdList.Add(tempCommand);
-                data.NowVelocity = velocity;
-            }
-            else
-                data.NowVelocityCommand = velocity;
+            tempCommand = NewVChangeCommand(null, 0, nextVelocityCommand, data.DirFlag, EnumVChangeType.TurnOut);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
 
             tempCommand = NewReviseOpenCommand();
-            moveCmdList.Add(tempCommand);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             data.TurnOutDistance = 0;
-            //data.TurnOutDistance = r;
             data.STDistance = 0;
-
             return true;
         }
 
         private bool AddOneMoveCommandToCommandList(OneceMoveCommand oneceMoveCommand, ref List<Command> moveCmdList,
                                                     List<ReserveData> reserveDataList, ref AddToCommandListData data, ref string errorMessage)
         {
+            vChangeList = new List<VChangeData>();
             double tempDistance;
             data.StartWheelAngle = oneceMoveCommand.WheelAngle;
             data.NowWheelAngle = oneceMoveCommand.WheelAngle;
@@ -1120,9 +1129,21 @@ namespace Mirle.Agv.Controller
             data.NowVelocityCommand = 0;
             data.LastNode = null;
             data.STDistance = 0;
-            data.NextMoveCmdStartReserveNumber = -1;
-            //data.MoveCmdStartReserveNumber = data.IndexOfReserveList;
+
             Command tempCommand;
+
+            // 插入Move指令.變速.開修正.
+            tempCommand = NewMoveCommand(oneceMoveCommand.AddressPositions[0], data.MoveStartEncoder, 0,
+                                              moveControlConfig.Move.Velocity, data.DirFlag, data.StartWheelAngle,
+                                              (data.StartMoveIndex == 0 ? EnumMoveStartType.FirstMove : EnumMoveStartType.ChangeDirFlagMove),
+                                              (data.StartMoveIndex == 0 ? 0 : -1));
+            moveCmdList.Add(tempCommand);
+
+            tempCommand = NewVChangeCommand(null, 0, oneceMoveCommand.SectionSpeedLimits[0], data.DirFlag);
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
+
+            tempCommand = NewReviseOpenCommand();
+            AddCommandToCommandList(ref moveCmdList, tempCommand, data);
 
             for (int i = 0; i < oneceMoveCommand.AddressPositions.Count; i++)
             {
@@ -1177,32 +1198,10 @@ namespace Mirle.Agv.Controller
                     data.NowVelocityCommand = oneceMoveCommand.SectionSpeedLimits[i];
             }
 
-            // 分解第一次移動命令完成,插入Move指令.
-            tempCommand = NewMoveCommand(oneceMoveCommand.AddressPositions[0], data.MoveStartEncoder, data.CommandDistance,
-                                              moveControlConfig.Move.Velocity, data.DirFlag, data.StartWheelAngle,
-                                              (data.InsertIndex == 0 ? EnumMoveStartType.FirstMove : EnumMoveStartType.ChangeDirFlagMove),
-                                              data.MoveCmdStartReserveNumber);
-            moveCmdList.Insert(data.InsertIndex, tempCommand);
-            data.InsertIndex++;
-
-            // 如果第一段Section速度比AGV Config速度慢且下一個不是VChange命令，插入VChange(立刻執行)指令.
-            if (/*oneceMoveCommand.SectionSpeedLimits[0] < moveControlConfig.Move.Velocity &&*/
-                (moveCmdList[data.InsertIndex].CmdType != EnumCommandType.Vchange || moveCmdList[data.InsertIndex].Position != null))
-            {
-                tempCommand = NewVChangeCommand(null, 0, oneceMoveCommand.SectionSpeedLimits[0], data.DirFlag);
-                moveCmdList.Insert(data.InsertIndex, tempCommand);
-                data.InsertIndex++;
-            }
-
-            // 插入開修正指令.
-            tempCommand = NewReviseOpenCommand();
-            moveCmdList.Insert(data.InsertIndex, tempCommand);
-
             // 計算出下一次移動命令的起始Encoder和需要插入Move的Index和方向改為反方向(只有反折會需要拆成多次命令吧?).
+            moveCmdList[data.StartMoveIndex].Distance = data.CommandDistance * moveControlConfig.MoveCommandDistanceMagnification + moveControlConfig.MoveCommandDistanceConstant;
             data.MoveStartEncoder += (data.DirFlag ? data.CommandDistance : -data.CommandDistance);
-            data.InsertIndex = moveCmdList.Count;
-
-            data.MoveCmdStartReserveNumber = data.NextMoveCmdStartReserveNumber;
+            data.StartMoveIndex = moveCmdList.Count;
             return true;
         }
 
@@ -1239,32 +1238,23 @@ namespace Mirle.Agv.Controller
                 {
                     if (action == EnumAddressAction.TR50 || action == EnumAddressAction.TR350)
                     {
-                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
-                                                          moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk) +
+                        tempDouble = GetAccDecDistanceFormMove(0, moveControlConfig.TurnParameter[action].Velocity) +
                                                           moveControlConfig.TurnParameter[action].VChangeSafetyDistance + moveControlConfig.TurnParameter[action].R;
                         data.TurnInSafetyDistance.Add(action, tempDouble);
 
-                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
-                                                          moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk) +
+                        tempDouble = GetAccDecDistanceFormMove(0, moveControlConfig.TurnParameter[action].Velocity) +
                                                           moveControlConfig.TurnParameter[action].R;
-                        //if (TurnOutSafetyDistance)
-                        //    tempDouble = tempDouble + moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
 
                         data.TurnOutSafetyDistance.Add(action, tempDouble);
                     }
                     else if (action == EnumAddressAction.R2000)
                     {
-                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
-                                                          moveControlConfig.Move.Acceleration, moveControlConfig.Move.Jerk) +
+                        tempDouble = GetAccDecDistanceFormMove(0, moveControlConfig.TurnParameter[action].Velocity) +
                                                           moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
                         data.TurnInSafetyDistance.Add(action, tempDouble);
 
-                        tempDouble = computeFunction.GetAccDecDistance(0, moveControlConfig.TurnParameter[action].Velocity,
-                                                          moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                        tempDouble = GetAccDecDistanceFormMove(0, moveControlConfig.TurnParameter[action].Velocity);
                         tempDouble = tempDouble + 100;
-                        //if (TurnOutSafetyDistance)
-                        //tempDouble = tempDouble + moveControlConfig.TurnParameter[action].VChangeSafetyDistance;
-
                         data.TurnOutSafetyDistance.Add(action, tempDouble);
                     }
                 }
@@ -1809,16 +1799,12 @@ namespace Mirle.Agv.Controller
             if (distance == 0)
                 return startVelocity;
 
-            double acc = moveControlConfig.Move.Acceleration;
-            double dec = moveControlConfig.Move.Deceleration;
-            double jerk = moveControlConfig.Move.Jerk;
-
             double vChangeDistance;
 
             if (velocityCommand > startVelocity)
-                vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, acc, jerk);
+                vChangeDistance = GetAccDecDistanceFormMove(startVelocity, velocityCommand);
             else
-                vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, dec, jerk);
+                vChangeDistance = GetAccDecDistanceFormMove(startVelocity, velocityCommand);
 
             if (vChangeDistance <= distance)
                 return velocityCommand;
@@ -1828,133 +1814,12 @@ namespace Mirle.Agv.Controller
             for (; vChangeDistance > distance; velocityCommand += deltaVelocity)
             {
                 if (velocityCommand > startVelocity)
-                    vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, acc, jerk);
+                    vChangeDistance = GetAccDecDistanceFormMove(startVelocity, velocityCommand);
                 else
-                    vChangeDistance = computeFunction.GetAccDecDistance(startVelocity, velocityCommand, dec, jerk);
+                    vChangeDistance = GetAccDecDistanceFormMove(startVelocity, velocityCommand);
             }
 
             return velocityCommand;
-        }
-
-        private void ProcessVChangeCommand(ref List<Command> moveCmdList)
-        {
-            double nowVelocity = 0;
-            double nowEncoder = 0;
-            bool dirFlag = true;
-            double deltaEncoder = 0;
-            double nowVelocityCommand = 0;
-            bool isMoveCommandVelocity = true;
-            int lastVChangeCommandIndex = 0;
-            double lastVChangeEncoder = 0;
-            double tempNowVelocity = 0;
-
-            for (int i = 0; i < moveCmdList.Count; i++)
-            {
-                switch (moveCmdList[i].CmdType)
-                {
-                    case EnumCommandType.Move:
-                        dirFlag = moveCmdList[i].DirFlag;
-                        nowEncoder = moveCmdList[i].TriggerEncoder + (dirFlag ? moveCmdList[i].SafetyDistance : -moveCmdList[i].SafetyDistance) / 2;
-                        lastVChangeCommandIndex = -1;
-                        nowVelocity = 0;
-                        nowVelocityCommand = moveCmdList[i].Velocity;
-                        isMoveCommandVelocity = true;
-                        lastVChangeEncoder = nowEncoder;
-
-                        break;
-
-                    case EnumCommandType.SlowStop:
-                        if (moveCmdList[i].Position != null)
-                            nowEncoder = moveCmdList[i].TriggerEncoder;
-
-                        if (!moveCmdList[i].NextRserveCancel)
-                            nowVelocity = 0;
-
-                        break;
-
-                    case EnumCommandType.Vchange:
-                        if (moveCmdList[i].Position != null)
-                        {
-                            if (lastVChangeCommandIndex != -1)
-                            {
-                                if ((dirFlag && moveCmdList[i].TriggerEncoder < lastVChangeEncoder) ||
-                                   (!dirFlag && moveCmdList[i].TriggerEncoder > lastVChangeEncoder))
-                                {
-                                    moveCmdList.RemoveAt(lastVChangeCommandIndex);
-                                    ProcessVChangeCommand(ref moveCmdList);
-                                    return;
-                                }
-                            }
-
-
-                            nowEncoder = moveCmdList[i].TriggerEncoder;
-                        }
-
-                        tempNowVelocity = GetNowVelocity(nowVelocity, nowVelocityCommand, Math.Abs(nowEncoder - lastVChangeEncoder));
-
-
-                        if (isMoveCommandVelocity)
-                        {
-                            isMoveCommandVelocity = false;
-                            nowVelocity = tempNowVelocity;
-                            nowVelocityCommand = moveCmdList[i].Velocity;
-                        }
-                        else
-                        {
-                            if (tempNowVelocity != nowVelocityCommand)
-                            {
-                                if (nowVelocity < nowVelocityCommand)
-                                {  // 升速.
-                                    moveCmdList[lastVChangeCommandIndex].Velocity = (int)(tempNowVelocity);
-                                }
-                                else
-                                {  // 降速.
-                                    moveCmdList[lastVChangeCommandIndex].Velocity = (int)(tempNowVelocity);
-                                }
-
-                                if ((int)moveCmdList[lastVChangeCommandIndex].Velocity == 0)
-                                {
-                                    moveCmdList[lastVChangeCommandIndex].Velocity = moveCmdList[i].Velocity;
-                                }
-                            }
-
-                            nowVelocity = moveCmdList[lastVChangeCommandIndex].Velocity;
-                            nowVelocityCommand = moveCmdList[i].Velocity;
-                        }
-
-                        lastVChangeCommandIndex = i;
-                        lastVChangeEncoder = nowEncoder;
-
-                        break;
-
-                    case EnumCommandType.TR:
-                        nowEncoder = moveCmdList[i].TriggerEncoder;
-                        deltaEncoder = moveControlConfig.TurnParameter[moveCmdList[i].TurnType].R * 2;
-                        nowEncoder = nowEncoder + (dirFlag ? deltaEncoder : -deltaEncoder);
-                        nowVelocity = moveControlConfig.TurnParameter[moveCmdList[i].TurnType].Velocity;
-                        lastVChangeEncoder = nowEncoder;
-                        break;
-
-                    case EnumCommandType.R2000:
-                        nowEncoder = moveCmdList[i].TriggerEncoder;
-                        deltaEncoder = moveControlConfig.TurnParameter[EnumAddressAction.R2000].R * Math.Sqrt(2);
-                        nowEncoder = nowEncoder + (dirFlag ? deltaEncoder : -deltaEncoder);
-                        nowVelocity = moveControlConfig.TurnParameter[moveCmdList[i].TurnType].Velocity;
-                        lastVChangeEncoder = nowEncoder;
-                        break;
-
-                    case EnumCommandType.ReviseClose:
-                    case EnumCommandType.ReviseOpen:
-                        if (moveCmdList[i].Position != null)
-                            nowEncoder = moveCmdList[i].TriggerEncoder;
-                        break;
-
-                    case EnumCommandType.End:
-                    case EnumCommandType.Stop:
-                    default:
-                        break;
-                }
-            }
         }
 
         public MoveCommandData CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd,
@@ -1992,18 +1857,31 @@ namespace Mirle.Agv.Controller
                 {
                     ResetReserveList(ref reserveList);
                     CommandListChangeReserveIndexToCurrectIndex(ref moveCmdList, reserveList);
-                    ProcessVChangeCommand(ref moveCmdList);
                     WriteListLog(moveCmdList, sectionLineList, reserveList);
 
                     MoveCommandData returnCommand = new MoveCommandData(moveCmdList, sectionLineList, reserveList);
 
-                    returnCommand.EndOffsetX = moveCmd.EndAddress.AddressOffset.OffsetX;
-                    returnCommand.EndOffsetY = moveCmd.EndAddress.AddressOffset.OffsetY;
-                    returnCommand.EndOffsetTheta = moveCmd.EndAddress.AddressOffset.OffsetTheta;
+                    if (moveCmd.EndAddress != null && moveCmd.EndAddress.AddressOffset != null)
+                    {
+                        returnCommand.EndOffsetX = moveCmd.EndAddress.AddressOffset.OffsetX;
+                        returnCommand.EndOffsetY = moveCmd.EndAddress.AddressOffset.OffsetY;
+                        returnCommand.EndOffsetTheta = moveCmd.EndAddress.AddressOffset.OffsetTheta;
+                    }
+                    else
+                    {
+                        WriteLog("MoveControl", "3", device, "", "moveCmd.EndAddress or moveCmd.EndAddress.AddressOffset == null!");
+                    }
 
-                    returnCommand.StartOffsetX = moveCmd.StartAddress.AddressOffset.OffsetX;
-                    returnCommand.StartOffsetY = moveCmd.StartAddress.AddressOffset.OffsetY;
-                    returnCommand.StartOffsetTheta = moveCmd.StartAddress.AddressOffset.OffsetTheta;
+                    if (moveCmd.StartAddress != null && moveCmd.StartAddress.AddressOffset != null)
+                    {
+                        returnCommand.StartOffsetX = moveCmd.StartAddress.AddressOffset.OffsetX;
+                        returnCommand.StartOffsetY = moveCmd.StartAddress.AddressOffset.OffsetY;
+                        returnCommand.StartOffsetTheta = moveCmd.StartAddress.AddressOffset.OffsetTheta;
+                    }
+                    else
+                    {
+                        WriteLog("MoveControl", "3", device, "", "moveCmd.StartAddress or moveCmd.StartAddress.AddressOffset == null!");
+                    }
 
                     return returnCommand;
                 }

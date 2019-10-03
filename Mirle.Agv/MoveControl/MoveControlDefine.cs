@@ -160,7 +160,8 @@ namespace Mirle.Agv
         TRTurn,
         R2000Turn,
         SensorSlow,
-        EQ
+        EQ,
+        TurnOut
     }
 
     public enum EnumGetThetaSectionDeviationType

@@ -24,7 +24,7 @@ namespace Mirle.Agv.Model
         public double StartOffsetX { get; set; }
         public double StartOffsetY { get; set; }
         public double StartOffsetTheta { get; set; }
-        
+
         public MoveCommandData()
         {
             CommandList = new List<Command>();
@@ -35,6 +35,13 @@ namespace Mirle.Agv.Model
 
             ReserveList = new List<ReserveData>();
             IndexOfReserveList = 0;
+
+            EndOffsetX = 0;
+            EndOffsetY = 0;
+            EndOffsetTheta = 0;
+            StartOffsetX = 0;
+            StartOffsetY = 0;
+            StartOffsetTheta = 0;
         }
 
         public MoveCommandData(List<Command> commandList, List<SectionLine> sectionLineList, List<ReserveData> reserveList)
@@ -47,6 +54,13 @@ namespace Mirle.Agv.Model
 
             ReserveList = reserveList;
             IndexOfReserveList = 0;
+
+            EndOffsetX = 0;
+            EndOffsetY = 0;
+            EndOffsetTheta = 0;
+            StartOffsetX = 0;
+            StartOffsetY = 0;
+            StartOffsetTheta = 0;
         }
     }
 }

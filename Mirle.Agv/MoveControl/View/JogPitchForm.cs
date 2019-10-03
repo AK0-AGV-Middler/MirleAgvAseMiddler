@@ -16,6 +16,8 @@ namespace Mirle.Agv.View
 {
     public partial class JogPitchForm : Form
     {
+        public JogPitchData jogPitchData = new JogPitchData();
+
         private Thread ontimeRevise;
         private Thread homeThread;
         private EnumJogPitchMode mode;
@@ -98,17 +100,19 @@ namespace Mirle.Agv.View
                 return;
 
             #region Update Sr2000
-            AGVPosition agvPosition;
-            ThetaSectionDeviation thetaSectionDeviation;
+            AGVPosition agvPositionL = null;
+            AGVPosition agvPositionR = null;
+            ThetaSectionDeviation thetaSectionDeviationL = null;
+            ThetaSectionDeviation thetaSectionDeviationR = null;
 
             if (moveControl.DriverSr2000List.Count > 0)
             {
-                agvPosition = moveControl.DriverSr2000List[0].GetAGVPosition();
-                if (agvPosition != null)
+                agvPositionL = moveControl.DriverSr2000List[0].GetAGVPosition();
+                if (agvPositionL != null)
                 {
-                    tB_JogPitch_MapX_L.Text = agvPosition.Position.X.ToString("0.0");
-                    tB_JogPitch_MapY_L.Text = agvPosition.Position.Y.ToString("0.0");
-                    tB_JogPitch_MapTheta_L.Text = agvPosition.AGVAngle.ToString("0.0");
+                    tB_JogPitch_MapX_L.Text = agvPositionL.Position.X.ToString("0.0");
+                    tB_JogPitch_MapY_L.Text = agvPositionL.Position.Y.ToString("0.0");
+                    tB_JogPitch_MapTheta_L.Text = agvPositionL.AGVAngle.ToString("0.0");
                 }
                 else
                 {
@@ -117,11 +121,11 @@ namespace Mirle.Agv.View
                     tB_JogPitch_MapTheta_L.Text = "-----";
                 }
 
-                thetaSectionDeviation = moveControl.DriverSr2000List[0].GetThetaSectionDeviation();
-                if (thetaSectionDeviation != null)
+                thetaSectionDeviationL = moveControl.DriverSr2000List[0].GetThetaSectionDeviation();
+                if (thetaSectionDeviationL != null)
                 {
-                    tB_JogPitch_SectionDeviation_L.Text = thetaSectionDeviation.SectionDeviation.ToString("0.0");
-                    tB_JogPitch_Theta_L.Text = thetaSectionDeviation.Theta.ToString("0.0");
+                    tB_JogPitch_SectionDeviation_L.Text = thetaSectionDeviationL.SectionDeviation.ToString("0.0");
+                    tB_JogPitch_Theta_L.Text = thetaSectionDeviationL.Theta.ToString("0.0");
                 }
                 else
                 {
@@ -132,12 +136,12 @@ namespace Mirle.Agv.View
 
             if (moveControl.DriverSr2000List.Count > 1)
             {
-                agvPosition = moveControl.DriverSr2000List[1].GetAGVPosition();
-                if (agvPosition != null)
+                agvPositionR = moveControl.DriverSr2000List[1].GetAGVPosition();
+                if (agvPositionR != null)
                 {
-                    tB_JogPitch_MapX_R.Text = agvPosition.Position.X.ToString("0.0");
-                    tB_JogPitch_MapY_R.Text = agvPosition.Position.Y.ToString("0.0");
-                    tB_JogPitch_MapTheta_R.Text = agvPosition.AGVAngle.ToString("0.0");
+                    tB_JogPitch_MapX_R.Text = agvPositionR.Position.X.ToString("0.0");
+                    tB_JogPitch_MapY_R.Text = agvPositionR.Position.Y.ToString("0.0");
+                    tB_JogPitch_MapTheta_R.Text = agvPositionR.AGVAngle.ToString("0.0");
                 }
                 else
                 {
@@ -146,17 +150,59 @@ namespace Mirle.Agv.View
                     tB_JogPitch_MapTheta_R.Text = "-----";
                 }
 
-                thetaSectionDeviation = moveControl.DriverSr2000List[1].GetThetaSectionDeviation();
-                if (thetaSectionDeviation != null)
+                thetaSectionDeviationR = moveControl.DriverSr2000List[1].GetThetaSectionDeviation();
+                if (thetaSectionDeviationR != null)
                 {
-                    tB_JogPitch_SectionDeviation_R.Text = thetaSectionDeviation.SectionDeviation.ToString("0.0");
-                    tB_JogPitch_Theta_R.Text = thetaSectionDeviation.Theta.ToString("0.0");
+                    tB_JogPitch_SectionDeviation_R.Text = thetaSectionDeviationR.SectionDeviation.ToString("0.0");
+                    tB_JogPitch_Theta_R.Text = thetaSectionDeviationR.Theta.ToString("0.0");
                 }
                 else
                 {
                     tB_JogPitch_SectionDeviation_R.Text = "-----";
                     tB_JogPitch_Theta_R.Text = "-----";
                 }
+            }
+
+            if ((agvPositionL != null && agvPositionL.Type == EnumBarcodeMaterial.Iron) ||
+                (agvPositionR != null && agvPositionR.Type == EnumBarcodeMaterial.Iron))
+            {
+                if (agvPositionL != null && agvPositionL.Type == EnumBarcodeMaterial.Iron)
+                {
+                    jogPitchData.MapX = agvPositionL.Position.X;
+                    jogPitchData.MapY = agvPositionL.Position.Y;
+                    jogPitchData.MapTheta = agvPositionL.AGVAngle;
+                }
+                else
+                {
+                    jogPitchData.MapX = agvPositionR.Position.X;
+                    jogPitchData.MapY = agvPositionR.Position.Y;
+                    jogPitchData.MapTheta = agvPositionR.AGVAngle;
+                }
+            }
+            else
+            {
+                jogPitchData.MapX = 0;
+                jogPitchData.MapY = 0;
+                jogPitchData.MapTheta = 0;
+            }
+
+            if (thetaSectionDeviationL != null || thetaSectionDeviationR != null)
+            {
+                if (thetaSectionDeviationL != null)
+                {
+                    jogPitchData.SectionDeviation = thetaSectionDeviationL.SectionDeviation;
+                    jogPitchData.Theta = thetaSectionDeviationL.Theta;
+                }
+                else
+                {
+                    jogPitchData.SectionDeviation = thetaSectionDeviationR.SectionDeviation;
+                    jogPitchData.Theta = thetaSectionDeviationR.Theta;
+                }
+            }
+            else
+            {
+                jogPitchData.SectionDeviation = 0;
+                jogPitchData.Theta = 0;
             }
             #endregion
 
@@ -168,6 +214,16 @@ namespace Mirle.Agv.View
             for (int i = 0; i < AxisList.Count(); i++)
             {
                 tempData = moveControl.elmoDriver.ElmoGetFeedbackData(AxisList[i]);
+
+                try
+                {
+                    jogPitchData.AxisData[AxisList[i]] = tempData;
+                }
+                catch
+                {
+                    jogPitchData.AxisData[AxisList[i]] = null;
+                }
+
                 if (tempData != null)
                 {
                     position = tempData.Feedback_Position.ToString("0");
@@ -546,19 +602,31 @@ namespace Mirle.Agv.View
             moveControl.location.Real = null;
         }
 
-        private void button_JogPitch_ElmoEnable_Click(object sender, EventArgs e)
+        public void button_JogPitch_ElmoEnable_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() => { moveControl.elmoDriver.EnableAllAxis(); });
+            Task.Factory.StartNew(() =>
+            {
+                moveControl.elmoDriver.EnableAllAxis();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
         }
 
-        private void button_JogPitch_ElmoDisable_Click(object sender, EventArgs e)
+        public void button_JogPitch_ElmoDisable_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() => { moveControl.elmoDriver.DisableAllAxis(); });
+            Task.Factory.StartNew(() =>
+            {
+                moveControl.elmoDriver.DisableAllAxis();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
         }
 
-        private void button_JogPitch_ElmoReset_Click(object sender, EventArgs e)
+        public void button_JogPitch_ElmoReset_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() => { moveControl.elmoDriver.ResetErrorAll(); });
+            Task.Factory.StartNew(() =>
+            {
+                moveControl.elmoDriver.ResetErrorAll();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
         }
 
         private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)

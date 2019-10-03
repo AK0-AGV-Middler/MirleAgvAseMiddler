@@ -1285,7 +1285,7 @@ namespace Mirle.Agv.Controller
                 else
                 {
                     location.Velocity = ControlData.DirFlag ? ControlData.RealVelocity : -ControlData.RealVelocity;
-                    location.ElmoEncoder = location.ElmoEncoder + 0.005 * location.Velocity;
+                    location.ElmoEncoder = location.ElmoEncoder + (double)moveControlConfig.SleepTime / 1000 * location.Velocity;
                 }
 
                 location.ElmoGetDataTime = DateTime.Now;
@@ -1471,7 +1471,7 @@ namespace Mirle.Agv.Controller
             {
                 UpdatePosition();
                 SensorSafety();
-                if (ControlData.FlowStopRequeset)
+                if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
@@ -1611,7 +1611,7 @@ namespace Mirle.Agv.Controller
             {
                 UpdatePosition();
                 SensorSafety();
-                if (ControlData.FlowStopRequeset)
+                if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
 
                 if (!IsInTRPath(type, Math.Abs(ControlData.TurnStartEncoder - location.ElmoEncoder), ControlData.WheelAngle, wheelAngle))
@@ -1714,7 +1714,7 @@ namespace Mirle.Agv.Controller
                 SensorSafety();
                 outerWheelEncoder = location.ElmoEncoder;
 
-                if (ControlData.FlowStopRequeset)
+                if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
 
                 Thread.Sleep(moveControlConfig.SleepTime);
@@ -1732,7 +1732,7 @@ namespace Mirle.Agv.Controller
                 UpdatePosition();
                 SensorSafety();
 
-                if (ControlData.FlowStopRequeset)
+                if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
 
                 Thread.Sleep(moveControlConfig.SleepTime);
@@ -1872,7 +1872,7 @@ namespace Mirle.Agv.Controller
                 UpdatePosition();
                 SensorSafety();
 
-                if (ControlData.FlowStopRequeset)
+                if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
 
                 Thread.Sleep(moveControlConfig.SleepTime);
@@ -1897,7 +1897,7 @@ namespace Mirle.Agv.Controller
                 UpdatePosition();
                 SensorSafety();
 
-                if (ControlData.FlowStopRequeset)
+                if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
 
                 Thread.Sleep(moveControlConfig.SleepTime);
@@ -2676,6 +2676,7 @@ namespace Mirle.Agv.Controller
                         DirLightCloseAll();
                         elmoDriver.DisableMoveAxis();
                         MoveState = EnumMoveState.Idle;
+                        MoveFinished(EnumMoveComplete.Fail);
                         ControlData.FlowStop = false;
                         ControlData.FlowClear = false;
                         location.Real = null;
@@ -2786,7 +2787,6 @@ namespace Mirle.Agv.Controller
                 if (command.CommandList[index].Velocity > velocity && velocity == moveControlConfig.LowVelocity)
                     return velocity;
             }
-
 
             nextVChangeDistance = Math.Abs(location.RealEncoder - command.CommandList[index].TriggerEncoder);
 
@@ -3443,6 +3443,183 @@ namespace Mirle.Agv.Controller
         }
         #endregion
 
+        #region Cover Action給錯
+        private bool IsSectionR2000(MapPosition start, MapPosition end)
+        {
+            foreach (var valuePair in theMapInfo.allMapSections)
+            {
+                if ((valuePair.Value.HeadAddress.Position.X == start.X && valuePair.Value.HeadAddress.Position.Y == start.Y) &&
+                    (valuePair.Value.TailAddress.Position.X == end.X && valuePair.Value.TailAddress.Position.Y == end.Y))
+                    return valuePair.Value.Type == EnumSectionType.R2000;
+                else if ((valuePair.Value.HeadAddress.Position.X == end.X && valuePair.Value.HeadAddress.Position.Y == end.Y) &&
+                         (valuePair.Value.TailAddress.Position.X == start.X && valuePair.Value.TailAddress.Position.Y == start.Y))
+                    return valuePair.Value.Type == EnumSectionType.R2000;
+            }
+
+            return false;
+        }
+
+        private bool IsTR50(MapPosition temp)
+        {
+            foreach (var valuePair in theMapInfo.allMapAddresses)
+            {
+                if (temp.X == valuePair.Value.Position.X && temp.Y == valuePair.Value.Position.Y)
+                    return valuePair.Value.IsTR50;
+            }
+
+            return true;
+        }
+
+        private double GetCurrectAngle(double angle)
+        {
+            while (angle > 180 || angle <= -180)
+            {
+                if (angle > 180)
+                    angle -= 360;
+                else
+                    angle += 360;
+            }
+
+            return angle;
+        }
+
+        public bool GetPositionAction(ref MoveCmdInfo tempMoveCmdInfo, ref string errorMessage)
+        {
+            int lastSectionAngle = 0;
+            int thisSectionAngle = 0;
+            int newWheelAngle = 0;
+
+            if (tempMoveCmdInfo.AddressPositions.Count < 2)
+            {
+                errorMessage = "只有" + tempMoveCmdInfo.AddressPositions.Count.ToString() + "個點,別鬧了!";
+                return false;
+            }
+
+            tempMoveCmdInfo.AddressActions.Clear();
+
+            BreakDownMoveCommandData data = new BreakDownMoveCommandData();
+
+            if (tempMoveCmdInfo.AddressPositions[0].X == tempMoveCmdInfo.AddressPositions[1].X &&
+                tempMoveCmdInfo.AddressPositions[0].Y == tempMoveCmdInfo.AddressPositions[1].Y)
+            {
+                errorMessage = "有相同Position!";
+                return false;
+            }
+
+            lastSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]);
+
+            if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]))
+                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
+            else
+                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
+
+            if (!computeFunction.GetDirFlagWheelAngle(tempMoveCmdInfo, ref data, location.Real, ControlData.WheelAngle, ref errorMessage))
+                return false;
+
+            if (tempMoveCmdInfo.AddressActions[0] == EnumAddressAction.R2000)
+            {
+                data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1], ref errorMessage);
+
+                if (data.AGVAngleInMap == -1)
+                    return false;
+            }
+
+            for (int i = 1; i < tempMoveCmdInfo.AddressPositions.Count - 1; i++)
+            {
+                if (tempMoveCmdInfo.AddressPositions[i].X == tempMoveCmdInfo.AddressPositions[i + 1].X &&
+                    tempMoveCmdInfo.AddressPositions[i].Y == tempMoveCmdInfo.AddressPositions[i + 1].Y)
+                {
+                    errorMessage = "有相同Position!";
+                    return false;
+                }
+
+                thisSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]);
+
+                if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]))
+                {
+                    if (Math.Abs(GetCurrectAngle(thisSectionAngle - lastSectionAngle)) == 45)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
+                    }
+                    else if (Math.Abs(GetCurrectAngle(thisSectionAngle - (lastSectionAngle - 180))) == 45)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.BR2000);
+                        data.DirFlag = !data.DirFlag;
+                    }
+                    else
+                    {
+                        errorMessage = "奇怪角度R2000!";
+                        return false;
+                    }
+
+                    data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
+
+                    if (data.AGVAngleInMap == -1)
+                        return false;
+                }
+                else if (tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.BR2000)
+                {
+                    if (GetCurrectAngle(thisSectionAngle - data.AGVAngleInMap) == 0)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.ST : EnumAddressAction.BST);
+                    }
+                    else if (GetCurrectAngle(thisSectionAngle - 180 - data.AGVAngleInMap) == 0)
+                    {
+                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.BST : EnumAddressAction.ST);
+                    }
+                    else
+                    {
+                        errorMessage = "R2000後不能接橫移!";
+                        return false;
+                    }
+
+                    if (tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1] == EnumAddressAction.BST)
+                        data.DirFlag = !data.DirFlag;
+                }
+                else if (thisSectionAngle == lastSectionAngle)
+                {
+                    tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
+                }
+                else
+                {
+                    newWheelAngle = computeFunction.GetTurnWheelAngle(data.WheelAngle, tempMoveCmdInfo.AddressPositions[i - 1],
+                        tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
+
+                    if (newWheelAngle != -1)
+                    {
+                        data.WheelAngle = newWheelAngle;
+                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.TR50 : EnumAddressAction.TR350);
+                    }
+                    else
+                    {
+                        data.WheelAngle = 0;
+                        data.DirFlag = !data.DirFlag;
+                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350);
+                    }
+                }
+
+                if (tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.BR2000)
+                {
+                    lastSectionAngle = data.AGVAngleInMap;
+
+                    if (!data.DirFlag)
+                    {
+                        if (lastSectionAngle > 0)
+                            lastSectionAngle -= 180;
+                        else
+                            lastSectionAngle += 180;
+                    }
+                }
+                else
+                    lastSectionAngle = thisSectionAngle;
+            }
+
+            tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.End);
+
+            return true;
+        }
+        #endregion
+
         #region 外部連結 : 產生List、DebugForm相關、狀態、移動完成.
         /// <summary>
         ///  when move finished, call this function to notice other class instance that move is finished with status
@@ -3629,7 +3806,28 @@ namespace Mirle.Agv.Controller
             if (tempCommand == null)
             {
                 WriteLog("MoveControl", "7", device, "", "命令分解失敗~!, errorMessage : " + errorMessage);
-                return false;
+
+                WriteLog("MoveControl", "7", device, "", "命令分解失敗 進行補正Position Action!");
+                if (GetPositionAction(ref moveCmd, ref errorMessage))
+                {
+                    WriteLog("MoveControl", "7", device, "", "補正Position Action成功!");
+
+                    WriteLog("MoveControl", "7", device, "", "補正後嘗試命令分解!");
+                    tempCommand = createMoveControlList.CreateMoveControlListSectionListReserveList(moveCmd, location.Real, ControlData.WheelAngle, ref errorMessage);
+
+                    if (tempCommand == null)
+                    {
+                        WriteLog("MoveControl", "7", device, "", "補正後嘗試命令分解失敗, errorMessage : " + errorMessage);
+                        return false;
+                    }
+                    else
+                        WriteLog("MoveControl", "7", device, "", "補正後命令分解成功!");
+                }
+                else
+                {
+                    WriteLog("MoveControl", "7", device, "", "命令分解失敗 進行補正Position Action : " + errorMessage);
+                    return false;
+                }
             }
 
             command = tempCommand;
@@ -3917,34 +4115,25 @@ namespace Mirle.Agv.Controller
                 return false;
             }
 
-            //if (command.ReserveList[command.IndexOfReserveList].Position.X == mapPosition.X &&
-            //    command.ReserveList[command.IndexOfReserveList].Position.Y == mapPosition.Y)
-            //{
-            if (!(command.ReserveList[command.IndexOfReserveList].Position.X == mapPosition.X &&
-                  command.ReserveList[command.IndexOfReserveList].Position.Y == mapPosition.Y))
+            if (command.ReserveList[command.IndexOfReserveList].Position.X == mapPosition.X &&
+                command.ReserveList[command.IndexOfReserveList].Position.Y == mapPosition.Y)
             {
-                WriteLog("MoveControl", "7", device, "", "取得Reserve node錯誤 : Reserve node : ( " +
-                                            command.ReserveList[command.IndexOfReserveList].Position.X.ToString("0") + ", " +
-                                            command.ReserveList[command.IndexOfReserveList].Position.Y.ToString("0") + " ), 取得 postion : ( " +
-                                            mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString("0") + " ) !");
+                command.ReserveList[command.IndexOfReserveList].GetReserve = true;
+                command.IndexOfReserveList++;
+                WriteLog("MoveControl", "7", device, "", "取得Reserve node : index = " + command.IndexOfReserveList.ToString() +
+                         "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString("0") + " ) !");
+
+                return true;
             }
+            else
+            {
+                WriteLog("MoveControl", "7", device, "", "Reserve node 跳號或無此Reserve,座標 : ( "
+                    + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ), 跳過 index = " + command.IndexOfReserveList.ToString() +
+                         "( " + command.ReserveList[command.IndexOfReserveList].Position.X.ToString("0") + ", " +
+                                command.ReserveList[command.IndexOfReserveList].Position.Y.ToString("0") + " ) !");
 
-            command.ReserveList[command.IndexOfReserveList].GetReserve = true;
-            command.IndexOfReserveList++;
-            WriteLog("MoveControl", "7", device, "", "取得Reserve node : index = " + command.IndexOfReserveList.ToString() +
-                     "( " + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString("0") + " ) !");
-
-
-            return true;
-            //}
-            //else
-            //{
-            //    WriteLog("MoveControl", "7", device, "", "Reserve node 跳號或無此Reserve,座標 : ( "
-            //        + mapPosition.X.ToString("0") + ", " + mapPosition.Y.ToString() + " ), 跳過 index = " + command.IndexOfReserveList.ToString() +
-            //             "( " + command.ReserveList[command.IndexOfReserveList].Position.X.ToString("0") + ", " +
-            //                    command.ReserveList[command.IndexOfReserveList].Position.Y.ToString("0") + " ) !");
-            //    return false;
-            //}
+                return false;
+            }
         }
 
         public void AddReservedIndexForDebugModeTest(int index)

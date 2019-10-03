@@ -348,7 +348,7 @@ namespace Mirle.Agv.Controller
         {
             if (startVel == endVel)
                 return 0;
-
+            
             double time = accOrDec / jerk; // acc = 0 > acc的時間.
             double deltaVelocity = time * accOrDec / 2 * 2;
             double lastDeltaVelocity;

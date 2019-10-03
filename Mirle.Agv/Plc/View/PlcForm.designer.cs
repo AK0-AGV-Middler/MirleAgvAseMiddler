@@ -32,6 +32,7 @@
             this.tabPlcOperation = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.btnFakeInterlockError = new System.Windows.Forms.Button();
             this.panel7 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.tbxAlignmentB_AV = new System.Windows.Forms.TextBox();
@@ -412,7 +413,6 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
-            this.btnFakeInterlockError = new System.Windows.Forms.Button();
             this.tabPlcOperation.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel7.SuspendLayout();
@@ -494,6 +494,16 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fork";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // btnFakeInterlockError
+            // 
+            this.btnFakeInterlockError.Location = new System.Drawing.Point(643, 196);
+            this.btnFakeInterlockError.Name = "btnFakeInterlockError";
+            this.btnFakeInterlockError.Size = new System.Drawing.Size(143, 37);
+            this.btnFakeInterlockError.TabIndex = 56;
+            this.btnFakeInterlockError.Text = "FakeInterlockError";
+            this.btnFakeInterlockError.UseVisualStyleBackColor = true;
+            this.btnFakeInterlockError.Click += new System.EventHandler(this.btnFakeInterlockError_Click);
             // 
             // panel7
             // 
@@ -4893,16 +4903,6 @@
             this.labIPcStatusManual.Size = new System.Drawing.Size(32, 20);
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
-            // 
-            // btnFakeInterlockError
-            // 
-            this.btnFakeInterlockError.Location = new System.Drawing.Point(643, 196);
-            this.btnFakeInterlockError.Name = "btnFakeInterlockError";
-            this.btnFakeInterlockError.Size = new System.Drawing.Size(143, 37);
-            this.btnFakeInterlockError.TabIndex = 56;
-            this.btnFakeInterlockError.Text = "FakeInterlockError";
-            this.btnFakeInterlockError.UseVisualStyleBackColor = true;
-            this.btnFakeInterlockError.Click += new System.EventHandler(this.btnFakeInterlockError_Click);
             // 
             // PlcForm
             // 

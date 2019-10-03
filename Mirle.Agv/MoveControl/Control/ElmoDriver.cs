@@ -873,7 +873,6 @@ namespace Mirle.Agv.Controller
             catch (MMCException ex)
             {
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
-                SendAlarmCode(100003);
             }
         }
 
@@ -914,7 +913,6 @@ namespace Mirle.Agv.Controller
             catch (MMCException ex)
             {
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
-                SendAlarmCode(100003);
                 return false;
             }
         }
@@ -985,7 +983,6 @@ namespace Mirle.Agv.Controller
             {
                 for (int i = 0; i < allAxis[axis].Config.GroupOrder.Count; i++)
                     allAxis[allAxis[axis].Config.GroupOrder[i]].NeedAssignLastCommandPosition = true;
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "LastCommand ::" +
                              "TFL : " + allAxis[EnumAxis.TFL].LastCommandPosition.ToString("0.00") +
                             ",TFR : " + allAxis[EnumAxis.TFR].LastCommandPosition.ToString("0.00") +
@@ -1041,7 +1038,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1073,7 +1069,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1106,7 +1101,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1132,7 +1126,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1153,7 +1146,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1251,7 +1243,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1279,7 +1270,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return -1;
             }
@@ -1306,7 +1296,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return -1;
             }
@@ -1323,7 +1312,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1340,7 +1328,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return null;
             }
@@ -1365,7 +1352,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1391,7 +1377,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1411,7 +1396,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return false;
             }

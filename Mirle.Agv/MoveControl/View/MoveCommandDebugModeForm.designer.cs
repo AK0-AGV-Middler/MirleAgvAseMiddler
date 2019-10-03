@@ -843,6 +843,8 @@ namespace Mirle.Agv.View
             // cB_GetAllReserve
             // 
             this.cB_GetAllReserve.AutoSize = true;
+            this.cB_GetAllReserve.Checked = true;
+            this.cB_GetAllReserve.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cB_GetAllReserve.Location = new System.Drawing.Point(1159, 3);
             this.cB_GetAllReserve.Name = "cB_GetAllReserve";
             this.cB_GetAllReserve.Size = new System.Drawing.Size(123, 23);

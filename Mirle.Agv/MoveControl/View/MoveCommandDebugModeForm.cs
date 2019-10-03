@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 
@@ -668,6 +669,18 @@ namespace Mirle.Agv.View
                     return;
                 }
 
+                moveCmdInfo.StartAddress = new MapAddress();
+                moveCmdInfo.StartAddress.AddressOffset = new MapAddressOffset();
+                moveCmdInfo.StartAddress.AddressOffset.OffsetX = 0;
+                moveCmdInfo.StartAddress.AddressOffset.OffsetY = 0;
+                moveCmdInfo.StartAddress.AddressOffset.OffsetTheta = 0;
+
+                moveCmdInfo.EndAddress = new MapAddress();
+                moveCmdInfo.EndAddress.AddressOffset = new MapAddressOffset();
+                moveCmdInfo.EndAddress.AddressOffset.OffsetX = 0;
+                moveCmdInfo.EndAddress.AddressOffset.OffsetY = 0;
+                moveCmdInfo.EndAddress.AddressOffset.OffsetTheta = 0;
+
                 command = moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo, ref errorMessage);
 
                 if (command != null)
@@ -721,7 +734,10 @@ namespace Mirle.Agv.View
             button_SendList.Enabled = false;
 
             if (cB_GetAllReserve.Checked)
+            {
+                Thread.Sleep(100);
                 moveControl.AddReservedIndexForDebugModeTest(ReserveList.Items.Count - 1);
+            }
         }
 
         private void button_StopMove_Click(object sender, EventArgs e)
@@ -1041,6 +1057,19 @@ namespace Mirle.Agv.View
             }
         }
 
+        private double GetCurrectAngle(double angle)
+        {
+            while (angle > 180 || angle <= -180)
+            {
+                if (angle > 180)
+                    angle -= 360;
+                else
+                    angle += 360;
+            }
+
+            return angle;
+        }
+
         public MoveCmdInfo GetPositionAction(ref string errorMessage)
         {
             int lastSectionAngle = 0;
@@ -1103,11 +1132,11 @@ namespace Mirle.Agv.View
 
                 if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]))
                 {
-                    if (Math.Abs(thisSectionAngle - lastSectionAngle) % 360 == 45)
+                    if (Math.Abs(GetCurrectAngle(thisSectionAngle - lastSectionAngle)) == 45)
                     {
                         tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
                     }
-                    else if (Math.Abs(thisSectionAngle - (lastSectionAngle - 180)) % 360 == 45)
+                    else if (Math.Abs(GetCurrectAngle(thisSectionAngle - (lastSectionAngle - 180))) == 45)
                     {
                         tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.BR2000);
                         data.DirFlag = !data.DirFlag;
@@ -1125,20 +1154,22 @@ namespace Mirle.Agv.View
                 }
                 else if (tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.BR2000)
                 {
-                    if ((thisSectionAngle - data.AGVAngleInMap) % 360 == 0)
+                    if (GetCurrectAngle(thisSectionAngle - data.AGVAngleInMap) == 0)
                     {
                         tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.ST : EnumAddressAction.BST);
                     }
-                    else if ((thisSectionAngle - data.AGVAngleInMap) % 180 == 0)
+                    else if (GetCurrectAngle(thisSectionAngle - 180 - data.AGVAngleInMap) == 0)
                     {
                         tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.BST : EnumAddressAction.ST);
-                        data.DirFlag = !data.DirFlag;
                     }
                     else
                     {
                         errorMessage = "R2000後不能接橫移!";
                         return null;
                     }
+
+                    if (tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1] == EnumAddressAction.BST)
+                        data.DirFlag = !data.DirFlag;
                 }
                 else if (thisSectionAngle == lastSectionAngle)
                 {
