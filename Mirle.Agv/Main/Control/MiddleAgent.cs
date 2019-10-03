@@ -63,7 +63,7 @@ namespace Mirle.Agv.Controller
         public TcpIpAgent ClientAgent { get; private set; }
         public bool IsCancelByCstIdRead { get; set; } = false;
 
-        private MapSection lastReportSection = new MapSection();
+        //private MapSection lastReportSection = new MapSection();
 
         public MiddleAgent(MainFlowHandler mainFlowHandler)
         {
@@ -1293,11 +1293,11 @@ namespace Mirle.Agv.Controller
         }
         public void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
-            if (theVehicle.ErrorStatus== VhStopSingle.StopSingleOn)
+            if (theVehicle.ErrorStatus == VhStopSingle.StopSingleOn)
             {
                 theVehicle.ErrorStatus = VhStopSingle.StopSingleOff;
                 StatusChangeReport(sender as string);
-            }         
+            }
             Send_Cmd194_AlarmReport("0", ErrorStatus.ErrReset);
 
             //foreach (var alarm in alarms)
@@ -1308,19 +1308,29 @@ namespace Mirle.Agv.Controller
 
         #region Public Functions
 
+        public void ReportAddressPass(MoveCmdInfo moveCmdInfo)
+        {
+            theVehicle.Cmd134EventType = EventType.AdrPass;
+            Send_Cmd134_TransferEventReport(moveCmdInfo);
+        }
+
         public void ReportAddressPass()
         {
             if (!IsNeerlyNoMove())
             {
-                lastReportSection = theVehicle.CurVehiclePosition.LastSection.DeepClone();
+                //lastReportSection = theVehicle.CurVehiclePosition.LastSection.DeepClone();
                 theVehicle.Cmd134EventType = EventType.AdrPass;
                 Send_Cmd134_TransferEventReport();
             }
         }
         private bool IsNeerlyNoMove()
         {
-            return (lastReportSection.Id == theVehicle.CurVehiclePosition.LastSection.Id) &&
-                (Math.Abs(lastReportSection.Distance - theVehicle.CurVehiclePosition.LastSection.Distance) < middlerConfig.NeerlyNoMoveRangeMm);
+            var realPos = theVehicle.CurVehiclePosition.RealPosition;
+            var lastAddr = theVehicle.CurVehiclePosition.LastAddress;
+            if (string.IsNullOrEmpty(lastAddr.Id)) return true;
+            return Math.Abs(realPos.X - lastAddr.Position.X) <= middlerConfig.NeerlyNoMoveRangeMm && Math.Abs(realPos.Y - lastAddr.Position.Y) <= middlerConfig.NeerlyNoMoveRangeMm;
+            //return (lastReportSection.Id == theVehicle.CurVehiclePosition.LastSection.Id) &&
+            //    (Math.Abs(lastReportSection.Distance - theVehicle.CurVehiclePosition.LastSection.Distance) < middlerConfig.NeerlyNoMoveRangeMm);
         }
         public void LoadArrivals()
         {
@@ -1337,9 +1347,10 @@ namespace Mirle.Agv.Controller
             readResult = result;
             Send_Cmd136_CstIdReadReport(result);
         }
-        public void TransferComplete()
+        public void TransferComplete(AgvcTransCmd agvcTransCmd)
         {
-            Send_Cmd132_TransferCompleteReport(0);
+            AgvcTransCmd cmd = agvcTransCmd;
+            Send_Cmd132_TransferCompleteReport(cmd, 0);
         }
         public void LoadComplete()
         {
@@ -2054,6 +2065,8 @@ namespace Mirle.Agv.Controller
             return completeStatus;
         }
 
+
+
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
             VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
@@ -2262,6 +2275,32 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+        private void Send_Cmd134_TransferEventReport(MoveCmdInfo moveCmdInfo)
+        {
+            var section = moveCmdInfo.MovingSections[moveCmdInfo.MovingSectionsIndex];
+
+            try
+            {
+                ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
+                iD_134_TRANS_EVENT_REP.EventType = theVehicle.Cmd134EventType;
+                iD_134_TRANS_EVENT_REP.CurrentAdrID = section.HeadAddress.Id;
+                iD_134_TRANS_EVENT_REP.CurrentSecID = section.Id;
+                iD_134_TRANS_EVENT_REP.SecDistance = 0;
+                iD_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(section.CmdDirection);
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
+                wrappers.TransEventRep = iD_134_TRANS_EVENT_REP;
+
+                SendCommandWrapper(wrappers);
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+       
 
         public void Receive_Cmd33_ControlZoneCancelRequest(object sender, TcpIpEventArgs e)
         {
@@ -2310,15 +2349,13 @@ namespace Mirle.Agv.Controller
         {
             ID_32_TRANS_COMPLETE_RESPONSE receive = (ID_32_TRANS_COMPLETE_RESPONSE)e.objPacket;
             theVehicle.ActionStatus = receive.ReplyCode == 0 ? VHActionStatus.NoCommand : VHActionStatus.Commanding;
-            theVehicle.CurAgvcTransCmd.CommandId = "";
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
         }
-        public void Send_Cmd132_TransferCompleteReport(int delay = 0)
+        public void Send_Cmd132_TransferCompleteReport(AgvcTransCmd agvcTransCmd, int delay = 0)
         {
             try
             {
                 VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
-                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
                 var msg = $"命令結束，結束狀態{agvcTransCmd.CompleteStatus}，命令編號{agvcTransCmd.CommandId}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
@@ -2687,15 +2724,46 @@ namespace Mirle.Agv.Controller
         }
         private BCRReadResult BCRReadResultParse(EnumCstIdReadResult readResult)
         {
-            switch (readResult)
+            try
             {
-                case EnumCstIdReadResult.Mismatch:
-                    return BCRReadResult.BcrMisMatch;
-                case EnumCstIdReadResult.Fail:
-                    return BCRReadResult.BcrReadFail;
-                case EnumCstIdReadResult.Noraml:
-                default:
-                    return BCRReadResult.BcrNormal;
+                switch (readResult)
+                {
+                    case EnumCstIdReadResult.Mismatch:
+                        return BCRReadResult.BcrMisMatch;
+                    case EnumCstIdReadResult.Fail:
+                        return BCRReadResult.BcrReadFail;
+                    case EnumCstIdReadResult.Noraml:
+                    default:
+                        return BCRReadResult.BcrNormal;
+                }
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return BCRReadResult.BcrNormal;
+            }           
+        }
+
+        private DriveDirction DriveDirctionParse(EnumPermitDirection cmdDirection)
+        {
+            try
+            {
+                switch (cmdDirection)
+                {
+                    case EnumPermitDirection.None:
+                        return DriveDirction.DriveDirNone;
+                    case EnumPermitDirection.Forward:
+                        return DriveDirction.DriveDirForward;
+                    case EnumPermitDirection.Backward:
+                        return DriveDirction.DriveDirReverse;
+                    default:
+                        return DriveDirction.DriveDirNone;
+                }
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return DriveDirction.DriveDirNone;
             }
         }
         #endregion

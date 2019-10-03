@@ -29,6 +29,8 @@ namespace Mirle.Agv.Model.TransferSteps
         public bool IsDuelStartPosition { get; set; } = false;
         public bool IsLoadPortToUnloadPort { get; set; } = false;
 
+        public List<MapAddress> MovingAddress = new List<MapAddress>();
+
         public MoveCmdInfo() : this(new MainFlowHandler()) { }
         public MoveCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
         {
@@ -708,6 +710,49 @@ namespace Mirle.Agv.Model.TransferSteps
             return moveCmd;
         }
 
+        public void SetupMovingAddress()
+        {
+            try
+            {
+                MovingAddress = new List<MapAddress>();
+                foreach (var id in AddressIds)
+                {
+                    MapAddress mapAddress = theMapInfo.allMapAddresses[id].DeepClone();
+                    MovingAddress.Add(mapAddress);
+                }
+
+                ModifyFirstMapAddress();
+                ModifyLastMapAddress();
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void ModifyLastMapAddress()
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void ModifyFirstMapAddress()
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
     }
 
     [Serializable]

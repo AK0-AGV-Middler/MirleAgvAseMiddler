@@ -282,8 +282,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-       
-
         private void VehicleLocationInitial()
         {
             if (IsRealPositionEmpty())
@@ -436,20 +434,14 @@ namespace Mirle.Agv.Controller
             {
                 agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
                 middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-            }
-          
-            //if (agvcTransCmd.CompleteStatus != CompleteStatus.CmpStatusVehicleAbort)
-            //{
-            //    middleAgent.TransferComplete();
-            //}
+            }          
 
-            middleAgent.TransferComplete();
+            middleAgent.TransferComplete(agvcTransCmd);
 
             IsVehicleAbortByAlarm = false;
             VisitTransferStepsStatus = EnumThreadStatus.None;
             lastAgvcTransCmd = agvcTransCmd;
             agvcTransCmd = new AgvcTransCmd();
-            //agvcTransCmd = null;
             lastTransferSteps = transferSteps;
             transferSteps = new List<TransferStep>();
             theVehicle.CurAgvcTransCmd = agvcTransCmd;
@@ -601,10 +593,10 @@ namespace Mirle.Agv.Controller
                     var position = theVehicle.CurVehiclePosition.RealPosition;
                     if (position == null) continue;
 
-                    if (mapHandler.IsPositionInThisAddress(position, theVehicle.CurVehiclePosition.LastAddress.Position))
-                    {
-                        continue;
-                    }
+                    //if (mapHandler.IsPositionInThisAddress(position, theVehicle.CurVehiclePosition.LastAddress.Position))
+                    //{
+                    //    continue;
+                    //}
                     if (transferSteps.Count > 0)
                     {
                         //有搬送命令時，比對當前Position與搬送路徑Sections計算LastSection/LastAddress/Distance
@@ -612,7 +604,7 @@ namespace Mirle.Agv.Controller
                         if (IsMoveStep())
                         {
                             MoveCmdInfo moveCmd = (MoveCmdInfo)curTransStep;
-                            UpdateVehiclePositionByMoveCmd(moveCmd, position);
+                            UpdateVehiclePositionByMoveCmd(moveCmd, position,sw);
                         }
                     }
                     else
@@ -2073,10 +2065,10 @@ namespace Mirle.Agv.Controller
             middleAgent.StartAskReserve();
         }
 
-        private void UpdateVehiclePositionByMoveCmd(MoveCmdInfo curTransCmd, MapPosition gxPosition)
+        private void UpdateVehiclePositionByMoveCmd(MoveCmdInfo moveCmdInfo, MapPosition gxPosition, Stopwatch sw)
         {
-            List<MapSection> moveCmdSections = GetMapSection(curTransCmd);
-            int searchingSectionIndex = curTransCmd.MovingSectionsIndex;
+            List<MapSection> moveCmdSections = GetMapSection(moveCmdInfo);
+            int searchingSectionIndex = moveCmdInfo.MovingSectionsIndex;
 
             while (searchingSectionIndex < moveCmdSections.Count)
             {
@@ -2086,8 +2078,14 @@ namespace Mirle.Agv.Controller
                     if (mapHandler.IsPositionInThisSection(gxPosition, moveCmdSections[searchingSectionIndex], ref vehiclePosition))
                     {
                         theVehicle.CurVehiclePosition = vehiclePosition;
-
-                        curTransCmd.MovingSectionsIndex = searchingSectionIndex;
+                        
+                        while (moveCmdInfo.MovingSectionsIndex < searchingSectionIndex)
+                        {
+                            middleAgent.ReportAddressPass(moveCmdInfo);
+                            moveCmdInfo.MovingSectionsIndex++;
+                            sw.Reset();
+                        }
+                        //curTransCmd.MovingSectionsIndex = searchingSectionIndex;
 
                         UpdateMiddlerGotReserveOkSections(moveCmdSections[searchingSectionIndex].Id);
 
@@ -2460,13 +2458,19 @@ namespace Mirle.Agv.Controller
         {
             PauseVisitTransferSteps();
             middleAgent.PauseAskReserve();
-            StopVehicle();
             middleAgent.StopAskReserve();
+            StopVehicle();            
             StopVisitTransferSteps();
             middleAgent.ClearAskReserve();
             theVehicle.CurVehiclePosition.WheelAngle = moveControlHandler.ControlData.WheelAngle;
             IsCancelByCstIdRead = false;
             middleAgent.IsCancelByCstIdRead = false;
+
+            if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
+            {
+                agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
+                middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+            }
 
             if (!IsInterlockErrorOrBcrReadFail())
             {

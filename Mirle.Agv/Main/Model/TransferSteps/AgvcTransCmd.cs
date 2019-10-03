@@ -171,6 +171,8 @@ namespace Mirle.Agv.Model.TransferSteps
             agvcTransCmd.CassetteId = CassetteId;
             agvcTransCmd.CommandId = CommandId;
             agvcTransCmd.SeqNum = SeqNum;
+            agvcTransCmd.CompleteStatus = CompleteStatus;
+            agvcTransCmd.PauseStatus = PauseStatus;
 
             return agvcTransCmd;
         }

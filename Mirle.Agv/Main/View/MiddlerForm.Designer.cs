@@ -112,9 +112,9 @@
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(11, 328);
+            this.richTextBox1.Location = new System.Drawing.Point(0, 465);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(772, 421);
+            this.richTextBox1.Size = new System.Drawing.Size(1295, 381);
             this.richTextBox1.TabIndex = 25;
             this.richTextBox1.Text = "";
             // 
@@ -124,10 +124,10 @@
             this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.CmdItem,
             this.CmdValue});
-            this.dataGridView1.Location = new System.Drawing.Point(11, 69);
+            this.dataGridView1.Location = new System.Drawing.Point(0, 69);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(772, 244);
+            this.dataGridView1.Size = new System.Drawing.Size(1295, 390);
             this.dataGridView1.TabIndex = 24;
             // 
             // CmdItem
@@ -197,16 +197,16 @@
             "Cmd194_AlarmReport"});
             this.cbSend.Location = new System.Drawing.Point(52, 39);
             this.cbSend.Name = "cbSend";
-            this.cbSend.Size = new System.Drawing.Size(649, 24);
+            this.cbSend.Size = new System.Drawing.Size(960, 24);
             this.cbSend.TabIndex = 22;
             this.cbSend.SelectedValueChanged += new System.EventHandler(this.cbSend_SelectedValueChanged);
             // 
             // btnSend
             // 
             this.btnSend.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnSend.Location = new System.Drawing.Point(708, 39);
+            this.btnSend.Location = new System.Drawing.Point(1018, 42);
             this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new System.Drawing.Size(75, 23);
+            this.btnSend.Size = new System.Drawing.Size(265, 23);
             this.btnSend.TabIndex = 21;
             this.btnSend.Text = "Send";
             this.btnSend.UseVisualStyleBackColor = true;
@@ -218,9 +218,9 @@
             this.toolStripStatusLabel1,
             this.toolStripStatusLabel2,
             this.toolStripStatusLabel3});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 754);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 849);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(793, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(1295, 22);
             this.statusStrip1.TabIndex = 26;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -234,7 +234,7 @@
             // 
             this.toolStripStatusLabel2.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(707, 17);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(1209, 17);
             this.toolStripStatusLabel2.Spring = true;
             // 
             // toolStripStatusLabel3
@@ -256,9 +256,9 @@
             // btnHide
             // 
             this.btnHide.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnHide.Location = new System.Drawing.Point(708, 6);
+            this.btnHide.Location = new System.Drawing.Point(1018, 6);
             this.btnHide.Name = "btnHide";
-            this.btnHide.Size = new System.Drawing.Size(75, 27);
+            this.btnHide.Size = new System.Drawing.Size(265, 27);
             this.btnHide.TabIndex = 27;
             this.btnHide.Text = "X";
             this.btnHide.UseVisualStyleBackColor = true;
@@ -270,7 +270,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.ClientSize = new System.Drawing.Size(793, 776);
+            this.ClientSize = new System.Drawing.Size(1295, 871);
             this.ControlBox = false;
             this.Controls.Add(this.btnHide);
             this.Controls.Add(this.statusStrip1);

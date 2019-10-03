@@ -102,7 +102,7 @@ namespace Mirle.Agv.Model
                 {
                     dblAhWorkingRange = value;
                     //CcModeAh = dblAHWorkingRange;
-                    SetCcModeAh(dblAhWorkingRange, false);
+                    //SetCcModeAh(dblAhWorkingRange, false);
                     CountPercentage();
                 }
             }
