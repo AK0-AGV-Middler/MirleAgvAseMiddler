@@ -27,6 +27,7 @@ namespace Mirle.Agv.Model
         public string InsideSectionId { get; set; }
         public MapAddressOffset AddressOffset { get; set; } = new MapAddressOffset();
         public double VehicleHeadAngle { get; set; }
+        public MapPosition CurRealPos { get; set; }
 
         public EnumChargeDirection ChargeDirectionParse(string v)
         {

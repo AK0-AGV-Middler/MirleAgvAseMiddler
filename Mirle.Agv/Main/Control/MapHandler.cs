@@ -286,12 +286,12 @@ namespace Mirle.Agv.Controller
                         if (dicHeaderIndexes.ContainsKey("InsideSectionId"))
                         {
                             oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
-                        }                       
+                        }
                         if (dicHeaderIndexes.ContainsKey("OffsetX"))
                         {
                             offset.OffsetX = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
                             offset.OffsetY = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
-                            offset.OffsetTheta = double.Parse(getThisRow[dicHeaderIndexes["OffsetTheta"]]);                          
+                            offset.OffsetTheta = double.Parse(getThisRow[dicHeaderIndexes["OffsetTheta"]]);
                         }
                         oneRow.AddressOffset = offset;
                         if (dicHeaderIndexes.ContainsKey("VehicleHeadAngle"))
@@ -652,16 +652,26 @@ namespace Mirle.Agv.Controller
                 #endregion
 
                 #region In Section    
+
+                MapAddress neerlyAddress = new MapAddress();
+                double neerlyDistance = 999999;
                 if (!IsPositionInThisAddress(aPosition, vehicleLocation.LastAddress.Position))
                 {
                     foreach (var insideAddress in aSection.InsideAddresses)
                     {
-                        if (IsPositionInThisAddress(aPosition, insideAddress.Position))
+                        double dis = GetDistance(aPosition, insideAddress.Position);
+
+                        if (dis < neerlyDistance)
                         {
-                            vehicleLocation.LastAddress = insideAddress;
-                            break;
+                            neerlyDistance = dis;
+                            neerlyAddress = insideAddress;
                         }
                     }
+                }
+
+                if (neerlyDistance <= mapConfig.AddressAreaMm)
+                {
+                    vehicleLocation.LastAddress = neerlyAddress;                 
                 }
 
                 vehicleLocation.LastSection = aSection;
