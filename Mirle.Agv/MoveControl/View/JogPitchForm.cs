@@ -400,7 +400,7 @@ namespace Mirle.Agv.View
                 moveControl.moveControlConfig.Turn.Jerk);
         }
 
-        private void button_JogPitch_STOP_Click(object sender, EventArgs e)
+        public void button_JogPitch_STOP_Click(object sender, EventArgs e)
         {
             if (homing)
             {
@@ -425,22 +425,22 @@ namespace Mirle.Agv.View
             ChangeMode(EnumJogPitchMode.Normal);
         }
 
-        private void button_JogPitch_Normal_Click(object sender, EventArgs e)
+        public void button_JogPitch_Normal_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.Normal);
         }
 
-        private void button_JogPitch_ForwardWheel_Click(object sender, EventArgs e)
+        public void button_JogPitch_ForwardWheel_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.ForwardWheel);
         }
 
-        private void button_JogPitch_BackwardWheel_Click(object sender, EventArgs e)
+        public void button_JogPitch_BackwardWheel_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.BackwardWheel);
         }
 
-        private void button_JogPitch_SpinTurn_Click(object sender, EventArgs e)
+        public void button_JogPitch_SpinTurn_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.SpinTurn);
         }
@@ -468,7 +468,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void button_JogPitch_Turn_MouseUp(object sender, MouseEventArgs e)
+        public void button_JogPitch_Turn_MouseUp(object sender, MouseEventArgs e)
         {
             moveControl.elmoDriver.ElmoStop(EnumAxis.GT, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
             moveControl.location.Real = null;
@@ -503,12 +503,12 @@ namespace Mirle.Agv.View
             moveControl.elmoDriver.ElmoMove(EnumAxis.GT, turn[0], turn[1], turn[2], turn[3], vel, EnumMoveType.Absolute, acc, dec, jerk);
         }
 
-        private void button_JogPitch_TurnRight_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_TurnRight_MouseDown(object sender, MouseEventArgs e)
         {
             Turn_MouseDown(-90);
         }
 
-        private void button_JogPitch_TurnLeft_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_TurnLeft_MouseDown(object sender, MouseEventArgs e)
         {
             Turn_MouseDown(90);
         }
@@ -586,17 +586,17 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void button_JogPitch_Forward_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_Forward_MouseDown(object sender, MouseEventArgs e)
         {
             Move_MouseDown(true);
         }
 
-        private void button_JogPitch_Backward_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_Backward_MouseDown(object sender, MouseEventArgs e)
         {
             Move_MouseDown(false);
         }
 
-        private void button_JogPitch_Move_MouseUp(object sender, MouseEventArgs e)
+        public void button_JogPitch_Move_MouseUp(object sender, MouseEventArgs e)
         {
             moveControl.elmoDriver.ElmoStop(EnumAxis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
             moveControl.location.Real = null;
@@ -604,6 +604,7 @@ namespace Mirle.Agv.View
 
         public void button_JogPitch_ElmoEnable_Click(object sender, EventArgs e)
         {
+            jogPitchData.ElmoFunctionCompelete = false;
             Task.Factory.StartNew(() =>
             {
                 moveControl.elmoDriver.EnableAllAxis();
@@ -613,6 +614,7 @@ namespace Mirle.Agv.View
 
         public void button_JogPitch_ElmoDisable_Click(object sender, EventArgs e)
         {
+            jogPitchData.ElmoFunctionCompelete = false;
             Task.Factory.StartNew(() =>
             {
                 moveControl.elmoDriver.DisableAllAxis();
@@ -622,6 +624,7 @@ namespace Mirle.Agv.View
 
         public void button_JogPitch_ElmoReset_Click(object sender, EventArgs e)
         {
+            jogPitchData.ElmoFunctionCompelete = false;
             Task.Factory.StartNew(() =>
             {
                 moveControl.elmoDriver.ResetErrorAll();
@@ -956,5 +959,55 @@ namespace Mirle.Agv.View
             button_Skip.BackColor = (button_Skip.Text == "強制\r\n手動") ? Color.Red : Color.Transparent;
             button_Skip.Enabled = true;
         }
+
+
+        /// <summary>
+        /// for plc jogpitch 
+        /// </summary>
+        public void SetPlcJogOperationValue (EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
+        {
+            
+            switch (turnS)
+            {
+                case EnumJogTurnSpeed.High:
+                    rB_JogPitch_TurnSpeed_High.Checked = true;
+                    break;
+                case EnumJogTurnSpeed.Medium:
+                    rB_JogPitch_TurnSpeed_Medium.Checked = true;
+                    break;
+                case EnumJogTurnSpeed.Low:
+                    rB_JogPitch_TurnSpeed_Low.Checked = true;
+                    break;
+                default:
+                    rB_JogPitch_TurnSpeed_Low.Checked = true;
+                    break;
+            }
+           
+            switch (moveV)
+            {
+                case EnumJogMoveVelocity.ThreeHundred:
+                    rB_JogPitch_MoveVelocity_300.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.OneHundred:
+                    rB_JogPitch_MoveVelocity_100.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.Fifty:
+                    rB_JogPitch_MoveVelocity_50.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.Ten:
+                    rB_JogPitch_MoveVelocity_10.Checked = true;
+                    break;
+                default:
+                    rB_JogPitch_MoveVelocity_10.Checked = true;
+                    break;
+            }
+
+            tB_JogPitch_Distance.Text = distance.ToString();
+
+
+        }
+
+
+
     }
 }

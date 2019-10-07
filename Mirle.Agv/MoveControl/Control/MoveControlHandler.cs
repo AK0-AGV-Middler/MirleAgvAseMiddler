@@ -1431,6 +1431,21 @@ namespace Mirle.Agv.Controller
             return Math.Abs(idealAngle - nowAngle) <= 15;
         }
 
+        private bool TurnGorupAxisNearlyAngle()
+        {
+            double range = 15;
+            double angle_TFL = elmoDriver.ElmoGetPosition(EnumAxis.TFL);
+            double angle_TFR = elmoDriver.ElmoGetPosition(EnumAxis.TFR);
+            double angle_TRL = elmoDriver.ElmoGetPosition(EnumAxis.TRL);
+            double angle_TRR = elmoDriver.ElmoGetPosition(EnumAxis.TRR);
+
+            bool result = (Math.Abs(angle_TFL - angle_TFR) > range) || (Math.Abs(angle_TFL - angle_TRL) > range) ||
+                          (Math.Abs(angle_TFL - angle_TRR) > range) || (Math.Abs(angle_TFR - angle_TRL) > range) ||
+                          (Math.Abs(angle_TFR - angle_TRR) > range) || (Math.Abs(angle_TRL - angle_TRR) > range);
+
+            return result;
+        }
+
         private void TRControl_SimulationMode(int wheelAngle, EnumAddressAction type)
         {
             double velocity = moveControlConfig.TurnParameter[type].Velocity;
@@ -1614,11 +1629,20 @@ namespace Mirle.Agv.Controller
                 if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
 
-                if (!IsInTRPath(type, Math.Abs(ControlData.TurnStartEncoder - location.ElmoEncoder), ControlData.WheelAngle, wheelAngle))
+                if (moveControlConfig.SensorByPass[EnumSensorSafetyType.TRPathMonitoring].Enable)
                 {
-                    SendAlarmCode(152001);
-                    EMSControl("不再TR預計路徑上,異常停止!");
-                    return;
+                    if (!TurnGorupAxisNearlyAngle())
+                    {
+                        SendAlarmCode(152003);
+                        EMSControl("四輪角度差異過大,EMS!");
+                        return;
+                    }
+                    else if (!IsInTRPath(type, Math.Abs(ControlData.TurnStartEncoder - location.ElmoEncoder), ControlData.WheelAngle, wheelAngle))
+                    {
+                        SendAlarmCode(152001);
+                        EMSControl("不再TR預計路徑上,異常停止!");
+                        return;
+                    }
                 }
 
                 if (changeToNextSectionLineWheelAngle != -1)
@@ -2711,6 +2735,7 @@ namespace Mirle.Agv.Controller
             }
             catch
             {
+                SendAlarmCode(150000);
                 EMSControl("MoveControl主Thread Expction!");
             }
         }
@@ -3089,6 +3114,7 @@ namespace Mirle.Agv.Controller
                         {
                             WriteLog("MoveControl", "7", device, "", "降速指令未降速, 目前速度 : " + Math.Abs(location.Velocity).ToString("0") +
                                                                            ", 安全速度 : " + ControlData.VChangeSafetyVelocity.ToString("0") + " !");
+                            SendAlarmCode(151000);
                             EMSControl("降速指令未降速!");
                         }
                         else
@@ -3108,6 +3134,7 @@ namespace Mirle.Agv.Controller
                         {
                             WriteLog("MoveControl", "7", device, "", "啟動VChange未降速, 目前速度 : " + Math.Abs(location.Velocity).ToString("0") +
                                                                            ", 安全速度 : " + ControlData.VChangeSafetyVelocity.ToString("0") + " !");
+                            SendAlarmCode(151000);
                             EMSControl("降速指令未降速!");
                         }
                         else
