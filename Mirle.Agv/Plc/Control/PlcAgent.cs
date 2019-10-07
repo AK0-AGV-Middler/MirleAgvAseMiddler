@@ -216,7 +216,7 @@ namespace Mirle.Agv.Controller
                 now = DateTime.Now;
                 csvLog = now.ToString("HH:mm:ss.ff");
 
-
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Percentage.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterCurrent.ToString();
                 csvLog = csvLog + Separator + this.MaxMeterCurrent.ToString();
                 csvLog = csvLog + Separator + this.MinMeterCurrent.ToString();
@@ -630,6 +630,18 @@ namespace Mirle.Agv.Controller
                                             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "MeterAH data change but new value is 0.0"));
                                         }
                                     }
+                                    break;
+                                case "GotechMaxVol":
+                                    this.APLCVehicle.Batterys.GotechMaxVol = this.DECToDouble(aMCProtocol.get_ItemByTag("GotechMaxVol").AsUInt16, 1, 2);
+                                    break;
+                                case "GotechMinVol":
+                                    this.APLCVehicle.Batterys.GotechMinVol = this.DECToDouble(aMCProtocol.get_ItemByTag("GotechMinVol").AsUInt16, 1, 2);
+                                    break;
+                                case "YindaMaxVol":
+                                    this.APLCVehicle.Batterys.YindaMaxVol = this.DECToDouble(aMCProtocol.get_ItemByTag("YindaMaxVol").AsUInt16, 1, 2);
+                                    break;
+                                case "YindaMinVol":
+                                    this.APLCVehicle.Batterys.YindaMinVol = this.DECToDouble(aMCProtocol.get_ItemByTag("YindaMinVol").AsUInt16, 1, 2);
                                     break;
                                 case "FullChargeIndex":
                                     //if (this.APLCVehicle.Batterys.FullChargeIndex == 0)
@@ -2257,7 +2269,7 @@ namespace Mirle.Agv.Controller
                         this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
                     }
                 }
-
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", liArrayWord.ToString()));
                 foreach (string word in liWarningWord)
                 {
                     for (int i = 0; i < 16; i++)
@@ -2266,6 +2278,8 @@ namespace Mirle.Agv.Controller
                         this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
                     }
                 }
+
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", liWarningWord.ToString()));
                 if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset Success"));
@@ -2279,7 +2293,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.StackTrace + ex.ToString()));
             }
             liArrayWord.Clear();
             liWarningWord.Clear();
@@ -2379,6 +2393,7 @@ namespace Mirle.Agv.Controller
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", OldCCModeAH = " + APLCVehicle.Batterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.Batterys.MeterAh.ToString()));
             this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.MeterAh + this.APLCVehicle.Batterys.AhWorkingRange * (100.0 - SOC) / 100.00, false);
             //CcModeAh
+            BatteryPercentageWriteLog(Convert.ToUInt16(SOC));
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", NewCCModeAH = " + APLCVehicle.Batterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.Batterys.MeterAh.ToString()));
 
         }

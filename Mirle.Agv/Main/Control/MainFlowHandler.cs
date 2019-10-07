@@ -602,17 +602,20 @@ namespace Mirle.Agv.Controller
                             if (IsMoveStep())
                             {
                                 MoveCmdInfo moveCmd = (MoveCmdInfo)curTransStep;
-                                if (UpdateVehiclePositionByMoveCmd(moveCmd, position))
+                                if (moveCmd.MovingSections.Count > 0)
                                 {
-                                    sw.Reset();
-                                }
+                                    if (UpdateVehiclePositionByMoveCmd(moveCmd, position))
+                                    {
+                                        sw.Reset();
+                                    }
+                                }                              
                             }
                         }
                         else
-                        {                           
-                                ////無搬送命令時，比對當前Position與全地圖Sections確定section-distance
-                                //UpdateVehiclePositionNoMoveCmd(position);
-                           
+                        {
+                            ////無搬送命令時，比對當前Position與全地圖Sections確定section-distance
+                            //UpdateVehiclePositionNoMoveCmd(position);
+
                         }
                     }
                     else
@@ -644,6 +647,20 @@ namespace Mirle.Agv.Controller
         private void UpdateVehiclePositionManual(MapPosition position)
         {
             var realPos = position;
+            if (realPos.X == 0 && realPos.Y == 0)
+            {
+                return;
+            }
+
+            VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
+            if (!string.IsNullOrEmpty(vehiclePosition.LastAddress.Id) && !string.IsNullOrEmpty(vehiclePosition.LastSection.Id))
+            {
+                if (mapHandler.IsPositionInThisAddress(realPos, vehiclePosition.LastAddress.Position))
+                {
+                    return;
+                }
+            }
+
             MapAddress neerlyAddress = new MapAddress();
             double neerlyDistance = 999999;
             foreach (MapAddress mapAddress in TheMapInfo.allMapAddresses.Values)
@@ -656,17 +673,23 @@ namespace Mirle.Agv.Controller
                     neerlyAddress = mapAddress;
                 }
             }
-            VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
-            var allMapSections = TheMapInfo.allMapSections.Values.ToList();
-            var allMapSectionsHasNeerlyAddress = allMapSections.FindAll(x => x.Id == neerlyAddress.Id);
+            var allMapSectionsHasNeerlyAddress = new List<MapSection>();
+            foreach (MapSection mapSection in TheMapInfo.allMapSections.Values)
+            {
+                if (mapSection.InsideAddresses.FindIndex(z => z.Id == neerlyAddress.Id) > -1)
+                {
+                    allMapSectionsHasNeerlyAddress.Add(mapSection.DeepClone());
+                }
+            }
 
             foreach (MapSection mapSection in allMapSectionsHasNeerlyAddress)
             {
                 if (IsPositionInThisSection(realPos, mapSection, ref vehiclePosition))
                 {
-                    theVehicle.CurVehiclePosition.LastAddress = neerlyAddress;
-                    theVehicle.CurVehiclePosition.LastSection = mapSection;
-                    theVehicle.CurVehiclePosition.LastSection.Distance = mapHandler.GetDistance(realPos, mapSection.HeadAddress.Position);
+                    vehiclePosition.LastAddress = neerlyAddress;
+                    vehiclePosition.LastSection = mapSection;
+                    vehiclePosition.LastSection.Distance = mapHandler.GetDistance(realPos, mapSection.HeadAddress.Position);
+                    theVehicle.CurVehiclePosition = vehiclePosition;
                     break;
                 }
             }
@@ -2141,7 +2164,7 @@ namespace Mirle.Agv.Controller
                 {
                     alarmHandler.SetAlarm(000011);
                     var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({gxPosition.X:F2},{gxPosition.Y:F2})]";
-                    OnMessageShowEvent?.Invoke(this, msg);
+                    //OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , msg));
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
@@ -2157,7 +2180,7 @@ namespace Mirle.Agv.Controller
                 isInMap = false;
                 alarmHandler.SetAlarm(000011);
                 var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({gxPosition.X:F2},{gxPosition.Y:F2})]";
-                OnMessageShowEvent?.Invoke(this, msg);
+                //OnMessageShowEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
             }
