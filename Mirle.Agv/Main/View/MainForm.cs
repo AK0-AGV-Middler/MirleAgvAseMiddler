@@ -1215,6 +1215,7 @@ namespace Mirle.Agv.View
                     {
                         if (mainFlowHandler.SetManualToAuto())
                         {
+                            alarmHandler.ResetAllAlarms();
                             mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                             mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                             Vehicle.Instance.AutoState = EnumAutoState.Auto;

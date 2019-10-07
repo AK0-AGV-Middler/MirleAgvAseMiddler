@@ -565,29 +565,22 @@ namespace Mirle.Agv.Controller
 
             var msg = $"Middler :詢問通行權 前處理[NeedReserveSectionIds={QueMapSectionsToString(queNeedReserveSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
         private void AfterAskReserve(long total)
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>();
             askingReserveSection = new MapSection();
-            //queGotReserveOkSections = new ConcurrentQueue<MapSection>();   
             AskReserveStatus = EnumThreadStatus.None;
-            theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
+            AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
+            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
+            //theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             var msg = $"MainFlow : 詢問通行權 後處理, [ThreadStatus={AskReserveStatus}][TotalSpendMs={total}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
 
         private bool CanAskReserve()
         {
-            //var xx1 = mainFlowHandler.IsMoveStep();
-            //var xx2 = mainFlowHandler.CanVehMove();
-            //var xx3 = !IsGotReserveOkSectionsFull();
-
             return mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !IsGotReserveOkSectionsFull();
         }
         public bool IsGotReserveOkSectionsFull()
@@ -619,24 +612,18 @@ namespace Mirle.Agv.Controller
             queNeedReserveSections = new ConcurrentQueue<MapSection>();
             var msg = $"Middler : 清除未取得通行權路徑清單, 共[{queNeedReserveSections.Count}]筆";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public void ClearAskingReserveSection()
         {
             askingReserveSection = new MapSection();
             var msg = $"Middler : 清除正在詢問通行權路徑[{askingReserveSection.Id}]。";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public void ClearGotReserveOkSections()
         {
             queReserveOkSections = new ConcurrentQueue<MapSection>();
             var msg = $"Middler : 清除已取得通行權路徑清單, 共[{queReserveOkSections.Count}]筆";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public void SetupAskingReserveSection(MapSection askingReserveSection)
         {
@@ -656,16 +643,12 @@ namespace Mirle.Agv.Controller
 
             var msg = $"Middler : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public void SetupNeedReserveSections(List<MapSection> mapSections)
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>(mapSections.DeepClone());
             var msg = $"Middler : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public List<MapSection> GetNeedReserveSections()
         {
@@ -681,8 +664,6 @@ namespace Mirle.Agv.Controller
             {
                 var msg = $"Middler :可通行路徑數量為[{queReserveOkSections.Count}]，無法清除已通過的路徑。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //     , msg));
                 return;
             }
             else
@@ -690,8 +671,6 @@ namespace Mirle.Agv.Controller
                 queReserveOkSections.TryDequeue(out MapSection passSection);
                 var msg = $"Middler : 清除已通過路徑[{passSection.Id}]。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //     , msg));
             }
         }
         public void SetupReserveOkSections(List<MapSection> reserveOkSections)
@@ -699,19 +678,15 @@ namespace Mirle.Agv.Controller
             queReserveOkSections = new ConcurrentQueue<MapSection>(reserveOkSections);
             var msg = $"Middler : 更新可通行路徑列表[{QueMapSectionsToString(queReserveOkSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
 
         public void OnGetReserveOk()
         {
-            //OnGetReserveOkEvent?.Invoke(this, askingReserveSection);
 
             if (queNeedReserveSections.Count == 0)
             {
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權失敗 , 未取得通行權路徑列表 is Empty";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
                 return;
             }
 
@@ -723,32 +698,25 @@ namespace Mirle.Agv.Controller
                 mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權成功";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
             }
             else
             {
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權失敗, 未取得通行權路徑為{needReserveSection.Id}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
             }
         }
         public void DequeueNeedReserveSections()
         {
             if (queNeedReserveSections.Count == 0)
             {
-                var msg = $"Middler : DequeueNeedReserveSections +++FAIL+++, [QueCount={queNeedReserveSections.Count}]";
+                var msg = $"Middler : 清除需要通行權路段失敗，需要通行權路段清單為空。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //     , msg));
             }
             else
             {
                 queNeedReserveSections.TryDequeue(out MapSection dequeueSection);
-                var msg = $"Middler : DequeueNeedReserveSections +++Ok+++, [SectionId={dequeueSection.Id}]";
+                var msg = $"Middler : 清除需要通行權路段[{dequeueSection.Id}]成功。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //     , msg));
-
             }
         }
         public void ClearAskReserve()
@@ -1717,7 +1685,7 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
                 iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(!string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId));
                 iD_144_STATUS_CHANGE_REP.ObstacleStatus = theVehicle.ObstacleStatus;
-                iD_144_STATUS_CHANGE_REP.ReserveStatus = theVehicle.ReserveStatus;
+                iD_144_STATUS_CHANGE_REP.ReserveStatus = agvcTransCmd.ReserveStatus;// theVehicle.ReserveStatus;
                 iD_144_STATUS_CHANGE_REP.BlockingStatus = theVehicle.BlockingStatus;
                 iD_144_STATUS_CHANGE_REP.PauseStatus = agvcTransCmd.PauseStatus;
                 iD_144_STATUS_CHANGE_REP.ErrorStatus = theVehicle.ErrorStatus;
@@ -1733,7 +1701,7 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                 wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
 
-                var msg = $"[來源{sender}]144 Report. [路徑ID={vehLocation.LastSection.Id}][位置ID={vehLocation.LastAddress.Id}][路徑距離={(uint)vehLocation.LastSection.Distance}][座標({Convert.ToInt32(vehLocation.RealPosition.X)},{Convert.ToInt32(vehLocation.RealPosition.Y)})][Mode={theVehicle.ModeStatus}][Reserve={theVehicle.ReserveStatus}]";
+                var msg = $"[來源{sender}]144 Report. [路徑ID={vehLocation.LastSection.Id}][位置ID={vehLocation.LastAddress.Id}][路徑距離={(uint)vehLocation.LastSection.Distance}][座標({Convert.ToInt32(vehLocation.RealPosition.X)},{Convert.ToInt32(vehLocation.RealPosition.Y)})][Mode={theVehicle.ModeStatus}][Reserve={agvcTransCmd.ReserveStatus}]";
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
 
                 SendCommandWrapper(wrappers);
@@ -1780,7 +1748,7 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.ObstVehicleID = theVehicle.ObstVehicleID;
                 iD_143_STATUS_RESPONSE.PauseStatus = agvcTransCmd.PauseStatus;
                 iD_143_STATUS_RESPONSE.PowerStatus = theVehicle.PowerStatus;
-                iD_143_STATUS_RESPONSE.ReserveStatus = theVehicle.ReserveStatus;
+                iD_143_STATUS_RESPONSE.ReserveStatus = agvcTransCmd.ReserveStatus;// theVehicle.ReserveStatus;
                 iD_143_STATUS_RESPONSE.SecDistance = (uint)vehLocation.LastSection.Distance;
                 iD_143_STATUS_RESPONSE.StoppedBlockID = theVehicle.StoppedBlockID;
 
@@ -1993,7 +1961,8 @@ namespace Mirle.Agv.Controller
                     if (receive.IsReserveSuccess == ReserveResult.Success)
                     {
                         var msg = $"取得{askingReserveSection.Id}通行權成功";
-                        theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
+                        //theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
+                        agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
                         StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                         OnGetReserveOk();
@@ -2004,7 +1973,8 @@ namespace Mirle.Agv.Controller
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                         if (mainFlowHandler.IsPauseByNoReserve())
                         {
-                            theVehicle.ReserveStatus = VhStopSingle.StopSingleOn;
+                            //theVehicle.ReserveStatus = VhStopSingle.StopSingleOn;
+                            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
                             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                             var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
                             OnMessageShowOnMainFormEvent?.Invoke(this, msg);

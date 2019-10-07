@@ -68,7 +68,6 @@ namespace Mirle.Agv.Model
                 }
             }
         }
-
         private bool backBeamDisable = false;
         public bool BackBeamDisable
         {

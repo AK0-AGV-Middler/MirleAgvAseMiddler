@@ -648,9 +648,9 @@ namespace Mirle.Agv.Controller
                 if ((data.DirFlag && triggerEncoder > lastVChange.EndEncoder) ||
                     (!data.DirFlag && triggerEncoder < lastVChange.EndEncoder))
                 { // 正常情況.
-                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-                        command.TriggerEncoder = triggerEncoder;
-                        command.Position = triggerPosition;
+                    triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                    command.TriggerEncoder = triggerEncoder;
+                    command.Position = triggerPosition;
                 }
                 else
                 { // 上次速度命令無法執行完.
@@ -661,7 +661,7 @@ namespace Mirle.Agv.Controller
                         (!data.DirFlag && triggerEncoder < lastVChange.StartEncoder - 200))
                     { // 上次變速命令可以執行,但是需要修改速度.
                         double velocity = 0;
-                        double realDistance = Math.Abs((data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : data.CommandDistance)) - lastVChange.StartEncoder) - distanceToPosition;
+                        double realDistance = Math.Abs((data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : -data.CommandDistance)) - lastVChange.StartEncoder) - distanceToPosition;
                         distance = GetVChangeDistance(lastVChange.StartVelocity, command.Velocity, lastVChange.VelocityCommand, realDistance, ref velocity) + distanceToPosition;
                         triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
                         triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
@@ -1882,6 +1882,8 @@ namespace Mirle.Agv.Controller
                     {
                         WriteLog("MoveControl", "3", device, "", "moveCmd.StartAddress or moveCmd.StartAddress.AddressOffset == null!");
                     }
+
+                    returnCommand.End = reserveList[reserveList.Count - 1].Position;
 
                     return returnCommand;
                 }

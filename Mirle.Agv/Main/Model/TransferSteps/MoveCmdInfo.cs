@@ -63,30 +63,38 @@ namespace Mirle.Agv.Model.TransferSteps
                 }
             }
 
-            //CheckIsDuelStartPosition();
+            CheckIsDuelStartPosition();
 
-            //if (IsDuelStartPosition)
-            //{
-            //    MovingSections.RemoveAt(0);
-            //    SectionIds.RemoveAt(0);
-            //    AddressIds.RemoveAt(0);
-            //}
+            if (IsDuelStartPosition)
+            {
+                MovingSections.RemoveAt(0);
+                SectionIds.RemoveAt(0);
+                AddressIds.RemoveAt(0);
+            }
 
             //RebuildLastSectionForInsideEndAddress();
         }
 
         private void CheckIsDuelStartPosition()
         {
-            var curLocation = theVehicle.CurVehiclePosition;
-            MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[1]];
-            if (mainFlowHandler.IsPositionInThisAddress(curLocation.RealPosition, mapAddress.Position))
+            if (MovingSections.Count > 0)
             {
-                if (mainFlowHandler.IsAddressInThisSection(MovingSections[0], mapAddress) && mainFlowHandler.IsAddressInThisSection(MovingSections[1], mapAddress))
+                if (theVehicle.CurVehiclePosition.LastAddress.Id== AddressIds[1])
                 {
                     IsDuelStartPosition = true;
                     mainFlowHandler.LogDuel();
                 }
             }
+            //var curLocation = theVehicle.CurVehiclePosition;
+            //MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[1]];
+            //if (mainFlowHandler.IsPositionInThisAddress(curLocation.RealPosition, mapAddress.Position))
+            //{
+            //    if (mainFlowHandler.IsAddressInThisSection(MovingSections[0], mapAddress) && mainFlowHandler.IsAddressInThisSection(MovingSections[1], mapAddress))
+            //    {
+            //        IsDuelStartPosition = true;
+            //        mainFlowHandler.LogDuel();
+            //    }
+            //}
         }
 
         public void SetupAddressPositions()

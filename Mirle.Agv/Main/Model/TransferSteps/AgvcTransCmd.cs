@@ -24,8 +24,10 @@ namespace Mirle.Agv.Model.TransferSteps
         public string CassetteId { get; set; } = "";
         public string CommandId { get; set; } = "";
         public ushort SeqNum { get; set; }
+        public double CommandDistance { get; set; }
         public CompleteStatus CompleteStatus { get; set; }
         public VhStopSingle PauseStatus { get; set; } = VhStopSingle.StopSingleOff;
+        public VhStopSingle ReserveStatus { get; set; } = VhStopSingle.StopSingleOff;
 
         public AgvcTransCmd()
         {

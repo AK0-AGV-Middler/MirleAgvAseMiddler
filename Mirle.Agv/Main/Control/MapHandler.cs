@@ -513,7 +513,7 @@ namespace Mirle.Agv.Controller
                 if (!TheMapInfo.allMapSections.ContainsKey(oneRow.SectionId))
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"AddMapSectionBeamDisableIntoList +++FAIL+++. AllMapSections.ContainsKey({oneRow.SectionId})={false}"));
+                     , $"Section[{oneRow.SectionId}]加入Beam Sensor Disable清單失敗，圖資不包含Section[{oneRow.SectionId}]"));
 
                     return;
                 }

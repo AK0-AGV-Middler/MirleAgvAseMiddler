@@ -440,9 +440,10 @@ namespace Mirle.Agv.Controller
                     case "ReviseOpen":
                     case "TR":
                     case "R2000":
-                        moveControlConfig.SafteyDistance.Add(
-                            (EnumCommandType)Enum.Parse(typeof(EnumCommandType), item.Name),
-                            double.Parse(item.InnerText));
+                        //moveControlConfig.SafteyDistance.Add(
+                        //    (EnumCommandType)Enum.Parse(typeof(EnumCommandType), item.Name),
+                        //    double.Parse(item.InnerText));
+                        moveControlConfig.SafteyDistance[(EnumCommandType)Enum.Parse(typeof(EnumCommandType), item.Name)] = double.Parse(item.InnerText);
                         break;
                     default:
                         break;
@@ -491,9 +492,10 @@ namespace Mirle.Agv.Controller
                     case "OneTimeRevise":
                     case "VChangeSafetyDistance":
                         temp = ReadSafetyDataXML((XmlElement)item);
-                        moveControlConfig.Safety.Add(
-                            (EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name),
-                            temp);
+                        //moveControlConfig.Safety.Add(
+                        //    (EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name),
+                        //    temp);
+                        moveControlConfig.Safety[(EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name)] = temp;
                         break;
                     default:
                         break;
@@ -522,10 +524,12 @@ namespace Mirle.Agv.Controller
                     case "CheckAxisState":
                     case "TRPathMonitoring":
                     case "EndPositionOffset":
+                    case "SecondCorrectionBySide":
                         temp.Enable = (item.InnerText == "Enable");
-                        moveControlConfig.SensorByPass.Add(
-                            (EnumSensorSafetyType)Enum.Parse(typeof(EnumSensorSafetyType), item.Name),
-                            temp);
+                        //moveControlConfig.SensorByPass.Add(
+                        //    (EnumSensorSafetyType)Enum.Parse(typeof(EnumSensorSafetyType), item.Name),
+                        //    temp);
+                        moveControlConfig.SensorByPass[(EnumSensorSafetyType)Enum.Parse(typeof(EnumSensorSafetyType), item.Name)] = temp;
                         break;
                     default:
                         break;
@@ -1445,9 +1449,9 @@ namespace Mirle.Agv.Controller
             double angle_TRL = elmoDriver.ElmoGetPosition(EnumAxis.TRL);
             double angle_TRR = elmoDriver.ElmoGetPosition(EnumAxis.TRR);
 
-            bool result = (Math.Abs(angle_TFL - angle_TFR) > range) || (Math.Abs(angle_TFL - angle_TRL) > range) ||
-                          (Math.Abs(angle_TFL - angle_TRR) > range) || (Math.Abs(angle_TFR - angle_TRL) > range) ||
-                          (Math.Abs(angle_TFR - angle_TRR) > range) || (Math.Abs(angle_TRL - angle_TRR) > range);
+            bool result = (Math.Abs(angle_TFL - angle_TFR) <= range) && (Math.Abs(angle_TFL - angle_TRL) <= range) &&
+                          (Math.Abs(angle_TFL - angle_TRR) <= range) && (Math.Abs(angle_TFR - angle_TRL) <= range) &&
+                          (Math.Abs(angle_TFR - angle_TRR) <= range) && (Math.Abs(angle_TRL - angle_TRR) <= range);
 
             return result;
         }
@@ -1531,6 +1535,8 @@ namespace Mirle.Agv.Controller
 
         private void TRControl(int wheelAngle, EnumAddressAction type)
         {
+            ControlData.CanPause = false;
+
             if (SimulationMode)
             {
                 TRControl_SimulationMode(wheelAngle, type);
@@ -1796,6 +1802,8 @@ namespace Mirle.Agv.Controller
 
         public void R2000Control(int wheelAngle)
         {
+            ControlData.CanPause = false;
+
             if (SimulationMode)
             {
                 R2000Control_SimulationMode(wheelAngle);
@@ -2052,8 +2060,6 @@ namespace Mirle.Agv.Controller
 
             if (vChangeType == EnumVChangeType.TRTurn)
             {
-                ControlData.CanPause = false;
-
                 if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorTR].Enable)
                     safetyData.TurningByPass = true;
 
@@ -2077,8 +2083,6 @@ namespace Mirle.Agv.Controller
             }
             else if (vChangeType == EnumVChangeType.R2000Turn)
             {
-                ControlData.CanPause = false;
-
                 if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorR2000].Enable)
                     safetyData.TurningByPass = true;
 

@@ -850,28 +850,28 @@ namespace Mirle.Agv.Controller
         {
             if (toSectionIds.Count > 0)
             {
-                if (!TheMapInfo.allMapSections.ContainsKey(toSectionIds[0]))
-                {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][{toSectionIds[0]} is not in the map]";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    //    , msg));
-                    return false;
-                }
+                //if (!TheMapInfo.allMapSections.ContainsKey(toSectionIds[0]))
+                //{
+                //    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][{toSectionIds[0]} is not in the map]";
+                //    OnMessageShowEvent?.Invoke(this, msg);
+                //    //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //    //    , msg));
+                //    return false;
+                //}
 
-                VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
-                if (!mapHandler.IsPositionInThisSection(moveFirstPosition, TheMapInfo.allMapSections[toSectionIds[0]], ref vehiclePosition))
-                {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][curPosition is not in first section {toSectionIds[0]}]";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    //    , msg));
-                    return false;
-                }
+                //VehiclePosition vehiclePosition = theVehicle.CurVehiclePosition.DeepClone();
+                //if (!mapHandler.IsPositionInThisSection(moveFirstPosition, TheMapInfo.allMapSections[toSectionIds[0]], ref vehiclePosition))
+                //{
+                //    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][curPosition is not in first section {toSectionIds[0]}]";
+                //    OnMessageShowEvent?.Invoke(this, msg);
+                //    //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //    //    , msg));
+                //    return false;
+                //}
                 if (!CheckSectionIdsAndAddressIds(toSectionIds, toAddressIds, endAddressId, commandType))
                 {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}]";
-                    OnMessageShowEvent?.Invoke(this, msg);
+                    //var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}]";
+                    //OnMessageShowEvent?.Invoke(this, msg);
                     //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     //    , msg));
                     return false;
@@ -879,14 +879,14 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                if (!CheckInSituSectionIdAndAddressId(moveFirstPosition, toSectionIds, toAddressIds, endAddressId, commandType))
-                {
-                    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][InSitu]";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    //    , msg));
-                    return false;
-                }
+                //if (!CheckInSituSectionIdAndAddressId(moveFirstPosition, toSectionIds, toAddressIds, endAddressId, commandType))
+                //{
+                //    var msg = $"MainFlow : Is Agvc Command Match The Map +++FAIL+++,[CommandType={commandType}][InSitu]";
+                //    OnMessageShowEvent?.Invoke(this, msg);
+                //    //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //    //    , msg));
+                //    return false;
+                //}
             }
 
             return true;
@@ -928,8 +928,10 @@ namespace Mirle.Agv.Controller
             {
                 if (!TheMapInfo.allMapSections.ContainsKey(id))
                 {
+                    var msg = $"MainFlow : [{type}]命令檢查失敗，本段路徑Section[{id}]不在圖資內。";
+                    OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++, [{type}] Section {id} is not in the map."));
+                      , msg));
                     return false;
                 }
             }
@@ -939,8 +941,10 @@ namespace Mirle.Agv.Controller
             {
                 if (!TheMapInfo.allMapAddresses.ContainsKey(id))
                 {
+                    var msg = $"MainFlow : [{type}]命令檢查失敗，本段路徑Address[{id}]不在圖資內。";
+                    OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++, [{type}] Address {id} is not in the map."));
+                      , msg));
                     return false;
                 }
             }
@@ -951,45 +955,55 @@ namespace Mirle.Agv.Controller
                 var section = TheMapInfo.allMapSections[sectionIds[i]];
                 if (!IsAddressIdInMapSection(addressIds[i], section))
                 {
+                    var msg = $"MainFlow : [{type}]命令檢查失敗，本段路徑Address[{addressIds[i]}]不在路徑Section[{section.Id}]內。";
+                    OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++, [{type}] the Address {addressIds[i]} is not in Section {section.Id}"));
+                     , msg));
                     return false;
                 }
 
                 if (!IsAddressIdInMapSection(addressIds[i + 1], section))
                 {
+                    var msg = $"MainFlow : [{type}]命令檢查失敗，本段路徑Address[{addressIds[i + 1]}]不在路徑Section[{section.Id}]內。";
+                    OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++, [{type}] the Address {addressIds[i + 1]} is not in Section {section.Id}"));
+                     , msg));
                     return false;
                 }
             }
 
-            //測相鄰ToUnloadSection共有ToUnloadAddress
+            //測相鄰Section共有Address
             for (int i = 1; i < addressIds.Count - 1; i++)
             {
                 var preSection = TheMapInfo.allMapSections[sectionIds[i - 1]];
                 if (!IsAddressIdInMapSection(addressIds[i], preSection))
                 {
+                    var msg = $"MainFlow : [{type}]命令檢查失敗，本段路徑Address[{addressIds[i]}]不在路徑Section[{preSection.Id}]內。";
+                    OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++, [{type}] the Address {addressIds[i]} is not in Section {preSection.Id}"));
+                     , msg));
                     return false;
                 }
 
                 var nextSection = TheMapInfo.allMapSections[sectionIds[i]];
                 if (!IsAddressIdInMapSection(addressIds[i], nextSection))
                 {
+                    var msg = $"MainFlow : [{type}]命令檢查失敗，本段路徑Address[{addressIds[i]}]不在路徑Section[{nextSection.Id}]內。";
+                    OnMessageShowEvent?.Invoke(this, msg);
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++,  [{type}] the Address {addressIds[i]} is not in Section {nextSection.Id}"));
+                     , msg));
                     return false;
                 }
             }
 
-            //測UnloadAddressId 屬於 最後一個ToUnloadSection
+            //測終點AddressId 屬於 最後一個Section
             var lastSection = TheMapInfo.allMapSections[sectionIds[sectionIds.Count - 1]];
             if (!IsAddressIdInMapSection(lastAddressId, lastSection))
             {
+                var msg = $"MainFlow : [{type}]命令檢查失敗，本段終點Address[{lastAddressId}]不在最後一段Section[{lastSection.Id}]內。";
+                OnMessageShowEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"MainFlow : CheckSectionIdsAndAddressIds +++FAIL+++,  [{type}] the Address {lastAddressId} is not in Section {lastSection.Id}"));
+                    , msg));
                 return false;
             }
 
@@ -1229,7 +1243,7 @@ namespace Mirle.Agv.Controller
             {
                 StopAndClear();
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 1, "");
-                var ngmsg = $"MainFlow : Get Middler OverrideCommand +++FAIL+++, [CmdId={agvcOverrideCmd.CommandId}][CmdType={agvcOverrideCmd.CommandType}]";
+                var ngmsg = $"MainFlow : 無法接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}，原因請見ErrorLog。";
                 OnMessageShowEvent?.Invoke(this, ngmsg);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
