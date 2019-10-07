@@ -1062,12 +1062,18 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void UpdateDelta()
+        private void UpdateDelta(bool secondCorrection)
         {
             if (safetyData.NowMoveState == EnumMoveState.Error)
                 return;
 
-            double realEncoder = MapPositionToEncoder(command.SectionLineList[command.IndexOflisSectionLine], location.Barcode.Position);
+            double realEncoder;
+
+            if (secondCorrection && moveControlConfig.SensorByPass[EnumSensorSafetyType.SecondCorrectionBySide].Enable)
+                realEncoder = MapPositionToEncoder(command.SectionLineList[command.IndexOflisSectionLine], location.Barcode.BarcodeCenter);
+            else
+                realEncoder = MapPositionToEncoder(command.SectionLineList[command.IndexOflisSectionLine], location.Barcode.Position);
+
             // 此Barcode是多久之前的資料,基本上為正值(s).
             double deltaTime = ((double)location.ScanTime + (DateTime.Now - location.BarcodeGetDataTime).TotalMilliseconds) / 1000;
             // 真實Barcode回推的RealEncoder需要再加上這個時間*速度(Elmo速度本身就帶正負號).
@@ -1247,7 +1253,7 @@ namespace Mirle.Agv.Controller
                 if (location.Barcode == null)
                 {
                     MapPosition tempPosition = new MapPosition(0, 0);
-                    location.Barcode = new AGVPosition(tempPosition, 0, 0, 20, DateTime.Now, 0, 0, EnumBarcodeMaterial.Iron);
+                    location.Barcode = new AGVPosition(tempPosition, tempPosition, 0, 0, 20, DateTime.Now, 0, 0, EnumBarcodeMaterial.Iron);
                     //location.Barcode = new AGVPosition(tempPosition, 90, 0, 20, DateTime.Now, 0, 0, EnumBarcodeMaterial.Iron);
                     return true;
                 }
@@ -1366,7 +1372,7 @@ namespace Mirle.Agv.Controller
             safetyData.LastMoveState = safetyData.NowMoveState;
         }
 
-        private void UpdatePosition()
+        private void UpdatePosition(bool secondCorrection = false)
         {
             LoopTime = loopTimeTimer.ElapsedMilliseconds;
             loopTimeTimer.Reset();
@@ -1389,7 +1395,7 @@ namespace Mirle.Agv.Controller
                     }
 
                     if (newBarcodeData)
-                        UpdateDelta();
+                        UpdateDelta(secondCorrection);
                 }
 
                 UpdateReal();
@@ -2267,7 +2273,7 @@ namespace Mirle.Agv.Controller
         {
             WriteLog("MoveControl", "7", device, "", "start");
             ControlData.SecondCorrection = true;
-            UpdatePosition();
+            UpdatePosition(ControlData.WheelAngle == 0);
 
             WriteLog("MoveControl", "7", device, "", "nowEncoder : " + location.RealEncoder.ToString("0") + ", endEncoder : " + endEncoder.ToString("0"));
 

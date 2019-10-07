@@ -143,7 +143,8 @@ namespace Mirle.Agv
         Bumper,
         CheckAxisState,
         TRPathMonitoring,
-        EndPositionOffset
+        EndPositionOffset,
+        SecondCorrectionBySide
     }
 
     public enum EnumMoveStartType

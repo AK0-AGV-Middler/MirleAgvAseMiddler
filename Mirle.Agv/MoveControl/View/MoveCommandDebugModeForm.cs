@@ -166,6 +166,9 @@ namespace Mirle.Agv.View
                     case EnumSensorSafetyType.EndPositionOffset:
                         tempSensor.SetLabelString("終點offset : ");
                         break;
+                    case EnumSensorSafetyType.SecondCorrectionBySide:
+                        tempSensor.SetLabelString("使用側邊二修 : ");
+                        break;
                     default:
                         break;
                 }

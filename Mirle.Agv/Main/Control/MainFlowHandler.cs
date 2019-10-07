@@ -605,7 +605,7 @@ namespace Mirle.Agv.Controller
                                     {
                                         sw.Reset();
                                     }
-                                }                              
+                                }
                             }
                         }
                         else
@@ -1479,6 +1479,7 @@ namespace Mirle.Agv.Controller
                     moveCmd.StartAddress = startAddress;
                 }
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
+                moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSections();
@@ -1495,6 +1496,22 @@ namespace Mirle.Agv.Controller
             }
             return moveCmd;
         }
+
+        private EnumStageDirection EnumStageDirectionParse(EnumPioDirection pioDirection)
+        {
+            switch (pioDirection)
+            {               
+                case EnumPioDirection.Left:
+                    return EnumStageDirection.Left;
+                case EnumPioDirection.Right:
+                    return EnumStageDirection.Right;
+                case EnumPioDirection.None:
+                    return EnumStageDirection.None;
+                default:
+                    return EnumStageDirection.None;
+            }
+        }
+
         private MoveCmdInfo GetMoveToUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             MoveCmdInfo moveCmd = new MoveCmdInfo(this);
@@ -1517,6 +1534,7 @@ namespace Mirle.Agv.Controller
                     moveCmd.StartAddress = startAddress;
                 }
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
+                moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSections();
@@ -1543,6 +1561,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.StartAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddressId];
+                moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.IsLoadPortToUnloadPort = true;
                 moveCmd.SetupMovingSections();
                 moveCmd.MovingSectionsIndex = 0;
@@ -1580,6 +1599,7 @@ namespace Mirle.Agv.Controller
                     moveCmd.StartAddress = startAddress;
                 }
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddressId];
+                moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSections();

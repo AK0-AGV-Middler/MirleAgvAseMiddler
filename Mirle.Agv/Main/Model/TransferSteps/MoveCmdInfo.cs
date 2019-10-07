@@ -28,6 +28,7 @@ namespace Mirle.Agv.Model.TransferSteps
         public string Info { get; set; } = "";
         public bool IsDuelStartPosition { get; set; } = false;
         public bool IsLoadPortToUnloadPort { get; set; } = false;
+        public EnumStageDirection StageDirection { get; set; } = EnumStageDirection.None;
 
         public List<MapAddress> MovingAddress = new List<MapAddress>();
 
