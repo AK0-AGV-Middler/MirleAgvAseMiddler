@@ -28,7 +28,6 @@ namespace Mirle.Agv.Controller
         public event EventHandler<string> OnCmdReceiveEvent;
         public event EventHandler<string> OnCmdSendEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
-        public event EventHandler<bool> OnGetBlockPassEvent;
         #endregion
 
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;

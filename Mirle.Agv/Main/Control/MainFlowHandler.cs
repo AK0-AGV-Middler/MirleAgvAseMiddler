@@ -243,9 +243,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
                 middleAgent.OnOverrideCommandEvent += MiddleAgent_OnOverrideCommandEvent;
 
-                //來自MiddleAgent的取得Reserve/BlockZone訊息，通知MainFlow(this)
-                middleAgent.OnGetBlockPassEvent += MiddleAgent_OnGetBlockPassEvent;
-
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
 
@@ -1197,10 +1194,8 @@ namespace Mirle.Agv.Controller
                 return;
             }
 
-
             try
             {
-
                 IsOverridePauseing = true;
                 if (moveControlHandler.VehclePause())
                 {
@@ -1852,7 +1847,7 @@ namespace Mirle.Agv.Controller
                     }
                     else
                     {
-                        middleAgent.ClearAskReserve();
+                        StopAndClear();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動取消確認");
                         return;
                     }
@@ -2527,6 +2522,7 @@ namespace Mirle.Agv.Controller
             StopVehicle();
             StopVisitTransferSteps();
             middleAgent.ClearAskReserve();
+            middleAgent.NeedReserveSections = new List<MapSection>();
             theVehicle.CurVehiclePosition.WheelAngle = moveControlHandler.ControlData.WheelAngle;
             IsCancelByCstIdRead = false;
             middleAgent.IsCancelByCstIdRead = false;
