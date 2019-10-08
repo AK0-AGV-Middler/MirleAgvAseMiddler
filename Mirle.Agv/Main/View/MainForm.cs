@@ -111,7 +111,7 @@ namespace Mirle.Agv.View
             tstextClientName.Text = $"[{ middlerConfig.ClientName}]";
             tstextRemoteIp.Text = $"[{middlerConfig.RemoteIp}]";
             tstextRemotePort.Text = $"[{middlerConfig.RemotePort}]";
-            //this.Text = $"主畫面  Remote[{middlerConfig.RemoteIp}] [{middlerConfig.RemotePort}]";
+            this.Text = $"主畫面 版本編號為[{Application.ProductVersion}]";
 
             alarmForm = new AlarmForm(mainFlowHandler);
             alarmForm.WindowState = FormWindowState.Normal;
