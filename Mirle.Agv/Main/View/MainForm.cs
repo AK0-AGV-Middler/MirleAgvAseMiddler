@@ -793,6 +793,9 @@ namespace Mirle.Agv.View
                 default:
                     break;
             }
+
+            tspbCommding.Maximum = mainFlowHandler.GetTransferStepsCount()-1;
+            tspbCommding.Value = mainFlowHandler.TransferStepsIndex;
         }
         private void UpdateRtbAgvcTransCmd()
         {
