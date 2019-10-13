@@ -93,6 +93,7 @@ namespace Mirle.Agv.View
             ResetImageAndPb();
             InitialSoc();
             InitialConnectionAndCstStatus();
+            plcAgent.SetOutSideObj(this);
         }
 
         private void InitialForms()
@@ -127,8 +128,6 @@ namespace Mirle.Agv.View
             jogPitchForm.WindowState = FormWindowState.Normal;
             jogPitchForm.Show();
             jogPitchForm.Hide();
-
-            mainFlowHandler.SetupJogPitchFormToPlcAgent(jogPitchForm);
 
             warningForm = new WarningForm();
             warningForm.WindowState = FormWindowState.Normal;
@@ -1207,6 +1206,14 @@ namespace Mirle.Agv.View
         private void btnAutoManual_Click(object sender, EventArgs e)
         {
             btnAutoManual.Enabled = false;
+            SwitchAutoStatus();
+            Thread.Sleep(500);
+            btnAutoManual.Enabled = true;
+        }
+
+        public bool SwitchAutoStatus()
+        {
+            bool switchResult = false;
             switch (Vehicle.Instance.AutoState)
             {
                 case EnumAutoState.Manual:
@@ -1215,6 +1222,7 @@ namespace Mirle.Agv.View
                         mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                        switchResult = true;
                     }
                     else
                     {
@@ -1224,30 +1232,27 @@ namespace Mirle.Agv.View
                             mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                             mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                             Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                            //mainFlowHandler.StartWatchLowPower();
-                        }
+                            switchResult = true;
+                        }                       
                     }
-
                     break;
                 case EnumAutoState.Auto:
                 default:
                     {
                         Vehicle.Instance.AutoState = EnumAutoState.PreManual;
                         mainFlowHandler.StopAndClear();
-                        //mainFlowHandler.StopWatchLowPower();
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                         Vehicle.Instance.AutoState = EnumAutoState.Manual;
                         var msg = $"Auto 切換 Manual 成功";
                         RichTextBoxAppendHead(richTextBox1, msg);
                         mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
                         mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = true;
+                        switchResult = true;
                     }
-
                     break;
             }
 
-            Thread.Sleep(500);
-            btnAutoManual.Enabled = true;
+            return switchResult;
         }
 
         private void btnStopAndClear_Click(object sender, EventArgs e)
@@ -1488,5 +1493,7 @@ namespace Mirle.Agv.View
                 timer_SetupInitialSoc.Enabled = false;
             }
         }
+
+        public JogPitchForm GetJogPitchForm() => jogPitchForm;
     }
 }

@@ -71,6 +71,7 @@ namespace Mirle.Agv.Controller
         private UInt32 alarmReadIndex = 0;
 
         private JogPitchForm jogPitchForm = null;
+        private MainForm mainForm = null;
 
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
@@ -96,9 +97,10 @@ namespace Mirle.Agv.Controller
 
         private AlarmHandler aAlarmHandler = null;
 
-        public void SetOutSideObj(ref JogPitchForm jogPitchForm)
+        public void SetOutSideObj(MainForm mainForm)
         {
-            this.jogPitchForm = jogPitchForm;
+            this.mainForm = mainForm;
+            jogPitchForm = mainForm.GetJogPitchForm();
 
             //this.APLCVehicle.Hmi.beforeFromPlcWord = this.APLCVehicle.Hmi.FromPlcWord.DeepClone();
         }

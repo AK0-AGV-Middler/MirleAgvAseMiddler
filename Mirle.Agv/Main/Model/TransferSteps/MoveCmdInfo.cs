@@ -747,25 +747,25 @@ namespace Mirle.Agv.Model.TransferSteps
             return moveCmd;
         }
 
-        public void SetupMovingAddress()
-        {
-            try
-            {
-                MovingAddress = new List<MapAddress>();
-                foreach (var id in AddressIds)
-                {
-                    MapAddress mapAddress = theMapInfo.allMapAddresses[id].DeepClone();
-                    MovingAddress.Add(mapAddress);
-                }
+        //public void SetupMovingAddress()
+        //{
+        //    try
+        //    {
+        //        MovingAddress = new List<MapAddress>();
+        //        foreach (var id in AddressIds)
+        //        {
+        //            MapAddress mapAddress = theMapInfo.allMapAddresses[id].DeepClone();
+        //            MovingAddress.Add(mapAddress);
+        //        }
 
-                ModifyFirstMapAddress();
-                ModifyLastMapAddress();
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
+        //        ModifyFirstMapAddress();
+        //        ModifyLastMapAddress();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+        //    }
+        //}
 
         private void ModifyLastMapAddress()
         {

@@ -156,8 +156,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         private void XmlInitial()
         {
             try
@@ -3055,11 +3053,6 @@ namespace Mirle.Agv.Controller
         {
             agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
             StopAndClear();
-        }
-
-        public void SetupJogPitchFormToPlcAgent(JogPitchForm jogPitchForm)
-        {
-            plcAgent.SetOutSideObj(ref jogPitchForm);
-        }
+        }       
     }
 }
