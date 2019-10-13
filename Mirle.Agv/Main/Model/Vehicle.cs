@@ -21,7 +21,7 @@ namespace Mirle.Agv.Model
         public MapInfo TheMapInfo { get; set; } = new MapInfo();
         public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
         public AgvcTransCmd CurAgvcTransCmd { get; set; } = new AgvcTransCmd();
-        public VehiclePosition CurVehiclePosition { get; set; } = new VehiclePosition();
+        public VehicleLocation VehicleLocation { get; set; } = new VehicleLocation();
         private EnumAutoState autoState = EnumAutoState.Manual;
         public EnumAutoState AutoState
         {

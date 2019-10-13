@@ -27,7 +27,6 @@ namespace Mirle.Agv.Controller
         private string lastReadAdrId = "";
         private string lastReadSecId = "";
 
-
         public MapHandler(MapConfig mapConfig)
         {
             this.mapConfig = mapConfig;
@@ -46,6 +45,9 @@ namespace Mirle.Agv.Controller
             ReadBarcodeLineCsv();
             ReadAddressCsv();
             ReadSectionCsv();
+            WriteBarcodeBackup();
+            WriteAddressBackup();
+            WriteSectionBackup();
         }
 
         public void ReadBarcodeLineCsv()
@@ -185,7 +187,6 @@ namespace Mirle.Agv.Controller
                     TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
                 }
 
-                WriteBarcodeBackup();
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"Load Barcode File Ok. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
             }
@@ -194,31 +195,6 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
-
-        private void WriteBarcodeBackup()
-        {
-            var directionName = Path.GetDirectoryName(BarcodePath);
-            if (!Directory.Exists(directionName))
-            {
-                Directory.CreateDirectory(directionName);
-            }
-
-            var barcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
-
-            string titleRow = "Id,BarcodeHeadNum,HeadX,HeadY,BarcodeTailNum,TailX,TailY,OffsetX,OffsetY,Material";
-            File.WriteAllText(barcodeBackupPath, titleRow);
-
-            List<string> barcodeLineInfos = new List<string>();
-            barcodeLineInfos.Add(Environment.NewLine);
-            foreach (var item in TheMapInfo.allMapBarcodeLines.Values)
-            {
-                var head = item.HeadBarcode;
-                var tail = item.TailBarcode;
-                var barcodeLineInfo = string.Format("{0},{1},{2:F2},{3:F2},{4},{5:F2},{6:F2},{7:F2},{8:F2},{9}", item.Id, head.Number, head.Position.X, head.Position.Y, tail.Number, tail.Position.X, tail.Position.Y, item.Offset.X, item.Offset.Y, item.Material);
-                barcodeLineInfos.Add(barcodeLineInfo);
-            }
-            File.AppendAllLines(barcodeBackupPath, barcodeLineInfos);
         }
 
         public void ReadAddressCsv()
@@ -249,9 +225,10 @@ namespace Mirle.Agv.Controller
                 int nColumns = titleRow.Length;
 
                 Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
-                //Id,PositionX,PositionY,
-                //IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,
-                //IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,IsTR50
+                //Id,PositionX,PositionY,IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,
+                //IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,PioDirection,IsTR50,
+                //InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle
+
                 for (int i = 0; i < nColumns; i++)
                 {
                     var keyword = titleRow[i].Trim();
@@ -285,7 +262,7 @@ namespace Mirle.Agv.Controller
                         oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
                         if (dicHeaderIndexes.ContainsKey("InsideSectionId"))
                         {
-                            oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
+                            oneRow.InsideSectionId = FitZero(getThisRow[dicHeaderIndexes["InsideSectionId"]]);
                         }
                         if (dicHeaderIndexes.ContainsKey("OffsetX"))
                         {
@@ -325,6 +302,12 @@ namespace Mirle.Agv.Controller
 
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+        }
+
+        private string FitZero(string v)
+        {
+            int sectionIdToInt = int.Parse(v);
+            return sectionIdToInt.ToString("0000");
         }
 
         public void ReadSectionCsv()
@@ -383,7 +366,7 @@ namespace Mirle.Agv.Controller
                         }
                         oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.TailAddress);
-                        oneRow.Distance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
+                        oneRow.HeadToTailDistance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
                         oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
                         oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
                         oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
@@ -412,6 +395,80 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv : [lastReadSecId={lastReadSecId}]"));
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+        }
+
+        private void WriteBarcodeBackup()
+        {
+            var directionName = Path.GetDirectoryName(BarcodePath);
+            if (!Directory.Exists(directionName))
+            {
+                Directory.CreateDirectory(directionName);
+            }
+
+            var barcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
+
+            string titleRow = "Id,BarcodeHeadNum,HeadX,HeadY,BarcodeTailNum,TailX,TailY,OffsetX,OffsetY,Material" + Environment.NewLine;
+            File.WriteAllText(barcodeBackupPath, titleRow);
+
+            List<string> barcodeLineInfos = new List<string>();
+            foreach (var item in TheMapInfo.allMapBarcodeLines.Values)
+            {
+                var head = item.HeadBarcode;
+                var tail = item.TailBarcode;
+                var barcodeLineInfo = string.Format("{0},{1},{2:F2},{3:F2},{4},{5:F2},{6:F2},{7:F2},{8:F2},{9}", item.Id, head.Number, head.Position.X, head.Position.Y, tail.Number, tail.Position.X, tail.Position.Y, item.Offset.X, item.Offset.Y, item.Material);
+                barcodeLineInfos.Add(barcodeLineInfo);
+            }
+            File.AppendAllLines(barcodeBackupPath, barcodeLineInfos);
+        }
+
+        private void WriteAddressBackup()
+        {
+            var directionName = Path.GetDirectoryName(AddressPath);
+            if (!Directory.Exists(directionName))
+            {
+                Directory.CreateDirectory(directionName);
+            }
+
+            var backupPath = Path.ChangeExtension(AddressPath, ".backup.csv");
+
+            string titleRow = "Id,PositionX,PositionY,IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,PioDirection,IsTR50,InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle" + Environment.NewLine;
+            File.WriteAllText(backupPath, titleRow);
+            List<string> lineInfos = new List<string>();
+            foreach (var item in TheMapInfo.allMapAddresses.Values)
+            {
+                var lineInfo = string.Format("{0},{1:F0},{2:F0},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15:0000},{16:F2},{17:F2},{18:F2},{19:N0}",
+                    item.Id, item.Position.X, item.Position.Y, item.IsWorkStation, item.CanLeftLoad, item.CanLeftUnload, item.CanRightLoad, item.CanRightUnload,
+                    item.IsCharger, item.CouplerId, item.ChargeDirection,
+                    item.IsSegmentPoint, item.CanSpin, item.PioDirection, item.IsTR50,
+                   int.Parse(item.InsideSectionId), item.AddressOffset.OffsetX, item.AddressOffset.OffsetY, item.AddressOffset.OffsetTheta,
+                   item.VehicleHeadAngle
+                    );
+                lineInfos.Add(lineInfo);
+            }
+            File.AppendAllLines(backupPath, lineInfos);
+        }
+
+        private void WriteSectionBackup()
+        {
+            var directionName = Path.GetDirectoryName(SectionPath);
+            if (!Directory.Exists(directionName))
+            {
+                Directory.CreateDirectory(directionName);
+            }
+
+            var backupPath = Path.ChangeExtension(SectionPath, ".backup.csv");
+
+            string titleRow = "Id,FromAddress,ToAddress,Speed, Type,PermitDirection" + Environment.NewLine;
+            File.WriteAllText(backupPath, titleRow);
+            List<string> lineInfos = new List<string>();
+            foreach (var item in TheMapInfo.allMapSections.Values)
+            {
+                var lineInfo = string.Format("{0},{1},{2},{3},{4},{5}",
+                    item.Id, item.HeadAddress.Id, item.TailAddress.Id, item.Speed, item.Type, item.PermitDirection
+                    );
+                lineInfos.Add(lineInfo);
+            }
+            File.AppendAllLines(backupPath, lineInfos);
         }
 
         private void AddInsideAddresses()
@@ -518,22 +575,23 @@ namespace Mirle.Agv.Controller
                     return;
                 }
                 MapSection mapSection = TheMapInfo.allMapSections[oneRow.SectionId];
-                if (oneRow.Min < 0)
+                if (oneRow.Min < -30)
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"Min < 0. [SectionId={oneRow.SectionId}][Min={oneRow.Min}]"));
                     return;
                 }
-                if (oneRow.Max > mapSection.Distance + 1)
+                if (oneRow.Max > mapSection.HeadToTailDistance + 31)
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"Max > Distance. [SectionId={oneRow.SectionId}][Max={oneRow.Max}][Distance={mapSection.Distance}]"));
+                    , $"Max > Distance. [SectionId={oneRow.SectionId}][Max={oneRow.Max}][Distance={mapSection.HeadToTailDistance}]"));
 
                     return;
                 }
                 if (oneRow.Min == 0 && oneRow.Max == 0)
                 {
-                    oneRow.Max = mapSection.Distance;
+                    oneRow.Min = -30;
+                    oneRow.Max = mapSection.HeadToTailDistance + 30;
                 }
 
                 mapSection.BeamSensorDisables.Add(oneRow);
@@ -544,7 +602,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection, ref VehiclePosition vehicleLocation)
+        public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection, ref VehicleLocation vehicleLocation)
         {
             try
             {
@@ -671,13 +729,67 @@ namespace Mirle.Agv.Controller
 
                 if (neerlyDistance <= mapConfig.AddressAreaMm)
                 {
-                    vehicleLocation.LastAddress = neerlyAddress;                 
+                    vehicleLocation.LastAddress = neerlyAddress;
                 }
 
                 vehicleLocation.LastSection = aSection;
 
-                vehicleLocation.LastSection.Distance = GetDistance(aPosition, aSection.HeadAddress.Position);
+                vehicleLocation.LastSection.VehicleDistanceSinceHead = GetDistance(aPosition, aSection.HeadAddress.Position);
 
+                return true;
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return false;
+            }
+        }
+
+        public bool IsPositionInThisSection(MapSection aSection, ref VehicleLocation vehicleLocation)
+        {
+            try
+            {
+                MapPosition aPosition = vehicleLocation.RealPosition;
+
+                #region NotInSection 2019.09.23
+                double secMinX, secMaxX, secMinY, secMaxY;
+
+                if (aSection.HeadAddress.Position.X >= aSection.TailAddress.Position.X)
+                {
+                    secMaxX = aSection.HeadAddress.Position.X + AddressAreaMm;
+                    secMinX = aSection.TailAddress.Position.X - AddressAreaMm;
+                }
+                else
+                {
+                    secMaxX = aSection.TailAddress.Position.X + AddressAreaMm;
+                    secMinX = aSection.HeadAddress.Position.X - AddressAreaMm;
+                }
+
+                if (aSection.HeadAddress.Position.Y >= aSection.TailAddress.Position.Y)
+                {
+                    secMaxY = aSection.HeadAddress.Position.Y + AddressAreaMm;
+                    secMinY = aSection.TailAddress.Position.Y - AddressAreaMm;
+                }
+                else
+                {
+                    secMaxY = aSection.TailAddress.Position.Y + AddressAreaMm;
+                    secMinY = aSection.HeadAddress.Position.Y - AddressAreaMm;
+                }
+
+
+                if (!(aPosition.X <= secMaxX && aPosition.X >= secMinX && aPosition.Y <= secMaxY && aPosition.Y >= secMinY))
+                {
+                    var msg = string.Format("Position({0:F2},{1:F2})不在[{2}]Section[{3}]內，MinX={4:F2},MaxX={5:F2},MinY={6:F2},MaxY={7:F2}。", aPosition.X, aPosition.Y, aSection.Type, aSection.Id, secMinX, secMaxX, secMinY, secMaxY);
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                            , msg));
+
+                    return false;
+                }
+                #endregion
+
+                #region In Section                   
                 return true;
                 #endregion
 

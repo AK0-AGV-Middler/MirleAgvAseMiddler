@@ -14,9 +14,9 @@ namespace Mirle.Agv.Model.Tests
         public void UpdateStatusTest()
         {
             var theVehicle = Vehicle.Instance;
-            var location = theVehicle.CurVehiclePosition;
-            location.LastSection.Distance = 123.45f;
-            var distance = Vehicle.Instance.CurVehiclePosition.LastSection.Distance;
+            var location = theVehicle.VehicleLocation;
+            location.LastSection.HeadToTailDistance = 123.45f;
+            var distance = Vehicle.Instance.VehicleLocation.LastSection.HeadToTailDistance;
 
             Assert.AreEqual(distance, 123.45f);
         }
@@ -112,7 +112,7 @@ namespace Mirle.Agv.Model.Tests
             Vehicle.Instance.VisitTransferStepsStatus = status;
             Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);
             status = EnumThreadStatus.Working;
-            Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);           
+            Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);
         }
 
         [Test()]
@@ -143,8 +143,22 @@ namespace Mirle.Agv.Model.Tests
             MapAddress address = new MapAddress();
             address.Id = "abc";
             pairs.Add("a", address);
-            var xx = pairs.Values.FirstOrDefault(x => x.Id=="abc");
+            var xx = pairs.Values.FirstOrDefault(x => x.Id == "abc");
             var yy = pairs.Values.FirstOrDefault(x => x.Id == "xxx");
+
+            Assert.True(true);
+        }
+
+        [Test()]
+        public void ReferenceTest1008()
+        {
+            Vehicle.Instance.VehicleLocation.RealPosition = new MapPosition(50, 100);
+            var vehLoc = Vehicle.Instance.VehicleLocation;
+            var xx1 = vehLoc.RealPosition;
+            vehLoc.RealPosition.X = 999;
+            var xx2 = vehLoc.RealPosition;
+            vehLoc.RealPosition = new MapPosition(777, 888);
+            var xx3 = vehLoc.RealPosition;
 
             Assert.True(true);
         }

@@ -602,7 +602,7 @@ namespace Mirle.Agv.Controller
             List<MapSection> reserveOkSections = new List<MapSection>(queReserveOkSections);
             foreach (var item in reserveOkSections)
             {
-                result += item.Distance;
+                result += item.HeadToTailDistance;
             }
             return (int)result;
         }
@@ -1292,8 +1292,8 @@ namespace Mirle.Agv.Controller
         }
         private bool IsNeerlyNoMove()
         {
-            var realPos = theVehicle.CurVehiclePosition.RealPosition;
-            var lastAddr = theVehicle.CurVehiclePosition.LastAddress;
+            var realPos = theVehicle.VehicleLocation.RealPosition;
+            var lastAddr = theVehicle.VehicleLocation.LastAddress;
             if (string.IsNullOrEmpty(lastAddr.Id)) return true;
             return Math.Abs(realPos.X - lastAddr.Position.X) <= middlerConfig.NeerlyNoMoveRangeMm && Math.Abs(realPos.Y - lastAddr.Position.Y) <= middlerConfig.NeerlyNoMoveRangeMm;
             //return (lastReportSection.Id == theVehicle.CurVehiclePosition.LastSection.Id) &&
@@ -1521,7 +1521,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd172_RangeTeachCompleteReport(int completeCode)
         {
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+            VehicleLocation vehLocation = theVehicle.VehicleLocation;
 
             try
             {
@@ -1531,7 +1531,7 @@ namespace Mirle.Agv.Controller
                 iD_172_RANGE_TEACHING_COMPLETE_REPORT.CompleteCode = completeCode;
                 iD_172_RANGE_TEACHING_COMPLETE_REPORT.FromAdr = theVehicle.TeachingFromAddress;
                 iD_172_RANGE_TEACHING_COMPLETE_REPORT.ToAdr = theVehicle.TeachingToAddress;
-                iD_172_RANGE_TEACHING_COMPLETE_REPORT.SecDistance = (uint)vehLocation.LastSection.Distance;
+                iD_172_RANGE_TEACHING_COMPLETE_REPORT.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.RangeTeachingCmpRepFieldNumber;
@@ -1673,13 +1673,13 @@ namespace Mirle.Agv.Controller
             try
             {
                 PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
-                VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+                VehicleLocation vehLocation = theVehicle.VehicleLocation;
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
                 ID_144_STATUS_CHANGE_REP iD_144_STATUS_CHANGE_REP = new ID_144_STATUS_CHANGE_REP();
                 iD_144_STATUS_CHANGE_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_144_STATUS_CHANGE_REP.CurrentSecID = vehLocation.LastSection.Id;
-                iD_144_STATUS_CHANGE_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
+                iD_144_STATUS_CHANGE_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
                 iD_144_STATUS_CHANGE_REP.ModeStatus = theVehicle.ModeStatus;
                 iD_144_STATUS_CHANGE_REP.ActionStatus = theVehicle.ActionStatus;
                 iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
@@ -1701,7 +1701,7 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                 wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
 
-                var msg = $"[來源{sender}]144 Report. [路徑ID={vehLocation.LastSection.Id}][位置ID={vehLocation.LastAddress.Id}][路徑距離={(uint)vehLocation.LastSection.Distance}][座標({Convert.ToInt32(vehLocation.RealPosition.X)},{Convert.ToInt32(vehLocation.RealPosition.Y)})][Mode={theVehicle.ModeStatus}][Reserve={agvcTransCmd.ReserveStatus}]";
+                var msg = $"[來源{sender}]144 Report. [路徑ID={vehLocation.LastSection.Id}][位置ID={vehLocation.LastAddress.Id}][路徑距離={(uint)vehLocation.LastSection.VehicleDistanceSinceHead}][座標({Convert.ToInt32(vehLocation.RealPosition.X)},{Convert.ToInt32(vehLocation.RealPosition.Y)})][Mode={theVehicle.ModeStatus}][Reserve={agvcTransCmd.ReserveStatus}]";
                 loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
 
                 SendCommandWrapper(wrappers);
@@ -1725,7 +1725,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+                VehicleLocation vehLocation = theVehicle.VehicleLocation;
                 PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
@@ -1749,7 +1749,7 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.PauseStatus = agvcTransCmd.PauseStatus;
                 iD_143_STATUS_RESPONSE.PowerStatus = theVehicle.PowerStatus;
                 iD_143_STATUS_RESPONSE.ReserveStatus = agvcTransCmd.ReserveStatus;// theVehicle.ReserveStatus;
-                iD_143_STATUS_RESPONSE.SecDistance = (uint)vehLocation.LastSection.Distance;
+                iD_143_STATUS_RESPONSE.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
                 iD_143_STATUS_RESPONSE.StoppedBlockID = theVehicle.StoppedBlockID;
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -2038,7 +2038,7 @@ namespace Mirle.Agv.Controller
 
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+            VehicleLocation vehLocation = theVehicle.VehicleLocation;
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
@@ -2046,7 +2046,7 @@ namespace Mirle.Agv.Controller
                 iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -2062,7 +2062,7 @@ namespace Mirle.Agv.Controller
         }
         public void Send_Cmd136_CstIdReadReport(EnumCstIdReadResult readResult)
         {
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+            VehicleLocation vehLocation = theVehicle.VehicleLocation;
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
@@ -2070,7 +2070,7 @@ namespace Mirle.Agv.Controller
                 iD_136_TRANS_EVENT_REP.CSTID = theVehicle.ThePlcVehicle.CassetteId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
                 iD_136_TRANS_EVENT_REP.BCRReadResult = BCRReadResultParse(readResult);
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -2139,7 +2139,7 @@ namespace Mirle.Agv.Controller
         {
             var msg = $"嘗試取得{askingReserveSection.Id}通行權";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+            VehicleLocation vehLocation = theVehicle.VehicleLocation;
 
             try
             {
@@ -2149,7 +2149,7 @@ namespace Mirle.Agv.Controller
                 iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
+                iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -2222,7 +2222,7 @@ namespace Mirle.Agv.Controller
 
         public void Send_Cmd134_TransferEventReport()
         {
-            VehiclePosition vehPosition = theVehicle.CurVehiclePosition;
+            VehicleLocation vehPosition = theVehicle.VehicleLocation;
 
             try
             {
@@ -2230,7 +2230,7 @@ namespace Mirle.Agv.Controller
                 iD_134_TRANS_EVENT_REP.EventType = theVehicle.Cmd134EventType;
                 iD_134_TRANS_EVENT_REP.CurrentAdrID = vehPosition.LastAddress.Id;
                 iD_134_TRANS_EVENT_REP.CurrentSecID = vehPosition.LastSection.Id;
-                iD_134_TRANS_EVENT_REP.SecDistance = (uint)vehPosition.LastSection.Distance;
+                iD_134_TRANS_EVENT_REP.SecDistance = (uint)vehPosition.LastSection.VehicleDistanceSinceHead;
                 iD_134_TRANS_EVENT_REP.DrivingDirection = theVehicle.DrivingDirection;
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -2324,7 +2324,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
+                VehicleLocation vehLocation = theVehicle.VehicleLocation;
 
                 var msg = $"命令結束，結束狀態{agvcTransCmd.CompleteStatus}，命令編號{agvcTransCmd.CommandId}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
@@ -2335,7 +2335,7 @@ namespace Mirle.Agv.Controller
                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = agvcTransCmd.CompleteStatus;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = vehLocation.LastSection.Id;
-                iD_132_TRANS_COMPLETE_REPORT.SecDistance = (uint)vehLocation.LastSection.Distance;
+                iD_132_TRANS_COMPLETE_REPORT.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
                 iD_132_TRANS_COMPLETE_REPORT.CmdPowerConsume = theVehicle.CmdPowerConsume;
                 iD_132_TRANS_COMPLETE_REPORT.CmdDistance = theVehicle.CmdDistance;
 

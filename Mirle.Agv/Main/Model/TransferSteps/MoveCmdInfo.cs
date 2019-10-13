@@ -79,23 +79,51 @@ namespace Mirle.Agv.Model.TransferSteps
         {
             if (MovingSections.Count > 0)
             {
-                if (theVehicle.CurVehiclePosition.LastAddress.Id== AddressIds[1])
+                if (theVehicle.VehicleLocation.LastAddress.Id== AddressIds[1])
                 {
                     IsDuelStartPosition = true;
                     mainFlowHandler.LogDuel();
                 }
-            }
-            //var curLocation = theVehicle.CurVehiclePosition;
-            //MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[1]];
-            //if (mainFlowHandler.IsPositionInThisAddress(curLocation.RealPosition, mapAddress.Position))
-            //{
-            //    if (mainFlowHandler.IsAddressInThisSection(MovingSections[0], mapAddress) && mainFlowHandler.IsAddressInThisSection(MovingSections[1], mapAddress))
-            //    {
-            //        IsDuelStartPosition = true;
-            //        mainFlowHandler.LogDuel();
-            //    }
-            //}
+            }          
         }
+
+        public void SetupMovingAddress()
+        {
+            MovingAddress = new List<MapAddress>();
+            if (AddressIds.Count > 0)
+            {
+                for (int i = 0; i < AddressIds.Count; i++)
+                {
+                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]];
+                    MovingAddress.Add(mapAddress);
+                }
+
+                
+
+                var endAddress = theMapInfo.allMapAddresses[EndAddress.Id].DeepClone();
+                var endSection = MovingSections[MovingSections.Count - 1];
+                if (endSection.CmdDirection == EnumPermitDirection.Forward)
+                {
+                    endSection.TailAddress = endAddress;
+                }
+                else
+                {
+                    endSection.HeadAddress = endAddress;
+                }
+            }
+
+            CheckIsDuelStartPosition();
+
+            if (IsDuelStartPosition)
+            {
+                MovingSections.RemoveAt(0);
+                SectionIds.RemoveAt(0);
+                AddressIds.RemoveAt(0);
+            }
+
+            //RebuildLastSectionForInsideEndAddress();
+        }
+
 
         public void SetupAddressPositions()
         {
@@ -106,7 +134,7 @@ namespace Mirle.Agv.Model.TransferSteps
                 if (MovingSections.Count > 0)
                 {
                     //Setup first position inside MovingSections[0];
-                    var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition.DeepClone();
+                    var firstPosition = Vehicle.Instance.VehicleLocation.RealPosition.DeepClone();
 
                     switch (MovingSections[0].Type)
                     {

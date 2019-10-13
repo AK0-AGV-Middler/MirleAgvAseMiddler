@@ -1062,7 +1062,7 @@ namespace Mirle.Agv.Controller
 
                 location.Real.Position = GetMapPosition(command.SectionLineList[command.IndexOflisSectionLine], realElmoEncode);
                 location.Encoder.Position = GetMapPosition(command.SectionLineList[command.IndexOflisSectionLine], encoderPosition);
-                Vehicle.Instance.CurVehiclePosition.RealPosition = location.Real.Position;
+                Vehicle.Instance.VehicleLocation.RealPosition = location.Real.Position;
             }
         }
 
@@ -1248,7 +1248,7 @@ namespace Mirle.Agv.Controller
                     location.ScanTime = agvPosition.ScanTime;
                     location.BarcodeGetDataTime = agvPosition.GetDataTime;
 
-                    Vehicle.Instance.CurVehiclePosition.BarcodePosition = location.Barcode.Position;
+                    Vehicle.Instance.VehicleLocation.BarcodePosition = location.Barcode.Position;
                     return true;
                 }
             }
@@ -1411,8 +1411,8 @@ namespace Mirle.Agv.Controller
                 {
                     location.Real = location.Barcode;
                     location.Real.AGVAngle = computeFunction.GetAGVAngle(location.Real.AGVAngle);
-                    Vehicle.Instance.CurVehiclePosition.RealPosition = location.Real.Position;
-                    Vehicle.Instance.CurVehiclePosition.VehicleAngle = location.Real.AGVAngle;
+                    Vehicle.Instance.VehicleLocation.RealPosition = location.Real.Position;
+                    Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
                 }
             }
         }
@@ -1790,7 +1790,7 @@ namespace Mirle.Agv.Controller
             else if (location.Real.AGVAngle <= -180)
                 location.Real.AGVAngle += 360;
 
-            Vehicle.Instance.CurVehiclePosition.VehicleAngle = location.Real.AGVAngle;
+            Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
 
             DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
 
@@ -1957,7 +1957,7 @@ namespace Mirle.Agv.Controller
             else if (location.Real.AGVAngle <= -180)
                 location.Real.AGVAngle += 360;
 
-            Vehicle.Instance.CurVehiclePosition.VehicleAngle = location.Real.AGVAngle;
+            Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
 
             DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
 

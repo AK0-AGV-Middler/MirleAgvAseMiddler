@@ -128,6 +128,8 @@ namespace Mirle.Agv.View
             jogPitchForm.Show();
             jogPitchForm.Hide();
 
+            mainFlowHandler.SetupJogPitchFormToPlcAgent(jogPitchForm);
+
             warningForm = new WarningForm();
             warningForm.WindowState = FormWindowState.Normal;
             warningForm.Show();
@@ -994,7 +996,7 @@ namespace Mirle.Agv.View
         }
         private void UpdateVehLocation()
         {
-            var location = theVehicle.CurVehiclePosition;
+            var location = theVehicle.VehicleLocation;
 
             var realPos = location.RealPosition;
             ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
@@ -1010,7 +1012,7 @@ namespace Mirle.Agv.View
             var curSection = location.LastSection;
             ucMapSection.TagValue = curSection.Id;
 
-            var dis = location.LastSection.Distance;
+            var dis = location.LastSection.VehicleDistanceSinceHead;
             ucDistance.TagValue = dis.ToString("F");
 
             ucVehicleImage.Hide();
@@ -1053,7 +1055,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                VehiclePosition curVehPos = Vehicle.Instance.CurVehiclePosition;
+                VehicleLocation curVehPos = Vehicle.Instance.VehicleLocation;
                 int posX = (int)numPositionX.Value;
                 int posY = (int)numPositionY.Value;
                 curVehPos.SetRealPos(new MapPosition(posX, posY));
@@ -1237,7 +1239,7 @@ namespace Mirle.Agv.View
                         Vehicle.Instance.AutoState = EnumAutoState.Manual;
                         var msg = $"Auto 切換 Manual 成功";
                         RichTextBoxAppendHead(richTextBox1, msg);
-                        mainFlowHandler.CmdEndVehiclePosition = theVehicle.CurVehiclePosition;
+                        mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
                         mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = true;
                     }
 

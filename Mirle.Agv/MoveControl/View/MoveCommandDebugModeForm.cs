@@ -952,8 +952,8 @@ namespace Mirle.Agv.View
                     settingAngleForm.TopMost = true;
 
                     moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position.DeepClone();
-                    Vehicle.Instance.CurVehiclePosition.RealPosition = moveControl.location.Real.Position;
-                    Vehicle.Instance.CurVehiclePosition.VehicleAngle = moveControl.location.Real.AGVAngle;
+                    Vehicle.Instance.VehicleLocation.RealPosition = moveControl.location.Real.Position;
+                    Vehicle.Instance.VehicleLocation.VehicleAngle = moveControl.location.Real.AGVAngle;
                 }
             }
         }
