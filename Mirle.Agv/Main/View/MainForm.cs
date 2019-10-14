@@ -93,8 +93,11 @@ namespace Mirle.Agv.View
             ResetImageAndPb();
             InitialSoc();
             InitialConnectionAndCstStatus();
+            InitialThdPads();
             plcAgent.SetOutSideObj(this);
         }
+
+        
 
         private void InitialForms()
         {
@@ -206,6 +209,11 @@ namespace Mirle.Agv.View
                 string cstid = "";
                 plcAgent.triggerCassetteIDReader(ref cstid);
             }
+        }
+
+        private void InitialThdPads()
+        {
+            //ucThdVisitTransferSteps.SetupTitleText("Visit Transfer Steps");
         }
 
         private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)

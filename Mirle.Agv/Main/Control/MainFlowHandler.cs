@@ -1422,18 +1422,8 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToUnloadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
-                if (IsPositionInThisAddress(theVehicle.VehicleLocation.RealPosition, theVehicle.VehicleLocation.LastAddress.Position))
-                {
-                    moveCmd.StartAddress = theVehicle.VehicleLocation.LastAddress;
-                }
-                else
-                {
-                    MapAddress startAddress = new MapAddress();
-                    startAddress.Id = "StartAddress";
-                    startAddress.Position = theVehicle.VehicleLocation.RealPosition;
-                    startAddress.AddressOffset = new MapAddressOffset();
-                    moveCmd.StartAddress = startAddress;
-                }
+                moveCmd.FilterUselessFirstSection();
+                moveCmd.SetupStartAddress();
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
@@ -1477,18 +1467,8 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToUnloadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
-                if (IsPositionInThisAddress(theVehicle.VehicleLocation.RealPosition, theVehicle.VehicleLocation.LastAddress.Position))
-                {
-                    moveCmd.StartAddress = theVehicle.VehicleLocation.LastAddress;
-                }
-                else
-                {
-                    MapAddress startAddress = new MapAddress();
-                    startAddress.Id = "StartAddress";
-                    startAddress.Position = theVehicle.VehicleLocation.RealPosition;
-                    startAddress.AddressOffset = new MapAddressOffset();
-                    moveCmd.StartAddress = startAddress;
-                }
+                moveCmd.FilterUselessFirstSection();
+                moveCmd.SetupStartAddress();
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
@@ -1515,9 +1495,10 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToUnloadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToUnloadSectionIds;
-                moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.StartAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddressId];
+                moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
+                moveCmd.FilterUselessNextToLoadFirstSection();
                 moveCmd.IsLoadPortToUnloadPort = true;
                 moveCmd.SetupMovingSections();
                 moveCmd.MovingSectionsIndex = 0;
@@ -1542,18 +1523,8 @@ namespace Mirle.Agv.Controller
                 moveCmd.CstId = agvcTransCmd.CassetteId;
                 moveCmd.AddressIds = agvcTransCmd.ToLoadAddressIds;
                 moveCmd.SectionIds = agvcTransCmd.ToLoadSectionIds;
-                if (IsPositionInThisAddress(theVehicle.VehicleLocation.RealPosition, theVehicle.VehicleLocation.LastAddress.Position))
-                {
-                    moveCmd.StartAddress = theVehicle.VehicleLocation.LastAddress;
-                }
-                else
-                {
-                    MapAddress startAddress = new MapAddress();
-                    startAddress.Id = "StartAddress";
-                    startAddress.Position = theVehicle.VehicleLocation.RealPosition;
-                    startAddress.AddressOffset = new MapAddressOffset();
-                    moveCmd.StartAddress = startAddress;
-                }
+                moveCmd.FilterUselessFirstSection();
+                moveCmd.SetupStartAddress();
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
@@ -2109,9 +2080,9 @@ namespace Mirle.Agv.Controller
             while (searchingSectionIndex < MovingSections.Count)
             {
                 try
-                {                   
+                {
                     if (mapHandler.IsPositionInThisSection(MovingSections[searchingSectionIndex], ref vehicleLocation))
-                    {                                          
+                    {
                         while (moveCmdInfo.MovingSectionsIndex < searchingSectionIndex)
                         {
                             isUpdateSection = true;
@@ -2140,7 +2111,7 @@ namespace Mirle.Agv.Controller
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     break;
-                }                
+                }
             }
 
             if (searchingSectionIndex >= MovingSections.Count)
@@ -3018,7 +2989,7 @@ namespace Mirle.Agv.Controller
         public bool IsPositionInThisAddress(MapPosition realPosition, MapPosition addressPosition)
         {
             return mapHandler.IsPositionInThisAddress(realPosition, addressPosition);
-        }       
+        }
 
         public bool IsAddressInThisSection(MapSection mapSection, MapAddress mapAddress)
         {
@@ -3053,6 +3024,6 @@ namespace Mirle.Agv.Controller
         {
             agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
             StopAndClear();
-        }       
+        }
     }
 }
