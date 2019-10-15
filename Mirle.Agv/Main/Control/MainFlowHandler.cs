@@ -2085,9 +2085,9 @@ namespace Mirle.Agv.Controller
                     {
                         while (moveCmdInfo.MovingSectionsIndex < searchingSectionIndex)
                         {
-                            isUpdateSection = true;
+                            moveCmdInfo.MovingSectionsIndex++;                           
                             middleAgent.ReportAddressPass(moveCmdInfo);
-                            moveCmdInfo.MovingSectionsIndex++;
+                            isUpdateSection = true;
                         }
 
                         FindeNeerlyAddressInTheMovingSection(MovingSections[searchingSectionIndex], ref vehicleLocation);

@@ -2252,9 +2252,17 @@ namespace Mirle.Agv.Controller
             {
                 ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
                 iD_134_TRANS_EVENT_REP.EventType = theVehicle.Cmd134EventType;
-                iD_134_TRANS_EVENT_REP.CurrentAdrID = section.HeadAddress.Id;
+                if (section.CmdDirection == EnumPermitDirection.Forward)
+                {
+                    iD_134_TRANS_EVENT_REP.CurrentAdrID = section.HeadAddress.Id;
+                    iD_134_TRANS_EVENT_REP.SecDistance = 0;
+                }
+                else
+                {
+                    iD_134_TRANS_EVENT_REP.CurrentAdrID = section.TailAddress.Id;
+                    iD_134_TRANS_EVENT_REP.SecDistance = (uint)section.HeadToTailDistance;
+                }
                 iD_134_TRANS_EVENT_REP.CurrentSecID = section.Id;
-                iD_134_TRANS_EVENT_REP.SecDistance = 0;
                 iD_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(section.CmdDirection);
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -2269,7 +2277,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-       
+
 
         public void Receive_Cmd33_ControlZoneCancelRequest(object sender, TcpIpEventArgs e)
         {
@@ -2710,7 +2718,7 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return BCRReadResult.BcrNormal;
-            }           
+            }
         }
 
         private DriveDirction DriveDirctionParse(EnumPermitDirection cmdDirection)
