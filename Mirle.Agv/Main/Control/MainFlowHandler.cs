@@ -2154,7 +2154,6 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                CmdEndVehiclePosition.IsMoveEnd = true;
                 CmdEndVehiclePosition.BarcodePosition = theVehicle.VehicleLocation.BarcodePosition;
                 CmdEndVehiclePosition.RealPosition = TheMapInfo.allMapAddresses[moveCmd.EndAddress.Id].Position;
                 CmdEndVehiclePosition.LastAddress = TheMapInfo.allMapAddresses[moveCmd.EndAddress.Id];
@@ -2622,26 +2621,12 @@ namespace Mirle.Agv.Controller
             {
                 var msg = $"MainFlow : Manual 切換 Auto 失敗，移動控制尚未Ready，可能原因:[MoveState={moveControlHandler.MoveState}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}][LocationNull={!moveControlHandler.IsLocationRealNotNull()}]";
                 OnMessageShowEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //     , msg));
-                return false;
-            }
-
-            if (false/*!UpdateVehiclePositionNoMoveCmd(theVehicle.CurVehiclePosition.RealPosition)*/)
-            {
-                var realpos = theVehicle.VehicleLocation.RealPosition;
-                var msg = $"MainFlow : Manual 切換 Auto 失敗, 當前座標({Convert.ToInt32(realpos.X)},{Convert.ToInt32(realpos.Y)}) 不在地圖上。";
-                OnMessageShowEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //     , msg));
                 return false;
             }
             else
             {
                 var msg = $"Manual 切換 Auto 成功";
                 OnMessageShowEvent?.Invoke(this, msg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //     , msg));
                 return true;
             }
         }

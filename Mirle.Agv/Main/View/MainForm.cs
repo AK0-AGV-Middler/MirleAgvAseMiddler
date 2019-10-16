@@ -1335,7 +1335,6 @@ namespace Mirle.Agv.View
                 case EnumAutoState.Manual:
                     if (cbSimulationMode.Checked)
                     {
-                        mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                         Vehicle.Instance.AutoState = EnumAutoState.Auto;
                         switchResult = true;
@@ -1345,7 +1344,6 @@ namespace Mirle.Agv.View
                         if (mainFlowHandler.SetManualToAuto())
                         {
                             alarmHandler.ResetAllAlarms();
-                            mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                             mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                             Vehicle.Instance.AutoState = EnumAutoState.Auto;
                             switchResult = true;
@@ -1362,7 +1360,6 @@ namespace Mirle.Agv.View
                         var msg = $"Auto 切換 Manual 成功";
                         RichTextBoxAppendHead(richTextBox1, msg);
                         mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
-                        mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = true;
                         switchResult = true;
                     }
                     break;

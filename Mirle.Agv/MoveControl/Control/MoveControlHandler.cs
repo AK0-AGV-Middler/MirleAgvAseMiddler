@@ -1536,6 +1536,8 @@ namespace Mirle.Agv.Controller
         private void TRControl(int wheelAngle, EnumAddressAction type)
         {
             ControlData.CanPause = false;
+            if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorTR].Enable)
+                safetyData.TurningByPass = true;
 
             if (SimulationMode)
             {
@@ -1803,6 +1805,8 @@ namespace Mirle.Agv.Controller
         public void R2000Control(int wheelAngle)
         {
             ControlData.CanPause = false;
+            if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorR2000].Enable)
+                safetyData.TurningByPass = true;
 
             if (SimulationMode)
             {
@@ -2020,9 +2024,27 @@ namespace Mirle.Agv.Controller
                 ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
         }
 
-        private void VchangeControl(double velocity, EnumVChangeType vChangeType, int TRWheelAngle = 0)
+        private void VchangeControl(double velocity, EnumVChangeType vChangeType, int TRWheelAngle, double nowVelocity)
         {
             WriteLog("MoveControl", "7", device, "", " start, Velocity : " + velocity.ToString("0"));
+
+            if (vChangeType == EnumVChangeType.EQ || vChangeType == EnumVChangeType.SlowStop)
+            {
+                if (nowVelocity != 0 && nowVelocity > ControlData.RealVelocity)
+                {
+                    double oldDistance = computeFunction.GetAccDecDistance(nowVelocity, velocity, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                    double newDistance = computeFunction.GetAccDecDistance(ControlData.RealVelocity, velocity, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
+                    double triggerEncoder = command.CommandList[command.IndexOfCmdList].TriggerEncoder + (ControlData.DirFlag ? oldDistance - newDistance : -(oldDistance - newDistance));
+                    Command temp = createMoveControlList.NewVChangeCommand(command.CommandList[command.IndexOfCmdList].Position, triggerEncoder, velocity, ControlData.DirFlag, vChangeType);
+                    temp.NowVelocity = ControlData.RealVelocity;
+                    command.CommandList.Insert(command.IndexOfCmdList + 1, temp);
+                    ControlData.KeepsLowSpeedStateByEQVChange = ControlData.SensorState;
+                    ControlData.VelocityCommand = ControlData.RealVelocity;
+                    return;
+                }
+
+                ControlData.KeepsLowSpeedStateByEQVChange = EnumVehicleSafetyAction.Stop;
+            }
 
             if (vChangeType != EnumVChangeType.SensorSlow)
                 ControlData.VelocityCommand = velocity;
@@ -2060,15 +2082,12 @@ namespace Mirle.Agv.Controller
 
             if (vChangeType == EnumVChangeType.TRTurn)
             {
-                if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorTR].Enable)
-                    safetyData.TurningByPass = true;
-
                 switch (TRWheelAngle)
                 {
                     case 0:
                         bool turnLeft = (ControlData.WheelAngle == 90 && ControlData.DirFlag) ||
                                         (ControlData.WheelAngle == -90 && !ControlData.DirFlag);
-                        DirLightTurn(turnLeft ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right);
+                        DirLightTurn(turnLeft ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
                         break;
                     case 90:
                         DirLightTurn(ControlData.DirFlag ? EnumBeamSensorLocate.Left : EnumBeamSensorLocate.Right);
@@ -2083,10 +2102,7 @@ namespace Mirle.Agv.Controller
             }
             else if (vChangeType == EnumVChangeType.R2000Turn)
             {
-                if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorR2000].Enable)
-                    safetyData.TurningByPass = true;
-
-                DirLightTurn(ControlData.WheelAngle == -1 ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
+                DirLightTurn(TRWheelAngle == -1 ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
             }
             else if (vChangeType == EnumVChangeType.EQ)
             {
@@ -2605,7 +2621,7 @@ namespace Mirle.Agv.Controller
                         break;
                     case EnumCommandType.Vchange:
                         VchangeControl(command.CommandList[command.IndexOfCmdList].Velocity, command.CommandList[command.IndexOfCmdList].VChangeType,
-                                       command.CommandList[command.IndexOfCmdList].WheelAngle);
+                                       command.CommandList[command.IndexOfCmdList].WheelAngle, command.CommandList[command.IndexOfCmdList].NowVelocity);
                         break;
                     case EnumCommandType.ReviseOpen:
                         if (ControlData.OntimeReviseFlag == false)
@@ -3199,6 +3215,8 @@ namespace Mirle.Agv.Controller
             else
                 sensorState = EnumVehicleSafetyAction.Normal;
 
+            if (ControlData.KeepsLowSpeedStateByEQVChange != EnumVehicleSafetyAction.Stop && sensorState != EnumVehicleSafetyAction.Stop)
+                sensorState = ControlData.KeepsLowSpeedStateByEQVChange;
 
             return sensorState;
         }
@@ -3480,183 +3498,6 @@ namespace Mirle.Agv.Controller
         }
         #endregion
 
-        #region Cover Action給錯
-        private bool IsSectionR2000(MapPosition start, MapPosition end)
-        {
-            foreach (var valuePair in theMapInfo.allMapSections)
-            {
-                if ((valuePair.Value.HeadAddress.Position.X == start.X && valuePair.Value.HeadAddress.Position.Y == start.Y) &&
-                    (valuePair.Value.TailAddress.Position.X == end.X && valuePair.Value.TailAddress.Position.Y == end.Y))
-                    return valuePair.Value.Type == EnumSectionType.R2000;
-                else if ((valuePair.Value.HeadAddress.Position.X == end.X && valuePair.Value.HeadAddress.Position.Y == end.Y) &&
-                         (valuePair.Value.TailAddress.Position.X == start.X && valuePair.Value.TailAddress.Position.Y == start.Y))
-                    return valuePair.Value.Type == EnumSectionType.R2000;
-            }
-
-            return false;
-        }
-
-        private bool IsTR50(MapPosition temp)
-        {
-            foreach (var valuePair in theMapInfo.allMapAddresses)
-            {
-                if (temp.X == valuePair.Value.Position.X && temp.Y == valuePair.Value.Position.Y)
-                    return valuePair.Value.IsTR50;
-            }
-
-            return true;
-        }
-
-        private double GetCurrectAngle(double angle)
-        {
-            while (angle > 180 || angle <= -180)
-            {
-                if (angle > 180)
-                    angle -= 360;
-                else
-                    angle += 360;
-            }
-
-            return angle;
-        }
-
-        public bool GetPositionAction(ref MoveCmdInfo tempMoveCmdInfo, ref string errorMessage)
-        {
-            int lastSectionAngle = 0;
-            int thisSectionAngle = 0;
-            int newWheelAngle = 0;
-
-            if (tempMoveCmdInfo.AddressPositions.Count < 2)
-            {
-                errorMessage = "只有" + tempMoveCmdInfo.AddressPositions.Count.ToString() + "個點,別鬧了!";
-                return false;
-            }
-
-            tempMoveCmdInfo.AddressActions.Clear();
-
-            BreakDownMoveCommandData data = new BreakDownMoveCommandData();
-
-            if (tempMoveCmdInfo.AddressPositions[0].X == tempMoveCmdInfo.AddressPositions[1].X &&
-                tempMoveCmdInfo.AddressPositions[0].Y == tempMoveCmdInfo.AddressPositions[1].Y)
-            {
-                errorMessage = "有相同Position!";
-                return false;
-            }
-
-            lastSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]);
-
-            if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]))
-                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
-            else
-                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
-
-            if (!computeFunction.GetDirFlagWheelAngle(tempMoveCmdInfo, ref data, location.Real, ControlData.WheelAngle, ref errorMessage))
-                return false;
-
-            if (tempMoveCmdInfo.AddressActions[0] == EnumAddressAction.R2000)
-            {
-                data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1], ref errorMessage);
-
-                if (data.AGVAngleInMap == -1)
-                    return false;
-            }
-
-            for (int i = 1; i < tempMoveCmdInfo.AddressPositions.Count - 1; i++)
-            {
-                if (tempMoveCmdInfo.AddressPositions[i].X == tempMoveCmdInfo.AddressPositions[i + 1].X &&
-                    tempMoveCmdInfo.AddressPositions[i].Y == tempMoveCmdInfo.AddressPositions[i + 1].Y)
-                {
-                    errorMessage = "有相同Position!";
-                    return false;
-                }
-
-                thisSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]);
-
-                if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]))
-                {
-                    if (Math.Abs(GetCurrectAngle(thisSectionAngle - lastSectionAngle)) == 45)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
-                    }
-                    else if (Math.Abs(GetCurrectAngle(thisSectionAngle - (lastSectionAngle - 180))) == 45)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.BR2000);
-                        data.DirFlag = !data.DirFlag;
-                    }
-                    else
-                    {
-                        errorMessage = "奇怪角度R2000!";
-                        return false;
-                    }
-
-                    data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
-
-                    if (data.AGVAngleInMap == -1)
-                        return false;
-                }
-                else if (tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.BR2000)
-                {
-                    if (GetCurrectAngle(thisSectionAngle - data.AGVAngleInMap) == 0)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.ST : EnumAddressAction.BST);
-                    }
-                    else if (GetCurrectAngle(thisSectionAngle - 180 - data.AGVAngleInMap) == 0)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.BST : EnumAddressAction.ST);
-                    }
-                    else
-                    {
-                        errorMessage = "R2000後不能接橫移!";
-                        return false;
-                    }
-
-                    if (tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1] == EnumAddressAction.BST)
-                        data.DirFlag = !data.DirFlag;
-                }
-                else if (thisSectionAngle == lastSectionAngle)
-                {
-                    tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
-                }
-                else
-                {
-                    newWheelAngle = computeFunction.GetTurnWheelAngle(data.WheelAngle, tempMoveCmdInfo.AddressPositions[i - 1],
-                        tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
-
-                    if (newWheelAngle != -1)
-                    {
-                        data.WheelAngle = newWheelAngle;
-                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.TR50 : EnumAddressAction.TR350);
-                    }
-                    else
-                    {
-                        data.WheelAngle = 0;
-                        data.DirFlag = !data.DirFlag;
-                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350);
-                    }
-                }
-
-                if (tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.BR2000)
-                {
-                    lastSectionAngle = data.AGVAngleInMap;
-
-                    if (!data.DirFlag)
-                    {
-                        if (lastSectionAngle > 0)
-                            lastSectionAngle -= 180;
-                        else
-                            lastSectionAngle += 180;
-                    }
-                }
-                else
-                    lastSectionAngle = thisSectionAngle;
-            }
-
-            tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.End);
-
-            return true;
-        }
-        #endregion
-
         #region 外部連結 : 產生List、DebugForm相關、狀態、移動完成.
         /// <summary>
         ///  when move finished, call this function to notice other class instance that move is finished with status
@@ -3743,6 +3584,7 @@ namespace Mirle.Agv.Controller
             ControlData.BeamSensorState = EnumVehicleSafetyAction.Normal;
             ControlData.BumpSensorState = EnumVehicleSafetyAction.Normal;
             ControlData.OntimeReviseFlag = false;
+            ControlData.KeepsLowSpeedStateByEQVChange = EnumVehicleSafetyAction.Stop;
             ControlData.PauseRequest = false;
             ControlData.PauseAlready = false;
             ControlData.CancelRequest = false;
@@ -3843,28 +3685,7 @@ namespace Mirle.Agv.Controller
             if (tempCommand == null)
             {
                 WriteLog("MoveControl", "7", device, "", "命令分解失敗~!, errorMessage : " + errorMessage);
-
-                WriteLog("MoveControl", "7", device, "", "命令分解失敗 進行補正Position Action!");
-                if (GetPositionAction(ref moveCmd, ref errorMessage))
-                {
-                    WriteLog("MoveControl", "7", device, "", "補正Position Action成功!");
-
-                    WriteLog("MoveControl", "7", device, "", "補正後嘗試命令分解!");
-                    tempCommand = createMoveControlList.CreateMoveControlListSectionListReserveList(moveCmd, location.Real, ControlData.WheelAngle, ref errorMessage);
-
-                    if (tempCommand == null)
-                    {
-                        WriteLog("MoveControl", "7", device, "", "補正後嘗試命令分解失敗, errorMessage : " + errorMessage);
-                        return false;
-                    }
-                    else
-                        WriteLog("MoveControl", "7", device, "", "補正後命令分解成功!");
-                }
-                else
-                {
-                    WriteLog("MoveControl", "7", device, "", "命令分解失敗 進行補正Position Action : " + errorMessage);
-                    return false;
-                }
+                return false;
             }
 
             command = tempCommand;
@@ -3976,6 +3797,12 @@ namespace Mirle.Agv.Controller
         private bool CanPauseNow()
         {
             WriteLog("MoveControl", "7", device, "", "開始判斷目前位置是否可以Pause!");
+
+            if (ControlData.SensorState == EnumVehicleSafetyAction.Stop && ControlData.WaitReserveIndex != -1)
+            {
+                WriteLog("MoveControl", "7", device, "", "由於目前已經處於Reserve stop,因此直接略過判斷(可以Pause)!");
+                return true;
+            }
 
             if (!ControlData.CanPause || !CanStopInNextTurn())
             {
@@ -4188,6 +4015,15 @@ namespace Mirle.Agv.Controller
                     }
                 }
             }
+        }
+
+        public void AddAllReserve()
+        {
+            if (MoveState == EnumMoveState.Idle)
+                return;
+
+            while (command.IndexOfReserveList < command.ReserveList.Count)
+                AddReservedMapPosition(command.ReserveList[command.IndexOfReserveList].Position);
         }
 
         public int GetReserveIndex()

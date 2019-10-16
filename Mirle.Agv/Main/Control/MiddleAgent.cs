@@ -573,7 +573,6 @@ namespace Mirle.Agv.Controller
             AskReserveStatus = EnumThreadStatus.None;
             AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
             agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
-            //theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             var msg = $"MainFlow : 詢問通行權 後處理, [ThreadStatus={AskReserveStatus}][TotalSpendMs={total}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
@@ -2034,8 +2033,6 @@ namespace Mirle.Agv.Controller
             return completeStatus;
         }
 
-
-
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
             VehicleLocation vehLocation = theVehicle.VehicleLocation;
@@ -2277,8 +2274,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         public void Receive_Cmd33_ControlZoneCancelRequest(object sender, TcpIpEventArgs e)
         {
 
@@ -2387,7 +2382,6 @@ namespace Mirle.Agv.Controller
                     var msg = $"拒絕傳送指令: {transRequest.ActType}";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                     Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.ActType, e.iSeqNum, 1, "Unknow command.");
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
                     return;
             }
 

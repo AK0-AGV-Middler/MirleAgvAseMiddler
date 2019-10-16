@@ -25,6 +25,7 @@ namespace Mirle.Agv.Model
         public int NextReserveNumber { get; set; } = -1;
         public EnumMoveStartType MoveType { get; set; }
         public EnumVChangeType VChangeType { get; set; }
+        public double NowVelocity { get; set; }
 
         public Command()
         {

@@ -162,6 +162,7 @@ namespace Mirle.Agv
         R2000Turn,
         SensorSlow,
         EQ,
+        SlowStop,
         TurnOut
     }
 

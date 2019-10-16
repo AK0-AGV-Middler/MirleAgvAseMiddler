@@ -651,6 +651,7 @@ namespace Mirle.Agv.Controller
                     triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
                     command.TriggerEncoder = triggerEncoder;
                     command.Position = triggerPosition;
+                    AddCommandToCommandList(ref moveCmdList, command, data);
                 }
                 else
                 { // 上次速度命令無法執行完.
@@ -663,12 +664,22 @@ namespace Mirle.Agv.Controller
                         double velocity = 0;
                         double realDistance = Math.Abs((data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : -data.CommandDistance)) - lastVChange.StartEncoder) - distanceToPosition;
                         distance = GetVChangeDistance(lastVChange.StartVelocity, command.Velocity, lastVChange.VelocityCommand, realDistance, ref velocity) + distanceToPosition;
-                        triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
-                        triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
-                        command.TriggerEncoder = triggerEncoder;
-                        command.Position = triggerPosition;
-                        OverRrideLastVChangeCommand(ref moveCmdList, data, velocity);
-                        data.NowVelocityCommand = velocity;
+                        distance = GetAccDecDistanceFormMove(velocity, command.Velocity) + distanceToPosition;
+
+                        if (lastVChange.StartVelocity < velocity && velocity < command.Velocity)
+                        {
+                            OverRrideLastVChangeCommand(ref moveCmdList, data, command.Velocity);
+                        }
+                        else
+                        {
+                            triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
+                            triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
+                            command.TriggerEncoder = triggerEncoder;
+                            command.Position = triggerPosition;
+                            OverRrideLastVChangeCommand(ref moveCmdList, data, velocity);
+                            data.NowVelocityCommand = velocity;
+                            AddCommandToCommandList(ref moveCmdList, command, data);
+                        }
                     }
                     else
                     { // 上次速度命令無法執行.
@@ -680,6 +691,7 @@ namespace Mirle.Agv.Controller
                             command.Position = moveCmdList[index].Position;
                             RemoveLastVChangeCommand(ref moveCmdList);
                             vChangeList.RemoveAt(vChangeList.Count - 1);
+                            AddCommandToCommandList(ref moveCmdList, command, data);
                         }
                         else
                         {
@@ -729,6 +741,9 @@ namespace Mirle.Agv.Controller
                         double velocity = 0;
                         distance = GetVChangeDistance(lastVChange.StartVelocity, 0, lastVChange.VelocityCommand, data.CommandDistance - data.TurnOutDistance - distanceToPosition, ref velocity) +
                                    GetAccDecDistanceFormMove(0, nextVelocity) + distanceToPosition;
+
+                        distance = GetAccDecDistanceFormMove(velocity, 0) + GetAccDecDistanceFormMove(0, nextVelocity) + distanceToPosition;
+
                         triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
                         triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distance);
                         command.TriggerEncoder = triggerEncoder;
@@ -908,7 +923,6 @@ namespace Mirle.Agv.Controller
                 {
                     tempCommand = NewVChangeCommand(null, 0, velocityCommand, data.DirFlag);
                     ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
-                    AddCommandToCommandList(ref moveCmdList, tempCommand, data);
                 }
 
                 if (reserveIndex != -1 && CheckNotInTRTurn(oneceMoveCommand, reserveDataList, indexOfOneceMoveCommand, reserveIndex))
@@ -946,9 +960,12 @@ namespace Mirle.Agv.Controller
                 if (data.NowVelocityCommand > moveControlConfig.EQ.Velocity)
                 { // 需要降速.
                     distance = (action == EnumAddressAction.End ? moveControlConfig.EQ.Distance : moveControlConfig.NormalStopDistance) + GetSLowStopDistance();
-                    tempCommand = NewVChangeCommand(null, distance, moveControlConfig.EQ.Velocity, data.DirFlag, (action == EnumAddressAction.End ? EnumVChangeType.EQ : EnumVChangeType.Normal));
+                    tempCommand = NewVChangeCommand(null, distance, moveControlConfig.EQ.Velocity, data.DirFlag, (action == EnumAddressAction.End ? EnumVChangeType.EQ : EnumVChangeType.SlowStop));
                     ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
-                    AddCommandToCommandList(ref moveCmdList, tempCommand, data);
+
+                    int index = FindLastVChangeCommand(moveCmdList);
+                    if (index != -1)
+                        moveCmdList[index].NowVelocity = vChangeList[vChangeList.Count - 1].StartVelocity;
                 }
 
                 // 算出停止距離跟座標.
@@ -1003,7 +1020,6 @@ namespace Mirle.Agv.Controller
             {
                 tempCommand = NewVChangeCommand(null, r + vChangeSafetyDistance, velocity, data.DirFlag, EnumVChangeType.TRTurn, data.NowWheelAngle);
                 ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
-                AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
             distance = closeReviseDistance + r;
@@ -1076,7 +1092,6 @@ namespace Mirle.Agv.Controller
             {
                 tempCommand = NewVChangeCommand(null, vChangeSafetyDistance, velocity, data.DirFlag, EnumVChangeType.R2000Turn, wheelAngle);
                 ProcessVChangeCommand(ref moveCmdList, ref tempCommand, data, position);
-                AddCommandToCommandList(ref moveCmdList, tempCommand, data);
             }
 
             distance = closeReviseDistance;
@@ -1617,42 +1632,64 @@ namespace Mirle.Agv.Controller
                     {
                         if (moveCmd.AddressActions[data.Index] == EnumAddressAction.ST)
                         { //
-                          // 先加入R2000終點BST->ST. 和SectionLineList
-                            AddOneceMoveCommand(ref tempOnceMoveCmd, moveCmd.AddressPositions[data.Index],
-                                                moveCmd.AddressActions[data.Index], moveCmd.SectionSpeedLimits[data.Index - 1]);
-                            data.Index++;
-                            // 這樣出彎的速度會有問題.
-                            //AddMoveCmdToOneceMoveCommand(moveCmd, ref tempOnceMoveCmd, ref data);
-                            if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.EndNode, data.StartMoveEncoder,
-                                                   data.DirFlag, ref errorMessage))
-                                return false;
+                            if (moveCmd.AddressActions[data.Index - 1] == EnumAddressAction.R2000)
+                            {
+                                // 先加入R2000終點BST->ST. 和SectionLineList
+                                AddOneceMoveCommand(ref tempOnceMoveCmd, moveCmd.AddressPositions[data.Index],
+                                                    moveCmd.AddressActions[data.Index], moveCmd.SectionSpeedLimits[data.Index - 1]);
+                                data.Index++;
+                                // 這樣出彎的速度會有問題.
+                                //AddMoveCmdToOneceMoveCommand(moveCmd, ref tempOnceMoveCmd, ref data);
+                                if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.EndNode, data.StartMoveEncoder,
+                                                       data.DirFlag, ref errorMessage))
+                                    return false;
 
-                            data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TempDistance : -data.TempDistance);
+                                data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TempDistance : -data.TempDistance);
 
-                            // 算出R2000 出彎點到停止所需要的做短距離.
-                            data.TurnInOutDistance = data.TurnOutSafetyDistance[EnumAddressAction.R2000];
+                                // 算出R2000 出彎點到停止所需要的做短距離.
+                                data.TurnInOutDistance = data.TurnOutSafetyDistance[EnumAddressAction.R2000];
 
-                            // 取得即將反折的反折點座標.
-                            data.TempNode = computeFunction.GetReversePositionR2000(data.EndNode, data, false, data.TurnInOutDistance);
+                                // 取得即將反折的反折點座標.
+                                data.TempNode = computeFunction.GetReversePositionR2000(data.EndNode, data, false, data.TurnInOutDistance);
 
-                            // SectionLineList加入從BST點到反折點,且轉換座標只能是BST點.
-                            data.EndByPassDistance = data.TurnInOutDistance;
-                            if (!AddNewSectionLine(ref sectionLineList, ref data, data.EndNode, data.TempNode, data.StartMoveEncoder,
-                                                   data.DirFlag, ref errorMessage))
-                                return false;
+                                // SectionLineList加入從BST點到反折點,且轉換座標只能是BST點.
+                                data.EndByPassDistance = data.TurnInOutDistance;
+                                if (!AddNewSectionLine(ref sectionLineList, ref data, data.EndNode, data.TempNode, data.StartMoveEncoder,
+                                                       data.DirFlag, ref errorMessage))
+                                    return false;
 
-                            AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
-                            oneceMoveCommandList.Add(tempOnceMoveCmd);
+                                AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
+                                oneceMoveCommandList.Add(tempOnceMoveCmd);
 
-                            // 前進方向改成反方向、設定SectionLine開始encoder,設定startByPassDisance,設定新起點和新的啟動encoder.
-                            data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TurnInOutDistance : -data.TurnInOutDistance);
-                            data.DirFlag = !data.DirFlag;
-                            tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
-                            // 這邊速度必須是下一段Section的速度(因為不可能拿上一段的138太慢).
-                            AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
-                            data.IsTurnOut = false;
-                            data.StartByPassDistance = data.TurnInOutDistance;
-                            data.StartNode = data.TempNode;
+                                // 前進方向改成反方向、設定SectionLine開始encoder,設定startByPassDisance,設定新起點和新的啟動encoder.
+                                data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TurnInOutDistance : -data.TurnInOutDistance);
+                                data.DirFlag = !data.DirFlag;
+                                tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
+                                // 這邊速度必須是下一段Section的速度(因為不可能拿上一段的138太慢).
+                                AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
+                                data.IsTurnOut = false;
+                                data.StartByPassDistance = data.TurnInOutDistance;
+                                data.StartNode = data.TempNode;
+                            }
+                            else
+                            {
+                                AddOneceMoveCommand(ref tempOnceMoveCmd, data.EndNode, EnumAddressAction.SlowStop, 0);
+                                data.Index++;
+                                oneceMoveCommandList.Add(tempOnceMoveCmd);
+
+                                if (!AddNewSectionLine(ref sectionLineList, ref data, data.StartNode, data.EndNode, data.StartMoveEncoder,
+                                                       data.DirFlag, ref errorMessage))
+                                    return false;
+
+                                data.StartMoveEncoder = data.StartMoveEncoder + (data.DirFlag ? data.TempDistance : -data.TempDistance);
+                                data.DirFlag = !data.DirFlag;
+                                tempOnceMoveCmd = new OneceMoveCommand(data.WheelAngle, data.DirFlag);
+                                // 這邊速度必須是下一段Section的速度(因為不可能拿上一段的138太慢).
+                                AddOneceMoveCommand(ref tempOnceMoveCmd, data.EndNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index - 1]);
+                                data.IsTurnOut = false;
+                                data.StartByPassDistance = data.TurnInOutDistance;
+                                data.StartNode = data.EndNode;
+                            }
                         }
                         else if (moveCmd.AddressActions[data.Index] == EnumAddressAction.TR50 || moveCmd.AddressActions[data.Index] == EnumAddressAction.TR350)
                         {
@@ -1822,11 +1859,203 @@ namespace Mirle.Agv.Controller
             return velocityCommand;
         }
 
+        public bool GetMoveCommandAddressAction(ref MoveCmdInfo moveCmd, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
+        {
+            List<EnumAddressAction> tempActionList = new List<EnumAddressAction>();
+            int lastSectionAngle = 0;
+            int thisSectionAngle = 0;
+            int newWheelAngle = 0;
+
+            if (moveCmd.AddressPositions.Count < 2)
+            {
+                errorMessage = "只有" + moveCmd.AddressPositions.Count.ToString() + "個點,別鬧了!";
+                return false;
+            }
+
+            BreakDownMoveCommandData data = new BreakDownMoveCommandData();
+
+            if (moveCmd.AddressPositions[0].X == moveCmd.AddressPositions[1].X &&
+                moveCmd.AddressPositions[0].Y == moveCmd.AddressPositions[1].Y)
+            {
+                errorMessage = "有相同Position!";
+                return false;
+            }
+
+            lastSectionAngle = computeFunction.ComputeAngleInt(moveCmd.AddressPositions[0], moveCmd.AddressPositions[1]);
+
+            if (moveCmd.MovingSections[0].Type == EnumSectionType.R2000)
+                tempActionList.Add(EnumAddressAction.R2000);
+            else
+                tempActionList.Add(EnumAddressAction.ST);
+
+            if (!computeFunction.GetDirFlagWheelAngle(moveCmd, ref data, nowAGV, wheelAngle, ref errorMessage))
+                return false;
+
+            if (moveCmd.MovingSections[0].Type == EnumSectionType.R2000)
+            {
+                data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, moveCmd.AddressPositions[0], moveCmd.AddressPositions[1], ref errorMessage);
+
+                if (data.AGVAngleInMap == -1)
+                    return false;
+            }
+
+            for (int i = 1; i < moveCmd.AddressPositions.Count - 1; i++)
+            {
+                if (moveCmd.AddressPositions[i].X == moveCmd.AddressPositions[i + 1].X &&
+                    moveCmd.AddressPositions[i].Y == moveCmd.AddressPositions[i + 1].Y)
+                {
+                    errorMessage = "有相同Position!";
+                    return false;
+                }
+
+                thisSectionAngle = computeFunction.ComputeAngleInt(moveCmd.AddressPositions[i], moveCmd.AddressPositions[i + 1]);
+
+                if (moveCmd.MovingSections[i].Type == EnumSectionType.R2000)
+                {
+                    if (Math.Abs(computeFunction.GetCurrectAngle(thisSectionAngle - lastSectionAngle)) == 45)
+                    {
+                        tempActionList.Add(EnumAddressAction.R2000);
+                    }
+                    else if (Math.Abs(computeFunction.GetCurrectAngle(thisSectionAngle - (lastSectionAngle - 180))) == 45)
+                    {
+                        tempActionList.Add(EnumAddressAction.BR2000);
+                        data.DirFlag = !data.DirFlag;
+                    }
+                    else
+                    {
+                        errorMessage = "奇怪角度R2000!";
+                        return false;
+                    }
+
+                    data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, moveCmd.AddressPositions[i], moveCmd.AddressPositions[i + 1], ref errorMessage);
+
+                    if (data.AGVAngleInMap == -1)
+                        return false;
+                }
+                else
+                {
+                    switch (Math.Abs(thisSectionAngle - lastSectionAngle))
+                    {
+                        case 0:
+                            tempActionList.Add(EnumAddressAction.ST);
+                            break;
+                        case 90:
+                            if (data.WheelAngle != 0 && data.WheelAngle != 90 && data.WheelAngle != -90)
+                            {
+                                errorMessage = "不該有舵輪不是0、90、-90度時Section轉90度的情況!";
+                                return false;
+                            }
+
+                            newWheelAngle = computeFunction.GetTurnWheelAngle(data.WheelAngle, moveCmd.AddressPositions[i - 1],
+                                moveCmd.AddressPositions[i], moveCmd.AddressPositions[i + 1], ref errorMessage);
+
+                            if (newWheelAngle != -1)
+                            {
+                                data.WheelAngle = newWheelAngle;
+                                tempActionList.Add(moveCmd.MovingAddress[i].IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350);
+                            }
+                            else
+                            {
+                                data.WheelAngle = 0;
+                                data.DirFlag = !data.DirFlag;
+                                tempActionList.Add(moveCmd.MovingAddress[i].IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350);
+                            }
+
+                            break;
+                        case 180:
+                            if (data.WheelAngle != 0)
+                            {
+                                errorMessage = "不該有舵輪不是0度時BST的情況!";
+                                return false;
+                            }
+
+                            tempActionList.Add(EnumAddressAction.BST);
+                            data.DirFlag = !data.DirFlag;
+                            break;
+                        case 30:
+                        default:
+                            errorMessage = "section 角度差異 " + Math.Abs(thisSectionAngle - lastSectionAngle).ToString() + " 度, 異常!";
+                            return false;
+                    }
+                }
+
+                if (tempActionList[i] == EnumAddressAction.R2000 || tempActionList[i] == EnumAddressAction.BR2000)
+                {
+                    lastSectionAngle = data.AGVAngleInMap;
+
+                    if (!data.DirFlag)
+                    {
+                        if (lastSectionAngle > 0)
+                            lastSectionAngle -= 180;
+                        else
+                            lastSectionAngle += 180;
+                    }
+                }
+                else
+                    lastSectionAngle = thisSectionAngle;
+            }
+
+            tempActionList.Add(EnumAddressAction.End);
+
+            bool result = true;
+
+            if (tempActionList.Count != moveCmd.AddressActions.Count)
+            {
+                result = false;
+            }
+            else
+            {
+                for (int i = 0; i < tempActionList.Count && result; i++)
+                {
+                    if (tempActionList[i] != moveCmd.AddressActions[i])
+                        result = false;
+                }
+            }
+
+            if (!result)
+            {
+                string listData = "";
+
+                for (int i = 0; i < tempActionList.Count; i++)
+                {
+                    listData = listData + " " + tempActionList[i].ToString();
+                }
+
+                WriteLog("MoveControl", "3", device, "", "CreateMoveContril : " + listData);
+
+                listData = "";
+
+                for (int i = 0; i < moveCmd.AddressActions.Count; i++)
+                {
+                    listData = listData + " " + moveCmd.AddressActions[i].ToString();
+                }
+
+                WriteLog("MoveControl", "3", device, "", "AGVM : " + listData);
+            }
+            else
+            {
+                WriteLog("MoveControl", "3", device, "", "AGVM 和 CreateMoveContril分解結果相同!");
+            }
+
+            //moveCmd.AddressActions = tempActionList;
+            return true;
+        }
+
         public MoveCommandData CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd,
                                   AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
             try
             {
+                try
+                {
+                    if (!GetMoveCommandAddressAction(ref moveCmd, nowAGV, wheelAngle, ref errorMessage))
+                        WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, errorMessage : " + errorMessage + " !");
+                }
+                catch
+                {
+                    WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, Excption !");
+                }
+
                 if (moveCmd.SectionSpeedLimits == null || moveCmd.AddressActions == null || moveCmd.AddressPositions == null ||
                     moveCmd.SectionSpeedLimits.Count == 0 || (moveCmd.SectionSpeedLimits.Count + 1) != moveCmd.AddressPositions.Count ||
                     moveCmd.AddressActions.Count != moveCmd.AddressPositions.Count)

@@ -257,9 +257,9 @@ namespace Mirle.Agv.View
                 lockResult = "Lock Result : Elmo drive連線失敗!";
             else if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
                 lockResult = "Lock Result : AutoMode中!";
-            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
-                     Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
-                lockResult = "Lock Result : 主流程動作中!";
+            //else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
+            //         Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
+            //    lockResult = "Lock Result : 主流程動作中!";
             else if (moveControl.MoveState != EnumMoveState.Idle)
                 lockResult = "Lock Result : MoveState動作中!";
             else if (button_Skip.Text != "強制\r\n手動" && moveControl.IsCharging())

@@ -190,6 +190,12 @@ namespace Mirle.Agv.Controller
             int endSectionAngle = ComputeAngleInt(tr, end);
             int delta = endSectionAngle - startSectionAngle;
 
+            if (delta == 0)
+            {
+                errorMessage = "Section 差0度,不該存在這種TR!";
+                return -1;
+            }
+
             if (delta < -90)
                 delta += 360;
             else if (delta > 90)
@@ -437,6 +443,19 @@ namespace Mirle.Agv.Controller
             }
 
             return true;
+        }
+
+        public double GetCurrectAngle(double angle)
+        {
+            while (angle > 180 || angle <= -180)
+            {
+                if (angle > 180)
+                    angle -= 360;
+                else
+                    angle += 360;
+            }
+
+            return angle;
         }
     }
 }

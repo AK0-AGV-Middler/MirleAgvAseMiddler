@@ -28,7 +28,6 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                             {
                                 if (mainFlowHandler.CallMoveControlWork(moveCmd))
                                 {
-                                    mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
                                     mainFlowHandler.PrepareForAskingReserve(moveCmd);
                                 }
                             }

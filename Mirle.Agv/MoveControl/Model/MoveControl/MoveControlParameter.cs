@@ -41,8 +41,11 @@ namespace Mirle.Agv.Model
         public double SectionDeviationOffset { get; set; }
         public bool EQVChange { get; set; }
 
+        public EnumVehicleSafetyAction KeepsLowSpeedStateByEQVChange { get; set; }
+
         public MoveControlParameter()
         {
+            KeepsLowSpeedStateByEQVChange = EnumVehicleSafetyAction.Stop;
             VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
             CanPause = true;
             DirFlag = true;

@@ -304,9 +304,9 @@ namespace Mirle.Agv.View
 
             if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
                 lockResult = "Lock Result : AutoMode中!";
-            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
-                     Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
-                lockResult = "Lock Result : 主流程動作中!";
+            //else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
+            //         Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
+            //    lockResult = "Lock Result : 主流程動作中!";
             else if (moveControl.MoveState != EnumMoveState.Idle)
                 lockResult = "Lock Result : MoveState動作中!";
             else if (moveControl.IsCharging())
@@ -664,6 +664,29 @@ namespace Mirle.Agv.View
                 SetActions();
                 SetSpeedLimits();
 
+                moveCmdInfo.MovingAddress = new List<MapAddress>();
+
+                moveCmdInfo.MovingSections = new List<MapSection>();
+                MapSection tempMapSection;
+                MapAddress tempMapAddress;
+                for (int i = 0; i < moveCmdInfo.AddressPositions.Count; i++)
+                {
+                    tempMapAddress = new MapAddress();
+                    tempMapAddress.IsTR50 = IsTR50(moveCmdInfo.AddressPositions[i]);
+                    moveCmdInfo.MovingAddress.Add(tempMapAddress);
+
+                    if (i + 1 < moveCmdInfo.AddressPositions.Count)
+                    {
+                        tempMapSection = new MapSection();
+                        if (IsSectionR2000(moveCmdInfo.AddressPositions[i], moveCmdInfo.AddressPositions[i + 1]))
+                            tempMapSection.Type = EnumSectionType.R2000;
+                        else
+                            tempMapSection.Type = EnumSectionType.None;
+
+                        moveCmdInfo.MovingSections.Add(tempMapSection);
+                    }
+                }
+
                 tbC_Debug.SelectedIndex = 1;
 
                 if (moveControl.MoveState != EnumMoveState.Idle)
@@ -739,7 +762,7 @@ namespace Mirle.Agv.View
             if (cB_GetAllReserve.Checked)
             {
                 Thread.Sleep(100);
-                moveControl.AddReservedIndexForDebugModeTest(ReserveList.Items.Count - 1);
+                moveControl.AddAllReserve();
             }
         }
 
