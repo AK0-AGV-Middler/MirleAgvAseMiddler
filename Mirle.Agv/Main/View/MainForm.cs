@@ -485,11 +485,18 @@ namespace Mirle.Agv.View
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mainFlowHandler.StopAndClear();
+            try
+            {
+                moveControlHandler.CloseMoveControlHandler();
+                mainFlowHandler.StopAndClear();
 
-            Application.Exit();
-            Environment.Exit(Environment.ExitCode);
-
+                Application.Exit();
+                Environment.Exit(Environment.ExitCode);
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void MiddlerPage_Click(object sender, EventArgs e)

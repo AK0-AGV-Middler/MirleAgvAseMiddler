@@ -217,6 +217,9 @@ namespace Mirle.Agv.View
 
                 try
                 {
+                    if (AxisList[i] == EnumAxis.GX || AxisList[i] == EnumAxis.GT)
+                        tempData.StandStill = moveControl.elmoDriver.MoveCompelete(AxisList[i]);
+
                     jogPitchData.AxisData[AxisList[i]] = tempData;
                 }
                 catch

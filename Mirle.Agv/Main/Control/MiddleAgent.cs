@@ -25,6 +25,7 @@ namespace Mirle.Agv.Controller
         public event EventHandler<string> OnMessageShowOnMainFormEvent;
         public event EventHandler<AgvcTransCmd> OnInstallTransferCommandEvent;
         public event EventHandler<AgvcOverrideCmd> OnOverrideCommandEvent;
+        public event EventHandler<AgvcMoveCmd> OnAvoideRequestEvent;
         public event EventHandler<string> OnCmdReceiveEvent;
         public event EventHandler<string> OnCmdSendEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
@@ -1422,7 +1423,6 @@ namespace Mirle.Agv.Controller
                 msg += $"({adrId})";
             }
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
         public bool IsConnected() => ClientAgent == null ? false : ClientAgent.IsConnection;
         #endregion
@@ -1605,13 +1605,38 @@ namespace Mirle.Agv.Controller
         {
             ID_51_AVOID_REQUEST receive = (ID_51_AVOID_REQUEST)e.objPacket;
             //TODO: Avoid
+            OnMessageShowOnMainFormEvent?.Invoke(this, $"收到避車指令");
+            AgvcMoveCmd agvcMoveCmd = ConvertAvoidRequseIntoPackage(receive, e.iSeqNum);
+            ShowAvoidRequestToForm(agvcMoveCmd);
+            OnAvoideRequestEvent?.Invoke(this, agvcMoveCmd);
 
-
-
-            int replyCode = 0;
-            string reason = "";
-            Send_Cmd151_AvoidResponse(e.iSeqNum, replyCode, reason);
+            //int replyCode = 0;
+            //string reason = "";
+            //Send_Cmd151_AvoidResponse(e.iSeqNum, replyCode, reason);
         }
+
+        private void ShowAvoidRequestToForm(AgvcMoveCmd agvcMoveCmd)
+        {
+            var msg = $"收到避車指令,避車終點={agvcMoveCmd.UnloadAddressId}.";
+           
+            msg += Environment.NewLine + "避車路徑ID:";
+            foreach (var secId in agvcMoveCmd.ToUnloadSectionIds)
+            {
+                msg += $"({secId})";
+            }
+            msg += Environment.NewLine + "避車過點ID:";
+            foreach (var adrId in agvcMoveCmd.ToUnloadAddressIds)
+            {
+                msg += $"({adrId})";
+            }
+            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+        }
+
+        private AgvcMoveCmd ConvertAvoidRequseIntoPackage(ID_51_AVOID_REQUEST receive, ushort iSeqNum)
+        {
+            return new AgvcMoveCmd(receive, iSeqNum);
+        }
+
         public void Send_Cmd151_AvoidResponse(ushort seqNum, int replyCode, string reason)
         {
             try
@@ -2441,8 +2466,7 @@ namespace Mirle.Agv.Controller
                 default:
                     return new AgvcTransCmd(transRequest, iSeqNum);
             }
-        }
-
+        }        
         #endregion
 
         #region EnumParse

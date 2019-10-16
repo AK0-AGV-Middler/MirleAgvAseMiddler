@@ -242,6 +242,7 @@ namespace Mirle.Agv.Controller
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
                 middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
                 middleAgent.OnOverrideCommandEvent += MiddleAgent_OnOverrideCommandEvent;
+                middleAgent.OnAvoideRequestEvent += MiddleAgent_OnAvoideRequestEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
@@ -278,6 +279,8 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        
 
         private void VehicleLocationInitial()
         {
@@ -992,8 +995,6 @@ namespace Mirle.Agv.Controller
         {
             var msg = $"MainFlow : 收到[{agvcOverrideCmd.CommandType}]命令[{agvcOverrideCmd.CommandId}]，開始檢查。";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
 
             try
             {
@@ -1168,7 +1169,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.StopAskReserve();
                 this.agvcTransCmd = CombineAgvcTransferCommandAndOverrideCommand(agvcTransCmd, agvcOverrideCmd);
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
-                //StopWatchLowPower();
                 SetupOverrideTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
                 GoNextTransferStep = true;
@@ -1176,9 +1176,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //    , okmsg));
-
                 ResumeVisitTransferSteps();
             }
             catch (Exception ex)
@@ -1254,6 +1251,19 @@ namespace Mirle.Agv.Controller
                 return false;
             }
             #endregion
+        }
+
+        private void MiddleAgent_OnAvoideRequestEvent(object sender, AgvcMoveCmd e)
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
+            }
         }
 
         #region Convert AgvcTransferCommand to TransferSteps

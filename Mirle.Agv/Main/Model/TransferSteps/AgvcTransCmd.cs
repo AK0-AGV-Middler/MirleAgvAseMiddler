@@ -204,6 +204,22 @@ namespace Mirle.Agv.Model.TransferSteps
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        public AgvcMoveCmd(ID_51_AVOID_REQUEST transRequest, ushort aSeqNum)
+        {
+            try
+            {
+                SeqNum = aSeqNum;
+                SecToUnloadSections(transRequest.GuideSections);
+                SetToUnloadAddresses(transRequest.GuideAddresses);
+
+               // UnloadAddressId = transRequest.DestinationAdr;    10.16.2019 300尚未提供
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
     }
     public class AgvcMoveToChargerCmd : AgvcMoveCmd
     {
