@@ -1618,7 +1618,7 @@ namespace Mirle.Agv.Controller
         private void ShowAvoidRequestToForm(AgvcMoveCmd agvcMoveCmd)
         {
             var msg = $"收到避車指令,避車終點={agvcMoveCmd.UnloadAddressId}.";
-           
+
             msg += Environment.NewLine + "避車路徑ID:";
             foreach (var secId in agvcMoveCmd.ToUnloadSectionIds)
             {
@@ -1716,7 +1716,7 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
                 iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
-                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
+                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage - 1 >= 0 ? (uint)batterys.Percentage - 1 : 0;
                 iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
 
@@ -1755,7 +1755,7 @@ namespace Mirle.Agv.Controller
 
                 ID_143_STATUS_RESPONSE iD_143_STATUS_RESPONSE = new ID_143_STATUS_RESPONSE();
                 iD_143_STATUS_RESPONSE.ActionStatus = theVehicle.ActionStatus;
-                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage;
+                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage - 1 >= 0 ? (uint)batterys.Percentage - 1 : 0;
                 iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_143_STATUS_RESPONSE.BlockingStatus = theVehicle.BlockingStatus;
                 iD_143_STATUS_RESPONSE.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
@@ -2466,7 +2466,7 @@ namespace Mirle.Agv.Controller
                 default:
                     return new AgvcTransCmd(transRequest, iSeqNum);
             }
-        }        
+        }
         #endregion
 
         #region EnumParse

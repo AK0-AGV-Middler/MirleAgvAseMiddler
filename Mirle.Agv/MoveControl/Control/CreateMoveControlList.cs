@@ -658,8 +658,8 @@ namespace Mirle.Agv.Controller
                     distance = GetAccDecDistanceFormMove(lastVChange.StartVelocity, command.Velocity) + distanceToPosition;
                     triggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distance : -(data.CommandDistance - distance));
 
-                    if ((data.DirFlag && triggerEncoder > lastVChange.StartEncoder + 200) ||
-                        (!data.DirFlag && triggerEncoder < lastVChange.StartEncoder - 200))
+                    if ((data.DirFlag && triggerEncoder > lastVChange.StartEncoder) ||
+                        (!data.DirFlag && triggerEncoder < lastVChange.StartEncoder))
                     { // 上次變速命令可以執行,但是需要修改速度.
                         double velocity = 0;
                         double realDistance = Math.Abs((data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance : -data.CommandDistance)) - lastVChange.StartEncoder) - distanceToPosition;
