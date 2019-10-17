@@ -2049,8 +2049,6 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : 通知MoveControlHandler傳送，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    //      , msg));
                     return true;
                 }
                 else
@@ -2058,8 +2056,6 @@ namespace Mirle.Agv.Controller
                     var msg = $"MainFlow : 通知MoveControlHandler傳送，回報失敗。{errorMsg}";
                     OnMessageShowEvent?.Invoke(this, msg);
                     MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    //    , msg));
                     return false;
                 }
             }
