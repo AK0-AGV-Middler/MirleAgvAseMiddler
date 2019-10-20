@@ -2115,6 +2115,14 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("StageDirection").AsUInt16 = Convert.ToUInt16(direction);
             this.aMCProtocol.get_ItemByTag("EQPIO").AsBoolean = eQIF;
             this.aMCProtocol.get_ItemByTag("ForkSpeed").AsUInt16 = forkSpeed;
+
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteForkCommandInfo: " +
+                            "CommandNo - " + commandNo +
+                            ", ForkCommandType - " + enumForkCommand +
+                            ", StageNo - " + stageNo +
+                            ", Direction - " + direction +
+                            ", IsEqPio - " + eQIF));
+
             if (this.aMCProtocol.WritePLC())
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, ");

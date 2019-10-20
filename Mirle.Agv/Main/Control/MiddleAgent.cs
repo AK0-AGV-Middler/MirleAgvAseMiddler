@@ -1716,7 +1716,7 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
                 iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
-                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage - 1 >= 0 ? (uint)batterys.Percentage - 1 : 0;
+                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage - 2 >= 0 ? (uint)batterys.Percentage - 2 : 0;
                 iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
 
@@ -1755,7 +1755,7 @@ namespace Mirle.Agv.Controller
 
                 ID_143_STATUS_RESPONSE iD_143_STATUS_RESPONSE = new ID_143_STATUS_RESPONSE();
                 iD_143_STATUS_RESPONSE.ActionStatus = theVehicle.ActionStatus;
-                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage - 1 >= 0 ? (uint)batterys.Percentage - 1 : 0;
+                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage - 2 >= 0 ? (uint)batterys.Percentage - 2 : 0;
                 iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_143_STATUS_RESPONSE.BlockingStatus = theVehicle.BlockingStatus;
                 iD_143_STATUS_RESPONSE.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
@@ -1985,7 +1985,6 @@ namespace Mirle.Agv.Controller
                     if (receive.IsReserveSuccess == ReserveResult.Success)
                     {
                         var msg = $"取得{askingReserveSection.Id}通行權成功";
-                        //theVehicle.ReserveStatus = VhStopSingle.StopSingleOff;
                         agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
                         StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
@@ -1997,7 +1996,6 @@ namespace Mirle.Agv.Controller
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                         if (mainFlowHandler.IsPauseByNoReserve())
                         {
-                            //theVehicle.ReserveStatus = VhStopSingle.StopSingleOn;
                             agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
                             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                             var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";

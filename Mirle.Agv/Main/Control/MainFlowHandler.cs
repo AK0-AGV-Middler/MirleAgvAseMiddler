@@ -280,7 +280,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        
+
 
         private void VehicleLocationInitial()
         {
@@ -690,8 +690,6 @@ namespace Mirle.Agv.Controller
         {
             var msg = $"MainFlow : 收到{agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId}。";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
 
             try
             {
@@ -701,12 +699,6 @@ namespace Mirle.Agv.Controller
                     RejectTransferCommandAndResume(000001, reason, agvcTransCmd);
                     return;
                 }
-
-                //if (theVehicle.ThePlcVehicle.Loading)
-                //{
-                //    var cstId = "";
-                //    plcAgent.triggerCassetteIDReader(ref cstId);
-                //}
 
                 if (IsVehicleAlreadyHaveCstCannotLoad(agvcTransCmd.CommandType))
                 {
@@ -1000,21 +992,21 @@ namespace Mirle.Agv.Controller
             {
                 if (IsAgvcTransferCommandEmpty())
                 {
-                    var reason = "Vehicle has no command to override.";
+                    var reason = "車輛沒有搬送命令可以override";
                     RejectTransferCommandAndResume(000019, reason, agvcOverrideCmd);
                     return;
                 }
 
                 if (!IsMoveStep())
                 {
-                    var reason = "Vehicle is not in moving-step.";
+                    var reason = "車輛不在移動流程，無法override";
                     RejectTransferCommandAndResume(000020, reason, agvcOverrideCmd);
                     return;
                 }
 
-                if (!IsPauseByNoReserve())
+                if (!IsStopReadyForOverride())
                 {
-                    var reason = $"Vehicle has next reserve section [{middleAgent.GetReserveOkSections()[0].Id}] to go.";
+                    var reason = $"車輛尚未停妥，拒絕override";
                     RejectTransferCommandAndResume(000021, reason, agvcOverrideCmd);
                     return;
                 }
@@ -1188,6 +1180,11 @@ namespace Mirle.Agv.Controller
             }
         }
 
+        private bool IsStopReadyForOverride()
+        {
+            return moveControlHandler.elmoDriver.MoveCompelete(EnumAxis.GX) && IsPauseByNoReserve();
+        }
+
         private AgvcTransCmd CombineAgvcTransferCommandAndOverrideCommand(AgvcTransCmd agvcTransCmd, AgvcOverrideCmd agvcOverrideCmd)
         {
             AgvcTransCmd combineCmd = agvcTransCmd.DeepClone();
@@ -1203,8 +1200,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcTransferCmd.CommandId, agvcTransferCmd.GetActiveType(), agvcTransferCmd.SeqNum, 1, reason);
                 reason = $"MainFlow : Reject {agvcTransferCmd.CommandType} Command, " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //       , reason));
                 if (VisitTransferStepsStatus == EnumThreadStatus.Pause)
                 {
                     ResumeVisitTransferSteps();
@@ -2091,7 +2086,7 @@ namespace Mirle.Agv.Controller
                     {
                         while (moveCmdInfo.MovingSectionsIndex < searchingSectionIndex)
                         {
-                            moveCmdInfo.MovingSectionsIndex++;                           
+                            moveCmdInfo.MovingSectionsIndex++;
                             middleAgent.ReportAddressPass(moveCmdInfo);
                             isUpdateSection = true;
                         }

@@ -1861,7 +1861,7 @@ namespace Mirle.Agv.Controller
 
         public bool GetMoveCommandAddressAction(ref MoveCmdInfo moveCmd, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
-            List<EnumAddressAction> tempActionList = new List<EnumAddressAction>();
+            moveCmd.AddressActions = new List<EnumAddressAction>();
             int lastSectionAngle = 0;
             int thisSectionAngle = 0;
             int newWheelAngle = 0;
@@ -1884,9 +1884,9 @@ namespace Mirle.Agv.Controller
             lastSectionAngle = computeFunction.ComputeAngleInt(moveCmd.AddressPositions[0], moveCmd.AddressPositions[1]);
 
             if (moveCmd.MovingSections[0].Type == EnumSectionType.R2000)
-                tempActionList.Add(EnumAddressAction.R2000);
+                moveCmd.AddressActions.Add(EnumAddressAction.R2000);
             else
-                tempActionList.Add(EnumAddressAction.ST);
+                moveCmd.AddressActions.Add(EnumAddressAction.ST);
 
             if (!computeFunction.GetDirFlagWheelAngle(moveCmd, ref data, nowAGV, wheelAngle, ref errorMessage))
                 return false;
@@ -1914,11 +1914,11 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(computeFunction.GetCurrectAngle(thisSectionAngle - lastSectionAngle)) == 45)
                     {
-                        tempActionList.Add(EnumAddressAction.R2000);
+                        moveCmd.AddressActions.Add(EnumAddressAction.R2000);
                     }
                     else if (Math.Abs(computeFunction.GetCurrectAngle(thisSectionAngle - (lastSectionAngle - 180))) == 45)
                     {
-                        tempActionList.Add(EnumAddressAction.BR2000);
+                        moveCmd.AddressActions.Add(EnumAddressAction.BR2000);
                         data.DirFlag = !data.DirFlag;
                     }
                     else
@@ -1934,10 +1934,10 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    switch (Math.Abs(thisSectionAngle - lastSectionAngle))
+                    switch (Math.Abs(computeFunction.GetCurrectAngle(thisSectionAngle - lastSectionAngle)))
                     {
                         case 0:
-                            tempActionList.Add(EnumAddressAction.ST);
+                            moveCmd.AddressActions.Add(EnumAddressAction.ST);
                             break;
                         case 90:
                             if (data.WheelAngle != 0 && data.WheelAngle != 90 && data.WheelAngle != -90)
@@ -1952,13 +1952,13 @@ namespace Mirle.Agv.Controller
                             if (newWheelAngle != -1)
                             {
                                 data.WheelAngle = newWheelAngle;
-                                tempActionList.Add(moveCmd.MovingAddress[i].IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350);
+                                moveCmd.AddressActions.Add(moveCmd.MovingAddress[i].IsTR50 ? EnumAddressAction.TR50 : EnumAddressAction.TR350);
                             }
                             else
                             {
                                 data.WheelAngle = 0;
                                 data.DirFlag = !data.DirFlag;
-                                tempActionList.Add(moveCmd.MovingAddress[i].IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350);
+                                moveCmd.AddressActions.Add(moveCmd.MovingAddress[i].IsTR50 ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350);
                             }
 
                             break;
@@ -1969,7 +1969,7 @@ namespace Mirle.Agv.Controller
                                 return false;
                             }
 
-                            tempActionList.Add(EnumAddressAction.BST);
+                            moveCmd.AddressActions.Add(EnumAddressAction.BST);
                             data.DirFlag = !data.DirFlag;
                             break;
                         case 30:
@@ -1979,7 +1979,7 @@ namespace Mirle.Agv.Controller
                     }
                 }
 
-                if (tempActionList[i] == EnumAddressAction.R2000 || tempActionList[i] == EnumAddressAction.BR2000)
+                if (moveCmd.AddressActions[i] == EnumAddressAction.R2000 || moveCmd.AddressActions[i] == EnumAddressAction.BR2000)
                 {
                     lastSectionAngle = data.AGVAngleInMap;
 
@@ -1995,7 +1995,7 @@ namespace Mirle.Agv.Controller
                     lastSectionAngle = thisSectionAngle;
             }
 
-            tempActionList.Add(EnumAddressAction.End);
+            moveCmd.AddressActions.Add(EnumAddressAction.End);
 
             bool result = true;
 
@@ -2021,7 +2021,7 @@ namespace Mirle.Agv.Controller
                     listData = listData + " " + tempActionList[i].ToString();
                 }
 
-                WriteLog("MoveControl", "3", device, "", "CreateMoveContril : " + listData);
+                WriteLog("MoveControl", "3", device, "", "AGVM : " + listData);
 
                 listData = "";
 
@@ -2030,22 +2030,25 @@ namespace Mirle.Agv.Controller
                     listData = listData + " " + moveCmd.AddressActions[i].ToString();
                 }
 
-                WriteLog("MoveControl", "3", device, "", "AGVM : " + listData);
+                WriteLog("MoveControl", "3", device, "", "CreateMoveContril : " + listData);
             }
             else
             {
                 WriteLog("MoveControl", "3", device, "", "AGVM 和 CreateMoveContril分解結果相同!");
             }
-
-            //moveCmd.AddressActions = tempActionList;
+            
             return true;
         }
+
+        public List<EnumAddressAction> tempActionList;
 
         public MoveCommandData CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd,
                                   AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
             try
             {
+                tempActionList = moveCmd.AddressActions;
+
                 try
                 {
                     if (!GetMoveCommandAddressAction(ref moveCmd, nowAGV, wheelAngle, ref errorMessage))
@@ -2055,6 +2058,8 @@ namespace Mirle.Agv.Controller
                 {
                     WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, Excption !");
                 }
+
+                moveCmd.AddressActions = tempActionList;
 
                 if (moveCmd.SectionSpeedLimits == null || moveCmd.AddressActions == null || moveCmd.AddressPositions == null ||
                     moveCmd.SectionSpeedLimits.Count == 0 || (moveCmd.SectionSpeedLimits.Count + 1) != moveCmd.AddressPositions.Count ||
