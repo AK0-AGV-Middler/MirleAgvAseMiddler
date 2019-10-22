@@ -274,6 +274,17 @@ namespace Mirle.Agv.Controller
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Remain_Capacity.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Design_Capacity.ToString();
 
+                try
+                {
+                    csvLog = csvLog + Separator + this.APLCVehicle.Robot.ForkHome;
+                    csvLog = csvLog + Separator + mainForm.mainFlowHandler.GetCurTransferStep().GetType().ToString();
+                    csvLog = csvLog + Separator + Vehicle.Instance.VehicleLocation.LastAddress.Id;
+                }
+                catch (Exception ex)
+                {
+
+                }
+
                 BatteryLogger.SavePureLog(csvLog);
 
                 sw.Stop();
