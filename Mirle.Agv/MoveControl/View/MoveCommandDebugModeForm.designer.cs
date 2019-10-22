@@ -99,10 +99,11 @@ namespace Mirle.Agv.View
             this.ucLabelTB_Delta = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_RealEncoder = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTextBox1 = new Mirle.Agv.UcLabelTextBox();
-            this.tbP_Debug = new System.Windows.Forms.TabPage();
-            this.button_DebugListClear = new System.Windows.Forms.Button();
-            this.label_DebugList = new System.Windows.Forms.Label();
-            this.DebugList = new System.Windows.Forms.ListBox();
+            this.tbP_LogMessage = new System.Windows.Forms.TabPage();
+            this.label_ElmoMessage = new System.Windows.Forms.Label();
+            this.tbxLogView_CreateCommandMessage = new System.Windows.Forms.TextBox();
+            this.tbxLogView_ElmoMessage = new System.Windows.Forms.TextBox();
+            this.label_CreateCommandMessage = new System.Windows.Forms.Label();
             this.tbP_DebugCSV = new System.Windows.Forms.TabPage();
             this.button_CSVListDisViewRang = new System.Windows.Forms.Button();
             this.button_CSVListShowAll = new System.Windows.Forms.Button();
@@ -152,7 +153,7 @@ namespace Mirle.Agv.View
             this.tbC_Debug.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbP_List.SuspendLayout();
-            this.tbP_Debug.SuspendLayout();
+            this.tbP_LogMessage.SuspendLayout();
             this.tbP_DebugCSV.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_CSVList)).BeginInit();
             this.tP_Admin.SuspendLayout();
@@ -244,7 +245,7 @@ namespace Mirle.Agv.View
             // 
             this.tbC_Debug.Controls.Add(this.tbP_CreateCommand);
             this.tbC_Debug.Controls.Add(this.tbP_List);
-            this.tbC_Debug.Controls.Add(this.tbP_Debug);
+            this.tbC_Debug.Controls.Add(this.tbP_LogMessage);
             this.tbC_Debug.Controls.Add(this.tbP_DebugCSV);
             this.tbC_Debug.Controls.Add(this.tP_Admin);
             this.tbC_Debug.Location = new System.Drawing.Point(2, 3);
@@ -962,49 +963,63 @@ namespace Mirle.Agv.View
             this.ucLabelTextBox1.TagName = "label1";
             this.ucLabelTextBox1.TagValue = "";
             // 
-            // tbP_Debug
+            // tbP_LogMessage
             // 
-            this.tbP_Debug.Controls.Add(this.button_DebugListClear);
-            this.tbP_Debug.Controls.Add(this.label_DebugList);
-            this.tbP_Debug.Controls.Add(this.DebugList);
-            this.tbP_Debug.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbP_Debug.Location = new System.Drawing.Point(4, 22);
-            this.tbP_Debug.Name = "tbP_Debug";
-            this.tbP_Debug.Size = new System.Drawing.Size(1283, 601);
-            this.tbP_Debug.TabIndex = 2;
-            this.tbP_Debug.Text = "Debug";
-            this.tbP_Debug.UseVisualStyleBackColor = true;
+            this.tbP_LogMessage.Controls.Add(this.label_ElmoMessage);
+            this.tbP_LogMessage.Controls.Add(this.tbxLogView_CreateCommandMessage);
+            this.tbP_LogMessage.Controls.Add(this.tbxLogView_ElmoMessage);
+            this.tbP_LogMessage.Controls.Add(this.label_CreateCommandMessage);
+            this.tbP_LogMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbP_LogMessage.Location = new System.Drawing.Point(4, 22);
+            this.tbP_LogMessage.Name = "tbP_LogMessage";
+            this.tbP_LogMessage.Size = new System.Drawing.Size(1283, 601);
+            this.tbP_LogMessage.TabIndex = 2;
+            this.tbP_LogMessage.Text = "LogMessage";
+            this.tbP_LogMessage.UseVisualStyleBackColor = true;
             // 
-            // button_DebugListClear
+            // label_ElmoMessage
             // 
-            this.button_DebugListClear.Location = new System.Drawing.Point(1192, 9);
-            this.button_DebugListClear.Name = "button_DebugListClear";
-            this.button_DebugListClear.Size = new System.Drawing.Size(85, 27);
-            this.button_DebugListClear.TabIndex = 42;
-            this.button_DebugListClear.Text = "清除";
-            this.button_DebugListClear.UseVisualStyleBackColor = true;
+            this.label_ElmoMessage.AutoSize = true;
+            this.label_ElmoMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_ElmoMessage.Location = new System.Drawing.Point(3, 311);
+            this.label_ElmoMessage.Name = "label_ElmoMessage";
+            this.label_ElmoMessage.Size = new System.Drawing.Size(92, 19);
+            this.label_ElmoMessage.TabIndex = 57;
+            this.label_ElmoMessage.Text = "Elmo Log :";
             // 
-            // label_DebugList
+            // tbxLogView_CreateCommandMessage
             // 
-            this.label_DebugList.AutoSize = true;
-            this.label_DebugList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_DebugList.Location = new System.Drawing.Point(6, 13);
-            this.label_DebugList.Name = "label_DebugList";
-            this.label_DebugList.Size = new System.Drawing.Size(100, 19);
-            this.label_DebugList.TabIndex = 41;
-            this.label_DebugList.Text = "Debug List :";
+            this.tbxLogView_CreateCommandMessage.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxLogView_CreateCommandMessage.Location = new System.Drawing.Point(0, 35);
+            this.tbxLogView_CreateCommandMessage.MaxLength = 65550;
+            this.tbxLogView_CreateCommandMessage.Multiline = true;
+            this.tbxLogView_CreateCommandMessage.Name = "tbxLogView_CreateCommandMessage";
+            this.tbxLogView_CreateCommandMessage.ReadOnly = true;
+            this.tbxLogView_CreateCommandMessage.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxLogView_CreateCommandMessage.Size = new System.Drawing.Size(1283, 264);
+            this.tbxLogView_CreateCommandMessage.TabIndex = 56;
             // 
-            // DebugList
+            // tbxLogView_ElmoMessage
             // 
-            this.DebugList.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.DebugList.FormattingEnabled = true;
-            this.DebugList.HorizontalScrollbar = true;
-            this.DebugList.ItemHeight = 16;
-            this.DebugList.Location = new System.Drawing.Point(6, 46);
-            this.DebugList.Name = "DebugList";
-            this.DebugList.ScrollAlwaysVisible = true;
-            this.DebugList.Size = new System.Drawing.Size(1271, 548);
-            this.DebugList.TabIndex = 37;
+            this.tbxLogView_ElmoMessage.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxLogView_ElmoMessage.Location = new System.Drawing.Point(0, 334);
+            this.tbxLogView_ElmoMessage.MaxLength = 65550;
+            this.tbxLogView_ElmoMessage.Multiline = true;
+            this.tbxLogView_ElmoMessage.Name = "tbxLogView_ElmoMessage";
+            this.tbxLogView_ElmoMessage.ReadOnly = true;
+            this.tbxLogView_ElmoMessage.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxLogView_ElmoMessage.Size = new System.Drawing.Size(1283, 264);
+            this.tbxLogView_ElmoMessage.TabIndex = 55;
+            // 
+            // label_CreateCommandMessage
+            // 
+            this.label_CreateCommandMessage.AutoSize = true;
+            this.label_CreateCommandMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_CreateCommandMessage.Location = new System.Drawing.Point(3, 13);
+            this.label_CreateCommandMessage.Name = "label_CreateCommandMessage";
+            this.label_CreateCommandMessage.Size = new System.Drawing.Size(180, 19);
+            this.label_CreateCommandMessage.TabIndex = 41;
+            this.label_CreateCommandMessage.Text = "Create Command Log :";
             // 
             // tbP_DebugCSV
             // 
@@ -1351,7 +1366,7 @@ namespace Mirle.Agv.View
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MoveCommandDebugModeForm";
-            this.Text = "MoveCommandMonitor";
+            this.Text = "MoveControlDebugForm";
             this.Load += new System.EventHandler(this.MoveCommandMonitor_Load);
             this.Leave += new System.EventHandler(this.MoveCommandDebugMode_Leave);
             this.tbC_Debug.ResumeLayout(false);
@@ -1359,8 +1374,8 @@ namespace Mirle.Agv.View
             this.tbP_CreateCommand.PerformLayout();
             this.tbP_List.ResumeLayout(false);
             this.tbP_List.PerformLayout();
-            this.tbP_Debug.ResumeLayout(false);
-            this.tbP_Debug.PerformLayout();
+            this.tbP_LogMessage.ResumeLayout(false);
+            this.tbP_LogMessage.PerformLayout();
             this.tbP_DebugCSV.ResumeLayout(false);
             this.tbP_DebugCSV.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_CSVList)).EndInit();
@@ -1406,7 +1421,7 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Button btnAddAddressAction;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TabPage tbP_Debug;
+        private System.Windows.Forms.TabPage tbP_LogMessage;
         private UcLabelTextBox ucLabelTB_BarcodePosition;
         private UcLabelTextBox ucLabelTB_RealPosition;
         private UcLabelTextBox ucLabelTB_Delta;
@@ -1416,10 +1431,8 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.TextBox tB_PositionX;
         private UcLabelTextBox ucLabelTB_CreateCommandState;
         private UcLabelTextBox ucLabelTtB_CommandListState;
-        private System.Windows.Forms.ListBox DebugList;
         private System.Windows.Forms.TabPage tbP_DebugCSV;
-        private System.Windows.Forms.Button button_DebugListClear;
-        private System.Windows.Forms.Label label_DebugList;
+        private System.Windows.Forms.Label label_CreateCommandMessage;
         private System.Windows.Forms.Button button_DebugCSVClear;
         private System.Windows.Forms.Label label_DebugCSVList;
         private System.Windows.Forms.Button button_DebugCSV;
@@ -1492,5 +1505,8 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Label label_BumpState_Label;
         private System.Windows.Forms.Button button_SimulateState;
         private System.Windows.Forms.Button Button_AutoCreate;
+        private System.Windows.Forms.TextBox tbxLogView_CreateCommandMessage;
+        private System.Windows.Forms.TextBox tbxLogView_ElmoMessage;
+        private System.Windows.Forms.Label label_ElmoMessage;
     }
 }

@@ -108,7 +108,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
         }
 
-        public void SetupMovingSections()
+        public void SetupMovingSectionsAndAddresses()
         {
             MovingSections = new List<MapSection>();
             if (SectionIds.Count > 0)

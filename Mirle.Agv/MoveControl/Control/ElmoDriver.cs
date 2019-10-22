@@ -47,6 +47,9 @@ namespace Mirle.Agv.Controller
         private double offsetValue = 0;
         private string device = "Elmo driver";
 
+        public string ElmoLog { get; set; } = "";
+        private const int elmoLogMaxLength = 10000;
+
         private void SendAlarmCode(int alarmCode)
         {
             try
@@ -100,6 +103,13 @@ namespace Mirle.Agv.Controller
                 Connected = false;
             }
         }
+        
+        private void SetElmoLog(string functionName, string message)
+        {
+            ElmoLog = DateTime.Now.ToString("HH:mm:ss.fff") + "\t" + functionName + "\t" + message + "\r\n" + ElmoLog;
+            if (ElmoLog.Length > elmoLogMaxLength)
+                ElmoLog = ElmoLog.Substring(0, elmoLogMaxLength);
+        }
 
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
@@ -108,6 +118,7 @@ namespace Mirle.Agv.Controller
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
             loggerAgent.LogMsg(logFormat.Category, logFormat);
+            SetElmoLog(memberName, message);
         }
 
         #region 讀取XML.

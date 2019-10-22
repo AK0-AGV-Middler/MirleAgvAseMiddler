@@ -45,6 +45,7 @@ namespace Mirle.Agv.View
             InitializeComponent();
             this.moveControl = moveControl;
             this.theMapInfo = theMapInfo;
+            this.Text = this.Text + " Version : " + moveControl.MoveControlVersion;
         }
 
         private void MoveCommandMonitor_Load(object sender, EventArgs e)
@@ -66,7 +67,6 @@ namespace Mirle.Agv.View
             AddListMapSpeedLimits();
             AddDataGridViewColumn();
             AddAdminSafetyUserControl();
-            moveControl.DebugFlowMode = true;
         }
 
         private void AddAdminSafetyUserControl()
@@ -429,8 +429,17 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void Timer_Update_Debug()
+        private void Timer_Update_LogMessage()
         {
+            try
+            {
+                tbxLogView_CreateCommandMessage.Text = moveControl.CreateMoveCommandList.CreateCommandListLog;
+                tbxLogView_ElmoMessage.Text = moveControl.elmoDriver.ElmoLog;
+            }
+            catch
+            {
+
+            }
         }
 
         private void Timer_Update_DebugCSV()
@@ -482,7 +491,7 @@ namespace Mirle.Agv.View
             else if (tbC_Debug.SelectedIndex == 1)
                 Timer_Update_CommandList();
             else if (tbC_Debug.SelectedIndex == 2)
-                Timer_Update_Debug();
+                Timer_Update_LogMessage();
             else if (tbC_Debug.SelectedIndex == 3)
                 Timer_Update_DebugCSV();
             else if (tbC_Debug.SelectedIndex == 4)
@@ -1263,6 +1272,5 @@ namespace Mirle.Agv.View
 
             listCmdAddressActions.Items.Add(tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1].ToString());
         }
-
     }
 }

@@ -129,6 +129,7 @@
     <Compile Include="MoveControl\Model\MoveControl\SimulateState.cs" />
     <Compile Include="MoveControl\Model\MoveControl\TRTimeToAngleRange.cs" />
     <Compile Include="MoveControl\Model\MoveControl\VChangeData.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\WallData.cs" />
     <Compile Include="MoveControl\MoveControlDefine.cs" />
     <Compile Include="MoveControl\View\MoveControlSimulateStateForm.cs">
       <SubType>Form</SubType>

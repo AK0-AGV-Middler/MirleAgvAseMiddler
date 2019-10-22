@@ -1340,7 +1340,7 @@ namespace Mirle.Agv.Controller
         private void ConvertOverrideAgvcLoadUnloadCmdIntoList(AgvcTransCmd agvcTransCmd, List<TransferStep> transferSteps)
         {
             ConvertAgvcLoadCmdIntoList(agvcTransCmd, transferSteps);
-            if (agvcTransCmd.ToLoadAddressIds.Count == 0)
+            if (theVehicle.ThePlcVehicle.Loading)
             {
                 ConvertOverrideAgvcNextUnloadCmdIntoList(agvcTransCmd, transferSteps);
             }
@@ -1433,7 +1433,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
-                moveCmd.SetupMovingSections();
+                moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupAddressPositions();
                 moveCmd.SetupAddressActions();
@@ -1478,7 +1478,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
-                moveCmd.SetupMovingSections();
+                moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.SetupAddressPositions();
                 moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
@@ -1505,7 +1505,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.FilterUselessNextToLoadFirstSection();
                 moveCmd.IsLoadPortToUnloadPort = true;
-                moveCmd.SetupMovingSections();
+                moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupNextUnloadAddressPositions();
                 moveCmd.SetupAddressActions();
@@ -1534,7 +1534,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
                 moveCmd.WheelAngle = GetCurWheelAngle();
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
-                moveCmd.SetupMovingSections();
+                moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupAddressPositions();
                 moveCmd.SetupAddressActions();
@@ -2040,7 +2040,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 string errorMsg = "";
-                if (moveControlHandler.TransferMove(moveCmd.DeepClone(), ref errorMsg))
+                if (moveControlHandler.TransferMove(moveCmd, ref errorMsg))
                 {
                     var msg = $"MainFlow : 通知MoveControlHandler傳送，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg);

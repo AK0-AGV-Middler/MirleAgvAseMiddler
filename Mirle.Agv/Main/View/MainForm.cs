@@ -20,7 +20,7 @@ namespace Mirle.Agv.View
 {
     public partial class MainForm : Form
     {
-        private MainFlowHandler mainFlowHandler;
+        public MainFlowHandler mainFlowHandler;
         private MoveControlHandler moveControlHandler;
         private MiddleAgent middleAgent;
         private MiddlerForm middlerForm;

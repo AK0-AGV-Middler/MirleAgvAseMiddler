@@ -188,5 +188,12 @@ namespace Mirle.Agv
         SpeedLower,
         MoveStartSpeedLower
     }
+
+    public enum EnumInWallLocate
+    {
+        Center,
+        Head,
+        Tail
+    }
     #endregion
 }

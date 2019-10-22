@@ -16,13 +16,20 @@ namespace Mirle.Agv.Controller
         private string device = "MoveControl";
         private List<VChangeData> vChangeList;
 
-        private const int AllowableTheta = 10;
-        public bool TurnOutSafetyDistance { get; set; } = false;
+        public string CreateCommandListLog { get; set; } = "";
+        private const int createCommandListLogMaxLength = 20000;
 
         public CreateMoveControlList(List<Sr2000Driver> driverSr2000List, MoveControlConfig moveControlConfig, AlarmHandler alarmHandler)
         {
             this.alarmHandler = alarmHandler;
             this.moveControlConfig = moveControlConfig;
+        }
+
+        private void SetCreateCommandListLog(string functionName, string message)
+        {
+            CreateCommandListLog = DateTime.Now.ToString("HH:mm:ss.fff") + "\t" + functionName + "\t" + message + "\r\n" + CreateCommandListLog;
+            if (CreateCommandListLog.Length > createCommandListLogMaxLength)
+                CreateCommandListLog = CreateCommandListLog.Substring(0, createCommandListLogMaxLength);
         }
 
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
@@ -32,6 +39,7 @@ namespace Mirle.Agv.Controller
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
             loggerAgent.LogMsg(logFormat.Category, logFormat);
+            SetCreateCommandListLog(memberName, message);
         }
 
         #region NewCommand function
@@ -258,7 +266,7 @@ namespace Mirle.Agv.Controller
                 {
                     for (int i = 1; i < moveCmd.AddressPositions.Count; i++)
                     {
-                        logMessage = logMessage + "\nAGVM 路線第 " + i.ToString() + " 條";
+                        logMessage = logMessage + "\r\nAGVM 路線第 " + i.ToString() + " 條";
 
                         if (moveCmd.SectionIds != null && moveCmd.SectionIds.Count > i)
                             logMessage = logMessage + ", Section : " + moveCmd.SectionIds[i - 1];
@@ -309,7 +317,7 @@ namespace Mirle.Agv.Controller
             {
                 for (int i = 1; i < oneceMoveCommandList[j].AddressPositions.Count; i++)
                 {
-                    logMessage = logMessage + "\n第 " + (j + 1).ToString() + " 次動令,第 " + i.ToString() +
+                    logMessage = logMessage + "\r\n第 " + (j + 1).ToString() + " 次動令,第 " + i.ToString() +
                                      " 條路線 Action : " + oneceMoveCommandList[j].AddressActions[i - 1].ToString() + " -> " +
                                      oneceMoveCommandList[j].AddressActions[i].ToString() + ", from :  ( " +
                                      oneceMoveCommandList[j].AddressPositions[i - 1].X.ToString("0") + ", " +
@@ -328,7 +336,7 @@ namespace Mirle.Agv.Controller
             string logMessage = "ReserveList :";
 
             for (int i = 0; i < reserveDataList.Count; i++)
-                logMessage = logMessage + "\nreserve node " + i.ToString() + " : ( " +
+                logMessage = logMessage + "\r\nreserve node " + i.ToString() + " : ( " +
                                  reserveDataList[i].Position.X.ToString("0") + ", " +
                                  reserveDataList[i].Position.Y.ToString("0") + " )";
 
@@ -370,7 +378,7 @@ namespace Mirle.Agv.Controller
 
             for (int i = 0; i < sectionLineList.Count; i++)
             {
-                logMessage = logMessage + "\nsectionLineList 第 " + (i + 1).ToString() + " 條為 from : (" +
+                logMessage = logMessage + "\r\nsectionLineList 第 " + (i + 1).ToString() + " 條為 from : (" +
                                  sectionLineList[i].Start.X.ToString("0") + ", " + sectionLineList[i].Start.Y.ToString("0") + " ), to : (" +
                                  sectionLineList[i].End.X.ToString("0") + ", " + sectionLineList[i].End.Y.ToString("0") + " ), DirFlag : " +
                                  (sectionLineList[i].DirFlag ? "前進" : "後退") + ", Distance : " + sectionLineList[i].Distance.ToString("0") +
@@ -550,7 +558,7 @@ namespace Mirle.Agv.Controller
             List<string> logMessage = new List<string>();
             GetMoveCommandListInfo(moveCmdList, ref logMessage);
             for (int i = 0; i < logMessage.Count; i++)
-                totalLogMessage = totalLogMessage + "\n" + logMessage[i];
+                totalLogMessage = totalLogMessage + "\r\n" + logMessage[i];
 
             WriteLog("MoveControl", "7", device, "", totalLogMessage);
         }
@@ -1872,6 +1880,24 @@ namespace Mirle.Agv.Controller
                 return false;
             }
 
+            if (moveCmd.MovingAddress == null || moveCmd.MovingAddress.Count != moveCmd.AddressPositions.Count)
+            {
+                errorMessage = (moveCmd.MovingAddress == null) ? "moveCmd.MovingAddress == null" :
+                    "MovingAddress.Count : " + moveCmd.MovingAddress.Count.ToString() +
+                    ",AddressPositions.Count : " + moveCmd.AddressPositions.Count.ToString();
+
+                return false;
+            }
+
+            if (moveCmd.MovingSections == null || moveCmd.MovingSections.Count != moveCmd.SectionSpeedLimits.Count)
+            {
+                errorMessage = (moveCmd.MovingSections == null) ? "moveCmd.MovingAddress == null" :
+                    "MovingSections.Count : " + moveCmd.MovingSections.Count.ToString() +
+                    ",SectionSpeedLimits.Count : " + moveCmd.SectionSpeedLimits.Count.ToString();
+
+                return false;
+            }
+
             BreakDownMoveCommandData data = new BreakDownMoveCommandData();
 
             if (moveCmd.AddressPositions[0].X == moveCmd.AddressPositions[1].X &&
@@ -2036,7 +2062,7 @@ namespace Mirle.Agv.Controller
             {
                 WriteLog("MoveControl", "3", device, "", "AGVM 和 CreateMoveContril分解結果相同!");
             }
-            
+
             return true;
         }
 
@@ -2052,14 +2078,16 @@ namespace Mirle.Agv.Controller
                 try
                 {
                     if (!GetMoveCommandAddressAction(ref moveCmd, nowAGV, wheelAngle, ref errorMessage))
+                    {
                         WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, errorMessage : " + errorMessage + " !");
+                        moveCmd.AddressActions = tempActionList;
+                    }
                 }
                 catch
                 {
                     WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, Excption !");
+                    moveCmd.AddressActions = tempActionList;
                 }
-
-                moveCmd.AddressActions = tempActionList;
 
                 if (moveCmd.SectionSpeedLimits == null || moveCmd.AddressActions == null || moveCmd.AddressPositions == null ||
                     moveCmd.SectionSpeedLimits.Count == 0 || (moveCmd.SectionSpeedLimits.Count + 1) != moveCmd.AddressPositions.Count ||

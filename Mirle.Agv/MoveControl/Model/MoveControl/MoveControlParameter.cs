@@ -43,6 +43,8 @@ namespace Mirle.Agv.Model
 
         public EnumVehicleSafetyAction KeepsLowSpeedStateByEQVChange { get; set; }
 
+        public bool CloseMoveControl { get; set; }
+
         public MoveControlParameter()
         {
             KeepsLowSpeedStateByEQVChange = EnumVehicleSafetyAction.Stop;
@@ -60,6 +62,7 @@ namespace Mirle.Agv.Model
             WaitReserveIndex = -1;
             CommandMoving = false;
             EQVChange = false;
+            CloseMoveControl = false;
             SensorState = EnumVehicleSafetyAction.Normal;
             BeamSensorState = EnumVehicleSafetyAction.Normal;
             BumpSensorState = EnumVehicleSafetyAction.Normal;
