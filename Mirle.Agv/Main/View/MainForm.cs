@@ -747,12 +747,30 @@ namespace Mirle.Agv.View
             UpdateRtbTransferStep();
             UpdateLastAlarm();
             UpdateAgvcConnection();
+            UpdateAgvFailResult();
             //}
             //catch (Exception ex)
             //{
             //    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             //}
         }
+
+        private void UpdateAgvFailResult()
+        {
+            try
+            {
+                var result = moveControlHandler.AGVStopResult;
+                if (!string.IsNullOrWhiteSpace(result))
+                {
+                    txtFailResult.Text = result;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
         public void UpdateAgvcConnection()
         {
             try
@@ -1518,22 +1536,22 @@ namespace Mirle.Agv.View
             ResetImageAndPb();
         }
 
-        private void txtBarNum_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                var barNum = int.Parse(txtBarNum.Text);
-                if (theMapInfo.allMapBarcodes.ContainsKey(barNum))
-                {
-                    var mapBar = theMapInfo.allMapBarcodes[barNum];
-                    ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
+        //private void txtBarNum_TextChanged(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        var barNum = int.Parse(txtBarNum.Text);
+        //        if (theMapInfo.allMapBarcodes.ContainsKey(barNum))
+        //        {
+        //            var mapBar = theMapInfo.allMapBarcodes[barNum];
+        //            ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+        //    }
+        //}
 
         private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
         {

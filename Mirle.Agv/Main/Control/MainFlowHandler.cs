@@ -477,7 +477,7 @@ namespace Mirle.Agv.Controller
                     {
                         if (IsLowPower())
                         {
-                            LowPowerStartCharge();
+                            LowPowerStartCharge(theVehicle.VehicleLocation.LastAddress);
                         }
                     }
                 }
@@ -1765,9 +1765,6 @@ namespace Mirle.Agv.Controller
                 {
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動完成[異常]");
                     alarmHandler.SetAlarm(000006);
-
-                    //PauseVisitTransferSteps();
-                    //middleAgent.PauseAskReserve();
                     return;
                 }
 
@@ -1809,9 +1806,11 @@ namespace Mirle.Agv.Controller
 
                 middleAgent.StopAskReserve();
 
-                UpdateVehiclePositionAfterArrival((MoveCmdInfo)GetCurTransferStep());
+                MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
 
-                StartCharge();
+                UpdateVehiclePositionAfterArrival(moveCmd);
+
+                StartCharge(moveCmd.EndAddress);
 
                 if (transferSteps.Count > 0)
                 {
@@ -2155,11 +2154,13 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                MapSection lastSection = moveCmd.MovingSections.FindLast(x => x.Id != null);
+                var lastAddress = moveCmd.EndAddress;
                 CmdEndVehiclePosition.BarcodePosition = theVehicle.VehicleLocation.BarcodePosition;
-                CmdEndVehiclePosition.RealPosition = TheMapInfo.allMapAddresses[moveCmd.EndAddress.Id].Position;
-                CmdEndVehiclePosition.LastAddress = TheMapInfo.allMapAddresses[moveCmd.EndAddress.Id];
-                CmdEndVehiclePosition.LastSection = TheMapInfo.allMapSections[moveCmd.SectionIds[moveCmd.SectionIds.Count - 1]];
-                CmdEndVehiclePosition.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(CmdEndVehiclePosition.RealPosition, CmdEndVehiclePosition.LastSection.HeadAddress.Position);
+                CmdEndVehiclePosition.RealPosition = lastAddress.Position;
+                CmdEndVehiclePosition.LastAddress = lastAddress;
+                CmdEndVehiclePosition.LastSection = lastSection;
+                CmdEndVehiclePosition.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(lastAddress.Position, lastSection.HeadAddress.Position);
                 CmdEndVehiclePosition.RealPositionRangeMm = theVehicle.VehicleLocation.RealPositionRangeMm;
                 CmdEndVehiclePosition.VehicleAngle = theVehicle.VehicleLocation.VehicleAngle;
                 CmdEndVehiclePosition.WheelAngle = theVehicle.VehicleLocation.WheelAngle;
@@ -2290,9 +2291,9 @@ namespace Mirle.Agv.Controller
 
         }
 
-        private void StartCharge()
+        private void StartCharge(MapAddress endAddress)
         {
-            var address = theVehicle.VehicleLocation.LastAddress;
+            var address = endAddress;
             var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
             var highPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeHighSoc;
 
@@ -2303,15 +2304,12 @@ namespace Mirle.Agv.Controller
                     var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
                     loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                           , msg));
-                    //OnMessageShowEvent?.Invoke(this, msg);
                     return;
                 }
 
                 if (IsHighPower())
                 {
                     var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} > {highPercentage:F2}(高水位門檻值), 故暫不充電";
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    //, msg));
                     OnMessageShowEvent?.Invoke(this, msg);
                     return;
                 }
@@ -2322,7 +2320,6 @@ namespace Mirle.Agv.Controller
                          , msg));
                     OnMessageShowEvent?.Invoke(this, msg);
                 }
-
 
                 middleAgent.ChargHandshaking();
                 EnumChargeDirection chargeDirection;
@@ -2371,9 +2368,9 @@ namespace Mirle.Agv.Controller
                 }
             }
         }
-        private void LowPowerStartCharge()
-        {
-            var address = theVehicle.VehicleLocation.LastAddress;
+        private void LowPowerStartCharge(MapAddress lastAddress)
+        {            
+            var address = lastAddress;
             var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
             var lowPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeLowSoc;
             var pos = theVehicle.VehicleLocation.RealPosition;
