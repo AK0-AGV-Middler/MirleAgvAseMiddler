@@ -2040,6 +2040,7 @@ namespace Mirle.Agv.Controller
 
             if (!result)
             {
+                WriteLog("MoveControl", "3", device, "", "AGVM 和 CreateMoveContril分解結果不同!");
                 string listData = "";
 
                 for (int i = 0; i < tempActionList.Count; i++)

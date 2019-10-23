@@ -89,27 +89,34 @@ namespace Mirle.Agv.Controller.Tools
 
         private void AddDebugLog(string aFunctionName, string aMessage)
         {
-            lock (theDebugLocker)
+            try
             {
-                string sDebugLogPath = Path.Combine(Environment.CurrentDirectory, "Log", "LogError" + logType.FileExtension);
-
-                if (!File.Exists(sDebugLogPath))
+                lock (theDebugLocker)
                 {
-                    // 建立檔案
-                    debugFileStream = new FileStream(sDebugLogPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
-                }
-                else
-                {
-                    debugFileStream = new FileStream(sDebugLogPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-                }
-                debugFileWriteStream = new StreamWriter(debugFileStream, encodingType);
+                    string sDebugLogPath = Path.Combine(Environment.CurrentDirectory, "Log", "LogError" + logType.FileExtension);
 
-                aMessage = aMessage + " by " + logType.DirName + @"\" + logType.LogFileName;
-                string log = string.Concat(DateTime.Now.ToString("yyyy-MM-dd@HH-mm-ss.fff@"), LOG_DEBUG, "@", aFunctionName,
-                    "@", Thread.CurrentThread.Name + "_" + Thread.CurrentThread.GetHashCode().ToString(), "@@@", aMessage, Environment.NewLine);
-                debugFileWriteStream.Write(log); // 寫入檔案
-                debugFileWriteStream.Flush();
-                debugFileStream.Close();
+                    if (!File.Exists(sDebugLogPath))
+                    {
+                        // 建立檔案
+                        debugFileStream = new FileStream(sDebugLogPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+                    }
+                    else
+                    {
+                        debugFileStream = new FileStream(sDebugLogPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+                    }
+                    debugFileWriteStream = new StreamWriter(debugFileStream, encodingType);
+
+                    aMessage = aMessage + " by " + logType.DirName + @"\" + logType.LogFileName;
+                    string log = string.Concat(DateTime.Now.ToString("yyyy-MM-dd@HH-mm-ss.fff@"), LOG_DEBUG, "@", aFunctionName,
+                        "@", Thread.CurrentThread.Name + "_" + Thread.CurrentThread.GetHashCode().ToString(), "@@@", aMessage, Environment.NewLine);
+                    debugFileWriteStream.Write(log); // 寫入檔案
+                    debugFileWriteStream.Flush();
+                    debugFileStream.Close();
+                }
+
+            }
+            catch (Exception )
+            {
             }
         }
 
