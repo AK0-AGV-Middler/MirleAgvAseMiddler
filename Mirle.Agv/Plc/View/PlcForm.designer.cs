@@ -1422,7 +1422,7 @@
             this.txtCommandNo.Name = "txtCommandNo";
             this.txtCommandNo.Size = new System.Drawing.Size(172, 23);
             this.txtCommandNo.TabIndex = 2;
-            this.txtCommandNo.Text = "1";
+            this.txtCommandNo.Text = "5";
             // 
             // label2
             // 
@@ -1635,7 +1635,7 @@
             this.txtErrorReason.Name = "txtErrorReason";
             this.txtErrorReason.Size = new System.Drawing.Size(172, 23);
             this.txtErrorReason.TabIndex = 19;
-            this.txtErrorReason.Text = "1";
+            this.txtErrorReason.Text = "5";
             // 
             // tabPage3
             // 
@@ -2041,7 +2041,7 @@
             this.txtCellVoltage_1.ReadOnly = true;
             this.txtCellVoltage_1.Size = new System.Drawing.Size(60, 23);
             this.txtCellVoltage_1.TabIndex = 71;
-            this.txtCellVoltage_1.Tag = "1";
+            this.txtCellVoltage_1.Tag = "5";
             // 
             // label76
             // 

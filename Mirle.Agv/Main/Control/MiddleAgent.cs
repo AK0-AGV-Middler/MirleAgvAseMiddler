@@ -625,28 +625,13 @@ namespace Mirle.Agv.Controller
             var msg = $"Middler : 清除已取得通行權路徑清單, 共[{queReserveOkSections.Count}]筆";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
-        public void SetupAskingReserveSection(MapSection askingReserveSection)
-        {
-            this.askingReserveSection = askingReserveSection.DeepClone();
-            var msg = $"Middler : SetupAskingReserveSection, [AskingReserveSectionID={askingReserveSection.Id}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
-        }
         public MapSection GetAskingReserveSection()
         {
             return askingReserveSection;
         }
-        public void SetupNeedReserveSections(MoveCmdInfo moveCmd)
-        {
-            queNeedReserveSections = new ConcurrentQueue<MapSection>(moveCmd.MovingSections.DeepClone());
-
-            var msg = $"Middler : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-        }
         public void SetupNeedReserveSections(List<MapSection> mapSections)
         {
-            queNeedReserveSections = new ConcurrentQueue<MapSection>(mapSections.DeepClone());
+            queNeedReserveSections = new ConcurrentQueue<MapSection>(mapSections);
             var msg = $"Middler : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
@@ -1716,7 +1701,7 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
                 iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
-                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage - 2 >= 0 ? (uint)batterys.Percentage - 2 : 0;
+                iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
                 iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
 
@@ -1755,7 +1740,7 @@ namespace Mirle.Agv.Controller
 
                 ID_143_STATUS_RESPONSE iD_143_STATUS_RESPONSE = new ID_143_STATUS_RESPONSE();
                 iD_143_STATUS_RESPONSE.ActionStatus = theVehicle.ActionStatus;
-                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage - 2 >= 0 ? (uint)batterys.Percentage - 2 : 0;
+                iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage;
                 iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_143_STATUS_RESPONSE.BlockingStatus = theVehicle.BlockingStatus;
                 iD_143_STATUS_RESPONSE.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
@@ -1978,27 +1963,33 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
                 ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
+                AgvcTransCmd agvcTransCmd = mainFlowHandler.agvcTransCmd;
                 if (receive.EventType == EventType.ReserveReq)
                 {
                     if (receive.IsReserveSuccess == ReserveResult.Success)
                     {
-                        var msg = $"取得{askingReserveSection.Id}通行權成功";
-                        agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
-                        StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                        string msg = $"取得{askingReserveSection.Id}通行權成功";
+                        if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOn)
+                        {
+                            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
+                            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                        }
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                         OnGetReserveOk();
                     }
                     else
                     {
-                        var msg = $"取得{askingReserveSection.Id}通行權失敗";
+                        string msg = $"取得{askingReserveSection.Id}通行權失敗";
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                         if (mainFlowHandler.IsPauseByNoReserve())
                         {
-                            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
-                            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                            var msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
+                            if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
+                            {
+                                agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
+                                StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                            }
+                            string msg2 = $"上報AGVC，因{askingReserveSection.Id}通行權無法取得停等中。";
                             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                         }
                     }

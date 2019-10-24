@@ -14,7 +14,7 @@ namespace Mirle.Agv.Model
         public ushort CommandNo { get;  set; } // 0 ~ 65535
         public EnumForkCommand ForkCommandType { get; set; }
         public EnumStageDirection Direction { get; set; }
-        public string StageNo { get; set; } = "1";
+        public string StageNo { get; set; } = "5";
         public bool IsEqPio { get; set; }
         public ushort ForkSpeed { get; set; }
         public string Reason { get; set; } = "";
@@ -25,7 +25,7 @@ namespace Mirle.Agv.Model
         {
             CommandNo = aCommandNo;
             ForkCommandType = aEnumForkCommand;
-            StageNo = string.IsNullOrEmpty(aStageNo) ? "1" : aStageNo;            
+            StageNo = string.IsNullOrEmpty(aStageNo) ? "5" : aStageNo;            
             Direction = aDirection;
             IsEqPio = isEqPio;
             ForkSpeed = aForkSpeed;

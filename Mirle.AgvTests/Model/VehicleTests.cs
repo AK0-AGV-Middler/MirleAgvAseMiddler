@@ -113,28 +113,7 @@ namespace Mirle.Agv.Model.Tests
             Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);
             status = EnumThreadStatus.Working;
             Assert.AreEqual(EnumThreadStatus.None, Vehicle.Instance.VisitTransferStepsStatus);
-        }
-
-        [Test()]
-        public void AgvcTransCmdCloneTest()
-        {
-            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
-            agvcTransCmd.CommandId = "DIDMC";
-            var xx = agvcTransCmd.DeepClone();
-            var xx1 = xx.CommandId;
-            Assert.True(true);
-        }
-
-
-        [Test()]
-        public void MoveCmdCloneTest()
-        {
-            MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
-            moveCmdInfo.CmdId = "DIDMC";
-            var xx = moveCmdInfo.DeepClone();
-            var xx1 = xx.CmdId;
-            Assert.True(true);
-        }
+        }        
 
         [Test()]
         public void DictionaryFirstTest()
@@ -159,6 +138,31 @@ namespace Mirle.Agv.Model.Tests
             var xx2 = vehLoc.RealPosition;
             vehLoc.RealPosition = new MapPosition(777, 888);
             var xx3 = vehLoc.RealPosition;
+
+            Assert.True(true);
+        }
+
+        [Test()]
+        public void ReferenceTest1024()
+        {
+            List<MapSection> moveSections = new List<MapSection>();
+            MapSection section01 = new MapSection() { Id = "01" };
+            moveSections.Add(section01);
+            MapSection section02 = new MapSection() { Id = "02" };
+            moveSections.Add(section02);
+
+            Assert.AreEqual(2, moveSections.Count);
+            Assert.AreEqual("02", moveSections[1].Id);
+
+            ConcurrentQueue<MapSection> askReserveSections = new ConcurrentQueue<MapSection>(moveSections);
+            Assert.AreEqual(2, askReserveSections.Count);
+
+            MapSection temp;
+            askReserveSections.TryDequeue(out temp);
+
+            Assert.AreEqual(1, askReserveSections.Count);
+            Assert.AreEqual(2, moveSections.Count);
+            Assert.AreEqual("02", moveSections[1].Id);
 
             Assert.True(true);
         }

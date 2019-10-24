@@ -39,7 +39,7 @@ namespace Mirle.Agv.Controller
         public bool IsReportingPosition { get; set; }
         public bool IsReserveMechanism { get; set; } = true;
         private ITransferStatus transferStatus;
-        private AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
+        public AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
         private AgvcTransCmd lastAgvcTransCmd = new AgvcTransCmd();
         public MapSection SectionHasFoundPosition { get; set; } = new MapSection();
         public VehicleLocation CmdEndVehiclePosition { get; set; } = new VehicleLocation();
@@ -419,7 +419,7 @@ namespace Mirle.Agv.Controller
         }
         private void PreVisitTransferSteps()
         {
-
+            IsMoveEnd = true;
             TransferStepsIndex = 0;
             GoNextTransferStep = true;
             //middleAgent.Commanding();
@@ -449,6 +449,7 @@ namespace Mirle.Agv.Controller
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
             middleAgent.NoCommand();
+            IsMoveEnd = true;
             var msg = $"MainFlow : 搬送流程 後處理, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -604,7 +605,7 @@ namespace Mirle.Agv.Controller
                             if (IsMoveStep())
                             {
                                 MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
-                                if (moveCmd.MovingSections.Count > 0 && !IsMoveEnd)
+                                if (/*moveCmd.MovingSections.Count > 0 &&*/ !IsMoveEnd)
                                 {
                                     if (UpdateVehiclePositionInMovingStep(moveCmd, vehicleLocation))
                                     {
@@ -1160,7 +1161,7 @@ namespace Mirle.Agv.Controller
                 }
 
                 middleAgent.StopAskReserve();
-                this.agvcTransCmd = CombineAgvcTransferCommandAndOverrideCommand(agvcTransCmd, agvcOverrideCmd);
+                agvcTransCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupOverrideTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
@@ -1186,12 +1187,12 @@ namespace Mirle.Agv.Controller
             return moveControlHandler.elmoDriver.MoveCompelete(EnumAxis.GX) && IsPauseByNoReserve();
         }
 
-        private AgvcTransCmd CombineAgvcTransferCommandAndOverrideCommand(AgvcTransCmd agvcTransCmd, AgvcOverrideCmd agvcOverrideCmd)
-        {
-            AgvcTransCmd combineCmd = agvcTransCmd.DeepClone();
-            combineCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
-            return combineCmd;
-        }
+        //private AgvcTransCmd CombineAgvcTransferCommandAndOverrideCommand(AgvcTransCmd agvcTransCmd, AgvcOverrideCmd agvcOverrideCmd)
+        //{
+        //    AgvcTransCmd combineCmd = agvcTransCmd;
+        //    combineCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
+        //    return combineCmd;
+        //}
 
         private void RejectTransferCommandAndResume(int alarmCode, string reason, AgvcTransCmd agvcTransferCmd)
         {
@@ -2067,7 +2068,7 @@ namespace Mirle.Agv.Controller
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
             middleAgent.StopAskReserve();
-            middleAgent.NeedReserveSections = moveCmd.MovingSections.DeepClone();
+            middleAgent.NeedReserveSections =  moveCmd.MovingSections;
             middleAgent.StartAskReserve();
         }
 
@@ -2084,7 +2085,7 @@ namespace Mirle.Agv.Controller
             {
                 try
                 {
-                    if (mapHandler.IsPositionInThisSection(MovingSections[searchingSectionIndex], ref vehicleLocation))
+                    if (mapHandler.IsPositionInThisSection(MovingSections[searchingSectionIndex], vehicleLocation.RealPosition))
                     {
                         while (moveCmdInfo.MovingSectionsIndex < searchingSectionIndex)
                         {
@@ -2122,7 +2123,6 @@ namespace Mirle.Agv.Controller
                 isUpdateSection = false;
                 alarmHandler.SetAlarm(000011);
                 var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({vehicleLocation.RealPosition.X:F2},{vehicleLocation.RealPosition.Y:F2})]";
-                //OnMessageShowEvent?.Invoke(this, msg);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
             }
@@ -2192,7 +2192,7 @@ namespace Mirle.Agv.Controller
 
             foreach (MapSection mapSection in sectionsWithinNeerlyAddress)
             {
-                if (mapHandler.IsPositionInThisSection(mapSection, ref vehicleLocation))
+                if (mapHandler.IsPositionInThisSection(mapSection, vehicleLocation.RealPosition))
                 {
                     vehicleLocation.LastSection = mapSection;
                     vehicleLocation.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(vehicleLocation.RealPosition, mapSection.HeadAddress.Position);
@@ -2253,7 +2253,7 @@ namespace Mirle.Agv.Controller
         private void UpdatePlcVehicleBeamSensor()
         {
             var plcVeh = theVehicle.ThePlcVehicle;
-            var lastSection = theVehicle.VehicleLocation.LastSection.DeepClone();
+            var lastSection = theVehicle.VehicleLocation.LastSection;
             var curDistance = lastSection.VehicleDistanceSinceHead;
             var index = lastSection.BeamSensorDisables.FindIndex(x => x.Min <= curDistance && x.Max >= curDistance);
             if (index > -1)
@@ -2675,15 +2675,6 @@ namespace Mirle.Agv.Controller
             transCmd.ToUnloadSectionIds.Add("0092");
 
             MiddleAgent_OnInstallTransferCommandEvent(this, transCmd);
-        }
-        public void SetupTestMoveCmd(List<MapSection> mapSections)
-        {
-            transferSteps = new List<TransferStep>();
-            MoveCmdInfo moveCmd = new MoveCmdInfo();
-            moveCmd.MovingSections = mapSections.DeepClone();
-            transferSteps.Add(moveCmd);
-            transferSteps.Add(new EmptyTransferStep());
-            TransferStepsIndex = 0;
         }
 
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)

@@ -37,7 +37,7 @@ namespace Mirle.Agv
             VectorHeadToTail = new MapVector(Section.TailAddress.Position.X - Section.HeadAddress.Position.X, Section.TailAddress.Position.Y - Section.HeadAddress.Position.Y);
             Id = Section.Id;
             label1.Text = Id;
-            labelSize = label1.Size.DeepClone();
+            labelSize = label1.Size;
             DrawSectionImage(bluePen);
             SetupShowSectionInfo();
         }

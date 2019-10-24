@@ -43,7 +43,7 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 //. 參考出問題,可能CPU x64 x86 anyCPU參考用錯,或sr2000Config = null. 或Connect Excpition.
-                WriteLog("Error", "1", device, "", "Initail Excption : " + ex.ToString());
+                WriteLog("Error", "5", device, "", "Initail Excption : " + ex.ToString());
                 SendAlarmCode(101000);
             }
         }

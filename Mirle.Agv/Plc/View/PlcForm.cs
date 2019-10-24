@@ -220,9 +220,9 @@ namespace Mirle.Agv.View
 
         private void btnForkCommandClear_Click(object sender, EventArgs e)
         {
-            txtCommandNo.Text = "1";
+            txtCommandNo.Text = "5";
             cmbOperationType.Text = EnumForkCommand.Load.ToString();
-            txtStageNo.Text = "1";
+            txtStageNo.Text = "5";
             cmbDirection.Text = EnumStageDirection.Left.ToString();
             cmbEQPIO.Text = bool.TrueString;
             txtForkSpeed.Text = "100";

@@ -247,7 +247,7 @@ namespace Mirle.Agv.View
             foreach (var valuePair in theMapInfo.allMapAddresses)
             {
                 MapAddress mapAddress = valuePair.Value;
-                MapPosition mapPosition = mapAddress.Position.DeepClone();
+                MapPosition mapPosition = mapAddress.Position;
                 string txtPosition = $"{mapPosition.X},{mapPosition.Y}";
                 listMapAddressPositions.Items.Add(txtPosition);
             }
@@ -983,7 +983,7 @@ namespace Mirle.Agv.View
                     settingAngleForm.Show();
                     settingAngleForm.TopMost = true;
 
-                    moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position.DeepClone();
+                    moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position;
                     Vehicle.Instance.VehicleLocation.RealPosition = moveControl.location.Real.Position;
                     Vehicle.Instance.VehicleLocation.VehicleAngle = moveControl.location.Real.AGVAngle;
                 }
@@ -1001,7 +1001,7 @@ namespace Mirle.Agv.View
                 {
                     if (tempPosition == null || Math.Abs(Math.Pow(valuePair.Value.Position.X - now.X, 2) + Math.Pow(valuePair.Value.Position.Y - now.Y, 2)) <
                                                 Math.Abs(Math.Pow(tempPosition.X - now.X, 2) + Math.Pow(tempPosition.Y - now.Y, 2)))
-                        tempPosition = valuePair.Value.Position.DeepClone();
+                        tempPosition = valuePair.Value.Position;
                 }
             }
 

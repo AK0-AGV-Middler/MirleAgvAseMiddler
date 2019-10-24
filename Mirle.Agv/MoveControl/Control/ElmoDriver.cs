@@ -97,8 +97,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                WriteLog("Elmo", "1", device, "", "Excption : " + ex.ToString());
-                WriteLog("Error", "1", device, "", "Elmo 連線失敗, Excption : " + ex.ToString());
+                WriteLog("Elmo", "5", device, "", "Excption : " + ex.ToString());
+                WriteLog("Error", "5", device, "", "Elmo 連線失敗, Excption : " + ex.ToString());
                 SendAlarmCode(100000);
                 Connected = false;
             }
@@ -348,7 +348,7 @@ namespace Mirle.Agv.Controller
 
             if (MMCConnection.ConnectRPC(controlIP, cardIP, elmoControlPort, out handler) != 0)
             {
-                WriteLog("Error", "1", device, "", "Elmo 連線失敗!");
+                WriteLog("Error", "5", device, "", "Elmo 連線失敗!");
                 return false;
             }
 
