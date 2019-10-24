@@ -50,7 +50,7 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.cbSimulationMode = new System.Windows.Forms.CheckBox();
+            this.txtFailResult = new System.Windows.Forms.Label();
             this.btnReDraw = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.ckAddress = new System.Windows.Forms.CheckBox();
@@ -101,6 +101,7 @@
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
+            this.cbSimulationMode = new System.Windows.Forms.CheckBox();
             this.btnUnloadOk = new System.Windows.Forms.Button();
             this.btnSemiAutoManual = new System.Windows.Forms.Button();
             this.gbVisitTransferSteps = new System.Windows.Forms.GroupBox();
@@ -143,7 +144,6 @@
             this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
-            this.txtFailResult = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -369,17 +369,15 @@
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             // 
-            // cbSimulationMode
+            // txtFailResult
             // 
-            this.cbSimulationMode.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.cbSimulationMode.ForeColor = System.Drawing.Color.OrangeRed;
-            this.cbSimulationMode.Location = new System.Drawing.Point(392, 270);
-            this.cbSimulationMode.Name = "cbSimulationMode";
-            this.cbSimulationMode.Size = new System.Drawing.Size(121, 43);
-            this.cbSimulationMode.TabIndex = 3;
-            this.cbSimulationMode.Text = "模擬測試";
-            this.cbSimulationMode.UseVisualStyleBackColor = true;
-            this.cbSimulationMode.CheckedChanged += new System.EventHandler(this.cbSimulationMode_CheckedChanged);
+            this.txtFailResult.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtFailResult.ForeColor = System.Drawing.Color.OrangeRed;
+            this.txtFailResult.Location = new System.Drawing.Point(709, 13);
+            this.txtFailResult.Name = "txtFailResult";
+            this.txtFailResult.Size = new System.Drawing.Size(466, 71);
+            this.txtFailResult.TabIndex = 37;
+            this.txtFailResult.Text = "  ";
             // 
             // btnReDraw
             // 
@@ -994,6 +992,18 @@
             this.radOffline.UseVisualStyleBackColor = true;
             this.radOffline.CheckedChanged += new System.EventHandler(this.radOffline_CheckedChanged);
             // 
+            // cbSimulationMode
+            // 
+            this.cbSimulationMode.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.cbSimulationMode.ForeColor = System.Drawing.Color.OrangeRed;
+            this.cbSimulationMode.Location = new System.Drawing.Point(392, 270);
+            this.cbSimulationMode.Name = "cbSimulationMode";
+            this.cbSimulationMode.Size = new System.Drawing.Size(121, 43);
+            this.cbSimulationMode.TabIndex = 3;
+            this.cbSimulationMode.Text = "模擬測試";
+            this.cbSimulationMode.UseVisualStyleBackColor = true;
+            this.cbSimulationMode.CheckedChanged += new System.EventHandler(this.cbSimulationMode_CheckedChanged);
+            // 
             // btnUnloadOk
             // 
             this.btnUnloadOk.Location = new System.Drawing.Point(6, 270);
@@ -1405,16 +1415,6 @@
             // 
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
-            // 
-            // txtFailResult
-            // 
-            this.txtFailResult.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtFailResult.ForeColor = System.Drawing.Color.OrangeRed;
-            this.txtFailResult.Location = new System.Drawing.Point(709, 13);
-            this.txtFailResult.Name = "txtFailResult";
-            this.txtFailResult.Size = new System.Drawing.Size(466, 71);
-            this.txtFailResult.TabIndex = 37;
-            this.txtFailResult.Text = "label1";
             // 
             // MainForm
             // 

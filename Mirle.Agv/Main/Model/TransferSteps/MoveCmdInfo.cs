@@ -120,16 +120,15 @@ namespace Mirle.Agv.Model.TransferSteps
                     mapSection.CmdDirection = (mapSection.HeadAddress.Id == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
                     MovingSections.Add(mapSection);
                 }
-
-                var endAddress = theMapInfo.allMapAddresses[EndAddress.Id].DeepClone();
+               
                 var endSection = MovingSections[MovingSections.Count - 1];
                 if (endSection.CmdDirection == EnumPermitDirection.Forward)
                 {
-                    endSection.TailAddress = endAddress;
+                    endSection.TailAddress = EndAddress;
                 }
                 else
                 {
-                    endSection.HeadAddress = endAddress;
+                    endSection.HeadAddress = EndAddress;
                 }
             }
 

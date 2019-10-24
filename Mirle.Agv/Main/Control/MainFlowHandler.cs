@@ -129,6 +129,7 @@ namespace Mirle.Agv.Controller
         public bool NeedRename { get; set; } = false;
         public bool IsBcrReadReply { get; set; } = false;
         public bool IsVehicleAbortByAlarm { get; set; } = false;
+        public bool IsMoveEnd { get; set; } = false;
         #endregion
 
         public MainFlowHandler()
@@ -603,7 +604,7 @@ namespace Mirle.Agv.Controller
                             if (IsMoveStep())
                             {
                                 MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
-                                if (moveCmd.MovingSections.Count > 0)
+                                if (moveCmd.MovingSections.Count > 0 && !IsMoveEnd)
                                 {
                                     if (UpdateVehiclePositionInMovingStep(moveCmd, vehicleLocation))
                                     {
@@ -1761,6 +1762,8 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                IsMoveEnd = true;
+
                 if (status == EnumMoveComplete.Fail)
                 {
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動完成[異常]");
@@ -2155,6 +2158,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 MapSection lastSection = moveCmd.MovingSections.FindLast(x => x.Id != null);
+                lastSection = TheMapInfo.allMapSections[lastSection.Id];
                 var lastAddress = moveCmd.EndAddress;
                 CmdEndVehiclePosition.BarcodePosition = theVehicle.VehicleLocation.BarcodePosition;
                 CmdEndVehiclePosition.RealPosition = lastAddress.Position;
