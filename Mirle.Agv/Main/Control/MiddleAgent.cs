@@ -1263,7 +1263,7 @@ namespace Mirle.Agv.Controller
         public void ReportAddressPass(MoveCmdInfo moveCmdInfo)
         {
             theVehicle.Cmd134EventType = EventType.AdrPass;
-            Send_Cmd134_TransferEventReport(moveCmdInfo);
+            Send_Cmd134_TransferEventReport(EventType.AdrPass);
         }
 
         public void ReportAddressPass()
@@ -2233,16 +2233,16 @@ namespace Mirle.Agv.Controller
 
         public void Send_Cmd134_TransferEventReport()
         {
-            VehicleLocation vehPosition = theVehicle.VehicleLocation;
+            VehicleLocation location = theVehicle.VehicleLocation;
 
             try
             {
                 ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
                 iD_134_TRANS_EVENT_REP.EventType = theVehicle.Cmd134EventType;
-                iD_134_TRANS_EVENT_REP.CurrentAdrID = vehPosition.LastAddress.Id;
-                iD_134_TRANS_EVENT_REP.CurrentSecID = vehPosition.LastSection.Id;
-                iD_134_TRANS_EVENT_REP.SecDistance = (uint)vehPosition.LastSection.VehicleDistanceSinceHead;
-                iD_134_TRANS_EVENT_REP.DrivingDirection = theVehicle.DrivingDirection;
+                iD_134_TRANS_EVENT_REP.CurrentAdrID = location.LastAddress.Id;
+                iD_134_TRANS_EVENT_REP.CurrentSecID = location.LastSection.Id;
+                iD_134_TRANS_EVENT_REP.SecDistance = (uint)location.LastSection.VehicleDistanceSinceHead;
+                iD_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(location.LastSection.CmdDirection);
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
@@ -2255,26 +2255,19 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-        private void Send_Cmd134_TransferEventReport(MoveCmdInfo moveCmdInfo)
+        private void Send_Cmd134_TransferEventReport(EventType type)
         {
-            var section = moveCmdInfo.MovingSections[moveCmdInfo.MovingSectionsIndex];
+            var location = theVehicle.VehicleLocation;
 
             try
             {
+
                 ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
-                iD_134_TRANS_EVENT_REP.EventType = theVehicle.Cmd134EventType;
-                if (section.CmdDirection == EnumPermitDirection.Forward)
-                {
-                    iD_134_TRANS_EVENT_REP.CurrentAdrID = section.HeadAddress.Id;
-                    iD_134_TRANS_EVENT_REP.SecDistance = 0;
-                }
-                else
-                {
-                    iD_134_TRANS_EVENT_REP.CurrentAdrID = section.TailAddress.Id;
-                    iD_134_TRANS_EVENT_REP.SecDistance = (uint)section.HeadToTailDistance;
-                }
-                iD_134_TRANS_EVENT_REP.CurrentSecID = section.Id;
-                iD_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(section.CmdDirection);
+                iD_134_TRANS_EVENT_REP.EventType = type;
+                iD_134_TRANS_EVENT_REP.CurrentAdrID = location.LastAddress.Id;
+                iD_134_TRANS_EVENT_REP.CurrentSecID = location.LastSection.Id;
+                iD_134_TRANS_EVENT_REP.SecDistance = (uint)location.LastSection.VehicleDistanceSinceHead;
+                iD_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(location.LastSection.CmdDirection);
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;

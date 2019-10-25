@@ -760,10 +760,7 @@ namespace Mirle.Agv.View
             try
             {
                 var result = moveControlHandler.AGVStopResult;
-                if (!string.IsNullOrWhiteSpace(result))
-                {
-                    txtFailResult.Text = result;
-                }
+                txtFailResult.Text = string.IsNullOrWhiteSpace(result) ? "" : result;
             }
             catch (Exception ex)
             {

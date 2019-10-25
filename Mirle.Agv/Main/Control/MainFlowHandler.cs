@@ -2068,7 +2068,7 @@ namespace Mirle.Agv.Controller
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
             middleAgent.StopAskReserve();
-            middleAgent.NeedReserveSections =  moveCmd.MovingSections;
+            middleAgent.NeedReserveSections = moveCmd.MovingSections;
             middleAgent.StartAskReserve();
         }
 
@@ -2090,15 +2090,18 @@ namespace Mirle.Agv.Controller
                         while (moveCmdInfo.MovingSectionsIndex < searchingSectionIndex)
                         {
                             moveCmdInfo.MovingSectionsIndex++;
+                            FitVehicalLocationAndMoveCmd(moveCmdInfo, vehicleLocation);
                             middleAgent.ReportAddressPass(moveCmdInfo);
                             isUpdateSection = true;
                         }
 
-                        FindeNeerlyAddressInTheMovingSection(MovingSections[searchingSectionIndex], ref vehicleLocation);
+                        FitVehicalLocation(moveCmdInfo, vehicleLocation);
 
-                        vehicleLocation.LastSection = TheMapInfo.allMapSections[MovingSections[searchingSectionIndex].Id];
+                        //FindeNeerlyAddressInTheMovingSection(MovingSections[searchingSectionIndex], ref vehicleLocation);
 
-                        vehicleLocation.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(vehicleLocation.RealPosition, vehicleLocation.LastSection.HeadAddress.Position);
+                        //vehicleLocation.LastSection = TheMapInfo.allMapSections[MovingSections[searchingSectionIndex].Id];
+
+                        //vehicleLocation.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(vehicleLocation.RealPosition, vehicleLocation.LastSection.HeadAddress.Position);
 
                         UpdateMiddlerGotReserveOkSections(MovingSections[searchingSectionIndex].Id);
 
@@ -2128,6 +2131,39 @@ namespace Mirle.Agv.Controller
             }
 
             return isUpdateSection;
+        }
+
+        private void FitVehicalLocation(MoveCmdInfo moveCmdInfo, VehicleLocation vehicleLocation)
+        {
+            var section = moveCmdInfo.MovingSections[moveCmdInfo.MovingSectionsIndex];
+            VehicleLocation tempLocation = new VehicleLocation(vehicleLocation);
+            tempLocation.LastSection = section;
+
+            FindeNeerlyAddressInTheMovingSection(section, ref tempLocation);
+
+            tempLocation.LastSection = TheMapInfo.allMapSections[section.Id];
+
+            tempLocation.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(tempLocation.RealPosition, tempLocation.LastSection.HeadAddress.Position);
+
+            theVehicle.VehicleLocation = new VehicleLocation(tempLocation);
+        }
+
+        private void FitVehicalLocationAndMoveCmd(MoveCmdInfo moveCmdInfo, VehicleLocation vehicleLocation)
+        {
+            var section = moveCmdInfo.MovingSections[moveCmdInfo.MovingSectionsIndex];
+            VehicleLocation tempLocation = new VehicleLocation(vehicleLocation);
+            tempLocation.LastSection = section;
+            if (section.CmdDirection == EnumPermitDirection.Forward)
+            {
+                tempLocation.LastAddress = section.HeadAddress;
+                tempLocation.LastSection.VehicleDistanceSinceHead = 0;
+            }
+            else
+            {
+                tempLocation.LastAddress = section.TailAddress;
+                tempLocation.LastSection.VehicleDistanceSinceHead = section.HeadToTailDistance;
+            }
+            theVehicle.VehicleLocation = new VehicleLocation(tempLocation);
         }
 
         private void FindeNeerlyAddressInTheMovingSection(MapSection mapSection, ref VehicleLocation vehicleLocation)
@@ -2373,7 +2409,7 @@ namespace Mirle.Agv.Controller
             }
         }
         private void LowPowerStartCharge(MapAddress lastAddress)
-        {            
+        {
             var address = lastAddress;
             var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
             var lowPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeLowSoc;

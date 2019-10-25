@@ -10,6 +10,22 @@ namespace Mirle.Agv.Model
         public MapAddress LastAddress { get; set; } = new MapAddress();
         public MapPosition BarcodePosition { get; set; } = new MapPosition();
         private MapPosition realPosition = new MapPosition();
+
+        public VehicleLocation(VehicleLocation vehicleLocation)
+        {
+            LastSection = vehicleLocation.LastSection;
+            LastAddress = vehicleLocation.LastAddress;
+            BarcodePosition = vehicleLocation.BarcodePosition;
+            RealPosition = vehicleLocation.RealPosition;
+            VehicleAngle = vehicleLocation.VehicleAngle;
+            WheelAngle = vehicleLocation.WheelAngle;
+            RealPositionRangeMm = vehicleLocation.RealPositionRangeMm;
+            NeerlyAddress = vehicleLocation.NeerlyAddress;
+        }
+
+        public VehicleLocation()
+        { }
+
         public MapPosition RealPosition
         {
             get

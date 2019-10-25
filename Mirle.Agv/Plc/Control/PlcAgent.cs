@@ -1,4 +1,4 @@
-﻿//#define  DebugTestThread 
+﻿    //#define  DebugTestThread 
 //#define  DebugTest 
 
 using ClsMCProtocol;
@@ -612,6 +612,44 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "MeterVoltage":
                                     this.APLCVehicle.Batterys.MeterVoltage = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
+
+                                    switch (this.APLCVehicle.Batterys.BatteryType)
+                                    {
+                                        case EnumBatteryType.Gotech:
+                                            if (this.APLCVehicle.Batterys.MeterVoltage < this.APLCVehicle.Batterys.GotechMinVol + 1.5)
+                                            {
+                                                if (this.APLCVehicle.Batterys.bVoltageAbnormal == false)
+                                                {
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
+                                                    setSOC(10);
+                                                    this.APLCVehicle.Batterys.bVoltageAbnormal = true;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                this.APLCVehicle.Batterys.bVoltageAbnormal = false;
+                                            }
+                                            break;
+                                        case EnumBatteryType.Yinda:
+                                            if (this.APLCVehicle.Batterys.MeterVoltage < this.APLCVehicle.Batterys.YindaMinVol + 1.5)
+                                            {
+                                                if (this.APLCVehicle.Batterys.bVoltageAbnormal == false)
+                                                {
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
+                                                    setSOC(10);
+                                                    this.APLCVehicle.Batterys.bVoltageAbnormal = true;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                this.APLCVehicle.Batterys.bVoltageAbnormal = false;
+                                            }
+                                            break;
+
+                                        default:
+                                            break;
+
+                                    }
                                     break;
                                 case "MeterCurrent":
                                     this.APLCVehicle.Batterys.MeterCurrent = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);

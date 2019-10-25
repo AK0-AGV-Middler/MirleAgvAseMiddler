@@ -22,16 +22,16 @@ namespace Mirle.Agv.Model
         public double YindaMaxVol { get; set; }
         public double YindaMinVol { get; set; }
 
-        public ushort Cell_number { get; set; }     
-        public List<BatteryCell> BatteryCells = new List<BatteryCell>();     
+        public ushort Cell_number { get; set; }
+        public List<BatteryCell> BatteryCells = new List<BatteryCell>();
 
-        public ushort Temperature_sensor_number { get; set; }  
-        public double Temperature_1_MOSFET { get; set; }       
-        public double Temperature_2_Cell { get; set; }         
-        public double Temperature_3_MCU { get; set; }          
-        public double BatteryCurrent { get; set; }             
-        public double Packet_Voltage { get; set; }             
-        public ushort Remain_Capacity { get; set; }            
+        public ushort Temperature_sensor_number { get; set; }
+        public double Temperature_1_MOSFET { get; set; }
+        public double Temperature_2_Cell { get; set; }
+        public double Temperature_3_MCU { get; set; }
+        public double BatteryCurrent { get; set; }
+        public double Packet_Voltage { get; set; }
+        public ushort Remain_Capacity { get; set; }
         public ushort Design_Capacity { get; set; }
 
         public ushort BatterySOCFormPlc { get; set; }//PLC->IPC
@@ -139,7 +139,7 @@ namespace Mirle.Agv.Model
 
         //改由毛哥卡CC mode停止,抓FullChargeIndex變化,代表達到CC mode
         public double CCModeStopVoltage { get; set; } = 61.5; //CC Mode充電停止電壓 (User config)
-        private Boolean bVoltageAbnormal = false;
+        public Boolean bVoltageAbnormal { get; set; } = false;
         private void CountPercentage()
         {
             if (!boolSetMeterAhToZeroFlag)
@@ -174,61 +174,10 @@ namespace Mirle.Agv.Model
                     }
                 }
 
-
-                try
-                {
-                    if (GotechMinVol != 0 && YindaMinVol != 0)
-                    {
-                        switch (BatteryType)
-                        {
-                            case EnumBatteryType.Gotech:
-                                TriggerBatteryLowVoltage(GotechMinVol + 1.5, 10);
-                                break;
-                            case EnumBatteryType.Yinda:
-                                TriggerBatteryLowVoltage(YindaMinVol + 1.5, 10);
-                                break;
-
-                            default:
-                                break;
-
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.StackTrace);
-                }
-
-
             }
 
         }
 
-        private void TriggerBatteryLowVoltage(double MinVol, double SocChange)
-        {
-            if (MeterVoltage < MinVol)
-            {
-                if (bVoltageAbnormal == false)
-                {
-                    bVoltageAbnormal = true;
-                    CcModeAh = (MeterAh + AhWorkingRange * (100.0 - SocChange) / 100.00);
-                }
-                else
-                {
-                    if (Percentage > SocChange)
-                    {
-                        CcModeAh = (MeterAh + AhWorkingRange * (100.0 - SocChange) / 100.00);
-                    }
-                }
-            }
-            else
-            {
-                if (bVoltageAbnormal == true)
-                {
-                    bVoltageAbnormal = false;
-                }
-            }
-        }
 
     }
 }
