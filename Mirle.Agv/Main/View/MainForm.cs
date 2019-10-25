@@ -257,7 +257,7 @@ namespace Mirle.Agv.View
         {
             var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor開關 {DisableParse(!e.IsDisable)}";
             ShowMsgOnMainForm(this, msg);
-            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
         private object DisableParse(bool v)
@@ -285,7 +285,7 @@ namespace Mirle.Agv.View
         private void ShowMsgOnMainForm(object sender, string msg)
         {
             RichTextBoxAppendHead(richTextBox1, msg);
-            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
         public void DrawBasicMap()
@@ -1533,23 +1533,6 @@ namespace Mirle.Agv.View
             ResetImageAndPb();
         }
 
-        //private void txtBarNum_TextChanged(object sender, EventArgs e)
-        //{
-        //    try
-        //    {
-        //        var barNum = int.Parse(txtBarNum.Text);
-        //        if (theMapInfo.allMapBarcodes.ContainsKey(barNum))
-        //        {
-        //            var mapBar = theMapInfo.allMapBarcodes[barNum];
-        //            ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-        //    }
-        //}
-
         private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             switch (Vehicle.Instance.AutoState)
@@ -1630,5 +1613,13 @@ namespace Mirle.Agv.View
         }
 
         public JogPitchForm GetJogPitchForm() => jogPitchForm;
+
+        private void btnReloadConfig_Click(object sender, EventArgs e)
+        {
+            if (theVehicle.AutoState == EnumAutoState.Manual)
+            {
+                mainFlowHandler.ReloadConfig();
+            }
+        }
     }
 }

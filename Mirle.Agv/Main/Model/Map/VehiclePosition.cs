@@ -26,28 +26,28 @@ namespace Mirle.Agv.Model
         public VehicleLocation()
         { }
 
-        public MapPosition RealPosition
-        {
-            get
-            {
-                return realPosition;                
-            }
-            set
-            {
-                if (value == null)
-                {
-                    return;
-                }
-                lock (realPosition)
-                {
-                    if (SimpleDistance(value, realPosition) >= RealPositionRangeMm)
-                    {
-                        realPosition = value;
-                    }
-                }               
-            }
-        }
-        //public MapPosition RealPosition { get; set; } = new MapPosition();
+        //public MapPosition RealPosition
+        //{
+        //    get
+        //    {
+        //        return realPosition;                
+        //    }
+        //    set
+        //    {
+        //        if (value == null)
+        //        {
+        //            return;
+        //        }
+        //        lock (realPosition)
+        //        {
+        //            if (SimpleDistance(value, realPosition) >= RealPositionRangeMm)
+        //            {
+        //                realPosition = value;
+        //            }
+        //        }               
+        //    }
+        //}
+        public MapPosition RealPosition { get; set; } = new MapPosition();
         public double VehicleAngle { get; set; } = 0;
         public int WheelAngle { get; set; } = 0;
         public int RealPositionRangeMm { get; set; } = 15;

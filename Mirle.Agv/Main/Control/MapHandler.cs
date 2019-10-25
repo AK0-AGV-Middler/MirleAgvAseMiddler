@@ -110,7 +110,7 @@ namespace Mirle.Agv.Controller
 
                         lastReadBcrLineId = oneRow.Id;
 
-                        //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         //  , $"LoadBarcodeLineCsv oneRow ok. [lastReadBcrLineId={lastReadBcrLineId}]"));
 
                     }
@@ -180,7 +180,7 @@ namespace Mirle.Agv.Controller
                         }
                     }
 
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     // , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}]"));
 
                     lastReadBcrLineId = oneRow.Id;

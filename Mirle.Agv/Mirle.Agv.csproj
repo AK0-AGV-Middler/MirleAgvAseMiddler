@@ -53,7 +53,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>VehHasCarrier.ico</ApplicationIcon>
+    <ApplicationIcon>Resource\VehHasCarrier.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClsMCProtocol">

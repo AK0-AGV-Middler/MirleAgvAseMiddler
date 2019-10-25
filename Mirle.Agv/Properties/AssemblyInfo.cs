@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // 變更這些屬性的值即可修改組件的相關
 // 資訊。
 [assembly: AssemblyTitle("Mirle.Agv")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Agv Local Controller")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Mirle Automation Corporation")]
 [assembly: AssemblyProduct("Mirle.Agv")]
@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 // 將 ComVisible 設為 false 可對 COM 元件隱藏
 // 組件中的類型。若必須從 COM 存取此組件中的類型，
 // 的類型，請在該類型上將 ComVisible 屬性設定為 true。
-[assembly: ComVisible(false)]
+[assembly: ComVisible(true)]
 
 // 下列 GUID 為專案公開 (Expose) 至 COM 時所要使用的 typelib ID
 [assembly: Guid("f88f96fd-cddf-467e-9b1f-abd97bd7f7c5")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // 您可以指定所有的值，或將組建編號或修訂編號設為預設值
 // 指定為預設值: 
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2019.10.15.2")]
-[assembly: AssemblyFileVersion("2019.10.15.2")]
+[assembly: AssemblyVersion("2019.10.25.01")]
+[assembly: AssemblyFileVersion("2019.10.25.01")]

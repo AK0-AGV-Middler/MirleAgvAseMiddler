@@ -281,8 +281,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         private void VehicleLocationInitial()
         {
             if (IsRealPositionEmpty())
@@ -299,7 +297,7 @@ namespace Mirle.Agv.Controller
             }
             StartTrackPosition();
             StartWatchLowPower();
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"讀取到的電量為{InitialSoc}"));
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"讀取到的電量為{InitialSoc}"));
 
         }
         private bool IsRealPositionEmpty()
@@ -315,6 +313,11 @@ namespace Mirle.Agv.Controller
             }
 
             return false;
+        }
+
+        public void ReloadConfig()
+        {
+            XmlInitial();
         }
 
         #endregion
@@ -370,7 +373,7 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : 開始搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //     , msg));
         }
         public void PauseVisitTransferSteps()
@@ -386,7 +389,7 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : 暫停搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
         }
         public void ResumeVisitTransferSteps()
@@ -400,7 +403,7 @@ namespace Mirle.Agv.Controller
             VisitTransferStepsStatus = VisitTransferStepsStatusBeforePause;
             var msg = $"MainFlow : 恢復搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
         }
         public void StopVisitTransferSteps()
@@ -414,7 +417,7 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : 停止搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //  , msg));
         }
         private void PreVisitTransferSteps()
@@ -426,7 +429,7 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : 搬送流程 前處理, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
         }
         private void AfterVisitTransferSteps(long total)
@@ -452,7 +455,7 @@ namespace Mirle.Agv.Controller
             IsMoveEnd = true;
             var msg = $"MainFlow : 搬送流程 後處理, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
         }
         #endregion
@@ -508,7 +511,7 @@ namespace Mirle.Agv.Controller
             var batterys = theVehicle.ThePlcVehicle.Batterys;
             var msg = $"MainFlow : 開始監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //     , msg));
         }
         public void PauseWatchLowPower()
@@ -519,7 +522,7 @@ namespace Mirle.Agv.Controller
             var batterys = theVehicle.ThePlcVehicle.Batterys;
             var msg = $"MainFlow : 暫停監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
 
         }
@@ -532,7 +535,7 @@ namespace Mirle.Agv.Controller
             var batterys = theVehicle.ThePlcVehicle.Batterys;
             var msg = $"MainFlow : 恢復監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
         }
         public void StopWatchLowPower()
@@ -544,7 +547,7 @@ namespace Mirle.Agv.Controller
             var batterys = theVehicle.ThePlcVehicle.Batterys;
             var msg = $"MainFlow : 停止監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //  , msg));
 
             watchLowPowerShutdownEvent.Set();
@@ -555,7 +558,7 @@ namespace Mirle.Agv.Controller
             WatchLowPowerStatus = EnumThreadStatus.None;
             var msg = $"MainFlow : 監看自動充電 後處理, [ThreadStatus={WatchLowPowerStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
         }
         private bool IsLowPower()
@@ -682,7 +685,7 @@ namespace Mirle.Agv.Controller
             TrackPositionStatus = EnumThreadStatus.None;
             var msg = $"MainFlow : 追蹤座標 後處理, [ThreadStatus={TrackPositionStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
         }
         #endregion
@@ -745,7 +748,7 @@ namespace Mirle.Agv.Controller
                 StartVisitTransferSteps();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 確認。";
                 OnMessageShowEvent?.Invoke(this, okMsg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 //    , okMsg));
             }
             catch (Exception ex)
@@ -971,7 +974,7 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcTransferCmd.CommandId, agvcTransferCmd.GetActiveType(), agvcTransferCmd.SeqNum, 1, reason);
                 reason = $"MainFlow : Reject [{agvcTransferCmd.CommandType}] Command, " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 //       , reason));
                 if (VisitTransferStepsStatus == EnumThreadStatus.Pause)
                 {
@@ -1386,6 +1389,8 @@ namespace Mirle.Agv.Controller
             transferSteps.Add(unloadCmd);
         }
 
+        
+
         private void ConvertOverrideAgvcNextUnloadCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
             MoveCmdInfo moveCmd = GetMoveToUnloadCmdInfo(agvcTransCmd);
@@ -1630,7 +1635,7 @@ namespace Mirle.Agv.Controller
         {
             var msg = $"MainFlow : Idle Visit Next TransferSteps, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
             TransferStepsIndex++;
         }
@@ -2196,24 +2201,21 @@ namespace Mirle.Agv.Controller
                 MapSection lastSection = moveCmd.MovingSections.FindLast(x => x.Id != null);
                 lastSection = TheMapInfo.allMapSections[lastSection.Id];
                 var lastAddress = moveCmd.EndAddress;
-                CmdEndVehiclePosition.BarcodePosition = theVehicle.VehicleLocation.BarcodePosition;
+                CmdEndVehiclePosition = new VehicleLocation(theVehicle.VehicleLocation);
                 CmdEndVehiclePosition.RealPosition = lastAddress.Position;
                 CmdEndVehiclePosition.LastAddress = lastAddress;
                 CmdEndVehiclePosition.LastSection = lastSection;
                 CmdEndVehiclePosition.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(lastAddress.Position, lastSection.HeadAddress.Position);
-                CmdEndVehiclePosition.RealPositionRangeMm = theVehicle.VehicleLocation.RealPositionRangeMm;
-                CmdEndVehiclePosition.VehicleAngle = theVehicle.VehicleLocation.VehicleAngle;
-                CmdEndVehiclePosition.WheelAngle = theVehicle.VehicleLocation.WheelAngle;
                 theVehicle.VehicleLocation = CmdEndVehiclePosition;
 
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                       , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新。"));
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "7", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新失敗。"));
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "7", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
         }
@@ -2342,7 +2344,7 @@ namespace Mirle.Agv.Controller
                 if (theVehicle.ThePlcVehicle.Batterys.Charging)
                 {
                     var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
-                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                           , msg));
                     return;
                 }
@@ -2356,7 +2358,7 @@ namespace Mirle.Agv.Controller
                 else
                 {
                     var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} < {highPercentage:F2}(高水位門檻值), 故送出充電信號";
-                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , msg));
                     OnMessageShowEvent?.Invoke(this, msg);
                 }
@@ -2419,7 +2421,7 @@ namespace Mirle.Agv.Controller
                 if (theVehicle.ThePlcVehicle.Batterys.Charging)
                 {
                     var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
-                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                           , msg));
                     //OnMessageShowEvent?.Invoke(this, msg);
                     return;
@@ -2427,7 +2429,7 @@ namespace Mirle.Agv.Controller
                 else
                 {
                     var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage:F2} < {lowPercentage:F2}(自動充電門檻值), 故送出充電信號";
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     //     , msg));
                     OnMessageShowEvent?.Invoke(this, msg);
                 }
@@ -2484,7 +2486,7 @@ namespace Mirle.Agv.Controller
         public bool StopCharge()
         {
             var msg = $"MainFlow : Stop Charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                  , msg));
 
 
@@ -2495,7 +2497,7 @@ namespace Mirle.Agv.Controller
 
             if (!mapHandler.IsPositionInThisAddress(theVehicle.VehicleLocation.RealPosition, theVehicle.VehicleLocation.LastAddress.Position))
             {
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 , $"MainFlow : Stop charge fail, RealPos is not in LastAddress [Real=({(int)theVehicle.VehicleLocation.RealPosition.X},{(int)theVehicle.VehicleLocation.RealPosition.Y})][LastAddress={theVehicle.VehicleLocation.LastAddress.Id}]"));
                 return true;
             }
@@ -2585,7 +2587,7 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : Stop And Clear";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //     , msg));
         }
 
@@ -2648,7 +2650,7 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlHandler.MoveState}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //     , msg));
         }
 
