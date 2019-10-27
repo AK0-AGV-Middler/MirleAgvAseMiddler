@@ -1220,9 +1220,14 @@ namespace Mirle.Agv.Controller
             return v.Split(',');
         }
 
-        public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort e)
+        public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort batteryPercentage)
         {
-            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+            BatteryPercentageChangeReport(MethodBase.GetCurrentMethod().Name, batteryPercentage);
+        }
+
+        private void BatteryPercentageChangeReport(string sender, ushort batteryPercentage)
+        {
+            Send_Cmd144_StatusChangeReport(sender, batteryPercentage);
         }
 
         public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
@@ -1702,6 +1707,50 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
                 iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
+                iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
+                iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
+
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
+                wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
+
+                var msg = $"[來源{sender}]144 Report. [路徑ID={vehLocation.LastSection.Id}][位置ID={vehLocation.LastAddress.Id}][路徑距離={(uint)vehLocation.LastSection.VehicleDistanceSinceHead}][座標({Convert.ToInt32(vehLocation.RealPosition.X)},{Convert.ToInt32(vehLocation.RealPosition.Y)})][Mode={theVehicle.ModeStatus}][Reserve={agvcTransCmd.ReserveStatus}]";
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+
+                SendCommandWrapper(wrappers);
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+
+        }
+        public void Send_Cmd144_StatusChangeReport(string sender, ushort batteryPercentage)
+        {
+            try
+            {
+                PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
+                VehicleLocation vehLocation = theVehicle.VehicleLocation;
+                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
+
+                ID_144_STATUS_CHANGE_REP iD_144_STATUS_CHANGE_REP = new ID_144_STATUS_CHANGE_REP();
+                iD_144_STATUS_CHANGE_REP.CurrentAdrID = vehLocation.LastAddress.Id;
+                iD_144_STATUS_CHANGE_REP.CurrentSecID = vehLocation.LastSection.Id;
+                iD_144_STATUS_CHANGE_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
+                iD_144_STATUS_CHANGE_REP.ModeStatus = theVehicle.ModeStatus;
+                iD_144_STATUS_CHANGE_REP.ActionStatus = theVehicle.ActionStatus;
+                iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
+                iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(!string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId));
+                iD_144_STATUS_CHANGE_REP.ObstacleStatus = theVehicle.ObstacleStatus;
+                iD_144_STATUS_CHANGE_REP.ReserveStatus = agvcTransCmd.ReserveStatus;// theVehicle.ReserveStatus;
+                iD_144_STATUS_CHANGE_REP.BlockingStatus = theVehicle.BlockingStatus;
+                iD_144_STATUS_CHANGE_REP.PauseStatus = agvcTransCmd.PauseStatus;
+                iD_144_STATUS_CHANGE_REP.ErrorStatus = theVehicle.ErrorStatus;
+                iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
+                iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+                iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
+                iD_144_STATUS_CHANGE_REP.BatteryCapacity = batteryPercentage;
                 iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
                 iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
 

@@ -701,6 +701,10 @@ namespace Mirle.Agv.Controller
                             vChangeList.RemoveAt(vChangeList.Count - 1);
                             AddCommandToCommandList(ref moveCmdList, command, data);
                         }
+                        else if (vChangeList.Count == 1)
+                        {
+                            OverRrideLastVChangeCommand(ref moveCmdList, data, command.Velocity);
+                        }
                         else
                         {
                             RemoveLastVChangeCommand(ref moveCmdList);

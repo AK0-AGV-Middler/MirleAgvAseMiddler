@@ -328,6 +328,7 @@ namespace Mirle.Agv.Controller
             this.theMapInfo = theMapInfo;
             this.plcAgent = plcAgent;
             ReadMoveControlConfigXML(@"D:\MoveControl\MoveControlConfig.xml");
+            WriteSafetyAndSensorByPassLog();
             SetTRTimeToAngleRange();
             InitailSr2000(moveControlConfig.Sr2000ConfigPath);
             elmoDriver = new ElmoDriver(moveControlConfig.ElmoConfigPath, this.alarmHandler);
@@ -410,6 +411,26 @@ namespace Mirle.Agv.Controller
 
             loggerAgent.LogMsg(logFormat.Category, logFormat);
             SetDebugFlowLog(memberName, message);
+        }
+
+        private void WriteSafetyAndSensorByPassLog()
+        {
+            string logMessage = "Safety : \r\n";
+
+            foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
+            {
+                logMessage = logMessage + item.ToString() + " : " + (moveControlConfig.Safety[item].Enable ? "Enable" : "Disable") +
+                             ", Range : " + moveControlConfig.Safety[item].Range.ToString("0.0") + "\r\n";
+            }
+
+            logMessage = logMessage + "\r\nSensorSafety : \r\n";
+
+            foreach (EnumSensorSafetyType item in (EnumSensorSafetyType[])Enum.GetValues(typeof(EnumSensorSafetyType)))
+            {
+                logMessage = logMessage + item.ToString() + " : " + (moveControlConfig.SensorByPass[item].Enable ? "Enable\r\n" : "Disable\r\n");
+            }
+
+            WriteLog("MoveControl", "7", device, "", logMessage);
         }
 
         #region Read MoveControlConfig XML
