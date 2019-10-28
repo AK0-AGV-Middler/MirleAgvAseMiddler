@@ -257,7 +257,7 @@ namespace Mirle.Agv.Controller
                 //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
                 //plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
                 plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
-
+                plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
@@ -268,7 +268,7 @@ namespace Mirle.Agv.Controller
                 alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
                 alarmHandler.OnResetAllAlarmsEvent += middleAgent.AlarmHandler_OnResetAllAlarmsEvent;
 
-                plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
+               
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
             }

@@ -1908,6 +1908,25 @@ namespace Mirle.Agv.Controller
             elmoDriver.ElmoMove(EnumAxis.VTRR, -rightTurn.Distance * wheelAngle, rightTurn.Velocity, EnumMoveType.Absolute,
                                rightTurn.Acceleration, rightTurn.Deceleration, rightTurn.Jerk);
 
+            Thread.Sleep(moveControlConfig.SleepTime * 2);
+            while (!elmoDriver.MoveCompeleteVirtual(EnumAxisType.Turn))
+            {
+                UpdatePosition();
+                SensorSafety();
+
+                if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
+                    return;
+
+                Thread.Sleep(moveControlConfig.SleepTime);
+            }
+
+            if (!elmoDriver.WheelAngleCompare(leftTurn.Distance * wheelAngle, rightTurn.Distance * wheelAngle,
+                                             -leftTurn.Distance * wheelAngle, -rightTurn.Distance * wheelAngle, 5))
+            {
+                SendAlarmCode(142000);
+                EMSControl("虛擬軸轉向沒Link");
+            }
+
             while (!OkToTurnZero(outerWheelEncoder, trunZeroEncoder))
             {
                 if (wheelAngle == 1)

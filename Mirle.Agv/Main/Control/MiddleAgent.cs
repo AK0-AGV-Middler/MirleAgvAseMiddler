@@ -59,6 +59,7 @@ namespace Mirle.Agv.Controller
         private MapSection askingReserveSection = new MapSection();
         //public bool IsPauseAskReserve { get; private set; } = false;
         private EnumCstIdReadResult readResult = EnumCstIdReadResult.Noraml;
+        private bool ReserveOkAskNext { get; set; } = false;
 
         public TcpIpAgent ClientAgent { get; private set; }
         public bool IsCancelByCstIdRead { get; set; } = false;
@@ -481,6 +482,7 @@ namespace Mirle.Agv.Controller
                     {
                         queNeedReserveSections.TryPeek(out MapSection needReserveSection);
                         askingReserveSection = needReserveSection == null ? new MapSection() : needReserveSection;
+                        ReserveOkAskNext = false;
                         Send_Cmd136_AskReserve();
                     }
                 }
@@ -490,7 +492,7 @@ namespace Mirle.Agv.Controller
                 }
                 finally
                 {
-                    SpinWait.SpinUntil(() => false, middlerConfig.AskReserveIntervalMs);
+                    SpinWait.SpinUntil(() => ReserveOkAskNext, middlerConfig.AskReserveIntervalMs);
                     sw.Stop();
                     total += sw.ElapsedMilliseconds;
                 }
@@ -667,7 +669,6 @@ namespace Mirle.Agv.Controller
 
         public void OnGetReserveOk()
         {
-
             if (queNeedReserveSections.Count == 0)
             {
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權失敗 , 未取得通行權路徑列表 is Empty";
@@ -683,12 +684,13 @@ namespace Mirle.Agv.Controller
                 mainFlowHandler.UpdateMoveControlReserveOkPositions(aReserveOkSection);
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權成功";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                ReserveOkAskNext = true;
             }
             else
             {
                 var msg = $"Middler : 延攬{askingReserveSection.Id}通行權失敗, 未取得通行權路徑為{needReserveSection.Id}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            }
+            }           
         }
         public void DequeueNeedReserveSections()
         {
