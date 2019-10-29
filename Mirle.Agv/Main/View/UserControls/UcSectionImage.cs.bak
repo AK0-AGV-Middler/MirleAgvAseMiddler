@@ -27,11 +27,6 @@ namespace Mirle.Agv
 
         private ToolTip toolTip = new ToolTip();
 
-        private int x1 = 0;
-        private int y1 = 0;
-        private int x2 = 0;
-        private int y2 = 0;
-
         public UcSectionImage() : this(new MapInfo(), new MapSection()) { }
         public UcSectionImage(MapInfo theMapInfo) : this(theMapInfo, new MapSection()) { }
         public UcSectionImage(MapInfo theMapInfo, MapSection section)
@@ -55,12 +50,6 @@ namespace Mirle.Agv
             toolTip.SetToolTip(label1, msg);
         }
 
-        public void SetColor(Pen pen)
-        {
-            gra.Clear(Color.Transparent);
-            gra.DrawLine(pen, x1, y1, x2, y2);
-        }
-
         public void DrawSectionImage(Pen aPen)
         {
             MapAddress headAdr = Section.HeadAddress;
@@ -77,11 +66,7 @@ namespace Mirle.Agv
                         label1.Location = new Point(disX / 2, label1.Height * 2);
                         image = new Bitmap(Size.Width, Size.Height);
                         gra = Graphics.FromImage(image);
-
-                        x1 = 0;
-                        y1 = 0;
-                        x2 = disX;
-                        y2 = 0;
+                        gra.DrawLine(aPen, 0, 0, disX, 0);
                     }
                     break;
                 case EnumSectionType.Vertical:
@@ -90,11 +75,7 @@ namespace Mirle.Agv
                         label1.Location = new Point(5, disY / 2);
                         image = new Bitmap(Size.Width, Size.Height);
                         gra = Graphics.FromImage(image);
-
-                        x1 = label1.Width / 2 + 5;
-                        y1 = 0;
-                        x2 = label1.Width / 2 + 5;
-                        y2 = disY;
+                        gra.DrawLine(aPen, label1.Width / 2 + 5, 0, label1.Width / 2 + 5, disY);
                     }
                     break;
                 case EnumSectionType.R2000:
@@ -106,18 +87,12 @@ namespace Mirle.Agv
                         if (VectorHeadToTail.DirX * VectorHeadToTail.DirY > 0)
                         {
                             //左上右下型
-                            x1 = 0;
-                            y1 = 0;
-                            x2 = disX;
-                            y2 = disY;
+                            gra.DrawLine(aPen, 0, 0, disX, disY);
                         }
                         else
                         {
                             //左下右上型
-                            x1 = 0;
-                            y1 = disY;
-                            x2 = disX;
-                            y2 = 0;
+                            gra.DrawLine(aPen, 0, disY, disX, 0);
                         }
                     }
                     break;
@@ -126,7 +101,6 @@ namespace Mirle.Agv
                     break;
             }
 
-            gra.DrawLine(aPen, x1, y1, x2, y2);
             pictureBox1.Image = image;
 
         }

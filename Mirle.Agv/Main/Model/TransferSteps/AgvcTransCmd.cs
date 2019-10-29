@@ -21,6 +21,7 @@ namespace Mirle.Agv.Model.TransferSteps
         public List<string> ToUnloadAddressIds { get; set; } = new List<string>();
         public string LoadAddressId { get; set; } = "";
         public string UnloadAddressId { get; set; } = "";
+        public string AvoidEndAddressId { get; set; } = "";
         public string CassetteId { get; set; } = "";
         public string CommandId { get; set; } = "";
         public ushort SeqNum { get; set; }
@@ -28,6 +29,7 @@ namespace Mirle.Agv.Model.TransferSteps
         public CompleteStatus CompleteStatus { get; set; }
         public VhStopSingle PauseStatus { get; set; } = VhStopSingle.StopSingleOff;
         public VhStopSingle ReserveStatus { get; set; } = VhStopSingle.StopSingleOff;
+        public bool IsAvoidComplete { get; set; }
 
         public AgvcTransCmd()
         {
@@ -158,7 +160,7 @@ namespace Mirle.Agv.Model.TransferSteps
             {
                 ToUnloadSectionIds = guideSectionsToDestination.ToList();
             }
-        }        
+        }
 
         public void ExchangeSectionsAndAddress(AgvcOverrideCmd agvcOverrideCmd)
         {
@@ -166,6 +168,13 @@ namespace Mirle.Agv.Model.TransferSteps
             ToLoadAddressIds = agvcOverrideCmd.ToLoadAddressIds;
             ToUnloadSectionIds = agvcOverrideCmd.ToUnloadSectionIds;
             ToUnloadAddressIds = agvcOverrideCmd.ToUnloadAddressIds;
+        }
+
+        public void CombineAvoid(AgvcMoveCmd agvcMoveCmd)
+        {
+            ToUnloadSectionIds = agvcMoveCmd.ToUnloadSectionIds;
+            ToUnloadAddressIds = agvcMoveCmd.ToUnloadAddressIds;
+            AvoidEndAddressId = agvcMoveCmd.UnloadAddressId;
         }
     }
 
@@ -193,8 +202,7 @@ namespace Mirle.Agv.Model.TransferSteps
                 SeqNum = aSeqNum;
                 SecToUnloadSections(transRequest.GuideSections);
                 SetToUnloadAddresses(transRequest.GuideAddresses);
-
-               // UnloadAddressId = transRequest.DestinationAdr;    10.16.2019 300尚未提供
+                UnloadAddressId = transRequest.DestinationAdr;
             }
             catch (Exception ex)
             {
@@ -216,6 +224,7 @@ namespace Mirle.Agv.Model.TransferSteps
         {
             try
             {
+                CommandType = EnumAgvcTransCommandType.Move;
                 SetToLoadSections(transRequest.GuideSectionsStartToLoad);
                 SetToLoadAddresses(transRequest.GuideAddressesStartToLoad);
                 LoadAddressId = transRequest.LoadAdr;

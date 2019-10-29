@@ -57,6 +57,7 @@ namespace Mirle.Agv.Controller
         private void SetDebugFlowLog(string functionName, string message)
         {
             DebugFlowLog = DateTime.Now.ToString("HH:mm:ss.fff") + "\t" + functionName + "\t" + message + "\r\n" + DebugFlowLog;
+
             if (DebugFlowLog.Length > debugFlowLogMaxLength)
                 DebugFlowLog = DebugFlowLog.Substring(0, debugFlowLogMaxLength);
         }
@@ -327,7 +328,7 @@ namespace Mirle.Agv.Controller
             this.alarmHandler = alarmHandler;
             this.theMapInfo = theMapInfo;
             this.plcAgent = plcAgent;
-            ReadMoveControlConfigXML(@"D:\MoveControl\MoveControlConfig.xml");
+            ReadMoveControlConfigXML(@"D:\AgvConfigs\MoveControlConfig.xml");
             WriteSafetyAndSensorByPassLog();
             SetTRTimeToAngleRange();
             InitailSr2000(moveControlConfig.Sr2000ConfigPath);
@@ -382,19 +383,19 @@ namespace Mirle.Agv.Controller
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
 
-            //if (!elmoDriver.MoveCompelete(EnumAxis.GT) || !elmoDriver.MoveCompelete(EnumAxis.GX))
-            //{
-            //    try
-            //    {
-            //        plcAgent.SetForcELMOServoOffOn();
-            //        WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電!");
-            //    }
-            //    catch
-            //    {
-            //        WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電,但跳Excption!");
-            //    }
-            //}
-            //else
+            if (!elmoDriver.AllAxisStop())
+            {
+                try
+                {
+                    plcAgent.SetForcELMOServoOffOn();
+                    WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電!");
+                }
+                catch
+                {
+                    WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電,但跳Excption!");
+                }
+            }
+            else
                 elmoDriver.DisableAllAxis();
 
             foreach (Sr2000Driver sr2000 in DriverSr2000List)
@@ -2415,6 +2416,7 @@ namespace Mirle.Agv.Controller
                             if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue)
                             {
                                 EMSControl("TR Flow Stop TimeOut!");
+                                break;
                             }
 
                             Thread.Sleep(moveControlConfig.SleepTime);
@@ -2458,6 +2460,7 @@ namespace Mirle.Agv.Controller
                             if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue)
                             {
                                 EMSControl("R2000 Flow Stop TimeOut!");
+                                break;
                             }
 
                             Thread.Sleep(moveControlConfig.SleepTime);
@@ -3413,9 +3416,6 @@ namespace Mirle.Agv.Controller
         #endregion
 
         #region 外部連結 : 產生List、DebugForm相關、狀態、移動完成.
-        /// <summary>
-        ///  when move finished, call this function to notice other class instance that move is finished with status
-        /// </summary>
         public void MoveFinished(EnumMoveComplete status)
         {
             WriteLog("MoveControl", "7", device, "", "status : " + status.ToString());
@@ -3540,25 +3540,29 @@ namespace Mirle.Agv.Controller
             if (ControlData.CloseMoveControl)
             {
                 WriteLog("MoveControl", "7", device, "", "程式關閉中,拒絕Debug Form命令.");
-                errorMessage = "程式關閉中,拒絕Debug Form命令.";
+                errorMessage = "程式關閉中,拒絕AGVM Move命令.";
+                AGVStopResult = "程式關閉中,拒絕AGVM Move命令.";
                 return false;
             }
             else if ((MoveState != EnumMoveState.Error && MoveState != EnumMoveState.Idle))
             {
                 WriteLog("MoveControl", "7", device, "", "移動中,因此無視~!");
                 errorMessage = "移動中,因此無視~!";
+                AGVStopResult = "移動中,因此無視AGVM Move命令~!";
                 return false;
             }
             else if (IsCharging())
             {
                 WriteLog("MoveControl", "7", device, "", "Charging中,因此無視~!");
                 errorMessage = "Charging中";
+                AGVStopResult = "Charging中,因此無視AGVM Move命令~!";
                 return false;
             }
             else if (ForkNotHome())
             {
                 WriteLog("MoveControl", "7", device, "", "Fork不在Home點,因此無視~!");
                 errorMessage = "Fork不在Home點";
+                AGVStopResult = "Fork不在Home點,因此無視AGVM Move命令~!";
                 return false;
             }
 
@@ -3582,6 +3586,7 @@ namespace Mirle.Agv.Controller
                     {
                         WriteLog("MoveControl", "7", device, "", "起點和目前位置差距過大!");
                         errorMessage = "起點和目前位置差距過大!";
+                        AGVStopResult = "起點和目前位置差距過大,因此無視AGVM Move命令~!";
                         return false;
                     }
                 }
@@ -3590,6 +3595,7 @@ namespace Mirle.Agv.Controller
             {
                 WriteLog("MoveControl", "7", device, "", "AGV迷航中(不知道目前在哪),因此無法接受命令!");
                 errorMessage = "AGV迷航中(不知道目前在哪),因此無法接受命令!";
+                AGVStopResult = "AGV迷航中(不知道目前在哪),因此無法接受AGVM Move命令!";
                 return false;
             }
 
@@ -3599,6 +3605,7 @@ namespace Mirle.Agv.Controller
             if (tempCommand == null)
             {
                 WriteLog("MoveControl", "7", device, "", "命令分解失敗~!, errorMessage : " + errorMessage);
+                AGVStopResult = errorMessage;
                 return false;
             }
 

@@ -1368,6 +1368,31 @@ namespace Mirle.Agv.Controller
             }
         }
 
+        public bool AllAxisStop([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && !allAxisList[i].Config.IsVirtualDevice)
+                    {
+                        if (!allAxisList[i].FeedbackData.Disable && !allAxisList[i].FeedbackData.StandStill)
+                            return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                return false;
+            }
+        }
+
         public bool MoveCompeleteVirtual(EnumAxisType type, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
             try

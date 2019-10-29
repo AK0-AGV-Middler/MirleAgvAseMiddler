@@ -156,15 +156,6 @@ namespace Mirle.Agv.View
             aPen.DashStyle = DashStyle.DashDot;
             allPens.Add("BlackDashDot1", aPen);
 
-            aPen = new Pen(Color.Red, 4);
-            allPens.Add("NotGetReserveSection", aPen);
-
-            aPen = new Pen(Color.Green, 4);
-            allPens.Add("GetReserveSection", aPen);
-
-            aPen = new Pen(Color.Blue);
-            allPens.Add("NormalSection", aPen);
-
             ucVehicleImage.Parent = pictureBox1;
             ucVehicleImage.BringToFront();
             ucVehicleImage.Show();
@@ -1343,8 +1334,6 @@ namespace Mirle.Agv.View
         {
             btnAutoManual.Enabled = false;
             SwitchAutoStatus();
-            ClearColor();
-            ResetSectionColor();
             Thread.Sleep(500);
             btnAutoManual.Enabled = true;
         }
@@ -1515,14 +1504,7 @@ namespace Mirle.Agv.View
 
             try
             {
-                if (ucAddressImage.BackColor != Color.Black)
-                {
-                    ucAddressImage.BackColor = Color.Black;
-                    mainFormAddNodes.Add(ucAddressImage.Address);
-                    changeColorAddressList.Add(ucAddressImage);
-                }
-
-                if (moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed)
+                if (moveCommandDebugMode != null)
                 {
                     moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
                     moveCommandDebugMode.Show();
@@ -1621,267 +1603,12 @@ namespace Mirle.Agv.View
 
         public JogPitchForm GetJogPitchForm() => jogPitchForm;
 
-        private void ClearColor()
-        {
-            foreach (UcAddressImage ucAddressImage in changeColorAddressList)
-            {
-                ucAddressImage.BackColor = Color.FromArgb(0, 255, 255, 255);
-            }
-
-            changeColorAddressList = new List<UcAddressImage>();
-        }
-
-        private bool SimulateAGVCMoveCommand()
-        {
-            if (mainFormAddNodes == null || mainFormAddNodes.Count < 2)
-                return false;
-
-            List<MapAddress> nodeMapAddressList = new List<MapAddress>();
-
-            List<string> agvcAddressList = new List<string>();
-            List<string> agvcSectionList = new List<string>();
-            string endAddressId = mainFormAddNodes[mainFormAddNodes.Count - 1].Id;
-
-            MapAddress startAddresee = null;
-            MapAddress endAddresee = null;
-
-            int lastLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[0].Position, mainFormAddNodes[1].Position);
-            int nowLineAngle;
-
-            nodeMapAddressList.Add(mainFormAddNodes[0]);
-
-            for (int i = 1; i < mainFormAddNodes.Count - 1; i++)
-            {
-                nowLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[i].Position, mainFormAddNodes[i + 1].Position);
-                if (nowLineAngle != lastLineAngle)
-                    nodeMapAddressList.Add(mainFormAddNodes[i]);
-
-                lastLineAngle = nowLineAngle;
-            }
-
-            nodeMapAddressList.Add(mainFormAddNodes[mainFormAddNodes.Count - 1]);
-            MapSection section = null;
-            MapSection lastAddressSection = null;
-
-            for (int i = 0; i < nodeMapAddressList.Count - 1; i++)
-            {
-                startAddresee = nodeMapAddressList[i];
-                endAddresee = nodeMapAddressList[i + 1];
-
-                if (theMapInfo.allMapSections.ContainsKey(endAddresee.InsideSectionId))
-                {
-                    if (i != nodeMapAddressList.Count - 2)
-                        return false;
-
-                    lastAddressSection = theMapInfo.allMapSections[endAddresee.InsideSectionId];
-                }
-
-                while (startAddresee != endAddresee)
-                {
-                    if (theMapInfo.allMapSections.ContainsKey(startAddresee.InsideSectionId))
-                    {
-                        if (i != 0)
-                            return false;
-
-                        section = theMapInfo.allMapSections[startAddresee.InsideSectionId];
-                        double distanceToSectionHead = Math.Sqrt(Math.Pow(section.HeadAddress.Position.X - endAddresee.Position.X, 2) +
-                                                                 Math.Pow(section.HeadAddress.Position.Y - endAddresee.Position.Y, 2));
-                        double distanceToSectionTail = Math.Sqrt(Math.Pow(section.TailAddress.Position.X - endAddresee.Position.X, 2) +
-                                                                 Math.Pow(section.TailAddress.Position.Y - endAddresee.Position.Y, 2));
-
-                        agvcSectionList.Add(section.Id);
-
-                        if (distanceToSectionHead > distanceToSectionTail)
-                        {
-                            agvcAddressList.Add(section.HeadAddress.Id);
-                            startAddresee = section.TailAddress;
-                        }
-                        else
-                        {
-                            agvcAddressList.Add(section.TailAddress.Id);
-                            startAddresee = section.HeadAddress;
-                        }
-                    }
-                    else
-                    {
-                        agvcAddressList.Add(startAddresee.Id);
-                        lastLineAngle = computeFunction.ComputeAngleInt(startAddresee.Position, endAddresee.Position);
-
-                        bool findNextSection = false;
-
-                        foreach (var valuePair in theMapInfo.allMapSections)
-                        {
-                            section = valuePair.Value;
-
-                            if (section.HeadAddress == startAddresee)
-                            {
-                                nowLineAngle = computeFunction.ComputeAngleInt(section.HeadAddress.Position, section.TailAddress.Position);
-
-                                if (nowLineAngle == lastLineAngle)
-                                {
-                                    agvcSectionList.Add(section.Id);
-                                    startAddresee = section.TailAddress;
-                                    findNextSection = true;
-                                    break;
-                                }
-                            }
-                            else if (section.TailAddress == startAddresee)
-                            {
-                                nowLineAngle = computeFunction.ComputeAngleInt(section.TailAddress.Position, section.HeadAddress.Position);
-
-                                if (nowLineAngle == lastLineAngle)
-                                {
-                                    agvcSectionList.Add(section.Id);
-                                    startAddresee = section.HeadAddress;
-                                    findNextSection = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!findNextSection)
-                            return false;
-                    }
-
-                    if (section != null && lastAddressSection != null && section == lastAddressSection)
-                    {
-                        if (startAddresee == lastAddressSection.HeadAddress || startAddresee == lastAddressSection.TailAddress)
-                            endAddresee = startAddresee;
-                        else
-                            startAddresee = endAddresee;
-                    }
-                }
-            }
-
-            if (endAddresee != null)
-                agvcAddressList.Add(endAddresee.Id);
-
-            string debugMessage = "address : ";
-            for (int i = 0; i < agvcAddressList.Count; i++)
-                debugMessage = debugMessage + agvcAddressList[i] + " ";
-
-            debugMessage += "\r\nsection : ";
-
-            for (int i = 0; i < agvcSectionList.Count; i++)
-                debugMessage = debugMessage + agvcSectionList[i] + " ";
-
-            debugMessage += "\r\nendAddress : " + endAddressId;
-            
-            //MessageBox.Show(debugMessage);
-            return true;
-        }
-
-        private List<MapAddress> mainFormAddNodes = new List<MapAddress>();
-        private List<UcAddressImage> changeColorAddressList = new List<UcAddressImage>();
-        private ComputeFunction computeFunction = new ComputeFunction();
-
-        private MapAddress endAddress = null;
-        private List<UcSectionImage> changeColorSectionList = new List<UcSectionImage>();
-        private int changeColorSectionListIndex = 0;
-        private int removeSectionIndex = 0;
-
-        public void ChangeToNormalSection(string sectionId)
-        {
-            try
-            {
-                if (removeSectionIndex < changeColorSectionList.Count &&
-                    changeColorSectionList[removeSectionIndex].Id == sectionId)
-                {
-                    changeColorSectionList[removeSectionIndex].SetColor(allPens["NormalSection"]);
-                    removeSectionIndex++;
-                    this.Refresh();
-                }
-            }
-            catch { }
-        }
-
-        public void GetReserveSection(string sectionId)
-        {
-            try
-            {
-                if (changeColorSectionListIndex < changeColorSectionList.Count &&
-                    changeColorSectionList[changeColorSectionListIndex].Id == sectionId)
-                {
-                    changeColorSectionList[changeColorSectionListIndex].SetColor(allPens["GetReserveSection"]);
-                    changeColorSectionListIndex++;
-                    this.Refresh();
-                }
-            }
-            catch { }
-        }
-
-        public void ResetSectionColor()
-        {
-            try
-            {
-                if (changeColorSectionList == null)
-                    changeColorSectionList = new List<UcSectionImage>();
-                else if (changeColorSectionList.Count != 0)
-                {
-                    for (int i = removeSectionIndex; i < changeColorSectionList.Count; i++)
-                        changeColorSectionList[i].SetColor(allPens["NormalSection"]);
-
-                    changeColorSectionList = new List<UcSectionImage>();
-                }
-
-                changeColorSectionListIndex = 0;
-                removeSectionIndex = 0;
-
-                if (endAddress != null)
-                {
-                    if (allUcAddressImages.ContainsKey(endAddress.Id))
-                        allUcAddressImages[endAddress.Id].BackColor = Color.Transparent;
-
-                    endAddress = null;
-                }
-
-                this.Refresh();
-            }
-            catch { }
-        }
-
-        public void SetMovingSectionAndEndPosition(List<MapSection> movingSection, MapAddress movingEndAddress)
-        {
-            try
-            {
-                ResetSectionColor();
-
-                foreach (MapSection section in movingSection)
-                {
-                    if (allUcSectionImages.ContainsKey(section.Id))
-                    {
-                        changeColorSectionList.Add(allUcSectionImages[section.Id]);
-                        allUcSectionImages[section.Id].SetColor(allPens["NotGetReserveSection"]);
-                    }
-                }
-
-                changeColorSectionListIndex = 0;
-                removeSectionIndex = 0;
-
-                if (movingEndAddress != null)
-                {
-                    if (allUcAddressImages.ContainsKey(movingEndAddress.Id))
-                    {
-                        allUcAddressImages[movingEndAddress.Id].BackColor = Color.Green;
-                        endAddress = movingEndAddress;
-                    }
-                }
-
-                this.Refresh();
-            }
-            catch { }
-        }
-        
         private void btnReloadConfig_Click(object sender, EventArgs e)
         {
-            ClearColor();
-            SimulateAGVCMoveCommand();
-            mainFormAddNodes = new List<MapAddress>();
-
-            //if (theVehicle.AutoState == EnumAutoState.Manual)
-            //{
-            //    mainFlowHandler.ReloadConfig();
-            //}
+            if (theVehicle.AutoState == EnumAutoState.Manual)
+            {
+                mainFlowHandler.ReloadConfig();
+            }
         }
     }
 }

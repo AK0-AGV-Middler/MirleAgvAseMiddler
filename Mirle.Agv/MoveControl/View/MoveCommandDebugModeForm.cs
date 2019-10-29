@@ -20,7 +20,7 @@ namespace Mirle.Agv.View
         private SimulateSettingAGVAngleForm settingAngleForm;
         private MoveControlSimulateStateForm simulateStateForm;
         private ComputeFunction computeFunction = new ComputeFunction();
-
+        private bool hideFunctionOn = false;
         private List<string> commandStringList = new List<string>();
         private List<string> reserveStringList = new List<string>();
         private int reserveIndex;
@@ -915,7 +915,9 @@ namespace Mirle.Agv.View
 
             button_SimulationModeChange.Enabled = false;
             moveControl.SimulationMode = (button_SimulationModeChange.Text == "關閉中");
+
             button_SimulateState.Visible = moveControl.SimulationMode;
+
             simulationModeFirstDoubleClick = moveControl.SimulationMode;
             button_SimulationModeChange.Text = (button_SimulationModeChange.Text == "關閉中") ? "開啟中" : "關閉中";
             button_SimulationModeChange.BackColor = moveControl.SimulationMode ? Color.Red : Color.Transparent;
@@ -1271,6 +1273,17 @@ namespace Mirle.Agv.View
             }
 
             listCmdAddressActions.Items.Add(tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1].ToString());
+        }
+
+        private void tP_Admin_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Location.X > 136 + 80 && e.Location.X < 136 + 80 + 80 &&
+                e.Location.Y > 23 && e.Location.Y < 23 + 30)
+            {
+                hideFunctionOn = !hideFunctionOn;
+
+                MessageBox.Show("隱藏Function " + (hideFunctionOn ? "開啟!" : "關閉!"));
+            }
         }
     }
 }

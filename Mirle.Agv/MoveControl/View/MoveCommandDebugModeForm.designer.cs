@@ -1321,13 +1321,14 @@ namespace Mirle.Agv.View
             this.tP_Admin.TabIndex = 4;
             this.tP_Admin.Text = "Admin";
             this.tP_Admin.UseVisualStyleBackColor = true;
+            this.tP_Admin.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tP_Admin_MouseDoubleClick);
             // 
             // button_SimulationModeChange
             // 
             this.button_SimulationModeChange.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.button_SimulationModeChange.Location = new System.Drawing.Point(136, 23);
             this.button_SimulationModeChange.Name = "button_SimulationModeChange";
-            this.button_SimulationModeChange.Size = new System.Drawing.Size(79, 30);
+            this.button_SimulationModeChange.Size = new System.Drawing.Size(80, 30);
             this.button_SimulationModeChange.TabIndex = 1;
             this.button_SimulationModeChange.Text = "關閉中";
             this.button_SimulationModeChange.UseVisualStyleBackColor = true;

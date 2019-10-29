@@ -482,7 +482,6 @@ namespace Mirle.Agv.Controller
                     {
                         queNeedReserveSections.TryPeek(out MapSection needReserveSection);
                         askingReserveSection = needReserveSection == null ? new MapSection() : needReserveSection;
-                        ReserveOkAskNext = false;
                         Send_Cmd136_AskReserve();
                     }
                 }
@@ -493,6 +492,7 @@ namespace Mirle.Agv.Controller
                 finally
                 {
                     SpinWait.SpinUntil(() => ReserveOkAskNext, middlerConfig.AskReserveIntervalMs);
+                    ReserveOkAskNext = false;
                     sw.Stop();
                     total += sw.ElapsedMilliseconds;
                 }
@@ -666,7 +666,6 @@ namespace Mirle.Agv.Controller
             var msg = $"Middler : 更新可通行路徑列表[{QueMapSectionsToString(queReserveOkSections)}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
-
         public void OnGetReserveOk()
         {
             if (queNeedReserveSections.Count == 0)
@@ -1337,6 +1336,14 @@ namespace Mirle.Agv.Controller
             Send_Cmd134_TransferEventReport();
             Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
         }
+        public void AvoidComplete()
+        {
+            Send_Cmd152_AvoidCompleteReport(0);
+        }
+        public void AvoidFail()
+        {
+            Send_Cmd152_AvoidCompleteReport(1);
+        }
         public bool IsAskReserveAlive() => (thdAskReserve != null) && thdAskReserve.IsAlive;
         public void NoCommand()
         {
@@ -1352,6 +1359,10 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd131_TransferResponse(cmdId, type, seqNum, replyCode, reason);
         }
+        public void ReplyAvoidCommand(AgvcMoveCmd agvcMoveCmd, int replyCode, string reason)
+        {
+            Send_Cmd151_AvoidResponse(agvcMoveCmd.SeqNum, replyCode, reason);
+        }
         public void ChargHandshaking()
         {
             theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusHandshaking;
@@ -1361,7 +1372,7 @@ namespace Mirle.Agv.Controller
         {
             theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusCharging;
             StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-        }
+        }        
         public void ChargeOff()
         {
             theVehicle.ChargeStatus = VhChargeStatus.ChargeStatusNone;
@@ -1596,17 +1607,11 @@ namespace Mirle.Agv.Controller
         public void Receive_Cmd51_AvoidRequest(object sender, TcpIpEventArgs e)
         {
             ID_51_AVOID_REQUEST receive = (ID_51_AVOID_REQUEST)e.objPacket;
-            //TODO: Avoid
             OnMessageShowOnMainFormEvent?.Invoke(this, $"收到避車指令");
-            AgvcMoveCmd agvcMoveCmd = ConvertAvoidRequseIntoPackage(receive, e.iSeqNum);
+            AgvcMoveCmd agvcMoveCmd = new AgvcMoveCmd(receive, e.iSeqNum);
             ShowAvoidRequestToForm(agvcMoveCmd);
             OnAvoideRequestEvent?.Invoke(this, agvcMoveCmd);
-
-            //int replyCode = 0;
-            //string reason = "";
-            //Send_Cmd151_AvoidResponse(e.iSeqNum, replyCode, reason);
         }
-
         private void ShowAvoidRequestToForm(AgvcMoveCmd agvcMoveCmd)
         {
             var msg = $"收到避車指令,避車終點={agvcMoveCmd.UnloadAddressId}.";
@@ -1623,12 +1628,6 @@ namespace Mirle.Agv.Controller
             }
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
-
-        private AgvcMoveCmd ConvertAvoidRequseIntoPackage(ID_51_AVOID_REQUEST receive, ushort iSeqNum)
-        {
-            return new AgvcMoveCmd(receive, iSeqNum);
-        }
-
         public void Send_Cmd151_AvoidResponse(ushort seqNum, int replyCode, string reason)
         {
             try
@@ -2033,7 +2032,7 @@ namespace Mirle.Agv.Controller
                     {
                         string msg = $"取得{askingReserveSection.Id}通行權失敗";
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                        if (mainFlowHandler.IsPauseByNoReserve())
+                        if (mainFlowHandler.IsMoveStopByNoReserve())
                         {
                             if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
                             {
@@ -2076,7 +2075,6 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-
         private CompleteStatus GetCancelCompleteStatus(CMDCancelType replyActiveType, CompleteStatus completeStatus)
         {
             switch (replyActiveType)

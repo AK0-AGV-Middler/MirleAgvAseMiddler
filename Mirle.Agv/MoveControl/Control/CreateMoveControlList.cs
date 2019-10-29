@@ -2078,6 +2078,8 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                System.Diagnostics.Stopwatch createListTimer = new System.Diagnostics.Stopwatch();
+                createListTimer.Restart();
                 tempActionList = moveCmd.AddressActions;
 
                 try
@@ -2099,11 +2101,13 @@ namespace Mirle.Agv.Controller
                     moveCmd.AddressActions.Count != moveCmd.AddressPositions.Count)
                 {
                     errorMessage = "moveCmd的三種List(Action, Position, Speed)數量不正確!";
+                    WriteLog("MoveControl", "7", device, "", "命令分解失敗, 分解時間 : " + createListTimer.ElapsedMilliseconds + "ms!");
                     return null;
                 }
                 else if (moveCmd.AddressActions[moveCmd.AddressActions.Count - 1] != EnumAddressAction.End)
                 {
                     errorMessage = "Action結尾必須是End!";
+                    WriteLog("MoveControl", "7", device, "", "命令分解失敗, 分解時間 : " + createListTimer.ElapsedMilliseconds + "ms!");
                     return null;
                 }
 
@@ -2152,10 +2156,14 @@ namespace Mirle.Agv.Controller
 
                     returnCommand.End = reserveList[reserveList.Count - 1].Position;
 
+                    WriteLog("MoveControl", "7", device, "", "命令分解成功, 分解時間 : " + createListTimer.ElapsedMilliseconds + "ms!");
                     return returnCommand;
                 }
                 else
+                {
+                    WriteLog("MoveControl", "7", device, "", "命令分解失敗, 分解時間 : " + createListTimer.ElapsedMilliseconds + "ms!");
                     return null;
+                }
             }
             catch (Exception ex)
             {
