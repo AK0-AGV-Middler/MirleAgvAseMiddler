@@ -382,19 +382,19 @@ namespace Mirle.Agv.Controller
                 Thread.Sleep(moveControlConfig.SleepTime);
             }
 
-            if (!elmoDriver.MoveCompelete(EnumAxis.GT) || !elmoDriver.MoveCompelete(EnumAxis.GX))
-            {
-                try
-                {
-                    plcAgent.SetForcELMOServoOffOn();
-                    WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電!");
-                }
-                catch
-                {
-                    WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電,但跳Excption!");
-                }
-            }
-            else
+            //if (!elmoDriver.MoveCompelete(EnumAxis.GT) || !elmoDriver.MoveCompelete(EnumAxis.GX))
+            //{
+            //    try
+            //    {
+            //        plcAgent.SetForcELMOServoOffOn();
+            //        WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電!");
+            //    }
+            //    catch
+            //    {
+            //        WriteLog("MoveControl", "7", device, "", "經過StopAndClear後group仍在動作,通知PLC斷電,但跳Excption!");
+            //    }
+            //}
+            //else
                 elmoDriver.DisableAllAxis();
 
             foreach (Sr2000Driver sr2000 in DriverSr2000List)
@@ -1908,7 +1908,7 @@ namespace Mirle.Agv.Controller
             elmoDriver.ElmoMove(EnumAxis.VTRR, -rightTurn.Distance * wheelAngle, rightTurn.Velocity, EnumMoveType.Absolute,
                                rightTurn.Acceleration, rightTurn.Deceleration, rightTurn.Jerk);
 
-            Thread.Sleep(moveControlConfig.SleepTime * 2);
+            Thread.Sleep(500);
             while (!elmoDriver.MoveCompeleteVirtual(EnumAxisType.Turn))
             {
                 UpdatePosition();
