@@ -365,7 +365,6 @@
             this.lblBeamSensorFUL = new System.Windows.Forms.Label();
             this.pnlF = new System.Windows.Forms.Panel();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.ckbHmiThreadControl = new System.Windows.Forms.CheckBox();
             this.grpOperateStatus = new System.Windows.Forms.GroupBox();
             this.lblAGVMode = new System.Windows.Forms.Label();
             this.lblPlcMode = new System.Windows.Forms.Label();
@@ -374,24 +373,24 @@
             this.lblPlcModeManual = new System.Windows.Forms.Label();
             this.lblPlcModeAuto = new System.Windows.Forms.Label();
             this.grpVehicleMode = new System.Windows.Forms.GroupBox();
-            this.lblMVelocity10 = new System.Windows.Forms.Label();
-            this.lblMVelocity50 = new System.Windows.Forms.Label();
-            this.lblMVelocity100 = new System.Windows.Forms.Label();
-            this.lblMVelocity300 = new System.Windows.Forms.Label();
+            this.lblMSpeed10 = new System.Windows.Forms.Label();
+            this.lblMSpeed50 = new System.Windows.Forms.Label();
+            this.lblMSpeed100 = new System.Windows.Forms.Label();
+            this.lblMSpeed300 = new System.Windows.Forms.Label();
             this.lblTSpeedSlow = new System.Windows.Forms.Label();
-            this.lblTSpeedMedium = new System.Windows.Forms.Label();
+            this.lblTSpeedNormal = new System.Windows.Forms.Label();
             this.lblTSpeedFast = new System.Windows.Forms.Label();
-            this.lblMVelocity = new System.Windows.Forms.Label();
+            this.lblMSpeed = new System.Windows.Forms.Label();
             this.lblTSpeed = new System.Windows.Forms.Label();
             this.lblDistanceMm = new System.Windows.Forms.Label();
             this.label101 = new System.Windows.Forms.Label();
             this.lblMoveDistance = new System.Windows.Forms.Label();
             this.lblOperationRevise = new System.Windows.Forms.Label();
             this.lblOperationStop = new System.Windows.Forms.Label();
-            this.lblOperationTurnRight = new System.Windows.Forms.Label();
-            this.lblOperationMoveForward = new System.Windows.Forms.Label();
-            this.lblOperationMoveBackward = new System.Windows.Forms.Label();
-            this.lblOperationTurnLeft = new System.Windows.Forms.Label();
+            this.lblOperationWheelRight = new System.Windows.Forms.Label();
+            this.lblOperationMoveFront = new System.Windows.Forms.Label();
+            this.lblOperationMoveBack = new System.Windows.Forms.Label();
+            this.lblOperationWheelLeft = new System.Windows.Forms.Label();
             this.lblOperation = new System.Windows.Forms.Label();
             this.lblVehicleOperationMode = new System.Windows.Forms.Label();
             this.lblVehicleOperationModeSpinTurn = new System.Windows.Forms.Label();
@@ -414,7 +413,6 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
             this.tabPlcOperation.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel7.SuspendLayout();
@@ -1424,7 +1422,7 @@
             this.txtCommandNo.Name = "txtCommandNo";
             this.txtCommandNo.Size = new System.Drawing.Size(172, 23);
             this.txtCommandNo.TabIndex = 2;
-            this.txtCommandNo.Text = "1";
+            this.txtCommandNo.Text = "5";
             // 
             // label2
             // 
@@ -1637,7 +1635,7 @@
             this.txtErrorReason.Name = "txtErrorReason";
             this.txtErrorReason.Size = new System.Drawing.Size(172, 23);
             this.txtErrorReason.TabIndex = 19;
-            this.txtErrorReason.Text = "1";
+            this.txtErrorReason.Text = "5";
             // 
             // tabPage3
             // 
@@ -2043,7 +2041,7 @@
             this.txtCellVoltage_1.ReadOnly = true;
             this.txtCellVoltage_1.Size = new System.Drawing.Size(60, 23);
             this.txtCellVoltage_1.TabIndex = 71;
-            this.txtCellVoltage_1.Tag = "1";
+            this.txtCellVoltage_1.Tag = "5";
             // 
             // label76
             // 
@@ -4336,8 +4334,6 @@
             // tabPage4
             // 
             this.tabPage4.BackColor = System.Drawing.Color.Transparent;
-            this.tabPage4.Controls.Add(this.button1);
-            this.tabPage4.Controls.Add(this.ckbHmiThreadControl);
             this.tabPage4.Controls.Add(this.grpOperateStatus);
             this.tabPage4.Controls.Add(this.grpVehicleMode);
             this.tabPage4.Controls.Add(this.grpElmoFunction);
@@ -4347,18 +4343,6 @@
             this.tabPage4.Size = new System.Drawing.Size(1289, 643);
             this.tabPage4.TabIndex = 4;
             this.tabPage4.Text = "JogStatus";
-            // 
-            // ckbHmiThreadControl
-            // 
-            this.ckbHmiThreadControl.AutoSize = true;
-            this.ckbHmiThreadControl.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.ckbHmiThreadControl.Location = new System.Drawing.Point(762, 25);
-            this.ckbHmiThreadControl.Name = "ckbHmiThreadControl";
-            this.ckbHmiThreadControl.Size = new System.Drawing.Size(210, 20);
-            this.ckbHmiThreadControl.TabIndex = 4;
-            this.ckbHmiThreadControl.Text = "Plc 人機介面操作功能開啟";
-            this.ckbHmiThreadControl.UseVisualStyleBackColor = true;
-            this.ckbHmiThreadControl.CheckedChanged += new System.EventHandler(this.ckbHmiThreadControl_CheckedChanged);
             // 
             // grpOperateStatus
             // 
@@ -4447,24 +4431,24 @@
             // 
             // grpVehicleMode
             // 
-            this.grpVehicleMode.Controls.Add(this.lblMVelocity10);
-            this.grpVehicleMode.Controls.Add(this.lblMVelocity50);
-            this.grpVehicleMode.Controls.Add(this.lblMVelocity100);
-            this.grpVehicleMode.Controls.Add(this.lblMVelocity300);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed10);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed50);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed100);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed300);
             this.grpVehicleMode.Controls.Add(this.lblTSpeedSlow);
-            this.grpVehicleMode.Controls.Add(this.lblTSpeedMedium);
+            this.grpVehicleMode.Controls.Add(this.lblTSpeedNormal);
             this.grpVehicleMode.Controls.Add(this.lblTSpeedFast);
-            this.grpVehicleMode.Controls.Add(this.lblMVelocity);
+            this.grpVehicleMode.Controls.Add(this.lblMSpeed);
             this.grpVehicleMode.Controls.Add(this.lblTSpeed);
             this.grpVehicleMode.Controls.Add(this.lblDistanceMm);
             this.grpVehicleMode.Controls.Add(this.label101);
             this.grpVehicleMode.Controls.Add(this.lblMoveDistance);
             this.grpVehicleMode.Controls.Add(this.lblOperationRevise);
             this.grpVehicleMode.Controls.Add(this.lblOperationStop);
-            this.grpVehicleMode.Controls.Add(this.lblOperationTurnRight);
-            this.grpVehicleMode.Controls.Add(this.lblOperationMoveForward);
-            this.grpVehicleMode.Controls.Add(this.lblOperationMoveBackward);
-            this.grpVehicleMode.Controls.Add(this.lblOperationTurnLeft);
+            this.grpVehicleMode.Controls.Add(this.lblOperationWheelRight);
+            this.grpVehicleMode.Controls.Add(this.lblOperationMoveFront);
+            this.grpVehicleMode.Controls.Add(this.lblOperationMoveBack);
+            this.grpVehicleMode.Controls.Add(this.lblOperationWheelLeft);
             this.grpVehicleMode.Controls.Add(this.lblOperation);
             this.grpVehicleMode.Controls.Add(this.lblVehicleOperationMode);
             this.grpVehicleMode.Controls.Add(this.lblVehicleOperationModeSpinTurn);
@@ -4478,53 +4462,53 @@
             this.grpVehicleMode.TabStop = false;
             this.grpVehicleMode.Text = "Vehicle Operation";
             // 
-            // lblMVelocity10
+            // lblMSpeed10
             // 
-            this.lblMVelocity10.AutoSize = true;
-            this.lblMVelocity10.BackColor = System.Drawing.Color.Transparent;
-            this.lblMVelocity10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMVelocity10.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblMVelocity10.Location = new System.Drawing.Point(401, 154);
-            this.lblMVelocity10.Name = "lblMVelocity10";
-            this.lblMVelocity10.Size = new System.Drawing.Size(34, 23);
-            this.lblMVelocity10.TabIndex = 29;
-            this.lblMVelocity10.Text = "10";
+            this.lblMSpeed10.AutoSize = true;
+            this.lblMSpeed10.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed10.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed10.Location = new System.Drawing.Point(401, 154);
+            this.lblMSpeed10.Name = "lblMSpeed10";
+            this.lblMSpeed10.Size = new System.Drawing.Size(34, 23);
+            this.lblMSpeed10.TabIndex = 29;
+            this.lblMSpeed10.Text = "10";
             // 
-            // lblMVelocity50
+            // lblMSpeed50
             // 
-            this.lblMVelocity50.AutoSize = true;
-            this.lblMVelocity50.BackColor = System.Drawing.Color.Transparent;
-            this.lblMVelocity50.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMVelocity50.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblMVelocity50.Location = new System.Drawing.Point(321, 154);
-            this.lblMVelocity50.Name = "lblMVelocity50";
-            this.lblMVelocity50.Size = new System.Drawing.Size(34, 23);
-            this.lblMVelocity50.TabIndex = 28;
-            this.lblMVelocity50.Text = "50";
+            this.lblMSpeed50.AutoSize = true;
+            this.lblMSpeed50.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed50.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed50.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed50.Location = new System.Drawing.Point(321, 154);
+            this.lblMSpeed50.Name = "lblMSpeed50";
+            this.lblMSpeed50.Size = new System.Drawing.Size(34, 23);
+            this.lblMSpeed50.TabIndex = 28;
+            this.lblMSpeed50.Text = "50";
             // 
-            // lblMVelocity100
+            // lblMSpeed100
             // 
-            this.lblMVelocity100.AutoSize = true;
-            this.lblMVelocity100.BackColor = System.Drawing.Color.Transparent;
-            this.lblMVelocity100.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMVelocity100.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblMVelocity100.Location = new System.Drawing.Point(233, 154);
-            this.lblMVelocity100.Name = "lblMVelocity100";
-            this.lblMVelocity100.Size = new System.Drawing.Size(45, 23);
-            this.lblMVelocity100.TabIndex = 27;
-            this.lblMVelocity100.Text = "100";
+            this.lblMSpeed100.AutoSize = true;
+            this.lblMSpeed100.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed100.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed100.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed100.Location = new System.Drawing.Point(233, 154);
+            this.lblMSpeed100.Name = "lblMSpeed100";
+            this.lblMSpeed100.Size = new System.Drawing.Size(45, 23);
+            this.lblMSpeed100.TabIndex = 27;
+            this.lblMSpeed100.Text = "100";
             // 
-            // lblMVelocity300
+            // lblMSpeed300
             // 
-            this.lblMVelocity300.AutoSize = true;
-            this.lblMVelocity300.BackColor = System.Drawing.Color.Transparent;
-            this.lblMVelocity300.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMVelocity300.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblMVelocity300.Location = new System.Drawing.Point(144, 154);
-            this.lblMVelocity300.Name = "lblMVelocity300";
-            this.lblMVelocity300.Size = new System.Drawing.Size(45, 23);
-            this.lblMVelocity300.TabIndex = 26;
-            this.lblMVelocity300.Text = "300";
+            this.lblMSpeed300.AutoSize = true;
+            this.lblMSpeed300.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed300.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblMSpeed300.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed300.Location = new System.Drawing.Point(144, 154);
+            this.lblMSpeed300.Name = "lblMSpeed300";
+            this.lblMSpeed300.Size = new System.Drawing.Size(45, 23);
+            this.lblMSpeed300.TabIndex = 26;
+            this.lblMSpeed300.Text = "300";
             // 
             // lblTSpeedSlow
             // 
@@ -4538,17 +4522,17 @@
             this.lblTSpeedSlow.TabIndex = 25;
             this.lblTSpeedSlow.Text = "Slow";
             // 
-            // lblTSpeedMedium
+            // lblTSpeedNormal
             // 
-            this.lblTSpeedMedium.AutoSize = true;
-            this.lblTSpeedMedium.BackColor = System.Drawing.Color.Transparent;
-            this.lblTSpeedMedium.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblTSpeedMedium.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblTSpeedMedium.Location = new System.Drawing.Point(233, 114);
-            this.lblTSpeedMedium.Name = "lblTSpeedMedium";
-            this.lblTSpeedMedium.Size = new System.Drawing.Size(85, 23);
-            this.lblTSpeedMedium.TabIndex = 24;
-            this.lblTSpeedMedium.Text = "Medium";
+            this.lblTSpeedNormal.AutoSize = true;
+            this.lblTSpeedNormal.BackColor = System.Drawing.Color.Transparent;
+            this.lblTSpeedNormal.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblTSpeedNormal.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblTSpeedNormal.Location = new System.Drawing.Point(233, 114);
+            this.lblTSpeedNormal.Name = "lblTSpeedNormal";
+            this.lblTSpeedNormal.Size = new System.Drawing.Size(78, 23);
+            this.lblTSpeedNormal.TabIndex = 24;
+            this.lblTSpeedNormal.Text = "Normal";
             // 
             // lblTSpeedFast
             // 
@@ -4562,16 +4546,16 @@
             this.lblTSpeedFast.TabIndex = 23;
             this.lblTSpeedFast.Text = "Fast";
             // 
-            // lblMVelocity
+            // lblMSpeed
             // 
-            this.lblMVelocity.AutoSize = true;
-            this.lblMVelocity.BackColor = System.Drawing.Color.Transparent;
-            this.lblMVelocity.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblMVelocity.Location = new System.Drawing.Point(17, 154);
-            this.lblMVelocity.Name = "lblMVelocity";
-            this.lblMVelocity.Size = new System.Drawing.Size(110, 21);
-            this.lblMVelocity.TabIndex = 22;
-            this.lblMVelocity.Text = "M Velocity";
+            this.lblMSpeed.AutoSize = true;
+            this.lblMSpeed.BackColor = System.Drawing.Color.Transparent;
+            this.lblMSpeed.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblMSpeed.Location = new System.Drawing.Point(38, 154);
+            this.lblMSpeed.Name = "lblMSpeed";
+            this.lblMSpeed.Size = new System.Drawing.Size(89, 21);
+            this.lblMSpeed.TabIndex = 22;
+            this.lblMSpeed.Text = "M Speed";
             // 
             // lblTSpeed
             // 
@@ -4641,53 +4625,53 @@
             this.lblOperationStop.TabIndex = 15;
             this.lblOperationStop.Text = "Stop";
             // 
-            // lblOperationTurnRight
+            // lblOperationWheelRight
             // 
-            this.lblOperationTurnRight.AutoSize = true;
-            this.lblOperationTurnRight.BackColor = System.Drawing.Color.Transparent;
-            this.lblOperationTurnRight.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblOperationTurnRight.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblOperationTurnRight.Location = new System.Drawing.Point(412, 204);
-            this.lblOperationTurnRight.Name = "lblOperationTurnRight";
-            this.lblOperationTurnRight.Size = new System.Drawing.Size(109, 23);
-            this.lblOperationTurnRight.TabIndex = 14;
-            this.lblOperationTurnRight.Text = "Turn Right";
+            this.lblOperationWheelRight.AutoSize = true;
+            this.lblOperationWheelRight.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationWheelRight.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationWheelRight.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationWheelRight.Location = new System.Drawing.Point(412, 204);
+            this.lblOperationWheelRight.Name = "lblOperationWheelRight";
+            this.lblOperationWheelRight.Size = new System.Drawing.Size(123, 23);
+            this.lblOperationWheelRight.TabIndex = 14;
+            this.lblOperationWheelRight.Text = "Wheel Right";
             // 
-            // lblOperationMoveForward
+            // lblOperationMoveFront
             // 
-            this.lblOperationMoveForward.AutoSize = true;
-            this.lblOperationMoveForward.BackColor = System.Drawing.Color.Transparent;
-            this.lblOperationMoveForward.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblOperationMoveForward.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblOperationMoveForward.Location = new System.Drawing.Point(144, 255);
-            this.lblOperationMoveForward.Name = "lblOperationMoveForward";
-            this.lblOperationMoveForward.Size = new System.Drawing.Size(144, 23);
-            this.lblOperationMoveForward.TabIndex = 13;
-            this.lblOperationMoveForward.Text = "Move Forward";
+            this.lblOperationMoveFront.AutoSize = true;
+            this.lblOperationMoveFront.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationMoveFront.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationMoveFront.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationMoveFront.Location = new System.Drawing.Point(144, 255);
+            this.lblOperationMoveFront.Name = "lblOperationMoveFront";
+            this.lblOperationMoveFront.Size = new System.Drawing.Size(117, 23);
+            this.lblOperationMoveFront.TabIndex = 13;
+            this.lblOperationMoveFront.Text = "Move Front";
             // 
-            // lblOperationMoveBackward
+            // lblOperationMoveBack
             // 
-            this.lblOperationMoveBackward.AutoSize = true;
-            this.lblOperationMoveBackward.BackColor = System.Drawing.Color.Transparent;
-            this.lblOperationMoveBackward.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblOperationMoveBackward.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblOperationMoveBackward.Location = new System.Drawing.Point(363, 255);
-            this.lblOperationMoveBackward.Name = "lblOperationMoveBackward";
-            this.lblOperationMoveBackward.Size = new System.Drawing.Size(158, 23);
-            this.lblOperationMoveBackward.TabIndex = 12;
-            this.lblOperationMoveBackward.Text = "Move Backward";
+            this.lblOperationMoveBack.AutoSize = true;
+            this.lblOperationMoveBack.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationMoveBack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationMoveBack.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationMoveBack.Location = new System.Drawing.Point(301, 255);
+            this.lblOperationMoveBack.Name = "lblOperationMoveBack";
+            this.lblOperationMoveBack.Size = new System.Drawing.Size(114, 23);
+            this.lblOperationMoveBack.TabIndex = 12;
+            this.lblOperationMoveBack.Text = "Move Back";
             // 
-            // lblOperationTurnLeft
+            // lblOperationWheelLeft
             // 
-            this.lblOperationTurnLeft.AutoSize = true;
-            this.lblOperationTurnLeft.BackColor = System.Drawing.Color.Transparent;
-            this.lblOperationTurnLeft.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblOperationTurnLeft.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lblOperationTurnLeft.Location = new System.Drawing.Point(144, 204);
-            this.lblOperationTurnLeft.Name = "lblOperationTurnLeft";
-            this.lblOperationTurnLeft.Size = new System.Drawing.Size(98, 23);
-            this.lblOperationTurnLeft.TabIndex = 11;
-            this.lblOperationTurnLeft.Text = "Turn Left";
+            this.lblOperationWheelLeft.AutoSize = true;
+            this.lblOperationWheelLeft.BackColor = System.Drawing.Color.Transparent;
+            this.lblOperationWheelLeft.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblOperationWheelLeft.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblOperationWheelLeft.Location = new System.Drawing.Point(144, 204);
+            this.lblOperationWheelLeft.Name = "lblOperationWheelLeft";
+            this.lblOperationWheelLeft.Size = new System.Drawing.Size(112, 23);
+            this.lblOperationWheelLeft.TabIndex = 11;
+            this.lblOperationWheelLeft.Text = "Wheel Left";
             // 
             // lblOperation
             // 
@@ -4920,15 +4904,6 @@
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(784, 102);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
             // PlcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -5006,7 +4981,6 @@
             this.grpB.ResumeLayout(false);
             this.grpF.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
-            this.tabPage4.PerformLayout();
             this.grpOperateStatus.ResumeLayout(false);
             this.grpOperateStatus.PerformLayout();
             this.grpVehicleMode.ResumeLayout(false);
@@ -5382,10 +5356,10 @@
         private System.Windows.Forms.Label lblMoveDistance;
         private System.Windows.Forms.Label lblOperationRevise;
         private System.Windows.Forms.Label lblOperationStop;
-        private System.Windows.Forms.Label lblOperationTurnRight;
-        private System.Windows.Forms.Label lblOperationMoveForward;
-        private System.Windows.Forms.Label lblOperationMoveBackward;
-        private System.Windows.Forms.Label lblOperationTurnLeft;
+        private System.Windows.Forms.Label lblOperationWheelRight;
+        private System.Windows.Forms.Label lblOperationMoveFront;
+        private System.Windows.Forms.Label lblOperationMoveBack;
+        private System.Windows.Forms.Label lblOperationWheelLeft;
         private System.Windows.Forms.Label lblOperation;
         private System.Windows.Forms.Label lblVehicleOperationMode;
         private System.Windows.Forms.Label lblVehicleOperationModeSpinTurn;
@@ -5393,18 +5367,16 @@
         private System.Windows.Forms.Label lblVehicleOperationModeTFWheel;
         private System.Windows.Forms.Label lblVehicleOperationModeNormal;
         private System.Windows.Forms.Label lblDistanceMm;
-        private System.Windows.Forms.Label lblMVelocity;
+        private System.Windows.Forms.Label lblMSpeed;
         private System.Windows.Forms.Label lblTSpeed;
-        private System.Windows.Forms.Label lblMVelocity10;
-        private System.Windows.Forms.Label lblMVelocity50;
-        private System.Windows.Forms.Label lblMVelocity100;
-        private System.Windows.Forms.Label lblMVelocity300;
+        private System.Windows.Forms.Label lblMSpeed10;
+        private System.Windows.Forms.Label lblMSpeed50;
+        private System.Windows.Forms.Label lblMSpeed100;
+        private System.Windows.Forms.Label lblMSpeed300;
         private System.Windows.Forms.Label lblTSpeedSlow;
-        private System.Windows.Forms.Label lblTSpeedMedium;
+        private System.Windows.Forms.Label lblTSpeedNormal;
         private System.Windows.Forms.Label lblTSpeedFast;
         private System.Windows.Forms.Label lblAGVMode;
         private System.Windows.Forms.Button btnFakeInterlockError;
-        private System.Windows.Forms.CheckBox ckbHmiThreadControl;
-        private System.Windows.Forms.Button button1;
     }
 }

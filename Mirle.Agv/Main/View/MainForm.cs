@@ -1515,19 +1515,22 @@ namespace Mirle.Agv.View
 
             try
             {
-                if (ucAddressImage.BackColor != Color.Black)
+                if (theVehicle.AutoState== EnumAutoState.Manual)
                 {
-                    ucAddressImage.BackColor = Color.Black;
-                    mainFormAddNodes.Add(ucAddressImage.Address);
-                    changeColorAddressList.Add(ucAddressImage);
-                }
+                    if (ucAddressImage.BackColor != Color.Black)
+                    {
+                        ucAddressImage.BackColor = Color.Black;
+                        mainFormAddNodes.Add(ucAddressImage.Address);
+                        changeColorAddressList.Add(ucAddressImage);
+                    }
 
-                if (moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed)
-                {
-                    moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
-                    moveCommandDebugMode.Show();
-                    moveCommandDebugMode.BringToFront();
-                }
+                    if (moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed)
+                    {
+                        moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
+                        moveCommandDebugMode.Show();
+                        moveCommandDebugMode.BringToFront();
+                    }
+                }              
             }
             catch
             {

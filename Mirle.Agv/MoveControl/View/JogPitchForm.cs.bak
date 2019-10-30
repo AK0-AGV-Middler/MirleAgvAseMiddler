@@ -964,68 +964,12 @@ namespace Mirle.Agv.View
         }
 
 
-        #region PlcJog
-
-        public delegate void plcJog_SettingValue();
-        public plcJog_SettingValue plcJog_mySettingValue;
-        public EnumJogTurnSpeed turnS;
-        public EnumJogMoveVelocity moveV;
-        public double distance;
-
-        public void PlcJog_SettingDelegate(EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
+        /// <summary>
+        /// for plc jogpitch 
+        /// </summary>
+        public void SetPlcJogOperationValue (EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
         {
-            this.turnS = turnS;
-            this.moveV = moveV;
-            this.distance = distance;
-            plcJog_mySettingValue = new plcJog_SettingValue(PlcJog_SetOperationValue);
-        }
-
-        public void PlcJog_RunSettingDelegate()
-        {
-            this.Invoke(plcJog_mySettingValue);
-        }
-
-        public void PlcJog_SetOperationValue()
-        {
-            switch (turnS)
-        {
-                case EnumJogTurnSpeed.High:
-                    rB_JogPitch_TurnSpeed_High.Checked = true;
-                    break;
-                case EnumJogTurnSpeed.Medium:
-                    rB_JogPitch_TurnSpeed_Medium.Checked = true;
-                    break;
-                case EnumJogTurnSpeed.Low:
-                    rB_JogPitch_TurnSpeed_Low.Checked = true;
-                    break;
-                default:
-                    rB_JogPitch_TurnSpeed_Low.Checked = true;
-                    break;
-            }
             
-            switch (moveV)
-            {
-                case EnumJogMoveVelocity.ThreeHundred:
-                    rB_JogPitch_MoveVelocity_300.Checked = true;
-                    break;
-                case EnumJogMoveVelocity.OneHundred:
-                    rB_JogPitch_MoveVelocity_100.Checked = true;
-                    break;
-                case EnumJogMoveVelocity.Fifty:
-                    rB_JogPitch_MoveVelocity_50.Checked = true;
-                    break;
-                case EnumJogMoveVelocity.Ten:
-                    rB_JogPitch_MoveVelocity_10.Checked = true;
-                    break;
-                default:
-                    rB_JogPitch_MoveVelocity_10.Checked = true;
-                    break;
-            }
-            tB_JogPitch_Distance.Text = distance.ToString();
-        }
-
-        public void PlcJog_SetOperationValue(EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
-        {
             switch (turnS)
             {
                 case EnumJogTurnSpeed.High:
@@ -1066,97 +1010,7 @@ namespace Mirle.Agv.View
 
         }
 
-        public void PlcJog_GetOperationStatus(ref PlcOperation ipcOperation)
-        {
 
-            if (ipcOperation.JogElmoFunction != EnumJogElmoFunction.All_Reset)
-            {
-                ipcOperation.JogElmoFunction = EnumJogElmoFunction.Enable;
-                bool bElmoStatus = true;
-                foreach (KeyValuePair<EnumAxis, ElmoAxisFeedbackData> item in jogPitchData.AxisData)
-                {
-                    if (null != item.Value)
-                    {
-                        bElmoStatus = bElmoStatus & item.Value.StandStill;
-                        if (bElmoStatus == false)
-                        {
-                            ipcOperation.JogElmoFunction = EnumJogElmoFunction.Disable;
-                            break;
-                        }
-                    }
-                    
-                }
-            }
 
-            EnumJogRunMode runMode = EnumJogRunMode.No_Use;
-
-            switch (mode)
-            {
-                case EnumJogPitchMode.BackwardWheel:
-                    runMode = EnumJogRunMode.BackwardWheel;
-                    break;
-                case EnumJogPitchMode.ForwardWheel:
-                    runMode = EnumJogRunMode.ForwardWheel;
-                    break;
-                case EnumJogPitchMode.Normal:
-                    runMode = EnumJogRunMode.Normal;
-                    break;
-                case EnumJogPitchMode.SpinTurn:
-                    runMode = EnumJogRunMode.SpinTurn;
-                    break;
-
-            }
-            ipcOperation.JogRunMode = runMode;
-
-            EnumJogTurnSpeed turnS = EnumJogTurnSpeed.No_Use;
-            if (rB_JogPitch_TurnSpeed_High.Checked)
-            {
-                turnS = EnumJogTurnSpeed.High;
-            }
-            if (rB_JogPitch_TurnSpeed_Medium.Checked)
-            {
-                turnS = EnumJogTurnSpeed.Medium;
-            }
-            if (rB_JogPitch_TurnSpeed_Low.Checked)
-            {
-                turnS = EnumJogTurnSpeed.Low;
-            }
-            ipcOperation.JogTurnSpeed = turnS;
-
-            EnumJogMoveVelocity moveVelocity = EnumJogMoveVelocity.No_Use;
-            if (rB_JogPitch_MoveVelocity_300.Checked)
-            {
-                moveVelocity = EnumJogMoveVelocity.ThreeHundred;
-            }
-            if (rB_JogPitch_MoveVelocity_100.Checked)
-            {
-                moveVelocity = EnumJogMoveVelocity.OneHundred;
-            }
-            if (rB_JogPitch_MoveVelocity_50.Checked)
-            {
-                moveVelocity = EnumJogMoveVelocity.Fifty;
-            }
-            if (rB_JogPitch_MoveVelocity_10.Checked)
-            {
-                moveVelocity = EnumJogMoveVelocity.Ten;
-            }
-
-            ipcOperation.JogMoveVelocity = moveVelocity;
-            
-
-            if (cB_JogPitch_MoveAndOntimeRevise.Checked)
-            {
-                ipcOperation.JogMoveOntimeRevise = true;
-            }
-            else
-            {
-                ipcOperation.JogMoveOntimeRevise = false;
-            }
-
-            //  ipcOperation.JogOperation = EnumJogOperation.No_Use; 不進行任何判斷
-            ipcOperation.JogMaxDistance = Convert.ToDouble(tB_JogPitch_Distance.Text);
-
-        }
-        #endregion
     }
 }

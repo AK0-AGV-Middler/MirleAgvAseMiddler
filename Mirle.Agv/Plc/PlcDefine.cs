@@ -95,6 +95,12 @@ namespace Mirle.Agv
 
     }
 
+    public enum EnumJogVehicleMode
+    {
+        No_Use = 0,
+        Auto = 1,
+        Manual = 2
+    }
 
     public enum EnumJogElmoFunction
     {
@@ -110,10 +116,21 @@ namespace Mirle.Agv
         Normal = 1,
         ForwardWheel = 2,
         BackwardWheel = 3,
-        SpinTurn = 4,
-        Stop = 99
+        SpinTurn = 4
 
     }
+
+    public enum EnumJogOperation
+    {
+        No_Use = 0,
+        Stop = 1,
+        MoveBackward = 16,
+        MoveForward = 32,
+        TurnLeft = 64,
+        TurnRight = 128
+
+    }
+
     public enum EnumJogTurnSpeed
     {
         No_Use = 0,
@@ -129,6 +146,33 @@ namespace Mirle.Agv
         Fifty = 2,
         OneHundred = 3,
         ThreeHundred = 4
+    }
+
+    public enum EnumElmoStatus
+    {
+        No_Use = 0,
+        Disable = 1,
+        StandStill = 16
+    }
+
+    public enum EnumPlcOperationStep
+    {
+        No_Use,
+        VehicleModeAuto,
+        VehicleModeManual,
+        ElmoDisable,
+        ElmoEnable,
+        ElmoAllReset,
+        RunModeNormal,
+        RunModeForwardWheel,
+        RunModeBackwardWheel,
+        RunModeSpinTurn,
+        JogOperationStop,
+        JogOperationMoveBackward,
+        JogOperationMoveForward,
+        JogOperationTurnLeft,
+        JogOperationTurnRight
+
     }
 
     #endregion
