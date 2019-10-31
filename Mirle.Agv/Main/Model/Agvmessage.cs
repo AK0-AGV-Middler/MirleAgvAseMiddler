@@ -137,12 +137,13 @@ namespace TcpIpClientSample {
             "c2VfQmxvY2tfQWRySUQYBSABKAkSFAoMQ3VycmVudEFkcklEGAYgASgJEhQK",
             "DEN1cnJlbnRTZWNJRBgHIAEoCRIUCgxTZWNfRGlzdGFuY2UYCCABKA0SLgoN",
             "QkNSUmVhZFJlc3VsdBgJIAEoDjIXLnR1dG9yaWFsLkJDUlJlYWRSZXN1bHQi",
-            "ggIKGklEXzM2X1RSQU5TX0VWRU5UX1JFU1BPTlNFEiYKCUV2ZW50VHlwZRgB",
+            "rwIKGklEXzM2X1RSQU5TX0VWRU5UX1JFU1BPTlNFEiYKCUV2ZW50VHlwZRgB",
             "IAEoDjITLnR1dG9yaWFsLkV2ZW50VHlwZRIzChJJc19SZXNlcnZlX1N1Y2Nl",
             "c3MYAiABKA4yFy50dXRvcmlhbC5SZXNlcnZlUmVzdWx0EikKDUlzX0Jsb2Nr",
             "X1Bhc3MYAyABKA4yEi50dXRvcmlhbC5QYXNzVHlwZRIXCg9SZW5hbWVDYXJy",
             "aWVySUQYBCABKAkSMAoPUmVwbHlBY3RpdmVUeXBlGAUgASgOMhcudHV0b3Jp",
-            "YWwuQ01EQ2FuY2VsVHlwZRIRCglSZXBseUNvZGUYBiABKAUiVgoaSURfMzdf",
+            "YWwuQ01EQ2FuY2VsVHlwZRIRCglSZXBseUNvZGUYBiABKAUSKwoMUmVzZXJ2",
+            "ZUluZm9zGAcgAygLMhUudHV0b3JpYWwuUmVzZXJ2ZUluZm8iVgoaSURfMzdf",
             "VFJBTlNfQ0FOQ0VMX1JFUVVFU1QSDgoGQ21kX0lEGAEgASgJEigKB0FjdFR5",
             "cGUYAiABKA4yFy50dXRvcmlhbC5DTURDYW5jZWxUeXBlImsKHElEXzEzN19U",
             "UkFOU19DQU5DRUxfUkVTUE9OU0USDgoGQ21kX0lEGAEgASgJEigKB0FjdFR5",
@@ -406,7 +407,7 @@ namespace TcpIpClientSample {
             new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ID_135_CST_ID_RENAME_RESPONSE), global::TcpIpClientSample.ID_135_CST_ID_RENAME_RESPONSE.Parser, new[]{ "ReplyCode" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ReserveInfo), global::TcpIpClientSample.ReserveInfo.Parser, new[]{ "ReserveSectionID", "DriveDirction" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ID_136_TRANS_EVENT_REP), global::TcpIpClientSample.ID_136_TRANS_EVENT_REP.Parser, new[]{ "EventType", "ReserveInfos", "RequestBlockID", "CSTID", "ReleaseBlockAdrID", "CurrentAdrID", "CurrentSecID", "SecDistance", "BCRReadResult" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ID_36_TRANS_EVENT_RESPONSE), global::TcpIpClientSample.ID_36_TRANS_EVENT_RESPONSE.Parser, new[]{ "EventType", "IsReserveSuccess", "IsBlockPass", "RenameCarrierID", "ReplyActiveType", "ReplyCode" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ID_36_TRANS_EVENT_RESPONSE), global::TcpIpClientSample.ID_36_TRANS_EVENT_RESPONSE.Parser, new[]{ "EventType", "IsReserveSuccess", "IsBlockPass", "RenameCarrierID", "ReplyActiveType", "ReplyCode", "ReserveInfos" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ID_37_TRANS_CANCEL_REQUEST), global::TcpIpClientSample.ID_37_TRANS_CANCEL_REQUEST.Parser, new[]{ "CmdID", "ActType" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ID_137_TRANS_CANCEL_RESPONSE), global::TcpIpClientSample.ID_137_TRANS_CANCEL_RESPONSE.Parser, new[]{ "CmdID", "ActType", "ReplyCode" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TcpIpClientSample.ID_39_PAUSE_REQUEST), global::TcpIpClientSample.ID_39_PAUSE_REQUEST.Parser, new[]{ "EventType", "PauseType", "ReserveInfos" }, null, null, null),
@@ -8628,6 +8629,7 @@ namespace TcpIpClientSample {
       renameCarrierID_ = other.renameCarrierID_;
       replyActiveType_ = other.replyActiveType_;
       replyCode_ = other.replyCode_;
+      reserveInfos_ = other.reserveInfos_.Clone();
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8701,6 +8703,16 @@ namespace TcpIpClientSample {
       }
     }
 
+    /// <summary>Field number for the "ReserveInfos" field.</summary>
+    public const int ReserveInfosFieldNumber = 7;
+    private static readonly pb::FieldCodec<global::TcpIpClientSample.ReserveInfo> _repeated_reserveInfos_codec
+        = pb::FieldCodec.ForMessage(58, global::TcpIpClientSample.ReserveInfo.Parser);
+    private readonly pbc::RepeatedField<global::TcpIpClientSample.ReserveInfo> reserveInfos_ = new pbc::RepeatedField<global::TcpIpClientSample.ReserveInfo>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::TcpIpClientSample.ReserveInfo> ReserveInfos {
+      get { return reserveInfos_; }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ID_36_TRANS_EVENT_RESPONSE);
@@ -8720,6 +8732,7 @@ namespace TcpIpClientSample {
       if (RenameCarrierID != other.RenameCarrierID) return false;
       if (ReplyActiveType != other.ReplyActiveType) return false;
       if (ReplyCode != other.ReplyCode) return false;
+      if(!reserveInfos_.Equals(other.reserveInfos_)) return false;
       return true;
     }
 
@@ -8732,6 +8745,7 @@ namespace TcpIpClientSample {
       if (RenameCarrierID.Length != 0) hash ^= RenameCarrierID.GetHashCode();
       if (ReplyActiveType != 0) hash ^= ReplyActiveType.GetHashCode();
       if (ReplyCode != 0) hash ^= ReplyCode.GetHashCode();
+      hash ^= reserveInfos_.GetHashCode();
       return hash;
     }
 
@@ -8766,6 +8780,7 @@ namespace TcpIpClientSample {
         output.WriteRawTag(48);
         output.WriteInt32(ReplyCode);
       }
+      reserveInfos_.WriteTo(output, _repeated_reserveInfos_codec);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8789,6 +8804,7 @@ namespace TcpIpClientSample {
       if (ReplyCode != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(ReplyCode);
       }
+      size += reserveInfos_.CalculateSize(_repeated_reserveInfos_codec);
       return size;
     }
 
@@ -8815,6 +8831,7 @@ namespace TcpIpClientSample {
       if (other.ReplyCode != 0) {
         ReplyCode = other.ReplyCode;
       }
+      reserveInfos_.Add(other.reserveInfos_);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8847,6 +8864,10 @@ namespace TcpIpClientSample {
           }
           case 48: {
             ReplyCode = input.ReadInt32();
+            break;
+          }
+          case 58: {
+            reserveInfos_.AddEntriesFrom(input, _repeated_reserveInfos_codec);
             break;
           }
         }

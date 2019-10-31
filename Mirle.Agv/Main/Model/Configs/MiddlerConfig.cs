@@ -26,5 +26,7 @@ namespace Mirle.Agv.Model.Configs
         public int ReserveLengthMeter { get; set; }
         public int AskReserveIntervalMs { get; set; }
         public int NeerlyNoMoveRangeMm { get; set; }
+        public int BcrReadRetryIntervalMs { get; set; }
+        public int BcrReadRetryTimeoutSec { get; set; }
     }
 }

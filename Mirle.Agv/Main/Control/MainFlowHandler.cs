@@ -115,6 +115,8 @@ namespace Mirle.Agv.Controller
         #region Events
         public event EventHandler<InitialEventArgs> OnComponentIntialDoneEvent;
         public event EventHandler<string> OnMessageShowEvent;
+        public event EventHandler<MoveCmdInfo> OnPrepareForAskingReserveEvent;
+        public event EventHandler OnMoveArrivalEvent;
         #endregion
 
         #region Models
@@ -214,7 +216,7 @@ namespace Mirle.Agv.Controller
             {
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "控制層"));
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -234,7 +236,7 @@ namespace Mirle.Agv.Controller
             {
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "台車"));
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -279,7 +281,7 @@ namespace Mirle.Agv.Controller
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "事件"));
 
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -294,7 +296,7 @@ namespace Mirle.Agv.Controller
                 catch (Exception ex)
                 {
                     theVehicle.VehicleLocation.RealPosition = new MapPosition();
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
             }
             StartTrackPosition();
@@ -351,7 +353,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
                 finally
                 {
@@ -490,7 +492,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
                 finally
                 {
@@ -628,7 +630,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
                 finally
                 {
@@ -730,7 +732,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
 
                 middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
                 return;
@@ -759,7 +761,7 @@ namespace Mirle.Agv.Controller
                 var ngMsg = $"MainFlow : 收到 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 處理失敗。";
                 OnMessageShowEvent?.Invoke(this, ngMsg);
 
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                //loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -805,7 +807,7 @@ namespace Mirle.Agv.Controller
             //測 AddressIds 為空
             if (addressIds.Count > 0)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"MainFlow : CheckInSituSectionIdAndAddressId +++FAIL+++, [{type}][InSitu] Address is not empty."));
                 return false;
             }
@@ -813,7 +815,7 @@ namespace Mirle.Agv.Controller
             //測 終點存在於圖資
             if (!TheMapInfo.allMapAddresses.ContainsKey(lastAddress))
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"MainFlow : CheckInSituSectionIdAndAddressId +++FAIL+++, [{type}][InSitu] Address {lastAddress} is not in the map."));
                 return false;
             }
@@ -821,7 +823,7 @@ namespace Mirle.Agv.Controller
             //測 現在還在終點
             if (!mapHandler.IsPositionInThisAddress(insituPosition, TheMapInfo.allMapAddresses[lastAddress].Position))
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"MainFlow : CheckInSituSectionIdAndAddressId +++FAIL+++, [{type}][InSitu] RealPos is not at {lastAddress}."));
                 return false;
             }
@@ -838,7 +840,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，地圖沒有ID為[{id}]的路段。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                       , msg));
                     return false;
                 }
@@ -851,7 +853,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，地圖沒有ID為[{id}]的站點。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                       , msg));
                     return false;
                 }
@@ -865,7 +867,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i + 1}]個路段[{section.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
                     return false;
                 }
@@ -874,7 +876,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 2}]個站點[{addressIds[i + 1]}]不在第[{i + 1}]個路段[{section.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
                     return false;
                 }
@@ -888,7 +890,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i}]個路段[{preSection.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
                     return false;
                 }
@@ -898,7 +900,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i + 1}]個路段[{nextSection.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
                     return false;
                 }
@@ -910,7 +912,7 @@ namespace Mirle.Agv.Controller
             {
                 var msg = $"MainFlow : [{type}]命令檢查失敗，最後一個站點[{lastAddressId}]不在最後一個路段[{lastSection.Id}]內。";
                 OnMessageShowEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
                 return false;
             }
@@ -950,7 +952,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1110,7 +1112,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
 
                 var reason = "替代路徑Exception";
                 RejectTransferCommandAndResume(000026, reason, agvcOverrideCmd);
@@ -1138,6 +1140,10 @@ namespace Mirle.Agv.Controller
                         return;
                     }
                 }
+                else
+                {
+                    GoNextTransferStep = true;
+                }
                 #endregion
 
                 middleAgent.StopAskReserve();
@@ -1147,7 +1153,6 @@ namespace Mirle.Agv.Controller
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupOverrideTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
-                GoNextTransferStep = true;
                 theVehicle.ThePlcVehicle.FakeCassetteId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
@@ -1159,7 +1164,7 @@ namespace Mirle.Agv.Controller
                 StopAndClear();
                 var reason = "替代路徑Exception";
                 RejectTransferCommandAndResume(000026, reason, agvcOverrideCmd);
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
             #endregion
@@ -1186,7 +1191,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1269,7 +1274,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
 
                 var reason = "避車Exception";
@@ -1280,24 +1285,33 @@ namespace Mirle.Agv.Controller
             #region 避車命令生成
             try
             {
-                IsAvoidPauseing = true;
-                if (moveControlHandler.VehclePause())
+                #region Avoid Pause and Cancel MoveControl
+                if (!agvcTransCmd.IsAvoidComplete)
                 {
-                    IsAvoidCanceling = true;
-                    moveControlHandler.VehcleCancel();
+                    IsAvoidPauseing = true;
+                    if (moveControlHandler.VehclePause())
+                    {
+                        IsAvoidCanceling = true;
+                        moveControlHandler.VehcleCancel();
+                    }
+                    else
+                    {
+                        var reason = "Vehicle can not pause.";
+                        RejectAvoidCommandAndResume(000027, reason, agvcMoveCmd);
+                        return;
+                    }
                 }
                 else
                 {
-                    var reason = "Vehicle can not pause.";
-                    RejectAvoidCommandAndResume(000027, reason, agvcMoveCmd);
-                    return;
+                    GoNextTransferStep = true;
                 }
+                #endregion
+
                 middleAgent.StopAskReserve();
                 agvcTransCmd.CombineAvoid(agvcMoveCmd);
                 agvcTransCmd.IsAvoidComplete = false;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupAvoidTransferSteps();
-                GoNextTransferStep = true;
                 theVehicle.ThePlcVehicle.FakeCassetteId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyAvoidCommand(agvcMoveCmd, 0, "");
                 var okmsg = $"MainFlow : 接受避車命令確認，終點[{agvcTransCmd.AvoidEndAddressId}]。";
@@ -1309,7 +1323,7 @@ namespace Mirle.Agv.Controller
                 StopAndClear();
                 var reason = "避車Exception";
                 RejectTransferCommandAndResume(000036, reason, agvcMoveCmd);
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
 
@@ -1338,7 +1352,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1538,7 +1552,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
             return moveCmd;
         }
@@ -1582,7 +1596,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
             return moveCmd;
         }
@@ -1610,7 +1624,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
             return moveCmd;
         }
@@ -1639,7 +1653,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
             return moveCmd;
         }
@@ -1667,7 +1681,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
             return moveCmd;
         }
@@ -1804,7 +1818,7 @@ namespace Mirle.Agv.Controller
             if (!result)
             {
                 var msg = $"MainFlow : CanVehMove, [RobotHome={plcVeh.Robot.ForkHome}][Charging={plcVeh.Batterys.Charging}]";
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                 , msg));
             }
 
@@ -1840,7 +1854,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1851,9 +1865,10 @@ namespace Mirle.Agv.Controller
             try
             {
                 IsMoveEnd = true;
+                OnMoveArrivalEvent?.Invoke(this, new EventArgs());
                 bool isAvoidCmd = !string.IsNullOrEmpty(agvcTransCmd.AvoidEndAddressId);
 
-                #region ! EnumMoveComplete.Success
+                #region Not EnumMoveComplete.Success
                 if (status == EnumMoveComplete.Fail)
                 {
                     if (isAvoidCmd)
@@ -1901,12 +1916,14 @@ namespace Mirle.Agv.Controller
                     {
                         IsOverrideCanceling = false;
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[替代路徑]且移動取消確認");
+                        GoNextTransferStep = true;
                         return;
                     }
                     else if (IsAvoidCanceling)
                     {
                         IsAvoidCanceling = false;
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[避車]且移動取消確認");
+                        GoNextTransferStep = true;
                         return;
                     }
                     else
@@ -1966,7 +1983,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1978,19 +1995,27 @@ namespace Mirle.Agv.Controller
                 {
                     middleAgent.LoadComplete();
                     Stopwatch sw = new Stopwatch();
+                    int bcrReadRetryTimeoutTotal = 0;
+                    int bcrReadRetryTimeoutMs = middlerConfig.BcrReadRetryTimeoutSec * 1000;
+                    int bcrReadRetryIntervalMs = middlerConfig.BcrReadRetryIntervalMs;
                     sw.Start();
                     while (true)
                     {
                         sw.Stop();
-                        if (sw.ElapsedMilliseconds > 5 * 60 * 1000)
+                        if (sw.ElapsedMilliseconds > bcrReadRetryIntervalMs)
                         {
-                            alarmHandler.SetAlarm(000029);
-                            break;
+                            middleAgent.CstIdRead(ReadResult);
+
+                            sw.Reset();
+                            bcrReadRetryTimeoutTotal += bcrReadRetryIntervalMs;
+                            if (bcrReadRetryTimeoutTotal > bcrReadRetryTimeoutMs)
+                            {
+                                alarmHandler.SetAlarm(000029);
+                                break;
+                            }
                         }
-                        else
-                        {
-                            sw.Start();
-                        }
+                        sw.Start();
+
                         SpinWait.SpinUntil(() => false, 100);
 
                         try
@@ -2015,7 +2040,7 @@ namespace Mirle.Agv.Controller
                         }
                         catch (Exception ex)
                         {
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                         }
                     }
 
@@ -2039,9 +2064,53 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(cstId))
+                {
+                    var msg = $"貨物ID讀取失敗";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Fail;
+                    alarmHandler.SetAlarm(000004);
+                    PauseVisitTransferSteps();
+                }
+                else if (cstId == "ERROR")
+                {
+                    var msg = $"貨物ID讀取失敗";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Fail;
+                    alarmHandler.SetAlarm(000005);
+                    PauseVisitTransferSteps();
+                }
+                else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != cstId)
+                {
+                    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合"; ;
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Mismatch;
+                    alarmHandler.SetAlarm(000028);
+                    PauseVisitTransferSteps();
+                }
+                else
+                {
+                    var msg = $"貨物ID[{cstId}]讀取成功";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    ReadResult = EnumCstIdReadResult.Noraml;
+                }
+                middleAgent.CstIdRead(ReadResult);
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
+            }
+        }
+
 
         public bool IsVisitTransferStepsPause() => VisitTransferStepsStatus == EnumThreadStatus.Pause || VisitTransferStepsStatus == EnumThreadStatus.PauseComplete;
 
@@ -2115,7 +2184,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
             }
         }
@@ -2146,7 +2215,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
             }
         }
@@ -2189,7 +2258,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
                 return false;
             }
@@ -2198,6 +2267,7 @@ namespace Mirle.Agv.Controller
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
             middleAgent.StopAskReserve();
+            OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
             middleAgent.NeedReserveSections = moveCmd.MovingSections;
             middleAgent.StartAskReserve();
         }
@@ -2246,7 +2316,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     break;
                 }
             }
@@ -2256,7 +2326,7 @@ namespace Mirle.Agv.Controller
                 isUpdateSection = false;
                 alarmHandler.SetAlarm(000011);
                 var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({vehicleLocation.RealPosition.X:F2},{vehicleLocation.RealPosition.Y:F2})]";
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , msg));
             }
 
@@ -2315,7 +2385,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -2396,7 +2466,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -2452,8 +2522,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"MainFlow : UpdateMiddlerGotReserveOkSections FAIL [SecId={id}][Index={getReserveOkSectionIndex}]"));
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"MainFlow : UpdateMiddlerGotReserveOkSections FAIL [SecId={id}][Index={getReserveOkSectionIndex}]"));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
         }
@@ -2737,7 +2807,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return EnumTransferStepType.Empty;
             }
         }
@@ -2757,7 +2827,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return EnumTransferStepType.Empty;
             }
         }
@@ -2876,55 +2946,6 @@ namespace Mirle.Agv.Controller
 
         private bool IsCancelByAgvcCmd() => agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusAbort || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusCancel || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdmisMatch || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdreadFailed;
 
-        private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
-        {
-            try
-            {
-                if (false/*!theVehicle.ThePlcVehicle.Loading*/)
-                {
-                    //var msg = $"貨物ID讀取失敗";
-                    //OnMessageShowEvent?.Invoke(this, msg);
-                    //ReadResult = EnumCstIdReadResult.Fail;
-                    //alarmHandler.SetAlarm(000003);
-                }
-                else if (string.IsNullOrEmpty(cstId))
-                {
-                    var msg = $"貨物ID讀取失敗";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    ReadResult = EnumCstIdReadResult.Fail;
-                    alarmHandler.SetAlarm(000004);
-                    PauseVisitTransferSteps();
-                }
-                else if (cstId == "ERROR")
-                {
-                    var msg = $"貨物ID讀取失敗";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    ReadResult = EnumCstIdReadResult.Fail;
-                    alarmHandler.SetAlarm(000005);
-                    PauseVisitTransferSteps();
-                }
-                else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != cstId)
-                {
-                    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合"; ;
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    ReadResult = EnumCstIdReadResult.Mismatch;
-                    alarmHandler.SetAlarm(000028);
-                    PauseVisitTransferSteps();
-                }
-                else
-                {
-                    var msg = $"貨物ID[{cstId}]讀取成功";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    ReadResult = EnumCstIdReadResult.Noraml;
-                }
-                middleAgent.CstIdRead(ReadResult);
-            }
-            catch (Exception ex)
-            {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
-            }
-        }
 
         public void SetupVehicleSoc(double percentage)
         {
@@ -2948,7 +2969,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
         }
@@ -3009,7 +3030,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
         }
@@ -3058,7 +3079,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
         }
@@ -3128,7 +3149,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
         }
@@ -3147,7 +3168,7 @@ namespace Mirle.Agv.Controller
         {
             var msg = "DuelStartSectionHappend";
             OnMessageShowEvent?.Invoke(this, msg);
-            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
         public int GetCurWheelAngle()

@@ -480,14 +480,14 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
-                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far"));
+                                    //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
+                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far"));
                                 }
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("RBeamSensor"))
@@ -502,15 +502,15 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-                                    LogFormat logFormat = new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    LogFormat logFormat = new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
                                     LogPlcMsg(loggerAgent, logFormat);
                                 }
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("WBeamSensor"))
@@ -525,14 +525,14 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep"));
+                                    //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep"));
                                 }
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("Bumper"))
@@ -545,8 +545,8 @@ namespace Mirle.Agv.Controller
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("EMO_"))
@@ -559,8 +559,8 @@ namespace Mirle.Agv.Controller
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("Cell_"))
@@ -805,8 +805,8 @@ namespace Mirle.Agv.Controller
                                     }
                                     catch (Exception ex)
                                     {
-                                        //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                                        LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                                        //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                                        LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                                     }
 
                                     //Console.Out.Write("alarm");
@@ -995,8 +995,8 @@ namespace Mirle.Agv.Controller
                     }
                     catch (Exception ex)
                     {
-                        //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString());
-                        LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString()));
+                        //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString());
+                        LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString()));
                     }
 
 
@@ -1004,8 +1004,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
             }
         }
 
@@ -1244,8 +1244,8 @@ namespace Mirle.Agv.Controller
 
             if (status.Equals("ForkCommandNG"))
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "Empty", strLog1));
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "Empty", strLog2));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog1));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog2));
             }
             
         }
@@ -1667,8 +1667,8 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                    //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                 }
                 System.Threading.Thread.Sleep(1);
             }
@@ -2416,7 +2416,7 @@ namespace Mirle.Agv.Controller
                         this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
                     }
                 }
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", liArrayWord.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", liArrayWord.ToString()));
                 foreach (string word in liWarningWord)
                 {
                     for (int i = 0; i < 16; i++)
@@ -2426,7 +2426,7 @@ namespace Mirle.Agv.Controller
                     }
                 }
 
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", liWarningWord.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", liWarningWord.ToString()));
                 if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset Success"));
@@ -2440,7 +2440,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
             }
             liArrayWord.Clear();
             liWarningWord.Clear();
@@ -2484,7 +2484,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
             }
             return result;
         }
@@ -3196,10 +3196,10 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
+                    //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
 
-                    //LogFormat logFormat = new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                    //LogFormat logFormat = new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                 }
                 System.Threading.Thread.Sleep(5);
             }
@@ -3355,7 +3355,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
             }
             return result;
         }
@@ -3745,7 +3745,7 @@ namespace Mirle.Agv.Controller
                 }
             } catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                 LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", ex.ToString()));
                 LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Error: action {open} is failed."));
             }
@@ -3826,7 +3826,7 @@ namespace Mirle.Agv.Controller
                 catch (Exception ex)
                 {
                     //  發生錯誤時停止所有狀態
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                     LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", $"Error: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
                     LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", ex.ToString()));
 
@@ -3940,7 +3940,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
                 LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", ex.ToString()));
             }
         }

@@ -21,6 +21,7 @@ namespace Mirle.Agv.View
     public partial class MainForm : Form
     {
         public MainFlowHandler mainFlowHandler;
+        public MainForm mainForm;
         private MoveControlHandler moveControlHandler;
         private MiddleAgent middleAgent;
         private MiddlerForm middlerForm;
@@ -82,6 +83,7 @@ namespace Mirle.Agv.View
             plcAgent = mainFlowHandler.GetPlcAgent();
             mcProtocol = mainFlowHandler.GetMcProtocol();
             middleAgent = mainFlowHandler.GetMiddleAgent();
+            mainForm = this;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -193,12 +195,17 @@ namespace Mirle.Agv.View
         {
             mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
+            mainFlowHandler.OnPrepareForAskingReserveEvent += MainFlowHandler_OnPrepareForAskingReserveEvent;
+            mainFlowHandler.OnMoveArrivalEvent += MainFlowHandler_OnMoveArrivalEvent;
             middleAgent.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
+            middleAgent.OnReserveOkEvent += MiddleAgent_OnReserveOkEvent;
+            middleAgent.OnPassReserveSectionEvent += MiddleAgent_OnPassReserveSectionEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
             theVehicle.OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
-        }
+            moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
+        }       
 
         private void InitialSoc()
         {
@@ -223,9 +230,54 @@ namespace Mirle.Agv.View
             //ucThdVisitTransferSteps.SetupTitleText("Visit Transfer Steps");
         }
 
+        private void MainFlowHandler_OnPrepareForAskingReserveEvent(object sender, MoveCmdInfo moveCmd)
+        {
+            try
+            {
+                SetMovingSectionAndEndPosition(moveCmd.MovingSections, moveCmd.EndAddress);
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private void MainFlowHandler_OnMoveArrivalEvent(object sender, EventArgs e)
+        {
+            try
+            {
+                ResetSectionColor();
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
         private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
         {
             IsAgvcConnect = isConnect;
+        }
+        private void MiddleAgent_OnReserveOkEvent(object sender, string sectionId)
+        {
+            try
+            {
+                GetReserveSection(sectionId);
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private void MiddleAgent_OnPassReserveSectionEvent(object sender, string passSectionId)
+        {
+            try
+            {
+                ChangeToNormalSection(passSectionId);
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
@@ -245,10 +297,29 @@ namespace Mirle.Agv.View
         }
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
-            btnAlarmReset.Enabled = false;
-            RichTextBoxAppendHead(richTextBox1, msg);
-            Thread.Sleep(500);
-            btnAlarmReset.Enabled = true;
+            try
+            {
+                btnAlarmReset.Enabled = false;
+                RichTextBoxAppendHead(richTextBox1, msg);
+                Thread.Sleep(500);
+                btnAlarmReset.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete e)
+        {
+            try
+            {
+                ResetSectionColor();
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void TheVehicle_OnBeamDisableChangeEvent(object sender, BeamDisableArgs e)
@@ -386,7 +457,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -493,7 +564,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -749,7 +820,7 @@ namespace Mirle.Agv.View
             //}
             //catch (Exception ex)
             //{
-            //    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            //    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             //}
         }
 
@@ -762,7 +833,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -785,7 +856,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateLastAlarm()
@@ -803,7 +874,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateRtbTransferStep()
@@ -852,7 +923,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateRtbAgvcTransCmd()
@@ -885,7 +956,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateUnloadCmdInfo(TransferStep transferStep)
@@ -908,7 +979,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateLoadCmdInfo(TransferStep transferStep)
@@ -931,7 +1002,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateMoveCmdInfo(TransferStep transferStep)
@@ -955,7 +1026,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1037,7 +1108,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
@@ -1076,7 +1147,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void DrawReserveSections()
@@ -1142,7 +1213,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateCharginAndLoading()
@@ -1159,7 +1230,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
@@ -1182,7 +1253,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1202,7 +1273,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
         }
@@ -1279,7 +1350,7 @@ namespace Mirle.Agv.View
         #region Thd Ask Reserve
         private void btnAutoApplyReserveOnce_Click(object sender, EventArgs e)
         {
-            middleAgent.OnGetReserveOk();
+            middleAgent.OnGetReserveOk("");
             RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve Once by MainForm");
         }
 
@@ -1515,7 +1586,7 @@ namespace Mirle.Agv.View
 
             try
             {
-                if (theVehicle.AutoState== EnumAutoState.Manual)
+                if (theVehicle.AutoState == EnumAutoState.Manual)
                 {
                     if (ucAddressImage.BackColor != Color.Black)
                     {
@@ -1530,7 +1601,7 @@ namespace Mirle.Agv.View
                         moveCommandDebugMode.Show();
                         moveCommandDebugMode.BringToFront();
                     }
-                }              
+                }
             }
             catch
             {
@@ -1769,7 +1840,7 @@ namespace Mirle.Agv.View
                 debugMessage = debugMessage + agvcSectionList[i] + " ";
 
             debugMessage += "\r\nendAddress : " + endAddressId;
-            
+
             //MessageBox.Show(debugMessage);
             return true;
         }
@@ -1783,6 +1854,34 @@ namespace Mirle.Agv.View
         private int changeColorSectionListIndex = 0;
         private int removeSectionIndex = 0;
 
+        public delegate void UcSectionImageSetColorCallback(UcSectionImage ucSectionImage, string keyword);
+        public void UcSectionImageSetColor(UcSectionImage ucSectionImage, string keyword)
+        {
+            if (ucSectionImage.InvokeRequired)
+            {
+                UcSectionImageSetColorCallback mydel = new UcSectionImageSetColorCallback(UcSectionImageSetColor);
+                this.Invoke(mydel, new object[] { ucSectionImage, keyword });
+            }
+            else
+            {
+                ucSectionImage.SetColor(allPens[keyword]);
+            }
+        }
+
+        public delegate void RefreshMapCallback(MainForm mainForm);
+        public void RefreshMap(MainForm mainForm)
+        {
+            if (mainForm.InvokeRequired)
+            {
+                RefreshMapCallback del = new RefreshMapCallback(RefreshMap);
+                this.Invoke(del, mainForm);
+            }
+            else
+            {
+                mainForm.Refresh();
+            }
+        }
+
         public void ChangeToNormalSection(string sectionId)
         {
             try
@@ -1790,24 +1889,26 @@ namespace Mirle.Agv.View
                 if (removeSectionIndex < changeColorSectionList.Count &&
                     changeColorSectionList[removeSectionIndex].Id == sectionId)
                 {
-                    changeColorSectionList[removeSectionIndex].SetColor(allPens["NormalSection"]);
+                    //changeColorSectionList[removeSectionIndex].SetColor(allPens["NormalSection"]);
+                    UcSectionImageSetColor(changeColorSectionList[removeSectionIndex], "NormalSection");
                     removeSectionIndex++;
-                    this.Refresh();
+                    RefreshMap(mainForm);
                 }
             }
             catch { }
         }
 
-        public void GetReserveSection(string sectionId)
+        private void GetReserveSection(string sectionId)
         {
             try
             {
                 if (changeColorSectionListIndex < changeColorSectionList.Count &&
                     changeColorSectionList[changeColorSectionListIndex].Id == sectionId)
                 {
-                    changeColorSectionList[changeColorSectionListIndex].SetColor(allPens["GetReserveSection"]);
+                    //changeColorSectionList[changeColorSectionListIndex].SetColor(allPens["GetReserveSection"]);
+                    UcSectionImageSetColor(changeColorSectionList[changeColorSectionListIndex], "GetReserveSection");
                     changeColorSectionListIndex++;
-                    this.Refresh();
+                    RefreshMap(mainForm);
                 }
             }
             catch { }
@@ -1822,7 +1923,11 @@ namespace Mirle.Agv.View
                 else if (changeColorSectionList.Count != 0)
                 {
                     for (int i = removeSectionIndex; i < changeColorSectionList.Count; i++)
-                        changeColorSectionList[i].SetColor(allPens["NormalSection"]);
+                    {
+                        //changeColorSectionList[i].SetColor(allPens["NormalSection"]);
+                        UcSectionImageSetColor(changeColorSectionList[i], "NormalSection");
+                    }
+                        
 
                     changeColorSectionList = new List<UcSectionImage>();
                 }
@@ -1838,10 +1943,11 @@ namespace Mirle.Agv.View
                     endAddress = null;
                 }
 
-                this.Refresh();
+                RefreshMap(mainForm);
             }
             catch { }
         }
+
 
         public void SetMovingSectionAndEndPosition(List<MapSection> movingSection, MapAddress movingEndAddress)
         {
@@ -1853,8 +1959,9 @@ namespace Mirle.Agv.View
                 {
                     if (allUcSectionImages.ContainsKey(section.Id))
                     {
-                        changeColorSectionList.Add(allUcSectionImages[section.Id]);
-                        allUcSectionImages[section.Id].SetColor(allPens["NotGetReserveSection"]);
+                        var ucSectionImage = allUcSectionImages[section.Id];
+                        changeColorSectionList.Add(ucSectionImage);
+                        UcSectionImageSetColor(ucSectionImage, "NotGetReserveSection");                  
                     }
                 }
 
@@ -1870,11 +1977,11 @@ namespace Mirle.Agv.View
                     }
                 }
 
-                this.Refresh();
+                RefreshMap(mainForm);
             }
             catch { }
         }
-        
+
         private void btnReloadConfig_Click(object sender, EventArgs e)
         {
             ClearColor();

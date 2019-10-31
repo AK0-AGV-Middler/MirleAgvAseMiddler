@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Mirle.Agv.Model.Tests
 {
@@ -165,6 +166,24 @@ namespace Mirle.Agv.Model.Tests
             Assert.AreEqual("02", moveSections[1].Id);
 
             Assert.True(true);
+        }
+
+        [Test()]
+        public void SpinWaitTest1031()
+        {
+            int index = 0;
+            bool flag = false;
+            List<int> numbers = new List<int>();
+            while (index<10)
+            {
+                index++;
+                numbers.Add(DateTime.Now.Millisecond);
+
+                SpinWait.SpinUntil(() => flag, 100);
+                flag = !flag;
+            }
+
+            Console.WriteLine();
         }
     }
 }
