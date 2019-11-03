@@ -116,8 +116,7 @@ namespace Mirle.Agv.Model.TransferSteps
             {
                 for (int i = 0; i < SectionIds.Count; i++)
                 {
-                    MapSection mapSection = new MapSection();
-                    mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();
+                    MapSection mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();                    
                     mapSection.CmdDirection = (mapSection.HeadAddress.Id == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
                     MovingSections.Add(mapSection);
                 }
@@ -157,41 +156,51 @@ namespace Mirle.Agv.Model.TransferSteps
 
             try
             {
-                if (MovingSections.Count > 0)
+                #region version 1.0
+                //if (MovingSections.Count > 0)
+                //{
+                //    //Setup first position inside MovingSections[0];
+                //    var realPos = Vehicle.Instance.VehicleLocation.RealPosition;
+                //    MapPosition firstPosition = new MapPosition(realPos.X, realPos.Y);
+
+                //    switch (MovingSections[0].Type)
+                //    {
+                //        case EnumSectionType.None:
+                //            break;
+                //        case EnumSectionType.Horizontal:
+                //            firstPosition.Y = MovingSections[0].HeadAddress.Position.Y;
+                //            break;
+                //        case EnumSectionType.Vertical:
+                //            firstPosition.X = MovingSections[0].HeadAddress.Position.X;
+                //            break;
+                //        case EnumSectionType.R2000:
+                //            firstPosition = theMapInfo.allMapAddresses[AddressIds[0]].Position;
+                //            break;
+                //        default:
+                //            break;
+                //    }
+
+                //    AddressPositions.Add(firstPosition);
+
+                //    for (int i = 0; i < MovingSections.Count - 1; i++)
+                //    {
+                //        MapAddress mapAddress = MovingSections[i].CmdDirection == EnumPermitDirection.Backward ? MovingSections[i].HeadAddress : MovingSections[i].TailAddress;
+                //        var pos = mapAddress.Position;
+                //        AddressPositions.Add(mapAddress.Position);
+                //    }
+                //}
+
+                //var endPosition = theMapInfo.allMapAddresses[EndAddress.Id].Position;
+                //AddressPositions.Add(endPosition);
+
+                #endregion
+
+                #region version 2.0
+                foreach (var mapAddress in MovingAddress)
                 {
-                    //Setup first position inside MovingSections[0];
-                    var realPos = Vehicle.Instance.VehicleLocation.RealPosition;
-                    MapPosition firstPosition = new MapPosition(realPos.X, realPos.Y);
-
-                    switch (MovingSections[0].Type)
-                    {
-                        case EnumSectionType.None:
-                            break;
-                        case EnumSectionType.Horizontal:
-                            firstPosition.Y = MovingSections[0].HeadAddress.Position.Y;
-                            break;
-                        case EnumSectionType.Vertical:
-                            firstPosition.X = MovingSections[0].HeadAddress.Position.X;
-                            break;
-                        case EnumSectionType.R2000:
-                            firstPosition = theMapInfo.allMapAddresses[AddressIds[0]].Position;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    AddressPositions.Add(firstPosition);
-
-                    for (int i = 0; i < MovingSections.Count - 1; i++)
-                    {
-                        MapAddress mapAddress = MovingSections[i].CmdDirection == EnumPermitDirection.Backward ? MovingSections[i].HeadAddress : MovingSections[i].TailAddress;
-                        var pos = mapAddress.Position;
-                        AddressPositions.Add(mapAddress.Position);
-                    }
+                    AddressPositions.Add(mapAddress.Position);
                 }
-
-                var endPosition = theMapInfo.allMapAddresses[EndAddress.Id].Position;
-                AddressPositions.Add(endPosition);
+                #endregion
             }
             catch (Exception ex)
             {
@@ -736,11 +745,11 @@ namespace Mirle.Agv.Model.TransferSteps
                 {
                     Info += $"({Convert.ToInt32(pos.X)},{Convert.ToInt32(pos.Y)})";
                 }
-                Info += "]" + Environment.NewLine + "[AddressActions=";
-                foreach (var act in AddressActions)
-                {
-                    Info += $"({act})";
-                }
+                //Info += "]" + Environment.NewLine + "[AddressActions=";
+                //foreach (var act in AddressActions)
+                //{
+                //    Info += $"({act})";
+                //}
                 Info += "]" + Environment.NewLine + "[SectionSpeedLimits=";
                 foreach (var speed in SectionSpeedLimits)
                 {
@@ -760,24 +769,7 @@ namespace Mirle.Agv.Model.TransferSteps
             {
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
-
-        //public MoveCmdInfo DeepClone()
-        //{
-        //    MoveCmdInfo moveCmd = new MoveCmdInfo();
-        //    moveCmd.AddressActions = AddressActions.DeepClone();
-        //    moveCmd.AddressPositions = AddressPositions.DeepClone();
-        //    moveCmd.SectionSpeedLimits = SectionSpeedLimits.DeepClone();
-        //    moveCmd.SectionIds = SectionIds.DeepClone();
-        //    moveCmd.AddressIds = AddressIds.DeepClone();
-        //    moveCmd.MovingSections = MovingSections.DeepClone();
-        //    moveCmd.MovingSectionsIndex = MovingSectionsIndex;
-        //    moveCmd.CmdId = CmdId;
-        //    moveCmd.CstId = CstId;
-        //    moveCmd.type = type;
-
-        //    return moveCmd;
-        //}
+        }        
     }
 
     [Serializable]

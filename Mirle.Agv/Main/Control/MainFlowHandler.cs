@@ -1545,7 +1545,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupAddressPositions();
-                moveCmd.SetupAddressActions();
+                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1589,7 +1589,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.SetupAddressPositions();
-                moveCmd.SetupAddressActions();
+                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1617,7 +1617,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupNextUnloadAddressPositions();
-                moveCmd.SetupAddressActions();
+                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1646,7 +1646,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupAddressPositions();
-                moveCmd.SetupAddressActions();
+                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1674,7 +1674,7 @@ namespace Mirle.Agv.Controller
                 moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.SetupAddressPositions();
-                moveCmd.SetupAddressActions();
+                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1875,13 +1875,13 @@ namespace Mirle.Agv.Controller
                     {
                         middleAgent.AvoidFail();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動異常終止");
-                        alarmHandler.SetAlarm(000006);
+                        //alarmHandler.SetAlarm(000006);
                         return;
                     }
                     else
                     {
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動異常終止");
-                        alarmHandler.SetAlarm(000006);
+                        //alarmHandler.SetAlarm(000006);
                         return;
                     }
                 }
@@ -1952,7 +1952,8 @@ namespace Mirle.Agv.Controller
 
                 UpdateVehiclePositionAfterArrival(moveCmd);
 
-                StartCharge(moveCmd.EndAddress);
+                Task.Run(() => StartCharge(moveCmd.EndAddress));
+                //StartCharge(moveCmd.EndAddress);
 
                 if (isAvoidCmd)
                 {
@@ -2241,6 +2242,10 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                {
+                    var msg = $"MainFlow : 通知MoveControlHandler傳送";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                }
                 string errorMsg = "";
                 if (moveControlHandler.TransferMove(moveCmd, ref errorMsg))
                 {
@@ -2597,7 +2602,7 @@ namespace Mirle.Agv.Controller
                 if (!isTimeout)
                 {
                     middleAgent.Charging();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
                 }
                 else
                 {
