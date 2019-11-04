@@ -205,7 +205,7 @@ namespace Mirle.Agv.View
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
             theVehicle.OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
             moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
-        }       
+        }
 
         private void InitialSoc()
         {
@@ -795,6 +795,15 @@ namespace Mirle.Agv.View
             //{
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
+
+            if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
+            {
+                ResetSectionColor();
+                ClearColor();
+                SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
+                moveCommandDebugMode.MainShowRunSectionList = false;
+            }
+
             ucSoc.TagValue = Vehicle.Instance.ThePlcVehicle.Batterys.Percentage.ToString("F2");
             if (middleAgent.GetAskingReserveSection().Id != LastAskingReserveSectionId)
             {
@@ -1927,7 +1936,7 @@ namespace Mirle.Agv.View
                         //changeColorSectionList[i].SetColor(allPens["NormalSection"]);
                         UcSectionImageSetColor(changeColorSectionList[i], "NormalSection");
                     }
-                        
+
 
                     changeColorSectionList = new List<UcSectionImage>();
                 }
@@ -1961,7 +1970,7 @@ namespace Mirle.Agv.View
                     {
                         var ucSectionImage = allUcSectionImages[section.Id];
                         changeColorSectionList.Add(ucSectionImage);
-                        UcSectionImageSetColor(ucSectionImage, "NotGetReserveSection");                  
+                        UcSectionImageSetColor(ucSectionImage, "NotGetReserveSection");
                     }
                 }
 

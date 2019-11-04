@@ -1360,6 +1360,8 @@ namespace Mirle.Agv.Controller
                ref List<OneceMoveCommand> oneceMoveCommandList, ref OneceMoveCommand tempOnceMoveCmd, ref string errorMessage)
         {
             // 第一次入彎才需要檢查距離是否不夠.
+            double temp = data.TurnInOutDistance;
+
             if (data.IsFirstTurnIn)
             {
                 data.TurnInOutDistance = data.TurnInSafetyDistance[moveCmd.AddressActions[data.Index]];
@@ -1433,6 +1435,7 @@ namespace Mirle.Agv.Controller
                 }
             }
 
+            data.TurnInOutDistance = temp;
             return true;
         }
 
@@ -1871,7 +1874,7 @@ namespace Mirle.Agv.Controller
             return velocityCommand;
         }
 
-        public bool GetMoveCommandAddressAction(ref MoveCmdInfo moveCmd, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
+        public bool GetMoveCommandAddressAction(ref MoveCmdInfo moveCmd, AGVPosition nowAGV, int wheelAngle, ref string errorMessage, bool middlerSend = true)
         {
             moveCmd.AddressActions = new List<EnumAddressAction>();
             int lastSectionAngle = 0;
@@ -1893,7 +1896,7 @@ namespace Mirle.Agv.Controller
                 return false;
             }
 
-            if (moveCmd.MovingSections == null || moveCmd.MovingSections.Count != moveCmd.SectionSpeedLimits.Count)
+            if (middlerSend && (moveCmd.MovingSections == null || moveCmd.MovingSections.Count != moveCmd.SectionSpeedLimits.Count))
             {
                 errorMessage = (moveCmd.MovingSections == null) ? "moveCmd.MovingAddress == null" :
                     "MovingSections.Count : " + moveCmd.MovingSections.Count.ToString() +
@@ -2026,75 +2029,28 @@ namespace Mirle.Agv.Controller
             }
 
             moveCmd.AddressActions.Add(EnumAddressAction.End);
-
-            bool result = true;
-
-            if (tempActionList.Count != moveCmd.AddressActions.Count)
-            {
-                result = false;
-            }
-            else
-            {
-                for (int i = 0; i < tempActionList.Count && result; i++)
-                {
-                    if (tempActionList[i] != moveCmd.AddressActions[i])
-                        result = false;
-                }
-            }
-
-            if (!result)
-            {
-                WriteLog("MoveControl", "3", device, "", "AGVM 和 CreateMoveContril分解結果不同!");
-                string listData = "";
-
-                for (int i = 0; i < tempActionList.Count; i++)
-                {
-                    listData = listData + " " + tempActionList[i].ToString();
-                }
-
-                WriteLog("MoveControl", "3", device, "", "AGVM : " + listData);
-
-                listData = "";
-
-                for (int i = 0; i < moveCmd.AddressActions.Count; i++)
-                {
-                    listData = listData + " " + moveCmd.AddressActions[i].ToString();
-                }
-
-                WriteLog("MoveControl", "3", device, "", "CreateMoveContril : " + listData);
-            }
-            else
-            {
-                WriteLog("MoveControl", "3", device, "", "AGVM 和 CreateMoveContril分解結果相同!");
-            }
-
             return true;
         }
 
-        public List<EnumAddressAction> tempActionList;
-
         public MoveCommandData CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd,
-                                  AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
+                                  AGVPosition nowAGV, int wheelAngle, ref string errorMessage, bool middlerSend = true)
         {
             try
             {
                 System.Diagnostics.Stopwatch createListTimer = new System.Diagnostics.Stopwatch();
                 createListTimer.Restart();
-                tempActionList = moveCmd.AddressActions;
 
-                try
+                if (middlerSend)
                 {
                     if (!GetMoveCommandAddressAction(ref moveCmd, nowAGV, wheelAngle, ref errorMessage))
                     {
                         WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, errorMessage : " + errorMessage + " !");
-                        moveCmd.AddressActions = tempActionList;
+                        return null;
                     }
                 }
-                catch
-                {
-                    WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, Excption !");
-                    moveCmd.AddressActions = tempActionList;
-                }
+                else
+                    WriteLog("MoveControl", "7", device, "", "debug form send, 因此略過node action計算!");
+
 
                 if (moveCmd.SectionSpeedLimits == null || moveCmd.AddressActions == null || moveCmd.AddressPositions == null ||
                     moveCmd.SectionSpeedLimits.Count == 0 || (moveCmd.SectionSpeedLimits.Count + 1) != moveCmd.AddressPositions.Count ||

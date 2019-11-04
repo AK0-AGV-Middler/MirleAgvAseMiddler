@@ -13,6 +13,9 @@ namespace Mirle.Agv.View
 {
     public partial class MoveCommandDebugModeForm : Form
     {
+        public List<MapSection> RunSectionList { get; set; } = new List<MapSection>();
+        public MapAddress RunEndAddress { get; set; }
+        public bool MainShowRunSectionList { get; set; } = false;
         private MoveControlHandler moveControl;
         private MoveCommandData command;
         private MapInfo theMapInfo = new MapInfo();
@@ -34,10 +37,10 @@ namespace Mirle.Agv.View
         private Dictionary<EnumSensorSafetyType, SensorByPassInformation> sensorByPassUserControl = new Dictionary<EnumSensorSafetyType, SensorByPassInformation>();
 
         private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
-                                                EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
-                                                EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
-                                                EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
-                                                EnumAxis.GX, EnumAxis.GT};
+                                                        EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
+                                                        EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
+                                                        EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
+                                                        EnumAxis.GX, EnumAxis.GT};
 
         #region Initail
         public MoveCommandDebugModeForm(MoveControlHandler moveControl, MapInfo theMapInfo)
@@ -63,10 +66,9 @@ namespace Mirle.Agv.View
             ucLabelTB_EncoderOffset.TagName = "Offset : ";
             ucLabelTB_EncoderPosition.TagName = "VelocityCmd : ";
             AddListMapAddressPositions();
-            AddListMapAddressActions();
-            AddListMapSpeedLimits();
             AddDataGridViewColumn();
             AddAdminSafetyUserControl();
+            HideChangeUI();
         }
 
         private void AddAdminSafetyUserControl()
@@ -253,30 +255,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void AddListMapAddressActions()
-        {
-            listMapAddressActions.Items.Clear();
-            foreach (string item in Enum.GetNames(typeof(EnumAddressAction)))
-            {
-                listMapAddressActions.Items.Add(item);
-            }
-        }
 
-        private void AddListMapSpeedLimits()
-        {
-            listMapSpeedLimits.Items.Clear();
-            Dictionary<double, short> dicSpeedLimits = new Dictionary<double, short>();
-            foreach (var valuePair in theMapInfo.allMapSections)
-            {
-                MapSection mapSection = valuePair.Value;
-                double speedLimit = mapSection.Speed;
-                if (!dicSpeedLimits.ContainsKey(speedLimit))
-                {
-                    dicSpeedLimits.Add(speedLimit, 1);
-                    listMapSpeedLimits.Items.Add(speedLimit);
-                }
-            }
-        }
 
         private void MoveCommandDebugMode_Leave(object sender, EventArgs e)
         {
@@ -317,6 +296,7 @@ namespace Mirle.Agv.View
                 buttonEnable = true;
 
             button_DebugModeSend.Enabled = buttonEnable;
+            button_FromTo.Enabled = buttonEnable;
             label_LockResult.Text = lockResult;
         }
 
@@ -402,6 +382,8 @@ namespace Mirle.Agv.View
 
             label_FlowStop.Text = (moveControl.ControlData.FlowStop || moveControl.ControlData.FlowStopRequeset) ? "Stop" : "Normal";
             label_FlowStop.ForeColor = (label_FlowStop.Text == "Normal") ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+
+            button_SimulateState.BackColor = (hideFunctionOn ? Color.Red : Color.Transparent);
 
             try
             {
@@ -511,6 +493,10 @@ namespace Mirle.Agv.View
                 listMapAddressPositions.SelectedIndex = 0;
 
             listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
+
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+            HideChangeUI();
         }
 
         private void btnRemoveLastAddressPosition_Click(object sender, EventArgs e)
@@ -521,61 +507,15 @@ namespace Mirle.Agv.View
                 listCmdAddressPositions.SelectedIndex = listCmdAddressPositions.Items.Count - 1;
 
             listCmdAddressPositions.Items.RemoveAt(listCmdAddressPositions.SelectedIndex);
+
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+            HideChangeUI();
         }
 
         private void btnAddressPositionsClear_Click(object sender, EventArgs e)
         {
             listCmdAddressPositions.Items.Clear();
-        }
-
-        private void btnAddAddressAction_Click(object sender, EventArgs e)
-        {
-            if (listMapAddressActions.Items.Count < 1)
-                return;
-            if (listMapAddressActions.SelectedIndex < 0)
-                listMapAddressActions.SelectedIndex = 0;
-
-            listCmdAddressActions.Items.Add(listMapAddressActions.SelectedItem);
-        }
-
-        private void btnRemoveLastAddressAction_Click(object sender, EventArgs e)
-        {
-            if (listCmdAddressActions.Items.Count < 1)
-                return;
-            if (listCmdAddressActions.SelectedIndex < 0)
-                listCmdAddressActions.SelectedIndex = listCmdAddressActions.Items.Count - 1;
-
-            listCmdAddressActions.Items.RemoveAt(listCmdAddressActions.SelectedIndex);
-        }
-
-        private void btnClearAddressActions_Click(object sender, EventArgs e)
-        {
-            listCmdAddressActions.Items.Clear();
-        }
-
-        private void btnAddSpeedLimit_Click(object sender, EventArgs e)
-        {
-            if (listMapSpeedLimits.Items.Count < 1)
-                return;
-            if (listMapSpeedLimits.SelectedIndex < 0)
-                listMapSpeedLimits.SelectedIndex = 0;
-
-            listCmdSpeedLimits.Items.Add(listMapSpeedLimits.SelectedItem);
-        }
-
-        private void btnRemoveSpeedLimit_Click(object sender, EventArgs e)
-        {
-            if (listCmdSpeedLimits.Items.Count < 1)
-                return;
-            if (listCmdSpeedLimits.SelectedIndex < 0)
-                listCmdSpeedLimits.SelectedIndex = listCmdSpeedLimits.Items.Count - 1;
-
-            listCmdSpeedLimits.Items.RemoveAt(listCmdSpeedLimits.SelectedIndex);
-        }
-
-        private void btnClearSpeedLimit_Click(object sender, EventArgs e)
-        {
-            listCmdSpeedLimits.Items.Clear();
         }
 
         private void btnPositionXY_Click(object sender, EventArgs e)
@@ -587,13 +527,16 @@ namespace Mirle.Agv.View
 
                 string txtPosition = $"{x.ToString()},{y.ToString()}";
                 listCmdAddressPositions.Items.Add(txtPosition);
+
+                listCmdAddressActions.Items.Clear();
+                listCmdSpeedLimits.Items.Clear();
+                HideChangeUI();
             }
             catch
             {
                 MessageBox.Show("請輸入正確格式..");
             }
         }
-
 
         private void SetSpeedLimits()
         {
@@ -609,7 +552,6 @@ namespace Mirle.Agv.View
 
             for (int i = 0; i < listCmdSpeedLimits.Items.Count; i++)
             {
-                //double limit = (double)listCmdSpeedLimits.Items[i];
                 double limit = double.Parse(listCmdSpeedLimits.Items[i].ToString());
                 moveCmdInfo.SectionSpeedLimits.Add(limit);
             }
@@ -662,41 +604,23 @@ namespace Mirle.Agv.View
             listCmdAddressPositions.Items.Clear();
             listCmdAddressActions.Items.Clear();
             listCmdSpeedLimits.Items.Clear();
+            HideChangeUI();
         }
 
         private void button_DebugModeSend_Click(object sender, EventArgs e)
         {
             try
             {
+                if (listCmdAddressPositions.Items.Count < 2)
+                    MessageBox.Show("至少需要兩個點!");
+
+                if (listCmdAddressActions.Items.Count == 0 || listCmdSpeedLimits.Items.Count == 0)
+                    Button_AutoCreate_Click(null, null);
+
                 string errorMessage = "";
                 SetPositions();
                 SetActions();
                 SetSpeedLimits();
-
-                moveCmdInfo.MovingAddress = new List<MapAddress>();
-
-                moveCmdInfo.MovingSections = new List<MapSection>();
-                MapSection tempMapSection;
-                MapAddress tempMapAddress;
-                for (int i = 0; i < moveCmdInfo.AddressPositions.Count; i++)
-                {
-                    tempMapAddress = new MapAddress();
-                    tempMapAddress.IsTR50 = IsTR50(moveCmdInfo.AddressPositions[i]);
-                    moveCmdInfo.MovingAddress.Add(tempMapAddress);
-
-                    if (i + 1 < moveCmdInfo.AddressPositions.Count)
-                    {
-                        tempMapSection = new MapSection();
-                        if (IsSectionR2000(moveCmdInfo.AddressPositions[i], moveCmdInfo.AddressPositions[i + 1]))
-                            tempMapSection.Type = EnumSectionType.R2000;
-                        else
-                            tempMapSection.Type = EnumSectionType.None;
-
-                        moveCmdInfo.MovingSections.Add(tempMapSection);
-                    }
-                }
-
-                tbC_Debug.SelectedIndex = 1;
 
                 if (moveControl.MoveState != EnumMoveState.Idle)
                 {
@@ -704,25 +628,14 @@ namespace Mirle.Agv.View
                     return;
                 }
 
-                moveCmdInfo.StartAddress = new MapAddress();
-                moveCmdInfo.StartAddress.AddressOffset = new MapAddressOffset();
-                moveCmdInfo.StartAddress.AddressOffset.OffsetX = 0;
-                moveCmdInfo.StartAddress.AddressOffset.OffsetY = 0;
-                moveCmdInfo.StartAddress.AddressOffset.OffsetTheta = 0;
-
-                moveCmdInfo.EndAddress = new MapAddress();
-                moveCmdInfo.EndAddress.AddressOffset = new MapAddressOffset();
-                moveCmdInfo.EndAddress.AddressOffset.OffsetX = 0;
-                moveCmdInfo.EndAddress.AddressOffset.OffsetY = 0;
-                moveCmdInfo.EndAddress.AddressOffset.OffsetTheta = 0;
-
                 command = moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo, ref errorMessage);
 
                 if (command != null)
                 {
-                    moveCmdInfo = null;
+                    tbC_Debug.SelectedIndex = 1;
                     button_SendList.Enabled = true;
                     ShowList();
+                    MainShowRunSectionList = true;
                 }
                 else
                     MessageBox.Show("List 產生失敗!\n" + errorMessage);
@@ -914,9 +827,13 @@ namespace Mirle.Agv.View
                 return;
 
             button_SimulationModeChange.Enabled = false;
+
             moveControl.SimulationMode = (button_SimulationModeChange.Text == "關閉中");
 
-            button_SimulateState.Visible = moveControl.SimulationMode;
+            button_SimulateState.Visible = (hideFunctionOn ? true : moveControl.SimulationMode);
+
+            if (simulateStateForm != null && !simulateStateForm.IsDisposed)
+                simulateStateForm.ResetHideFunctionOnOff(hideFunctionOn);
 
             simulationModeFirstDoubleClick = moveControl.SimulationMode;
             button_SimulationModeChange.Text = (button_SimulationModeChange.Text == "關閉中") ? "開啟中" : "關閉中";
@@ -938,34 +855,10 @@ namespace Mirle.Agv.View
 
                 listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
             }
-        }
 
-        private void listMapAddressActions_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            int index = this.listMapAddressActions.IndexFromPoint(e.Location);
-            if (index != System.Windows.Forms.ListBox.NoMatches)
-            {
-                if (listMapAddressActions.Items.Count < 1)
-                    return;
-                if (listMapAddressActions.SelectedIndex < 0)
-                    return;
-
-                listCmdAddressActions.Items.Add(listMapAddressActions.SelectedItem);
-            }
-        }
-
-        private void listMapSpeedLimits_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            int index = this.listMapSpeedLimits.IndexFromPoint(e.Location);
-            if (index != System.Windows.Forms.ListBox.NoMatches)
-            {
-                if (listMapSpeedLimits.Items.Count < 1)
-                    return;
-                if (listMapSpeedLimits.SelectedIndex < 0)
-                    return;
-
-                listCmdSpeedLimits.Items.Add(listMapSpeedLimits.SelectedItem);
-            }
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+            HideChangeUI();
         }
 
         public void AddAddressPositionByMainFormDoubleClick(string id)
@@ -975,6 +868,10 @@ namespace Mirle.Agv.View
                 string str = theMapInfo.allMapAddresses[id].Position.X.ToString() + "," + theMapInfo.allMapAddresses[id].Position.Y.ToString();
                 listCmdAddressPositions.Items.Add(str);
                 tbC_Debug.SelectedIndex = 0;
+
+                listCmdAddressActions.Items.Clear();
+                listCmdSpeedLimits.Items.Clear();
+                HideChangeUI();
 
                 if (moveControl.SimulationMode && simulationModeFirstDoubleClick)
                 {
@@ -998,8 +895,8 @@ namespace Mirle.Agv.View
 
             foreach (var valuePair in theMapInfo.allMapAddresses)
             {
-                if (Math.Abs(now.X - valuePair.Value.Position.X) <= 15 &&
-                    Math.Abs(now.Y - valuePair.Value.Position.Y) <= 15)
+                if (Math.Abs(now.X - valuePair.Value.Position.X) <= 30 &&
+                    Math.Abs(now.Y - valuePair.Value.Position.Y) <= 30)
                 {
                     if (tempPosition == null || Math.Abs(Math.Pow(valuePair.Value.Position.X - now.X, 2) + Math.Pow(valuePair.Value.Position.Y - now.Y, 2)) <
                                                 Math.Abs(Math.Pow(tempPosition.X - now.X, 2) + Math.Pow(tempPosition.Y - now.Y, 2)))
@@ -1022,14 +919,14 @@ namespace Mirle.Agv.View
             foreach (var valuePair in theMapInfo.allMapSections)
             {
                 if (valuePair.Value.HeadAddress.Position.X == valuePair.Value.TailAddress.Position.X &&
-                     Math.Abs(valuePair.Value.HeadAddress.Position.X - now.X) <= 15)
+                     Math.Abs(valuePair.Value.HeadAddress.Position.X - now.X) <= 30)
                 {
                     string str = valuePair.Value.HeadAddress.Position.X.ToString() + "," + now.Y.ToString();
                     listCmdAddressPositions.Items.Add(str);
                     return;
                 }
                 else if (valuePair.Value.HeadAddress.Position.Y == valuePair.Value.TailAddress.Position.Y &&
-                     Math.Abs(valuePair.Value.HeadAddress.Position.Y - now.Y) <= 15)
+                     Math.Abs(valuePair.Value.HeadAddress.Position.Y - now.Y) <= 30)
                 {
                     string str = now.X.ToString() + "," + valuePair.Value.HeadAddress.Position.Y.ToString();
                     listCmdAddressPositions.Items.Add(str);
@@ -1043,14 +940,25 @@ namespace Mirle.Agv.View
             if (moveControl.location.Real != null)
             {
                 if (!IsAddress(moveControl.location.Real.Position))
+                {
                     FindPositionBySection(moveControl.location.Real.Position);
+
+                    listCmdAddressActions.Items.Clear();
+                    listCmdSpeedLimits.Items.Clear();
+                    HideChangeUI();
+                }
             }
         }
 
         private void button_SimulateState_Click(object sender, EventArgs e)
         {
-            simulateStateForm = new MoveControlSimulateStateForm(moveControl);
-            simulateStateForm.Show();
+            if (simulateStateForm == null || simulateStateForm.IsDisposed)
+            {
+                simulateStateForm = new MoveControlSimulateStateForm(moveControl, hideFunctionOn);
+                simulateStateForm.Show();
+                simulateStateForm.TopMost = true;
+            }
+
         }
 
         private bool IsSectionR2000(MapPosition start, MapPosition end)
@@ -1079,200 +987,128 @@ namespace Mirle.Agv.View
             return true;
         }
 
-        public void GetSectionSpeed(ref MoveCmdInfo moveCmdInfo)
+        public void GetSectionSpeed()
         {
+            if (moveCmdInfo == null)
+                return;
+
+            if (moveCmdInfo.AddressPositions == null || moveCmdInfo.AddressPositions.Count < 2)
+                return;
+
+            if (moveCmdInfo.AddressActions == null || moveCmdInfo.AddressActions.Count < 2)
+                return;
+
             moveCmdInfo.SectionSpeedLimits = new List<double>();
+            bool isLine;
+
+            int firstSectionAngle = computeFunction.ComputeAngleInt(moveCmdInfo.AddressPositions[0], moveCmdInfo.AddressPositions[1]);
+
+            if (moveControl.location.Real == null)
+                return;
+
+            int agvAngle = (int)moveControl.location.Real.AGVAngle;
+
+            isLine = (agvAngle == firstSectionAngle) || (computeFunction.GetCurrectAngle(agvAngle - firstSectionAngle) == 180);
+
+            if (moveCmdInfo.AddressActions[0] == EnumAddressAction.R2000 || moveCmdInfo.AddressActions[0] == EnumAddressAction.BR2000)
+                isLine = true;
 
             for (int i = 0; i < moveCmdInfo.AddressActions.Count - 1; i++)
             {
                 if (moveCmdInfo.AddressActions[i] == EnumAddressAction.R2000 ||
                     moveCmdInfo.AddressActions[i] == EnumAddressAction.BR2000)
                     moveCmdInfo.SectionSpeedLimits.Add(moveControl.moveControlConfig.TurnParameter[EnumAddressAction.R2000].Velocity);
-
                 else
-                    moveCmdInfo.SectionSpeedLimits.Add(400);
+                {
+                    if (moveCmdInfo.AddressActions[i] == EnumAddressAction.TR350 ||
+                        moveCmdInfo.AddressActions[i] == EnumAddressAction.BTR350 ||
+                        moveCmdInfo.AddressActions[i] == EnumAddressAction.TR50 ||
+                        moveCmdInfo.AddressActions[i] == EnumAddressAction.BTR50)
+                        isLine = !isLine;
+
+                    moveCmdInfo.SectionSpeedLimits.Add(isLine ? double.Parse(tB_LineVelocity.Text) : double.Parse(tB_HorizontalVelocity.Text));
+                }
             }
         }
 
-        private double GetCurrectAngle(double angle)
+        private void ShowAddressActionsAndVelocitys()
         {
-            while (angle > 180 || angle <= -180)
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+
+            for (int i = 0; i < moveCmdInfo.AddressActions.Count - 1; i++)
             {
-                if (angle > 180)
-                    angle -= 360;
-                else
-                    angle += 360;
+                listCmdAddressActions.Items.Add(moveCmdInfo.AddressActions[i].ToString());
+                listCmdSpeedLimits.Items.Add(moveCmdInfo.SectionSpeedLimits[i].ToString());
             }
 
-            return angle;
-        }
-
-        public MoveCmdInfo GetPositionAction(ref string errorMessage)
-        {
-            int lastSectionAngle = 0;
-            int thisSectionAngle = 0;
-            int newWheelAngle = 0;
-
-            if (listCmdAddressPositions.Items.Count < 2)
-            {
-                errorMessage = "只有" + listCmdAddressPositions.Items.Count.ToString() + "個點,別鬧了!";
-                return null;
-            }
-
-            MoveCmdInfo tempMoveCmdInfo = new MoveCmdInfo();
-            BreakDownMoveCommandData data = new BreakDownMoveCommandData();
-
-            for (int i = 0; i < listCmdAddressPositions.Items.Count; i++)
-            {
-                string positionPair = (string)listCmdAddressPositions.Items[i];
-                string[] posXY = positionPair.Split(',');
-                var posX = float.Parse(posXY[0]);
-                var posY = float.Parse(posXY[1]);
-                tempMoveCmdInfo.AddressPositions.Add(new MapPosition(posX, posY));
-            }
-
-            if (tempMoveCmdInfo.AddressPositions[0].X == tempMoveCmdInfo.AddressPositions[1].X &&
-                tempMoveCmdInfo.AddressPositions[0].Y == tempMoveCmdInfo.AddressPositions[1].Y)
-            {
-                errorMessage = "有相同Position!";
-                return null;
-            }
-
-            lastSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]);
-
-            if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1]))
-                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
-            else
-                tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
-
-            if (!computeFunction.GetDirFlagWheelAngle(tempMoveCmdInfo, ref data, moveControl.location.Real, moveControl.ControlData.WheelAngle, ref errorMessage))
-                return null;
-
-            if (tempMoveCmdInfo.AddressActions[0] == EnumAddressAction.R2000)
-            {
-                data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[0], tempMoveCmdInfo.AddressPositions[1], ref errorMessage);
-
-                if (data.AGVAngleInMap == -1)
-                    return null;
-            }
-
-            for (int i = 1; i < tempMoveCmdInfo.AddressPositions.Count - 1; i++)
-            {
-                if (tempMoveCmdInfo.AddressPositions[i].X == tempMoveCmdInfo.AddressPositions[i + 1].X &&
-                    tempMoveCmdInfo.AddressPositions[i].Y == tempMoveCmdInfo.AddressPositions[i + 1].Y)
-                {
-                    errorMessage = "有相同Position!";
-                    return null;
-                }
-
-                thisSectionAngle = computeFunction.ComputeAngleInt(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]);
-
-                if (IsSectionR2000(tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1]))
-                {
-                    if (Math.Abs(GetCurrectAngle(thisSectionAngle - lastSectionAngle)) == 45)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.R2000);
-                    }
-                    else if (Math.Abs(GetCurrectAngle(thisSectionAngle - (lastSectionAngle - 180))) == 45)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.BR2000);
-                        data.DirFlag = !data.DirFlag;
-                    }
-                    else
-                    {
-                        errorMessage = "奇怪角度R2000!";
-                        return null;
-                    }
-
-                    data.AGVAngleInMap = computeFunction.GetAGVAngleAfterR2000(data.AGVAngleInMap, data.DirFlag, tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
-
-                    if (data.AGVAngleInMap == -1)
-                        return null;
-                }
-                else if (tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i - 1] == EnumAddressAction.BR2000)
-                {
-                    if (GetCurrectAngle(thisSectionAngle - data.AGVAngleInMap) == 0)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.ST : EnumAddressAction.BST);
-                    }
-                    else if (GetCurrectAngle(thisSectionAngle - 180 - data.AGVAngleInMap) == 0)
-                    {
-                        tempMoveCmdInfo.AddressActions.Add(data.DirFlag ? EnumAddressAction.BST : EnumAddressAction.ST);
-                    }
-                    else
-                    {
-                        errorMessage = "R2000後不能接橫移!";
-                        return null;
-                    }
-
-                    if (tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1] == EnumAddressAction.BST)
-                        data.DirFlag = !data.DirFlag;
-                }
-                else if (thisSectionAngle == lastSectionAngle)
-                {
-                    tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.ST);
-                }
-                else
-                {
-                    newWheelAngle = computeFunction.GetTurnWheelAngle(data.WheelAngle, tempMoveCmdInfo.AddressPositions[i - 1],
-                        tempMoveCmdInfo.AddressPositions[i], tempMoveCmdInfo.AddressPositions[i + 1], ref errorMessage);
-
-                    if (newWheelAngle != -1)
-                    {
-                        data.WheelAngle = newWheelAngle;
-                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.TR50 : EnumAddressAction.TR350);
-                    }
-                    else
-                    {
-                        data.WheelAngle = 0;
-                        data.DirFlag = !data.DirFlag;
-                        tempMoveCmdInfo.AddressActions.Add(IsTR50(tempMoveCmdInfo.AddressPositions[i]) ? EnumAddressAction.BTR50 : EnumAddressAction.BTR350);
-                    }
-                }
-
-                if (tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.R2000 || tempMoveCmdInfo.AddressActions[i] == EnumAddressAction.BR2000)
-                {
-                    lastSectionAngle = data.AGVAngleInMap;
-
-                    if (!data.DirFlag)
-                    {
-                        if (lastSectionAngle > 0)
-                            lastSectionAngle -= 180;
-                        else
-                            lastSectionAngle += 180;
-                    }
-                }
-                else
-                    lastSectionAngle = thisSectionAngle;
-            }
-
-            tempMoveCmdInfo.AddressActions.Add(EnumAddressAction.End);
-
-            return tempMoveCmdInfo;
+            listCmdAddressActions.Items.Add(moveCmdInfo.AddressActions[moveCmdInfo.AddressActions.Count - 1].ToString());
         }
 
         private void Button_AutoCreate_Click(object sender, EventArgs e)
         {
-            string errorMessage = "";
-            MoveCmdInfo tempMoveCmdInfo = GetPositionAction(ref errorMessage);
-
-            if (tempMoveCmdInfo == null)
+            try
             {
-                MessageBox.Show(errorMessage);
-                return;
+                moveCmdInfo = new MoveCmdInfo();
+                moveCmdInfo.AddressActions = new List<EnumAddressAction>();
+                moveCmdInfo.AddressPositions = new List<MapPosition>();
+                moveCmdInfo.SectionSpeedLimits = new List<double>();
+
+                moveCmdInfo.StartAddress = new MapAddress();
+                moveCmdInfo.EndAddress = new MapAddress();
+                moveCmdInfo.StartAddress.AddressOffset = new MapAddressOffset();
+                moveCmdInfo.StartAddress.AddressOffset.OffsetX = 0;
+                moveCmdInfo.StartAddress.AddressOffset.OffsetY = 0;
+                moveCmdInfo.StartAddress.AddressOffset.OffsetTheta = 0;
+
+                moveCmdInfo.EndAddress.AddressOffset = new MapAddressOffset();
+                moveCmdInfo.EndAddress.AddressOffset.OffsetX = 0;
+                moveCmdInfo.EndAddress.AddressOffset.OffsetY = 0;
+                moveCmdInfo.EndAddress.AddressOffset.OffsetTheta = 0;
+
+                for (int i = 0; i < listCmdAddressPositions.Items.Count; i++)
+                {
+                    string positionPair = (string)listCmdAddressPositions.Items[i];
+                    string[] posXY = positionPair.Split(',');
+                    var posX = float.Parse(posXY[0]);
+                    var posY = float.Parse(posXY[1]);
+                    moveCmdInfo.AddressPositions.Add(new MapPosition(posX, posY));
+                }
+
+                moveCmdInfo.MovingAddress = new List<MapAddress>();
+                moveCmdInfo.MovingSections = new List<MapSection>();
+                MapSection tempMapSection;
+                MapAddress tempMapAddress;
+
+                for (int i = 0; i < moveCmdInfo.AddressPositions.Count; i++)
+                {
+                    tempMapAddress = new MapAddress();
+                    tempMapAddress.IsTR50 = IsTR50(moveCmdInfo.AddressPositions[i]);
+                    moveCmdInfo.MovingAddress.Add(tempMapAddress);
+
+                    if (i + 1 < moveCmdInfo.AddressPositions.Count)
+                    {
+                        tempMapSection = new MapSection();
+                        if (IsSectionR2000(moveCmdInfo.AddressPositions[i], moveCmdInfo.AddressPositions[i + 1]))
+                            tempMapSection.Type = EnumSectionType.R2000;
+                        else
+                            tempMapSection.Type = EnumSectionType.None;
+
+                        moveCmdInfo.MovingSections.Add(tempMapSection);
+                    }
+                }
+
+                string errorMessage = "";
+
+                if (moveControl.GetPositionActions(ref moveCmdInfo, ref errorMessage))
+                {
+                    GetSectionSpeed();
+                    ShowAddressActionsAndVelocitys();
+                }
+                else
+                    MessageBox.Show(errorMessage);
             }
-
-            GetSectionSpeed(ref tempMoveCmdInfo);
-            listCmdAddressActions.Items.Clear();
-            listCmdSpeedLimits.Items.Clear();
-
-            for (int i = 0; i < tempMoveCmdInfo.AddressActions.Count - 1; i++)
-            {
-                listCmdAddressActions.Items.Add(tempMoveCmdInfo.AddressActions[i].ToString());
-                listCmdSpeedLimits.Items.Add(tempMoveCmdInfo.SectionSpeedLimits[i].ToString());
-            }
-
-            listCmdAddressActions.Items.Add(tempMoveCmdInfo.AddressActions[tempMoveCmdInfo.AddressActions.Count - 1].ToString());
+            catch { }
         }
 
         private void tP_Admin_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -1282,8 +1118,548 @@ namespace Mirle.Agv.View
             {
                 hideFunctionOn = !hideFunctionOn;
 
+                button_SimulateState.Visible = (hideFunctionOn ? true : moveControl.SimulationMode);
+                if (simulateStateForm != null && !simulateStateForm.IsDisposed)
+                    simulateStateForm.ResetHideFunctionOnOff(hideFunctionOn);
                 MessageBox.Show("隱藏Function " + (hideFunctionOn ? "開啟!" : "關閉!"));
             }
+        }
+
+        private void HideChangeUI()
+        {
+            cB_ChangeAction.Visible = false;
+            tB_ChangeVelocity.Visible = false;
+            RunSectionList = new List<MapSection>();
+            RunEndAddress = null;
+        }
+
+        private void listCmdAddressActions_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            int index = this.listCmdAddressActions.IndexFromPoint(e.Location);
+
+            if (index != System.Windows.Forms.ListBox.NoMatches)
+            {
+                EnumAddressAction action = (EnumAddressAction)Enum.Parse(typeof(EnumAddressAction), (string)listCmdAddressActions.Items[index]);
+
+                bool actionCanChange = false;
+
+                switch (action)
+                {
+                    case EnumAddressAction.TR50:
+                    case EnumAddressAction.TR350:
+                    case EnumAddressAction.BTR50:
+                    case EnumAddressAction.BTR350:
+                        cB_ChangeAction.Items.Clear();
+                        cB_ChangeAction.Items.Add(EnumAddressAction.TR350.ToString());
+                        cB_ChangeAction.Items.Add(EnumAddressAction.BTR350.ToString());
+                        cB_ChangeAction.Items.Add(EnumAddressAction.TR50.ToString());
+                        cB_ChangeAction.Items.Add(EnumAddressAction.BTR50.ToString());
+
+                        actionCanChange = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (actionCanChange)
+                {
+                    int x = listCmdAddressActions.Location.X + listCmdAddressActions.Width / 2 - cB_ChangeAction.Width / 2;
+                    int y = listCmdAddressActions.Location.Y + (int)(listCmdAddressActions.ItemHeight * index);
+                    cB_ChangeAction.Location = new Point(x, y);
+
+                    cB_ChangeAction.Visible = true;
+                }
+            }
+        }
+
+        private void cB_ChangeAction_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                int index = (cB_ChangeAction.Location.Y - listCmdAddressActions.Location.Y) / listCmdAddressActions.ItemHeight;
+                listCmdAddressActions.Items[index] = (string)cB_ChangeAction.SelectedItem;
+                cB_ChangeAction.Visible = false;
+            }
+            catch { }
+        }
+
+        private void listCmdSpeedLimits_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            int index = this.listCmdSpeedLimits.IndexFromPoint(e.Location);
+
+            if (index != System.Windows.Forms.ListBox.NoMatches)
+            {
+                if (index < listCmdAddressActions.Items.Count)
+                {
+                    EnumAddressAction action = (EnumAddressAction)Enum.Parse(typeof(EnumAddressAction), (string)listCmdAddressActions.Items[index]);
+                    if (action == EnumAddressAction.R2000)
+                        return;
+                }
+
+                int x = listCmdSpeedLimits.Location.X + listCmdSpeedLimits.Width / 2 - tB_ChangeVelocity.Width / 2;
+                int y = listCmdSpeedLimits.Location.Y + (int)(listCmdSpeedLimits.ItemHeight * index);
+                tB_ChangeVelocity.Location = new Point(x, y);
+
+                tB_ChangeVelocity.Visible = true;
+                tB_ChangeVelocity.Focus();
+            }
+        }
+
+        private void tB_ChangeVelocity_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                if ((e.KeyChar >= (char)48 && e.KeyChar <= (char)57) || (e.KeyChar == (char)8))
+                    e.Handled = false;
+                else if (e.KeyChar == (char)13)
+                {
+                    if (Int32.Parse(tB_ChangeVelocity.Text) < moveControl.moveControlConfig.EQ.Velocity)
+                    {
+                        MessageBox.Show("速度請勿設定低於EQ速度(80mm/s)!");
+                        return;
+                    }
+
+                    int index = (tB_ChangeVelocity.Location.Y - listCmdSpeedLimits.Location.Y) / listCmdSpeedLimits.ItemHeight;
+                    listCmdSpeedLimits.Items[index] = tB_ChangeVelocity.Text;
+                    tB_ChangeVelocity.Visible = false;
+                    e.Handled = true;
+                    tB_ChangeVelocity.Text = "";
+                }
+                else
+                    e.Handled = true;
+            }
+            catch { }
+        }
+
+        private void tB_LineVelocity_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                if ((e.KeyChar >= (char)48 && e.KeyChar <= (char)57) || (e.KeyChar == (char)8))
+                    e.Handled = false;
+                else if (e.KeyChar == (char)13)
+                {
+                    if (Int32.Parse(tB_LineVelocity.Text) < moveControl.moveControlConfig.EQ.Velocity)
+                    {
+                        MessageBox.Show("速度請勿設定低於EQ速度(80mm/s)!");
+                        tB_LineVelocity.Text = "400";
+                    }
+                    else
+                    {
+                        GetSectionSpeed();
+                        ShowAddressActionsAndVelocitys();
+                    }
+                }
+                else
+                    e.Handled = true;
+            }
+            catch { }
+        }
+
+        private void tB_HorizontalVelocity_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                if ((e.KeyChar >= (char)48 && e.KeyChar <= (char)57) || (e.KeyChar == (char)8))
+                    e.Handled = false;
+                else if (e.KeyChar == (char)13)
+                {
+                    if (Int32.Parse(tB_HorizontalVelocity.Text) < moveControl.moveControlConfig.EQ.Velocity)
+                    {
+                        MessageBox.Show("速度請勿設定低於EQ速度(80mm/s)!");
+                        tB_HorizontalVelocity.Text = "400";
+                    }
+                    else
+                    {
+                        GetSectionSpeed();
+                        ShowAddressActionsAndVelocitys();
+                    }
+                }
+                else
+                    e.Handled = true;
+            }
+            catch { }
+        }
+
+        private void tB_RunTimes_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if ((e.KeyChar >= (char)48 && e.KeyChar <= (char)57) || (e.KeyChar == (char)8))
+                e.Handled = false;
+            else
+                e.Handled = true;
+        }
+
+        private void ProcessRunTimes(int runTimes)
+        {
+            int count = listCmdAddressPositions.Items.Count;
+
+            if (runTimes <= 0)
+            {
+                MessageBox.Show("請輸入 > 0 的數字!");
+                return;
+            }
+
+            if ((count - 1) * runTimes + 1 > 50)
+            {
+                MessageBox.Show("不要亂玩, 程式會當掉!");
+                return;
+            }
+
+            if (count < 2)
+                return;
+
+            bool reverse = true;
+
+            for (int i = 1; i < runTimes; i++)
+            {
+                if (reverse)
+                    for (int j = count - 2; j >= 0; j--)
+                        listCmdAddressPositions.Items.Add(listCmdAddressPositions.Items[j]);
+                else
+                    for (int j = 1; j < count; j++)
+                        listCmdAddressPositions.Items.Add(listCmdAddressPositions.Items[j]);
+
+                reverse = !reverse;
+            }
+
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+            HideChangeUI();
+        }
+
+        private void button_RunTimesEven_Click(object sender, EventArgs e)
+        {
+            int runTimes = Int32.Parse(tB_RunTimes.Text);
+            ProcessRunTimes(runTimes * 2);
+        }
+
+        private void button_RunTimesOdd_Click(object sender, EventArgs e)
+        {
+            int runTimes = Int32.Parse(tB_RunTimes.Text);
+            ProcessRunTimes(runTimes);
+        }
+
+        private void button_ReveseAddressList_Click(object sender, EventArgs e)
+        {
+            int count = listCmdAddressPositions.Items.Count;
+
+            if (count < 2)
+                return;
+
+            for (int i = count - 1; i >= 0; i--)
+                listCmdAddressPositions.Items.Add(listCmdAddressPositions.Items[i]);
+
+            for (int i = 0; i < count; i++)
+                listCmdAddressPositions.Items.RemoveAt(0);
+
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+            HideChangeUI();
+        }
+
+
+        private string GetAddressID(MapPosition now)
+        {
+            string address = "";
+            MapPosition tempPosition = null;
+
+            foreach (var valuePair in theMapInfo.allMapAddresses)
+            {
+                if (Math.Abs(now.X - valuePair.Value.Position.X) <= 30 &&
+                    Math.Abs(now.Y - valuePair.Value.Position.Y) <= 30)
+                {
+                    if (tempPosition == null || Math.Abs(Math.Pow(valuePair.Value.Position.X - now.X, 2) + Math.Pow(valuePair.Value.Position.Y - now.Y, 2)) <
+                                                Math.Abs(Math.Pow(tempPosition.X - now.X, 2) + Math.Pow(tempPosition.Y - now.Y, 2)))
+                    {
+                        tempPosition = valuePair.Value.Position;
+                        address = valuePair.Value.Id;
+                    }
+                }
+            }
+
+            return address;
+        }
+
+        private string GetSectionID(MapPosition now)
+        {
+            foreach (var valuePair in theMapInfo.allMapSections)
+            {
+                if (valuePair.Value.HeadAddress.Position.X == valuePair.Value.TailAddress.Position.X &&
+                     Math.Abs(valuePair.Value.HeadAddress.Position.X - now.X) <= 30)
+                {
+                    if ((valuePair.Value.HeadAddress.Position.Y > valuePair.Value.TailAddress.Position.Y &&
+                        valuePair.Value.HeadAddress.Position.Y + 30 > now.Y && now.Y > valuePair.Value.TailAddress.Position.Y - 30) ||
+                        (valuePair.Value.HeadAddress.Position.Y < valuePair.Value.TailAddress.Position.Y &&
+                        valuePair.Value.HeadAddress.Position.Y + 30 < now.Y && now.Y < valuePair.Value.TailAddress.Position.Y - 30))
+                        return valuePair.Value.Id;
+                }
+                else if (valuePair.Value.HeadAddress.Position.Y == valuePair.Value.TailAddress.Position.Y &&
+                         Math.Abs(valuePair.Value.HeadAddress.Position.Y - now.Y) <= 30)
+                {
+                    if ((valuePair.Value.HeadAddress.Position.X > valuePair.Value.TailAddress.Position.X &&
+                        valuePair.Value.HeadAddress.Position.X + 30 > now.X && now.X > valuePair.Value.TailAddress.Position.X - 30) ||
+                        (valuePair.Value.HeadAddress.Position.X < valuePair.Value.TailAddress.Position.X &&
+                        valuePair.Value.HeadAddress.Position.X + 30 < now.X && now.X < valuePair.Value.TailAddress.Position.X - 30))
+                        return valuePair.Value.Id;
+                }
+            }
+
+            return "";
+        }
+
+        private bool GetNowAGVLocation(MapPosition now, ref string address, ref string section)
+        {
+            address = GetAddressID(now);
+
+            if (address == "")
+            {
+                section = GetSectionID(now);
+
+                if (section == "")
+                    return false;
+                else
+                    return true;
+            }
+            else
+                return true;
+        }
+
+        private void FindAGVFromToPath(string endAddress, List<string> nodeList, double nowDistance, ref List<string> minNodeList, ref double minDistance, List<MapSection> tempSectionList, ref List<MapSection> mapSectionList)
+        {
+            if (endAddress == nodeList[nodeList.Count - 1])
+            {
+                if (minDistance == -1 || minDistance > nowDistance)
+                {
+                    minNodeList = new List<string>();
+                    for (int i = 0; i < nodeList.Count; i++)
+                        minNodeList.Add(nodeList[i]);
+
+                    mapSectionList = new List<MapSection>();
+                    for (int i = 0; i < tempSectionList.Count; i++)
+                        mapSectionList.Add(tempSectionList[i]);
+
+                    minDistance = nowDistance;
+                }
+            }
+            else
+            {
+                if (minDistance == -1 || nowDistance < minDistance)
+                {
+                    bool notRepeat;
+                    string nextNode;
+
+                    foreach (var valuePair in theMapInfo.allMapSections)
+                    {
+                        nextNode = "";
+
+                        if (nodeList[nodeList.Count - 1] == valuePair.Value.HeadAddress.Id)
+                            nextNode = valuePair.Value.TailAddress.Id;
+                        else if (nodeList[nodeList.Count - 1] == valuePair.Value.TailAddress.Id)
+                            nextNode = valuePair.Value.HeadAddress.Id;
+
+                        if (nextNode != "")
+                        {
+                            notRepeat = true;
+
+                            for (int i = 0; i < nodeList.Count && notRepeat; i++)
+                            {
+                                if (nodeList[i] == nextNode)
+                                    notRepeat = false;
+                            }
+
+                            if (notRepeat)
+                            {
+                                nodeList.Add(nextNode);
+                                tempSectionList.Add(valuePair.Value);
+                                FindAGVFromToPath(endAddress, nodeList, nowDistance + valuePair.Value.HeadToTailDistance / valuePair.Value.Speed, ref minNodeList, ref minDistance, tempSectionList, ref mapSectionList);
+                                nodeList.RemoveAt(nodeList.Count - 1);
+                                tempSectionList.RemoveAt(tempSectionList.Count - 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void button_FromTo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<MapSection> SectionList = new List<MapSection>();
+                List<MapSection> tempSectionList = new List<MapSection>();
+                string address = "";
+                string section = "";
+                MapPosition endPosition;
+                double distance;
+
+                List<double> startAddressToSectionNodeDistance = new List<double>();
+                List<string> startSectionNode = new List<string>();
+
+                string endAddressID = "";
+                List<double> endAddressToSectionNodeDistance = new List<double>();
+                List<string> endSectionNode = new List<string>();
+
+                if (listCmdAddressPositions.Items.Count != 1)
+                {
+                    MessageBox.Show("Address數量應為1個!");
+                    return;
+                }
+
+                if (moveControl.location.Real == null)
+                {
+                    MessageBox.Show("迷航中!");
+                    return;
+                }
+
+                MapPosition now = moveControl.location.Real.Position;
+
+                if (!GetNowAGVLocation(now, ref address, ref section))
+                {
+                    MessageBox.Show("和任何Address或Section接差距超過30mm,找不到目前所在位置!");
+                    return;
+                }
+
+                if (address != "")
+                {
+                    if (theMapInfo.allMapSections.ContainsKey(theMapInfo.allMapAddresses[address].InsideSectionId))
+                    {
+                        section = theMapInfo.allMapAddresses[address].InsideSectionId;
+                        address = "";
+                    }
+                }
+
+                if (section != "")
+                {
+                    SectionList.Add(theMapInfo.allMapSections[section]);
+                    distance = Math.Sqrt(Math.Pow(now.X - theMapInfo.allMapSections[section].HeadAddress.Position.X, 2) +
+                                         Math.Pow(now.Y - theMapInfo.allMapSections[section].HeadAddress.Position.Y, 2));
+
+                    startAddressToSectionNodeDistance.Add(distance / theMapInfo.allMapSections[section].Speed);
+                    startSectionNode.Add(theMapInfo.allMapSections[section].HeadAddress.Id);
+
+                    distance = Math.Sqrt(Math.Pow(now.X - theMapInfo.allMapSections[section].TailAddress.Position.X, 2) +
+                                         Math.Pow(now.Y - theMapInfo.allMapSections[section].TailAddress.Position.Y, 2));
+
+                    startAddressToSectionNodeDistance.Add(distance / theMapInfo.allMapSections[section].Speed);
+                    startSectionNode.Add(theMapInfo.allMapSections[section].TailAddress.Id);
+                }
+                else
+                {
+                    startAddressToSectionNodeDistance.Add(0);
+                    startSectionNode.Add(address);
+                }
+
+                string positionPair = (string)listCmdAddressPositions.Items[0];
+                string[] posXY = positionPair.Split(',');
+                endPosition = new MapPosition(double.Parse(posXY[0]), double.Parse(posXY[1]));
+
+                foreach (var valuePair in theMapInfo.allMapAddresses)
+                {
+                    if ((int)valuePair.Value.Position.X == (int)endPosition.X &&
+                        (int)valuePair.Value.Position.Y == (int)endPosition.Y)
+                    {
+                        endAddressID = valuePair.Value.Id;
+                        break;
+                    }
+                }
+
+                if (endAddressID == "")
+                {
+                    MessageBox.Show("GG double 轉成 string 再轉回 double 資料不同了!");
+                    return;
+                }
+
+                if (theMapInfo.allMapSections.ContainsKey(theMapInfo.allMapAddresses[endAddressID].InsideSectionId))
+                {
+                    distance = Math.Sqrt(Math.Pow(endPosition.X - theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].HeadAddress.Position.X, 2) +
+                                         Math.Pow(endPosition.Y - theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].HeadAddress.Position.Y, 2));
+
+                    endAddressToSectionNodeDistance.Add(distance / theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].Speed);
+                    endSectionNode.Add(theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].HeadAddress.Id);
+
+                    distance = Math.Sqrt(Math.Pow(endPosition.X - theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].TailAddress.Position.X, 2) +
+                                         Math.Pow(endPosition.Y - theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].TailAddress.Position.Y, 2));
+
+                    endAddressToSectionNodeDistance.Add(distance / theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].Speed);
+                    endSectionNode.Add(theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].TailAddress.Id);
+                }
+                else
+                {
+                    endAddressToSectionNodeDistance.Add(0);
+                    endSectionNode.Add(endAddressID);
+                }
+
+                List<string> nodeList = new List<string>();
+                List<string> minNodeList = new List<string>();
+                double minDistance = -1;
+
+                for (int i = 0; i < startSectionNode.Count; i++)
+                {
+                    for (int j = 0; j < endSectionNode.Count; j++)
+                    {
+                        nodeList.Add(startSectionNode[i]);
+                        FindAGVFromToPath(endSectionNode[j], nodeList, startAddressToSectionNodeDistance[i] + endAddressToSectionNodeDistance[j], ref minNodeList, ref minDistance, tempSectionList, ref SectionList);
+                        nodeList = new List<string>();
+                    }
+                }
+
+                if (minDistance == -1)
+                    MessageBox.Show("找不到路徑!");
+                else
+                {
+                    listCmdAddressPositions.Items.Clear();
+
+                    double x, y;
+                    string txtPosition;
+
+                    if (section != "" || address != minNodeList[0])
+                    {
+                        if (theMapInfo.allMapSections[section].TailAddress.Position.X == theMapInfo.allMapSections[section].HeadAddress.Position.X)
+                        {
+                            x = theMapInfo.allMapSections[section].TailAddress.Position.X;
+                            y = now.Y;
+                        }
+                        else
+                        {
+                            x = now.X;
+                            y = theMapInfo.allMapSections[section].TailAddress.Position.Y;
+                        }
+
+                        txtPosition = $"{x.ToString()},{y.ToString()}";
+                        listCmdAddressPositions.Items.Add(txtPosition);
+                    }
+
+                    for (int i = 0; i < minNodeList.Count; i++)
+                    {
+                        x = theMapInfo.allMapAddresses[minNodeList[i]].Position.X;
+                        y = theMapInfo.allMapAddresses[minNodeList[i]].Position.Y;
+                        txtPosition = $"{x.ToString()},{y.ToString()}";
+                        listCmdAddressPositions.Items.Add(txtPosition);
+                    }
+
+                    if (endAddressID != minNodeList[minNodeList.Count - 1])
+                    {
+                        x = theMapInfo.allMapAddresses[endAddressID].Position.X;
+                        y = theMapInfo.allMapAddresses[endAddressID].Position.Y;
+                        txtPosition = $"{x.ToString()},{y.ToString()}";
+                        listCmdAddressPositions.Items.Add(txtPosition);
+                    }
+
+                    listCmdAddressActions.Items.Clear();
+                    listCmdSpeedLimits.Items.Clear();
+                    HideChangeUI();
+
+                    if (section != "")
+                        SectionList.Insert(0, theMapInfo.allMapSections[section]);
+
+                    if (theMapInfo.allMapSections.ContainsKey(theMapInfo.allMapAddresses[endAddressID].InsideSectionId))
+                        SectionList.Add(theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId]);
+
+                    RunEndAddress = theMapInfo.allMapAddresses[endAddressID];
+                    RunSectionList = SectionList;
+                }
+            }
+            catch { }
         }
     }
 }
