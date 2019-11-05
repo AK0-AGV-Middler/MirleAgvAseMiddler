@@ -24,6 +24,7 @@ namespace Mirle.Agv.Model
         public double StartOffsetX { get; set; }
         public double StartOffsetY { get; set; }
         public double StartOffsetTheta { get; set; }
+        public bool EndAddressLoadUnload { get; set; }
 
         public MoveCommandData()
         {
@@ -42,6 +43,7 @@ namespace Mirle.Agv.Model
             StartOffsetX = 0;
             StartOffsetY = 0;
             StartOffsetTheta = 0;
+            EndAddressLoadUnload = false;
         }
 
         public MoveCommandData(List<Command> commandList, List<SectionLine> sectionLineList, List<ReserveData> reserveList)
@@ -61,6 +63,7 @@ namespace Mirle.Agv.Model
             StartOffsetX = 0;
             StartOffsetY = 0;
             StartOffsetTheta = 0;
+            EndAddressLoadUnload = false;
         }
     }
 }

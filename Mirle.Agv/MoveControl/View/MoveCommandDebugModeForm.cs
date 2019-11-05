@@ -66,7 +66,6 @@ namespace Mirle.Agv.View
             ucLabelTB_EncoderOffset.TagName = "Offset : ";
             ucLabelTB_EncoderPosition.TagName = "VelocityCmd : ";
             AddListMapAddressPositions();
-            AddDataGridViewColumn();
             AddAdminSafetyUserControl();
             HideChangeUI();
         }
@@ -102,14 +101,17 @@ namespace Mirle.Agv.View
                     case EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal:
                         temp.SetLabelString("橫移偏差 : ", "容許橫移軌道偏差量 :");
                         break;
-                    case EnumMoveControlSafetyType.UpdateDeltaPositionRange:
-                        temp.SetLabelString("更新偏差 : ", "容許Barcode和目前位置偏差 :");
-                        break;
                     case EnumMoveControlSafetyType.OneTimeRevise:
                         temp.SetLabelString("一次修正 : ", "一次性修正距離,多少會修完 :");
                         break;
                     case EnumMoveControlSafetyType.VChangeSafetyDistance:
                         temp.SetLabelString("降速保護 : ", "多少距離檢查一次速度變化 :");
+                        break;
+                    case EnumMoveControlSafetyType.TRPathMonitoring:
+                        temp.SetLabelString("監控TR軌跡 : ", "角度允許誤差 :");
+                        break;
+                    case EnumMoveControlSafetyType.IdleNotWriteLog:
+                        temp.SetLabelString("Idle不Log : ", "移動完成後再多記多少ms : ");
                         break;
                     default:
                         break;
@@ -162,9 +164,6 @@ namespace Mirle.Agv.View
                         tempSensor.SetLabelString("監控Axis狀態 : ");
                         tempSensor.DisableButton();
                         break;
-                    case EnumSensorSafetyType.TRPathMonitoring:
-                        tempSensor.SetLabelString("監控TR軌跡 : ");
-                        break;
                     case EnumSensorSafetyType.EndPositionOffset:
                         tempSensor.SetLabelString("終點offset : ");
                         break;
@@ -181,68 +180,6 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void AddDataGridViewColumn()
-        {
-            System.Windows.Forms.DataGridViewTextBoxColumn[][] AxisColumn = new DataGridViewTextBoxColumn[18][];
-
-            for (int i = 0; i < 8; i++)
-            {
-                AxisColumn[i] = new DataGridViewTextBoxColumn[8];
-                for (int j = 0; j < 8; j++)
-                    AxisColumn[i][j] = new DataGridViewTextBoxColumn();
-                //  count   position	velocity	toc	disable	moveComplete	error
-                AxisColumn[i][0].HeaderText = AxisList[i].ToString();
-                AxisColumn[i][0].Name = AxisList[i].ToString();
-                AxisColumn[i][1].HeaderText = "Position";
-                AxisColumn[i][1].Name = AxisList[i].ToString() + "Position";
-                AxisColumn[i][2].HeaderText = "Velocity";
-                AxisColumn[i][2].Name = AxisList[i].ToString() + "Velocity";
-                AxisColumn[i][3].HeaderText = "ErrorPosition";
-                AxisColumn[i][3].Name = AxisList[i].ToString() + "ErrorPosition";
-                AxisColumn[i][4].HeaderText = "toc";
-                AxisColumn[i][4].Name = AxisList[i].ToString() + "toc";
-                AxisColumn[i][5].HeaderText = "Disable";
-                AxisColumn[i][5].Name = AxisList[i].ToString() + "Disable";
-                AxisColumn[i][6].HeaderText = "Complete";
-                AxisColumn[i][6].Name = AxisList[i].ToString() + "Complete";
-                AxisColumn[i][7].HeaderText = "Error";
-                AxisColumn[i][7].Name = AxisList[i].ToString() + "Error";
-            }
-
-            for (int i = 8; i < 16; i++)
-            {
-                AxisColumn[i] = new DataGridViewTextBoxColumn[5];
-                for (int j = 0; j < 5; j++)
-                    AxisColumn[i][j] = new DataGridViewTextBoxColumn();
-                //  count   position		disable	moveComplete	error
-                AxisColumn[i][0].HeaderText = AxisList[i].ToString();
-                AxisColumn[i][0].Name = AxisList[i].ToString();
-                AxisColumn[i][1].HeaderText = "Position";
-                AxisColumn[i][1].Name = AxisList[i].ToString() + "Position";
-                AxisColumn[i][2].HeaderText = "Disable";
-                AxisColumn[i][2].Name = AxisList[i].ToString() + "Disable";
-                AxisColumn[i][3].HeaderText = "Complete";
-                AxisColumn[i][3].Name = AxisList[i].ToString() + "Complete";
-                AxisColumn[i][4].HeaderText = "Error";
-                AxisColumn[i][4].Name = AxisList[i].ToString() + "Error";
-            }
-
-            for (int i = 16; i < 18; i++)
-            {
-                AxisColumn[i] = new DataGridViewTextBoxColumn[1];
-                // 		disable	moveComplete
-                AxisColumn[i][0] = new DataGridViewTextBoxColumn();
-                AxisColumn[i][0].HeaderText = AxisList[i].ToString() + "Complete";
-                AxisColumn[i][0].Name = AxisList[i].ToString() + "Complete";
-            }
-
-            for (int i = 0; i < 18; i++)
-            {
-                for (int j = 0; j < AxisColumn[i].Count(); j++)
-                    this.dataGridView_CSVList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { AxisColumn[i][j] });
-            }
-        }
-
         private void AddListMapAddressPositions()
         {
             listMapAddressPositions.Items.Clear();
@@ -253,13 +190,6 @@ namespace Mirle.Agv.View
                 string txtPosition = $"{mapPosition.X},{mapPosition.Y}";
                 listMapAddressPositions.Items.Add(txtPosition);
             }
-        }
-
-
-
-        private void MoveCommandDebugMode_Leave(object sender, EventArgs e)
-        {
-            moveControl.DebugCSVMode = false;
         }
         #endregion
 
@@ -295,8 +225,8 @@ namespace Mirle.Agv.View
             else
                 buttonEnable = true;
 
-            button_DebugModeSend.Enabled = buttonEnable;
-            button_FromTo.Enabled = buttonEnable;
+            button_DebugModeSend.Enabled = (cB_OverrideTest.Checked && moveControl.MoveState != EnumMoveState.Error) ? true : buttonEnable;
+            button_FromTo.Enabled = (cB_OverrideTest.Checked && moveControl.MoveState != EnumMoveState.Error) ? true : buttonEnable; ;
             label_LockResult.Text = lockResult;
         }
 
@@ -418,27 +348,7 @@ namespace Mirle.Agv.View
                 tbxLogView_CreateCommandMessage.Text = moveControl.CreateMoveCommandList.CreateCommandListLog;
                 tbxLogView_ElmoMessage.Text = moveControl.elmoDriver.ElmoLog;
             }
-            catch
-            {
-
-            }
-        }
-
-        private void Timer_Update_DebugCSV()
-        {
-            List<string[]> bufferList;
-
-            lock (moveControl.deubgCsvLogList)
-            {
-                bufferList = moveControl.deubgCsvLogList;
-                moveControl.deubgCsvLogList = new List<string[]>();
-            }
-
-            for (int i = 0; i < bufferList.Count; i++)
-                dataGridView_CSVList.Rows.Add(bufferList[i].ToArray());
-
-            while (bufferList.Count > 3000)
-                dataGridView_CSVList.Rows.RemoveAt(0);
+            catch { }
         }
 
         private void Timer_Update_Admin()
@@ -475,8 +385,6 @@ namespace Mirle.Agv.View
             else if (tbC_Debug.SelectedIndex == 2)
                 Timer_Update_LogMessage();
             else if (tbC_Debug.SelectedIndex == 3)
-                Timer_Update_DebugCSV();
-            else if (tbC_Debug.SelectedIndex == 4)
                 Timer_Update_Admin();
 
             tbxLogView_MoveControlDebugMessage.Text = moveControl.DebugFlowLog;
@@ -611,34 +519,79 @@ namespace Mirle.Agv.View
         {
             try
             {
-                if (listCmdAddressPositions.Items.Count < 2)
-                    MessageBox.Show("至少需要兩個點!");
+                if (listCmdAddressActions.Items.Count == 0 || listCmdSpeedLimits.Items.Count == 0)
+                {
+                    if (listCmdAddressPositions.Items.Count == 0)
+                        return;
+                    else if (listCmdAddressPositions.Items.Count == 1)
+                        button_FromTo_Click(null, null);
+
+                    Button_AutoCreate_Click(null, null);
+                }
 
                 if (listCmdAddressActions.Items.Count == 0 || listCmdSpeedLimits.Items.Count == 0)
-                    Button_AutoCreate_Click(null, null);
+                    return;
 
                 string errorMessage = "";
                 SetPositions();
                 SetActions();
                 SetSpeedLimits();
 
-                if (moveControl.MoveState != EnumMoveState.Idle)
+                if (cB_OverrideTest.Checked)
                 {
-                    MessageBox.Show("動作命令中!");
-                    return;
-                }
+                    moveCmdInfo.MovingAddress = new List<MapAddress>();
+                    moveCmdInfo.MovingSections = new List<MapSection>();
+                    MapSection tempMapSection;
+                    MapAddress tempMapAddress;
 
-                command = moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo, ref errorMessage);
+                    for (int i = 0; i < moveCmdInfo.AddressPositions.Count; i++)
+                    {
+                        tempMapAddress = new MapAddress();
+                        tempMapAddress.IsTR50 = IsTR50(moveCmdInfo.AddressPositions[i]);
+                        moveCmdInfo.MovingAddress.Add(tempMapAddress);
 
-                if (command != null)
-                {
-                    tbC_Debug.SelectedIndex = 1;
-                    button_SendList.Enabled = true;
-                    ShowList();
-                    MainShowRunSectionList = true;
+                        if (i + 1 < moveCmdInfo.AddressPositions.Count)
+                        {
+                            tempMapSection = new MapSection();
+                            if (IsSectionR2000(moveCmdInfo.AddressPositions[i], moveCmdInfo.AddressPositions[i + 1]))
+                                tempMapSection.Type = EnumSectionType.R2000;
+                            else
+                                tempMapSection.Type = EnumSectionType.None;
+
+                            moveCmdInfo.MovingSections.Add(tempMapSection);
+                        }
+                    }
+
+                    if (!moveControl.TransferMove_Override(moveCmdInfo, ref errorMessage))
+                    {
+                        MessageBox.Show("Override 失敗!\n" + errorMessage);
+                    }
+                    else
+                    {
+                        MainShowRunSectionList = true;
+                        tbC_Debug.SelectedIndex = 1;
+                    }
                 }
                 else
-                    MessageBox.Show("List 產生失敗!\n" + errorMessage);
+                {
+                    if (moveControl.MoveState != EnumMoveState.Idle)
+                    {
+                        MessageBox.Show("動作命令中!");
+                        return;
+                    }
+
+                    command = moveControl.CreateMoveControlListSectionListReserveList(moveCmdInfo, ref errorMessage);
+
+                    if (command != null)
+                    {
+                        tbC_Debug.SelectedIndex = 1;
+                        button_SendList.Enabled = true;
+                        ShowList();
+                        MainShowRunSectionList = true;
+                    }
+                    else
+                        MessageBox.Show("List 產生失敗!\n" + errorMessage);
+                }
             }
             catch
             {
@@ -732,94 +685,7 @@ namespace Mirle.Agv.View
             }
         }
         #endregion
-
-        #region Page Debug CSV
-        private void button_DebugCSV_Click(object sender, EventArgs e)
-        {
-            button_DebugCSV.Enabled = false;
-            if (button_DebugCSV.Text == "開啟")
-            {
-                button_DebugCSV.Text = "關閉";
-                moveControl.DebugCSVMode = true;
-            }
-            else
-            {
-                button_DebugCSV.Text = "開啟";
-                moveControl.DebugCSVMode = false;
-            }
-
-            button_DebugCSV.Enabled = true;
-        }
-
-        private void button_DebugCSVClear_Click(object sender, EventArgs e)
-        {
-            dataGridView_CSVList.Rows.Clear();
-        }
-
-        private void dataGridView_CSVList_ColumnHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            int index = e.ColumnIndex;
-
-            if (index < dataGridView_CSVList.ColumnCount)
-            {
-                dataGridView_CSVList.Columns[index].Visible = false;
-            }
-        }
-
-        private void button_CSVListShowAll_Click(object sender, EventArgs e)
-        {
-            for (int i = 0; i < dataGridView_CSVList.ColumnCount; i++)
-                dataGridView_CSVList.Columns[i].Visible = true;
-        }
-
-        private void dataGridView_CSVList_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (button_CSVListDisViewRang.Text == "隱藏區域關閉")
-            {
-                int index = e.ColumnIndex;
-                if (firstSelect == -1)
-                {
-                    firstSelect = index;
-                }
-                else if (secondSelect == -1)
-                {
-                    if (index < firstSelect)
-                    {
-                        secondSelect = firstSelect;
-                        firstSelect = index;
-                    }
-                    else
-                        secondSelect = index;
-
-                    for (int i = firstSelect; i <= secondSelect; i++)
-                    {
-                        if (i < dataGridView_CSVList.ColumnCount)
-                            dataGridView_CSVList.Columns[i].Visible = false;
-                    }
-
-                    firstSelect = -1;
-                    secondSelect = -1;
-                }
-            }
-        }
-
-        private void button_CSVListDisViewRang_Click(object sender, EventArgs e)
-        {
-            button_CSVListDisViewRang.Enabled = false;
-
-            if (button_CSVListDisViewRang.Text == "隱藏區域開啟")
-            {
-                firstSelect = -1;
-                secondSelect = -1;
-                button_CSVListDisViewRang.Text = "隱藏區域關閉";
-            }
-            else
-                button_CSVListDisViewRang.Text = "隱藏區域開啟";
-
-            button_CSVListDisViewRang.Enabled = true;
-        }
-        #endregion
-
+        
         #region tabPage Admin
         public void button_SimulationMode_Click(object sender, EventArgs e)
         {
@@ -1117,6 +983,10 @@ namespace Mirle.Agv.View
                 e.Location.Y > 23 && e.Location.Y < 23 + 30)
             {
                 hideFunctionOn = !hideFunctionOn;
+                cB_OverrideTest.Visible = hideFunctionOn;
+
+                if (!hideFunctionOn)
+                    cB_OverrideTest.Checked = false;
 
                 button_SimulateState.Visible = (hideFunctionOn ? true : moveControl.SimulationMode);
                 if (simulateStateForm != null && !simulateStateForm.IsDisposed)
@@ -1246,7 +1116,9 @@ namespace Mirle.Agv.View
                     }
                     else
                     {
-                        GetSectionSpeed();
+                        if (listCmdAddressActions.Items.Count != 0 && listCmdSpeedLimits.Items.Count != 0)
+                            GetSectionSpeed();
+
                         ShowAddressActionsAndVelocitys();
                     }
                 }
@@ -1271,7 +1143,9 @@ namespace Mirle.Agv.View
                     }
                     else
                     {
-                        GetSectionSpeed();
+                        if (listCmdAddressActions.Items.Count != 0 && listCmdSpeedLimits.Items.Count != 0)
+                            GetSectionSpeed();
+
                         ShowAddressActionsAndVelocitys();
                     }
                 }

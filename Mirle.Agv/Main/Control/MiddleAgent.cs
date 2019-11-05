@@ -1274,19 +1274,15 @@ namespace Mirle.Agv.Controller
 
         #region Public Functions
 
-        public void ReportAddressPass(MoveCmdInfo moveCmdInfo)
+        public void ReportSectionPass(EventType type)
         {
-            theVehicle.Cmd134EventType = EventType.AdrPass;
-            Send_Cmd134_TransferEventReport(EventType.AdrPass);
+            Send_Cmd134_TransferEventReport(type);
         }
-
         public void ReportAddressPass()
         {
             if (!IsNeerlyNoMove())
             {
-                //lastReportSection = theVehicle.CurVehiclePosition.LastSection.DeepClone();
-                theVehicle.Cmd134EventType = EventType.AdrPass;
-                Send_Cmd134_TransferEventReport();
+                Send_Cmd134_TransferEventReport(EventType.AdrPass);
             }
         }
         private bool IsNeerlyNoMove()
@@ -1295,14 +1291,11 @@ namespace Mirle.Agv.Controller
             var lastAddr = theVehicle.VehicleLocation.LastAddress;
             if (string.IsNullOrEmpty(lastAddr.Id)) return true;
             return Math.Abs(realPos.X - lastAddr.Position.X) <= middlerConfig.NeerlyNoMoveRangeMm && Math.Abs(realPos.Y - lastAddr.Position.Y) <= middlerConfig.NeerlyNoMoveRangeMm;
-            //return (lastReportSection.Id == theVehicle.CurVehiclePosition.LastSection.Id) &&
-            //    (Math.Abs(lastReportSection.Distance - theVehicle.CurVehiclePosition.LastSection.Distance) < middlerConfig.NeerlyNoMoveRangeMm);
         }
         public void LoadArrivals()
         {
-            theVehicle.Cmd134EventType = EventType.LoadArrivals;
             Send_Cmd136_TransferEventReport(EventType.LoadArrivals);
-            Send_Cmd134_TransferEventReport();
+            Send_Cmd134_TransferEventReport(EventType.LoadArrivals);
         }
         public void Loading()
         {
@@ -1325,9 +1318,8 @@ namespace Mirle.Agv.Controller
         }
         public void UnloadArrivals()
         {
-            theVehicle.Cmd134EventType = EventType.UnloadArrivals;
             Send_Cmd136_TransferEventReport(EventType.UnloadArrivals);
-            Send_Cmd134_TransferEventReport();
+            Send_Cmd134_TransferEventReport(EventType.UnloadArrivals);
         }
         public void Unloading()
         {
@@ -1340,8 +1332,7 @@ namespace Mirle.Agv.Controller
         }
         public void MoveArrival()
         {
-            theVehicle.Cmd134EventType = EventType.AdrOrMoveArrivals;
-            Send_Cmd134_TransferEventReport();
+            Send_Cmd134_TransferEventReport(EventType.AdrOrMoveArrivals);
             Send_Cmd136_TransferEventReport(EventType.AdrOrMoveArrivals);
         }
         public void AvoidComplete()
@@ -2086,8 +2077,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         private CompleteStatus GetCancelCompleteStatus(CMDCancelType replyActiveType, CompleteStatus completeStatus)
         {
             switch (replyActiveType)
@@ -2293,37 +2282,12 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void Send_Cmd134_TransferEventReport()
-        {
-            VehicleLocation location = theVehicle.VehicleLocation;
-
-            try
-            {
-                ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
-                iD_134_TRANS_EVENT_REP.EventType = theVehicle.Cmd134EventType;
-                iD_134_TRANS_EVENT_REP.CurrentAdrID = location.LastAddress.Id;
-                iD_134_TRANS_EVENT_REP.CurrentSecID = location.LastSection.Id;
-                iD_134_TRANS_EVENT_REP.SecDistance = (uint)location.LastSection.VehicleDistanceSinceHead;
-                iD_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(location.LastSection.CmdDirection);
-
-                WrapperMessage wrappers = new WrapperMessage();
-                wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
-                wrappers.TransEventRep = iD_134_TRANS_EVENT_REP;
-
-                SendCommandWrapper(wrappers);
-            }
-            catch (Exception ex)
-            {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
         private void Send_Cmd134_TransferEventReport(EventType type)
         {
             var location = theVehicle.VehicleLocation;
 
             try
             {
-
                 ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
                 iD_134_TRANS_EVENT_REP.EventType = type;
                 iD_134_TRANS_EVENT_REP.CurrentAdrID = location.LastAddress.Id;

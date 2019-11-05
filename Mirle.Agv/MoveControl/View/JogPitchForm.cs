@@ -244,7 +244,7 @@ namespace Mirle.Agv.View
 
             if (changingMode)
             {
-                if (moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && !homing)
+                if (moveControl.elmoDriver.MoveAxisStop() && moveControl.elmoDriver.TurnAxisStop() && !homing)
                 {
                     changingMode = false;
                     EnalbeDisableButton(true);
@@ -988,7 +988,7 @@ namespace Mirle.Agv.View
         public void PlcJog_SetOperationValue()
         {
             switch (turnS)
-        {
+            {
                 case EnumJogTurnSpeed.High:
                     rB_JogPitch_TurnSpeed_High.Checked = true;
                     break;
@@ -1002,7 +1002,7 @@ namespace Mirle.Agv.View
                     rB_JogPitch_TurnSpeed_Low.Checked = true;
                     break;
             }
-            
+
             switch (moveV)
             {
                 case EnumJogMoveVelocity.ThreeHundred:
@@ -1041,7 +1041,7 @@ namespace Mirle.Agv.View
                     rB_JogPitch_TurnSpeed_Low.Checked = true;
                     break;
             }
-           
+
             switch (moveV)
             {
                 case EnumJogMoveVelocity.ThreeHundred:
@@ -1084,7 +1084,7 @@ namespace Mirle.Agv.View
                             break;
                         }
                     }
-                    
+
                 }
             }
 
@@ -1142,7 +1142,7 @@ namespace Mirle.Agv.View
             }
 
             ipcOperation.JogMoveVelocity = moveVelocity;
-            
+
 
             if (cB_JogPitch_MoveAndOntimeRevise.Checked)
             {

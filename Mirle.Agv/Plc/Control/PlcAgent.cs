@@ -97,6 +97,11 @@ namespace Mirle.Agv.Controller
             //}
         }
 
+        public void SendVehicleDecreaseSpeedFlag()
+        {
+
+        }
+
         private AlarmHandler aAlarmHandler = null;
 
         public void SetOutSideObj(MainForm mainForm)

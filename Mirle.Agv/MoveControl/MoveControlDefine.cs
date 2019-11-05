@@ -98,9 +98,7 @@ namespace Mirle.Agv
         Moving,
         TR,
         R2000,
-        Error,
-        WaitForReserve,
-        WaitForResume
+        Error
     }
 
     public enum EnumMoveComplete
@@ -126,9 +124,10 @@ namespace Mirle.Agv
         OntimeReviseTheta,
         OntimeReviseSectionDeviationLine,
         OntimeReviseSectionDeviationHorizontal,
-        UpdateDeltaPositionRange,
         OneTimeRevise,
-        VChangeSafetyDistance
+        VChangeSafetyDistance,
+        TRPathMonitoring,
+        IdleNotWriteLog
     }
 
     public enum EnumSensorSafetyType
@@ -142,7 +141,6 @@ namespace Mirle.Agv
         R2000FlowStat,
         Bumper,
         CheckAxisState,
-        TRPathMonitoring,
         EndPositionOffset,
         SecondCorrectionBySide
     }

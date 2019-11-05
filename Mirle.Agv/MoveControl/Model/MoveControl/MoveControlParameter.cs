@@ -9,6 +9,9 @@ namespace Mirle.Agv.Model
 {
     public class MoveControlParameter
     {
+        public bool MoveControlCommandMoving { get; set; }
+        public bool MoveControlCommandComplete { get; set; }
+        public System.Diagnostics.Stopwatch MoveControlCommandCompleteTimer { get; set; } 
         public bool DirFlag { get; set; }
         public bool PositionDirFlag { get; set; }
         public int WheelAngle { get; set; }
@@ -22,11 +25,13 @@ namespace Mirle.Agv.Model
         public bool FlowStop { get; set; }
         public bool FlowClear { get; set; }
         public int WaitReserveIndex { get; set; }
-        public EnumAddressAction NowAction { get; set; }
+        public EnumAddressAction TurnType { get; set; }
         public double TurnStartEncoder { get; set; }
         public EnumVehicleSafetyAction SensorState { get; set; }
         public EnumVehicleSafetyAction BeamSensorState { get; set; }
         public EnumVehicleSafetyAction BumpSensorState { get; set; }
+
+        public bool MoveStartNoWaitTime { get; set; }
 
         public bool CommandMoving { get; set; }
         public bool PauseRequest { get; set; }
@@ -34,6 +39,7 @@ namespace Mirle.Agv.Model
         public bool PauseNotSendEvent { get; set; }
         public bool CancelRequest { get; set; }
         public bool CanPause { get; set; }
+        public bool CancelNotSendEvent { get; set; }
         public bool SecondCorrection { get; set; }
         public EnumVChangeSpeedLowerSafety VChangeSafetyType { get; set; }
         public double VChangeSafetyTargetEncoder { get; set; }
@@ -48,6 +54,9 @@ namespace Mirle.Agv.Model
 
         public MoveControlParameter()
         {
+            MoveControlCommandMoving = false;
+            MoveControlCommandComplete = false;
+            MoveControlCommandCompleteTimer  = new System.Diagnostics.Stopwatch();
             KeepsLowSpeedStateByEQVChange = EnumVehicleSafetyAction.Stop;
             VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
             CanPause = true;
@@ -56,6 +65,7 @@ namespace Mirle.Agv.Model
             WheelAngle = 0;
             MoveControlStop = false;
             VelocityCommand = 100;
+            MoveStartNoWaitTime = true;
             OntimeReviseFlag = false;
             FlowStopRequeset = false;
             FlowStop = false;

@@ -33,6 +33,7 @@ namespace Mirle.Agv.View
         private MoveCommandDebugModeForm moveCommandDebugMode;
         private JogPitchForm jogPitchForm;
         private WarningForm warningForm;
+        private ConfigForm configForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
         private Panel panelRightUp;
@@ -110,6 +111,11 @@ namespace Mirle.Agv.View
             middlerForm.WindowState = FormWindowState.Normal;
             middlerForm.Show();
             middlerForm.Hide();
+
+            configForm = new ConfigForm(mainFlowHandler);
+            configForm.WindowState = FormWindowState.Normal;
+            configForm.Show();
+            configForm.Hide();
 
             var middlerConfig = middleAgent.GetMiddlerConfig();
             tstextClientName.Text = $"[{ middlerConfig.ClientName}]";
@@ -607,6 +613,16 @@ namespace Mirle.Agv.View
             }
             plcForm.BringToFront();
             plcForm.Show();
+        }
+
+        private void VehicleStatusPage_Click(object sender, EventArgs e)
+        {
+            if (configForm.IsDisposed)
+            {
+                configForm = new ConfigForm(mainFlowHandler);
+            }
+            configForm.BringToFront();
+            configForm.Show();
         }
 
         private void JogPage_Click(object sender, EventArgs e)
@@ -1625,24 +1641,7 @@ namespace Mirle.Agv.View
 
         private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            switch (Vehicle.Instance.AutoState)
-            {
-                case EnumAutoState.Manual:
-                    {
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        //mainFlowHandler.StartWatchLowPower();
-                    }
-                    break;
-                case EnumAutoState.Auto:
-                default:
-                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
-                    mainFlowHandler.StopAndClear();
-                    //mainFlowHandler.StopWatchLowPower();
-                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
-                    Vehicle.Instance.AutoState = EnumAutoState.Manual;
-                    break;
-            }
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -2002,5 +2001,7 @@ namespace Mirle.Agv.View
             //    mainFlowHandler.ReloadConfig();
             //}
         }
+
+       
     }
 }

@@ -38,8 +38,6 @@ namespace Mirle.Agv.Controller
         public MoveControlParameter ControlData { get; private set; } = new MoveControlParameter();
         public SimulateState FakeState { get; set; } = new SimulateState();
         private Thread threadSCVLog;
-        public bool DebugCSVMode { get; set; } = false;
-        public List<string[]> deubgCsvLogList = new List<string[]>();
         private bool isAGVMCommand = false;
         public string MoveCommandID { get; set; } = "";
         public bool SimulationMode { get; set; } = false;
@@ -53,6 +51,7 @@ namespace Mirle.Agv.Controller
         private System.Diagnostics.Stopwatch loopTimeTimer = new System.Diagnostics.Stopwatch();
         public bool SR2000Connected { get; private set; } = true;
         public string MoveControlVersion { get; set; }
+        public string AGVState { get; set; } = EnumMoveState.Idle.ToString();
 
         private void SetDebugFlowLog(string functionName, string message)
         {
@@ -149,13 +148,13 @@ namespace Mirle.Agv.Controller
 
         private double GetTRFlowAngleChange(double nowEncoder)
         {
-            double velocity = moveControlConfig.TurnParameter[ControlData.NowAction].Velocity;
+            double velocity = moveControlConfig.TurnParameter[ControlData.TurnType].Velocity;
             double time = nowEncoder / velocity;
-            TRTimeToAngleRange trTimeToAngle = trTimeToAngleRange[ControlData.NowAction];
+            TRTimeToAngleRange trTimeToAngle = trTimeToAngleRange[ControlData.TurnType];
 
-            double jerk = moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Jerk;
-            double acc = moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Acceleration;
-            double dec = moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Deceleration;
+            double jerk = moveControlConfig.TurnParameter[ControlData.TurnType].AxisParameter.Jerk;
+            double acc = moveControlConfig.TurnParameter[ControlData.TurnType].AxisParameter.Acceleration;
+            double dec = moveControlConfig.TurnParameter[ControlData.TurnType].AxisParameter.Deceleration;
 
             double angle = 0;
             double deltaTime = 0;
@@ -533,11 +532,15 @@ namespace Mirle.Agv.Controller
                     case "UpdateDeltaPositionRange":
                     case "OneTimeRevise":
                     case "VChangeSafetyDistance":
+                    case "TRPathMonitoring":
+                    case "IdleNotWriteLog":
                         temp = ReadSafetyDataXML((XmlElement)item);
-                        //moveControlConfig.Safety.Add(
-                        //    (EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name),
-                        //    temp);
-                        moveControlConfig.Safety[(EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name)] = temp;
+                        try
+                        {
+                            moveControlConfig.Safety[(EnumMoveControlSafetyType)Enum.Parse(typeof(EnumMoveControlSafetyType), item.Name)] = temp;
+                        }
+                        catch { }
+
                         break;
                     default:
                         break;
@@ -564,14 +567,15 @@ namespace Mirle.Agv.Controller
                     case "R2000FlowStat":
                     case "Bumper":
                     case "CheckAxisState":
-                    case "TRPathMonitoring":
                     case "EndPositionOffset":
                     case "SecondCorrectionBySide":
                         temp.Enable = (item.InnerText == "Enable");
-                        //moveControlConfig.SensorByPass.Add(
-                        //    (EnumSensorSafetyType)Enum.Parse(typeof(EnumSensorSafetyType), item.Name),
-                        //    temp);
-                        moveControlConfig.SensorByPass[(EnumSensorSafetyType)Enum.Parse(typeof(EnumSensorSafetyType), item.Name)] = temp;
+                        try
+                        {
+                            moveControlConfig.SensorByPass[(EnumSensorSafetyType)Enum.Parse(typeof(EnumSensorSafetyType), item.Name)] = temp;
+                        }
+                        catch { }
+
                         break;
                     default:
                         break;
@@ -761,6 +765,9 @@ namespace Mirle.Agv.Controller
                         break;
                     case "VChangeSafetyDistanceMagnification":
                         moveControlConfig.VChangeSafetyDistanceMagnification = double.Parse(item.InnerText);
+                        break;
+                    case "OverrideTimeoutValue":
+                        moveControlConfig.OverrideTimeoutValue = double.Parse(item.InnerText);
                         break;
                     case "SafteyDistance":
                         ReadSafetyDistanceXML((XmlElement)item);
@@ -1126,24 +1133,6 @@ namespace Mirle.Agv.Controller
             realEncoder = realEncoder + location.Velocity * deltaTime;
             // RealEncoder = elmoEncoder + offset + delta.
             location.Delta = realEncoder - (location.ElmoEncoder + location.Offset);
-
-            if (location.Encoder != null && moveControlConfig.Safety[EnumMoveControlSafetyType.UpdateDeltaPositionRange].Enable)
-            {
-                double deltaTimeDistance = Math.Abs(location.Velocity) *
-               ((DateTime.Now - location.Barcode.GetDataTime).TotalMilliseconds + moveControlConfig.SleepTime + location.Barcode.ScanTime) / 1000;
-                double distance = Math.Sqrt(Math.Pow(location.Encoder.Position.X - location.Barcode.Position.X, 2) +
-                                            Math.Pow(location.Encoder.Position.Y - location.Barcode.Position.Y, 2));
-                if (distance > moveControlConfig.Safety[EnumMoveControlSafetyType.UpdateDeltaPositionRange].Range + deltaTimeDistance)
-                {
-                    SendAlarmCode(159999);
-                    EMSControl("UpdateDelta中Barcode讀取位置和Encode(座標)差距" +
-                        distance.ToString("0.0") + "mm,已超過安全設置的" +
-                        moveControlConfig.Safety[EnumMoveControlSafetyType.UpdateDeltaPositionRange].Range.ToString("0") +
-                        "mm,因此啟動EMS! Encoder ( " + location.Encoder.Position.X.ToString("0") + ", " + location.Encoder.Position.Y.ToString("0") +
-                        " ), Barcoder ( " + location.Barcode.Position.X.ToString("0") + ", " + location.Barcode.Position.Y.ToString("0") +
-                        " ), realEncoder : " + location.RealEncoder.ToString("0"));
-                }
-            }
         }
 
         private void UpdateThetaSectionDeviation()
@@ -1332,8 +1321,8 @@ namespace Mirle.Agv.Controller
                 ElmoAxisFeedbackData elmoData = elmoDriver.ElmoGetFeedbackData(EnumAxis.XFL);
 
                 location.GTPosition = elmoDriver.ElmoGetPosition(EnumAxis.GT);
-                location.GTMoveCompelete = elmoDriver.MoveCompelete(EnumAxis.GT);
-                location.GXMoveCompelete = elmoDriver.MoveCompelete(EnumAxis.GX);
+                location.GTMoveCompelete = elmoDriver.TurnAxisStop();
+                location.GXMoveCompelete = elmoDriver.MoveAxisStop();
 
                 if (elmoData != null)
                 {
@@ -1478,7 +1467,7 @@ namespace Mirle.Agv.Controller
         #endregion
 
         #region CommandControl
-        private bool IsInTRPath(EnumAddressAction type, double encoder, double startAngle, double targetAngle)
+        private bool IsInTRPath(EnumAddressAction type, double encoder, double startAngle, double targetAngle, double range)
         {
             double nowAngle = location.GTPosition;
             nowAngle -= startAngle;
@@ -1497,12 +1486,11 @@ namespace Mirle.Agv.Controller
 
             double idealAngle = GetTRFlowAngleChange(Math.Abs(location.ElmoEncoder - ControlData.TurnStartEncoder));
 
-            return Math.Abs(idealAngle - nowAngle) <= 15;
+            return Math.Abs(idealAngle - nowAngle) <= range;
         }
 
-        private bool TurnGorupAxisNearlyAngle()
+        private bool TurnGorupAxisNearlyAngle(double range)
         {
-            double range = 15;
             double angle_TFL = elmoDriver.ElmoGetPosition(EnumAxis.TFL);
             double angle_TFR = elmoDriver.ElmoGetPosition(EnumAxis.TFR);
             double angle_TRL = elmoDriver.ElmoGetPosition(EnumAxis.TRL);
@@ -1523,7 +1511,7 @@ namespace Mirle.Agv.Controller
             WriteLog("MoveControl", "7", device, "", "start, velocity : " + velocity.ToString("0") + ", r : " + r.ToString("0") +
                 ", 舵輪將旋轉至 " + wheelAngle.ToString("0") + "度!");
             MoveState = EnumMoveState.TR;
-            ControlData.NowAction = type;
+            ControlData.TurnType = type;
 
             double distance = r * 2;
             double simulationDisntace = r * Math.PI / 2;
@@ -1616,7 +1604,7 @@ namespace Mirle.Agv.Controller
                 ", 舵輪將旋轉至 " + wheelAngle.ToString("0") + "度, 旋轉至 " + changeToNextSectionLineWheelAngle.ToString("0") + "!");
 
             MoveState = EnumMoveState.TR;
-            ControlData.NowAction = type;
+            ControlData.TurnType = type;
 
             double agvVelocity = Math.Abs(location.Velocity);
             double distance = r * 2;
@@ -1672,15 +1660,16 @@ namespace Mirle.Agv.Controller
                 if (ControlData.FlowStopRequeset || MoveState == EnumMoveState.Error)
                     return;
 
-                if (moveControlConfig.SensorByPass[EnumSensorSafetyType.TRPathMonitoring].Enable)
+                if (moveControlConfig.Safety[EnumMoveControlSafetyType.TRPathMonitoring].Enable)
                 {
-                    if (!TurnGorupAxisNearlyAngle())
+                    if (!TurnGorupAxisNearlyAngle(moveControlConfig.Safety[EnumMoveControlSafetyType.TRPathMonitoring].Range))
                     {
                         SendAlarmCode(152003);
                         EMSControl("四輪角度差異過大,EMS!");
                         return;
                     }
-                    else if (!IsInTRPath(type, Math.Abs(ControlData.TurnStartEncoder - location.ElmoEncoder), ControlData.WheelAngle, wheelAngle))
+                    else if (!IsInTRPath(type, Math.Abs(ControlData.TurnStartEncoder - location.ElmoEncoder),
+                        ControlData.WheelAngle, wheelAngle, moveControlConfig.Safety[EnumMoveControlSafetyType.TRPathMonitoring].Range))
                     {
                         SendAlarmCode(152001);
                         EMSControl("不再TR預計路徑上,異常停止!");
@@ -1755,7 +1744,7 @@ namespace Mirle.Agv.Controller
             double distance = moveControlConfig.TurnParameter[EnumAddressAction.R2000].R * Math.Sqrt(2);
 
             MoveState = EnumMoveState.R2000;
-            ControlData.NowAction = EnumAddressAction.R2000;
+            ControlData.TurnType = EnumAddressAction.R2000;
             command.IndexOflisSectionLine++;
 
             if (wheelAngle == 1 || wheelAngle == -1)
@@ -1858,7 +1847,7 @@ namespace Mirle.Agv.Controller
             double distance = moveControlConfig.TurnParameter[EnumAddressAction.R2000].R * Math.Sqrt(2);
 
             MoveState = EnumMoveState.R2000;
-            ControlData.NowAction = EnumAddressAction.R2000;
+            ControlData.TurnType = EnumAddressAction.R2000;
             command.IndexOflisSectionLine++;
 
             double velocity = moveControlConfig.TurnParameter[EnumAddressAction.R2000].Velocity;
@@ -2157,6 +2146,19 @@ namespace Mirle.Agv.Controller
             {
                 if (moveControlConfig.SensorByPass[EnumSensorSafetyType.EndPositionOffset].Enable)
                     ControlData.EQVChange = true;
+
+                if (command.EndAddressLoadUnload)
+                {
+                    try
+                    {
+                        WriteLog("MoveControl", "7", device, "", "終點站要取放貨, 通知Plc Fork Servo On!");
+                        plcAgent.SendVehicleDecreaseSpeedFlag();
+                    }
+                    catch
+                    {
+                        WriteLog("MoveControl", "7", device, "", "通知Plc Fork Servo On, Excption!");
+                    }
+                }
             }
 
             WriteLog("MoveControl", "7", device, "", "end");
@@ -2206,6 +2208,8 @@ namespace Mirle.Agv.Controller
 
 
                 ControlData.WheelAngle = wheelAngle;
+                ControlData.TrigetEndEncoder = location.RealEncoder + (dirFlag ? distance : -distance);
+                ControlData.DirFlag = dirFlag;
 
                 switch (ControlData.WheelAngle)
                 {
@@ -2226,42 +2230,45 @@ namespace Mirle.Agv.Controller
                         return;
                 }
 
-                ControlData.DirFlag = dirFlag;
-            }
-
-            if (moveType == EnumMoveStartType.FirstMove)
-            {
-                ControlData.TrigetEndEncoder = location.RealEncoder + (dirFlag ? distance : -distance);
-                timer.Reset();
-                timer.Start();
-                while (timer.ElapsedMilliseconds < moveControlConfig.MoveStartWaitTime)
+                if (moveType == EnumMoveStartType.FirstMove)
                 {
-                    UpdatePosition();
-                    SensorSafety();
-                    Thread.Sleep(moveControlConfig.SleepTime);
-                }
-
-                timer.Reset();
-                timer.Start();
-                while (elmoDriver.ElmoGetDisable(EnumAxis.GX) && !SimulationMode)
-                {
-                    UpdatePosition();
-                    SensorSafety();
-
-                    if (timer.ElapsedMilliseconds > moveControlConfig.TurnTimeoutValue)
+                    if (ControlData.MoveStartNoWaitTime)
                     {
-                        WriteLog("MoveControl", "4", device, "", "Enable Timeout!");
-                        return;
+                        WriteLog("MoveControl", "7", device, "", "為Override的First Move移動,因此取消等待2秒!");
+                        ControlData.MoveStartNoWaitTime = false;
                     }
+                    else
+                    {
+                        while (timer.ElapsedMilliseconds < moveControlConfig.MoveStartWaitTime)
+                        {
+                            UpdatePosition();
+                            SensorSafety();
+                            Thread.Sleep(moveControlConfig.SleepTime);
+                        }
 
-                    Thread.Sleep(moveControlConfig.SleepTime);
+                        timer.Reset();
+                        timer.Start();
+                        while (elmoDriver.ElmoGetDisable(EnumAxis.GX) && !SimulationMode)
+                        {
+                            UpdatePosition();
+                            SensorSafety();
+
+                            if (timer.ElapsedMilliseconds > moveControlConfig.TurnTimeoutValue)
+                            {
+                                WriteLog("MoveControl", "4", device, "", "Enable Timeout!");
+                                return;
+                            }
+
+                            Thread.Sleep(moveControlConfig.SleepTime);
+                        }
+                    }
+                }
+                else if (moveType == EnumMoveStartType.ChangeDirFlagMove)
+                {
+                    command.IndexOflisSectionLine++;
                 }
             }
-            else if (moveType == EnumMoveStartType.ChangeDirFlagMove)
-            {
-                ControlData.TrigetEndEncoder = location.RealEncoder + (dirFlag ? distance : -distance);
-                command.IndexOflisSectionLine++;
-            }
+
 
             if (moveType != EnumMoveStartType.SensorStopMove)
                 ControlData.VelocityCommand = velocity;
@@ -2431,7 +2438,7 @@ namespace Mirle.Agv.Controller
                     WriteLog("MoveControl", "7", device, "", "EnumMoveState.TR ");
 
                     elmoDriver.ElmoStop(EnumAxis.GX, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
-                    elmoDriver.ElmoStop(EnumAxis.GT, moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Deceleration, moveControlConfig.TurnParameter[ControlData.NowAction].AxisParameter.Jerk);
+                    elmoDriver.ElmoStop(EnumAxis.GT, moveControlConfig.TurnParameter[ControlData.TurnType].AxisParameter.Deceleration, moveControlConfig.TurnParameter[ControlData.TurnType].AxisParameter.Jerk);
 
                     if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.TRFlowStart].Enable)
                     {
@@ -2716,9 +2723,15 @@ namespace Mirle.Agv.Controller
                             ControlData.PauseRequest = false;
 
                             if (ControlData.PauseNotSendEvent)
+                            {
+                                WriteLog("MoveControl", "7", device, "", "AGV已經停止 PauseAlready, 但不發送Event!");
                                 ControlData.PauseNotSendEvent = false;
+                            }
                             else
+                            {
+                                WriteLog("MoveControl", "7", device, "", "AGV已經停止 PauseAlready!");
                                 MoveFinished(EnumMoveComplete.Pause);
+                            }
                         }
                     }
 
@@ -2753,10 +2766,18 @@ namespace Mirle.Agv.Controller
 
                         ControlData.PauseAlready = false;
                         ControlData.CancelRequest = false;
-                        WriteLog("MoveControl", "7", device, "", "AGV已Pause完成,Cancel!");
                         MoveState = EnumMoveState.Idle;
-                        MoveFinished(EnumMoveComplete.Cancel);
-                        WriteLog("MoveControl", "7", device, "", "AGV已Pause完成,Cancel已完成!");
+
+                        if (ControlData.CancelNotSendEvent)
+                        {
+                            WriteLog("MoveControl", "7", device, "", "AGV已經停止 Cancel已完成, 但不發送Event!");
+                            ControlData.CancelNotSendEvent = false;
+                        }
+                        else
+                        {
+                            WriteLog("MoveControl", "7", device, "", "AGV已經停止 Cancel已完成!");
+                            MoveFinished(EnumMoveComplete.Cancel);
+                        }
                     }
 
                     if (MoveState == EnumMoveState.Idle && ControlData.CloseMoveControl)
@@ -3255,6 +3276,30 @@ namespace Mirle.Agv.Controller
             return ProcessSensorState(sensorState);
         }
 
+        private void UpdateAGVState()
+        {
+            if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
+                AGVState = MoveState.ToString();
+            else
+            {
+                if (ControlData.SensorState == EnumVehicleSafetyAction.Stop)
+                {
+                    if (ControlData.PauseRequest || ControlData.PauseAlready)
+                        AGVState = "AGVC Command : Pause";
+                    else if (ControlData.WaitReserveIndex != -1)
+                        AGVState = "Wait Reserve";
+                    else if (ControlData.BeamSensorState == EnumVehicleSafetyAction.Stop)
+                        AGVState = "BeamSensor";
+                    else if (ControlData.FlowStop || ControlData.FlowStopRequeset)
+                        AGVState = "StopAndClear";
+                    else
+                        AGVState = "Stop ?? ";
+                }
+                else
+                    AGVState = EnumMoveState.Moving.ToString();
+            }
+        }
+
         private void SensorSafety()
         {
             if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
@@ -3279,6 +3324,8 @@ namespace Mirle.Agv.Controller
 
                 SensorAction(sensorState);
                 ControlData.SensorState = sensorState;
+                UpdateAGVState();
+
                 VChangeSafety();
             }
         }
@@ -3484,6 +3531,9 @@ namespace Mirle.Agv.Controller
                 ControlData.CommandMoving = false;
                 ControlData.OntimeReviseFlag = false;
 
+                ControlData.MoveControlCommandComplete = true;
+                ControlData.MoveControlCommandCompleteTimer.Restart();
+
                 if (isAGVMCommand)
                     OnMoveFinished?.Invoke(this, status);
             }
@@ -3492,8 +3542,14 @@ namespace Mirle.Agv.Controller
                 BeamSensorCloseAll();
                 DirLightCloseAll();
                 ControlData.OntimeReviseFlag = false;
+
+                ControlData.MoveControlCommandComplete = true;
+                ControlData.MoveControlCommandCompleteTimer.Restart();
+
                 WriteLog("MoveControl", "7", device, "", "error : no Command send MoveFinished, status : " + status.ToString());
             }
+
+            UpdateAGVState();
         }
 
         private void ResetEncoder(MapPosition start, MapPosition end, bool dirFlag)
@@ -3545,6 +3601,8 @@ namespace Mirle.Agv.Controller
 
         private void ResetFlag()
         {
+            ControlData.MoveControlCommandMoving = true;
+
             ControlData.SensorState = EnumVehicleSafetyAction.Normal;
             ControlData.BeamSensorState = EnumVehicleSafetyAction.Normal;
             ControlData.BumpSensorState = EnumVehicleSafetyAction.Normal;
@@ -3554,6 +3612,7 @@ namespace Mirle.Agv.Controller
             ControlData.PauseAlready = false;
             ControlData.PauseNotSendEvent = false;
             ControlData.CancelRequest = false;
+            ControlData.CancelNotSendEvent = false;
             ControlData.FlowStopRequeset = false;
             ControlData.FlowStop = false;
             ControlData.FlowClear = false;
@@ -3680,9 +3739,70 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-        public void StopAndClear()
+        public bool TransferMove_Override(MoveCmdInfo moveCmd, ref string errorMessage)
         {
-            WriteLog("MoveControl", "7", device, "", "StopAndClear!");
+            WriteLog("MoveControl", "7", device, "", "Override start");
+
+            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+            timer.Reset();
+            timer.Start();
+
+            if (!VehclePause(true))
+            {
+                WriteLog("MoveControl", "7", device, "", "AGV不處於不能Pause狀態,因此拒絕AGVM Override命令.");
+                errorMessage = "AGV不處於不能Pause狀態,因此拒絕AGVM Override命令.";
+                AGVStopResult = "AGV不處於不能Pause狀態,因此拒絕AGVM Override命令.";
+                SendAlarmCode(111000);
+                return false;
+            }
+
+            while (!ControlData.PauseAlready)
+            {
+                if (timer.ElapsedMilliseconds > moveControlConfig.OverrideTimeoutValue)
+                {
+                    errorMessage = "wait PauseAlready timeout!";
+                    SendAlarmCode(111001);
+                    return false;
+                }
+
+                Thread.Sleep(moveControlConfig.SleepTime);
+            }
+
+            if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
+            {
+                errorMessage = "PauseAlready, 但是車子狀態變為" + MoveState.ToString() + "!";
+                return false;
+            }
+
+            VehcleCancel(true);
+
+            while (MoveState != EnumMoveState.Idle)
+            {
+                if (timer.ElapsedMilliseconds > moveControlConfig.OverrideTimeoutValue)
+                {
+                    errorMessage = "wait Cancel timeout!";
+                    SendAlarmCode(111001);
+                    return false;
+                }
+
+                Thread.Sleep(moveControlConfig.SleepTime);
+            }
+
+            ControlData.MoveStartNoWaitTime = true;
+
+            if (!TransferMove(moveCmd, ref errorMessage))
+            {
+                ControlData.MoveStartNoWaitTime = false;
+                return false;
+            }
+
+            WriteLog("MoveControl", "7", device, "", "Override 成功!");
+            return true;
+        }
+
+        public void StopAndClear([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            WriteLog("MoveControl", "7", device, "", memberName + " : StopAndClear!");
 
             if (MoveState != EnumMoveState.Error && MoveState != EnumMoveState.Idle)
             {
@@ -3816,8 +3936,8 @@ namespace Mirle.Agv.Controller
             if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error &&
                 !ControlData.PauseRequest && !ControlData.PauseAlready && CanPauseNow())
             {
-                ControlData.PauseRequest = true;
                 WriteLog("MoveControl", "7", device, "", "Pause Request接受!");
+                ControlData.PauseRequest = true;
 
                 if (hideFunction)
                     ControlData.PauseNotSendEvent = true;
@@ -3844,13 +3964,16 @@ namespace Mirle.Agv.Controller
                 WriteLog("MoveControl", "7", device, "", "Pause Request拒絕!");
         }
 
-        public void VehcleCancel()
+        public void VehcleCancel(bool hideFunction = false)
         {
             WriteLog("MoveControl", "7", device, "", "Cancel Request!");
             if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error && !ControlData.CancelRequest)
             {
                 WriteLog("MoveControl", "7", device, "", "Cancel Request接受!");
                 ControlData.CancelRequest = true;
+
+                if (hideFunction)
+                    ControlData.CancelNotSendEvent = true;
             }
             else
                 WriteLog("MoveControl", "7", device, "", "Cancel Request拒絕!");
@@ -3907,7 +4030,7 @@ namespace Mirle.Agv.Controller
 
         public bool TransferMoveDebugMode(MoveCommandData command)
         {
-            if (Vehicle.Instance.AutoState == EnumAutoState.Auto)
+            if (Vehicle.Instance.AutoState == EnumAutoState.Auto || MoveState != EnumMoveState.Idle)
                 return false;
 
             WriteLog("MoveControl", "7", device, "", "start");
@@ -4004,9 +4127,6 @@ namespace Mirle.Agv.Controller
         private void WriteLogCSV()
         {
             string csvLog;
-
-            string[] oneRowData;
-            string[] splitTime;
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
             ElmoAxisFeedbackData feedBackData;
             EnumAxis[] order = new EnumAxis[18] { EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
@@ -4019,242 +4139,243 @@ namespace Mirle.Agv.Controller
             Sr2000ReadData logReadData;
             DateTime now;
 
-            bool csvLogResult;
-
             while (true)
             {
                 timer.Reset();
                 timer.Start();
-                //  Debug 
-                //BarcodeX	BarocdeY	ElmoEncoder	elmoV	TurnP	TurnV
 
-                csvLogResult = DebugCSVMode && (MoveState != EnumMoveState.Idle);
-                //  Time
-                now = DateTime.Now;
-                csvLog = now.ToString("yyyy/MM/dd HH:mm:ss.fff");
-
-                //  State
-                AddCSV(ref csvLog, MoveState.ToString());
-
-                //  RealEncoder
-                AddCSV(ref csvLog, location.RealEncoder.ToString("0.0"));
-
-                //  NextCommand	TriggerEncoder
-                if (MoveState != EnumMoveState.Idle && command.IndexOfCmdList < command.CommandList.Count)
+                if (moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Enable &&
+                    ControlData.MoveControlCommandComplete)
                 {
-                    AddCSV(ref csvLog, command.CommandList[command.IndexOfCmdList].CmdType.ToString());
-
-                    if (command.CommandList[command.IndexOfCmdList].Position != null)
-                        AddCSV(ref csvLog, command.CommandList[command.IndexOfCmdList].TriggerEncoder.ToString("0"));
-                    else
-                        AddCSV(ref csvLog, "Now");
-                }
-                else
-                {
-                    AddCSV(ref csvLog, "Empty");
-                    AddCSV(ref csvLog, "Empty");
-                }
-
-                //  Delta
-                AddCSV(ref csvLog, location.Delta.ToString("0.0"));
-
-                //  Offset
-                AddCSV(ref csvLog, location.Offset.ToString("0.0"));
-
-                //  RealPosition
-                logAGVPosition = location.Real;
-                if (logAGVPosition != null)
-                {
-                    AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
-                    AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
-                }
-                else
-                {
-                    AddCSV(ref csvLog, "N/A");
-                    AddCSV(ref csvLog, "N/A");
-                }
-
-                //  BarcodePosition
-                //  X Y
-                logAGVPosition = location.Barcode;
-                if (logAGVPosition != null)
-                {
-                    AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
-                    AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
-                }
-                else
-                {
-                    AddCSV(ref csvLog, "N/A");
-                    AddCSV(ref csvLog, "N/A");
-                }
-
-                //  EncoderPosition
-                //  X Y
-                logAGVPosition = location.Encoder;
-                if (logAGVPosition != null && logAGVPosition.Position != null)
-                {
-                    AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
-                    AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
-                }
-                else
-                {
-                    AddCSV(ref csvLog, "N/A");
-                    AddCSV(ref csvLog, "N/A");
-                }
-
-                logThetaDeviation = location.ThetaAndSectionDeviation;
-                if (logThetaDeviation != null)
-                {
-                    AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
-                    AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
-                }
-                else
-                {
-                    AddCSV(ref csvLog, "N/A");
-                    AddCSV(ref csvLog, "N/A");
-                }
-
-                //  SR2000
-                //  count	scanTime	X	Y	theta   BarcodeAngle    delta	theta   
-                for (int i = 0; i < 2; i++)
-                {
-                    if (DriverSr2000List.Count > i)
+                    if (ControlData.MoveControlCommandCompleteTimer.ElapsedMilliseconds >
+                        moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Range)
                     {
-                        logReadData = DriverSr2000List[i].GetReadData();
-                        if (logReadData != null)
+                        ControlData.MoveControlCommandComplete = false;
+                        ControlData.MoveControlCommandMoving = false;
+                    }
+                }
+
+                if (!moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Enable ||
+                    ControlData.MoveControlCommandMoving)
+                {
+                    //  Debug 
+                    //BarcodeX	BarocdeY	ElmoEncoder	elmoV	TurnP	TurnV
+
+                    //  Time
+                    now = DateTime.Now;
+                    csvLog = now.ToString("yyyy/MM/dd HH:mm:ss.fff");
+
+                    //  State
+                    if (MoveState != EnumMoveState.TR)
+                        AddCSV(ref csvLog, MoveState.ToString());
+                    else
+                        AddCSV(ref csvLog, ControlData.TurnType.ToString());
+
+                    //  RealEncoder
+                    AddCSV(ref csvLog, location.RealEncoder.ToString("0.0"));
+
+                    //  NextCommand	TriggerEncoder
+                    if (MoveState != EnumMoveState.Idle && command.IndexOfCmdList < command.CommandList.Count)
+                    {
+                        AddCSV(ref csvLog, command.CommandList[command.IndexOfCmdList].CmdType.ToString());
+
+                        if (command.CommandList[command.IndexOfCmdList].Position != null)
+                            AddCSV(ref csvLog, command.CommandList[command.IndexOfCmdList].TriggerEncoder.ToString("0"));
+                        else
+                            AddCSV(ref csvLog, "Now");
+                    }
+                    else
+                    {
+                        AddCSV(ref csvLog, "Empty");
+                        AddCSV(ref csvLog, "Empty");
+                    }
+
+                    //  Delta
+                    AddCSV(ref csvLog, location.Delta.ToString("0.0"));
+
+                    //  Offset
+                    AddCSV(ref csvLog, location.Offset.ToString("0.0"));
+
+                    //  RealPosition
+                    logAGVPosition = location.Real;
+                    if (logAGVPosition != null)
+                    {
+                        AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
+                        AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
+                    }
+                    else
+                    {
+                        AddCSV(ref csvLog, "N/A");
+                        AddCSV(ref csvLog, "N/A");
+                    }
+
+                    //  BarcodePosition
+                    //  X Y
+                    logAGVPosition = location.Barcode;
+                    if (logAGVPosition != null)
+                    {
+                        AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
+                        AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
+                    }
+                    else
+                    {
+                        AddCSV(ref csvLog, "N/A");
+                        AddCSV(ref csvLog, "N/A");
+                    }
+
+                    //  EncoderPosition
+                    //  X Y
+                    logAGVPosition = location.Encoder;
+                    if (logAGVPosition != null && logAGVPosition.Position != null)
+                    {
+                        AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
+                        AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
+                    }
+                    else
+                    {
+                        AddCSV(ref csvLog, "N/A");
+                        AddCSV(ref csvLog, "N/A");
+                    }
+
+                    logThetaDeviation = location.ThetaAndSectionDeviation;
+                    if (logThetaDeviation != null)
+                    {
+                        AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
+                        AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
+                    }
+                    else
+                    {
+                        AddCSV(ref csvLog, "N/A");
+                        AddCSV(ref csvLog, "N/A");
+                    }
+
+                    //  SR2000
+                    //  count	scanTime	X	Y	theta   BarcodeAngle    delta	theta   
+                    for (int i = 0; i < 2; i++)
+                    {
+                        if (DriverSr2000List.Count > i)
                         {
-                            logAGVPosition = logReadData.AGV;
-                            logThetaDeviation = logReadData.ReviseData;
-                            if (logAGVPosition != null)
+                            logReadData = DriverSr2000List[i].GetReadData();
+                            if (logReadData != null)
                             {
-                                AddCSV(ref csvLog, logAGVPosition.Count.ToString("0"));
-                                AddCSV(ref csvLog, logAGVPosition.GetDataTime.ToString("HH:mm:ss.ff"));
-                                AddCSV(ref csvLog, logAGVPosition.ScanTime.ToString("0"));
-                                AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0"));
-                                AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0"));
-                                AddCSV(ref csvLog, logAGVPosition.AGVAngle.ToString("0.0"));
-                                AddCSV(ref csvLog, logAGVPosition.BarcodeAngleInMap.ToString("0"));
-                            }
-                            else
-                            {
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
-                            }
+                                logAGVPosition = logReadData.AGV;
+                                logThetaDeviation = logReadData.ReviseData;
+                                if (logAGVPosition != null)
+                                {
+                                    AddCSV(ref csvLog, logAGVPosition.Count.ToString("0"));
+                                    AddCSV(ref csvLog, logAGVPosition.GetDataTime.ToString("HH:mm:ss.ff"));
+                                    AddCSV(ref csvLog, logAGVPosition.ScanTime.ToString("0"));
+                                    AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0"));
+                                    AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0"));
+                                    AddCSV(ref csvLog, logAGVPosition.AGVAngle.ToString("0.0"));
+                                    AddCSV(ref csvLog, logAGVPosition.BarcodeAngleInMap.ToString("0"));
+                                }
+                                else
+                                {
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                }
 
-                            if (logThetaDeviation != null)
-                            {
-                                AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
-                                AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
-                            }
-                            else
-                            {
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
-                            }
+                                if (logThetaDeviation != null)
+                                {
+                                    AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
+                                    AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
+                                }
+                                else
+                                {
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                }
 
-                            if (logReadData.Barcode1 != null && logReadData.Barcode2 != null)
-                            {
-                                AddCSV(ref csvLog, logReadData.Barcode1.ID.ToString("0"));
-                                AddCSV(ref csvLog, logReadData.Barcode2.ID.ToString("0"));
-                            }
-                            else
-                            {
-                                AddCSV(ref csvLog, "N/A");
-                                AddCSV(ref csvLog, "N/A");
+                                if (logReadData.Barcode1 != null && logReadData.Barcode2 != null)
+                                {
+                                    AddCSV(ref csvLog, logReadData.Barcode1.ID.ToString("0"));
+                                    AddCSV(ref csvLog, logReadData.Barcode2.ID.ToString("0"));
+                                }
+                                else
+                                {
+                                    AddCSV(ref csvLog, "N/A");
+                                    AddCSV(ref csvLog, "N/A");
+                                }
                             }
                         }
+                        else
+                        {
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                        }
                     }
-                    else
-                    {
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                    }
-                }
 
-                //  Elmo
-                //  count   position	velocity	toc	disable	moveComplete	error
-                for (int i = 0; i < 8; i++)
-                {
-                    feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
-                    if (feedBackData != null)
+                    //  Elmo
+                    //  count   position	velocity	toc	disable	moveComplete	error
+                    for (int i = 0; i < 8; i++)
                     {
-                        AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
-                        AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
-                        AddCSV(ref csvLog, feedBackData.Feedback_Velocity.ToString("0.0"));
-                        AddCSV(ref csvLog, feedBackData.Feedback_Position_Error.ToString("0.0"));
-                        AddCSV(ref csvLog, feedBackData.Feedback_Torque.ToString("0.0"));
-                        AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
-                        AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
-                        AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
+                        feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
+                        if (feedBackData != null)
+                        {
+                            AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
+                            AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
+                            AddCSV(ref csvLog, feedBackData.Feedback_Velocity.ToString("0.0"));
+                            AddCSV(ref csvLog, feedBackData.Feedback_Position_Error.ToString("0.0"));
+                            AddCSV(ref csvLog, feedBackData.Feedback_Torque.ToString("0.0"));
+                            AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
+                            AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
+                            AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
+                        }
+                        else
+                        {
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                        }
                     }
-                    else
+
+                    for (int i = 8; i < 16; i++)
                     {
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
+                        feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
+                        if (feedBackData != null)
+                        {
+                            AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
+                            AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
+                            AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
+                            AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
+                            AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
+                        }
+                        else
+                        {
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                        }
                     }
-                }
 
-                for (int i = 8; i < 16; i++)
-                {
-                    feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
-                    if (feedBackData != null)
+                    for (int i = 16; i < 18; i++)
                     {
-                        AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
-                        AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
-                        AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
-                        AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
-                        AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
+                        AddCSV(ref csvLog, elmoDriver.MoveCompelete(order[i]) ? "Stop" : "Move");
                     }
-                    else
-                    {
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                    }
-                }
 
-                for (int i = 16; i < 18; i++)
-                {
-                    AddCSV(ref csvLog, elmoDriver.MoveCompelete(order[i]) ? "Stop" : "Move");
-                }
-
-                logger.SavePureLog(csvLog);
-
-                if (csvLogResult)
-                {
-                    oneRowData = Regex.Split(csvLog, ",", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
-                    splitTime = Regex.Split(oneRowData[0], " ", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
-                    if (splitTime != null && splitTime.Length > 1)
-                        oneRowData[0] = splitTime[1];
-
-                    lock (deubgCsvLogList)
-                    {
-                        deubgCsvLogList.Add(oneRowData);
-                        if (deubgCsvLogList.Count > 3000)
-                            deubgCsvLogList.RemoveAt(0);
-                    }
+                    logger.SavePureLog(csvLog);
                 }
 
                 while (timer.ElapsedMilliseconds < moveControlConfig.CSVLogInterval)

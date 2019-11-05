@@ -50,6 +50,7 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnReloadConfig = new System.Windows.Forms.Button();
             this.txtFailResult = new System.Windows.Forms.Label();
             this.btnReDraw = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -133,7 +134,6 @@
             this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
-            this.btnReloadConfig = new System.Windows.Forms.Button();
             this.ucCstId = new Mirle.Agv.UcLabelTextBox();
             this.ucCharging = new Mirle.Agv.UcLabelTextBox();
             this.ucSoc = new Mirle.Agv.UcLabelTextBox();
@@ -251,12 +251,12 @@
             // 模式ToolStripMenuItem
             // 
             this.模式ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.JogPage,
+            this.VehicleStatusPage,
             this.AlarmPage,
             this.MiddlerPage,
+            this.PlcPage,
             this.ManualMoveCmdPage,
-            this.VehicleStatusPage,
-            this.PlcPage});
+            this.JogPage});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.模式ToolStripMenuItem.Text = "模式";
@@ -293,7 +293,8 @@
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
             this.VehicleStatusPage.Size = new System.Drawing.Size(208, 22);
-            this.VehicleStatusPage.Text = "車輛狀態";
+            this.VehicleStatusPage.Text = "參數調整";
+            this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // PlcPage
             // 
@@ -307,7 +308,6 @@
             this.工程師ToolStripMenuItem.Name = "工程師ToolStripMenuItem";
             this.工程師ToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
             this.工程師ToolStripMenuItem.Text = "工程師";
-            this.工程師ToolStripMenuItem.Click += new System.EventHandler(this.工程師ToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -370,6 +370,19 @@
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // btnReloadConfig
+            // 
+            this.btnReloadConfig.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnReloadConfig.ForeColor = System.Drawing.Color.OrangeRed;
+            this.btnReloadConfig.Location = new System.Drawing.Point(985, 15);
+            this.btnReloadConfig.Name = "btnReloadConfig";
+            this.btnReloadConfig.Size = new System.Drawing.Size(178, 53);
+            this.btnReloadConfig.TabIndex = 57;
+            this.btnReloadConfig.Text = "重新讀取參數";
+            this.btnReloadConfig.UseVisualStyleBackColor = true;
+            this.btnReloadConfig.Visible = false;
+            this.btnReloadConfig.Click += new System.EventHandler(this.btnReloadConfig_Click);
             // 
             // txtFailResult
             // 
@@ -1307,19 +1320,6 @@
             // 
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
-            // 
-            // btnReloadConfig
-            // 
-            this.btnReloadConfig.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnReloadConfig.ForeColor = System.Drawing.Color.OrangeRed;
-            this.btnReloadConfig.Location = new System.Drawing.Point(985, 15);
-            this.btnReloadConfig.Name = "btnReloadConfig";
-            this.btnReloadConfig.Size = new System.Drawing.Size(178, 53);
-            this.btnReloadConfig.TabIndex = 57;
-            this.btnReloadConfig.Text = "重新讀取參數";
-            this.btnReloadConfig.UseVisualStyleBackColor = true;
-            this.btnReloadConfig.Visible = false;
-            this.btnReloadConfig.Click += new System.EventHandler(this.btnReloadConfig_Click);
             // 
             // ucCstId
             // 

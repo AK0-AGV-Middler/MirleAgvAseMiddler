@@ -66,6 +66,9 @@ namespace Mirle.Agv.Controller
         #region Threads
         private Thread thdVisitTransferSteps;
         private ManualResetEvent visitTransferStepsShutdownEvent = new ManualResetEvent(false);
+
+       
+
         private ManualResetEvent visitTransferStepsPauseEvent = new ManualResetEvent(true);
         private EnumThreadStatus visitTransferStepsStatus = EnumThreadStatus.None;
         public EnumThreadStatus VisitTransferStepsStatus
@@ -92,6 +95,8 @@ namespace Mirle.Agv.Controller
                 theVehicle.TrackPositionStatus = value;
             }
         }
+
+        
 
         public EnumThreadStatus PreTrackPositionStatus { get; private set; } = EnumThreadStatus.None;
 
@@ -612,7 +617,7 @@ namespace Mirle.Agv.Controller
                             if (IsMoveStep())
                             {
                                 MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
-                                if (/*moveCmd.MovingSections.Count > 0 &&*/ !IsMoveEnd)
+                                if (!IsMoveEnd)
                                 {
                                     if (UpdateVehiclePositionInMovingStep(moveCmd, vehicleLocation))
                                     {
@@ -978,7 +983,6 @@ namespace Mirle.Agv.Controller
                     return;
                 }
 
-
                 if (!IsMoveStopByNoReserve() && !agvcTransCmd.IsAvoidComplete)
                 {
                     var reason = $"車輛尚未停妥，拒絕執行替代路徑";
@@ -989,7 +993,6 @@ namespace Mirle.Agv.Controller
                 {
                     PauseVisitTransferSteps();
                     middleAgent.PauseAskReserve();
-
                 }
 
                 if (IsNextTransferStepUnload())
@@ -2230,6 +2233,7 @@ namespace Mirle.Agv.Controller
         public AlarmHandler GetAlarmHandler() => alarmHandler;
         public MiddleAgent GetMiddleAgent() => middleAgent;
         public MiddlerConfig GetMiddlerConfig() => middlerConfig;
+        public MainFlowConfig GetMainFlowConfig() => mainFlowConfig;
         public MapConfig GetMapConfig() => mapConfig;
         public MapHandler GetMapHandler() => mapHandler;
         public MoveControlHandler GetMoveControlHandler() => moveControlHandler;
@@ -2272,6 +2276,7 @@ namespace Mirle.Agv.Controller
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
             middleAgent.StopAskReserve();
+            middleAgent.ReportSectionPass(EventType.AdrPass);
             OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
             middleAgent.NeedReserveSections = moveCmd.MovingSections;
             middleAgent.StartAskReserve();
@@ -2296,17 +2301,11 @@ namespace Mirle.Agv.Controller
                         {
                             moveCmdInfo.MovingSectionsIndex++;
                             FitVehicalLocationAndMoveCmd(moveCmdInfo, vehicleLocation);
-                            middleAgent.ReportAddressPass(moveCmdInfo);
+                            middleAgent.ReportSectionPass(EventType.AdrPass);
                             isUpdateSection = true;
                         }
 
                         FitVehicalLocation(moveCmdInfo, vehicleLocation);
-
-                        //FindeNeerlyAddressInTheMovingSection(MovingSections[searchingSectionIndex], ref vehicleLocation);
-
-                        //vehicleLocation.LastSection = TheMapInfo.allMapSections[MovingSections[searchingSectionIndex].Id];
-
-                        //vehicleLocation.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(vehicleLocation.RealPosition, vehicleLocation.LastSection.HeadAddress.Position);
 
                         UpdateMiddlerGotReserveOkSections(MovingSections[searchingSectionIndex].Id);
 
@@ -3197,6 +3196,20 @@ namespace Mirle.Agv.Controller
         {
             agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
             StopAndClear();
+        }
+
+        public void LoadMainFlowConfig()
+        {
+            XmlHandler xmlHandler = new XmlHandler();
+
+            mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
+        }
+
+        public void SetMainFlowConfig(MainFlowConfig mainFlowConfig)
+        {
+            this.mainFlowConfig = mainFlowConfig;
+            XmlHandler xmlHandler = new XmlHandler();
+            xmlHandler.WriteXml(mainFlowConfig, @"D:\AgvConfigs\MainFlow.xml");
         }
     }
 }

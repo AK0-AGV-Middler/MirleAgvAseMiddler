@@ -365,6 +365,7 @@
             this.lblBeamSensorFUL = new System.Windows.Forms.Label();
             this.pnlF = new System.Windows.Forms.Panel();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.button1 = new System.Windows.Forms.Button();
             this.ckbHmiThreadControl = new System.Windows.Forms.CheckBox();
             this.grpOperateStatus = new System.Windows.Forms.GroupBox();
             this.lblAGVMode = new System.Windows.Forms.Label();
@@ -414,7 +415,6 @@
             this.labIPcStatus = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.labIPcStatusManual = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
             this.tabPlcOperation.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel7.SuspendLayout();
@@ -4348,6 +4348,15 @@
             this.tabPage4.TabIndex = 4;
             this.tabPage4.Text = "JogStatus";
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(784, 102);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
             // ckbHmiThreadControl
             // 
             this.ckbHmiThreadControl.AutoSize = true;
@@ -4919,15 +4928,6 @@
             this.labIPcStatusManual.Size = new System.Drawing.Size(32, 20);
             this.labIPcStatusManual.TabIndex = 71;
             this.labIPcStatusManual.Click += new System.EventHandler(this.labIPcStatusManual_Click);
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(784, 102);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
             // 
             // PlcForm
             // 

@@ -2099,6 +2099,8 @@ namespace Mirle.Agv.Controller
                         WriteLog("MoveControl", "3", device, "", "moveCmd.EndAddress or moveCmd.EndAddress.AddressOffset == null!");
                     }
 
+                    returnCommand.EndAddressLoadUnload = moveCmd.IsMoveEndDoLoadUnload;
+
                     if (moveCmd.StartAddress != null && moveCmd.StartAddress.AddressOffset != null)
                     {
                         returnCommand.StartOffsetX = moveCmd.StartAddress.AddressOffset.OffsetX;
