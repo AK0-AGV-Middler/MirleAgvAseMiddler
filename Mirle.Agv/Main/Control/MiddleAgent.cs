@@ -1940,6 +1940,8 @@ namespace Mirle.Agv.Controller
                 var msg = $"Middler : 收到[{receive.ActType}]命令。";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
 
+                var cmdId = receive.CmdID.Trim();
+
                 if (theVehicle.ActionStatus == VHActionStatus.NoCommand)
                 {
                     replyCode = 1;
@@ -1950,11 +1952,11 @@ namespace Mirle.Agv.Controller
                 }
 
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
-                if (agvcTransCmd.CommandId != receive.CmdID)
+                if (agvcTransCmd.CommandId != cmdId)
                 {
                     replyCode = 1;
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive.CmdID, receive.ActType);
-                    var ngMsg = $"Middler : 當前搬送命令ID({agvcTransCmd.CommandId})與收到取消命令ID({receive.CmdID})不合，拒絕[{receive.ActType}]命令，";
+                    var ngMsg = $"Middler : 當前搬送命令ID({agvcTransCmd.CommandId})與收到取消命令ID({cmdId})不合，拒絕[{receive.ActType}]命令，";
                     OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
                     return;
                 }
@@ -1963,7 +1965,7 @@ namespace Mirle.Agv.Controller
                 {
                     case CMDCancelType.CmdCancel:
                     case CMDCancelType.CmdAbort:
-                        mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType);
+                        mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, cmdId, receive.ActType);
                         break;
                     case CMDCancelType.CmdCancelIdMismatch:
                     case CMDCancelType.CmdCancelIdReadFailed:
