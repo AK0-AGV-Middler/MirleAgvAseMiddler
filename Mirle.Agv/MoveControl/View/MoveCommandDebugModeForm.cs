@@ -29,12 +29,15 @@ namespace Mirle.Agv.View
         private int reserveIndex;
         private int commandIndex;
         private AGVPosition tempReal = null;
-        private int firstSelect;
-        private int secondSelect;
         private string commandID = "";
         private bool simulationModeFirstDoubleClick = false;
         private Dictionary<EnumMoveControlSafetyType, SafetyInformation> safetyUserControl = new Dictionary<EnumMoveControlSafetyType, SafetyInformation>();
         private Dictionary<EnumSensorSafetyType, SensorByPassInformation> sensorByPassUserControl = new Dictionary<EnumSensorSafetyType, SensorByPassInformation>();
+
+        private TabPage checkBarcodePositionPage;
+
+        private AGVPosition checkBarcodeNode;
+        private AGVPosition nowPosition;
 
         private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
                                                         EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
@@ -49,6 +52,8 @@ namespace Mirle.Agv.View
             this.moveControl = moveControl;
             this.theMapInfo = theMapInfo;
             this.Text = this.Text + " Version : " + moveControl.MoveControlVersion;
+            checkBarcodePositionPage = tbC_Debug.TabPages[4];
+            tbC_Debug.TabPages.RemoveAt(4);
         }
 
         private void MoveCommandMonitor_Load(object sender, EventArgs e)
@@ -59,8 +64,8 @@ namespace Mirle.Agv.View
             ucLabelTB_BarcodePosition.TagName = "Barcode Position : ";
             ucLabelTB_Delta.TagName = "Encoder Delta : ";
             ucLabelTB_CreateCommand_BarcodePosition.TagName = "Barcode Position : ";
-            ucLabelTtB_CommandListState.TagName = "AGV Move State : ";
-            ucLabelTB_CreateCommandState.TagName = "AGV Move State : ";
+            ucLabelTtB_CommandListState.TagName = "Move State : ";
+            ucLabelTB_CreateCommandState.TagName = "Move State : ";
             ucLabelTB_Velocity.TagName = "Velocity : ";
             ucLabelTB_ElmoEncoder.TagName = "Elmo encoder : ";
             ucLabelTB_EncoderOffset.TagName = "Offset : ";
@@ -112,6 +117,12 @@ namespace Mirle.Agv.View
                         break;
                     case EnumMoveControlSafetyType.IdleNotWriteLog:
                         temp.SetLabelString("Idle不Log : ", "移動完成後再多記多少ms : ");
+                        break;
+                    case EnumMoveControlSafetyType.BarcodePositionSafety:
+                        temp.SetLabelString("Barcode保護 : ", "Config (mm) : ");
+                        break;
+                    case EnumMoveControlSafetyType.StopWithoutReason:
+                        temp.SetLabelString("默停偵測 : ", "Config (s) : ");
                         break;
                     default:
                         break;
@@ -213,9 +224,6 @@ namespace Mirle.Agv.View
 
             if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
                 lockResult = "Lock Result : AutoMode中!";
-            //else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
-            //         Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
-            //    lockResult = "Lock Result : 主流程動作中!";
             else if (moveControl.MoveState != EnumMoveState.Idle)
                 lockResult = "Lock Result : MoveState動作中!";
             else if (moveControl.IsCharging())
@@ -264,6 +272,9 @@ namespace Mirle.Agv.View
             string nowCommandID = moveControl.MoveCommandID;
             if (nowCommandID != commandID || (moveControl.MoveState != EnumMoveState.Idle && moveControl.command.CommandList.Count != commandStringList.Count))
             {
+                ReserveList.TopIndex = 0;
+                CommandList.TopIndex = 0;
+
                 UpdateList();
                 commandID = nowCommandID;
                 label_MoveCommandID.Text = commandID;
@@ -309,32 +320,34 @@ namespace Mirle.Agv.View
 
             label_Psuse.Text = (moveControl.ControlData.PauseRequest || moveControl.ControlData.PauseAlready) ? "Pause" : "Normal";
             label_Psuse.ForeColor = (label_Psuse.Text == "Normal") ? System.Drawing.Color.Green : System.Drawing.Color.Red;
-
-            label_FlowStop.Text = (moveControl.ControlData.FlowStop || moveControl.ControlData.FlowStopRequeset) ? "Stop" : "Normal";
-            label_FlowStop.ForeColor = (label_FlowStop.Text == "Normal") ? System.Drawing.Color.Green : System.Drawing.Color.Red;
-
+            
             button_SimulateState.BackColor = (hideFunctionOn ? Color.Red : Color.Transparent);
 
             try
             {
                 int tempResserveIndex = moveControl.GetReserveIndex();
                 int tempCommandIndex = moveControl.command.IndexOfCmdList;
-
+                int temp = ReserveList.TopIndex;
                 if (tempResserveIndex > reserveIndex)
                 {
                     for (int i = reserveIndex; i < tempResserveIndex; i++)
-                        ReserveList.Items[i] = "▶ " + reserveStringList[i];
+                        ReserveList.Items[i] = String.Concat("▶ ", reserveStringList[i]);
 
                     reserveIndex = tempResserveIndex;
                 }
 
+                ReserveList.TopIndex = temp;
+
+                temp = CommandList.TopIndex;
                 if (tempCommandIndex != -1 && tempCommandIndex > commandIndex)
                 {
                     for (int i = commandIndex; i < tempCommandIndex; i++)
-                        CommandList.Items[i] = "▶ " + commandStringList[i];
+                        CommandList.Items[i] = String.Concat("▶ ", commandStringList[i]);
 
                     commandIndex = tempCommandIndex;
                 }
+
+                CommandList.TopIndex = temp;
             }
             catch
             {
@@ -393,6 +406,14 @@ namespace Mirle.Agv.View
 
         #region Page Create Command
 
+        private void ResetListAndMoveCommandInfo()
+        {
+            moveCmdInfo = new MoveCmdInfo();
+            listCmdAddressActions.Items.Clear();
+            listCmdSpeedLimits.Items.Clear();
+            HideChangeUI();
+        }
+
         private void btnAddAddressPosition_Click(object sender, EventArgs e)
         {
             if (listMapAddressPositions.Items.Count < 1)
@@ -401,10 +422,7 @@ namespace Mirle.Agv.View
                 listMapAddressPositions.SelectedIndex = 0;
 
             listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
-
-            listCmdAddressActions.Items.Clear();
-            listCmdSpeedLimits.Items.Clear();
-            HideChangeUI();
+            ResetListAndMoveCommandInfo();
         }
 
         private void btnRemoveLastAddressPosition_Click(object sender, EventArgs e)
@@ -416,9 +434,7 @@ namespace Mirle.Agv.View
 
             listCmdAddressPositions.Items.RemoveAt(listCmdAddressPositions.SelectedIndex);
 
-            listCmdAddressActions.Items.Clear();
-            listCmdSpeedLimits.Items.Clear();
-            HideChangeUI();
+            ResetListAndMoveCommandInfo();
         }
 
         private void btnAddressPositionsClear_Click(object sender, EventArgs e)
@@ -436,9 +452,7 @@ namespace Mirle.Agv.View
                 string txtPosition = $"{x.ToString()},{y.ToString()}";
                 listCmdAddressPositions.Items.Add(txtPosition);
 
-                listCmdAddressActions.Items.Clear();
-                listCmdSpeedLimits.Items.Clear();
-                HideChangeUI();
+                ResetListAndMoveCommandInfo();
             }
             catch
             {
@@ -510,9 +524,7 @@ namespace Mirle.Agv.View
         private void btnClearMoveCmdInfo_Click(object sender, EventArgs e)
         {
             listCmdAddressPositions.Items.Clear();
-            listCmdAddressActions.Items.Clear();
-            listCmdSpeedLimits.Items.Clear();
-            HideChangeUI();
+            ResetListAndMoveCommandInfo();
         }
 
         private void button_DebugModeSend_Click(object sender, EventArgs e)
@@ -609,7 +621,7 @@ namespace Mirle.Agv.View
 
             moveControl.GetReserveListInfo(reserveList, ref reserveStringList);
             for (int i = 0; i < reserveStringList.Count; i++)
-                ReserveList.Items.Add("▷ " + reserveStringList[i]);
+                ReserveList.Items.Add(String.Concat("▷ ", reserveStringList[i]));
         }
 
         private void ShowMoveCommandList(List<Command> cmdList)
@@ -620,7 +632,7 @@ namespace Mirle.Agv.View
 
             moveControl.GetMoveCommandListInfo(cmdList, ref commandStringList);
             for (int i = 0; i < commandStringList.Count; i++)
-                CommandList.Items.Add("▷ " + commandStringList[i]);
+                CommandList.Items.Add(String.Concat("▷ ", commandStringList[i]));
         }
 
         private void ShowList()
@@ -685,7 +697,7 @@ namespace Mirle.Agv.View
             }
         }
         #endregion
-        
+
         #region tabPage Admin
         public void button_SimulationMode_Click(object sender, EventArgs e)
         {
@@ -722,35 +734,44 @@ namespace Mirle.Agv.View
                 listCmdAddressPositions.Items.Add(listMapAddressPositions.SelectedItem);
             }
 
-            listCmdAddressActions.Items.Clear();
-            listCmdSpeedLimits.Items.Clear();
-            HideChangeUI();
+            ResetListAndMoveCommandInfo();
         }
 
         public void AddAddressPositionByMainFormDoubleClick(string id)
         {
             if (theMapInfo.allMapAddresses.ContainsKey(id))
             {
-                string str = theMapInfo.allMapAddresses[id].Position.X.ToString() + "," + theMapInfo.allMapAddresses[id].Position.Y.ToString();
-                listCmdAddressPositions.Items.Add(str);
-                tbC_Debug.SelectedIndex = 0;
-
-                listCmdAddressActions.Items.Clear();
-                listCmdSpeedLimits.Items.Clear();
-                HideChangeUI();
-
-                if (moveControl.SimulationMode && simulationModeFirstDoubleClick)
+                if (tbC_Debug.SelectedIndex == 4)
                 {
-                    simulationModeFirstDoubleClick = false;
-                    moveControl.location.Real = new AGVPosition();
-                    moveControl.location.Real.AGVAngle = 0;
-                    settingAngleForm = new SimulateSettingAGVAngleForm(moveControl);
-                    settingAngleForm.Show();
-                    settingAngleForm.TopMost = true;
+                    if (moveControl.location.Real != null)
+                    {
+                        checkBarcodeNode = new AGVPosition();
 
-                    moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position;
-                    Vehicle.Instance.VehicleLocation.RealPosition = moveControl.location.Real.Position;
-                    Vehicle.Instance.VehicleLocation.VehicleAngle = moveControl.location.Real.AGVAngle;
+                        checkBarcodeNode.AGVAngle = moveControl.location.Real.AGVAngle;
+                        checkBarcodeNode.Position = new MapPosition(theMapInfo.allMapAddresses[id].Position.X, theMapInfo.allMapAddresses[id].Position.Y);
+                    }
+                }
+                else
+                {
+                    string str = theMapInfo.allMapAddresses[id].Position.X.ToString() + "," + theMapInfo.allMapAddresses[id].Position.Y.ToString();
+                    listCmdAddressPositions.Items.Add(str);
+                    tbC_Debug.SelectedIndex = 0;
+
+                    ResetListAndMoveCommandInfo();
+
+                    if (moveControl.SimulationMode && simulationModeFirstDoubleClick)
+                    {
+                        simulationModeFirstDoubleClick = false;
+                        moveControl.location.Real = new AGVPosition();
+                        moveControl.location.Real.AGVAngle = 0;
+                        settingAngleForm = new SimulateSettingAGVAngleForm(moveControl);
+                        settingAngleForm.Show();
+                        settingAngleForm.TopMost = true;
+
+                        moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position;
+                        Vehicle.Instance.VehicleLocation.RealPosition = moveControl.location.Real.Position;
+                        Vehicle.Instance.VehicleLocation.VehicleAngle = moveControl.location.Real.AGVAngle;
+                    }
                 }
             }
         }
@@ -809,9 +830,7 @@ namespace Mirle.Agv.View
                 {
                     FindPositionBySection(moveControl.location.Real.Position);
 
-                    listCmdAddressActions.Items.Clear();
-                    listCmdSpeedLimits.Items.Clear();
-                    HideChangeUI();
+                    ResetListAndMoveCommandInfo();
                 }
             }
         }
@@ -915,6 +934,17 @@ namespace Mirle.Agv.View
         {
             try
             {
+                if (listCmdAddressActions.Items.Count == 0 || listCmdSpeedLimits.Items.Count == 0)
+                {
+                    if (listCmdAddressPositions.Items.Count == 0)
+                        return;
+                    else if (listCmdAddressPositions.Items.Count == 1)
+                        button_FromTo_Click(null, null);
+                    
+                    if (listCmdAddressPositions.Items.Count == 1)
+                        return;
+                }
+
                 moveCmdInfo = new MoveCmdInfo();
                 moveCmdInfo.AddressActions = new List<EnumAddressAction>();
                 moveCmdInfo.AddressPositions = new List<MapPosition>();
@@ -988,6 +1018,11 @@ namespace Mirle.Agv.View
                 if (!hideFunctionOn)
                     cB_OverrideTest.Checked = false;
 
+                if (hideFunctionOn)
+                    tbC_Debug.TabPages.Add(checkBarcodePositionPage);
+                else
+                    tbC_Debug.TabPages.RemoveAt(4);
+                
                 button_SimulateState.Visible = (hideFunctionOn ? true : moveControl.SimulationMode);
                 if (simulateStateForm != null && !simulateStateForm.IsDisposed)
                     simulateStateForm.ResetHideFunctionOnOff(hideFunctionOn);
@@ -1173,7 +1208,7 @@ namespace Mirle.Agv.View
                 return;
             }
 
-            if ((count - 1) * runTimes + 1 > 50)
+            if ((count - 1) * runTimes + 1 > 200)
             {
                 MessageBox.Show("不要亂玩, 程式會當掉!");
                 return;
@@ -1196,9 +1231,7 @@ namespace Mirle.Agv.View
                 reverse = !reverse;
             }
 
-            listCmdAddressActions.Items.Clear();
-            listCmdSpeedLimits.Items.Clear();
-            HideChangeUI();
+            ResetListAndMoveCommandInfo();
         }
 
         private void button_RunTimesEven_Click(object sender, EventArgs e)
@@ -1226,9 +1259,7 @@ namespace Mirle.Agv.View
             for (int i = 0; i < count; i++)
                 listCmdAddressPositions.Items.RemoveAt(0);
 
-            listCmdAddressActions.Items.Clear();
-            listCmdSpeedLimits.Items.Clear();
-            HideChangeUI();
+            ResetListAndMoveCommandInfo();
         }
 
 
@@ -1519,9 +1550,7 @@ namespace Mirle.Agv.View
                         listCmdAddressPositions.Items.Add(txtPosition);
                     }
 
-                    listCmdAddressActions.Items.Clear();
-                    listCmdSpeedLimits.Items.Clear();
-                    HideChangeUI();
+                    ResetListAndMoveCommandInfo();
 
                     if (section != "")
                         SectionList.Insert(0, theMapInfo.allMapSections[section]);
@@ -1534,6 +1563,47 @@ namespace Mirle.Agv.View
                 }
             }
             catch { }
+        }
+
+        private void ElmoGTMove(double angle)
+        {
+            moveControl.elmoDriver.ElmoMove(EnumAxis.GT, angle, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute, moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
+        }
+
+        private void button_GT0_Click(object sender, EventArgs e)
+        {
+            ElmoGTMove(0);
+        }
+
+        private void button_GTLeft_Click(object sender, EventArgs e)
+        {
+            ElmoGTMove(90);
+        }
+
+        private void button_GTRight_Click(object sender, EventArgs e)
+        {
+            ElmoGTMove(-90);
+        }
+
+        private void button_GTMove_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ElmoGTMove(double.Parse(tB_GTMoveAngle.Text));
+            }
+            catch { }
+        }
+
+        private void button_CheckTRStartStop_Click(object sender, EventArgs e)
+        {
+            if (button_CheckTRStartStop.Text == "開始")
+            {
+
+            }
+            else
+            {
+
+            }
         }
     }
 }

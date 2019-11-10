@@ -17,5 +17,6 @@ namespace Mirle.Agv.Model.Configs
         public int StartChargeWaitingTimeoutMs { get; set; }
         public int StopChargeWaitingTimeoutMs { get; set; }
         public int RealPositionRangeMm { get; set; }
+        public int LoadingChargeIntervalMs { get; set; }
     }
 }

@@ -39,7 +39,7 @@ namespace Mirle.Agv
         {
             label_Name.Text = safetyName;
         }
-
+        
         public void DisableButton()
         {
             button_Change.Enabled = false;

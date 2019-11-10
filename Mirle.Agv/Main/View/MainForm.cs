@@ -98,6 +98,8 @@ namespace Mirle.Agv.View
             InitialConnectionAndCstStatus();
             InitialThdPads();
             plcAgent.SetOutSideObj(this);
+            var msg = "MainForm : 讀取主畫面";
+            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
         private void InitialForms()
@@ -1657,7 +1659,6 @@ namespace Mirle.Agv.View
             if (cbSimulationMode.Checked)
             {
                 mainFlowHandler.SetupVehicleSoc(100);
-
             }
 
             btnLoadOk.Visible = cbSimulationMode.Checked;
@@ -2002,6 +2003,18 @@ namespace Mirle.Agv.View
             //}
         }
 
-       
+        private void 模擬測試ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            moveCommandDebugMode.button_SimulationMode_Click(this, e);
+            plcForm.chkFakeForking.Checked = !plcForm.chkFakeForking.Checked;
+            if (plcForm.chkFakeForking.Checked)
+            {
+                mainFlowHandler.SetupVehicleSoc(100);
+            }
+
+            btnLoadOk.Visible = plcForm.chkFakeForking.Checked;
+            btnMoveOk.Visible = plcForm.chkFakeForking.Checked;
+            btnUnloadOk.Visible = plcForm.chkFakeForking.Checked;
+        }
     }
 }

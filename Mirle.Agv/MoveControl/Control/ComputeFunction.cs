@@ -30,6 +30,11 @@ namespace Mirle.Agv.Controller
             return (agvAngleInMap + barcodeAngleInMap + wheelAngle) % 180 == 0;
         }
 
+        public double GetTwoPositionDistance(MapPosition start, MapPosition end)
+        {
+            return Math.Sqrt(Math.Pow(start.X - end.X, 2) + Math.Pow(start.Y - end.Y, 2));
+        }
+
         // angle : start to end.
         // input : ( x, y ) ( x2, y2 ), output : angle ( -180 < angle <= 180 ).
         public double ComputeAngle(MapPosition start, MapPosition end)
@@ -722,6 +727,37 @@ namespace Mirle.Agv.Controller
             foreach (WallData wall in wallList)
             {
                 ComputeWallByPass(sectionList, wall, ref sectionBeamDisableList);
+            }
+        }
+
+
+        public bool IsInStartEnd(double start, double end, double num)
+        {
+            if (start > end)
+                return start > num && num > end;
+            else
+                return start < num && num < end;
+        }
+
+        public double GetDistanceToStart(double start, double end, double num)
+        {
+            if (start > end)
+            {
+                if (num > start)
+                    return 0;
+                else if (num < end)
+                    return Math.Abs(start - end);
+
+                return Math.Abs(num - start);
+            }
+            else
+            {
+                if (num < start)
+                    return 0;
+                else if (num > end)
+                    return Math.Abs(start - end);
+
+                return Math.Abs(num - start);
             }
         }
     }

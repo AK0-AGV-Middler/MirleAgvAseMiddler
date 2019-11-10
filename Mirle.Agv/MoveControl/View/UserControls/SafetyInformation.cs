@@ -40,7 +40,7 @@ namespace Mirle.Agv
             label_Name.Text = safetyName;
             label_Range.Text = rangeName;
         }
-
+        
         public void UpdateEnableRange()
         {
             try

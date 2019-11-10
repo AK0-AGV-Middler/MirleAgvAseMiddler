@@ -17,6 +17,15 @@ namespace Mirle.Agv.Model
         public List<ReserveData> ReserveList { get; set; }
         public int IndexOfReserveList { get; set; }
 
+        public int BarcodeLineListIndex { get; set; }
+
+        public List<List<BarcodeSafetyData>> LeftBarcodeLineList { get; set; }
+        public int IndexOfLeftBarcodeLineList { get; set; }
+
+        public List<List<BarcodeSafetyData>> RightBarcodeLineList { get; set; }
+        public int IndexOfRightBarcodeLineList { get; set; }
+
+
         public MapPosition End { get; set; }
         public double EndOffsetX { get; set; }
         public double EndOffsetY { get; set; }
@@ -37,6 +46,14 @@ namespace Mirle.Agv.Model
             ReserveList = new List<ReserveData>();
             IndexOfReserveList = 0;
 
+            LeftBarcodeLineList = new List<List<BarcodeSafetyData>>();
+            IndexOfLeftBarcodeLineList = 0;
+
+            RightBarcodeLineList = new List<List<BarcodeSafetyData>>();
+            IndexOfRightBarcodeLineList = 0;
+
+            BarcodeLineListIndex = 0;
+
             EndOffsetX = 0;
             EndOffsetY = 0;
             EndOffsetTheta = 0;
@@ -46,7 +63,8 @@ namespace Mirle.Agv.Model
             EndAddressLoadUnload = false;
         }
 
-        public MoveCommandData(List<Command> commandList, List<SectionLine> sectionLineList, List<ReserveData> reserveList)
+        public MoveCommandData(List<Command> commandList, List<SectionLine> sectionLineList, List<ReserveData> reserveList,
+             List<List<BarcodeSafetyData>> leftBarcodeList, List<List<BarcodeSafetyData>> rightBarcodeList)
         {
             CommandList = commandList;
             IndexOfCmdList = 0;
@@ -56,6 +74,14 @@ namespace Mirle.Agv.Model
 
             ReserveList = reserveList;
             IndexOfReserveList = 0;
+
+            LeftBarcodeLineList = leftBarcodeList;
+            IndexOfLeftBarcodeLineList = 0;
+
+            RightBarcodeLineList = rightBarcodeList;
+            IndexOfRightBarcodeLineList = 0;
+
+            BarcodeLineListIndex = 0;
 
             EndOffsetX = 0;
             EndOffsetY = 0;

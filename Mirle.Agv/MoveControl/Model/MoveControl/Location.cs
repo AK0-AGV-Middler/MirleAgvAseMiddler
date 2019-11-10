@@ -10,6 +10,8 @@ namespace Mirle.Agv.Model
     {
         public AGVPosition Encoder { get; set; }
         public AGVPosition Barcode { get; set; }
+        public AGVPosition BarcodeLeft { get; set; }
+        public AGVPosition BarcodeRight { get; set; }
         public double Delta { get; set; }
         public double Offset { get; set; }
         public AGVPosition Real { get; set; }
@@ -30,6 +32,8 @@ namespace Mirle.Agv.Model
         {
             Encoder = null;
             Barcode = null;
+            BarcodeLeft = null;
+            BarcodeRight = null;
             Delta = 0;
             RealEncoder = 0;
             Real = null;

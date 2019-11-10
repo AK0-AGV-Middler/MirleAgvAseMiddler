@@ -10,6 +10,7 @@ namespace Mirle.Agv.Model
     {
         public MapPosition Start { get; set; }
         public MapPosition End { get; set; }
+        public double AGVAngle { get; set; }
         public double SectionAngle { get; set; }
         public double Distance { get; set; }
         public double EncoderStart { get; set; }

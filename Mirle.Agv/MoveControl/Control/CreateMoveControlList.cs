@@ -15,19 +15,28 @@ namespace Mirle.Agv.Controller
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
         private string device = "MoveControl";
         private List<VChangeData> vChangeList;
+        private List<Sr2000Config> sr2000Config;
 
         public string CreateCommandListLog { get; set; } = "";
-        private const int createCommandListLogMaxLength = 20000;
+        private const int createCommandListLogMaxLength = 50000;
 
-        public CreateMoveControlList(List<Sr2000Driver> driverSr2000List, MoveControlConfig moveControlConfig, AlarmHandler alarmHandler)
+        private Dictionary<int, List<MapBarcodeLine>> barcodeLineAngleData = new Dictionary<int, List<MapBarcodeLine>>();
+        private double sr2000Width = 20;
+
+        public CreateMoveControlList(List<Sr2000Driver> driverSr2000List, MoveControlConfig moveControlConfig, List<Sr2000Config> sr2000Config, AlarmHandler alarmHandler, Dictionary<string, MapBarcodeLine> barcodeLineData)
         {
+            this.sr2000Config = sr2000Config;
             this.alarmHandler = alarmHandler;
             this.moveControlConfig = moveControlConfig;
+
+            //if (moveControlConfig.Safety[ EnumMoveControlSafetyType.BarcodePositionSafety].Enable)
+            ProcessBarcodeLineWithAngle(barcodeLineData);
         }
 
         private void SetCreateCommandListLog(string functionName, string message)
         {
-            CreateCommandListLog = DateTime.Now.ToString("HH:mm:ss.fff") + "\t" + functionName + "\t" + message + "\r\n" + CreateCommandListLog;
+            CreateCommandListLog = String.Concat(DateTime.Now.ToString("HH:mm:ss.fff"), "\t", functionName, "\t", message, "\r\n", CreateCommandListLog);
+
             if (CreateCommandListLog.Length > createCommandListLogMaxLength)
                 CreateCommandListLog = CreateCommandListLog.Substring(0, createCommandListLogMaxLength);
         }
@@ -35,7 +44,7 @@ namespace Mirle.Agv.Controller
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            string classMethodName = GetType().Name + ":" + memberName;
+            string classMethodName = String.Concat(GetType().Name, ":", memberName);
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
             loggerAgent.LogMsg(logFormat.Category, logFormat);
@@ -256,7 +265,7 @@ namespace Mirle.Agv.Controller
         #endregion
 
         #region Write list log 
-        private void WriteAGVMCommand(MoveCmdInfo moveCmd)
+        private void WriteAGVMCommand(MoveCmdInfo moveCmd, bool NeedWriteAction)
         {
             string logMessage = "AGVM command資料 : ";
 
@@ -266,37 +275,38 @@ namespace Mirle.Agv.Controller
                 {
                     for (int i = 1; i < moveCmd.AddressPositions.Count; i++)
                     {
-                        logMessage = logMessage + "\r\nAGVM 路線第 " + i.ToString() + " 條";
+                        logMessage = String.Concat(logMessage, "\r\nAGVM 路線第 ", i.ToString(), " 條");
 
                         if (moveCmd.SectionIds != null && moveCmd.SectionIds.Count > i)
-                            logMessage = logMessage + ", Section : " + moveCmd.SectionIds[i - 1];
+                            logMessage = String.Concat(logMessage, ", Section : ", moveCmd.SectionIds[i - 1]);
 
-                        logMessage = logMessage + ", Action : " + moveCmd.AddressActions[i - 1].ToString() + " -> " + moveCmd.AddressActions[i].ToString() + ", from : ";
-
-                        if (moveCmd.AddressIds != null && moveCmd.AddressIds.Count > i)
-                            logMessage = logMessage + moveCmd.AddressIds[i - 1];
-
-                        logMessage = logMessage + " ( " + moveCmd.AddressPositions[i - 1].X.ToString("0") + ", " +
-                                                          moveCmd.AddressPositions[i - 1].Y.ToString("0") + " ), to : ";
+                        if (NeedWriteAction)
+                            logMessage = String.Concat(logMessage, ", Action : ", moveCmd.AddressActions[i - 1].ToString(), " -> ", moveCmd.AddressActions[i].ToString(), ", from : ");
 
                         if (moveCmd.AddressIds != null && moveCmd.AddressIds.Count > i)
-                            logMessage = logMessage + moveCmd.AddressIds[i];
+                            logMessage = String.Concat(logMessage, moveCmd.AddressIds[i - 1]);
 
-                        logMessage = logMessage + " ( " + moveCmd.AddressPositions[i].X.ToString("0") + ", " +
-                                                          moveCmd.AddressPositions[i].Y.ToString("0") +
-                                                  " ), velocity : " + moveCmd.SectionSpeedLimits[i - 1].ToString("0");
+                        logMessage = String.Concat(logMessage, " ( ", moveCmd.AddressPositions[i - 1].X.ToString("0"), ", ",
+                                                          moveCmd.AddressPositions[i - 1].Y.ToString("0"), " ), to : ");
+
+                        if (moveCmd.AddressIds != null && moveCmd.AddressIds.Count > i)
+                            logMessage = String.Concat(logMessage, moveCmd.AddressIds[i]);
+
+                        logMessage = String.Concat(logMessage, " ( ", moveCmd.AddressPositions[i].X.ToString("0"), ", ",
+                                                          moveCmd.AddressPositions[i].Y.ToString("0"),
+                                                  " ), velocity : ", moveCmd.SectionSpeedLimits[i - 1].ToString("0"));
 
                     }
 
                     WriteLog("MoveControl", "7", device, "", logMessage);
 
-                    WriteLog("MoveControl", "7", device, "", "起點Offset x = " + moveCmd.StartAddress.AddressOffset.OffsetX.ToString("0.0") +
-                                                             ", y = " + moveCmd.StartAddress.AddressOffset.OffsetX.ToString("0.0") +
-                                                             ",theta = " + moveCmd.StartAddress.AddressOffset.OffsetTheta.ToString("0.0"));
+                    WriteLog("MoveControl", "7", device, "", String.Concat("起點Offset x = ", moveCmd.StartAddress.AddressOffset.OffsetX.ToString("0.0"),
+                                                             ", y = ", moveCmd.StartAddress.AddressOffset.OffsetX.ToString("0.0"),
+                                                             ",theta = ", moveCmd.StartAddress.AddressOffset.OffsetTheta.ToString("0.0")));
 
-                    WriteLog("MoveControl", "7", device, "", "終點Offset x = " + moveCmd.EndAddress.AddressOffset.OffsetX.ToString("0.0") +
-                                                             ", y = " + moveCmd.EndAddress.AddressOffset.OffsetX.ToString("0.0") +
-                                                             ",theta = " + moveCmd.EndAddress.AddressOffset.OffsetTheta.ToString("0.0"));
+                    WriteLog("MoveControl", "7", device, "", String.Concat("終點Offset x = ", moveCmd.EndAddress.AddressOffset.OffsetX.ToString("0.0"),
+                                                          ", y = ", moveCmd.EndAddress.AddressOffset.OffsetX.ToString("0.0"),
+                                                          ",theta = ", moveCmd.EndAddress.AddressOffset.OffsetTheta.ToString("0.0")));
                 }
                 else
                 {
@@ -305,7 +315,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                WriteLog("MoveControl", "3", device, "", "AGVM command資料 異常end (Excption) ~ " + ex.ToString());
+                WriteLog("MoveControl", "3", device, "", String.Concat("AGVM command資料 異常end (Excption) ~ ", ex.ToString(), "\r\n目前資料 : ", logMessage));
             }
         }
 
@@ -317,14 +327,14 @@ namespace Mirle.Agv.Controller
             {
                 for (int i = 1; i < oneceMoveCommandList[j].AddressPositions.Count; i++)
                 {
-                    logMessage = logMessage + "\r\n第 " + (j + 1).ToString() + " 次動令,第 " + i.ToString() +
-                                     " 條路線 Action : " + oneceMoveCommandList[j].AddressActions[i - 1].ToString() + " -> " +
-                                     oneceMoveCommandList[j].AddressActions[i].ToString() + ", from :  ( " +
-                                     oneceMoveCommandList[j].AddressPositions[i - 1].X.ToString("0") + ", " +
-                                     oneceMoveCommandList[j].AddressPositions[i - 1].Y.ToString("0") + " ), to :  ( " +
-                                     oneceMoveCommandList[j].AddressPositions[i].X.ToString("0") + ", " +
-                                     oneceMoveCommandList[j].AddressPositions[i].Y.ToString("0") + " ), velocity : " +
-                                     oneceMoveCommandList[j].SectionSpeedLimits[i - 1].ToString("0");
+                    logMessage = String.Concat(logMessage, "\r\n第 ", (j + 1).ToString(), " 次動令,第 " + i.ToString(),
+                                     " 條路線 Action : ", oneceMoveCommandList[j].AddressActions[i - 1].ToString(), " -> ",
+                                     oneceMoveCommandList[j].AddressActions[i].ToString(), ", from :  ( ",
+                                     oneceMoveCommandList[j].AddressPositions[i - 1].X.ToString("0"), ", ",
+                                     oneceMoveCommandList[j].AddressPositions[i - 1].Y.ToString("0"), " ), to :  ( ",
+                                     oneceMoveCommandList[j].AddressPositions[i].X.ToString("0"), ", ",
+                                     oneceMoveCommandList[j].AddressPositions[i].Y.ToString("0"), " ), velocity : ",
+                                     oneceMoveCommandList[j].SectionSpeedLimits[i - 1].ToString("0"));
                 }
             }
 
@@ -336,9 +346,9 @@ namespace Mirle.Agv.Controller
             string logMessage = "ReserveList :";
 
             for (int i = 0; i < reserveDataList.Count; i++)
-                logMessage = logMessage + "\r\nreserve node " + i.ToString() + " : ( " +
-                                 reserveDataList[i].Position.X.ToString("0") + ", " +
-                                 reserveDataList[i].Position.Y.ToString("0") + " )";
+                logMessage = String.Concat(logMessage, "\r\nreserve node ", i.ToString(), " : ( ",
+                                 reserveDataList[i].Position.X.ToString("0"), ", ",
+                                 reserveDataList[i].Position.Y.ToString("0"), " )");
 
             WriteLog("MoveControl", "7", device, "", logMessage);
         }
@@ -350,26 +360,26 @@ namespace Mirle.Agv.Controller
 
             for (int i = 0; i < reserveDataList.Count; i++)
             {
-                lineString = "reserve node " + i.ToString() + " : ( " +
-                    reserveDataList[i].Position.X.ToString("0") + ", " +
-                    reserveDataList[i].Position.Y.ToString("0") + " )";
+                lineString = String.Concat("reserve node ", i.ToString(), " : ( ",
+                    reserveDataList[i].Position.X.ToString("0"), ", ",
+                    reserveDataList[i].Position.Y.ToString("0"), " )");
                 logMessage.Add(lineString);
             }
         }
 
         private void TriggerLog(Command cmd, ref string logMessage)
         {
-            logMessage = logMessage + "command type : " + cmd.CmdType.ToString();
+            logMessage = String.Concat(logMessage, "command type : ", cmd.CmdType.ToString());
 
             if (cmd.Position != null)
             {
-                logMessage = logMessage + ", 觸發Encoder為 " + cmd.TriggerEncoder.ToString("0") + " ~ " +
-                                          (cmd.TriggerEncoder + (cmd.DirFlag ? cmd.SafetyDistance : -cmd.SafetyDistance)).ToString("0") +
-                                          ", position : ( " + cmd.Position.X.ToString("0") + ", " + cmd.Position.Y.ToString("0") + " )";
+                logMessage = String.Concat(logMessage, ", 觸發Encoder為 ", cmd.TriggerEncoder.ToString("0"), " ~ ",
+                                          (cmd.TriggerEncoder + (cmd.DirFlag ? cmd.SafetyDistance : -cmd.SafetyDistance)).ToString("0"),
+                                          ", position : ( ", cmd.Position.X.ToString("0"), ", " + cmd.Position.Y.ToString("0") + " )");
 
             }
             else
-                logMessage = logMessage + ", 為立即觸發";
+                logMessage = String.Concat(logMessage, ", 為立即觸發");
         }
 
         private void WritSectionLineListLog(List<SectionLine> sectionLineList)
@@ -378,12 +388,12 @@ namespace Mirle.Agv.Controller
 
             for (int i = 0; i < sectionLineList.Count; i++)
             {
-                logMessage = logMessage + "\r\nsectionLineList 第 " + (i + 1).ToString() + " 條為 from : (" +
-                                 sectionLineList[i].Start.X.ToString("0") + ", " + sectionLineList[i].Start.Y.ToString("0") + " ), to : (" +
-                                 sectionLineList[i].End.X.ToString("0") + ", " + sectionLineList[i].End.Y.ToString("0") + " ), DirFlag : " +
-                                 (sectionLineList[i].DirFlag ? "前進" : "後退") + ", Distance : " + sectionLineList[i].Distance.ToString("0") +
-                                 ", EncoderStart : " + sectionLineList[i].EncoderStart.ToString("0") +
-                                 ", EncoderEnd : " + sectionLineList[i].EncoderEnd.ToString("0");
+                logMessage = String.Concat(logMessage, "\r\nsectionLineList 第 ", (i + 1).ToString(), " 條為 from : (",
+                                 sectionLineList[i].Start.X.ToString("0"), ", ", sectionLineList[i].Start.Y.ToString("0"), " ), to : (",
+                                 sectionLineList[i].End.X.ToString("0"), ", ", sectionLineList[i].End.Y.ToString("0"), " ), DirFlag : ",
+                                 (sectionLineList[i].DirFlag ? "前進" : "後退"), ", Distance : ", sectionLineList[i].Distance.ToString("0"),
+                                 ", EncoderStart : ", sectionLineList[i].EncoderStart.ToString("0"),
+                                 ", EncoderEnd : ", sectionLineList[i].EncoderEnd.ToString("0"));
             }
 
             WriteLog("MoveControl", "7", device, "", logMessage);
@@ -393,14 +403,14 @@ namespace Mirle.Agv.Controller
         {
             TriggerLog(cmd, ref logMessage);
 
-            logMessage = logMessage + ", 啟動舵輪角度 : " + cmd.WheelAngle.ToString("0") + ", 方向 : " + (cmd.DirFlag ? "前進" : "後退") +
-                                      ", 距離 : " + cmd.Distance.ToString("0") + ", 速度 : " + cmd.Velocity.ToString("0");
+            logMessage = String.Concat(logMessage, ", 啟動舵輪角度 : ", cmd.WheelAngle.ToString("0"), ", 方向 : ", (cmd.DirFlag ? "前進" : "後退"),
+                                      ", 距離 : ", cmd.Distance.ToString("0"), ", 速度 : ", cmd.Velocity.ToString("0"));
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
 
             if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", 取得Reserve index = ", cmd.NextReserveNumber.ToString(), "時取消此Command");
         }
 
         private void WriteMoveCommandListLogTypeReviseOpen(Command cmd, ref string logMessage)
@@ -408,103 +418,85 @@ namespace Mirle.Agv.Controller
             TriggerLog(cmd, ref logMessage);
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
 
             if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", 取得Reserve index = ", cmd.NextReserveNumber.ToString(), "時取消此Command");
         }
 
         private void WriteMoveCommandListLogTypeReviseClose(Command cmd, ref string logMessage)
         {
             TriggerLog(cmd, ref logMessage);
-
-            if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
         }
 
         private void WriteMoveCommandListLogTypeTR(Command cmd, ref string logMessage)
         {
             TriggerLog(cmd, ref logMessage);
 
-            logMessage = logMessage + ", 為TR " + moveControlConfig.TurnParameter[cmd.TurnType].R.ToString("0") + ", 速度 : " + moveControlConfig.TurnParameter[cmd.TurnType].Velocity.ToString("0") +
-                                      ", 舵輪將轉為 : " + cmd.WheelAngle.ToString("0") + ", 方向 : " + (cmd.DirFlag ? "前進" : "後退");
+            logMessage = String.Concat(logMessage, ", 為TR ", moveControlConfig.TurnParameter[cmd.TurnType].R.ToString("0"), ", 速度 : ", moveControlConfig.TurnParameter[cmd.TurnType].Velocity.ToString("0"),
+                                      ", 舵輪將轉為 : ", cmd.WheelAngle.ToString("0"), ", 方向 : ", (cmd.DirFlag ? "前進" : "後退"));
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
-
-            if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
         }
 
         private void WriteMoveCommandListLogTypeR2000(Command cmd, ref string logMessage)
         {
             TriggerLog(cmd, ref logMessage);
 
-            logMessage = logMessage + ", 為R " + moveControlConfig.TurnParameter[cmd.TurnType].R.ToString("0") + ", 速度 : " + moveControlConfig.TurnParameter[cmd.TurnType].Velocity.ToString("0") +
-                                      ", 前後輪子為向" + (cmd.WheelAngle == -1 ? "右" : "左") + "轉, 方向 : " + (cmd.DirFlag ? "前進" : "後退");
+            logMessage = String.Concat(logMessage, ", 為R ", moveControlConfig.TurnParameter[cmd.TurnType].R.ToString("0"), ", 速度 : ", moveControlConfig.TurnParameter[cmd.TurnType].Velocity.ToString("0"),
+                                      ", 前後輪子為向", (cmd.WheelAngle == -1 ? "右" : "左"), "轉, 方向 : ", (cmd.DirFlag ? "前進" : "後退"));
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
-
-            if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
         }
 
         private void WriteMoveCommandListLogTypeVchange(Command cmd, ref string logMessage)
         {
             TriggerLog(cmd, ref logMessage);
 
-            logMessage = logMessage + ", 方向 : " + (cmd.DirFlag ? "前進" : "後退") + ", 速度變更為 : " + cmd.Velocity.ToString("0");
+            logMessage = String.Concat(logMessage, ", 方向 : ", (cmd.DirFlag ? "前進" : "後退"), ", 速度變更為 : ", cmd.Velocity.ToString("0"));
 
             if (cmd.VChangeType == EnumVChangeType.TRTurn)
-                logMessage = logMessage + ", 為TR前的 VChange, 舵輪將轉為 : " + cmd.WheelAngle.ToString("0");
+                logMessage = String.Concat(logMessage, ", 為TR前的 VChange, 舵輪將轉為 : ", cmd.WheelAngle.ToString("0"));
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
-
-            if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
         }
 
         private void WriteMoveCommandListLogTypeSlowStop(Command cmd, ref string logMessage)
         {
             TriggerLog(cmd, ref logMessage);
 
-            logMessage = logMessage + ", 方向 : " + (cmd.DirFlag ? "前進" : "後退");
+            logMessage = String.Concat(logMessage, ", 方向 : ", (cmd.DirFlag ? "前進" : "後退"));
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
-
-            if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
         }
 
         private void WriteMoveCommandListLogTypeStop(Command cmd, ref string logMessage)
         {
             TriggerLog(cmd, ref logMessage);
 
-            logMessage = logMessage + ", 方向 : " + (cmd.DirFlag ? "前進" : "後退");
+            logMessage = String.Concat(logMessage, ", 方向 : ", (cmd.DirFlag ? "前進" : "後退"));
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
 
             if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", 取得Reserve index = ", cmd.NextReserveNumber.ToString(), "時取消此Command");
         }
 
         private void WriteMoveCommandListLogTypeEnd(Command cmd, ref string logMessage)
         {
             TriggerLog(cmd, ref logMessage);
 
-            logMessage = logMessage + ", 方向 : " + (cmd.DirFlag ? "前進" : "後退") +
-                                      ", 終點Encoder : " + cmd.EndEncoder.ToString("0") + ", position : ( " + cmd.EndPosition.X.ToString("0") +
-                                      ", " + cmd.EndPosition.Y.ToString("0") + " )";
+            logMessage = String.Concat(logMessage, ", 方向 : ", (cmd.DirFlag ? "前進" : "後退"),
+                                      ", 終點Encoder : ", cmd.EndEncoder.ToString("0"), ", position : ( ", cmd.EndPosition.X.ToString("0"),
+                                      ", ", cmd.EndPosition.Y.ToString("0"), " )");
 
             if (cmd.ReserveNumber != -1)
-                logMessage = logMessage + ", Reserve index : " + cmd.ReserveNumber.ToString();
-
-            if (cmd.NextRserveCancel)
-                logMessage = logMessage + ", 取得Reserve index = " + cmd.NextReserveNumber.ToString() + "時取消此Command";
+                logMessage = String.Concat(logMessage, ", Reserve index : ", cmd.ReserveNumber.ToString());
         }
 
         public void GetMoveCommandListInfo(List<Command> moveCmdList, ref List<string> logMessage)
@@ -558,7 +550,7 @@ namespace Mirle.Agv.Controller
             List<string> logMessage = new List<string>();
             GetMoveCommandListInfo(moveCmdList, ref logMessage);
             for (int i = 0; i < logMessage.Count; i++)
-                totalLogMessage = totalLogMessage + "\r\n" + logMessage[i];
+                totalLogMessage = String.Concat(totalLogMessage, "\r\n", logMessage[i]);
 
             WriteLog("MoveControl", "7", device, "", totalLogMessage);
         }
@@ -568,6 +560,273 @@ namespace Mirle.Agv.Controller
             WriteReserveListLog(reserveDataList);
             WritSectionLineListLog(sectionLineList);
             WriteMoveCommandListLog(moveCmdList);
+        }
+        #endregion
+
+        #region Barcode最終保護機制測試
+        private void ProcessBarcodeLineWithAngle(Dictionary<string, MapBarcodeLine> barcodeLineData)
+        {
+            int angle = 0;
+
+            foreach (MapBarcodeLine barcodeLine in barcodeLineData.Values)
+            {
+                if (barcodeLine.Material == EnumBarcodeMaterial.Iron)
+                {
+                    angle = computeFunction.ComputeAngleInt(barcodeLine.HeadBarcode.Position, barcodeLine.TailBarcode.Position);
+                    if (angle > 90)
+                        angle -= 180;
+                    else if (angle <= -90)
+                        angle += 180;
+
+                    if (!barcodeLineAngleData.ContainsKey(angle))
+                    {
+                        List<MapBarcodeLine> temp = new List<MapBarcodeLine>();
+                        barcodeLineAngleData.Add(angle, temp);
+                    }
+
+                    barcodeLineAngleData[angle].Add(barcodeLine);
+                }
+            }
+        }
+
+        private bool GetReadThisBarcodeDistance(double start, double end, double barcodeLineStart, double barcodeLineEnd, bool dirFlag, double nowEncoder, ref double encoderStart, ref double encoderEnd)
+        {
+            double big;
+            double small;
+
+            double distanceSmall;
+            double distanceBig;
+
+            if (barcodeLineStart > barcodeLineEnd)
+            {
+                big = barcodeLineStart;
+                small = barcodeLineEnd;
+            }
+            else
+            {
+                small = barcodeLineStart;
+                big = barcodeLineEnd;
+            }
+
+            if (start > end)
+            {
+                distanceSmall = computeFunction.GetDistanceToStart(start, end, big);
+                distanceBig = computeFunction.GetDistanceToStart(start, end, small);
+            }
+            else
+            {
+                distanceSmall = computeFunction.GetDistanceToStart(start, end, small);
+                distanceBig = computeFunction.GetDistanceToStart(start, end, big);
+            }
+
+            if (distanceSmall == distanceBig)
+                return false;
+
+            encoderStart = nowEncoder + (dirFlag ? distanceSmall : -distanceSmall);
+            encoderEnd = nowEncoder + (dirFlag ? distanceBig : -distanceBig);
+            return true;
+        }
+
+        private void CreateBarcodeSafetyListOneLineMovingOneSR2000(MapPosition start, MapPosition end, bool dirFlag, double nowEncoder, ref List<BarcodeSafetyData> oneMoveList)
+        {
+            BarcodeSafetyData temp;
+            int i;
+            int angle = computeFunction.ComputeAngleInt(start, end);
+            double encoderStart = 0;
+            double encoderEnd = 0;
+
+            if (angle <= -90)
+                angle += 180;
+            else if (angle > 90)
+                angle -= 180;
+
+            if (!barcodeLineAngleData.ContainsKey(angle))
+                return;
+
+            if (angle == 0)
+            {
+                foreach (MapBarcodeLine tempLine in barcodeLineAngleData[angle])
+                {
+                    if (Math.Abs(tempLine.HeadBarcode.Position.Y - start.Y) <= sr2000Width &&
+                        GetReadThisBarcodeDistance(start.X, end.X, tempLine.HeadBarcode.Position.X,
+                                      tempLine.TailBarcode.Position.X, dirFlag, nowEncoder, ref encoderStart, ref encoderEnd))
+                    {
+                        temp = new BarcodeSafetyData(encoderStart, encoderEnd, tempLine.Id, (Math.Abs(encoderStart - encoderEnd) > moveControlConfig.Safety[EnumMoveControlSafetyType.BarcodePositionSafety].Range ? true : false));
+
+                        i = 0;
+
+                        while (i < oneMoveList.Count)
+                        {
+                            if ((dirFlag && temp.StartEncoder < oneMoveList[i].StartEncoder) ||
+                               (!dirFlag && temp.StartEncoder > oneMoveList[i].StartEncoder))
+                            {
+                                oneMoveList.Insert(i, temp);
+                                break;
+                            }
+
+                            i++;
+                        }
+
+                        if (i == oneMoveList.Count)
+                            oneMoveList.Add(temp);
+                    }
+                }
+            }
+            else if (angle == 90)
+            {
+                foreach (MapBarcodeLine tempLine in barcodeLineAngleData[angle])
+                {
+                    if (Math.Abs(tempLine.HeadBarcode.Position.X - start.X) <= sr2000Width &&
+                        GetReadThisBarcodeDistance(start.Y, end.Y, tempLine.HeadBarcode.Position.Y,
+                                      tempLine.TailBarcode.Position.Y, dirFlag, nowEncoder, ref encoderStart, ref encoderEnd))
+                    {
+                        temp = new BarcodeSafetyData(encoderStart, encoderEnd, tempLine.Id, (Math.Abs(encoderStart - encoderEnd) > moveControlConfig.Safety[EnumMoveControlSafetyType.BarcodePositionSafety].Range ? true : false));
+
+                        i = 0;
+
+                        while (i < oneMoveList.Count)
+                        {
+                            if ((dirFlag && temp.StartEncoder < oneMoveList[i].StartEncoder) ||
+                               (!dirFlag && temp.StartEncoder > oneMoveList[i].StartEncoder))
+                            {
+                                oneMoveList.Insert(i, temp);
+                                break;
+                            }
+
+                            i++;
+                        }
+
+                        if (i == oneMoveList.Count)
+                            oneMoveList.Add(temp);
+                    }
+                }
+            }
+        }
+
+        private void CreateBarcodeSafetyListOneLineMoving(MapPosition start, MapPosition end, double nowEncoder, bool dirFlag, int agvAngle, double startByPassDistance,
+               double endByPassDistance, ref List<BarcodeSafetyData> oneMoveListLeft, ref List<BarcodeSafetyData> oneMoveListRight)
+        {
+            if (endByPassDistance != 0)
+                end = computeFunction.GetPositionFormEndDistance(start, end, endByPassDistance);
+
+            if (startByPassDistance != 0)
+                start = computeFunction.GetPositionFormEndDistance(end, start, startByPassDistance);
+
+            double deltaX = 0;
+            double deltaY = 0;
+            MapPosition tempStart;
+            MapPosition tempEnd;
+            // left:
+            deltaX = Math.Cos((sr2000Config[0].ReaderToCenterDegree + agvAngle) / 180 * Math.PI) * sr2000Config[0].ReaderToCenterDistance;
+            deltaY = -Math.Sin((sr2000Config[0].ReaderToCenterDegree + agvAngle) / 180 * Math.PI) * sr2000Config[0].ReaderToCenterDistance;
+            tempStart = new MapPosition(start.X + deltaX, start.Y + deltaY);
+            tempEnd = new MapPosition(end.X + deltaX, end.Y + deltaY);
+            CreateBarcodeSafetyListOneLineMovingOneSR2000(tempStart, tempEnd, dirFlag, nowEncoder, ref oneMoveListLeft);
+            // right:
+            deltaX = Math.Cos((sr2000Config[1].ReaderToCenterDegree + agvAngle) / 180 * Math.PI) * sr2000Config[1].ReaderToCenterDistance;
+            deltaY = -Math.Sin((sr2000Config[1].ReaderToCenterDegree + agvAngle) / 180 * Math.PI) * sr2000Config[1].ReaderToCenterDistance;
+            tempStart = new MapPosition(start.X + deltaX, start.Y + deltaY);
+            tempEnd = new MapPosition(end.X + deltaX, end.Y + deltaY);
+            CreateBarcodeSafetyListOneLineMovingOneSR2000(tempStart, tempEnd, dirFlag, nowEncoder, ref oneMoveListRight);
+
+        }
+
+        private bool CreateBarcodeSafetyListOneMoving(OneceMoveCommand onceMoveCommand, ref int agvAngle, ref double nowEncoder,
+                      ref List<BarcodeSafetyData> oneMoveListLeft, ref List<BarcodeSafetyData> oneMoveListRight, ref string errorMessage)
+        {
+            try
+            {
+                oneMoveListLeft = new List<BarcodeSafetyData>();
+                oneMoveListRight = new List<BarcodeSafetyData>();
+                int wheelAngle = onceMoveCommand.WheelAngle;
+                double startByPassDistance = 0;
+                double endByPassDistance = 0;
+                double distance = 0;
+                int startIndex = 0;
+
+                for (int i = 0; i < onceMoveCommand.AddressActions.Count; i++)
+                {
+                    switch (onceMoveCommand.AddressActions[i])
+                    {
+                        case EnumAddressAction.ST:
+                            break;
+                        case EnumAddressAction.TR350:
+                        case EnumAddressAction.TR50:
+                            endByPassDistance = moveControlConfig.TurnParameter[onceMoveCommand.AddressActions[i]].R;
+
+                            CreateBarcodeSafetyListOneLineMoving(onceMoveCommand.AddressPositions[startIndex], onceMoveCommand.AddressPositions[i],
+                                           nowEncoder, onceMoveCommand.DirFlag, agvAngle, startByPassDistance, endByPassDistance, ref oneMoveListLeft, ref oneMoveListRight);
+                            startByPassDistance = endByPassDistance;
+                            endByPassDistance = 0;
+
+                            wheelAngle = computeFunction.GetTurnWheelAngle(wheelAngle, onceMoveCommand.AddressPositions[startIndex],
+                                onceMoveCommand.AddressPositions[i], onceMoveCommand.AddressPositions[i + 1], ref errorMessage);
+
+                            if (wheelAngle == -1)
+                                return false;
+
+                            distance = computeFunction.GetTwoPositionDistance(onceMoveCommand.AddressPositions[startIndex], onceMoveCommand.AddressPositions[i]);
+                            nowEncoder = nowEncoder + (onceMoveCommand.DirFlag ? distance : -distance);
+
+                            startIndex = i;
+                            break;
+                        case EnumAddressAction.R2000:
+                            CreateBarcodeSafetyListOneLineMoving(onceMoveCommand.AddressPositions[startIndex], onceMoveCommand.AddressPositions[i],
+                                                nowEncoder, onceMoveCommand.DirFlag, agvAngle, startByPassDistance, endByPassDistance, ref oneMoveListLeft, ref oneMoveListRight);
+                            startByPassDistance = 0;
+                            endByPassDistance = 0;
+
+                            distance = computeFunction.GetTwoPositionDistance(onceMoveCommand.AddressPositions[i], onceMoveCommand.AddressPositions[i + 1]);
+                            nowEncoder = nowEncoder + (onceMoveCommand.DirFlag ? distance : -distance);
+
+                            agvAngle = computeFunction.GetAGVAngleAfterR2000(agvAngle, onceMoveCommand.DirFlag, onceMoveCommand.AddressPositions[i], onceMoveCommand.AddressPositions[i + 1], ref errorMessage);
+                            if (wheelAngle == -1)
+                                return false;
+
+                            i++;
+                            startIndex = i;
+
+                            break;
+                        case EnumAddressAction.SlowStop:
+                        case EnumAddressAction.End:
+                            CreateBarcodeSafetyListOneLineMoving(onceMoveCommand.AddressPositions[startIndex], onceMoveCommand.AddressPositions[i],
+                    nowEncoder, onceMoveCommand.DirFlag, agvAngle, startByPassDistance, endByPassDistance, ref oneMoveListLeft, ref oneMoveListRight);
+
+                            distance = computeFunction.GetTwoPositionDistance(onceMoveCommand.AddressPositions[startIndex], onceMoveCommand.AddressPositions[i]);
+                            nowEncoder = nowEncoder + (onceMoveCommand.DirFlag ? distance : -distance);
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool CreateBarcodeSafetyList(List<OneceMoveCommand> oneceMoveCommandList, int agvAngle,
+                             ref List<List<BarcodeSafetyData>> sr2000LeftList, ref List<List<BarcodeSafetyData>> sr2000RightList,
+                             ref string errorMessage)
+        {
+            List<BarcodeSafetyData> tempLeft = new List<BarcodeSafetyData>();
+            List<BarcodeSafetyData> tempRight = new List<BarcodeSafetyData>();
+            double nowEncoder = 0;
+
+            for (int i = 0; i < oneceMoveCommandList.Count; i++)
+            {
+                if (!CreateBarcodeSafetyListOneMoving(oneceMoveCommandList[i], ref agvAngle, ref nowEncoder, ref tempLeft, ref tempRight, ref errorMessage))
+                    return false;
+
+                sr2000LeftList.Add(tempLeft);
+                sr2000RightList.Add(tempRight);
+            }
+
+            return true;
         }
         #endregion
 
@@ -1492,6 +1751,7 @@ namespace Mirle.Agv.Controller
 
         // 應該沒人看得懂.
         private bool BreakDownMoveCmd(MoveCmdInfo moveCmd, ref List<Command> moveCmdList, ref List<SectionLine> sectionLineList,
+                                  ref List<List<BarcodeSafetyData>> leftBarcodeList, ref List<List<BarcodeSafetyData>> rightBarcodeList,
                                       List<ReserveData> reserveDataList, AGVPosition nowAGV, int wheelAngle, ref string errorMessage)
         {
             List<OneceMoveCommand> oneceMoveCommandList = new List<OneceMoveCommand>();
@@ -1501,7 +1761,7 @@ namespace Mirle.Agv.Controller
             data.StartNode = moveCmd.AddressPositions[0];
 
             // 確認啟動時的舵輪角度應該為多少、前進方向 retrun false表示不知道目前位置或者是角度偏差過大(10度).
-            // 取得所有入彎、出彎所需要的距離(可能會含保護距離(可以設定)).
+            // 取得所有入彎、出彎所需要的距離.
             if (!computeFunction.GetDirFlagWheelAngle(moveCmd, ref data, nowAGV, wheelAngle, ref errorMessage) ||
                 !GetTurnInOutSafetyDistance(ref data, ref errorMessage))
             {
@@ -1798,6 +2058,13 @@ namespace Mirle.Agv.Controller
             }
 
             WriteBreakDownMoveCommandList(oneceMoveCommandList);
+
+            if (moveControlConfig.Safety[EnumMoveControlSafetyType.BarcodePositionSafety].Enable)
+            {
+                if (!CreateBarcodeSafetyList(oneceMoveCommandList, data.AGVAngleInMap, ref leftBarcodeList, ref rightBarcodeList, ref errorMessage))
+                    return false;
+            }
+
             return AddTOCommandList(ref oneceMoveCommandList, ref moveCmdList, reserveDataList, data.AGVAngleInMap, ref errorMessage);
         }
 
@@ -2040,37 +2307,43 @@ namespace Mirle.Agv.Controller
                 System.Diagnostics.Stopwatch createListTimer = new System.Diagnostics.Stopwatch();
                 createListTimer.Restart();
 
+
                 if (middlerSend)
                 {
                     if (!GetMoveCommandAddressAction(ref moveCmd, nowAGV, wheelAngle, ref errorMessage))
                     {
+                        WriteAGVMCommand(moveCmd, false);
                         WriteLog("MoveControl", "3", device, "", "GetMoveCommandAddressAction return false, errorMessage : " + errorMessage + " !");
                         return null;
                     }
                 }
                 else
                     WriteLog("MoveControl", "7", device, "", "debug form send, 因此略過node action計算!");
-
-
+                
                 if (moveCmd.SectionSpeedLimits == null || moveCmd.AddressActions == null || moveCmd.AddressPositions == null ||
                     moveCmd.SectionSpeedLimits.Count == 0 || (moveCmd.SectionSpeedLimits.Count + 1) != moveCmd.AddressPositions.Count ||
                     moveCmd.AddressActions.Count != moveCmd.AddressPositions.Count)
                 {
+                    WriteAGVMCommand(moveCmd, false);
                     errorMessage = "moveCmd的三種List(Action, Position, Speed)數量不正確!";
                     WriteLog("MoveControl", "7", device, "", "命令分解失敗, 分解時間 : " + createListTimer.ElapsedMilliseconds + "ms!");
                     return null;
                 }
                 else if (moveCmd.AddressActions[moveCmd.AddressActions.Count - 1] != EnumAddressAction.End)
                 {
+                    WriteAGVMCommand(moveCmd, false);
                     errorMessage = "Action結尾必須是End!";
                     WriteLog("MoveControl", "7", device, "", "命令分解失敗, 分解時間 : " + createListTimer.ElapsedMilliseconds + "ms!");
                     return null;
                 }
 
-                WriteAGVMCommand(moveCmd);
+                WriteAGVMCommand(moveCmd, true);
+
                 List<ReserveData> reserveList = new List<ReserveData>();
                 List<Command> moveCmdList = new List<Command>();
                 List<SectionLine> sectionLineList = new List<SectionLine>();
+                List<List<BarcodeSafetyData>> leftBarcodeList = new List<List<BarcodeSafetyData>>();
+                List<List<BarcodeSafetyData>> rightBarcodeList = new List<List<BarcodeSafetyData>>();
 
                 NewReserveList(moveCmd.AddressPositions, moveCmd.AddressActions, ref reserveList);
 
@@ -2080,13 +2353,13 @@ namespace Mirle.Agv.Controller
                         moveCmd.SectionSpeedLimits[i] = moveControlConfig.Move.Velocity;
                 }
 
-                if (BreakDownMoveCmd(moveCmd, ref moveCmdList, ref sectionLineList, reserveList, nowAGV, wheelAngle, ref errorMessage))
+                if (BreakDownMoveCmd(moveCmd, ref moveCmdList, ref sectionLineList, ref leftBarcodeList, ref rightBarcodeList, reserveList, nowAGV, wheelAngle, ref errorMessage))
                 {
                     ResetReserveList(ref reserveList);
                     CommandListChangeReserveIndexToCurrectIndex(ref moveCmdList, reserveList);
                     WriteListLog(moveCmdList, sectionLineList, reserveList);
 
-                    MoveCommandData returnCommand = new MoveCommandData(moveCmdList, sectionLineList, reserveList);
+                    MoveCommandData returnCommand = new MoveCommandData(moveCmdList, sectionLineList, reserveList, leftBarcodeList, rightBarcodeList);
 
                     if (moveCmd.EndAddress != null && moveCmd.EndAddress.AddressOffset != null)
                     {

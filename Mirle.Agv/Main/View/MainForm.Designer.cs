@@ -40,12 +40,12 @@
             this.中文ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.englishToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.模式ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.JogPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AlarmPage = new System.Windows.Forms.ToolStripMenuItem();
             this.MiddlerPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.ManualMoveCmdPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
             this.PlcPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.ManualMoveCmdPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.JogPage = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
@@ -134,6 +134,7 @@
             this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
+            this.模擬測試ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ucCstId = new Mirle.Agv.UcLabelTextBox();
             this.ucCharging = new Mirle.Agv.UcLabelTextBox();
             this.ucSoc = new Mirle.Agv.UcLabelTextBox();
@@ -261,12 +262,12 @@
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.模式ToolStripMenuItem.Text = "模式";
             // 
-            // JogPage
+            // VehicleStatusPage
             // 
-            this.JogPage.Name = "JogPage";
-            this.JogPage.Size = new System.Drawing.Size(208, 22);
-            this.JogPage.Text = "JogPitch";
-            this.JogPage.Click += new System.EventHandler(this.JogPage_Click);
+            this.VehicleStatusPage.Name = "VehicleStatusPage";
+            this.VehicleStatusPage.Size = new System.Drawing.Size(208, 22);
+            this.VehicleStatusPage.Text = "參數調整";
+            this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
@@ -282,20 +283,6 @@
             this.MiddlerPage.Text = "通訊";
             this.MiddlerPage.Click += new System.EventHandler(this.MiddlerPage_Click);
             // 
-            // ManualMoveCmdPage
-            // 
-            this.ManualMoveCmdPage.Name = "ManualMoveCmdPage";
-            this.ManualMoveCmdPage.Size = new System.Drawing.Size(208, 22);
-            this.ManualMoveCmdPage.Text = "半自動命令DebugMode";
-            this.ManualMoveCmdPage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
-            // 
-            // VehicleStatusPage
-            // 
-            this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(208, 22);
-            this.VehicleStatusPage.Text = "參數調整";
-            this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
-            // 
             // PlcPage
             // 
             this.PlcPage.Name = "PlcPage";
@@ -303,8 +290,24 @@
             this.PlcPage.Text = "Plc";
             this.PlcPage.Click += new System.EventHandler(this.PlcPage_Click);
             // 
+            // ManualMoveCmdPage
+            // 
+            this.ManualMoveCmdPage.Name = "ManualMoveCmdPage";
+            this.ManualMoveCmdPage.Size = new System.Drawing.Size(208, 22);
+            this.ManualMoveCmdPage.Text = "半自動命令DebugMode";
+            this.ManualMoveCmdPage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
+            // 
+            // JogPage
+            // 
+            this.JogPage.Name = "JogPage";
+            this.JogPage.Size = new System.Drawing.Size(208, 22);
+            this.JogPage.Text = "JogPitch";
+            this.JogPage.Click += new System.EventHandler(this.JogPage_Click);
+            // 
             // 工程師ToolStripMenuItem
             // 
+            this.工程師ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.模擬測試ToolStripMenuItem});
             this.工程師ToolStripMenuItem.Name = "工程師ToolStripMenuItem";
             this.工程師ToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
             this.工程師ToolStripMenuItem.Text = "工程師";
@@ -657,7 +660,7 @@
             this.rtbTransferStep.AcceptsTab = true;
             this.rtbTransferStep.Location = new System.Drawing.Point(422, 472);
             this.rtbTransferStep.Name = "rtbTransferStep";
-            this.rtbTransferStep.Size = new System.Drawing.Size(285, 191);
+            this.rtbTransferStep.Size = new System.Drawing.Size(294, 202);
             this.rtbTransferStep.TabIndex = 56;
             this.rtbTransferStep.Text = "";
             this.rtbTransferStep.WordWrap = false;
@@ -667,7 +670,7 @@
             this.rtbAgvcTransCmd.AcceptsTab = true;
             this.rtbAgvcTransCmd.Location = new System.Drawing.Point(6, 390);
             this.rtbAgvcTransCmd.Name = "rtbAgvcTransCmd";
-            this.rtbAgvcTransCmd.Size = new System.Drawing.Size(410, 273);
+            this.rtbAgvcTransCmd.Size = new System.Drawing.Size(410, 284);
             this.rtbAgvcTransCmd.TabIndex = 55;
             this.rtbAgvcTransCmd.Text = "";
             this.rtbAgvcTransCmd.WordWrap = false;
@@ -729,6 +732,7 @@
             this.btnStopAndClear.TabIndex = 54;
             this.btnStopAndClear.Text = "Stop and Clear";
             this.btnStopAndClear.UseVisualStyleBackColor = true;
+            this.btnStopAndClear.Visible = false;
             this.btnStopAndClear.Click += new System.EventHandler(this.btnStopAndClear_Click);
             // 
             // btnAutoManual
@@ -761,6 +765,7 @@
             this.btnStopVehicle.TabIndex = 4;
             this.btnStopVehicle.Text = "StopVehicle";
             this.btnStopVehicle.UseVisualStyleBackColor = true;
+            this.btnStopVehicle.Visible = false;
             this.btnStopVehicle.Click += new System.EventHandler(this.btnStopVehicle_Click);
             // 
             // btnBuzzOff
@@ -907,6 +912,7 @@
             this.cbSimulationMode.TabIndex = 3;
             this.cbSimulationMode.Text = "模擬測試";
             this.cbSimulationMode.UseVisualStyleBackColor = true;
+            this.cbSimulationMode.Visible = false;
             this.cbSimulationMode.CheckedChanged += new System.EventHandler(this.cbSimulationMode_CheckedChanged);
             // 
             // btnUnloadOk
@@ -1321,6 +1327,13 @@
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
+            // 模擬測試ToolStripMenuItem
+            // 
+            this.模擬測試ToolStripMenuItem.Name = "模擬測試ToolStripMenuItem";
+            this.模擬測試ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.模擬測試ToolStripMenuItem.Text = "模擬測試";
+            this.模擬測試ToolStripMenuItem.Click += new System.EventHandler(this.模擬測試ToolStripMenuItem_Click);
+            // 
             // ucCstId
             // 
             this.ucCstId.Location = new System.Drawing.Point(7, 181);
@@ -1607,5 +1620,6 @@
         private System.Windows.Forms.Timer timer_SetupInitialSoc;
         private System.Windows.Forms.Label txtFailResult;
         private System.Windows.Forms.Button btnReloadConfig;
+        private System.Windows.Forms.ToolStripMenuItem 模擬測試ToolStripMenuItem;
     }
 }

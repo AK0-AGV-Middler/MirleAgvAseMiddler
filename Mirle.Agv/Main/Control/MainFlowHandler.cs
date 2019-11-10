@@ -25,6 +25,7 @@ namespace Mirle.Agv.Controller
         private MainFlowConfig mainFlowConfig;
         private MapConfig mapConfig;
         private AlarmConfig alarmConfig;
+        private BatteryLog batteryLog;
         #endregion
 
         #region TransCmds
@@ -35,8 +36,10 @@ namespace Mirle.Agv.Controller
         public int TransferStepsIndex { get; private set; }
         public bool IsOverridePauseing { get; set; }
         public bool IsOverrideCanceling { get; set; }
+
         public bool IsAvoidPauseing { get; set; }
         public bool IsAvoidCanceling { get; set; }
+        public bool IsOverrideMove { get; set; }
 
         public bool IsReportingPosition { get; set; }
         public bool IsReserveMechanism { get; set; } = true;
@@ -67,8 +70,6 @@ namespace Mirle.Agv.Controller
         private Thread thdVisitTransferSteps;
         private ManualResetEvent visitTransferStepsShutdownEvent = new ManualResetEvent(false);
 
-       
-
         private ManualResetEvent visitTransferStepsPauseEvent = new ManualResetEvent(true);
         private EnumThreadStatus visitTransferStepsStatus = EnumThreadStatus.None;
         public EnumThreadStatus VisitTransferStepsStatus
@@ -95,8 +96,6 @@ namespace Mirle.Agv.Controller
                 theVehicle.TrackPositionStatus = value;
             }
         }
-
-        
 
         public EnumThreadStatus PreTrackPositionStatus { get; private set; } = EnumThreadStatus.None;
 
@@ -137,7 +136,7 @@ namespace Mirle.Agv.Controller
         public bool IsCancelByCstIdRead { get; set; } = false;
         public bool NeedRename { get; set; } = false;
         public bool IsBcrReadReply { get; set; } = false;
-        public bool IsVehicleAbortByAlarm { get; set; } = false;
+        //public bool IsVehicleAbortByAlarm { get; set; } = false;
         public bool IsMoveEnd { get; set; } = false;
         #endregion
 
@@ -178,6 +177,7 @@ namespace Mirle.Agv.Controller
                 middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"D:\AgvConfigs\Alarm.xml");
                 GetInitialSoc("BatteryPercentage.log");
+                batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");               
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
             }
@@ -451,7 +451,7 @@ namespace Mirle.Agv.Controller
 
             middleAgent.TransferComplete(agvcTransCmd);
 
-            IsVehicleAbortByAlarm = false;
+            //IsVehicleAbortByAlarm = false;
             VisitTransferStepsStatus = EnumThreadStatus.None;
             lastAgvcTransCmd = agvcTransCmd;
             agvcTransCmd = new AgvcTransCmd();
@@ -1127,27 +1127,27 @@ namespace Mirle.Agv.Controller
             #region 替代路徑生成
             try
             {
-                #region Override Pause and Cancel MoveControl
-                if (!agvcTransCmd.IsAvoidComplete)
-                {
-                    IsOverridePauseing = true;
-                    if (moveControlHandler.VehclePause())
-                    {
-                        IsOverrideCanceling = true;
-                        moveControlHandler.VehcleCancel();
-                    }
-                    else
-                    {
-                        var reason = "Vehicle can not pause.";
-                        RejectTransferCommandAndResume(000027, reason, agvcOverrideCmd);
-                        return;
-                    }
-                }
-                else
-                {
-                    GoNextTransferStep = true;
-                }
-                #endregion
+                //#region Override Pause and Cancel MoveControl
+                //if (!agvcTransCmd.IsAvoidComplete)
+                //{
+                //    IsOverridePauseing = true;
+                //    if (moveControlHandler.VehclePause())
+                //    {
+                //        IsOverrideCanceling = true;
+                //        moveControlHandler.VehcleCancel();
+                //    }
+                //    else
+                //    {
+                //        var reason = "Vehicle can not pause.";
+                //        RejectTransferCommandAndResume(000027, reason, agvcOverrideCmd);
+                //        return;
+                //    }
+                //}
+                //else
+                //{
+                //    GoNextTransferStep = true;
+                //}
+                //#endregion
 
                 middleAgent.StopAskReserve();
                 agvcTransCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
@@ -1160,6 +1160,8 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
+                IsOverrideMove = true;
+                GoNextTransferStep = true;
                 ResumeVisitTransferSteps();
             }
             catch (Exception ex)
@@ -1881,6 +1883,12 @@ namespace Mirle.Agv.Controller
                         //alarmHandler.SetAlarm(000006);
                         return;
                     }
+                    else if (IsOverrideMove)
+                    {
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 替代路徑移動異常終止");
+                        IsOverrideMove = false;
+                        return;
+                    }
                     else
                     {
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動異常終止");
@@ -1948,6 +1956,7 @@ namespace Mirle.Agv.Controller
                 #endregion
 
                 #region EnumMoveComplete.Success
+                IsOverrideMove = false;
 
                 middleAgent.StopAskReserve();
 
@@ -1956,6 +1965,14 @@ namespace Mirle.Agv.Controller
                 UpdateVehiclePositionAfterArrival(moveCmd);
 
                 Task.Run(() => StartCharge(moveCmd.EndAddress));
+                if (IsNextTransferStepLoad() && mainFlowConfig.LoadingChargeIntervalMs > 0)
+                {
+                    Task.Run(() =>
+                    {
+                        SpinWait.SpinUntil(() => false, mainFlowConfig.LoadingChargeIntervalMs);
+                        StopCharge();
+                    });
+                }
                 //StartCharge(moveCmd.EndAddress);
 
                 if (isAvoidCmd)
@@ -2272,6 +2289,36 @@ namespace Mirle.Agv.Controller
                 return false;
             }
         }
+        public bool CallMoveControlOverride(MoveCmdInfo moveCmd)
+        {
+            try
+            {
+                {
+                    var msg = $"MainFlow : 通知MoveControlHandler[替代路徑]";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                }
+                string errorMsg = "";
+                if (moveControlHandler.TransferMove_Override(moveCmd, ref errorMsg))
+                {
+                    var msg = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報可行.";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    return true;
+                }
+                else
+                {
+                    var msg = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報失敗。{errorMsg}";
+                    OnMessageShowEvent?.Invoke(this, msg);
+                    MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
+                return false;
+            }
+        }
 
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
@@ -2325,14 +2372,14 @@ namespace Mirle.Agv.Controller
                 }
             }
 
-            if (searchingSectionIndex >= MovingSections.Count)
-            {
-                isUpdateSection = false;
-                alarmHandler.SetAlarm(000011);
-                var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({vehicleLocation.RealPosition.X:F2},{vehicleLocation.RealPosition.Y:F2})]";
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
-            }
+            //if (searchingSectionIndex >= MovingSections.Count)
+            //{
+            //    isUpdateSection = false;
+            //    alarmHandler.SetAlarm(000011);
+            //    var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({vehicleLocation.RealPosition.X:F2},{vehicleLocation.RealPosition.Y:F2})]";
+            //    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+            //         , msg));
+            //}
 
             return isUpdateSection;
         }
@@ -2934,12 +2981,12 @@ namespace Mirle.Agv.Controller
         {
             if (alarmHandler.HasAlarm && !IsCancelByAgvcCmd())
             {
-                middleAgent.PauseAskReserve();
-                PauseVisitTransferSteps();
-                if (!IsVehicleAbortByAlarm)
-                {
-                    IsVehicleAbortByAlarm = true;
-                }
+                //middleAgent.PauseAskReserve();
+                //PauseVisitTransferSteps();
+                //if (!IsVehicleAbortByAlarm)
+                //{
+                //    IsVehicleAbortByAlarm = true;
+                //}
             }
             if (alarm.PlcWord != 0 || alarm.PlcBit != 0)
             {
@@ -2949,7 +2996,6 @@ namespace Mirle.Agv.Controller
         }
 
         private bool IsCancelByAgvcCmd() => agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusAbort || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusCancel || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdmisMatch || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdreadFailed;
-
 
         public void SetupVehicleSoc(double percentage)
         {
@@ -3194,6 +3240,8 @@ namespace Mirle.Agv.Controller
 
         private void PlcAgent_OnForkCommandInterlockErrorEvent(object sender, PlcForkCommand e)
         {
+            var msg = $"MainFlow : Fork Interlock Error AbortCmd";
+            OnMessageShowEvent?.Invoke(this, msg);
             agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
             StopAndClear();
         }

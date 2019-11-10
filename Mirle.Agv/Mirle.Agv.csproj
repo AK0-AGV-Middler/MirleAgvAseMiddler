@@ -104,6 +104,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
     <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
     <Compile Include="Main\Model\Map\ChargeInfo.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Main\Control\TransfereCmdSteps\Unload.cs" />
     <Compile Include="Main\Control\IComplete.cs" />
     <Compile Include="MoveControl\Control\MoveControlHandler.cs" />
+    <Compile Include="MoveControl\Model\MoveControl\BarcodeSafetyData.cs" />
     <Compile Include="MoveControl\Model\MoveControl\JogPitchData.cs" />
     <Compile Include="MoveControl\Model\MoveControl\MoveCommandData.cs" />
     <Compile Include="MoveControl\Model\MoveControl\OneTimeReviseParameter.cs" />

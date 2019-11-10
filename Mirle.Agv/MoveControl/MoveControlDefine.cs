@@ -127,7 +127,9 @@ namespace Mirle.Agv
         OneTimeRevise,
         VChangeSafetyDistance,
         TRPathMonitoring,
-        IdleNotWriteLog
+        IdleNotWriteLog,
+        BarcodePositionSafety,
+        StopWithoutReason
     }
 
     public enum EnumSensorSafetyType

@@ -401,7 +401,7 @@ namespace Mirle.Agv.Controller
                 Math.Sin(-(agvAngleInMap + sr2000Config.ReaderToCenterDegree + 180) / 180 * Math.PI)));
 
             sr2000ReadData.AGV = new AGVPosition(agvPosition, sr2000ReadData.TargetCenter, agvAngleInMap, barcodeAngleInView, sr2000ReadData.ScanTime,
-                                                 sr2000ReadData.GetDataTime, sr2000ReadData.Count, barcodeAngleInMap, sr2000ReadData.Barcode1.Type);
+                                                 sr2000ReadData.GetDataTime, sr2000ReadData.Count, barcodeAngleInMap, sr2000ReadData.Barcode1.Type, sr2000ReadData.Barcode1.LineId);
 
             sr2000ReadData.AngleOfMapInReader = barcodeAngleInView - barcodeAngleInMap;
             if (sr2000ReadData.AngleOfMapInReader > 180)

@@ -1487,12 +1487,72 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool CheckAxisNoError()
+        public bool CheckAxisNoError(ref int alarmcode)
         {
             for (int i = 0; i < MAX_AXIS; i++)
             {
                 if (!allAxisList[i].Config.IsGroup && allAxisList[i].FeedbackData.ErrorStop)
+                {
+                    switch (allAxisList[i].Config.ID)
+                    {
+                        case EnumAxis.XFL:
+                            alarmcode = 142000;
+                            break;
+                        case EnumAxis.XFR:
+                            alarmcode = 142001;
+                            break;
+                        case EnumAxis.XRL:
+                            alarmcode = 142002;
+                            break;
+                        case EnumAxis.XRR:
+                            alarmcode = 142003;
+                            break;
+                        case EnumAxis.TFL:
+                            alarmcode = 142004;
+                            break;
+                        case EnumAxis.TFR:
+                            alarmcode = 142005;
+                            break;
+                        case EnumAxis.TRL:
+                            alarmcode = 142006;
+                            break;
+                        case EnumAxis.TRR:
+                            alarmcode = 142007;
+                            break;
+                        case EnumAxis.VXFL:
+                            alarmcode = 142100;
+                            break;
+                        case EnumAxis.VXFR:
+                            alarmcode = 142101;
+                            break;
+                        case EnumAxis.VXRL:
+                            alarmcode = 142102;
+                            break;
+                        case EnumAxis.VXRR:
+                            alarmcode = 142103;
+                            break;
+                        case EnumAxis.VTFL:
+                            alarmcode = 142104;
+                            break;
+                        case EnumAxis.VTFR:
+                            alarmcode = 142105;
+                            break;
+                        case EnumAxis.VTRL:
+                            alarmcode = 142106;
+                            break;
+                        case EnumAxis.VTRR:
+                            alarmcode = 142107;
+                            break;
+
+                        case EnumAxis.GT:
+                        case EnumAxis.GX:
+                        default:
+                            alarmcode = 159998;
+                            break;
+                    }
+
                     return false;
+                }
             }
 
             return true;

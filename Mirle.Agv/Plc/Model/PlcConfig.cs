@@ -28,6 +28,5 @@ namespace Mirle.Agv.Model.Configs
         public uint Fork_Command_Read_Timeout { get; set; } = 50000;//*1000
         public uint Fork_Command_Busy_Timeout { get; set; } = 30000;//*1000
         public uint Fork_Command_Moving_Timeout { get; set; } = 120000;//*1000
-        public int LoadStopChargerTimeMs { get; set; } = -1;
     }
 }

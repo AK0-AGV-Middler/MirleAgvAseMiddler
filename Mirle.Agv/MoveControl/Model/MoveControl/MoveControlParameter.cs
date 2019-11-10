@@ -11,7 +11,11 @@ namespace Mirle.Agv.Model
     {
         public bool MoveControlCommandMoving { get; set; }
         public bool MoveControlCommandComplete { get; set; }
-        public System.Diagnostics.Stopwatch MoveControlCommandCompleteTimer { get; set; } 
+        public bool ResetMoveControlCommandMoving { get; set; }
+        public System.Diagnostics.Stopwatch MoveControlCommandCompleteTimer { get; set; }
+
+        public bool StopWithoutReason { get; set; }
+        public System.Diagnostics.Stopwatch StopWithoutReasonTimer { get; set; }
         public bool DirFlag { get; set; }
         public bool PositionDirFlag { get; set; }
         public int WheelAngle { get; set; }
@@ -22,7 +26,6 @@ namespace Mirle.Agv.Model
         public bool OntimeReviseFlag { get; set; }
         public double TrigetEndEncoder { get; set; }
         public bool FlowStopRequeset { get; set; }
-        public bool FlowStop { get; set; }
         public bool FlowClear { get; set; }
         public int WaitReserveIndex { get; set; }
         public EnumAddressAction TurnType { get; set; }
@@ -54,9 +57,12 @@ namespace Mirle.Agv.Model
 
         public MoveControlParameter()
         {
+            StopWithoutReason = false;
+            ResetMoveControlCommandMoving = false;
             MoveControlCommandMoving = false;
             MoveControlCommandComplete = false;
-            MoveControlCommandCompleteTimer  = new System.Diagnostics.Stopwatch();
+            MoveControlCommandCompleteTimer = new System.Diagnostics.Stopwatch();
+            StopWithoutReasonTimer = new System.Diagnostics.Stopwatch();
             KeepsLowSpeedStateByEQVChange = EnumVehicleSafetyAction.Stop;
             VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
             CanPause = true;
@@ -65,10 +71,9 @@ namespace Mirle.Agv.Model
             WheelAngle = 0;
             MoveControlStop = false;
             VelocityCommand = 100;
-            MoveStartNoWaitTime = true;
+            MoveStartNoWaitTime = false;
             OntimeReviseFlag = false;
             FlowStopRequeset = false;
-            FlowStop = false;
             FlowClear = false;
             WaitReserveIndex = -1;
             CommandMoving = false;
