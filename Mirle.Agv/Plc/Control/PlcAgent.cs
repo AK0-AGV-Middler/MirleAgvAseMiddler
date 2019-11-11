@@ -862,31 +862,13 @@ namespace Mirle.Agv.Controller
                                     if (this.APLCVehicle.Robot.ForkPrePioFail == true)
                                     {
                                         LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Reset plc alarm and warn."));
-                                        WritePLCAlarmReset();
 
                                         Task.Run(() =>
                                         {
                                             Thread.Sleep(1500);
-                                            long lStartMilliseconds = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                            long lEndMilliseconds = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                            while (true)
-                                            {
-                                                if (aMCProtocol.get_ItemByTag("PLCWarningStatus").AsBoolean == false && aMCProtocol.get_ItemByTag("PLCAlarmStatus").AsBoolean == false)
-                                                {
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent."));
-                                                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                                    OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
-
-                                                    break;
-                                                }
-                                                lEndMilliseconds = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                                if (lEndMilliseconds - lStartMilliseconds > 2000)
-                                                {
-                                                    break;
-                                                }
-                                                Thread.Sleep(10);
-                                            }
-                                            
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger."));
+                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
                                         });
                                     }
                                     break;
