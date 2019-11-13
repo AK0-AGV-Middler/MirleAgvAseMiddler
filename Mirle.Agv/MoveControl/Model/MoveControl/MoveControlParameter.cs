@@ -16,6 +16,10 @@ namespace Mirle.Agv.Model
 
         public bool StopWithoutReason { get; set; }
         public System.Diagnostics.Stopwatch StopWithoutReasonTimer { get; set; }
+
+
+        public bool R2000Stop { get; set; }
+        public System.Diagnostics.Stopwatch R2000StopTimer { get; set; }
         public bool DirFlag { get; set; }
         public bool PositionDirFlag { get; set; }
         public int WheelAngle { get; set; }
@@ -57,6 +61,8 @@ namespace Mirle.Agv.Model
 
         public MoveControlParameter()
         {
+            R2000Stop = false;
+            R2000StopTimer = new System.Diagnostics.Stopwatch();
             StopWithoutReason = false;
             ResetMoveControlCommandMoving = false;
             MoveControlCommandMoving = false;

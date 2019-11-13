@@ -530,6 +530,7 @@ namespace Mirle.Agv.Controller
                     case "IdleNotWriteLog":
                     case "BarcodePositionSafety":
                     case "StopWithoutReason":
+                    case "BeamSensorR2000":
                         temp = ReadSafetyDataXML((XmlElement)item);
                         try
                         {
@@ -559,7 +560,6 @@ namespace Mirle.Agv.Controller
                     case "BeamSensor":
                     case "BeamSensorTR":
                     case "TRFlowStart":
-                    case "BeamSensorR2000":
                     case "R2000FlowStat":
                     case "Bumper":
                     case "CheckAxisState":
@@ -1843,7 +1843,7 @@ namespace Mirle.Agv.Controller
         public void R2000Control(int wheelAngle)
         {
             ControlData.CanPause = false;
-            if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorR2000].Enable)
+            if (!moveControlConfig.Safety[EnumMoveControlSafetyType.BeamSensorR2000].Enable)
                 safetyData.TurningByPass = true;
 
             if (SimulationMode)
@@ -2478,6 +2478,7 @@ namespace Mirle.Agv.Controller
                 case EnumMoveState.R2000:
                     if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.R2000FlowStat].Enable)
                     {
+                        SendAlarmCode(153002);
                         EMSControl("R2000 Flow Stop 且未開啟R2000啟動功能!");
                         return;
                     }
@@ -3160,8 +3161,45 @@ namespace Mirle.Agv.Controller
             ControlData.BeamSensorState = beamSensorState;
             ControlData.BumpSensorState = bumpSensorState;
 
-            if (beamSensorState != EnumVehicleSafetyAction.Normal && (safetyData.TurningByPass || ControlData.SecondCorrection || !CanStopInNextTurn()))
-                beamSensorState = EnumVehicleSafetyAction.Normal;
+            if (ControlData.BeamSensorState == EnumVehicleSafetyAction.Normal)
+            {
+                ControlData.R2000Stop = false;
+            }
+
+            if (beamSensorState == EnumVehicleSafetyAction.Stop && !ControlData.SecondCorrection)
+            {
+                EnumCommandType type = EnumCommandType.End;
+
+                bool canStop = CanStopInNextTurn(ref type);
+
+                if (!canStop)
+                {
+                    if (type == EnumCommandType.TR)
+                    {
+                        if (moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorTR].Enable)
+                            canStop = true;
+                    }
+                    else if (type == EnumCommandType.R2000)
+                    {
+                        if (moveControlConfig.Safety[EnumMoveControlSafetyType.BeamSensorR2000].Enable)
+                        {
+                            if (ControlData.R2000Stop)
+                            {
+                                if (ControlData.R2000StopTimer.ElapsedMilliseconds > moveControlConfig.Safety[EnumMoveControlSafetyType.BeamSensorR2000].Range)
+                                    canStop = true;
+                            }
+                            else
+                            {
+                                ControlData.R2000Stop = true;
+                                ControlData.R2000StopTimer.Restart();
+                            }
+                        }
+                    }
+                }
+
+                if (safetyData.TurningByPass || !canStop)
+                    beamSensorState = EnumVehicleSafetyAction.Normal;
+            }
 
             if (ControlData.WaitReserveIndex != -1)
             {
@@ -3265,9 +3303,9 @@ namespace Mirle.Agv.Controller
                 return false;
 
             if (moveControlConfig.Safety[EnumMoveControlSafetyType.StopWithoutReason].Enable && ControlData.StopWithoutReason)
-                return ControlData.StopWithoutReasonTimer.ElapsedMilliseconds > (moveControlConfig.Safety[EnumMoveControlSafetyType.StopWithoutReason].Range * 1000);
+                return ControlData.StopWithoutReasonTimer.ElapsedMilliseconds > (moveControlConfig.Safety[EnumMoveControlSafetyType.StopWithoutReason].Range);
             else
-                return true;
+                return false;
         }
 
         private void SensorSafety()
@@ -3787,6 +3825,7 @@ namespace Mirle.Agv.Controller
             ControlData.SecondCorrection = false;
             ControlData.RealVelocity = 0;
             ControlData.EQVChange = false;
+            ControlData.R2000Stop = false;
 
             ControlData.VChangeSafetyType = EnumVChangeSpeedLowerSafety.None;
             safetyData = new MoveControlSafetyData();
@@ -3806,6 +3845,7 @@ namespace Mirle.Agv.Controller
             ControlData.CanPause = true;
 
             ResetEncoder(command.SectionLineList[0].Start, command.SectionLineList[0].End, command.SectionLineList[0].DirFlag);
+            UpdatePosition();
             Task.Factory.StartNew(() =>
             {
                 elmoDriver.EnableMoveAxis();
@@ -4009,7 +4049,7 @@ namespace Mirle.Agv.Controller
             return location.Real != null;
         }
 
-        private bool CanStopInNextTurn()
+        private bool CanStopInNextTurn(ref EnumCommandType type)
         {
             int index = -1;
 
@@ -4019,15 +4059,15 @@ namespace Mirle.Agv.Controller
                     break;
                 else if (command.CommandList[i].CmdType == EnumCommandType.TR)
                 {
-                    if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorTR].Enable)
-                        index = i;
+                    index = i;
+                    type = EnumCommandType.TR;
 
                     break;
                 }
                 else if (command.CommandList[i].CmdType == EnumCommandType.R2000)
                 {
-                    if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorR2000].Enable)
-                        index = i;
+                    index = i;
+                    type = EnumCommandType.R2000;
 
                     break;
                 }
@@ -4080,7 +4120,25 @@ namespace Mirle.Agv.Controller
                 return true;
             }
 
-            if (!ControlData.CanPause || !CanStopInNextTurn())
+            EnumCommandType type = EnumCommandType.End;
+
+            bool canStop = CanStopInNextTurn(ref type);
+
+            if (!canStop)
+            {
+                if (type == EnumCommandType.TR)
+                {
+                    if (moveControlConfig.SensorByPass[EnumSensorSafetyType.BeamSensorTR].Enable)
+                        canStop = true;
+                }
+                else if (type == EnumCommandType.R2000)
+                {
+                    if (moveControlConfig.Safety[EnumMoveControlSafetyType.BeamSensorR2000].Enable)
+                        canStop = true;
+                }
+            }
+
+            if (!ControlData.CanPause || !canStop)
             {
                 WriteLog("MoveControl", "7", device, "", "因為在R2000和TR中,所以無法Pause!");
                 return false;

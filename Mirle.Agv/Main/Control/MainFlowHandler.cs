@@ -25,7 +25,7 @@ namespace Mirle.Agv.Controller
         private MainFlowConfig mainFlowConfig;
         private MapConfig mapConfig;
         private AlarmConfig alarmConfig;
-        private BatteryLog batteryLog;
+        public BatteryLog batteryLog;
         #endregion
 
         #region TransCmds
@@ -176,8 +176,9 @@ namespace Mirle.Agv.Controller
                 mapConfig = xmlHandler.ReadXml<MapConfig>(@"D:\AgvConfigs\Map.xml");
                 middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"D:\AgvConfigs\Alarm.xml");
-                GetInitialSoc("BatteryPercentage.log");
-                batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");               
+                //GetInitialSoc("BatteryPercentage.log");
+                batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");
+                InitialSoc = batteryLog.InitialSoc;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
             }
@@ -262,6 +263,7 @@ namespace Mirle.Agv.Controller
 
                 //來自PlcBattery的電量改變訊息，通知middleAgent
                 plcAgent.OnBatteryPercentageChangeEvent += middleAgent.PlcAgent_OnBatteryPercentageChangeEvent;
+                plcAgent.OnBatteryPercentageChangeEvent += PlcAgent_OnBatteryPercentageChangeEvent;
 
                 //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
                 //plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
@@ -290,6 +292,8 @@ namespace Mirle.Agv.Controller
             }
         }
 
+        
+
         private void VehicleLocationInitial()
         {
             if (IsRealPositionEmpty())
@@ -306,7 +310,7 @@ namespace Mirle.Agv.Controller
             }
             StartTrackPosition();
             StartWatchLowPower();
-            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"讀取到的電量為{InitialSoc}"));
+            loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"讀取到的電量為{batteryLog.InitialSoc}"));
 
         }
         private bool IsRealPositionEmpty()
@@ -1969,6 +1973,16 @@ namespace Mirle.Agv.Controller
                 {
                     Task.Run(() =>
                     {
+                        Stopwatch sw = new Stopwatch();
+                        sw.Start();
+                        while (!theVehicle.ThePlcVehicle.Loading)
+                        {
+                            if (sw.ElapsedMilliseconds>=mainFlowConfig.StopChargeWaitingTimeoutMs)
+                            {
+                                break;
+                            }
+                            SpinWait.SpinUntil(() => false, 50);
+                        }
                         SpinWait.SpinUntil(() => false, mainFlowConfig.LoadingChargeIntervalMs);
                         StopCharge();
                     });
@@ -2132,7 +2146,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
         public bool IsVisitTransferStepsPause() => VisitTransferStepsStatus == EnumThreadStatus.Pause || VisitTransferStepsStatus == EnumThreadStatus.PauseComplete;
 
         private bool IsNextTransferStepUnload() => GetNextTransferStepType() == EnumTransferStepType.Unload;
@@ -2197,6 +2210,8 @@ namespace Mirle.Agv.Controller
                         PlcForkUnloadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
                         Task.Run(() => plcAgent.AddForkComand(PlcForkUnloadCommand));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
+                        batteryLog.LoadUnloadCount++;
+                        SaveBatteryLog();
                     }
                     else
                     {
@@ -2228,6 +2243,8 @@ namespace Mirle.Agv.Controller
                         PlcForkLoadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
                         Task.Run(() => plcAgent.AddForkComand(PlcForkLoadCommand));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
+                        batteryLog.LoadUnloadCount++;
+                        SaveBatteryLog();
                     }
                     else
                     {
@@ -2239,11 +2256,6 @@ namespace Mirle.Agv.Controller
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
             }
-        }
-
-        public void ReconnectToAgvc()
-        {
-            middleAgent.ReConnect();
         }
 
         #region Simple Getters
@@ -2346,6 +2358,8 @@ namespace Mirle.Agv.Controller
                     {
                         while (moveCmdInfo.MovingSectionsIndex < searchingSectionIndex)
                         {
+                            batteryLog.MoveDistanceTotalM += (int)(moveCmdInfo.MovingSections[moveCmdInfo.MovingSectionsIndex].HeadToTailDistance / 1000);
+                            SaveBatteryLog();
                             moveCmdInfo.MovingSectionsIndex++;
                             FitVehicalLocationAndMoveCmd(moveCmdInfo, vehicleLocation);
                             middleAgent.ReportSectionPass(EventType.AdrPass);
@@ -2649,6 +2663,8 @@ namespace Mirle.Agv.Controller
                 {
                     middleAgent.Charging();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
+                    batteryLog.ChargeCount++;
+                    SaveBatteryLog();
                 }
                 else
                 {
@@ -2721,6 +2737,8 @@ namespace Mirle.Agv.Controller
                 {
                     middleAgent.Charging();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                    batteryLog.ChargeCount++;
+                    SaveBatteryLog();
                 }
                 else
                 {
@@ -3258,6 +3276,42 @@ namespace Mirle.Agv.Controller
             this.mainFlowConfig = mainFlowConfig;
             XmlHandler xmlHandler = new XmlHandler();
             xmlHandler.WriteXml(mainFlowConfig, @"D:\AgvConfigs\MainFlow.xml");
+        }
+
+        public void LoadMiddlerConfig()
+        {
+            XmlHandler xmlHandler = new XmlHandler();
+
+            middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
+        }
+
+        public void SetMiddlerConfig(MiddlerConfig middlerConfig)
+        {
+            this.middlerConfig = middlerConfig;
+            XmlHandler xmlHandler = new XmlHandler();
+            xmlHandler.WriteXml(middlerConfig, @"D:\AgvConfigs\Middler.xml");
+        }
+
+        private void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort batteryPercentage)
+        {
+            batteryLog.InitialSoc = batteryPercentage;
+            SaveBatteryLog();
+        }
+
+        public void SaveBatteryLog()
+        {
+            XmlHandler xmlHandler = new XmlHandler();
+            xmlHandler.WriteXml(batteryLog, @"D:\AgvConfigs\BatteryLog.xml");
+        }
+
+        public void ResetBatteryLog()
+        {
+            BatteryLog tempBatteryLog = new BatteryLog();
+            tempBatteryLog.ResetTime = DateTime.Now.ToString("yyyy/MM/dd_HH:mm:ss.fff");
+            tempBatteryLog.InitialSoc = batteryLog.InitialSoc;
+            batteryLog = tempBatteryLog;
+            //TODO: Middler
+
         }
     }
 }

@@ -676,6 +676,8 @@ namespace Mirle.Agv.Controller
             {
                 foreach (MapBarcodeLine tempLine in barcodeLineAngleData[angle])
                 {
+                    if (tempLine.Id == "32")
+                        ;
                     if (Math.Abs(tempLine.HeadBarcode.Position.X - start.X) <= sr2000Width &&
                         GetReadThisBarcodeDistance(start.Y, end.Y, tempLine.HeadBarcode.Position.Y,
                                       tempLine.TailBarcode.Position.Y, dirFlag, nowEncoder, ref encoderStart, ref encoderEnd))
@@ -775,6 +777,9 @@ namespace Mirle.Agv.Controller
                                                 nowEncoder, onceMoveCommand.DirFlag, agvAngle, startByPassDistance, endByPassDistance, ref oneMoveListLeft, ref oneMoveListRight);
                             startByPassDistance = 0;
                             endByPassDistance = 0;
+
+                            distance = computeFunction.GetTwoPositionDistance(onceMoveCommand.AddressPositions[startIndex], onceMoveCommand.AddressPositions[i]);
+                            nowEncoder = nowEncoder + (onceMoveCommand.DirFlag ? distance : -distance);
 
                             distance = computeFunction.GetTwoPositionDistance(onceMoveCommand.AddressPositions[i], onceMoveCommand.AddressPositions[i + 1]);
                             nowEncoder = nowEncoder + (onceMoveCommand.DirFlag ? distance : -distance);

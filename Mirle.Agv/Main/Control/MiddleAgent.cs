@@ -1438,9 +1438,8 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                //TODO: Report alram
                 ID_194_ALARM_REPORT iD_194_ALARM_REPORT = new ID_194_ALARM_REPORT();
-                iD_194_ALARM_REPORT.ErrCode = alarmCode;
+                iD_194_ALARM_REPORT.ErrCode = alarmCode;            
                 iD_194_ALARM_REPORT.ErrStatus = status;
 
                 WrapperMessage wrappers = new WrapperMessage();

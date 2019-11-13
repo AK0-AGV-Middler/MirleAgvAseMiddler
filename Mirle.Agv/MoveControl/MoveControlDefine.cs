@@ -129,7 +129,8 @@ namespace Mirle.Agv
         TRPathMonitoring,
         IdleNotWriteLog,
         BarcodePositionSafety,
-        StopWithoutReason
+        StopWithoutReason,
+        BeamSensorR2000
     }
 
     public enum EnumSensorSafetyType
@@ -139,7 +140,6 @@ namespace Mirle.Agv
         BeamSensor,
         BeamSensorTR,
         TRFlowStart,
-        BeamSensorR2000,
         R2000FlowStat,
         Bumper,
         CheckAxisState,

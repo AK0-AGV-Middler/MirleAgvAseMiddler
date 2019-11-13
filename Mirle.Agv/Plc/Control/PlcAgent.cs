@@ -289,6 +289,7 @@ namespace Mirle.Agv.Controller
                     csvLog = csvLog + Separator + this.APLCVehicle.Robot.ForkHome;
                     csvLog = csvLog + Separator + mainForm.mainFlowHandler.GetCurTransferStep().GetType().ToString();
                     csvLog = csvLog + Separator + Vehicle.Instance.VehicleLocation.LastAddress.Id;
+                    csvLog = csvLog + Separator + this.aMCProtocol.get_ItemByTag("PLCBigDataTT01").AsUInt16;
                 } catch (Exception ex)
                 {
 

@@ -122,7 +122,10 @@ namespace Mirle.Agv.View
                         temp.SetLabelString("Barcode保護 : ", "Config (mm) : ");
                         break;
                     case EnumMoveControlSafetyType.StopWithoutReason:
-                        temp.SetLabelString("默停偵測 : ", "Config (s) : ");
+                        temp.SetLabelString("默停偵測 : ", "Config (ms) : ");
+                        break;
+                    case EnumMoveControlSafetyType.BeamSensorR2000:
+                        temp.SetLabelString("Beam R2000 : ", "delay (ms) : ");
                         break;
                     default:
                         break;
@@ -161,9 +164,6 @@ namespace Mirle.Agv.View
                         break;
                     case EnumSensorSafetyType.TRFlowStart:
                         tempSensor.SetLabelString("TR中啟動 : ");
-                        break;
-                    case EnumSensorSafetyType.BeamSensorR2000:
-                        tempSensor.SetLabelString("Beam R2000 : ");
                         break;
                     case EnumSensorSafetyType.R2000FlowStat:
                         tempSensor.SetLabelString("R2000中啟動 : ");

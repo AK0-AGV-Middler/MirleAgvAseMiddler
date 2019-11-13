@@ -9,9 +9,10 @@ namespace Mirle.Agv.Model
     [Serializable]
     public class BatteryLog
     {
-        public double MoveDistanceTotalMm { get; set; }
+        public long MoveDistanceTotalM { get; set; }
         public int LoadUnloadCount { get; set; }
         public int ChargeCount { get; set; }
-        public double UsingTime { get; set; }
+        public string ResetTime { get; set; }
+        public int InitialSoc { get; set; } = 70;
     }
 }
