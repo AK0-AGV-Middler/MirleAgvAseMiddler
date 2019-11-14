@@ -103,7 +103,7 @@ namespace Mirle.Agv.Controller
                 Connected = false;
             }
         }
-        
+
         private void SetElmoLog(string functionName, string message)
         {
             ElmoLog = DateTime.Now.ToString("HH:mm:ss.fff") + "\t" + functionName + "\t" + message + "\r\n" + ElmoLog;
@@ -1570,6 +1570,24 @@ namespace Mirle.Agv.Controller
             }
 
             return true;
+        }
+
+        public bool ElmoAllResetAndCheckLink([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            WriteLog("Elmo", "7", device, memberName, "start!");
+
+            bool returnBoolean = true;
+
+            //return true;
+
+
+            uint SR_value = 0;
+            uint MLR_value = 0;
+
+            allAxisList[10].SingleAxis.GetStatusRegister(ref SR_value, ref MLR_value);
+
+            WriteLog("Elmo", "7", device, memberName, String.Concat("end : ", returnBoolean ? "Sucess" : "Fail", " !"));
+            return returnBoolean;
         }
     }
 }

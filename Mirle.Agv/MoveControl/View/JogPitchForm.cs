@@ -19,7 +19,6 @@ namespace Mirle.Agv.View
         public JogPitchData jogPitchData = new JogPitchData();
 
         private Thread ontimeRevise;
-        private Thread homeThread;
         private EnumJogPitchMode mode;
         private AgvMoveRevise agvRevise;
         private bool changingMode = false;
@@ -31,7 +30,6 @@ namespace Mirle.Agv.View
                                                 EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
                                                 EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
                                                 EnumAxis.GX, EnumAxis.GT};
-        private bool homing = false;
         private bool formEnable = true;
 
         public JogPitchForm(MoveControlHandler moveControl)
@@ -244,7 +242,7 @@ namespace Mirle.Agv.View
 
             if (changingMode)
             {
-                if (moveControl.elmoDriver.MoveAxisStop() && moveControl.elmoDriver.TurnAxisStop() && !homing)
+                if (moveControl.elmoDriver.MoveAxisStop() && moveControl.elmoDriver.TurnAxisStop())
                 {
                     changingMode = false;
                     EnalbeDisableButton(true);
@@ -313,7 +311,7 @@ namespace Mirle.Agv.View
             button_JogPitch_ForwardWheel.Enabled = flag;
             button_JogPitch_BackwardWheel.Enabled = flag;
             button_JogPitch_SpinTurn.Enabled = flag;
-            button_JogPitch_Home.Enabled = flag;
+            button_JogpitchResetAll.Enabled = flag;
 
             if (flag)
             {
@@ -405,12 +403,6 @@ namespace Mirle.Agv.View
 
         public void button_JogPitch_STOP_Click(object sender, EventArgs e)
         {
-            if (homing)
-            {
-                homeThread.Abort();
-                homing = false;
-            }
-
             moveControl.elmoDriver.ElmoStop(EnumAxis.VTFL);
             moveControl.elmoDriver.ElmoStop(EnumAxis.VTFR);
             moveControl.elmoDriver.ElmoStop(EnumAxis.VTRL);
@@ -678,158 +670,6 @@ namespace Mirle.Agv.View
                 return;
 
             moveControl.elmoDriver.ElmoMove(axis, -distance, velocity, EnumMoveType.Relative);
-        }
-
-        private void HomeThread()
-        {
-            double oneCycleDistance = Math.PI * Math.Sqrt(Math.Pow(1400, 2) + Math.Pow(2400, 2));
-            double spinDistance;
-            System.Diagnostics.Stopwatch servoOnTimer = new System.Diagnostics.Stopwatch();
-            ThetaSectionDeviation reviseData = null;
-
-            for (int i = 0; i < moveControl.DriverSr2000List.Count; i++)
-            {
-                reviseData = moveControl.DriverSr2000List[i].GetThetaSectionDeviation();
-                if (reviseData != null)
-                {
-                    if (computeFunction.IsSameAngle(reviseData.BarcodeAngleInMap, reviseData.AGVAngleInMap, 0))
-                        break;
-                    else
-                        reviseData = null;
-                }
-            }
-
-            if (reviseData == null)
-            {
-                MessageBox.Show("請移至可以讀取到和軌道平行的Barocde上!");
-                homing = false;
-                return;
-            }
-
-            if (Math.Abs(reviseData.Theta) > 20 || Math.Abs(reviseData.SectionDeviation) > 50)
-            {
-                MessageBox.Show("偏差過大,請手動調整(角度超過20度或偏差超過50mm)");
-                homing = false;
-                return;
-            }
-
-            if (Math.Abs(reviseData.Theta) > 0.1)
-            {
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GT, -59.744, 59.744, 59.744, -59.744, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
-                            moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
-
-                spinDistance = reviseData.Theta / 360 * oneCycleDistance;
-                double[] move = new double[4] { -spinDistance, spinDistance, -spinDistance, spinDistance };
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GT);
-                    MessageBox.Show("轉向角度至Spin Turn角度時Timeout!");
-                    homing = false;
-                    return;
-                }
-
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, move[0], move[1], move[2], move[3], 10, EnumMoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
-                                         moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
-                    MessageBox.Show("Spin Turn至軌道平行時Timeout!");
-                    homing = false;
-                    return;
-                }
-            }
-
-            for (int i = 0; i < moveControl.DriverSr2000List.Count; i++)
-            {
-                reviseData = moveControl.DriverSr2000List[i].GetThetaSectionDeviation();
-                if (reviseData != null)
-                {
-                    if (computeFunction.IsSameAngle(reviseData.BarcodeAngleInMap, reviseData.AGVAngleInMap, 0))
-                        break;
-                    else
-                        reviseData = null;
-                }
-            }
-
-            if (reviseData == null)
-            {
-                MessageBox.Show("請移至可以讀取到和軌道平行的Barocde上!");
-                homing = false;
-                return;
-            }
-
-            if (Math.Abs(reviseData.SectionDeviation) > 5)
-            {
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GT, 90, 90, 90, 90, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
-                moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GT);
-                    MessageBox.Show("轉向角度至90度時Timeout!");
-                    homing = false;
-                    return;
-                }
-
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, reviseData.SectionDeviation, 50, EnumMoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
-                                         moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
-                    MessageBox.Show("平移行時Timeout!");
-                    homing = false;
-                    return;
-                }
-
-                homing = false;
-            }
-        }
-
-        private void button_JogPitch_Home_Click(object sender, EventArgs e)
-        {
-            if (!homing)
-            {
-                homing = true;
-                changingMode = true;
-                EnalbeDisableButton(false);
-                homeThread = new Thread(HomeThread);
-                homeThread.Start();
-            }
         }
 
         private void JogPitchForm_Shown(object sender, EventArgs e)
@@ -1158,5 +998,10 @@ namespace Mirle.Agv.View
 
         }
         #endregion
+
+        private void button_JogpitchResetAll_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

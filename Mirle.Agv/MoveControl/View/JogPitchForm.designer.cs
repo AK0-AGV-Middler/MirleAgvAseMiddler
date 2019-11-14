@@ -42,6 +42,7 @@
             this.button_JogPitch_ElmoDisable = new System.Windows.Forms.Button();
             this.button_JogPitch_ElmoEnable = new System.Windows.Forms.Button();
             this.gB_JogPitch_Sr2000 = new System.Windows.Forms.GroupBox();
+            this.label_SR2000Connected = new System.Windows.Forms.Label();
             this.label_JogPitch_Sr2000R = new System.Windows.Forms.Label();
             this.label_JogPitch_Sr2000L = new System.Windows.Forms.Label();
             this.tB_JogPitch_Theta_R = new System.Windows.Forms.TextBox();
@@ -88,12 +89,11 @@
             this.gB_JogPitch_ElmoFunction = new System.Windows.Forms.GroupBox();
             this.button_Skip = new System.Windows.Forms.Button();
             this.gB_JogPitch_JogPitch = new System.Windows.Forms.GroupBox();
-            this.button_JogPitch_Home = new System.Windows.Forms.Button();
+            this.button_JogpitchResetAll = new System.Windows.Forms.Button();
             this.button_JogPitch_ChangeFormSize = new System.Windows.Forms.Button();
             this.button_JogPitchHide = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
-            this.label_SR2000Connected = new System.Windows.Forms.Label();
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -252,6 +252,16 @@
             this.gB_JogPitch_Sr2000.TabIndex = 110;
             this.gB_JogPitch_Sr2000.TabStop = false;
             this.gB_JogPitch_Sr2000.Text = "Sr2000";
+            // 
+            // label_SR2000Connected
+            // 
+            this.label_SR2000Connected.AutoSize = true;
+            this.label_SR2000Connected.Font = new System.Drawing.Font("新細明體", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_SR2000Connected.ForeColor = System.Drawing.Color.Red;
+            this.label_SR2000Connected.Location = new System.Drawing.Point(5, 79);
+            this.label_SR2000Connected.Name = "label_SR2000Connected";
+            this.label_SR2000Connected.Size = new System.Drawing.Size(0, 35);
+            this.label_SR2000Connected.TabIndex = 136;
             // 
             // label_JogPitch_Sr2000R
             // 
@@ -716,7 +726,7 @@
             // 
             // gB_JogPitch_JogPitch
             // 
-            this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_Home);
+            this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogpitchResetAll);
             this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_SpinTurn);
             this.gB_JogPitch_JogPitch.Controls.Add(this.groupBox2);
             this.gB_JogPitch_JogPitch.Controls.Add(this.button_JogPitch_Normal);
@@ -742,16 +752,16 @@
             this.gB_JogPitch_JogPitch.TabStop = false;
             this.gB_JogPitch_JogPitch.Text = "JogPitch";
             // 
-            // button_JogPitch_Home
+            // button_JogpitchResetAll
             // 
-            this.button_JogPitch_Home.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_JogPitch_Home.Location = new System.Drawing.Point(313, 371);
-            this.button_JogPitch_Home.Name = "button_JogPitch_Home";
-            this.button_JogPitch_Home.Size = new System.Drawing.Size(90, 68);
-            this.button_JogPitch_Home.TabIndex = 131;
-            this.button_JogPitch_Home.Text = "回到軌\r\n道中央";
-            this.button_JogPitch_Home.UseVisualStyleBackColor = true;
-            this.button_JogPitch_Home.Click += new System.EventHandler(this.button_JogPitch_Home_Click);
+            this.button_JogpitchResetAll.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_JogpitchResetAll.Location = new System.Drawing.Point(313, 371);
+            this.button_JogpitchResetAll.Name = "button_JogpitchResetAll";
+            this.button_JogpitchResetAll.Size = new System.Drawing.Size(90, 68);
+            this.button_JogpitchResetAll.TabIndex = 131;
+            this.button_JogpitchResetAll.Text = "一鍵\r\n賦歸";
+            this.button_JogpitchResetAll.UseVisualStyleBackColor = true;
+            this.button_JogpitchResetAll.Click += new System.EventHandler(this.button_JogpitchResetAll_Click);
             // 
             // button_JogPitch_ChangeFormSize
             // 
@@ -795,16 +805,6 @@
             this.button1.Text = "Test";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // label_SR2000Connected
-            // 
-            this.label_SR2000Connected.AutoSize = true;
-            this.label_SR2000Connected.Font = new System.Drawing.Font("新細明體", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_SR2000Connected.ForeColor = System.Drawing.Color.Red;
-            this.label_SR2000Connected.Location = new System.Drawing.Point(5, 79);
-            this.label_SR2000Connected.Name = "label_SR2000Connected";
-            this.label_SR2000Connected.Size = new System.Drawing.Size(0, 35);
-            this.label_SR2000Connected.TabIndex = 136;
             // 
             // JogPitchForm
             // 
@@ -904,7 +904,7 @@
         private System.Windows.Forms.GroupBox gB_JogPitch_ElmoFunction;
         private System.Windows.Forms.GroupBox gB_JogPitch_JogPitch;
         private JogPitchAxis[] allAxis;
-        private System.Windows.Forms.Button button_JogPitch_Home;
+        private System.Windows.Forms.Button button_JogpitchResetAll;
         private System.Windows.Forms.Button button_JogPitch_ChangeFormSize;
         private System.Windows.Forms.Button button_JogPitchHide;
         private System.Windows.Forms.Label label_LockResult;

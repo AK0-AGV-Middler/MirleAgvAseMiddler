@@ -1396,6 +1396,8 @@ namespace Mirle.Agv.View
                 string section = "";
                 MapPosition endPosition;
                 double distance;
+                double x, y;
+                string txtPosition;
 
                 List<double> startAddressToSectionNodeDistance = new List<double>();
                 List<string> startSectionNode = new List<string>();
@@ -1473,9 +1475,40 @@ namespace Mirle.Agv.View
                     MessageBox.Show("GG double 轉成 string 再轉回 double 資料不同了!");
                     return;
                 }
-
+                
                 if (theMapInfo.allMapSections.ContainsKey(theMapInfo.allMapAddresses[endAddressID].InsideSectionId))
                 {
+                    if (theMapInfo.allMapAddresses[endAddressID].InsideSectionId == section)
+                    {
+                        listCmdAddressPositions.Items.Clear();
+
+                        if (theMapInfo.allMapSections[section].TailAddress.Position.X == theMapInfo.allMapSections[section].HeadAddress.Position.X)
+                        {
+                            x = theMapInfo.allMapSections[section].TailAddress.Position.X;
+                            y = now.Y;
+                        }
+                        else
+                        {
+                            x = now.X;
+                            y = theMapInfo.allMapSections[section].TailAddress.Position.Y;
+                        }
+
+                        txtPosition = $"{x.ToString()},{y.ToString()}";
+                        listCmdAddressPositions.Items.Add(txtPosition);
+
+                        x = endPosition.X;
+                        y = endPosition.Y;
+
+                        txtPosition = $"{x.ToString()},{y.ToString()}";
+                        listCmdAddressPositions.Items.Add(txtPosition);
+
+                        RunEndAddress = theMapInfo.allMapAddresses[endAddressID];
+                        SectionList = new List<MapSection>();
+                        SectionList.Add(theMapInfo.allMapSections[section]);
+                        RunSectionList = SectionList;
+                        return;
+                    }
+
                     distance = Math.Sqrt(Math.Pow(endPosition.X - theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].HeadAddress.Position.X, 2) +
                                          Math.Pow(endPosition.Y - theMapInfo.allMapSections[theMapInfo.allMapAddresses[endAddressID].InsideSectionId].HeadAddress.Position.Y, 2));
 
@@ -1513,10 +1546,7 @@ namespace Mirle.Agv.View
                 else
                 {
                     listCmdAddressPositions.Items.Clear();
-
-                    double x, y;
-                    string txtPosition;
-
+                    
                     if (section != "" || address != minNodeList[0])
                     {
                         if (theMapInfo.allMapSections[section].TailAddress.Position.X == theMapInfo.allMapSections[section].HeadAddress.Position.X)

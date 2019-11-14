@@ -1212,6 +1212,10 @@ namespace Mirle.Agv.Controller
                 if (Math.Abs(location.ThetaAndSectionDeviation.Theta) >
                     moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range)
                 {
+                    if (location.Barcode != null)
+                        WriteLog("MoveControl", "7", device, "", String.Concat("nowAGV車資 : ", location.Barcode.AGVAngle, ", section index : ", command.IndexOflisSectionLine,
+                                                                               ", dirFlag : ", command.SectionLineList[command.IndexOflisSectionLine].DirFlag.ToString(),
+                                                                               ", SectionAngle : ", command.SectionLineList[command.IndexOflisSectionLine].SectionAngle));
                     SendAlarmCode(154000);
                     EMSControl("角度偏差" + location.ThetaAndSectionDeviation.Theta.ToString("0.0") +
                         "度,已超過安全設置的" +
@@ -1327,7 +1331,8 @@ namespace Mirle.Agv.Controller
                 location.GTMoveCompelete = elmoDriver.TurnAxisStop();
                 location.GXMoveCompelete = elmoDriver.MoveAxisStop();
 
-                if (location.GXMoveCompelete && ControlData.SensorState != EnumVehicleSafetyAction.Stop)
+                if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error &&
+                    location.GXMoveCompelete && ControlData.SensorState != EnumVehicleSafetyAction.Stop)
                 {
                     if (!ControlData.StopWithoutReason)
                     {
@@ -2716,9 +2721,11 @@ namespace Mirle.Agv.Controller
 
                     if (ControlData.PauseAlready && ControlData.CancelRequest)
                     {
+                        WriteLog("MoveControl", "7", device, "", "AGV已經停止 Cancel Start!");
                         waitDelateTime.Reset();
                         waitDelateTime.Start();
-                        elmoDriver.DisableMoveAxis();
+                        if (!ControlData.CancelNotSendEvent)
+                            elmoDriver.DisableMoveAxis();
 
                         while (waitDelateTime.ElapsedMilliseconds < moveControlConfig.PauseDelateTime)
                         {
@@ -3951,6 +3958,12 @@ namespace Mirle.Agv.Controller
         {
             WriteLog("MoveControl", "7", device, "", "Override start");
 
+            if (MoveState == EnumMoveState.Idle)
+            {
+                WriteLog("MoveControl", "7", device, "", "Idle中收到override....轉傳成一般移動命令試試..");
+                return TransferMove(moveCmd, ref errorMessage);
+            }
+
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
             timer.Reset();
             timer.Start();
@@ -3961,6 +3974,7 @@ namespace Mirle.Agv.Controller
                 errorMessage = "AGV不處於不能Pause狀態,因此拒絕AGVM Override命令.";
                 AGVStopResult = "AGV不處於不能Pause狀態,因此拒絕AGVM Override命令.";
                 SendAlarmCode(111000);
+                WriteLog("MoveControl", "7", device, "", String.Concat("Override 失敗,", errorMessage));
                 return false;
             }
 
@@ -3970,6 +3984,7 @@ namespace Mirle.Agv.Controller
                 {
                     errorMessage = "wait PauseAlready timeout!";
                     SendAlarmCode(111001);
+                    WriteLog("MoveControl", "7", device, "", String.Concat("Override 失敗,", errorMessage));
                     return false;
                 }
 
@@ -3979,6 +3994,7 @@ namespace Mirle.Agv.Controller
             if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
             {
                 errorMessage = "PauseAlready, 但是車子狀態變為" + MoveState.ToString() + "!";
+                WriteLog("MoveControl", "7", device, "", String.Concat("Override 失敗,", errorMessage));
                 return false;
             }
 
@@ -3990,6 +4006,7 @@ namespace Mirle.Agv.Controller
                 {
                     errorMessage = "wait Cancel timeout!";
                     SendAlarmCode(111001);
+                    WriteLog("MoveControl", "7", device, "", String.Concat("Override 失敗,", errorMessage));
                     return false;
                 }
 
@@ -4001,6 +4018,7 @@ namespace Mirle.Agv.Controller
             if (!TransferMove(moveCmd, ref errorMessage))
             {
                 ControlData.MoveStartNoWaitTime = false;
+                WriteLog("MoveControl", "7", device, "", String.Concat("Override 失敗,", errorMessage));
                 return false;
             }
 
