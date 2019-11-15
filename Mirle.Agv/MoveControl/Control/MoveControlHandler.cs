@@ -4264,7 +4264,7 @@ namespace Mirle.Agv.Controller
         public bool GetPositionActions(ref MoveCmdInfo moveCommand, ref string errorMessage)
         {
             UpdateWheelAngle();
-            return CreateMoveCommandList.GetMoveCommandAddressAction(ref moveCommand, location.Real, 0, ref errorMessage, false);
+            return CreateMoveCommandList.GetMoveCommandAddressAction(ref moveCommand, location.Real, ControlData.WheelAngle, ref errorMessage, false);
         }
 
         public void GetMoveCommandListInfo(List<Command> cmdList, ref List<string> logMessage)

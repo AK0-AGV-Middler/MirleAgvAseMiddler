@@ -214,11 +214,11 @@
     <Compile Include="Plc\Model\PlcOperation.cs" />
     <Compile Include="Plc\Model\PlcRobot.cs" />
     <Compile Include="Plc\Model\PlcVehicle.cs" />
-    <Compile Include="Main\Model\TransferSteps\EmptyTransCmd.cs" />
-    <Compile Include="Main\Model\TransferSteps\LoadCmdInfo.cs" />
-    <Compile Include="Main\Model\TransferSteps\MoveCmdInfo.cs" />
-    <Compile Include="Main\Model\TransferSteps\TransCmd.cs" />
-    <Compile Include="Main\Model\TransferSteps\UnloadCmdInfo.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\EmptyTransCmd.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\LoadCmdInfo.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\MoveCmdInfo.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\TransCmd.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\UnloadCmdInfo.cs" />
     <Compile Include="Plc\Model\VehicleCorrectValue.cs" />
     <Compile Include="Plc\PlcDefine.cs" />
     <Compile Include="UcThreadPad.cs">
@@ -303,7 +303,7 @@
     <Compile Include="Main\Model\Map\VehiclePosition.cs" />
     <Compile Include="Main\Model\Vehicle.cs" />
     <Compile Include="Main\Control\MiddleAgent.cs" />
-    <Compile Include="Main\Model\TransferSteps\AgvcTransCmd.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\AgvcTransCmd.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Main\Model\Map\MapAddress.cs" />

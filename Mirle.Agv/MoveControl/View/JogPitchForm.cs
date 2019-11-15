@@ -31,6 +31,12 @@ namespace Mirle.Agv.View
                                                 EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
                                                 EnumAxis.GX, EnumAxis.GT};
         private bool formEnable = true;
+        public bool CanAuto { get; set; }
+        public string CantAutoResult { get; set; } = "";
+
+        private int retryTimes = 2;
+        private string elmoAllResetMessage = "";
+        private string temp;
 
         public JogPitchForm(MoveControlHandler moveControl)
         {
@@ -92,11 +98,119 @@ namespace Mirle.Agv.View
             button_JogPitchHide.Enabled = true;
         }
 
+        private void UpdateCanAuto()
+        {
+            int errorcode = 0;
+            bool canAuto = true;
+            string cantAutoResult = "";
+
+
+            label_AGVStateValue.Text = moveControl.MoveState.ToString();
+            label_AGVStateValue.ForeColor = (label_AGVStateValue.Text == EnumMoveState.Idle.ToString() ? Color.Green : Color.Red);
+            if (label_AGVStateValue.Text != EnumMoveState.Idle.ToString())
+            {
+                canAuto = false;
+
+
+                if (cantAutoResult == "")
+                {
+                    if (label_AGVStateValue.Text == EnumMoveState.Error.ToString())
+                        cantAutoResult = "AGV Error狀態!";
+                    else
+                        cantAutoResult = "流程移動中!";
+                }
+            }
+
+            if (moveControl.location.Real == null)
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "迷航中,沒讀取到Barcode!";
+
+                label_ReadIronValue.Text = "無";
+                label_ReadIronValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_ReadIronValue.Text = "有";
+                label_ReadIronValue.ForeColor = Color.Green;
+            }
+
+            if (Vehicle.Instance.VehicleLocation.LastAddress.Id == "" || Vehicle.Instance.VehicleLocation.LastSection.Id == "")
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "迷航中,認不出目前所在Address、Section!";
+
+                label_CheckAddressSectionValue.Text = "-----";
+                label_CheckAddressSectionValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_CheckAddressSectionValue.Text = Vehicle.Instance.VehicleLocation.LastAddress.Id;
+                label_CheckAddressSectionValue.ForeColor = Color.Green;
+            }
+
+            if (!moveControl.elmoDriver.CheckAxisNoError(ref errorcode))
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "有軸異常!";
+
+                label_AxisErrorValue.Text = "有";
+                label_AxisErrorValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_AxisErrorValue.Text = "無";
+                label_AxisErrorValue.ForeColor = Color.Green;
+            }
+
+            if (!moveControl.elmoDriver.ElmoAxisTypeAllServoOn(EnumAxisType.Turn))
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "請Enable所有軸!";
+
+                label_TurnServoOnValue.Text = "無";
+                label_TurnServoOnValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_TurnServoOnValue.Text = "有";
+                label_TurnServoOnValue.ForeColor = Color.Green;
+            }
+
+            if (!moveControl.elmoDriver.MoveAxisStop())
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "AGV移動中!";
+
+                label_MoveStopValue.Text = "Moving";
+                label_MoveStopValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_MoveStopValue.Text = "Stop";
+                label_MoveStopValue.ForeColor = Color.Green;
+            }
+
+            label_CanAutoValue.Text = (canAuto ? "可以" : "不能");
+            label_CanAutoValue.ForeColor = (canAuto ? Color.Green : Color.Red);
+
+            CanAuto = canAuto;
+            CantAutoResult = cantAutoResult;
+        }
+
         private void timerUpdate_Tick(object sender, EventArgs e)
         {
             if (moveControl == null)
                 return;
 
+            if (Vehicle.Instance.AutoState == EnumAutoState.Manual)
+                UpdateCanAuto();
+            
             #region Update Sr2000
             AGVPosition agvPositionL = null;
             AGVPosition agvPositionR = null;
@@ -999,9 +1113,72 @@ namespace Mirle.Agv.View
         }
         #endregion
 
+        private void ElmoResetAndCheckLinked()
+        {
+            int errorCode = 0;
+
+            for (int i = 0; i < retryTimes; i++)
+            {
+                if (!moveControl.elmoDriver.CheckAxisNoError(ref errorCode))
+                {
+                    moveControl.elmoDriver.ResetErrorAll();
+                    Thread.Sleep(500);
+                }
+
+                moveControl.elmoDriver.DisableAllAxis();
+                Thread.Sleep(500);
+                moveControl.elmoDriver.EnableAllAxis();
+                Thread.Sleep(500);
+                if (moveControl.elmoDriver.CheckAxisNoError(ref errorCode))
+                    break;
+
+                if (retryTimes == i)
+                {
+                    elmoAllResetMessage = "axis error 清除不掉!";
+                    return;
+                }
+            }
+
+            if (!moveControl.elmoDriver.ElmoAxisTypeAllServoOn(EnumAxisType.Move) || !moveControl.elmoDriver.ElmoAxisTypeAllServoOn(EnumAxisType.Turn))
+            {
+                elmoAllResetMessage = "ServoOn all Axis 失敗!";
+                return;
+            }
+
+            if (moveControl.elmoDriver.SetAllVirtualServoOnAndLinked())
+                elmoAllResetMessage = "Elmo Reset 成功!";
+            else
+                elmoAllResetMessage = "Elmo Reset 失敗!";
+        }
+
         private void button_JogpitchResetAll_Click(object sender, EventArgs e)
         {
+            jogPitchData.ElmoFunctionCompelete = false;
+            Task.Factory.StartNew(() =>
+            {
+                ElmoResetAndCheckLinked();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
+        }
 
+        private void ElmoFunctionFlagChange(bool compelete)
+        {
+            button_JogPitch_ElmoEnable.Enabled = compelete;
+            button_JogPitch_ElmoDisable.Enabled = compelete;
+            button_JogPitch_ElmoReset.Enabled = compelete;
+            button_JogpitchResetAll.Enabled = compelete;
+        }
+
+        private void timer_UpdateElmoFunction_Tick(object sender, EventArgs e)
+        {
+            if (elmoAllResetMessage != "")
+            {
+                temp = elmoAllResetMessage;
+                elmoAllResetMessage = "";
+                MessageBox.Show(temp);
+            }
+
+            ElmoFunctionFlagChange(jogPitchData.ElmoFunctionCompelete);
         }
     }
 }

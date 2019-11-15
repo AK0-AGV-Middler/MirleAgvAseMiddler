@@ -2304,6 +2304,93 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
+        private bool CheckFirstAddressPositionLetItInSection(MoveCmdInfo moveCmd, ref string errorMessage)
+        {
+            if (moveCmd == null)
+            {
+                errorMessage = "moveCmd == null..";
+                return false;
+            }
+
+            if (moveCmd.MovingSections == null)
+            {
+                errorMessage = "moveCmd.MovingSections == null..";
+                return false;
+            }
+
+            if (moveCmd.MovingSections.Count == 0)
+            {
+                errorMessage = "moveCmd.MovingSections.Count == 0..";
+                return false;
+            }
+
+            if (moveCmd.AddressPositions == null)
+            {
+                errorMessage = "moveCmd.AddressPositions == null..";
+                return false;
+            }
+
+            if (moveCmd.AddressPositions.Count == 0)
+            {
+                errorMessage = "moveCmd.AddressPositions.Count == 0..";
+                return false;
+            }
+
+            if (moveCmd.MovingSections[0].Type == EnumSectionType.R2000)
+                return true;
+
+            if (moveCmd.MovingSections[0].HeadAddress.Position.X == moveCmd.MovingSections[0].TailAddress.Position.X)
+            {
+                if (moveCmd.MovingSections[0].HeadAddress.Position.X == moveCmd.AddressPositions[0].X)
+                    return true;
+
+                if (moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Enable &&
+                    Math.Abs(moveCmd.MovingSections[0].HeadAddress.Position.X - moveCmd.AddressPositions[0].X) >
+                    moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
+                {
+                    errorMessage = "偏差過大..";
+                    return false;
+                }
+                else
+                {
+                    WriteLog("MoveControl", "7", device, "", String.Concat("幫Middler壓回Section.. form : ( ",
+                        moveCmd.AddressPositions[0].X.ToString("0.0"), ", ", moveCmd.AddressPositions[0].Y.ToString("0.0"), " to : ( ",
+                        moveCmd.MovingSections[0].HeadAddress.Position.X.ToString("0.0"), ", ", moveCmd.AddressPositions[0].Y.ToString("0.0"), " ).."));
+
+                    moveCmd.AddressPositions[0].X = moveCmd.MovingSections[0].HeadAddress.Position.X;
+
+                    return true;
+                }
+            }
+            else if (moveCmd.MovingSections[0].HeadAddress.Position.Y == moveCmd.MovingSections[0].TailAddress.Position.Y)
+            {
+                if (moveCmd.MovingSections[0].HeadAddress.Position.Y == moveCmd.AddressPositions[0].Y)
+                    return true;
+
+                if (moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Enable &&
+                    Math.Abs(moveCmd.MovingSections[0].HeadAddress.Position.Y - moveCmd.AddressPositions[0].Y) >
+                    moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
+                {
+                    errorMessage = "偏差過大..";
+                    return false;
+                }
+                else
+                {
+                    WriteLog("MoveControl", "7", device, "", String.Concat("幫Middler壓回Section.. form : ( ",
+                        moveCmd.AddressPositions[0].X.ToString("0.0"), ", ", moveCmd.AddressPositions[0].Y.ToString("0.0"), " to : ( ",
+                        moveCmd.AddressPositions[0].X.ToString("0.0"), ", ", moveCmd.MovingSections[0].HeadAddress.Position.Y.ToString("0.0"), " ).."));
+
+                    moveCmd.AddressPositions[0].Y = moveCmd.MovingSections[0].HeadAddress.Position.Y;
+
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public MoveCommandData CreateMoveControlListSectionListReserveList(MoveCmdInfo moveCmd,
                                   AGVPosition nowAGV, int wheelAngle, ref string errorMessage, bool middlerSend = true)
         {
@@ -2312,9 +2399,14 @@ namespace Mirle.Agv.Controller
                 System.Diagnostics.Stopwatch createListTimer = new System.Diagnostics.Stopwatch();
                 createListTimer.Restart();
 
-
                 if (middlerSend)
                 {
+                    //if (!CheckFirstAddressPositionLetItInSection(moveCmd, ref errorMessage))
+                    //{
+                    //    WriteLog("MoveControl", "3", device, "", "CheckFirstAddressPositionLetItInSection return false, errorMessage : " + errorMessage + " !");
+                    //    return null;
+                    //}
+
                     if (!GetMoveCommandAddressAction(ref moveCmd, nowAGV, wheelAngle, ref errorMessage))
                     {
                         WriteAGVMCommand(moveCmd, false);
@@ -2324,7 +2416,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                     WriteLog("MoveControl", "7", device, "", "debug form send, 因此略過node action計算!");
-                
+
                 if (moveCmd.SectionSpeedLimits == null || moveCmd.AddressActions == null || moveCmd.AddressPositions == null ||
                     moveCmd.SectionSpeedLimits.Count == 0 || (moveCmd.SectionSpeedLimits.Count + 1) != moveCmd.AddressPositions.Count ||
                     moveCmd.AddressActions.Count != moveCmd.AddressPositions.Count)

@@ -490,7 +490,10 @@ namespace Mirle.Agv.Controller
                 }
                 finally
                 {
-                    SpinWait.SpinUntil(() => ReserveOkAskNext, middlerConfig.AskReserveIntervalMs);
+                    if (!askReserveShutdownEvent.WaitOne(0))
+                    {
+                        SpinWait.SpinUntil(() => ReserveOkAskNext, middlerConfig.AskReserveIntervalMs);
+                    }
                     ReserveOkAskNext = false;
                     sw.Stop();
                     total += sw.ElapsedMilliseconds;
@@ -669,7 +672,7 @@ namespace Mirle.Agv.Controller
         }
         public void OnGetReserveOk(string sectionId)
         {
-            if (string.IsNullOrEmpty(sectionId))
+            if (sectionId == "XXX")
             {
                 sectionId = askingReserveSection.Id;
             }
@@ -1439,7 +1442,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_194_ALARM_REPORT iD_194_ALARM_REPORT = new ID_194_ALARM_REPORT();
-                iD_194_ALARM_REPORT.ErrCode = alarmCode;            
+                iD_194_ALARM_REPORT.ErrCode = alarmCode;
                 iD_194_ALARM_REPORT.ErrStatus = status;
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -2077,7 +2080,6 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-
         private CompleteStatus GetCancelCompleteStatus(CMDCancelType replyActiveType, CompleteStatus completeStatus)
         {
             switch (replyActiveType)
@@ -2098,7 +2100,6 @@ namespace Mirle.Agv.Controller
 
             return completeStatus;
         }
-
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
             VehicleLocation vehLocation = theVehicle.VehicleLocation;

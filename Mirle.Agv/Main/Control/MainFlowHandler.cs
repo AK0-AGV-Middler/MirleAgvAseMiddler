@@ -611,7 +611,7 @@ namespace Mirle.Agv.Controller
                     VehicleLocation vehicleLocation = theVehicle.VehicleLocation;
                     var position = theVehicle.VehicleLocation.RealPosition;
                     if (vehicleLocation.RealPosition == null) continue;
-                    if (IsVehlocStayInSameAddress(vehicleLocation)) continue;
+                    //if (IsVehlocStayInSameAddress(vehicleLocation)) continue;
 
                     if (theVehicle.AutoState == EnumAutoState.Auto)
                     {
@@ -1883,7 +1883,7 @@ namespace Mirle.Agv.Controller
                     if (isAvoidCmd)
                     {
                         middleAgent.AvoidFail();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動異常終止");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動異常終止");                        
                         //alarmHandler.SetAlarm(000006);
                         return;
                     }
@@ -3061,7 +3061,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 middleAgent.PauseAskReserve();
-                PauseVisitTransferSteps();
+                //PauseVisitTransferSteps();
                 if (IsMoveStep())
                 {
                     if (moveControlHandler.VehclePause())
@@ -3115,8 +3115,9 @@ namespace Mirle.Agv.Controller
                         OnMessageShowEvent(this, msg);
                         middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
                         moveControlHandler.VehcleContinue();
-                        ResumeVisitTransferSteps();
+                        //ResumeVisitTransferSteps();
                         middleAgent.ResumeAskReserve();
+                        IsMoveEnd = false;
                         if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
                         {
                             agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
@@ -3136,7 +3137,7 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent(this, msg);
                     middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
                     middleAgent.ResumeAskReserve();
-                    ResumeVisitTransferSteps();
+                    //ResumeVisitTransferSteps();
                     if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
                     {
                         agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;

@@ -94,12 +94,29 @@
             this.button_JogPitchHide = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
+            this.gB_JogPitch_AutoInfo = new System.Windows.Forms.GroupBox();
+            this.label_MoveStopValue = new System.Windows.Forms.Label();
+            this.label_MoveStopName = new System.Windows.Forms.Label();
+            this.label_TurnServoOnValue = new System.Windows.Forms.Label();
+            this.label_AxisErrorValue = new System.Windows.Forms.Label();
+            this.label_CheckAddressSectionValue = new System.Windows.Forms.Label();
+            this.label_ReadIronValue = new System.Windows.Forms.Label();
+            this.label_CanAutoValue = new System.Windows.Forms.Label();
+            this.label_AxisErrorName = new System.Windows.Forms.Label();
+            this.label_CanAutoName = new System.Windows.Forms.Label();
+            this.label_CheckAddressSectionName = new System.Windows.Forms.Label();
+            this.label_TurnServoOnName = new System.Windows.Forms.Label();
+            this.label_ReadIronName = new System.Windows.Forms.Label();
+            this.label_AGVStateValue = new System.Windows.Forms.Label();
+            this.label_AGVStateName = new System.Windows.Forms.Label();
+            this.timer_UpdateElmoFunction = new System.Windows.Forms.Timer(this.components);
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.gB_JogPitch_ElmoFunction.SuspendLayout();
             this.gB_JogPitch_JogPitch.SuspendLayout();
+            this.gB_JogPitch_AutoInfo.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox_SingleAxis
@@ -118,6 +135,7 @@
             this.groupBox_SingleAxis.TabIndex = 108;
             this.groupBox_SingleAxis.TabStop = false;
             this.groupBox_SingleAxis.Text = "單軸命令";
+            this.groupBox_SingleAxis.Visible = false;
             // 
             // cB_JogPitch_SelectAxis
             // 
@@ -246,7 +264,7 @@
             this.gB_JogPitch_Sr2000.Controls.Add(this.lable_JogPitch_MapY);
             this.gB_JogPitch_Sr2000.Controls.Add(this.label_JogPitch_Theta);
             this.gB_JogPitch_Sr2000.Controls.Add(this.lable_JogPitch_MapX);
-            this.gB_JogPitch_Sr2000.Location = new System.Drawing.Point(8, 118);
+            this.gB_JogPitch_Sr2000.Location = new System.Drawing.Point(8, 298);
             this.gB_JogPitch_Sr2000.Name = "gB_JogPitch_Sr2000";
             this.gB_JogPitch_Sr2000.Size = new System.Drawing.Size(265, 188);
             this.gB_JogPitch_Sr2000.TabIndex = 110;
@@ -759,7 +777,7 @@
             this.button_JogpitchResetAll.Name = "button_JogpitchResetAll";
             this.button_JogpitchResetAll.Size = new System.Drawing.Size(90, 68);
             this.button_JogpitchResetAll.TabIndex = 131;
-            this.button_JogpitchResetAll.Text = "一鍵\r\n賦歸";
+            this.button_JogpitchResetAll.Text = "Elmo\r\nReset";
             this.button_JogpitchResetAll.UseVisualStyleBackColor = true;
             this.button_JogpitchResetAll.Click += new System.EventHandler(this.button_JogpitchResetAll_Click);
             // 
@@ -806,6 +824,182 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // gB_JogPitch_AutoInfo
+            // 
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_AGVStateValue);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_AGVStateName);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_MoveStopValue);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_MoveStopName);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_TurnServoOnValue);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_AxisErrorValue);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_CheckAddressSectionValue);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_ReadIronValue);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_CanAutoValue);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_AxisErrorName);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_CanAutoName);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_CheckAddressSectionName);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_TurnServoOnName);
+            this.gB_JogPitch_AutoInfo.Controls.Add(this.label_ReadIronName);
+            this.gB_JogPitch_AutoInfo.Location = new System.Drawing.Point(8, 123);
+            this.gB_JogPitch_AutoInfo.Name = "gB_JogPitch_AutoInfo";
+            this.gB_JogPitch_AutoInfo.Size = new System.Drawing.Size(265, 169);
+            this.gB_JogPitch_AutoInfo.TabIndex = 137;
+            this.gB_JogPitch_AutoInfo.TabStop = false;
+            this.gB_JogPitch_AutoInfo.Text = "AutoInfo";
+            this.gB_JogPitch_AutoInfo.Visible = false;
+            // 
+            // label_MoveStopValue
+            // 
+            this.label_MoveStopValue.AutoSize = true;
+            this.label_MoveStopValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_MoveStopValue.ForeColor = System.Drawing.Color.Green;
+            this.label_MoveStopValue.Location = new System.Drawing.Point(176, 146);
+            this.label_MoveStopValue.Name = "label_MoveStopValue";
+            this.label_MoveStopValue.Size = new System.Drawing.Size(36, 16);
+            this.label_MoveStopValue.TabIndex = 148;
+            this.label_MoveStopValue.Text = "Stop";
+            // 
+            // label_MoveStopName
+            // 
+            this.label_MoveStopName.AutoSize = true;
+            this.label_MoveStopName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_MoveStopName.Location = new System.Drawing.Point(15, 146);
+            this.label_MoveStopName.Name = "label_MoveStopName";
+            this.label_MoveStopName.Size = new System.Drawing.Size(80, 16);
+            this.label_MoveStopName.TabIndex = 147;
+            this.label_MoveStopName.Text = "移動停止 :";
+            // 
+            // label_TurnServoOnValue
+            // 
+            this.label_TurnServoOnValue.AutoSize = true;
+            this.label_TurnServoOnValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_TurnServoOnValue.ForeColor = System.Drawing.Color.Green;
+            this.label_TurnServoOnValue.Location = new System.Drawing.Point(176, 126);
+            this.label_TurnServoOnValue.Name = "label_TurnServoOnValue";
+            this.label_TurnServoOnValue.Size = new System.Drawing.Size(51, 16);
+            this.label_TurnServoOnValue.TabIndex = 146;
+            this.label_TurnServoOnValue.Text = "Enable";
+            // 
+            // label_AxisErrorValue
+            // 
+            this.label_AxisErrorValue.AutoSize = true;
+            this.label_AxisErrorValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_AxisErrorValue.ForeColor = System.Drawing.Color.Green;
+            this.label_AxisErrorValue.Location = new System.Drawing.Point(176, 105);
+            this.label_AxisErrorValue.Name = "label_AxisErrorValue";
+            this.label_AxisErrorValue.Size = new System.Drawing.Size(59, 16);
+            this.label_AxisErrorValue.TabIndex = 145;
+            this.label_AxisErrorValue.Text = "NoError";
+            // 
+            // label_CheckAddressSectionValue
+            // 
+            this.label_CheckAddressSectionValue.AutoSize = true;
+            this.label_CheckAddressSectionValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_CheckAddressSectionValue.ForeColor = System.Drawing.Color.Green;
+            this.label_CheckAddressSectionValue.Location = new System.Drawing.Point(176, 82);
+            this.label_CheckAddressSectionValue.Name = "label_CheckAddressSectionValue";
+            this.label_CheckAddressSectionValue.Size = new System.Drawing.Size(48, 16);
+            this.label_CheckAddressSectionValue.TabIndex = 144;
+            this.label_CheckAddressSectionValue.Text = "99001";
+            // 
+            // label_ReadIronValue
+            // 
+            this.label_ReadIronValue.AutoSize = true;
+            this.label_ReadIronValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_ReadIronValue.ForeColor = System.Drawing.Color.Green;
+            this.label_ReadIronValue.Location = new System.Drawing.Point(176, 60);
+            this.label_ReadIronValue.Name = "label_ReadIronValue";
+            this.label_ReadIronValue.Size = new System.Drawing.Size(24, 16);
+            this.label_ReadIronValue.TabIndex = 143;
+            this.label_ReadIronValue.Text = "有";
+            // 
+            // label_CanAutoValue
+            // 
+            this.label_CanAutoValue.AutoSize = true;
+            this.label_CanAutoValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_CanAutoValue.ForeColor = System.Drawing.Color.Green;
+            this.label_CanAutoValue.Location = new System.Drawing.Point(177, 18);
+            this.label_CanAutoValue.Name = "label_CanAutoValue";
+            this.label_CanAutoValue.Size = new System.Drawing.Size(40, 16);
+            this.label_CanAutoValue.TabIndex = 142;
+            this.label_CanAutoValue.Text = "可以";
+            // 
+            // label_AxisErrorName
+            // 
+            this.label_AxisErrorName.AutoSize = true;
+            this.label_AxisErrorName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_AxisErrorName.Location = new System.Drawing.Point(15, 105);
+            this.label_AxisErrorName.Name = "label_AxisErrorName";
+            this.label_AxisErrorName.Size = new System.Drawing.Size(64, 16);
+            this.label_AxisErrorName.TabIndex = 141;
+            this.label_AxisErrorName.Text = "軸異常 :";
+            // 
+            // label_CanAutoName
+            // 
+            this.label_CanAutoName.AutoSize = true;
+            this.label_CanAutoName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_CanAutoName.Location = new System.Drawing.Point(16, 18);
+            this.label_CanAutoName.Name = "label_CanAutoName";
+            this.label_CanAutoName.Size = new System.Drawing.Size(79, 16);
+            this.label_CanAutoName.TabIndex = 137;
+            this.label_CanAutoName.Text = "能切Auto :";
+            // 
+            // label_CheckAddressSectionName
+            // 
+            this.label_CheckAddressSectionName.AutoSize = true;
+            this.label_CheckAddressSectionName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_CheckAddressSectionName.Location = new System.Drawing.Point(15, 82);
+            this.label_CheckAddressSectionName.Name = "label_CheckAddressSectionName";
+            this.label_CheckAddressSectionName.Size = new System.Drawing.Size(112, 16);
+            this.label_CheckAddressSectionName.TabIndex = 140;
+            this.label_CheckAddressSectionName.Text = "目前所在位置 :";
+            // 
+            // label_TurnServoOnName
+            // 
+            this.label_TurnServoOnName.AutoSize = true;
+            this.label_TurnServoOnName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_TurnServoOnName.Location = new System.Drawing.Point(15, 126);
+            this.label_TurnServoOnName.Name = "label_TurnServoOnName";
+            this.label_TurnServoOnName.Size = new System.Drawing.Size(103, 16);
+            this.label_TurnServoOnName.TabIndex = 138;
+            this.label_TurnServoOnName.Text = "轉向ServoOn :";
+            // 
+            // label_ReadIronName
+            // 
+            this.label_ReadIronName.AutoSize = true;
+            this.label_ReadIronName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_ReadIronName.Location = new System.Drawing.Point(15, 60);
+            this.label_ReadIronName.Name = "label_ReadIronName";
+            this.label_ReadIronName.Size = new System.Drawing.Size(132, 16);
+            this.label_ReadIronName.TabIndex = 139;
+            this.label_ReadIronName.Text = "讀取鋼尺Barcode :";
+            // 
+            // label_AGVStateValue
+            // 
+            this.label_AGVStateValue.AutoSize = true;
+            this.label_AGVStateValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_AGVStateValue.ForeColor = System.Drawing.Color.Green;
+            this.label_AGVStateValue.Location = new System.Drawing.Point(176, 40);
+            this.label_AGVStateValue.Name = "label_AGVStateValue";
+            this.label_AGVStateValue.Size = new System.Drawing.Size(32, 16);
+            this.label_AGVStateValue.TabIndex = 150;
+            this.label_AGVStateValue.Text = "Idle";
+            // 
+            // label_AGVStateName
+            // 
+            this.label_AGVStateName.AutoSize = true;
+            this.label_AGVStateName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_AGVStateName.Location = new System.Drawing.Point(15, 40);
+            this.label_AGVStateName.Name = "label_AGVStateName";
+            this.label_AGVStateName.Size = new System.Drawing.Size(79, 16);
+            this.label_AGVStateName.TabIndex = 149;
+            this.label_AGVStateName.Text = "AGVState :";
+            // 
+            // timer_UpdateElmoFunction
+            // 
+            this.timer_UpdateElmoFunction.Enabled = true;
+            this.timer_UpdateElmoFunction.Tick += new System.EventHandler(this.timer_UpdateElmoFunction_Tick);
+            // 
             // JogPitchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -813,6 +1007,7 @@
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             this.ClientSize = new System.Drawing.Size(724, 494);
             this.ControlBox = false;
+            this.Controls.Add(this.gB_JogPitch_AutoInfo);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label_LockResult);
             this.Controls.Add(this.button_JogPitchHide);
@@ -839,6 +1034,8 @@
             this.gB_JogPitch_ElmoFunction.ResumeLayout(false);
             this.gB_JogPitch_JogPitch.ResumeLayout(false);
             this.gB_JogPitch_JogPitch.PerformLayout();
+            this.gB_JogPitch_AutoInfo.ResumeLayout(false);
+            this.gB_JogPitch_AutoInfo.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -911,5 +1108,21 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button_Skip;
         private System.Windows.Forms.Label label_SR2000Connected;
+        private System.Windows.Forms.GroupBox gB_JogPitch_AutoInfo;
+        private System.Windows.Forms.Label label_TurnServoOnValue;
+        private System.Windows.Forms.Label label_AxisErrorValue;
+        private System.Windows.Forms.Label label_CheckAddressSectionValue;
+        private System.Windows.Forms.Label label_ReadIronValue;
+        private System.Windows.Forms.Label label_CanAutoValue;
+        private System.Windows.Forms.Label label_AxisErrorName;
+        private System.Windows.Forms.Label label_CanAutoName;
+        private System.Windows.Forms.Label label_CheckAddressSectionName;
+        private System.Windows.Forms.Label label_TurnServoOnName;
+        private System.Windows.Forms.Label label_ReadIronName;
+        private System.Windows.Forms.Label label_MoveStopValue;
+        private System.Windows.Forms.Label label_MoveStopName;
+        private System.Windows.Forms.Label label_AGVStateValue;
+        private System.Windows.Forms.Label label_AGVStateName;
+        private System.Windows.Forms.Timer timer_UpdateElmoFunction;
     }
 }

@@ -1377,7 +1377,7 @@ namespace Mirle.Agv.View
         #region Thd Ask Reserve
         private void btnAutoApplyReserveOnce_Click(object sender, EventArgs e)
         {
-            middleAgent.OnGetReserveOk("");
+            middleAgent.OnGetReserveOk("XXX");
             RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve Once by MainForm");
         }
 
