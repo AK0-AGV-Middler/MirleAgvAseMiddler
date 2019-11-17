@@ -292,7 +292,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        
+
 
         private void VehicleLocationInitial()
         {
@@ -1883,7 +1883,7 @@ namespace Mirle.Agv.Controller
                     if (isAvoidCmd)
                     {
                         middleAgent.AvoidFail();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動異常終止");                        
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動異常終止");
                         //alarmHandler.SetAlarm(000006);
                         return;
                     }
@@ -1968,25 +1968,10 @@ namespace Mirle.Agv.Controller
 
                 UpdateVehiclePositionAfterArrival(moveCmd);
 
-                Task.Run(() => StartCharge(moveCmd.EndAddress));
-                if (IsNextTransferStepLoad() && mainFlowConfig.LoadingChargeIntervalMs > 0)
-                {
-                    Task.Run(() =>
-                    {
-                        Stopwatch sw = new Stopwatch();
-                        sw.Start();
-                        while (!theVehicle.ThePlcVehicle.Loading)
-                        {
-                            if (sw.ElapsedMilliseconds>=mainFlowConfig.StopChargeWaitingTimeoutMs)
-                            {
-                                break;
-                            }
-                            SpinWait.SpinUntil(() => false, 50);
-                        }
-                        SpinWait.SpinUntil(() => false, mainFlowConfig.LoadingChargeIntervalMs);
-                        StopCharge();
-                    });
-                }
+                ArrivalStartCharge(moveCmd.EndAddress);
+
+                ArrivalStopCharge(mainFlowConfig.LoadingChargeIntervalMs);
+                
                 //StartCharge(moveCmd.EndAddress);
 
                 if (isAvoidCmd)
@@ -2015,6 +2000,61 @@ namespace Mirle.Agv.Controller
                 }
 
                 #endregion
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void ArrivalStopCharge(int loadingChargeIntervalMs)
+        {
+            try
+            {
+                if (IsNextTransferStepLoad() && loadingChargeIntervalMs > 0)
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            Stopwatch sw = new Stopwatch();
+                            sw.Start();
+                            while (!theVehicle.ThePlcVehicle.Loading)
+                            {
+                                if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
+                                {
+                                    break;
+                                }
+                                SpinWait.SpinUntil(() => false, 50);
+                            }
+                            SpinWait.SpinUntil(() => false, loadingChargeIntervalMs);
+                            StopCharge();
+                        }
+                        catch (Exception ex)
+                        {
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void ArrivalStartCharge(MapAddress endAddress)
+        {
+            try
+            {
+                Task.Run(() =>
+                {
+                    try { StartCharge(endAddress); }
+                    catch (Exception ex)
+                    {
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
+                });
             }
             catch (Exception ex)
             {
