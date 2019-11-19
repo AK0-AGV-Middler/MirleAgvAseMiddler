@@ -1584,28 +1584,6 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void btnSemiAutoManual_Click(object sender, EventArgs e)
-        {
-            switch (Vehicle.Instance.AutoState)
-            {
-                case EnumAutoState.Manual:
-                    {
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        //mainFlowHandler.StartWatchLowPower();
-                    }
-                    break;
-                case EnumAutoState.Auto:
-                default:
-                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
-                    mainFlowHandler.StopAndClear();
-                    //mainFlowHandler.StopWatchLowPower();
-                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
-                    Vehicle.Instance.AutoState = EnumAutoState.Manual;
-                    break;
-            }
-        }
-
         private void ucAddressImageItem_DoubleClick(object sender, MouseEventArgs e)
         {
             Control control = ((Control)sender).Parent;
@@ -1956,7 +1934,6 @@ namespace Mirle.Agv.View
             }
             catch { }
         }
-
 
         public void SetMovingSectionAndEndPosition(List<MapSection> movingSection, MapAddress movingEndAddress)
         {

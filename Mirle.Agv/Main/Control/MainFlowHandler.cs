@@ -292,8 +292,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         private void VehicleLocationInitial()
         {
             if (IsRealPositionEmpty())
@@ -438,12 +436,9 @@ namespace Mirle.Agv.Controller
             IsMoveEnd = true;
             TransferStepsIndex = 0;
             GoNextTransferStep = true;
-            //middleAgent.Commanding();
 
             var msg = $"MainFlow : 搬送流程 前處理, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
         private void AfterVisitTransferSteps(long total)
         {
@@ -455,7 +450,6 @@ namespace Mirle.Agv.Controller
 
             middleAgent.TransferComplete(agvcTransCmd);
 
-            //IsVehicleAbortByAlarm = false;
             VisitTransferStepsStatus = EnumThreadStatus.None;
             lastAgvcTransCmd = agvcTransCmd;
             agvcTransCmd = new AgvcTransCmd();
@@ -468,8 +462,6 @@ namespace Mirle.Agv.Controller
             IsMoveEnd = true;
             var msg = $"MainFlow : 搬送流程 後處理, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
         #endregion
 
@@ -2375,9 +2367,9 @@ namespace Mirle.Agv.Controller
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
             middleAgent.StopAskReserve();
-            middleAgent.ReportSectionPass(EventType.AdrPass);
-            OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
             middleAgent.NeedReserveSections = moveCmd.MovingSections;
+            middleAgent.ReportSectionPass(EventType.AdrPass);
+            OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);           
             middleAgent.StartAskReserve();
         }
 
@@ -2857,8 +2849,6 @@ namespace Mirle.Agv.Controller
             middleAgent.StopAskReserve();
             StopVehicle();
             StopVisitTransferSteps();
-            middleAgent.ClearAskReserve();
-            middleAgent.NeedReserveSections = new List<MapSection>();
             theVehicle.VehicleLocation.WheelAngle = moveControlHandler.ControlData.WheelAngle;
             IsCancelByCstIdRead = false;
             middleAgent.IsCancelByCstIdRead = false;
@@ -3220,7 +3210,6 @@ namespace Mirle.Agv.Controller
 
                         moveControlHandler.VehcleCancel();
                         middleAgent.StopAskReserve();
-                        middleAgent.ClearAskReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
@@ -3242,7 +3231,6 @@ namespace Mirle.Agv.Controller
                         middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
                         middleAgent.StopAskReserve();
-                        middleAgent.ClearAskReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
@@ -3290,19 +3278,13 @@ namespace Mirle.Agv.Controller
             return (int)theVehicle.VehicleLocation.VehicleAngle; //車頭方向角度(0,90,180,-90)  
         }
 
-        public void StopByAlarmSet()
-        {
-            middleAgent.StopAskReserve();
-            middleAgent.ClearAskReserve();
-            StopVisitTransferSteps();
-        }
-
         private void PlcAgent_OnForkCommandInterlockErrorEvent(object sender, PlcForkCommand e)
         {
             var msg = $"MainFlow : Fork Interlock Error AbortCmd";
             OnMessageShowEvent?.Invoke(this, msg);
             agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
             StopAndClear();
+            alarmHandler.ResetAllAlarms();
         }
 
         public void LoadMainFlowConfig()

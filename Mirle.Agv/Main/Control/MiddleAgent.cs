@@ -500,12 +500,7 @@ namespace Mirle.Agv.Controller
                 }
             }
             AfterAskReserve(total);
-        }
-        public void RestartAskReserve()
-        {
-            StopAskReserve();
-            StartAskReserve();
-        }
+        }        
         public void StartAskReserve()
         {
             askReservePauseEvent.Set();
@@ -555,8 +550,6 @@ namespace Mirle.Agv.Controller
 
             var msg = $"Middler : 停止詢問通行權, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //   , msg));
         }
         private void PreAskReserve()
         {
@@ -614,20 +607,20 @@ namespace Mirle.Agv.Controller
         public void ClearNeedReserveSections()
         {
             queNeedReserveSections = new ConcurrentQueue<MapSection>();
-            var msg = $"Middler : 清除未取得通行權路徑清單, 共[{queNeedReserveSections.Count}]筆";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            //var msg = $"Middler : 清除未取得通行權路徑清單, 共[{queNeedReserveSections.Count}]筆";
+            //OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
         public void ClearAskingReserveSection()
         {
             askingReserveSection = new MapSection();
-            var msg = $"Middler : 清除正在詢問通行權路徑[{askingReserveSection.Id}]。";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            //var msg = $"Middler : 清除正在詢問通行權路徑[{askingReserveSection.Id}]。";
+            //OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
         public void ClearGotReserveOkSections()
         {
             queReserveOkSections = new ConcurrentQueue<MapSection>();
-            var msg = $"Middler : 清除已取得通行權路徑清單, 共[{queReserveOkSections.Count}]筆";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            //var msg = $"Middler : 清除已取得通行權路徑清單, 共[{queReserveOkSections.Count}]筆";
+            //OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
         public MapSection GetAskingReserveSection()
         {
@@ -718,9 +711,13 @@ namespace Mirle.Agv.Controller
         }
         public void ClearAskReserve()
         {
+            NeedReserveSections = new List<MapSection>();
             ClearAskingReserveSection();
             ClearGotReserveOkSections();
             ClearNeedReserveSections();
+
+            var msg = $"Middler : 清除已取得與未取得通行權。";
+            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
         #endregion
 
