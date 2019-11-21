@@ -99,7 +99,21 @@ namespace Mirle.Agv.Model.TransferSteps
                 {
                     StartAddress = new MapAddress();
                     StartAddress.Id = "StartAddress";
-                    StartAddress.Position = vehicleLocation.RealPosition;
+                    switch (vehicleLocation.LastSection.Type)
+                    {                        
+                        case EnumSectionType.Horizontal:
+                            StartAddress.Position = new MapPosition(vehicleLocation.RealPosition.X, vehicleLocation.LastAddress.Position.Y);
+                            break;
+                        case EnumSectionType.Vertical:
+                            StartAddress.Position = new MapPosition(vehicleLocation.LastAddress.Position.X, vehicleLocation.RealPosition.Y);
+                            break;
+                        case EnumSectionType.R2000:                         
+                        case EnumSectionType.None:                           
+                        default:
+                            StartAddress.Position = vehicleLocation.RealPosition;
+                            break;
+                    }
+                    
                     StartAddress.AddressOffset = new MapAddressOffset();
                 }
             }

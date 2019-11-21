@@ -821,8 +821,8 @@ namespace Mirle.Agv.View
                 SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
                 moveCommandDebugMode.MainShowRunSectionList = false;
             }
-
-            ucSoc.TagValue = Vehicle.Instance.ThePlcVehicle.Batterys.Percentage.ToString("F2");
+            var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
+            ucSoc.TagValue = battery.Percentage.ToString("F1")+$"/"+ battery.MeterVoltage.ToString("F2");
             if (middleAgent.GetAskingReserveSection().Id != LastAskingReserveSectionId)
             {
                 LastAskingReserveSectionId = middleAgent.GetAskingReserveSection().Id;
@@ -1163,14 +1163,30 @@ namespace Mirle.Agv.View
                 {
                     case EnumAutoState.Manual:
                         btnAutoManual.BackColor = Color.Pink;
+                        txtCanAuto.Visible = true;
+                        txtCannotAutoReason.Visible = true;
+                        if (jogPitchForm.CanAuto)
+                        {
+                            txtCanAuto.BackColor = Color.LightGreen;
+                            txtCanAuto.Text = "可以 Auto";
+                        }
+                        else
+                        {
+                            txtCanAuto.BackColor = Color.Pink;
+                            txtCanAuto.Text = "不行 Auto";
+                        }
                         break;
                     case EnumAutoState.Auto:
                     default:
                         btnAutoManual.BackColor = Color.LightGreen;
+                        txtCanAuto.Visible = false;
+                        txtCannotAutoReason.Visible = false;
                         break;
                 }
 
                 btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
+
+                txtCannotAutoReason.Text = jogPitchForm.CantAutoResult;
             }
             catch (Exception ex)
             {

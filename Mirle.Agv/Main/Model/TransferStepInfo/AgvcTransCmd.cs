@@ -224,7 +224,6 @@ namespace Mirle.Agv.Model.TransferSteps
         {
             try
             {
-                CommandType = EnumAgvcTransCommandType.Move;
                 SetToLoadSections(transRequest.GuideSectionsStartToLoad);
                 SetToLoadAddresses(transRequest.GuideAddressesStartToLoad);
                 LoadAddressId = transRequest.LoadAdr;
