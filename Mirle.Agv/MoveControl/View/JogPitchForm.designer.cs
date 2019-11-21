@@ -95,6 +95,8 @@
             this.label_LockResult = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.gB_JogPitch_AutoInfo = new System.Windows.Forms.GroupBox();
+            this.label_AGVStateValue = new System.Windows.Forms.Label();
+            this.label_AGVStateName = new System.Windows.Forms.Label();
             this.label_MoveStopValue = new System.Windows.Forms.Label();
             this.label_MoveStopName = new System.Windows.Forms.Label();
             this.label_TurnServoOnValue = new System.Windows.Forms.Label();
@@ -107,8 +109,6 @@
             this.label_CheckAddressSectionName = new System.Windows.Forms.Label();
             this.label_TurnServoOnName = new System.Windows.Forms.Label();
             this.label_ReadIronName = new System.Windows.Forms.Label();
-            this.label_AGVStateValue = new System.Windows.Forms.Label();
-            this.label_AGVStateName = new System.Windows.Forms.Label();
             this.timer_UpdateElmoFunction = new System.Windows.Forms.Timer(this.components);
             this.groupBox_SingleAxis.SuspendLayout();
             this.gB_JogPitch_Sr2000.SuspendLayout();
@@ -846,7 +846,27 @@
             this.gB_JogPitch_AutoInfo.TabIndex = 137;
             this.gB_JogPitch_AutoInfo.TabStop = false;
             this.gB_JogPitch_AutoInfo.Text = "AutoInfo";
-            this.gB_JogPitch_AutoInfo.Visible = false;
+            // 
+            // label_AGVStateValue
+            // 
+            this.label_AGVStateValue.AutoSize = true;
+            this.label_AGVStateValue.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_AGVStateValue.ForeColor = System.Drawing.Color.Green;
+            this.label_AGVStateValue.Location = new System.Drawing.Point(176, 40);
+            this.label_AGVStateValue.Name = "label_AGVStateValue";
+            this.label_AGVStateValue.Size = new System.Drawing.Size(32, 16);
+            this.label_AGVStateValue.TabIndex = 150;
+            this.label_AGVStateValue.Text = "Idle";
+            // 
+            // label_AGVStateName
+            // 
+            this.label_AGVStateName.AutoSize = true;
+            this.label_AGVStateName.Font = new System.Drawing.Font("新細明體", 12F);
+            this.label_AGVStateName.Location = new System.Drawing.Point(15, 40);
+            this.label_AGVStateName.Name = "label_AGVStateName";
+            this.label_AGVStateName.Size = new System.Drawing.Size(79, 16);
+            this.label_AGVStateName.TabIndex = 149;
+            this.label_AGVStateName.Text = "AGVState :";
             // 
             // label_MoveStopValue
             // 
@@ -973,27 +993,6 @@
             this.label_ReadIronName.Size = new System.Drawing.Size(132, 16);
             this.label_ReadIronName.TabIndex = 139;
             this.label_ReadIronName.Text = "讀取鋼尺Barcode :";
-            // 
-            // label_AGVStateValue
-            // 
-            this.label_AGVStateValue.AutoSize = true;
-            this.label_AGVStateValue.Font = new System.Drawing.Font("新細明體", 12F);
-            this.label_AGVStateValue.ForeColor = System.Drawing.Color.Green;
-            this.label_AGVStateValue.Location = new System.Drawing.Point(176, 40);
-            this.label_AGVStateValue.Name = "label_AGVStateValue";
-            this.label_AGVStateValue.Size = new System.Drawing.Size(32, 16);
-            this.label_AGVStateValue.TabIndex = 150;
-            this.label_AGVStateValue.Text = "Idle";
-            // 
-            // label_AGVStateName
-            // 
-            this.label_AGVStateName.AutoSize = true;
-            this.label_AGVStateName.Font = new System.Drawing.Font("新細明體", 12F);
-            this.label_AGVStateName.Location = new System.Drawing.Point(15, 40);
-            this.label_AGVStateName.Name = "label_AGVStateName";
-            this.label_AGVStateName.Size = new System.Drawing.Size(79, 16);
-            this.label_AGVStateName.TabIndex = 149;
-            this.label_AGVStateName.Text = "AGVState :";
             // 
             // timer_UpdateElmoFunction
             // 

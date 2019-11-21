@@ -195,5 +195,6 @@ namespace Mirle.Agv
         Head,
         Tail
     }
+    
     #endregion
 }

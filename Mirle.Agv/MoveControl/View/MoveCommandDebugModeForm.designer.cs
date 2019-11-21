@@ -130,12 +130,19 @@ namespace Mirle.Agv.View
             this.ucBox_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBox_NowPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBox_NodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.tP_SettingConfigs = new System.Windows.Forms.TabPage();
+            this.tC_Configs = new System.Windows.Forms.TabControl();
+            this.tB_MoveControlConst = new System.Windows.Forms.TabPage();
+            this.tB_MoveControlDictory = new System.Windows.Forms.TabPage();
+            this.tB_MoveControlTurn = new System.Windows.Forms.TabPage();
             this.tP_Admin.SuspendLayout();
             this.tbP_LogMessage.SuspendLayout();
             this.tbP_List.SuspendLayout();
             this.tbP_CreateCommand.SuspendLayout();
             this.tbC_Debug.SuspendLayout();
             this.tP_CheckBarcodePosition.SuspendLayout();
+            this.tP_SettingConfigs.SuspendLayout();
+            this.tC_Configs.SuspendLayout();
             this.SuspendLayout();
             // 
             // timer_UpdateData
@@ -1085,6 +1092,7 @@ namespace Mirle.Agv.View
             this.tbC_Debug.Controls.Add(this.tbP_List);
             this.tbC_Debug.Controls.Add(this.tbP_LogMessage);
             this.tbC_Debug.Controls.Add(this.tP_Admin);
+            this.tbC_Debug.Controls.Add(this.tP_SettingConfigs);
             this.tbC_Debug.Controls.Add(this.tP_CheckBarcodePosition);
             this.tbC_Debug.Location = new System.Drawing.Point(2, 3);
             this.tbC_Debug.Name = "tbC_Debug";
@@ -1284,6 +1292,56 @@ namespace Mirle.Agv.View
             this.ucBox_NodePosition.TagName = "label1";
             this.ucBox_NodePosition.TagValue = "";
             // 
+            // tP_SettingConfigs
+            // 
+            this.tP_SettingConfigs.Controls.Add(this.tC_Configs);
+            this.tP_SettingConfigs.Location = new System.Drawing.Point(4, 22);
+            this.tP_SettingConfigs.Name = "tP_SettingConfigs";
+            this.tP_SettingConfigs.Size = new System.Drawing.Size(1283, 601);
+            this.tP_SettingConfigs.TabIndex = 6;
+            this.tP_SettingConfigs.Text = "Configs";
+            this.tP_SettingConfigs.UseVisualStyleBackColor = true;
+            // 
+            // tC_Configs
+            // 
+            this.tC_Configs.Controls.Add(this.tB_MoveControlConst);
+            this.tC_Configs.Controls.Add(this.tB_MoveControlDictory);
+            this.tC_Configs.Controls.Add(this.tB_MoveControlTurn);
+            this.tC_Configs.Location = new System.Drawing.Point(3, 3);
+            this.tC_Configs.Name = "tC_Configs";
+            this.tC_Configs.SelectedIndex = 0;
+            this.tC_Configs.Size = new System.Drawing.Size(1274, 595);
+            this.tC_Configs.TabIndex = 0;
+            // 
+            // tB_MoveControlConst
+            // 
+            this.tB_MoveControlConst.Location = new System.Drawing.Point(4, 22);
+            this.tB_MoveControlConst.Name = "tB_MoveControlConst";
+            this.tB_MoveControlConst.Padding = new System.Windows.Forms.Padding(3);
+            this.tB_MoveControlConst.Size = new System.Drawing.Size(1266, 569);
+            this.tB_MoveControlConst.TabIndex = 0;
+            this.tB_MoveControlConst.Text = "MoveControl";
+            this.tB_MoveControlConst.UseVisualStyleBackColor = true;
+            // 
+            // tB_MoveControlDictory
+            // 
+            this.tB_MoveControlDictory.Location = new System.Drawing.Point(4, 22);
+            this.tB_MoveControlDictory.Name = "tB_MoveControlDictory";
+            this.tB_MoveControlDictory.Padding = new System.Windows.Forms.Padding(3);
+            this.tB_MoveControlDictory.Size = new System.Drawing.Size(1266, 569);
+            this.tB_MoveControlDictory.TabIndex = 1;
+            this.tB_MoveControlDictory.Text = "MoveControlDictory";
+            this.tB_MoveControlDictory.UseVisualStyleBackColor = true;
+            // 
+            // tB_MoveControlTurn
+            // 
+            this.tB_MoveControlTurn.Location = new System.Drawing.Point(4, 22);
+            this.tB_MoveControlTurn.Name = "tB_MoveControlTurn";
+            this.tB_MoveControlTurn.Size = new System.Drawing.Size(1266, 569);
+            this.tB_MoveControlTurn.TabIndex = 2;
+            this.tB_MoveControlTurn.Text = "MoveControlTurn";
+            this.tB_MoveControlTurn.UseVisualStyleBackColor = true;
+            // 
             // MoveCommandDebugModeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1308,6 +1366,8 @@ namespace Mirle.Agv.View
             this.tbC_Debug.ResumeLayout(false);
             this.tP_CheckBarcodePosition.ResumeLayout(false);
             this.tP_CheckBarcodePosition.PerformLayout();
+            this.tP_SettingConfigs.ResumeLayout(false);
+            this.tC_Configs.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1414,5 +1474,10 @@ namespace Mirle.Agv.View
         private System.Windows.Forms.Button button_ComputeDelta;
         private System.Windows.Forms.Button button_CreateCommandList_StopAndClear;
         private System.Windows.Forms.Button button_CreateCommandList_Stop;
+        private System.Windows.Forms.TabPage tP_SettingConfigs;
+        private System.Windows.Forms.TabControl tC_Configs;
+        private System.Windows.Forms.TabPage tB_MoveControlConst;
+        private System.Windows.Forms.TabPage tB_MoveControlDictory;
+        private System.Windows.Forms.TabPage tB_MoveControlTurn;
     }
 }

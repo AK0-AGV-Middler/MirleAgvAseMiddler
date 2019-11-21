@@ -96,5 +96,15 @@ namespace Mirle.Agv
             button_RangeSet.Enabled = true;
             UpdateEnableRange();
         }
+
+        private void tB_Range_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label_Range_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

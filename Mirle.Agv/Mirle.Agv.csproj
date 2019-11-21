@@ -157,6 +157,18 @@
     <Compile Include="MoveControl\View\SimulateSettingAGVAngleForm.Designer.cs">
       <DependentUpon>SimulateSettingAGVAngleForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MoveControl\View\UserControls\AxisConfigs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\AxisConfigs.Designer.cs">
+      <DependentUpon>AxisConfigs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\ConfigsNameAndValue.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MoveControl\View\UserControls\ConfigsNameAndValue.Designer.cs">
+      <DependentUpon>ConfigsNameAndValue.cs</DependentUpon>
+    </Compile>
     <Compile Include="Plc\Control\PlcAgent.cs" />
     <Compile Include="Main\Control\InitialEventArgs.cs" />
     <Compile Include="Main\Control\Tools\CassetteIDReader.cs" />
@@ -344,6 +356,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MoveControl\View\SimulateSettingAGVAngleForm.resx">
       <DependentUpon>SimulateSettingAGVAngleForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\UserControls\AxisConfigs.resx">
+      <DependentUpon>AxisConfigs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MoveControl\View\UserControls\ConfigsNameAndValue.resx">
+      <DependentUpon>ConfigsNameAndValue.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

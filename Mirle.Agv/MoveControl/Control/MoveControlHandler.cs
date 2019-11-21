@@ -782,11 +782,11 @@ namespace Mirle.Agv.Controller
                 }
             }
 
-            if (moveControlConfig.Move.Velocity > 1000)
-            {
-                moveControlConfig.Move.Velocity = 1000;
-                WriteLog("MoveControl", "7", device, "", "推測速度超過1000 elmo drive會出問題, 強制降回1000!");
-            }
+            //if (moveControlConfig.Move.Velocity > 1000)
+            //{
+            //    moveControlConfig.Move.Velocity = 1000;
+            //    WriteLog("MoveControl", "7", device, "", "推測速度超過1000 elmo drive會出問題, 強制降回1000!");
+            //}
         }
         #endregion
 
@@ -2818,7 +2818,7 @@ namespace Mirle.Agv.Controller
                     break;
             }
 
-            if (nextVChangeDistance == -1)
+            if (index == -1)
                 return velocity;
             else if (ControlData.SensorState == EnumVehicleSafetyAction.LowSpeed)
             {

@@ -43,6 +43,7 @@
             this.tB_Range.Size = new System.Drawing.Size(98, 30);
             this.tB_Range.TabIndex = 11;
             this.tB_Range.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tB_Range.TextChanged += new System.EventHandler(this.tB_Range_TextChanged);
             // 
             // button_RangeSet
             // 
@@ -64,6 +65,7 @@
             this.label_Range.Size = new System.Drawing.Size(65, 19);
             this.label_Range.TabIndex = 9;
             this.label_Range.Text = "Range :";
+            this.label_Range.Click += new System.EventHandler(this.label_Range_Click);
             // 
             // button_Change
             // 

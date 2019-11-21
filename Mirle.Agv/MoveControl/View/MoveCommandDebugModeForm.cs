@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -35,9 +36,12 @@ namespace Mirle.Agv.View
         private Dictionary<EnumSensorSafetyType, SensorByPassInformation> sensorByPassUserControl = new Dictionary<EnumSensorSafetyType, SensorByPassInformation>();
 
         private TabPage checkBarcodePositionPage;
+        private TabPage configs;
 
         private AGVPosition checkBarcodeNode;
         private AGVPosition nowPosition;
+
+        private bool initailConfigForm = false;
 
         private EnumAxis[] AxisList = new EnumAxis[18] {EnumAxis.XFL, EnumAxis.XFR, EnumAxis.XRL, EnumAxis.XRR,
                                                         EnumAxis.TFL, EnumAxis.TFR, EnumAxis.TRL, EnumAxis.TRR,
@@ -52,7 +56,9 @@ namespace Mirle.Agv.View
             this.moveControl = moveControl;
             this.theMapInfo = theMapInfo;
             this.Text = this.Text + " Version : " + moveControl.MoveControlVersion;
-            checkBarcodePositionPage = tbC_Debug.TabPages[4];
+            checkBarcodePositionPage = tbC_Debug.TabPages[5];
+            tbC_Debug.TabPages.RemoveAt(5);
+            configs = tbC_Debug.TabPages[4];
             tbC_Debug.TabPages.RemoveAt(4);
         }
 
@@ -73,6 +79,7 @@ namespace Mirle.Agv.View
             AddListMapAddressPositions();
             AddAdminSafetyUserControl();
             HideChangeUI();
+            //InitailConfigsPage();
         }
 
         private void AddAdminSafetyUserControl()
@@ -320,7 +327,7 @@ namespace Mirle.Agv.View
 
             label_Psuse.Text = (moveControl.ControlData.PauseRequest || moveControl.ControlData.PauseAlready) ? "Pause" : "Normal";
             label_Psuse.ForeColor = (label_Psuse.Text == "Normal") ? System.Drawing.Color.Green : System.Drawing.Color.Red;
-            
+
             button_SimulateState.BackColor = (hideFunctionOn ? Color.Red : Color.Transparent);
 
             try
@@ -940,7 +947,7 @@ namespace Mirle.Agv.View
                         return;
                     else if (listCmdAddressPositions.Items.Count == 1)
                         button_FromTo_Click(null, null);
-                    
+
                     if (listCmdAddressPositions.Items.Count == 1)
                         return;
                 }
@@ -1019,10 +1026,22 @@ namespace Mirle.Agv.View
                     cB_OverrideTest.Checked = false;
 
                 if (hideFunctionOn)
+                {
+                    if (!initailConfigForm)
+                    {
+                        initailConfigForm = true;
+                        InitailConfigsPage();
+                    }
+
+                    tbC_Debug.TabPages.Add(configs);
                     tbC_Debug.TabPages.Add(checkBarcodePositionPage);
+                }
                 else
+                {
+                    tbC_Debug.TabPages.RemoveAt(5);
                     tbC_Debug.TabPages.RemoveAt(4);
-                
+                }
+
                 button_SimulateState.Visible = (hideFunctionOn ? true : moveControl.SimulationMode);
                 if (simulateStateForm != null && !simulateStateForm.IsDisposed)
                     simulateStateForm.ResetHideFunctionOnOff(hideFunctionOn);
@@ -1475,7 +1494,7 @@ namespace Mirle.Agv.View
                     MessageBox.Show("GG double 轉成 string 再轉回 double 資料不同了!");
                     return;
                 }
-                
+
                 if (theMapInfo.allMapSections.ContainsKey(theMapInfo.allMapAddresses[endAddressID].InsideSectionId))
                 {
                     if (theMapInfo.allMapAddresses[endAddressID].InsideSectionId == section)
@@ -1546,7 +1565,7 @@ namespace Mirle.Agv.View
                 else
                 {
                     listCmdAddressPositions.Items.Clear();
-                    
+
                     if (section != "" || address != minNodeList[0])
                     {
                         if (theMapInfo.allMapSections[section].TailAddress.Position.X == theMapInfo.allMapSections[section].HeadAddress.Position.X)
@@ -1635,5 +1654,130 @@ namespace Mirle.Agv.View
 
             }
         }
+
+
+        #region Congis
+        private void InitailConfigsMoveControlPage()
+        {
+
+            SafetyInformation temp;
+            int x = 30;
+            int y = 80;
+
+            foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
+            {
+                temp = new SafetyInformation(moveControl, item);
+                temp.Location = new System.Drawing.Point(x, y);
+                y += 40;
+                temp.Name = item.ToString();
+                temp.Size = new System.Drawing.Size(647, 30);
+
+                switch (item)
+                {
+                    case EnumMoveControlSafetyType.TurnOut:
+                        temp.SetLabelString("出彎保護 : ", "出彎多久內必須讀到Barcode :");
+                        break;
+                    case EnumMoveControlSafetyType.LineBarcodeInterval:
+                        temp.SetLabelString("直線保護 : ", "直線Barcode最大間隔 :");
+                        break;
+                    case EnumMoveControlSafetyType.OntimeReviseTheta:
+                        temp.SetLabelString("角度偏差 : ", "容許Theta偏差量 :");
+                        break;
+                    case EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine:
+                        temp.SetLabelString("直線偏差 : ", "容許直線軌道偏差量 :");
+                        break;
+                    case EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal:
+                        temp.SetLabelString("橫移偏差 : ", "容許橫移軌道偏差量 :");
+                        break;
+                    case EnumMoveControlSafetyType.OneTimeRevise:
+                        temp.SetLabelString("一次修正 : ", "一次性修正距離,多少會修完 :");
+                        break;
+                    case EnumMoveControlSafetyType.VChangeSafetyDistance:
+                        temp.SetLabelString("降速保護 : ", "多少距離檢查一次速度變化 :");
+                        break;
+                    case EnumMoveControlSafetyType.TRPathMonitoring:
+                        temp.SetLabelString("監控TR軌跡 : ", "角度允許誤差 :");
+                        break;
+                    case EnumMoveControlSafetyType.IdleNotWriteLog:
+                        temp.SetLabelString("Idle不Log : ", "移動完成後再多記多少ms : ");
+                        break;
+                    case EnumMoveControlSafetyType.BarcodePositionSafety:
+                        temp.SetLabelString("Barcode保護 : ", "Config (mm) : ");
+                        break;
+                    case EnumMoveControlSafetyType.StopWithoutReason:
+                        temp.SetLabelString("默停偵測 : ", "Config (ms) : ");
+                        break;
+                    case EnumMoveControlSafetyType.BeamSensorR2000:
+                        temp.SetLabelString("Beam R2000 : ", "delay (ms) : ");
+                        break;
+                    default:
+                        break;
+                }
+
+                temp.UpdateEnableRange();
+                this.tC_Configs.TabPages[0].Controls.Add(temp);
+            }
+
+        }
+
+        private void InitailConfigsPage()
+        {
+            ConfigsNameAndValue temp;
+            AxisConfigs tempAxis;
+
+            int intailX = 15;
+            int intailY = 20;
+            int deltaX = 415;
+            int deltaY = 35;
+
+            int x = intailX;
+            int y = intailY;
+
+            int AxisX = x + 2 * deltaX;
+            int AxisY = intailY;
+
+            int formHeight = tC_Configs.Location.Y + tC_Configs.Size.Height - 2 * deltaY;
+
+            foreach (PropertyInfo propertyInfo in moveControl.moveControlConfig.GetType().GetProperties())
+            {
+                if (propertyInfo.Name == "Move")
+                    ;
+
+                switch (propertyInfo.PropertyType.Name)
+                {
+                    case "Int32":
+                    case "Int16":
+                    case "Double":
+                    case "Boolean":
+                    case "String":
+                        temp = new ConfigsNameAndValue(propertyInfo.Name, propertyInfo.PropertyType.Name, moveControl.moveControlConfig);
+                        temp.Location = new System.Drawing.Point(x, y);
+
+                        y += deltaY;
+                        if (y > formHeight)
+                        {
+                            y = intailY;
+                            x += deltaX;
+                        }
+
+                        this.tC_Configs.TabPages[0].Controls.Add(temp);
+                        break;
+                    case "AxisData":
+
+                        tempAxis = new AxisConfigs(propertyInfo.Name, moveControl.moveControlConfig);
+                        tempAxis.Location = new System.Drawing.Point(AxisX, AxisY);
+                        AxisY += tempAxis.Size.Height + 5;
+                        this.tC_Configs.TabPages[0].Controls.Add(tempAxis);
+                        break;
+                    default:
+                        ;
+                        break;
+                }
+
+                //moveControl.moveControlConfig.GetType().GetProperty(propertyInfo.Name).Get();
+                // do stuff here
+            }
+        }
+        #endregion
     }
 }
