@@ -71,6 +71,7 @@ namespace Mirle.Agv.Model
         public Boolean BeamSensorDisableNormalSpeed { get; set; } = false;
 
         public int BatteryCellNum = 17;
+        public int BatteryReplaceIndex = 17;
 
         public PlcVehicle()
         {

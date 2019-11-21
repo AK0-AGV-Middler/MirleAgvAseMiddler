@@ -794,7 +794,8 @@ namespace Mirle.Agv.Controller
                                                 }
 
 
-                                                if (AlarmCode == 1150 || AlarmCode == 1160)
+                                                if (AlarmCode == 1150 || AlarmCode == 1160 || 
+                                                    AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126)
                                                 {
                                                     Task.Run(() =>
                                                     {
@@ -991,6 +992,10 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "PLCJogMaxDistance":
                                     this.APLCVehicle.JogOperation.JogMaxDistance = this.DECToDouble(aMCProtocol.get_ItemByTag("PLCJogMaxDistance").AsUInt32, 2, 2);
+                                    break;
+                                case "PLCJogBatteryReplaceIndex":
+                                    this.APLCVehicle.BatteryReplaceIndex = aMCProtocol.get_ItemByTag("PLCJogBatteryReplaceIndex").AsUInt16;
+                                    //this.mainForm.mainFlowHandler
                                     break;
                             }
                         }
@@ -3719,6 +3724,48 @@ namespace Mirle.Agv.Controller
 
         }
 
+
+        private void WritePLCBatteryBigData(BatteryLog batteryLog)
+        {
+
+            //String datetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            //LogRecord(NLog.LogLevel.Info, "WriteDateTimeCalibrationReport", "DateTime: " + datetime);
+            //this.aMCProtocol.get_ItemByTag("YearMonth").AsHex = datetime.Substring(2, 4);
+            //this.aMCProtocol.get_ItemByTag("DayHour").AsHex = datetime.Substring(6, 4);
+            //this.aMCProtocol.get_ItemByTag("MinSec").AsHex = datetime.Substring(10, 4);
+            //DateTime dateTime = DateTime.ParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture);
+
+            ushort iMoveDistance = 0;
+            ushort iLoadUnloadCount = 0;
+            ushort iChargeCount = 0;
+
+            try
+            {
+                iMoveDistance = (ushort)(batteryLog.MoveDistanceTotalM / 1000);
+                iLoadUnloadCount = (ushort)batteryLog.LoadUnloadCount;
+                iChargeCount = (ushort)batteryLog.ChargeCount;
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Change value to ushort error"));
+            }
+            
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetYearMonth").AsHex = "1911";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetDayHour").AsHex = "2012";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetMinSec").AsHex = "5959";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryMoveDistance").AsUInt16 = iMoveDistance;
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryLoadUnloadCount").AsUInt16 = iLoadUnloadCount;
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryChargeCount").AsUInt16 = iChargeCount;
+
+            if (this.aMCProtocol.WritePLC())
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC Success"));
+            }
+            else
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC fail"));
+            }
+        }
 
         private JogPitchData plcOperationRun_IpcJogPitchData = new JogPitchData();
         private bool plcOperationRun_bActionRunningStatus = false;
