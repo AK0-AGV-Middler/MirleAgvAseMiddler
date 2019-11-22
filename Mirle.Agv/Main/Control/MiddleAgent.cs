@@ -1438,15 +1438,18 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                ID_194_ALARM_REPORT iD_194_ALARM_REPORT = new ID_194_ALARM_REPORT();
-                iD_194_ALARM_REPORT.ErrCode = alarmCode;
-                iD_194_ALARM_REPORT.ErrStatus = status;
+                if (theVehicle.AutoState== EnumAutoState.Auto)
+                {
+                    ID_194_ALARM_REPORT iD_194_ALARM_REPORT = new ID_194_ALARM_REPORT();
+                    iD_194_ALARM_REPORT.ErrCode = alarmCode;
+                    iD_194_ALARM_REPORT.ErrStatus = status;
 
-                WrapperMessage wrappers = new WrapperMessage();
-                wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
-                wrappers.AlarmRep = iD_194_ALARM_REPORT;
+                    WrapperMessage wrappers = new WrapperMessage();
+                    wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
+                    wrappers.AlarmRep = iD_194_ALARM_REPORT;
 
-                SendCommandWrapper(wrappers);
+                    SendCommandWrapper(wrappers);
+                }                
             }
             catch (Exception ex)
             {

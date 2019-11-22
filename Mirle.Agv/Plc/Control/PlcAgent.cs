@@ -795,7 +795,7 @@ namespace Mirle.Agv.Controller
 
 
                                                 if (AlarmCode == 1150 || AlarmCode == 1160 || 
-                                                    AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126)
+                                                    AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126 || AlarmCode == 140 )
                                                 {
                                                     Task.Run(() =>
                                                     {
