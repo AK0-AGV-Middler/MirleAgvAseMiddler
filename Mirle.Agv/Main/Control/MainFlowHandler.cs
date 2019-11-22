@@ -1963,7 +1963,7 @@ namespace Mirle.Agv.Controller
                 ArrivalStartCharge(moveCmd.EndAddress);
 
                 ArrivalStopCharge(mainFlowConfig.LoadingChargeIntervalMs);
-                
+
                 //StartCharge(moveCmd.EndAddress);
 
                 if (isAvoidCmd)
@@ -2369,7 +2369,7 @@ namespace Mirle.Agv.Controller
             middleAgent.StopAskReserve();
             middleAgent.NeedReserveSections = moveCmd.MovingSections;
             middleAgent.ReportSectionPass(EventType.AdrPass);
-            OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);           
+            OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
             middleAgent.StartAskReserve();
         }
 
@@ -2949,22 +2949,11 @@ namespace Mirle.Agv.Controller
         public bool SetManualToAuto()
         {
             StopAndClear();
-            if (!IsMoveControlHandlerReadyToAuto())
+            string reason = "";
+            if (!moveControlHandler.MoveControlCanAuto(ref reason))
             {
-                string reason = "";
-                if (moveControlHandler.MoveState != EnumMoveState.Idle)
-                {
-                    reason = $"MainFlow : Manual 切換 Auto 失敗，移動控制層不在Idle";
-                    alarmHandler.SetAlarm(000031);
-                }
-                else
-                {
-                    reason = $"MainFlow : Manual 切換 Auto 失敗，座標迷失";
-                    alarmHandler.SetAlarm(000032);
-                }
-
+                reason = $"Manual 切換 Auto 失敗，原因： " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
-
                 return false;
             }
             else
@@ -2973,11 +2962,6 @@ namespace Mirle.Agv.Controller
                 OnMessageShowEvent?.Invoke(this, msg);
                 return true;
             }
-        }
-
-        private bool IsMoveControlHandlerReadyToAuto()
-        {
-            return moveControlHandler.MoveState == EnumMoveState.Idle && moveControlHandler.IsLocationRealNotNull();
         }
 
         private bool IsMoveStateIdle()

@@ -4058,13 +4058,52 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public bool IsLocationRealNotNull()
+        public bool MoveControlCanAuto(ref string errorMessage)
         {
-            int alarmcode = 0;
-            if (!elmoDriver.CheckAxisNoError(ref alarmcode))
-                return false;
+            int errorcode = 0;
 
-            return location.Real != null;
+            if (MoveState != EnumMoveState.Idle)
+            {
+                if (MoveState == EnumMoveState.Error)
+                    errorMessage = "AGV Error狀態!";
+                else
+                    errorMessage = "流程移動中!";
+
+                SendAlarmCode(120000);
+                return false;
+            }
+            else if (location.Real == null)
+            {
+                errorMessage = "迷航中,沒讀取到鐵Barcode!";
+                SendAlarmCode(120001);
+                return false;
+            }
+            else if (Vehicle.Instance.VehicleLocation.LastAddress.Id == "" || Vehicle.Instance.VehicleLocation.LastSection.Id == "")
+            {
+                errorMessage = "迷航中,認不出目前所在Address、Section!";
+                SendAlarmCode(120002);
+                return false;
+            }
+            else if (!elmoDriver.CheckAxisNoError(ref errorcode))
+            {
+                errorMessage = "有軸異常!";
+                SendAlarmCode(120003);
+                return false;
+            }
+            else if (!elmoDriver.ElmoAxisTypeAllServoOn(EnumAxisType.Turn))
+            {
+                errorMessage = "請Enable所有軸!";
+                SendAlarmCode(120004);
+                return false;
+            }
+            else if (!elmoDriver.MoveAxisStop())
+            {
+                errorMessage = "AGV移動中!";
+                SendAlarmCode(120005);
+                return false;
+            }
+
+            return true;
         }
 
         private bool CanStopInNextTurn(ref EnumCommandType type)

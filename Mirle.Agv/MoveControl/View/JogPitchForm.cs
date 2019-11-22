@@ -124,7 +124,7 @@ namespace Mirle.Agv.View
             if (moveControl.location.Real == null)
             {
                 if (cantAutoResult == "")
-                    cantAutoResult = "迷航中,沒讀取到Barcode!";
+                    cantAutoResult = "迷航中,沒讀取到鐵Barcode!";
 
                 label_ReadIronValue.Text = "無";
                 label_ReadIronValue.ForeColor = Color.Red;

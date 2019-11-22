@@ -1733,8 +1733,10 @@ namespace Mirle.Agv.View
             int x = intailX;
             int y = intailY;
 
-            int AxisX = x + 2 * deltaX;
-            int AxisY = intailY;
+            int axisX = x + 2 * deltaX;
+            int axisY = intailY;
+
+            int axisDeltaY = 32;
 
             int formHeight = tC_Configs.Location.Y + tC_Configs.Size.Height - 2 * deltaY;
 
@@ -1763,11 +1765,42 @@ namespace Mirle.Agv.View
                         this.tC_Configs.TabPages[0].Controls.Add(temp);
                         break;
                     case "AxisData":
+                        {
+                            //tempAxis = new AxisConfigs(propertyInfo.Name, moveControl.moveControlConfig);
+                            //tempAxis.Location = new System.Drawing.Point(AxisX, AxisY);
+                            //AxisY += tempAxis.Size.Height + 5;
+                            //this.tC_Configs.TabPages[0].Controls.Add(tempAxis);
+                        }
+                        try
+                        {
+                            Label labelName = new Label();
+                            labelName.Location = new System.Drawing.Point(axisX, axisY);
+                            labelName.Text = propertyInfo.Name;
+                            labelName.Font = new System.Drawing.Font("新細明體", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
 
-                        tempAxis = new AxisConfigs(propertyInfo.Name, moveControl.moveControlConfig);
-                        tempAxis.Location = new System.Drawing.Point(AxisX, AxisY);
-                        AxisY += tempAxis.Size.Height + 5;
-                        this.tC_Configs.TabPages[0].Controls.Add(tempAxis);
+                            this.tC_Configs.TabPages[0].Controls.Add(labelName);
+                            axisY += axisDeltaY;
+
+
+                            object axis = moveControl.moveControlConfig.GetType().GetProperty(propertyInfo.Name).GetValue(moveControl.moveControlConfig, null);
+
+                            foreach (PropertyInfo axisPropertyInfo in axis.GetType().GetProperties())
+                            {
+                                if ((double)axis.GetType().GetProperty(axisPropertyInfo.Name).GetValue(axis, null) != 0)
+                                {
+                                    temp = new ConfigsNameAndValue(axisPropertyInfo.Name, "Double", axis);
+                                    temp.Location = new System.Drawing.Point(axisX, axisY);
+                                    axisY += axisDeltaY;
+                                    this.tC_Configs.TabPages[0].Controls.Add(temp);
+                                }
+
+                            }
+
+                            axisY += 5;
+                        }
+                        catch { }
+
+
                         break;
                     default:
                         ;
