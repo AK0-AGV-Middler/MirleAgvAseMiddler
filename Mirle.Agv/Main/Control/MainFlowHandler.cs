@@ -34,12 +34,8 @@ namespace Mirle.Agv.Controller
 
         public bool GoNextTransferStep { get; set; }
         public int TransferStepsIndex { get; private set; }
-        public bool IsOverridePauseing { get; set; }
-        public bool IsOverrideCanceling { get; set; }
-
-        public bool IsAvoidPauseing { get; set; }
-        public bool IsAvoidCanceling { get; set; }
         public bool IsOverrideMove { get; set; }
+        public bool IsAvoidMove { get; set; }
 
         public bool IsReportingPosition { get; set; }
         public bool IsReserveMechanism { get; set; } = true;
@@ -136,7 +132,6 @@ namespace Mirle.Agv.Controller
         public bool IsCancelByCstIdRead { get; set; } = false;
         public bool NeedRename { get; set; } = false;
         public bool IsBcrReadReply { get; set; } = false;
-        //public bool IsVehicleAbortByAlarm { get; set; } = false;
         public bool IsMoveEnd { get; set; } = false;
         #endregion
 
@@ -1123,34 +1118,12 @@ namespace Mirle.Agv.Controller
             #region 替代路徑生成
             try
             {
-                //#region Override Pause and Cancel MoveControl
-                //if (!agvcTransCmd.IsAvoidComplete)
-                //{
-                //    IsOverridePauseing = true;
-                //    if (moveControlHandler.VehclePause())
-                //    {
-                //        IsOverrideCanceling = true;
-                //        moveControlHandler.VehcleCancel();
-                //    }
-                //    else
-                //    {
-                //        var reason = "Vehicle can not pause.";
-                //        RejectTransferCommandAndResume(000027, reason, agvcOverrideCmd);
-                //        return;
-                //    }
-                //}
-                //else
-                //{
-                //    GoNextTransferStep = true;
-                //}
-                //#endregion
-
                 middleAgent.StopAskReserve();
                 agvcTransCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
                 agvcTransCmd.AvoidEndAddressId = "";
                 agvcTransCmd.IsAvoidComplete = false;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
-                SetupOverrideTransferSteps();
+                SetupOverrideTransferSteps(agvcOverrideCmd);
                 transferSteps.Add(new EmptyTransferStep());
                 theVehicle.ThePlcVehicle.FakeCassetteId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
@@ -1286,28 +1259,6 @@ namespace Mirle.Agv.Controller
             #region 避車命令生成
             try
             {
-                #region Avoid Pause and Cancel MoveControl
-                if (!agvcTransCmd.IsAvoidComplete)
-                {
-                    IsAvoidPauseing = true;
-                    if (moveControlHandler.VehclePause())
-                    {
-                        IsAvoidCanceling = true;
-                        moveControlHandler.VehcleCancel();
-                    }
-                    else
-                    {
-                        var reason = "Vehicle can not pause.";
-                        RejectAvoidCommandAndResume(000027, reason, agvcMoveCmd);
-                        return;
-                    }
-                }
-                else
-                {
-                    GoNextTransferStep = true;
-                }
-                #endregion
-
                 middleAgent.StopAskReserve();
                 agvcTransCmd.CombineAvoid(agvcMoveCmd);
                 agvcTransCmd.IsAvoidComplete = false;
@@ -1317,6 +1268,7 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyAvoidCommand(agvcMoveCmd, 0, "");
                 var okmsg = $"MainFlow : 接受避車命令確認，終點[{agvcTransCmd.AvoidEndAddressId}]。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
+                IsAvoidMove = true;
                 ResumeVisitTransferSteps();
             }
             catch (Exception ex)
@@ -1386,8 +1338,9 @@ namespace Mirle.Agv.Controller
                     break;
             }
         }
-        private void SetupOverrideTransferSteps()
+        private void SetupOverrideTransferSteps(AgvcOverrideCmd agvcOverrideCmd)
         {
+            #region 1.0
             var aTransferSteps = new List<TransferStep>();
 
             switch (agvcTransCmd.CommandType)
@@ -1414,7 +1367,13 @@ namespace Mirle.Agv.Controller
             }
 
             transferSteps = aTransferSteps;
-        }
+            #endregion
+
+            #region 2.0
+            
+            #endregion
+
+        }        
 
         private void SetupAvoidTransferSteps()
         {
@@ -1867,16 +1826,15 @@ namespace Mirle.Agv.Controller
             {
                 IsMoveEnd = true;
                 OnMoveArrivalEvent?.Invoke(this, new EventArgs());
-                bool isAvoidCmd = !string.IsNullOrEmpty(agvcTransCmd.AvoidEndAddressId);
 
                 #region Not EnumMoveComplete.Success
                 if (status == EnumMoveComplete.Fail)
                 {
-                    if (isAvoidCmd)
+                    if (IsAvoidMove)
                     {
                         middleAgent.AvoidFail();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動異常終止");
-                        //alarmHandler.SetAlarm(000006);
+                        IsAvoidMove = false;
                         return;
                     }
                     else if (IsOverrideMove)
@@ -1888,72 +1846,69 @@ namespace Mirle.Agv.Controller
                     else
                     {
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動異常終止");
-                        //alarmHandler.SetAlarm(000006);
                         return;
                     }
                 }
 
                 if (status == EnumMoveComplete.Pause)
                 {
-                    if (IsOverridePauseing)
-                    {
-                        IsOverridePauseing = false;
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[替代路徑]且暫停移動確認");
-                        return;
-                    }
-                    else if (IsAvoidPauseing)
-                    {
-                        IsAvoidPauseing = false;
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[避車]且暫停移動確認");
-                        return;
-                    }
-                    else
-                    {
-                        VisitTransferStepsStatus = EnumThreadStatus.PauseComplete;
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動暫停確認");
-                        middleAgent.PauseAskReserve();
-                        PauseVisitTransferSteps();
-                        return;
-                    }
+                    //if (IsOverridePauseing)
+                    //{
+                    //    IsOverridePauseing = false;
+                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[替代路徑]且暫停移動確認");
+                    //    return;
+                    //}
+                    //else if (IsAvoidPauseing)
+                    //{
+                    //    IsAvoidPauseing = false;
+                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[避車]且暫停移動確認");
+                    //    return;
+                    //}
+                    //else
+                    //{
+                    VisitTransferStepsStatus = EnumThreadStatus.PauseComplete;
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動暫停確認");
+                    middleAgent.PauseAskReserve();
+                    PauseVisitTransferSteps();
+                    return;
+                    //}
                 }
 
                 if (status == EnumMoveComplete.Cancel)
                 {
-                    if (IsOverrideCanceling)
+                    //if (IsOverrideCanceling)
+                    //{
+                    //    IsOverrideCanceling = false;
+                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[替代路徑]且移動取消確認");
+                    //    GoNextTransferStep = true;
+                    //    return;
+                    //}
+                    //else if (IsAvoidCanceling)
+                    //{
+                    //    IsAvoidCanceling = false;
+                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[避車]且移動取消確認");
+                    //    GoNextTransferStep = true;
+                    //    return;
+                    //}
+                    //else
+                    //{
+                    StopAndClear();
+                    if (IsAvoidMove)
                     {
-                        IsOverrideCanceling = false;
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[替代路徑]且移動取消確認");
-                        GoNextTransferStep = true;
-                        return;
-                    }
-                    else if (IsAvoidCanceling)
-                    {
-                        IsAvoidCanceling = false;
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[避車]且移動取消確認");
-                        GoNextTransferStep = true;
+                        middleAgent.AvoidFail();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動取消確認");
                         return;
                     }
                     else
                     {
-                        StopAndClear();
-                        if (isAvoidCmd)
-                        {
-                            middleAgent.AvoidFail();
-                            OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動取消確認");
-                            return;
-                        }
-                        else
-                        {
-                            OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動取消確認");
-                            return;
-                        }
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動取消確認");
+                        return;
                     }
+                    //}
                 }
                 #endregion
 
                 #region EnumMoveComplete.Success
-                IsOverrideMove = false;
-
                 middleAgent.StopAskReserve();
 
                 MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
@@ -1964,9 +1919,7 @@ namespace Mirle.Agv.Controller
 
                 ArrivalStopCharge(mainFlowConfig.LoadingChargeIntervalMs);
 
-                //StartCharge(moveCmd.EndAddress);
-
-                if (isAvoidCmd)
+                if (IsAvoidMove)
                 {
                     agvcTransCmd.IsAvoidComplete = true;
                     middleAgent.AvoidComplete();
@@ -1990,6 +1943,9 @@ namespace Mirle.Agv.Controller
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 走行移動完成");
                     }
                 }
+
+                IsAvoidMove = false;
+                IsOverrideMove = false;
 
                 #endregion
             }
