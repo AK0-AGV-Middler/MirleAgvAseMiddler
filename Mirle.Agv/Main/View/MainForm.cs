@@ -15,6 +15,7 @@ using Mirle.Agv.Model.TransferSteps;
 using Mirle.Agv;
 using Mirle.Agv.Controller.Tools;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Mirle.Agv.View
 {
@@ -242,7 +243,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                SetMovingSectionAndEndPosition(moveCmd.MovingSections, moveCmd.EndAddress);
+                Task.Run(() => SetMovingSectionAndEndPosition(moveCmd.MovingSections, moveCmd.EndAddress));
             }
             catch (Exception ex)
             {
@@ -253,7 +254,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                ResetSectionColor();
+                Task.Run(() => ResetSectionColor());
             }
             catch (Exception ex)
             {
@@ -269,7 +270,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                GetReserveSection(sectionId);
+                Task.Run(() => GetReserveSection(sectionId));
             }
             catch (Exception ex)
             {
@@ -280,7 +281,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                ChangeToNormalSection(passSectionId);
+                Task.Run(() => ChangeToNormalSection(passSectionId));
             }
             catch (Exception ex)
             {
@@ -290,20 +291,42 @@ namespace Mirle.Agv.View
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
-            RichTextBoxAppendHead(richTextBox1, msg);
-
-            if (alarm.Level == EnumAlarmLevel.Alarm)
+            Task.Run(() => OnSetAlarmEvent(alarm));
+        }
+        private void OnSetAlarmEvent(Alarm alarm)
+        {
+            try
             {
-                if (alarmForm.IsDisposed)
+                var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
+                RichTextBoxAppendHead(richTextBox1, msg);
+
+                if (alarm.Level == EnumAlarmLevel.Alarm)
                 {
-                    alarmForm = new AlarmForm(mainFlowHandler);
+                    if (alarmForm.IsDisposed)
+                    {
+                        alarmForm = new AlarmForm(mainFlowHandler);
+                    }
+                    alarmForm.BringToFront();
+                    alarmForm.Show();
                 }
-                alarmForm.BringToFront();
-                alarmForm.Show();
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
+        {
+            try
+            {
+                Task.Run(() => OnResetAllAlarmsEvent(msg));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private void OnResetAllAlarmsEvent(string msg)
         {
             try
             {
@@ -322,7 +345,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                ResetSectionColor();
+                Task.Run(() => ResetSectionColor());
             }
             catch (Exception ex)
             {
@@ -332,9 +355,16 @@ namespace Mirle.Agv.View
 
         private void TheVehicle_OnBeamDisableChangeEvent(object sender, BeamDisableArgs e)
         {
-            var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor開關 {DisableParse(!e.IsDisable)}";
-            ShowMsgOnMainForm(this, msg);
-            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            try
+            {
+                var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor開關 {DisableParse(!e.IsDisable)}";
+                Task.Run(() => ShowMsgOnMainForm(this, msg));
+                LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private object DisableParse(bool v)
@@ -361,7 +391,7 @@ namespace Mirle.Agv.View
 
         private void ShowMsgOnMainForm(object sender, string msg)
         {
-            RichTextBoxAppendHead(richTextBox1, msg);
+            Task.Run(() => RichTextBoxAppendHead(richTextBox1, msg));
             LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
@@ -822,7 +852,7 @@ namespace Mirle.Agv.View
                 moveCommandDebugMode.MainShowRunSectionList = false;
             }
             var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
-            ucSoc.TagValue = battery.Percentage.ToString("F1")+$"/"+ battery.MeterVoltage.ToString("F2");
+            ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
             if (middleAgent.GetAskingReserveSection().Id != LastAskingReserveSectionId)
             {
                 LastAskingReserveSectionId = middleAgent.GetAskingReserveSection().Id;
@@ -1914,7 +1944,10 @@ namespace Mirle.Agv.View
                     RefreshMap(mainForm);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         public void ResetSectionColor()
@@ -1981,7 +2014,10 @@ namespace Mirle.Agv.View
 
                 RefreshMap(mainForm);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void btnReloadConfig_Click(object sender, EventArgs e)

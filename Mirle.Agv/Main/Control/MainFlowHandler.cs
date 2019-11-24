@@ -1370,10 +1370,10 @@ namespace Mirle.Agv.Controller
             #endregion
 
             #region 2.0
-            
+
             #endregion
 
-        }        
+        }
 
         private void SetupAvoidTransferSteps()
         {
@@ -2914,7 +2914,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                var msg = $"Manual 切換 Auto 成功";
+                string msg = $"Manual 切換 Auto 成功";
                 OnMessageShowEvent?.Invoke(this, msg);
                 return true;
             }

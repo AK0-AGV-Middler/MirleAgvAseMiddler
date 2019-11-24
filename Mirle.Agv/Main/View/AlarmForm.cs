@@ -36,26 +36,26 @@ namespace Mirle.Agv.View
         private void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
         {
             var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][ResetTime={alarm.ResetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
-            RichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
+            TaskRunRichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
 
             var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][ResetTime={alarm.ResetTime.ToString("yyyy/MM/dd_HH/mm")}]";
-            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
+            TaskRunRichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
             var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][SetTime={alarm.SetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
-            RichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
+            TaskRunRichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
 
             var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][SetTime={alarm.SetTime.ToString("yyyy/MM/dd_HH/mm")}]";
-            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
+            TaskRunRichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
         }
 
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             btnAlarmReset.Enabled = false;
 
-            RichTextBoxAppendHead(rtbHistoryAlarms, msg);
+            TaskRunRichTextBoxAppendHead(rtbHistoryAlarms, msg);
             rtbHappeningAlarms.Clear();
             Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
@@ -69,6 +69,18 @@ namespace Mirle.Agv.View
         private void btnBuzzOff_Click(object sender, EventArgs e)
         {
             mainFlowHandler.GetPlcAgent().WritePLCBuzzserStop();
+        }
+
+        private void TaskRunRichTextBoxAppendHead(RichTextBox richTextBox, string msg)
+        {
+            try
+            {
+                Task.Run(() => RichTextBoxAppendHead(richTextBox, msg));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);

@@ -2463,7 +2463,9 @@ namespace Mirle.Agv.Controller
                 case ActiveType.Loadunload:
                     return new AgvcLoadunloadCmd(transRequest, iSeqNum);
                 case ActiveType.Override:
-                    return new AgvcOverrideCmd(transRequest, iSeqNum);
+                    AgvcOverrideCmd agvcOverrideCmd = new AgvcOverrideCmd(transRequest, iSeqNum);
+                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "9", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", "[替代路徑]物件生成完成"));
+                    return agvcOverrideCmd;
                 case ActiveType.Movetocharger:
                     return new AgvcMoveToChargerCmd(transRequest, iSeqNum);
                 case ActiveType.Cstidrename:
