@@ -1487,6 +1487,27 @@ namespace Mirle.Agv.Controller
             }
         }
 
+        public bool CheckAxisAllError()
+        {
+            try
+            {
+                if (!Connected)
+                    return false;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && !allAxisList[i].FeedbackData.ErrorStop)
+                        return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public bool CheckAxisNoError(ref int alarmcode)
         {
             try

@@ -74,7 +74,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                Task.Run(() => RichTextBoxAppendHead(richTextBox1, e));
+                //Task.Run(() => RichTextBoxAppendHead(richTextBox1, e));
             }
             catch (Exception ex)
             {
@@ -454,11 +454,11 @@ namespace Mirle.Agv.View
         {
             if (middleAgent.IsClientAgentNull())
             {
-                RichTextBoxAppendHead(richTextBox1, "ClientAgent is null");
+                //RichTextBoxAppendHead(richTextBox1, "ClientAgent is null");
             }
             else
             {
-                RichTextBoxAppendHead(richTextBox1, "ClientAgent is not null");
+                //RichTextBoxAppendHead(richTextBox1, "ClientAgent is not null");
             }
         }       
 

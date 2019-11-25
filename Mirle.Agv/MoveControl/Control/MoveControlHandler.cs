@@ -368,8 +368,8 @@ namespace Mirle.Agv.Controller
                 if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue * 5)
                 {
                     ControlData.MoveControlThread.Abort();
-                    SendAlarmCode(155002);
                     EMSControl("StopAndClear time out !");
+                    SendAlarmCode(155002);
                 }
 
                 Thread.Sleep(moveControlConfig.SleepTime);
@@ -1216,11 +1216,11 @@ namespace Mirle.Agv.Controller
                         WriteLog("MoveControl", "7", device, "", String.Concat("nowAGV車資 : ", location.Barcode.AGVAngle, ", section index : ", command.IndexOflisSectionLine,
                                                                                ", dirFlag : ", command.SectionLineList[command.IndexOflisSectionLine].DirFlag.ToString(),
                                                                                ", SectionAngle : ", command.SectionLineList[command.IndexOflisSectionLine].SectionAngle));
-                    SendAlarmCode(154000);
                     EMSControl("角度偏差" + location.ThetaAndSectionDeviation.Theta.ToString("0.0") +
                         "度,已超過安全設置的" +
                         moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0") +
                         "度,因此啟動EMS!");
+                    SendAlarmCode(154000);
 
                     return;
                 }
@@ -1232,22 +1232,22 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range)
                     {
-                        SendAlarmCode(154001);
                         EMSControl("橫移偏差" + location.ThetaAndSectionDeviation.SectionDeviation.ToString("0") +
                             "mm,已超過安全設置的" +
                             moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0") +
                             "mm,因此啟動EMS!");
+                        SendAlarmCode(154001);
                     }
                 }
                 else
                 {
                     if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
                     {
-                        SendAlarmCode(154001);
                         EMSControl("軌道偏差" + location.ThetaAndSectionDeviation.SectionDeviation.ToString("0") +
                             "mm,已超過安全設置的" +
                             moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0") +
                             "mm,因此啟動EMS!");
+                        SendAlarmCode(154001);
                     }
                 }
             }
@@ -1402,11 +1402,11 @@ namespace Mirle.Agv.Controller
                     if (Math.Abs(location.ElmoEncoder - safetyData.TurnOutElmoEncoder) >
                         moveControlConfig.Safety[EnumMoveControlSafetyType.TurnOut].Range)
                     {
-                        SendAlarmCode(130000);
                         EMSControl("出彎" + Math.Abs(location.ElmoEncoder - safetyData.TurnOutElmoEncoder).ToString("0") +
                             "mm未讀取到Barcode,已超過安全設置的" +
                             moveControlConfig.Safety[EnumMoveControlSafetyType.TurnOut].Range.ToString("0") +
                             "mm,因此啟動EMS!");
+                        SendAlarmCode(130000);
                     }
                 }
             }
@@ -1431,11 +1431,11 @@ namespace Mirle.Agv.Controller
                     if (Math.Abs(location.ElmoEncoder - safetyData.LastReadBarcodeElmoEncoder) >
                         moveControlConfig.Safety[EnumMoveControlSafetyType.LineBarcodeInterval].Range)
                     {
-                        SendAlarmCode(130001);
                         EMSControl("直線超過" + Math.Abs(location.ElmoEncoder - safetyData.LastReadBarcodeElmoEncoder).ToString("0") +
                             "mm未讀取到Barcode,已超過安全設置的" +
                             moveControlConfig.Safety[EnumMoveControlSafetyType.LineBarcodeInterval].Range.ToString("0") +
                             "mm,因此啟動EMS!");
+                        SendAlarmCode(130001);
                     }
                 }
             }
@@ -1549,8 +1549,8 @@ namespace Mirle.Agv.Controller
                     BeamSensorSingleOn((ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left));
                     break;
                 default:
-                    SendAlarmCode(159998);
                     EMSControl("switch (TRWheelAngle) default..EMS.");
+                    SendAlarmCode(159998);
                     break;
             }
 
@@ -1588,8 +1588,8 @@ namespace Mirle.Agv.Controller
                     DirLightOnlyOn(ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
                     break;
                 default:
-                    SendAlarmCode(159998);
                     EMSControl("switch (wheelAngle) default..EMS..");
+                    SendAlarmCode(159998);
                     break;
             }
 
@@ -1645,8 +1645,8 @@ namespace Mirle.Agv.Controller
                     BeamSensorSingleOn((ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left));
                     break;
                 default:
-                    SendAlarmCode(159998);
                     EMSControl("switch (TRWheelAngle) default..EMS.");
+                    SendAlarmCode(159998);
                     break;
             }
 
@@ -1658,8 +1658,8 @@ namespace Mirle.Agv.Controller
 
             if (agvVelocity > velocity + safetyVelocityRange)
             { // 超速GG, 不該發生.
-                SendAlarmCode(152000);
                 EMSControl("超速.., vel : " + agvVelocity.ToString("0"));
+                SendAlarmCode(152000);
                 return;
             }
             else if (Math.Abs(agvVelocity - velocity) <= safetyVelocityRange)
@@ -1671,8 +1671,8 @@ namespace Mirle.Agv.Controller
             }
             else
             { // 太慢 處理??
-                SendAlarmCode(152003);
                 EMSControl("速度過慢.., vel : " + agvVelocity.ToString("0"));
+                SendAlarmCode(152003);
             }
 
             while (!elmoDriver.WheelAngleCompare(wheelAngle, moveControlConfig.StartWheelAngleRange))
@@ -1686,15 +1686,15 @@ namespace Mirle.Agv.Controller
                 {
                     if (!TurnGorupAxisNearlyAngle(moveControlConfig.Safety[EnumMoveControlSafetyType.TRPathMonitoring].Range))
                     {
-                        SendAlarmCode(152003);
                         EMSControl("四輪角度差異過大,EMS!");
+                        SendAlarmCode(152003);
                         return;
                     }
                     else if (!IsInTRPath(type, Math.Abs(ControlData.TurnStartEncoder - location.ElmoEncoder),
                         ControlData.WheelAngle, wheelAngle, moveControlConfig.Safety[EnumMoveControlSafetyType.TRPathMonitoring].Range))
                     {
-                        SendAlarmCode(152001);
                         EMSControl("不再TR預計路徑上,異常停止!");
+                        SendAlarmCode(152001);
                         return;
                     }
                 }
@@ -1725,8 +1725,8 @@ namespace Mirle.Agv.Controller
                                 DirLightOnlyOn(ControlData.DirFlag ? EnumBeamSensorLocate.Right : EnumBeamSensorLocate.Left);
                                 break;
                             default:
-                                SendAlarmCode(159998);
                                 EMSControl("switch (wheelAngle) default..EMS..");
+                                SendAlarmCode(159998);
                                 break;
                         }
 
@@ -1776,8 +1776,8 @@ namespace Mirle.Agv.Controller
                 outerWheelEncoder = location.ElmoEncoder;
             else
             {
-                SendAlarmCode(159998);
                 EMSControl("R2000取得奇怪的wheelAngle");
+                SendAlarmCode(159998);
                 return;
             }
 
@@ -1884,14 +1884,14 @@ namespace Mirle.Agv.Controller
             }
             else if (agvVelocity > velocity)
             { // 超速GG, 不該發生.
-                SendAlarmCode(153000);
                 EMSControl("超速.., vel : " + agvVelocity.ToString("0"));
+                SendAlarmCode(153000);
                 return;
             }
             else
             { // 太慢 處理??
-                SendAlarmCode(153001);
                 EMSControl("速度過慢.., vel : " + agvVelocity.ToString("0"));
+                SendAlarmCode(153001);
                 return;
             }
 
@@ -1915,8 +1915,8 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                SendAlarmCode(159998);
                 EMSControl("R2000取得奇怪的wheelAngle");
+                SendAlarmCode(159998);
                 return;
             }
 
@@ -1962,8 +1962,8 @@ namespace Mirle.Agv.Controller
             if (!elmoDriver.WheelAngleCompare(leftTurn.Distance * wheelAngle, rightTurn.Distance * wheelAngle,
                                              -leftTurn.Distance * wheelAngle, -rightTurn.Distance * wheelAngle, 5))
             {
-                SendAlarmCode(142000);
                 EMSControl("虛擬軸轉向沒Link");
+                SendAlarmCode(142000);
             }
 
             while (!OkToTurnZero(outerWheelEncoder, trunZeroEncoder))
@@ -2161,8 +2161,8 @@ namespace Mirle.Agv.Controller
                         BeamSensorSingleAwake(ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back);
                         break;
                     default:
-                        SendAlarmCode(159998);
                         EMSControl("switch (TRWheelAngle) default..EMS.");
+                        SendAlarmCode(159998);
                         break;
                 }
             }
@@ -2247,8 +2247,8 @@ namespace Mirle.Agv.Controller
 
                         if (timer.ElapsedMilliseconds > moveControlConfig.TurnTimeoutValue)
                         {
-                            SendAlarmCode(150001);
                             EMSControl("移動前旋轉轉向軸旋轉不到位!");
+                            SendAlarmCode(150001);
                             return;
                         }
 
@@ -2356,8 +2356,8 @@ namespace Mirle.Agv.Controller
 
                 if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue)
                 {
-                    SendAlarmCode(155000);
                     EMSControl("SlowStop Timeout!");
+                    SendAlarmCode(155000);
                     return;
                 }
 
@@ -2415,8 +2415,8 @@ namespace Mirle.Agv.Controller
 
                     if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue)
                     {
-                        SendAlarmCode(156000);
                         EMSControl("SecondCorrectionControl Timeout!");
+                        SendAlarmCode(156000);
                         return;
                     }
 
@@ -2483,8 +2483,8 @@ namespace Mirle.Agv.Controller
                 case EnumMoveState.R2000:
                     if (!moveControlConfig.SensorByPass[EnumSensorSafetyType.R2000FlowStat].Enable)
                     {
-                        SendAlarmCode(153002);
                         EMSControl("R2000 Flow Stop 且未開啟R2000啟動功能!");
+                        SendAlarmCode(153002);
                         return;
                     }
                     else
@@ -2592,10 +2592,10 @@ namespace Mirle.Agv.Controller
                     if ((cmd.DirFlag && location.RealEncoder > cmd.TriggerEncoder + cmd.SafetyDistance) ||
                        (!cmd.DirFlag && location.RealEncoder < cmd.TriggerEncoder - cmd.SafetyDistance))
                     {
-                        SendAlarmCode(150002);
                         EMSControl("Command : " + cmd.CmdType.ToString() + ", 超過Triiger觸發區間,EMS.. dirFlag : " +
                                      (ControlData.DirFlag ? "往前" : "往後") + ", Encoder : " +
                                      location.RealEncoder.ToString("0.0") + ", triggerEncoder : " + cmd.TriggerEncoder.ToString("0.0"));
+                        SendAlarmCode(150002);
                         return false;
                     }
                     else if ((cmd.DirFlag && location.RealEncoder > cmd.TriggerEncoder) ||
@@ -2750,8 +2750,8 @@ namespace Mirle.Agv.Controller
             }
             catch
             {
-                SendAlarmCode(150000);
                 EMSControl("MoveControl主Thread Expction!");
+                SendAlarmCode(150000);
             }
         }
 
@@ -2920,8 +2920,8 @@ namespace Mirle.Agv.Controller
 
                         if (timer.ElapsedMilliseconds > moveControlConfig.SlowStopTimeoutValue * 3)
                         {
-                            SendAlarmCode(156001);
                             EMSControl("SensorStartMove Fake SecondCorrection Timeout!");
+                            SendAlarmCode(156001);
                             return;
                         }
                     }
@@ -2964,8 +2964,8 @@ namespace Mirle.Agv.Controller
 
         private void SensorStartMoveTRAction()
         {
-            SendAlarmCode(159999);
             EMSControl("TR flow start 還未實作!");
+            SendAlarmCode(159999);
         }
 
         private void SensorActionToNormal()
@@ -2989,8 +2989,8 @@ namespace Mirle.Agv.Controller
                         SensorStartMoveTRAction();
                     else if (MoveState == EnumMoveState.R2000)
                     {
-                        SendAlarmCode(159999);
                         EMSControl("暫時By pass TR2000中啟動!");
+                        SendAlarmCode(159999);
                     }
                     else
                         SensorStartMove(EnumVehicleSafetyAction.Normal);
@@ -3024,8 +3024,8 @@ namespace Mirle.Agv.Controller
                         SensorStartMoveTRAction();
                     else if (MoveState == EnumMoveState.R2000)
                     {
-                        SendAlarmCode(159999);
                         EMSControl("暫時By pass TR2000中啟動!");
+                        SendAlarmCode(159999);
                     }
                     else
                         SensorStartMove(EnumVehicleSafetyAction.LowSpeed);
@@ -3113,8 +3113,8 @@ namespace Mirle.Agv.Controller
                         {
                             WriteLog("MoveControl", "7", device, "", "降速指令未降速, 目前速度 : " + Math.Abs(location.Velocity).ToString("0") +
                                                                            ", 安全速度 : " + ControlData.VChangeSafetyVelocity.ToString("0") + " !");
-                            SendAlarmCode(151000);
                             EMSControl("降速指令未降速!");
+                            SendAlarmCode(151000);
                         }
                         else
                         {
@@ -3133,8 +3133,8 @@ namespace Mirle.Agv.Controller
                         {
                             WriteLog("MoveControl", "7", device, "", "啟動VChange未降速, 目前速度 : " + Math.Abs(location.Velocity).ToString("0") +
                                                                            ", 安全速度 : " + ControlData.VChangeSafetyVelocity.ToString("0") + " !");
-                            SendAlarmCode(151000);
                             EMSControl("降速指令未降速!");
+                            SendAlarmCode(151000);
                         }
                         else
                         {
@@ -3324,13 +3324,16 @@ namespace Mirle.Agv.Controller
 
             if (ForkNotHome())
             {
-                SendAlarmCode(140000);
                 EMSControl("走行中Fork不在Home點!");
+                SendAlarmCode(140000);
             }
             else if (!CheckAxisNoError(ref alarmcode))
             {
-                SendAlarmCode(alarmcode);
+                if (elmoDriver.CheckAxisAllError())
+                    WriteLog("MoveControl", "7", device, "", "Elmo All Axis Error!");
+
                 EMSControl("走行中Axis Error!");
+                SendAlarmCode(alarmcode);
             }
             else if (ControlData.FlowStopRequeset)
             {
@@ -3350,8 +3353,8 @@ namespace Mirle.Agv.Controller
             }
             else if (IsAGVStopWithReasonTimeout())
             {
-                SendAlarmCode(150003);
                 EMSControl("AGV默停!");
+                SendAlarmCode(150003);
             }
             else
             {
@@ -3655,8 +3658,8 @@ namespace Mirle.Agv.Controller
                 {
                     if (!SimulationMode && command.LeftBarcodeLineList[command.BarcodeLineListIndex][command.IndexOfLeftBarcodeLineList].MustRead)
                     {
-                        SendAlarmCode(130009);
                         EMSControl(String.Concat("SR2000L沒讀取到Barcode ID : ", command.LeftBarcodeLineList[command.BarcodeLineListIndex][command.IndexOfLeftBarcodeLineList].BarcodeLineID));
+                        SendAlarmCode(130009);
                         return;
                     }
                     else
@@ -3687,8 +3690,8 @@ namespace Mirle.Agv.Controller
                 {
                     if (!SimulationMode && command.RightBarcodeLineList[command.BarcodeLineListIndex][command.IndexOfRightBarcodeLineList].MustRead)
                     {
-                        SendAlarmCode(130009);
                         EMSControl(String.Concat("SR2000R沒讀取到Barcode ID : ", command.RightBarcodeLineList[command.BarcodeLineListIndex][command.IndexOfRightBarcodeLineList].BarcodeLineID));
+                        SendAlarmCode(130009);
                         return;
                     }
                     else
@@ -3781,8 +3784,8 @@ namespace Mirle.Agv.Controller
 
             if (location.Real == null)
             {
-                SendAlarmCode(159998);
                 EMSControl("location.Real == null EMS");
+                SendAlarmCode(159998);
                 return;
             }
 
@@ -3802,8 +3805,8 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                SendAlarmCode(159999);
                 EMSControl("不該有R2000啟動動作.");
+                SendAlarmCode(159999);
             }
 
             location.Encoder = new AGVPosition();
@@ -4231,7 +4234,18 @@ namespace Mirle.Agv.Controller
         public bool VehclePause(bool hideFunction = false)
         {
             WriteLog("MoveControl", "7", device, "", "Pause Request!");
-            if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error &&
+            
+            if (ControlData.PauseRequest)
+            {
+                WriteLog("MoveControl", "7", device, "", "AGV PauseRequest,因此不再發送PauseRequest!");
+                return true;
+            }
+            else if (ControlData.PauseAlready)
+            {
+                WriteLog("MoveControl", "7", device, "", "AGV PauseAlready,因此不再發送PauseRequest!");
+                return true;
+            }
+            else if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error &&
                 !ControlData.PauseRequest && !ControlData.PauseAlready && CanPauseNow())
             {
                 WriteLog("MoveControl", "7", device, "", "Pause Request接受!");

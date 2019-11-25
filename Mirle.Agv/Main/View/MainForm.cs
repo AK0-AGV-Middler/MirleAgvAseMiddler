@@ -243,7 +243,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                Task.Run(() => SetMovingSectionAndEndPosition(moveCmd.MovingSections, moveCmd.EndAddress));
+                //Task.Run(() => SetMovingSectionAndEndPosition(moveCmd.MovingSections, moveCmd.EndAddress));
             }
             catch (Exception ex)
             {
@@ -254,7 +254,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                Task.Run(() => ResetSectionColor());
+                //Task.Run(() => ResetSectionColor());
             }
             catch (Exception ex)
             {
@@ -270,7 +270,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                Task.Run(() => GetReserveSection(sectionId));
+                //Task.Run(() => GetReserveSection(sectionId));
             }
             catch (Exception ex)
             {
@@ -281,7 +281,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                Task.Run(() => ChangeToNormalSection(passSectionId));
+                //Task.Run(() => ChangeToNormalSection(passSectionId));
             }
             catch (Exception ex)
             {
@@ -298,7 +298,7 @@ namespace Mirle.Agv.View
             try
             {
                 var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
-                RichTextBoxAppendHead(richTextBox1, msg);
+                //RichTextBoxAppendHead(richTextBox1, msg);
 
                 if (alarm.Level == EnumAlarmLevel.Alarm)
                 {
@@ -331,7 +331,7 @@ namespace Mirle.Agv.View
             try
             {
                 btnAlarmReset.Enabled = false;
-                RichTextBoxAppendHead(richTextBox1, msg);
+                //RichTextBoxAppendHead(richTextBox1, msg);
                 Thread.Sleep(500);
                 btnAlarmReset.Enabled = true;
             }
@@ -345,7 +345,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                Task.Run(() => ResetSectionColor());
+                //Task.Run(() => ResetSectionColor());
             }
             catch (Exception ex)
             {
@@ -391,7 +391,7 @@ namespace Mirle.Agv.View
 
         private void ShowMsgOnMainForm(object sender, string msg)
         {
-            Task.Run(() => RichTextBoxAppendHead(richTextBox1, msg));
+            //Task.Run(() => RichTextBoxAppendHead(richTextBox1, msg));
             LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
@@ -844,13 +844,13 @@ namespace Mirle.Agv.View
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
 
-            if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
-            {
-                ResetSectionColor();
-                ClearColor();
-                SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
-                moveCommandDebugMode.MainShowRunSectionList = false;
-            }
+            //if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
+            //{
+            //    ResetSectionColor();
+            //    ClearColor();
+            //    SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
+            //    moveCommandDebugMode.MainShowRunSectionList = false;
+            //}
             var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
             ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
             if (middleAgent.GetAskingReserveSection().Id != LastAskingReserveSectionId)
@@ -1009,7 +1009,7 @@ namespace Mirle.Agv.View
                               $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\n" +
                               $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]";
 
-                RichTextBoxAppendHead(rtbAgvcTransCmd, cmdInfo);
+               // RichTextBoxAppendHead(rtbAgvcTransCmd, cmdInfo);
             }
             catch (Exception ex)
             {
@@ -1031,7 +1031,7 @@ namespace Mirle.Agv.View
                    $"[IsEqPio={unloadCmdInfo.IsEqPio}]\n" +
                    $"[ForkSpeed={unloadCmdInfo.ForkSpeed}]";
 
-                RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
+                //RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
 
             }
             catch (Exception ex)
@@ -1054,7 +1054,7 @@ namespace Mirle.Agv.View
                    $"[IsEqPio={loadCmdInfo.IsEqPio}]\n" +
                    $"[ForkSpeed={loadCmdInfo.ForkSpeed}]";
 
-                RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
+                //RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
 
             }
             catch (Exception ex)
@@ -1079,7 +1079,7 @@ namespace Mirle.Agv.View
                              $"[Speeds={GetListSpeedsToString(moveCmdInfo.SectionSpeedLimits)}]" +
                              $"[MovAdr={GetListMovingAddressToString(moveCmdInfo.MovingAddress)}]";
 
-                RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
+                //RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
             }
             catch (Exception ex)
             {
@@ -1424,7 +1424,7 @@ namespace Mirle.Agv.View
         private void btnAutoApplyReserveOnce_Click(object sender, EventArgs e)
         {
             middleAgent.OnGetReserveOk("XXX");
-            RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve Once by MainForm");
+            //RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve Once by MainForm");
         }
 
         private void btnStartAskReserve_Click(object sender, EventArgs e)
@@ -1488,7 +1488,7 @@ namespace Mirle.Agv.View
             btnAutoManual.Enabled = false;
             SwitchAutoStatus();
             ClearColor();
-            ResetSectionColor();
+           // ResetSectionColor();
             Thread.Sleep(500);
             btnAutoManual.Enabled = true;
         }
@@ -1524,7 +1524,7 @@ namespace Mirle.Agv.View
                         mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                         Vehicle.Instance.AutoState = EnumAutoState.Manual;
                         var msg = $"Auto 切換 Manual 成功";
-                        RichTextBoxAppendHead(richTextBox1, msg);
+                        //RichTextBoxAppendHead(richTextBox1, msg);
                         mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
                         switchResult = true;
                     }

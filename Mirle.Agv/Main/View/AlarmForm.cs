@@ -75,7 +75,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                Task.Run(() => RichTextBoxAppendHead(richTextBox, msg));
+                //Task.Run(() => RichTextBoxAppendHead(richTextBox, msg));
             }
             catch (Exception ex)
             {
