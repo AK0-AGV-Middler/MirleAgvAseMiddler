@@ -51,6 +51,9 @@ namespace Mirle.Agv.View
         private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
         private int lastAlarmId = 0;
         public bool IsAgvcConnect { get; set; } = false;
+        public string DebugLogMsg { get; set; } = "";
+        public string TransferCommandMsg { get; set; } = "";
+        public string TransferStepMsg { get; set; } = "";
 
         #region PaintingItems
         private Image image;
@@ -298,7 +301,7 @@ namespace Mirle.Agv.View
             try
             {
                 var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
-                //RichTextBoxAppendHead(richTextBox1, msg);
+                AppendDebugLogMsg(msg);
 
                 if (alarm.Level == EnumAlarmLevel.Alarm)
                 {
@@ -331,7 +334,7 @@ namespace Mirle.Agv.View
             try
             {
                 btnAlarmReset.Enabled = false;
-                //RichTextBoxAppendHead(richTextBox1, msg);
+                AppendDebugLogMsg(msg);
                 Thread.Sleep(500);
                 btnAlarmReset.Enabled = true;
             }
@@ -391,8 +394,27 @@ namespace Mirle.Agv.View
 
         private void ShowMsgOnMainForm(object sender, string msg)
         {
+            AppendDebugLogMsg(msg);
+
             //Task.Run(() => RichTextBoxAppendHead(richTextBox1, msg));
             LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+        }
+
+        private void AppendDebugLogMsg(string msg)
+        {
+            try
+            {
+                DebugLogMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", msg, "\r\n", DebugLogMsg);
+
+                if (DebugLogMsg.Length > 65535)
+                {
+                    DebugLogMsg = DebugLogMsg.Substring(65535);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         public void DrawBasicMap()
@@ -844,6 +866,8 @@ namespace Mirle.Agv.View
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
 
+            tbxDebugLogMsg.Text = DebugLogMsg;
+
             //if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
             //{
             //    ResetSectionColor();
@@ -869,8 +893,8 @@ namespace Mirle.Agv.View
             UpdateCharginAndLoading();
             //DrawReserveSections();
             UpdateThreadPicture();
-            UpdateRtbAgvcTransCmd();
-            UpdateRtbTransferStep();
+            //UpdateRtbAgvcTransCmd();
+            //UpdateRtbTransferStep();
             UpdateLastAlarm();
             UpdateAgvcConnection();
             UpdateAgvFailResult();
@@ -994,22 +1018,36 @@ namespace Mirle.Agv.View
 
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
-                if (agvcTransCmd.CommandId.Equals(LastAgvcTransferCommandId))
+                string markText = "";
+                if (mainFlowHandler.IsOverrideMove)
                 {
-                    return;
+                    markText = "[替代路徑]";
                 }
-                LastAgvcTransferCommandId = agvcTransCmd.CommandId;
+                else if (mainFlowHandler.IsAvoidMove)
+                {
+                    markText = "[避車路徑]";
+                }
+                else
+                {
+                    markText = "[一般路徑]";
+                }
 
-                var cmdInfo = $"\n" +
-                              $"[SeqNum={agvcTransCmd.SeqNum}] [Type={agvcTransCmd.CommandType}]\n" +
-                              $"[CmdId={agvcTransCmd.CommandId}] [CstId={agvcTransCmd.CassetteId}]\n" +
-                              $"[LoadAdr={agvcTransCmd.LoadAddressId}] [UnloadAdr={agvcTransCmd.UnloadAddressId}]\n" +
-                              $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\n" +
-                              $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\n" +
-                              $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\n" +
-                              $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]";
+                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n",
+                                                   markText, "\t", $"{agvcTransCmd.CommandType}", "\r\n",
+                                                   $"[命令號={agvcTransCmd.CommandId}] [貨號={agvcTransCmd.CassetteId}]\r\n",
+                                                   $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
+                                                   $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n",
+                                                   $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\n",
+                                                   $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\n",
+                                                   $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\n",
+                                                   $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]");               
 
-               // RichTextBoxAppendHead(rtbAgvcTransCmd, cmdInfo);
+                if (TransferCommandMsg.Length > 65535)
+                {
+                    TransferCommandMsg = TransferCommandMsg.Substring(65535);
+                }
+
+                tbxTransferCommandMsg.Text = TransferCommandMsg;
             }
             catch (Exception ex)
             {
@@ -1079,7 +1117,7 @@ namespace Mirle.Agv.View
                              $"[Speeds={GetListSpeedsToString(moveCmdInfo.SectionSpeedLimits)}]" +
                              $"[MovAdr={GetListMovingAddressToString(moveCmdInfo.MovingAddress)}]";
 
-                //RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
+                AppendDebugLogMsg(cmdInfo);
             }
             catch (Exception ex)
             {
@@ -1424,7 +1462,7 @@ namespace Mirle.Agv.View
         private void btnAutoApplyReserveOnce_Click(object sender, EventArgs e)
         {
             middleAgent.OnGetReserveOk("XXX");
-            //RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve Once by MainForm");
+            AppendDebugLogMsg($"Auto Apply Reserve Once by MainForm");
         }
 
         private void btnStartAskReserve_Click(object sender, EventArgs e)
@@ -1488,7 +1526,7 @@ namespace Mirle.Agv.View
             btnAutoManual.Enabled = false;
             SwitchAutoStatus();
             ClearColor();
-           // ResetSectionColor();
+            // ResetSectionColor();
             Thread.Sleep(500);
             btnAutoManual.Enabled = true;
         }
@@ -1557,46 +1595,6 @@ namespace Mirle.Agv.View
         private void btnGetReserveOkClear_Click(object sender, EventArgs e)
         {
             middleAgent.DequeueGotReserveOkSections();
-        }
-
-        private void btnTestSomething_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-            Vehicle.Instance.AutoState = EnumAutoState.Auto;
-
-            //MapSection mapSection = theMapInfo.allMapSections["sec003"];
-            //middleAgent.SetupAskingReserveSection(mapSection);
-
-            //middleAgent.Send_Cmd136_AskReserve();
-
-            //middleAgent.Send_Cmd141_ModeChangeResponse();
-
-
-            //List<MapSection> mapSections = new List<MapSection>();
-            //MapSection mapSection;
-            //mapSection = theMapInfo.allMapSections["102"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["101"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["92"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["91"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["111"];
-            //mapSections.Add(mapSection);
-
-            //mainFlowHandler.SetupTestMoveCmd(mapSections);
-            //middleAgent.StopAskReserve();
-            //middleAgent.SetupNeedReserveSections(mapSections);
-            //middleAgent.StartAskReserve();
-            //RichTextBoxAppendHead(rtbTransferStep, "line001");
-            //RichTextBoxAppendHead(rtbTransferStep, "line002");
-            //RichTextBoxAppendHead(rtbTransferStep, "line003");
-
-            //var xx = rtbTransferStep.Text.ToList();
-
-            //Console.WriteLine();
-
         }
 
         private void btnSetupTestAgvcTransferCmd_Click(object sender, EventArgs e)

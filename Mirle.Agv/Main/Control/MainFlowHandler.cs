@@ -379,8 +379,6 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : 開始搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public void PauseVisitTransferSteps()
         {
@@ -696,6 +694,7 @@ namespace Mirle.Agv.Controller
             var msg = $"MainFlow : 收到{agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId}。";
             OnMessageShowEvent?.Invoke(this, msg);
 
+            #region 檢查搬送路徑
             try
             {
                 if (!IsAgvcTransferCommandEmpty())
@@ -733,13 +732,13 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
                 return;
             }
+            #endregion
 
-
+            #region 搬送路徑生成
             try
             {
                 this.agvcTransCmd = agvcTransCmd;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
-                //StopWatchLowPower();
                 SetupTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
                 //開始尋訪 trasnferSteps as List<TrasnferStep> 裡的每一步MoveCmdInfo/LoadCmdInfo/UnloadCmdInfo
@@ -748,8 +747,6 @@ namespace Mirle.Agv.Controller
                 StartVisitTransferSteps();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 確認。";
                 OnMessageShowEvent?.Invoke(this, okMsg);
-                //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                //    , okMsg));
             }
             catch (Exception ex)
             {
@@ -757,8 +754,9 @@ namespace Mirle.Agv.Controller
                 var ngMsg = $"MainFlow : 收到 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 處理失敗。";
                 OnMessageShowEvent?.Invoke(this, ngMsg);
 
-                //loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+            #endregion
         }
 
         private bool IsAgvcCommandMatchTheMap(AgvcTransCmd agvcTransCmd)
@@ -960,52 +958,50 @@ namespace Mirle.Agv.Controller
             #region 替代路徑檢查
             try
             {
+                middleAgent.PauseAskReserve();
+
                 if (IsAgvcTransferCommandEmpty())
                 {
                     var reason = "車輛沒有搬送命令可以執行替代路徑";
-                    RejectTransferCommandAndResume(000019, reason, agvcOverrideCmd);
+                    RejectOverrideCommandAndResume(000019, reason, agvcOverrideCmd);
                     return;
                 }
 
                 if (!IsMoveStep())
                 {
                     var reason = "車輛不在移動流程，無法執行替代路徑";
-                    RejectTransferCommandAndResume(000020, reason, agvcOverrideCmd);
+                    RejectOverrideCommandAndResume(000020, reason, agvcOverrideCmd);
                     return;
                 }
 
                 if (!IsMoveStopByNoReserve() && !agvcTransCmd.IsAvoidComplete)
                 {
                     var reason = $"車輛尚未停妥，拒絕執行替代路徑";
-                    RejectTransferCommandAndResume(000021, reason, agvcOverrideCmd);
+                    RejectOverrideCommandAndResume(000021, reason, agvcOverrideCmd);
                     return;
                 }
-                else
-                {
-                    PauseVisitTransferSteps();
-                    middleAgent.PauseAskReserve();
-                }
+                
 
                 if (IsNextTransferStepUnload())
                 {
                     if (!this.agvcTransCmd.UnloadAddressId.Equals(agvcOverrideCmd.UnloadAddressId))
                     {
                         var reason = $"替代路徑放貨站點[{agvcOverrideCmd.UnloadAddressId}]與原路徑放貨站點[{agvcTransCmd.UnloadAddressId}]不合。";
-                        RejectTransferCommandAndResume(000022, reason, agvcOverrideCmd);
+                        RejectOverrideCommandAndResume(000022, reason, agvcOverrideCmd);
                         return;
                     }
 
                     if (agvcOverrideCmd.ToUnloadSectionIds.Count == 0)
                     {
                         var reason = "替代路徑清單放貨段為空。";
-                        RejectTransferCommandAndResume(000024, reason, agvcOverrideCmd);
+                        RejectOverrideCommandAndResume(000024, reason, agvcOverrideCmd);
                         return;
                     }
 
                     if (!IsOverrideCommandMatchTheMapToUnload(agvcOverrideCmd))
                     {
                         var reason = "替代路徑放貨段站點與路段不合圖資";
-                        RejectTransferCommandAndResume(000018, reason, agvcOverrideCmd);
+                        RejectOverrideCommandAndResume(000018, reason, agvcOverrideCmd);
                         return;
                     }
                 }
@@ -1016,42 +1012,42 @@ namespace Mirle.Agv.Controller
                         if (!this.agvcTransCmd.LoadAddressId.Equals(agvcOverrideCmd.LoadAddressId))
                         {
                             var reason = $"替代路徑取貨站點[{agvcOverrideCmd.LoadAddressId}]與原路徑取貨站點[{agvcTransCmd.LoadAddressId}]不合。";
-                            RejectTransferCommandAndResume(000023, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000023, reason, agvcOverrideCmd);
                             return;
                         }
 
                         if (!this.agvcTransCmd.UnloadAddressId.Equals(agvcOverrideCmd.UnloadAddressId))
                         {
                             var reason = $"替代路徑放貨站點[{agvcOverrideCmd.UnloadAddressId}]與原路徑放貨站點[{agvcTransCmd.UnloadAddressId}]不合。";
-                            RejectTransferCommandAndResume(000022, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000022, reason, agvcOverrideCmd);
                             return;
                         }
 
                         if (agvcOverrideCmd.ToLoadSectionIds.Count == 0)
                         {
                             var reason = "替代路徑清單取貨段為空。";
-                            RejectTransferCommandAndResume(000025, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000025, reason, agvcOverrideCmd);
                             return;
                         }
 
                         if (agvcOverrideCmd.ToUnloadSectionIds.Count == 0)
                         {
                             var reason = "替代路徑清單放貨段為空。";
-                            RejectTransferCommandAndResume(000024, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000024, reason, agvcOverrideCmd);
                             return;
                         }
 
                         if (!IsOverrideCommandMatchTheMapToLoad(agvcOverrideCmd))
                         {
                             var reason = "替代路徑取貨段站點與路段不合圖資";
-                            RejectTransferCommandAndResume(000018, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000018, reason, agvcOverrideCmd);
                             return;
                         }
 
                         if (!IsOverrideCommandMatchTheMapToNextUnload(agvcOverrideCmd))
                         {
                             var reason = "替代路徑放貨段站點與路段不合圖資";
-                            RejectTransferCommandAndResume(000018, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000018, reason, agvcOverrideCmd);
                             return;
                         }
                     }
@@ -1060,21 +1056,21 @@ namespace Mirle.Agv.Controller
                         if (!this.agvcTransCmd.LoadAddressId.Equals(agvcOverrideCmd.LoadAddressId))
                         {
                             var reason = $"替代路徑取貨站點[{agvcOverrideCmd.LoadAddressId}]與原路徑取貨站點[{agvcTransCmd.LoadAddressId}]不合。";
-                            RejectTransferCommandAndResume(000023, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000023, reason, agvcOverrideCmd);
                             return;
                         }
 
                         if (agvcOverrideCmd.ToLoadSectionIds.Count == 0)
                         {
                             var reason = "替代路徑清單取貨段為空。";
-                            RejectTransferCommandAndResume(000025, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000025, reason, agvcOverrideCmd);
                             return;
                         }
 
                         if (!IsOverrideCommandMatchTheMapToLoad(agvcOverrideCmd))
                         {
                             var reason = "替代路徑取貨段站點與路段不合圖資";
-                            RejectTransferCommandAndResume(000018, reason, agvcOverrideCmd);
+                            RejectOverrideCommandAndResume(000018, reason, agvcOverrideCmd);
                             return;
                         }
                     }
@@ -1085,21 +1081,21 @@ namespace Mirle.Agv.Controller
                     if (!agvcTransCmd.UnloadAddressId.Equals(agvcOverrideCmd.UnloadAddressId))
                     {
                         var reason = $"替代路徑移動終點[{agvcOverrideCmd.UnloadAddressId}]與原路徑移動終點[{agvcTransCmd.UnloadAddressId}]不合。";
-                        RejectTransferCommandAndResume(000022, reason, agvcOverrideCmd);
+                        RejectOverrideCommandAndResume(000022, reason, agvcOverrideCmd);
                         return;
                     }
 
                     if (agvcOverrideCmd.ToUnloadSectionIds.Count == 0)
                     {
                         var reason = "替代路徑清單為空。";
-                        RejectTransferCommandAndResume(000024, reason, agvcOverrideCmd);
+                        RejectOverrideCommandAndResume(000024, reason, agvcOverrideCmd);
                         return;
                     }
 
                     if (!IsOverrideCommandMatchTheMapToUnload(agvcOverrideCmd))
                     {
                         var reason = "替代路徑中站點與路段不合圖資";
-                        RejectTransferCommandAndResume(000018, reason, agvcOverrideCmd);
+                        RejectOverrideCommandAndResume(000018, reason, agvcOverrideCmd);
                         return;
                     }
                 }
@@ -1109,7 +1105,7 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
 
                 var reason = "替代路徑Exception";
-                RejectTransferCommandAndResume(000026, reason, agvcOverrideCmd);
+                RejectOverrideCommandAndResume(000026, reason, agvcOverrideCmd);
                 return;
             }
 
@@ -1130,6 +1126,7 @@ namespace Mirle.Agv.Controller
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
                 IsOverrideMove = true;
+                IsAvoidMove = false;
                 GoNextTransferStep = true;
                 ResumeVisitTransferSteps();
             }
@@ -1137,7 +1134,7 @@ namespace Mirle.Agv.Controller
             {
                 StopAndClear();
                 var reason = "替代路徑Exception";
-                RejectTransferCommandAndResume(000026, reason, agvcOverrideCmd);
+                RejectOverrideCommandAndResume(000026, reason, agvcOverrideCmd);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
@@ -1162,6 +1159,22 @@ namespace Mirle.Agv.Controller
                     ResumeVisitTransferSteps();
                     middleAgent.ResumeAskReserve();
                 }
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void RejectOverrideCommandAndResume(int alarmCode, string reason, AgvcOverrideCmd agvcOverrideCmd)
+        {
+            try
+            {
+                alarmHandler.SetAlarm(alarmCode);
+                middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 1, reason);
+                reason = $"MainFlow : 拒絕 {agvcOverrideCmd.CommandType} 命令, " + reason;
+                OnMessageShowEvent?.Invoke(this, reason);
+                middleAgent.ResumeAskReserve();
             }
             catch (Exception ex)
             {
@@ -1213,6 +1226,8 @@ namespace Mirle.Agv.Controller
             #region 避車檢查
             try
             {
+                middleAgent.PauseAskReserve();
+
                 if (IsAgvcTransferCommandEmpty())
                 {
                     var reason = "車輛不在搬送命令中，無法避車";
@@ -1223,26 +1238,21 @@ namespace Mirle.Agv.Controller
                 if (!IsMoveStep())
                 {
                     var reason = "車輛不在移動流程，無法避車";
-                    RejectTransferCommandAndResume(000034, reason, agvcMoveCmd);
+                    RejectAvoidCommandAndResume(000034, reason, agvcMoveCmd);
                     return;
                 }
 
                 if (!IsMoveStopByNoReserve() && !agvcTransCmd.IsAvoidComplete)
                 {
                     var reason = $"車輛尚未停妥，無法避車";
-                    RejectTransferCommandAndResume(000035, reason, agvcMoveCmd);
+                    RejectAvoidCommandAndResume(000035, reason, agvcMoveCmd);
                     return;
-                }
-                else
-                {
-                    PauseVisitTransferSteps();
-                    middleAgent.PauseAskReserve();
                 }
 
                 if (!IsAvoidCommandMatchTheMap(agvcMoveCmd))
                 {
                     var reason = "避車路徑中站點與路段不合圖資";
-                    RejectTransferCommandAndResume(000018, reason, agvcMoveCmd);
+                    RejectAvoidCommandAndResume(000018, reason, agvcMoveCmd);
                     return;
                 }
             }
@@ -1252,7 +1262,7 @@ namespace Mirle.Agv.Controller
                     , ex.StackTrace));
 
                 var reason = "避車Exception";
-                RejectTransferCommandAndResume(000036, reason, agvcMoveCmd);
+                RejectAvoidCommandAndResume(000036, reason, agvcMoveCmd);
             }
             #endregion
 
@@ -1269,13 +1279,15 @@ namespace Mirle.Agv.Controller
                 var okmsg = $"MainFlow : 接受避車命令確認，終點[{agvcTransCmd.AvoidEndAddressId}]。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
                 IsAvoidMove = true;
+                IsOverrideMove = false;
+                GoNextTransferStep = true;
                 ResumeVisitTransferSteps();
             }
             catch (Exception ex)
             {
                 StopAndClear();
                 var reason = "避車Exception";
-                RejectTransferCommandAndResume(000036, reason, agvcMoveCmd);
+                RejectAvoidCommandAndResume(000036, reason, agvcMoveCmd);
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
             }
@@ -1297,11 +1309,7 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyAvoidCommand(agvcMoveCmd, 1, reason);
                 reason = $"MainFlow : 拒絕避車命令, " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
-                if (VisitTransferStepsStatus == EnumThreadStatus.Pause)
-                {
-                    ResumeVisitTransferSteps();
-                    middleAgent.ResumeAskReserve();
-                }
+                middleAgent.ResumeAskReserve();
             }
             catch (Exception ex)
             {
