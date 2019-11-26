@@ -1132,96 +1132,63 @@ namespace Mirle.Agv.Controller
             location.Delta = realEncoder - (location.ElmoEncoder + location.Offset);
         }
 
-        private void UpdateThetaSectionDeviation()
+        private void UpdateThetaSectionDeviationAndSafetyCheck()
         {
-            AGVPosition agvPosition = null;
-
-            int index = -1;
-            for (int i = 0; i < DriverSr2000List.Count; i++)
-            {
-                agvPosition = DriverSr2000List[i].GetAGVPosition();
-
-                if (agvPosition != null)
-                {
-                    if (computeFunction.IsSameAngle(agvPosition.BarcodeAngleInMap, agvPosition.AGVAngle, ControlData.WheelAngle))
-                    {
-                        index = i;
-                        break;
-                    }
-                    else
-                        agvPosition = null;
-                }
-            }
-
-            if (agvPosition != null)
-            {
-                if (location.ThetaAndSectionDeviation == null ||
-                !(location.ThetaAndSectionDeviation.Count == agvPosition.Count && location.ThetaAndSectionDeviation.Index == index))
-                {
-                    double sectionDeviation = 0;
-                    double theta =
-                        agvPosition.AGVAngle + (command.SectionLineList[command.IndexOflisSectionLine].DirFlag ? 0 : 180) +
-                        ControlData.WheelAngle - command.SectionLineList[command.IndexOflisSectionLine].SectionAngle;
-
-                    while (theta > 180 || theta <= -180)
-                    {
-                        if (theta > 180)
-                            theta -= 360;
-                        else if (theta <= -180)
-                            theta += 360;
-                    }
-
-                    switch (command.SectionLineList[command.IndexOflisSectionLine].SectionAngle)
-                    {
-                        case 0:
-                            sectionDeviation = agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y;
-                            ControlData.SectionDeviationOffset = command.EndOffsetY;
-                            break;
-                        case 180:
-                            sectionDeviation = -(agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y);
-                            ControlData.SectionDeviationOffset = -command.EndOffsetY;
-                            break;
-                        case 90:
-                            sectionDeviation = agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X;
-                            ControlData.SectionDeviationOffset = command.EndOffsetX;
-                            break;
-                        case -90:
-                            sectionDeviation = -(agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X);
-                            ControlData.SectionDeviationOffset = -command.EndOffsetX;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    location.ThetaAndSectionDeviation = new ThetaSectionDeviation(theta, sectionDeviation, agvPosition.Count, index);
-                }
-            }
-            else
+            if (location.Barcode == null)
             {
                 location.ThetaAndSectionDeviation = null;
-            }
-        }
-
-        private void ThetaSectionDeviationSafetyCheck()
-        {
-            if (location.ThetaAndSectionDeviation == null)
                 return;
+            }
+
+            double sectionDeviation = 0;
+            double theta =
+                location.Barcode.AGVAngle + (command.SectionLineList[command.IndexOflisSectionLine].DirFlag ? 0 : 180) +
+                ControlData.WheelAngle - command.SectionLineList[command.IndexOflisSectionLine].SectionAngle;
+
+            while (theta > 180 || theta <= -180)
+            {
+                if (theta > 180)
+                    theta -= 360;
+                else if (theta <= -180)
+                    theta += 360;
+            }
+
+            switch (command.SectionLineList[command.IndexOflisSectionLine].SectionAngle)
+            {
+                case 0:
+                    sectionDeviation = location.Barcode.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y;
+                    ControlData.SectionDeviationOffset = command.EndOffsetY;
+                    break;
+                case 180:
+                    sectionDeviation = -(location.Barcode.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y);
+                    ControlData.SectionDeviationOffset = -command.EndOffsetY;
+                    break;
+                case 90:
+                    sectionDeviation = location.Barcode.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X;
+                    ControlData.SectionDeviationOffset = command.EndOffsetX;
+                    break;
+                case -90:
+                    sectionDeviation = -(location.Barcode.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X);
+                    ControlData.SectionDeviationOffset = -command.EndOffsetX;
+                    break;
+                default:
+                    break;
+            }
+
+            location.ThetaAndSectionDeviation = new ThetaSectionDeviation(theta, sectionDeviation, location.Barcode.Count);
 
             if (moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Enable)
             {
                 if (Math.Abs(location.ThetaAndSectionDeviation.Theta) >
                     moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range)
                 {
-                    if (location.Barcode != null)
-                        WriteLog("MoveControl", "7", device, "", String.Concat("nowAGV車資 : ", location.Barcode.AGVAngle, ", section index : ", command.IndexOflisSectionLine,
-                                                                               ", dirFlag : ", command.SectionLineList[command.IndexOflisSectionLine].DirFlag.ToString(),
-                                                                               ", SectionAngle : ", command.SectionLineList[command.IndexOflisSectionLine].SectionAngle));
-                    EMSControl("角度偏差" + location.ThetaAndSectionDeviation.Theta.ToString("0.0") +
-                        "度,已超過安全設置的" +
-                        moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0") +
-                        "度,因此啟動EMS!");
+                    WriteLog("MoveControl", "7", device, "", String.Concat("nowAGV車資 : ", location.Barcode.AGVAngle, ", section index : ", command.IndexOflisSectionLine,
+                                                                           ", dirFlag : ", command.SectionLineList[command.IndexOflisSectionLine].DirFlag.ToString(),
+                                                                           ", SectionAngle : ", command.SectionLineList[command.IndexOflisSectionLine].SectionAngle));
+                    EMSControl(String.Concat("nowAGV車資 : ", location.Barcode.AGVAngle, ", 角度偏差", location.ThetaAndSectionDeviation.Theta.ToString("0.0"),
+                        "度,已超過安全設置的", moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0"),
+                        "度,因此啟動EMS!"));
                     SendAlarmCode(154000);
-
                     return;
                 }
             }
@@ -1232,10 +1199,10 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range)
                     {
-                        EMSControl("橫移偏差" + location.ThetaAndSectionDeviation.SectionDeviation.ToString("0") +
-                            "mm,已超過安全設置的" +
-                            moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0") +
-                            "mm,因此啟動EMS!");
+                        EMSControl(String.Concat("nowBarcodePosition : ( ", location.Barcode.Position.X.ToString(), ", ", location.Barcode.Position.Y.ToString(),
+                                                 " ), ", "橫移偏差", location.ThetaAndSectionDeviation.SectionDeviation.ToString("0"), "mm,已超過安全設置的",
+                                                 moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0"),
+                                                 "mm,因此啟動EMS!"));
                         SendAlarmCode(154001);
                     }
                 }
@@ -1243,10 +1210,10 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
                     {
-                        EMSControl("軌道偏差" + location.ThetaAndSectionDeviation.SectionDeviation.ToString("0") +
-                            "mm,已超過安全設置的" +
-                            moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0") +
-                            "mm,因此啟動EMS!");
+                        EMSControl(String.Concat("nowBarcodePosition : ( ", location.Barcode.Position.X.ToString(), ", ", location.Barcode.Position.Y.ToString(),
+                                                 " ), ", "橫移偏差", location.ThetaAndSectionDeviation.SectionDeviation.ToString("0"), "mm,已超過安全設置的",
+                                                 moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0"),
+                                                 "mm,因此啟動EMS!"));
                         SendAlarmCode(154001);
                     }
                 }
@@ -1257,40 +1224,39 @@ namespace Mirle.Agv.Controller
         {
             if (!SimulationMode)
             {
+                AGVPosition temp = null;
                 AGVPosition agvPosition = null;
-                int index = 0;
 
-                for (; index < DriverSr2000List.Count; index++)
+                for (int i = 0; i < DriverSr2000List.Count; i++)
                 {
-                    agvPosition = DriverSr2000List[index].GetAGVPosition();
+                    temp = DriverSr2000List[i].GetAGVPosition();
 
-                    if (index == 0)
-                        location.BarcodeLeft = agvPosition;
-                    else if (index == 1)
-                        location.BarcodeRight = agvPosition;
+                    if (i == 0)
+                        location.BarcodeLeft = temp;
+                    else if (i == 1)
+                        location.BarcodeRight = temp;
 
-                    if (agvPosition != null)
+                    if (temp != null && computeFunction.IsSameAngle(temp.BarcodeAngleInMap, temp.AGVAngle, ControlData.WheelAngle))
                     {
-                        if (agvPosition.Type == EnumBarcodeMaterial.Papper)
-                            agvPosition = null;
-                        else if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
-                            break;
-                        else if (computeFunction.IsSameAngle(agvPosition.BarcodeAngleInMap, agvPosition.AGVAngle, ControlData.WheelAngle))
-                            break;
-                        else
-                            agvPosition = null;
+                        if (agvPosition == null || (agvPosition.Type != EnumBarcodeMaterial.Iron && temp.Type == EnumBarcodeMaterial.Iron))
+                        {
+                            agvPosition = temp;
+                        }
                     }
                 }
 
-                if (agvPosition != null && !(location.LastBarcodeCount == agvPosition.Count && location.IndexOfSr2000List == index))
+                if (agvPosition != null)
                 {   // 有資料且和上次的不是同一筆.
-                    location.LastBarcodeCount = agvPosition.Count;
-                    location.IndexOfSr2000List = index;
                     location.Barcode = agvPosition;
                     location.ScanTime = agvPosition.ScanTime;
                     location.BarcodeGetDataTime = agvPosition.GetDataTime;
 
-                    Vehicle.Instance.VehicleLocation.BarcodePosition = location.Barcode.Position;
+                    if (location.Barcode.Type == EnumBarcodeMaterial.Iron)
+                    {
+                        location.LastPositingBarcodeID = location.Barcode.BarcodeLineID;
+                        Vehicle.Instance.VehicleLocation.BarcodePosition = location.Barcode.Position;
+                    }
+
                     return true;
                 }
             }
@@ -1450,14 +1416,14 @@ namespace Mirle.Agv.Controller
             loopTimeTimer.Start();
 
             UpdateElmo();
-            bool newBarcodeData = UpdateSR2000();
+            bool newBarcode = UpdateSR2000();
 
             if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error)
             {
                 if (MoveState != EnumMoveState.TR && MoveState != EnumMoveState.R2000)
                 {
-                    UpdateThetaSectionDeviation();
-                    ThetaSectionDeviationSafetyCheck();
+                    if (newBarcode)
+                        UpdateThetaSectionDeviationAndSafetyCheck();
 
                     if (location.ThetaAndSectionDeviation != null && ControlData.EQVChange)
                     {
@@ -1465,16 +1431,16 @@ namespace Mirle.Agv.Controller
                         location.ThetaAndSectionDeviation.Theta += command.EndOffsetTheta;
                     }
 
-                    if (newBarcodeData)
+                    if (newBarcode && location.Barcode.Type == EnumBarcodeMaterial.Iron)
                         UpdateDelta(secondCorrection);
                 }
 
                 UpdateReal();
-                SafetyTurnOutAndLineBarcodeInterval(newBarcodeData);
+                SafetyTurnOutAndLineBarcodeInterval(newBarcode);
             }
             else
             {
-                if (Vehicle.Instance.AutoState != EnumAutoState.Auto && newBarcodeData)
+                if (Vehicle.Instance.AutoState != EnumAutoState.Auto && newBarcode && location.Barcode.Type == EnumBarcodeMaterial.Iron)
                 {
                     location.Real = location.Barcode;
                     location.Real.AGVAngle = computeFunction.GetAGVAngle(location.Real.AGVAngle);
@@ -2432,7 +2398,7 @@ namespace Mirle.Agv.Controller
 
             try
             {
-                if (newBarcode)
+                if (newBarcode && location.Barcode.Type == EnumBarcodeMaterial.Iron)
                 {
                     double deltaX = location.Barcode.Position.X - command.End.X;
                     double deltaY = location.Barcode.Position.Y - command.End.Y;
@@ -2592,18 +2558,17 @@ namespace Mirle.Agv.Controller
                     if ((cmd.DirFlag && location.RealEncoder > cmd.TriggerEncoder + cmd.SafetyDistance) ||
                        (!cmd.DirFlag && location.RealEncoder < cmd.TriggerEncoder - cmd.SafetyDistance))
                     {
-                        EMSControl("Command : " + cmd.CmdType.ToString() + ", 超過Triiger觸發區間,EMS.. dirFlag : " +
-                                     (ControlData.DirFlag ? "往前" : "往後") + ", Encoder : " +
-                                     location.RealEncoder.ToString("0.0") + ", triggerEncoder : " + cmd.TriggerEncoder.ToString("0.0"));
+                        EMSControl(String.Concat("Command : ", cmd.CmdType.ToString(), ", 超過Triiger觸發區間,EMS.. dirFlag : ", (ControlData.DirFlag ? "往前" : "往後"),
+                                     ", Encoder : ", location.RealEncoder.ToString("0.0"), ", triggerEncoder : ", cmd.TriggerEncoder.ToString("0.0")));
                         SendAlarmCode(150002);
                         return false;
                     }
                     else if ((cmd.DirFlag && location.RealEncoder > cmd.TriggerEncoder) ||
                             (!cmd.DirFlag && location.RealEncoder < cmd.TriggerEncoder))
                     {
-                        WriteLog("MoveControl", "7", device, "", "Command : " + cmd.CmdType.ToString() + ", 觸發, dirFlag : " +
-                                  (ControlData.DirFlag ? "往前" : "往後") + ", Encoder : " +
-                                 location.RealEncoder.ToString("0.0") + ", triggerEncoder : " + cmd.TriggerEncoder.ToString("0.0"));
+                        WriteLog("MoveControl", "7", device, "", String.Concat("Command : ", cmd.CmdType.ToString(), ", 觸發, dirFlag : ",
+                                  (ControlData.DirFlag ? "往前" : "往後"), ", Encoder : ", location.RealEncoder.ToString("0.0"),
+                                  ", triggerEncoder : ", cmd.TriggerEncoder.ToString("0.0"), ", 定位Barcode ID : ", location.LastPositingBarcodeID));
                         return true;
                     }
                 }
@@ -2617,9 +2582,9 @@ namespace Mirle.Agv.Controller
         {
             if (command.IndexOfCmdList < command.CommandList.Count && TriggerCommand(command.CommandList[command.IndexOfCmdList]))
             {
-                WriteLog("MoveControl", "7", device, "", "Barcode Position ( " + location.Barcode.Position.X.ToString("0") + ", " + location.Barcode.Position.Y.ToString("0") +
-                                                         " ), Real Position ( " + location.Real.Position.X.ToString("0") + ", " + location.Real.Position.Y.ToString("0") +
-                                                         " ), Encoder Position ( " + location.Encoder.Position.X.ToString("0") + ", " + location.Encoder.Position.Y.ToString("0") + " )");
+                WriteLog("MoveControl", "7", device, "", String.Concat("Barcode Position ( ", location.Barcode.Position.X.ToString("0"), ", " + location.Barcode.Position.Y.ToString("0"),
+                                                                       " ), Real Position ( ", location.Real.Position.X.ToString("0"), ", ", location.Real.Position.Y.ToString("0"),
+                                                                       " ), Encoder Position ( ", location.Encoder.Position.X.ToString("0"), ", " + location.Encoder.Position.Y.ToString("0") + " )"));
 
                 switch (command.CommandList[command.IndexOfCmdList].CmdType)
                 {
@@ -4234,7 +4199,7 @@ namespace Mirle.Agv.Controller
         public bool VehclePause(bool hideFunction = false)
         {
             WriteLog("MoveControl", "7", device, "", "Pause Request!");
-            
+
             if (ControlData.PauseRequest)
             {
                 WriteLog("MoveControl", "7", device, "", "AGV PauseRequest,因此不再發送PauseRequest!");

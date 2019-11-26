@@ -3018,7 +3018,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 middleAgent.PauseAskReserve();
-                //PauseVisitTransferSteps();
+                PauseVisitTransferSteps();
                 if (IsMoveStep())
                 {
                     if (moveControlHandler.VehclePause())
@@ -3072,7 +3072,7 @@ namespace Mirle.Agv.Controller
                         OnMessageShowEvent(this, msg);
                         middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
                         moveControlHandler.VehcleContinue();
-                        //ResumeVisitTransferSteps();
+                        ResumeVisitTransferSteps();
                         middleAgent.ResumeAskReserve();
                         IsMoveEnd = false;
                         if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
@@ -3094,7 +3094,7 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent(this, msg);
                     middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
                     middleAgent.ResumeAskReserve();
-                    //ResumeVisitTransferSteps();
+                    ResumeVisitTransferSteps();
                     if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
                     {
                         agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
