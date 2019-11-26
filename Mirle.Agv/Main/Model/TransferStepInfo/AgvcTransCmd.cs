@@ -199,6 +199,7 @@ namespace Mirle.Agv.Model.TransferSteps
         {
             try
             {
+                CommandType = EnumAgvcTransCommandType.Move;
                 SeqNum = aSeqNum;
                 SecToUnloadSections(transRequest.GuideSections);
                 SetToUnloadAddresses(transRequest.GuideAddresses);

@@ -117,6 +117,10 @@ namespace Mirle.Agv.Controller
         public event EventHandler<string> OnMessageShowEvent;
         public event EventHandler<MoveCmdInfo> OnPrepareForAskingReserveEvent;
         public event EventHandler OnMoveArrivalEvent;
+        public event EventHandler<AgvcTransCmd> OnTransferCommandCheckedEvent;
+        public event EventHandler<AgvcOverrideCmd> OnOverrideCommandCheckedEvent;
+        public event EventHandler<AgvcMoveCmd> OnAvoidCommandCheckedEvent;
+        public event EventHandler<TransferStep> OnDoTransferStepEvent;
         #endregion
 
         #region Models
@@ -747,6 +751,7 @@ namespace Mirle.Agv.Controller
                 StartVisitTransferSteps();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 確認。";
                 OnMessageShowEvent?.Invoke(this, okMsg);
+                OnTransferCommandCheckedEvent?.Invoke(this, agvcTransCmd);
             }
             catch (Exception ex)
             {
@@ -980,7 +985,7 @@ namespace Mirle.Agv.Controller
                     RejectOverrideCommandAndResume(000021, reason, agvcOverrideCmd);
                     return;
                 }
-                
+
 
                 if (IsNextTransferStepUnload())
                 {
@@ -1125,6 +1130,7 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
+                OnOverrideCommandCheckedEvent?.Invoke(this, agvcOverrideCmd);
                 IsOverrideMove = true;
                 IsAvoidMove = false;
                 GoNextTransferStep = true;
@@ -1278,6 +1284,7 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyAvoidCommand(agvcMoveCmd, 0, "");
                 var okmsg = $"MainFlow : 接受避車命令確認，終點[{agvcTransCmd.AvoidEndAddressId}]。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
+                OnAvoidCommandCheckedEvent?.Invoke(this, agvcMoveCmd);
                 IsAvoidMove = true;
                 IsOverrideMove = false;
                 GoNextTransferStep = true;
@@ -1860,46 +1867,15 @@ namespace Mirle.Agv.Controller
 
                 if (status == EnumMoveComplete.Pause)
                 {
-                    //if (IsOverridePauseing)
-                    //{
-                    //    IsOverridePauseing = false;
-                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[替代路徑]且暫停移動確認");
-                    //    return;
-                    //}
-                    //else if (IsAvoidPauseing)
-                    //{
-                    //    IsAvoidPauseing = false;
-                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[避車]且暫停移動確認");
-                    //    return;
-                    //}
-                    //else
-                    //{
                     VisitTransferStepsStatus = EnumThreadStatus.PauseComplete;
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動暫停確認");
                     middleAgent.PauseAskReserve();
                     PauseVisitTransferSteps();
                     return;
-                    //}
                 }
 
                 if (status == EnumMoveComplete.Cancel)
                 {
-                    //if (IsOverrideCanceling)
-                    //{
-                    //    IsOverrideCanceling = false;
-                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[替代路徑]且移動取消確認");
-                    //    GoNextTransferStep = true;
-                    //    return;
-                    //}
-                    //else if (IsAvoidCanceling)
-                    //{
-                    //    IsAvoidCanceling = false;
-                    //    OnMessageShowEvent?.Invoke(this, $"MainFlow : 接受[避車]且移動取消確認");
-                    //    GoNextTransferStep = true;
-                    //    return;
-                    //}
-                    //else
-                    //{
                     StopAndClear();
                     if (IsAvoidMove)
                     {
@@ -1912,7 +1888,6 @@ namespace Mirle.Agv.Controller
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動取消確認");
                         return;
                     }
-                    //}
                 }
                 #endregion
 
@@ -1969,8 +1944,8 @@ namespace Mirle.Agv.Controller
             {
                 if (IsNextTransferStepLoad() && loadingChargeIntervalMs > 0)
                 {
-                    Task.Run(() =>
-                    {
+                    //Task.Run(() =>
+                    //{
                         try
                         {
                             Stopwatch sw = new Stopwatch();
@@ -1990,7 +1965,7 @@ namespace Mirle.Agv.Controller
                         {
                             loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                         }
-                    });
+                    //});
                 }
             }
             catch (Exception ex)
@@ -2003,14 +1978,17 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                Task.Run(() =>
+                //Task.Run(() =>
+                //{
+                try
                 {
-                    try { StartCharge(endAddress); }
-                    catch (Exception ex)
-                    {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                    }
-                });
+                    StartCharge(endAddress);
+                }
+                catch (Exception ex)
+                {
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                }
+                //});
             }
             catch (Exception ex)
             {
@@ -2185,6 +2163,7 @@ namespace Mirle.Agv.Controller
 
         public void DoTransfer()
         {
+            OnDoTransferStepEvent?.Invoke(this, GetCurTransferStep());
             transferStatus.DoTransfer(this);
         }
 

@@ -209,6 +209,10 @@ namespace Mirle.Agv.View
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
             mainFlowHandler.OnPrepareForAskingReserveEvent += MainFlowHandler_OnPrepareForAskingReserveEvent;
             mainFlowHandler.OnMoveArrivalEvent += MainFlowHandler_OnMoveArrivalEvent;
+            mainFlowHandler.OnTransferCommandCheckedEvent += MainFlowHandler_OnTransferCommandCheckedEvent;
+            mainFlowHandler.OnOverrideCommandCheckedEvent += MainFlowHandler_OnOverrideCommandCheckedEvent;
+            mainFlowHandler.OnAvoidCommandCheckedEvent += MainFlowHandler_OnAvoidCommandCheckedEvent;
+            mainFlowHandler.OnDoTransferStepEvent += MainFlowHandler_OnDoTransferStepEvent;
             middleAgent.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
             middleAgent.OnReserveOkEvent += MiddleAgent_OnReserveOkEvent;
@@ -218,6 +222,8 @@ namespace Mirle.Agv.View
             theVehicle.OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
             moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
         }
+
+
 
         private void InitialSoc()
         {
@@ -859,6 +865,148 @@ namespace Mirle.Agv.View
 
         #endregion
 
+        private void MainFlowHandler_OnAvoidCommandCheckedEvent(object sender, AgvcMoveCmd agvcMoveCmd)
+        {
+            SetTransferCommandMsg("[避車路徑]", agvcMoveCmd);
+        }
+
+        private void MainFlowHandler_OnOverrideCommandCheckedEvent(object sender, AgvcOverrideCmd agvcOverrideCmd)
+        {
+            SetTransferCommandMsg("[替代路徑]", agvcOverrideCmd);
+        }
+
+        private void MainFlowHandler_OnTransferCommandCheckedEvent(object sender, AgvcTransCmd agvcTransCmd)
+        {
+            SetTransferCommandMsg("[一般路徑]", agvcTransCmd);
+        }
+
+        private void SetTransferCommandMsg(string type, AgvcTransCmd agvcTransCmd)
+        {
+            try
+            {
+                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n",
+                                      type, "\t", $"{agvcTransCmd.CommandType}", "\r\n",
+                                      $"[命令號={agvcTransCmd.CommandId}]\t[貨號={agvcTransCmd.CassetteId}]\r\n",
+                                      $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
+                                      $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n",
+                                      $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\r\n",
+                                      $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\r\n",
+                                      $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\r\n",
+                                      $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]\r\n",
+                                      TransferCommandMsg);
+
+                if (TransferCommandMsg.Length > 32767)
+                {
+                    TransferCommandMsg = TransferCommandMsg.Substring(32767);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+
+        }
+
+        private void MainFlowHandler_OnDoTransferStepEvent(object sender, TransferStep transferStep)
+        {
+            try
+            {
+                string msg = "";
+                switch (transferStep.GetTransferStepType())
+                {
+                    case EnumTransferStepType.Load:
+                        msg = GetTransferStepMsgFromLoadCmdInfo(transferStep);
+                        break;
+                    case EnumTransferStepType.Unload:
+                        msg = GetTransferStepMsgFromUnLoadCmdInfo(transferStep);
+                        break;
+                    case EnumTransferStepType.Move:
+                    case EnumTransferStepType.MoveToCharger:
+                        msg = GetTransferStepMsgFromMoveCmdInfo(transferStep);
+                        break;
+                    case EnumTransferStepType.Empty:
+                    default:
+                        return;
+                }
+
+                SetTransferStepMsg(msg);
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private string GetTransferStepMsgFromMoveCmdInfo(TransferStep transferStep)
+        {
+            try
+            {
+                MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
+
+                string result = string.Concat($"移動\t{moveCmdInfo.GetTransferStepType()}\r\n",
+                                       $"[命令號={moveCmdInfo.CmdId}]\r\n",
+                                       $"[Addresses={GetListMovingAddressToString(moveCmdInfo.MovingAddress)}]\r\n",
+                                       $"[Sections={GetListMovingSectionsToString(moveCmdInfo.MovingSections)}]"
+                                       );
+                AppendDebugLogMsg(result);
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return "";
+            }
+        }
+        private string GetTransferStepMsgFromUnLoadCmdInfo(TransferStep transferStep)
+        {
+            try
+            {
+                UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
+                return string.Concat($"放貨\t{unloadCmdInfo.GetTransferStepType()}\r\n",
+                                      $"[命令號={unloadCmdInfo.CmdId}]\t[貨號={unloadCmdInfo.CstId}]\r\n",
+                                      $"[放貨站={unloadCmdInfo.UnloadAddress}]\r\n",
+                                      $"[放貨方向={unloadCmdInfo.StageDirection}]\r\n",
+                                      $"[StageNum={unloadCmdInfo.StageNum}]\r\n",
+                                      $"[是否PIO通訊={unloadCmdInfo.IsEqPio}]\r\n",
+                                      $"[手臂速度={unloadCmdInfo.ForkSpeed}]");
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return "";
+            }
+        }
+        private string GetTransferStepMsgFromLoadCmdInfo(TransferStep transferStep)
+        {
+            try
+            {
+                LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
+                return string.Concat($"取貨\t{loadCmdInfo.GetTransferStepType()}\r\n",
+                                      $"[命令號={loadCmdInfo.CmdId}]\t[貨號={loadCmdInfo.CstId}]\r\n",
+                                      $"[取貨站={loadCmdInfo.LoadAddress}]\r\n",
+                                      $"[取貨方向={loadCmdInfo.StageDirection}]\r\n",
+                                      $"[StageNum={loadCmdInfo.StageNum}]\r\n",
+                                      $"[是否PIO通訊={loadCmdInfo.IsEqPio}]\r\n",
+                                      $"[手臂速度={loadCmdInfo.ForkSpeed}]");
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return "";
+            }
+        }
+        private void SetTransferStepMsg(string msg)
+        {
+            TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg, "\r\n", TransferStepMsg);
+
+            if (TransferStepMsg.Length > 32767)
+            {
+                TransferStepMsg = TransferStepMsg.Substring(32767);
+            }
+        }
+
         private void timeUpdateUI_Tick(object sender, EventArgs e)
         {
             //try
@@ -893,8 +1041,8 @@ namespace Mirle.Agv.View
             UpdateCharginAndLoading();
             //DrawReserveSections();
             UpdateThreadPicture();
-            //UpdateRtbAgvcTransCmd();
-            //UpdateRtbTransferStep();
+            UpdateTbxAgvcTransCmd();
+            UpdateTbxTransferStep();
             UpdateLastAlarm();
             UpdateAgvcConnection();
             UpdateAgvFailResult();
@@ -917,7 +1065,6 @@ namespace Mirle.Agv.View
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-
         public void UpdateAgvcConnection()
         {
             try
@@ -958,40 +1105,11 @@ namespace Mirle.Agv.View
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-        private void UpdateRtbTransferStep()
+        private void UpdateTbxTransferStep()
         {
             try
             {
-                if (mainFlowHandler.GetTransferStepsCount() == 0)
-                {
-                    return;
-                }
-
-                TransferStep transferStep = mainFlowHandler.GetCurTransferStep();
-
-                if (transferStep.GetTransferStepType() == LastTransferStepType && mainFlowHandler.GetAgvcTransCmd().CommandId == LastAgvcTransferCommandId)
-                {
-                    return;
-                }
-                LastTransferStepType = transferStep.GetTransferStepType();
-
-                switch (transferStep.GetTransferStepType())
-                {
-                    case EnumTransferStepType.Move:
-                    case EnumTransferStepType.MoveToCharger:
-                        UpdateMoveCmdInfo(transferStep);
-                        break;
-                    case EnumTransferStepType.Load:
-                        UpdateLoadCmdInfo(transferStep);
-                        break;
-                    case EnumTransferStepType.Unload:
-                        UpdateUnloadCmdInfo(transferStep);
-                        break;
-                    case EnumTransferStepType.Empty:
-                    default:
-                        break;
-                }
-
+                tbxTransferStepMsg.Text = TransferStepMsg;
                 tspbCommding.Maximum = mainFlowHandler.GetTransferStepsCount() - 1;
                 if (mainFlowHandler.TransferStepsIndex >= tspbCommding.Maximum)
                 {
@@ -1007,46 +1125,10 @@ namespace Mirle.Agv.View
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-        private void UpdateRtbAgvcTransCmd()
+        private void UpdateTbxAgvcTransCmd()
         {
             try
             {
-                if (mainFlowHandler.IsAgvcTransferCommandEmpty())
-                {
-                    return;
-                }
-
-                AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
-
-                string markText = "";
-                if (mainFlowHandler.IsOverrideMove)
-                {
-                    markText = "[替代路徑]";
-                }
-                else if (mainFlowHandler.IsAvoidMove)
-                {
-                    markText = "[避車路徑]";
-                }
-                else
-                {
-                    markText = "[一般路徑]";
-                }
-
-                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n",
-                                                   markText, "\t", $"{agvcTransCmd.CommandType}", "\r\n",
-                                                   $"[命令號={agvcTransCmd.CommandId}] [貨號={agvcTransCmd.CassetteId}]\r\n",
-                                                   $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
-                                                   $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n",
-                                                   $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\n",
-                                                   $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\n",
-                                                   $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\n",
-                                                   $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]");               
-
-                if (TransferCommandMsg.Length > 65535)
-                {
-                    TransferCommandMsg = TransferCommandMsg.Substring(65535);
-                }
-
                 tbxTransferCommandMsg.Text = TransferCommandMsg;
             }
             catch (Exception ex)
@@ -1054,78 +1136,7 @@ namespace Mirle.Agv.View
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-        private void UpdateUnloadCmdInfo(TransferStep transferStep)
-        {
-            try
-            {
-                UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
-
-                var cmdInfo = $"\n" +
-                   $"[Type={transferStep.GetTransferStepType()}]\n" +
-                   $"[CmdId={unloadCmdInfo.CmdId}] [CstId={unloadCmdInfo.CstId}]\n" +
-                   $"[UnoadAdr={unloadCmdInfo.UnloadAddress}]\n" +
-                   $"[StageDirection={unloadCmdInfo.StageDirection}]\n" +
-                   $"[StageNum={unloadCmdInfo.StageNum}]\n" +
-                   $"[IsEqPio={unloadCmdInfo.IsEqPio}]\n" +
-                   $"[ForkSpeed={unloadCmdInfo.ForkSpeed}]";
-
-                //RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
-
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
-        private void UpdateLoadCmdInfo(TransferStep transferStep)
-        {
-            try
-            {
-                LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
-
-                var cmdInfo = $"\n" +
-                   $"[Type={transferStep.GetTransferStepType()}]\n" +
-                   $"[CmdId={loadCmdInfo.CmdId}] [CstId={loadCmdInfo.CstId}]\n" +
-                   $"[LoadAdr={loadCmdInfo.LoadAddress}]\n" +
-                   $"[StageDirection={loadCmdInfo.StageDirection}]\n" +
-                   $"[StageNum={loadCmdInfo.StageNum}]\n" +
-                   $"[IsEqPio={loadCmdInfo.IsEqPio}]\n" +
-                   $"[ForkSpeed={loadCmdInfo.ForkSpeed}]";
-
-                //RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
-
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
-        private void UpdateMoveCmdInfo(TransferStep transferStep)
-        {
-            try
-            {
-
-                MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
-
-                var cmdInfo = $"\n" +
-                             $"[Type={transferStep.GetTransferStepType()}]\n" +
-                             $"[CmdId={moveCmdInfo.CmdId}] [CstId={moveCmdInfo.CstId}]\n" +
-                             $"[Adrs={GuideListToString(moveCmdInfo.AddressIds)}]\n" +
-                             $"[Secs={GuideListToString(moveCmdInfo.SectionIds)}]\n" +
-                             $"[Positions={GetListPositionsToString(moveCmdInfo.AddressPositions)}]\n" +
-                             $"[Actions={GetListActionsToString(moveCmdInfo.AddressActions)}]\n" +
-                             $"[Speeds={GetListSpeedsToString(moveCmdInfo.SectionSpeedLimits)}]" +
-                             $"[MovAdr={GetListMovingAddressToString(moveCmdInfo.MovingAddress)}]";
-
-                AppendDebugLogMsg(cmdInfo);
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
-
-        private object GetListMovingAddressToString(List<MapAddress> movingAddress)
+        private string GetListMovingAddressToString(List<MapAddress> movingAddress)
         {
             List<string> result = new List<string>();
             foreach (var adr in movingAddress)
@@ -1134,21 +1145,12 @@ namespace Mirle.Agv.View
             }
             return GuideListToString(result);
         }
-        private object GetListSpeedsToString(List<double> speeds)
+        private string GetListMovingSectionsToString(List<MapSection> movingSections)
         {
             List<string> result = new List<string>();
-            foreach (var speed in speeds)
+            foreach (var sec in movingSections)
             {
-                result.Add($"({(int)speed})");
-            }
-            return GuideListToString(result);
-        }
-        private string GetListActionsToString(List<EnumAddressAction> actions)
-        {
-            List<string> result = new List<string>();
-            foreach (var action in actions)
-            {
-                result.Add($"({action})");
+                result.Add($"({sec.Id})");
             }
             return GuideListToString(result);
         }

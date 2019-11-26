@@ -51,6 +51,7 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.btnReloadConfig = new System.Windows.Forms.Button();
             this.txtFailResult = new System.Windows.Forms.Label();
             this.btnReDraw = new System.Windows.Forms.Button();
@@ -68,12 +69,12 @@
             this.btnSaveImage = new System.Windows.Forms.Button();
             this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.tbxTransferCommandMsg = new System.Windows.Forms.TextBox();
             this.txtCannotAutoReason = new System.Windows.Forms.Label();
             this.txtCanAuto = new System.Windows.Forms.Label();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.rtbTransferStep = new System.Windows.Forms.RichTextBox();
             this.gbReserve = new System.Windows.Forms.GroupBox();
             this.lbxReserveOkSections = new System.Windows.Forms.ListBox();
             this.lbxAskReserveSection = new System.Windows.Forms.ListBox();
@@ -132,7 +133,6 @@
             this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
-            this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.ucCstId = new Mirle.Agv.UcLabelTextBox();
             this.ucCharging = new Mirle.Agv.UcLabelTextBox();
             this.ucSoc = new Mirle.Agv.UcLabelTextBox();
@@ -144,7 +144,7 @@
             this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
             this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
-            this.tbxTransferCommandMsg = new System.Windows.Forms.TextBox();
+            this.tbxTransferStepMsg = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -380,6 +380,16 @@
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             // 
+            // tbxDebugLogMsg
+            // 
+            this.tbxDebugLogMsg.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxDebugLogMsg.Location = new System.Drawing.Point(3, 94);
+            this.tbxDebugLogMsg.Multiline = true;
+            this.tbxDebugLogMsg.Name = "tbxDebugLogMsg";
+            this.tbxDebugLogMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxDebugLogMsg.Size = new System.Drawing.Size(1172, 217);
+            this.tbxDebugLogMsg.TabIndex = 58;
+            // 
             // btnReloadConfig
             // 
             this.btnReloadConfig.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -580,11 +590,11 @@
             // splitContainer2.Panel1
             // 
             this.splitContainer2.Panel1.AutoScroll = true;
+            this.splitContainer2.Panel1.Controls.Add(this.tbxTransferStepMsg);
             this.splitContainer2.Panel1.Controls.Add(this.tbxTransferCommandMsg);
             this.splitContainer2.Panel1.Controls.Add(this.txtCannotAutoReason);
             this.splitContainer2.Panel1.Controls.Add(this.txtCanAuto);
             this.splitContainer2.Panel1.Controls.Add(this.gbPerformanceCounter);
-            this.splitContainer2.Panel1.Controls.Add(this.rtbTransferStep);
             this.splitContainer2.Panel1.Controls.Add(this.gbReserve);
             this.splitContainer2.Panel1.Controls.Add(this.btnAutoManual);
             this.splitContainer2.Panel1.Controls.Add(this.txtLastAlarm);
@@ -608,6 +618,16 @@
             this.splitContainer2.Size = new System.Drawing.Size(722, 1017);
             this.splitContainer2.SplitterDistance = 660;
             this.splitContainer2.TabIndex = 0;
+            // 
+            // tbxTransferCommandMsg
+            // 
+            this.tbxTransferCommandMsg.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxTransferCommandMsg.Location = new System.Drawing.Point(3, 390);
+            this.tbxTransferCommandMsg.Multiline = true;
+            this.tbxTransferCommandMsg.Name = "tbxTransferCommandMsg";
+            this.tbxTransferCommandMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxTransferCommandMsg.Size = new System.Drawing.Size(415, 247);
+            this.tbxTransferCommandMsg.TabIndex = 59;
             // 
             // txtCannotAutoReason
             // 
@@ -670,16 +690,6 @@
             0,
             0,
             0});
-            // 
-            // rtbTransferStep
-            // 
-            this.rtbTransferStep.AcceptsTab = true;
-            this.rtbTransferStep.Location = new System.Drawing.Point(422, 453);
-            this.rtbTransferStep.Name = "rtbTransferStep";
-            this.rtbTransferStep.Size = new System.Drawing.Size(294, 184);
-            this.rtbTransferStep.TabIndex = 56;
-            this.rtbTransferStep.Text = "";
-            this.rtbTransferStep.WordWrap = false;
             // 
             // gbReserve
             // 
@@ -1295,16 +1305,6 @@
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
-            // tbxDebugLogMsg
-            // 
-            this.tbxDebugLogMsg.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxDebugLogMsg.Location = new System.Drawing.Point(3, 94);
-            this.tbxDebugLogMsg.Multiline = true;
-            this.tbxDebugLogMsg.Name = "tbxDebugLogMsg";
-            this.tbxDebugLogMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbxDebugLogMsg.Size = new System.Drawing.Size(1172, 217);
-            this.tbxDebugLogMsg.TabIndex = 58;
-            // 
             // ucCstId
             // 
             this.ucCstId.Location = new System.Drawing.Point(7, 181);
@@ -1415,15 +1415,15 @@
             this.ucMapSection.TagName = "L.Sec";
             this.ucMapSection.TagValue = "";
             // 
-            // tbxTransferCommandMsg
+            // tbxTransferStepMsg
             // 
-            this.tbxTransferCommandMsg.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxTransferCommandMsg.Location = new System.Drawing.Point(3, 390);
-            this.tbxTransferCommandMsg.Multiline = true;
-            this.tbxTransferCommandMsg.Name = "tbxTransferCommandMsg";
-            this.tbxTransferCommandMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbxTransferCommandMsg.Size = new System.Drawing.Size(415, 247);
-            this.tbxTransferCommandMsg.TabIndex = 59;
+            this.tbxTransferStepMsg.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxTransferStepMsg.Location = new System.Drawing.Point(423, 453);
+            this.tbxTransferStepMsg.Multiline = true;
+            this.tbxTransferStepMsg.Name = "tbxTransferStepMsg";
+            this.tbxTransferStepMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxTransferStepMsg.Size = new System.Drawing.Size(287, 184);
+            this.tbxTransferStepMsg.TabIndex = 60;
             // 
             // MainForm
             // 
@@ -1564,7 +1564,6 @@
         private System.Windows.Forms.GroupBox gbReserve;
         private System.Windows.Forms.Label txtTrackPosition;
         private System.Windows.Forms.Label txtAskingReserve;
-        private System.Windows.Forms.RichTextBox rtbTransferStep;
         private System.Windows.Forms.GroupBox gbWatchLowPower;
         private System.Windows.Forms.Label txtWatchLowPower;
         private System.Windows.Forms.PictureBox picWatchLowPower;
@@ -1602,5 +1601,6 @@
         private System.Windows.Forms.Label txtCanAuto;
         private System.Windows.Forms.TextBox tbxDebugLogMsg;
         private System.Windows.Forms.TextBox tbxTransferCommandMsg;
+        private System.Windows.Forms.TextBox tbxTransferStepMsg;
     }
 }
