@@ -138,6 +138,7 @@ namespace Mirle.Agv.Controller
         public bool IsBcrReadReply { get; set; } = false;
         public bool IsMoveEnd { get; set; } = false;
         public bool IsSimulation { get; set; }
+        public string MainFlowAbnormalMsg { get; set; }
         #endregion
 
         public MainFlowHandler()

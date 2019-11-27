@@ -64,6 +64,7 @@ namespace Mirle.Agv.Controller
 
         public TcpIpAgent ClientAgent { get; private set; }
         public bool IsCancelByCstIdRead { get; set; } = false;
+        public string MiddlerAbnormalMsg { get; set; } = "";
 
         public MiddleAgent(MainFlowHandler mainFlowHandler)
         {

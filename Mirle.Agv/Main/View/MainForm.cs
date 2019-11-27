@@ -54,6 +54,12 @@ namespace Mirle.Agv.View
         public string DebugLogMsg { get; set; } = "";
         public string TransferCommandMsg { get; set; } = "";
         public string TransferStepMsg { get; set; } = "";
+        public string MainFlowAbnormalReasonMsg { get; set; } = "";
+        public string MiddlerAbnormalReasonMsg { get; set; } = "";
+        public string MoveControllerAbnormalReasonMsg { get; set; } = "";
+        public string RobotAbnormalReasonMsg { get; set; } = "";
+        public string BatterysAbnormalReasonMsg { get; set; } = "";
+        public Dictionary<string, string> MainFormMsgs { get; set; } = new Dictionary<string, string>();
 
         #region PaintingItems
         private Image image;
@@ -101,9 +107,36 @@ namespace Mirle.Agv.View
             InitialSoc();
             InitialConnectionAndCstStatus();
             InitialThdPads();
+            InitialAbnormalMsgs();
+            //InitialMainFormMsgs();
             plcAgent.SetOutSideObj(this);
             var msg = "MainForm : 讀取主畫面";
             LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+        }
+
+        private void InitialAbnormalMsgs()
+        {
+            txtMainFlowAbnormalReason.Text = "";
+            txtMiddlerAbnormalReason.Text = "";
+            txtMoveControlAbnormalReason.Text = "";
+            txtRobotAbnormalReason.Text = "";
+            txtBatterysAbnormalReason.Text = "";
+        }
+
+        private void InitialMainFormMsgs()
+        {
+            try
+            {
+                MainFormMsgs.Add("MainFlowAbnormalReason", "");
+                MainFormMsgs.Add("MiddlerAbnormalReason", "");
+                MainFormMsgs.Add("MoveControllerAbnormalReason", "");
+                MainFormMsgs.Add("RobotAbnormalReason", "");
+                MainFormMsgs.Add("BatterysAbnormalReason", "");
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void InitialForms()
@@ -1038,12 +1071,13 @@ namespace Mirle.Agv.View
             UpdateVehLocation();
             UpdateCharginAndLoading();
             //DrawReserveSections();
+            UpdateAbnormalText();
             UpdateThreadPicture();
             UpdateTbxAgvcTransCmd();
             UpdateTbxTransferStep();
             UpdateLastAlarm();
             UpdateAgvcConnection();
-            UpdateAgvFailResult();
+            //UpdateAgvFailResult();
             //}
             //catch (Exception ex)
             //{
@@ -1051,12 +1085,120 @@ namespace Mirle.Agv.View
             //}
         }
 
+        private void SetAbnormalAllGreen()
+        {
+            try
+            {
+                txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+
+                txtRobotAbnormal.BackColor = Color.LightGreen;
+                txtRobotAbnormalReason.Text = "";
+
+                txtBatterysAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+
+                txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+
+                txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void UpdateAbnormalText()
+        {
+            try
+            {
+                if (mainFlowHandler.IsMoveStep())
+                {
+                    MoveControllerAbnormalReasonMsg = moveControlHandler.AGVStopResult;
+                    if (string.IsNullOrEmpty(MoveControllerAbnormalReasonMsg))
+                    {
+                        txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                        txtMoveControlAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtMoveControlAbnormal.BackColor = Color.Pink;
+                        txtMoveControlAbnormalReason.Text = MoveControllerAbnormalReasonMsg;
+                        txtMoveControlAbnormalReason.BringToFront();
+                    }
+
+                }
+                else if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Load || mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Unload)
+                {
+                    if (string.IsNullOrEmpty(RobotAbnormalReasonMsg))
+                    {
+                        txtRobotAbnormal.BackColor = Color.LightGreen;
+                        txtRobotAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtRobotAbnormal.BackColor = Color.Pink;
+                        txtRobotAbnormalReason.Text = RobotAbnormalReasonMsg;
+                        txtRobotAbnormalReason.BringToFront();
+                    }
+
+                }
+                else
+                {
+                    MainFlowAbnormalReasonMsg = mainFlowHandler.MainFlowAbnormalMsg;
+                    if (string.IsNullOrEmpty(MainFlowAbnormalReasonMsg))
+                    {
+                        txtMainFlowAbnormal.BackColor = Color.LightGreen;
+                        txtMainFlowAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtMainFlowAbnormal.BackColor = Color.Pink;
+                        txtMainFlowAbnormalReason.Text = MainFlowAbnormalReasonMsg;
+                        txtMainFlowAbnormalReason.BringToFront();
+                    }
+
+                    MiddlerAbnormalReasonMsg = middleAgent.MiddlerAbnormalMsg;
+                    if (string.IsNullOrEmpty(MiddlerAbnormalReasonMsg))
+                    {
+                        txtMiddlerAbnormal.BackColor = Color.LightGreen;
+                        txtMiddlerAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtMiddlerAbnormal.BackColor = Color.Pink;
+                        txtMiddlerAbnormalReason.Text = MiddlerAbnormalReasonMsg;
+                        txtMiddlerAbnormalReason.BringToFront();
+                    }
+                }
+
+                if (string.IsNullOrEmpty(BatterysAbnormalReasonMsg))
+                {
+                    txtBatterysAbnormal.BackColor = Color.LightGreen;
+                    txtBatterysAbnormalReason.Text = "";
+                }
+                else
+                {
+                    txtBatterysAbnormal.BackColor = Color.Pink;
+                    txtBatterysAbnormalReason.Text = BatterysAbnormalReasonMsg;
+                    txtBatterysAbnormalReason.BringToFront();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
         private void UpdateAgvFailResult()
         {
             try
             {
                 var result = moveControlHandler.AGVStopResult;
-                txtFailResult.Text = string.IsNullOrWhiteSpace(result) ? "" : result;
+                txtMoveControlAbnormalReason.Text = string.IsNullOrWhiteSpace(result) ? "" : result;
             }
             catch (Exception ex)
             {
@@ -1093,10 +1235,9 @@ namespace Mirle.Agv.View
                 if (!lastAlarmId.Equals(alarm.Id))
                 {
                     lastAlarmId = alarm.Id;
-                    var msg = $"[{alarm.Id}]\n[{alarm.AlarmText}]";
+                    var msg = $"[{alarm.Id}]\r\n[{alarm.AlarmText}]";
                     txtLastAlarm.Text = msg;
                 }
-
             }
             catch (Exception ex)
             {
@@ -1171,13 +1312,7 @@ namespace Mirle.Agv.View
             {
                 Vehicle theVehicle = Vehicle.Instance;
 
-                picVisitTransferSteps.BackColor = GetThreadStatusColor(theVehicle.VisitTransferStepsStatus);
                 txtTransferStep.Text = mainFlowHandler.GetCurrentTransferStepType().ToString();
-
-                picTrackPosition.BackColor = GetThreadStatusColor(theVehicle.TrackPositionStatus);
-                //var realPos = Vehicle.Instance.CurVehiclePosition.RealPosition;
-                //var posText = $"({(int)realPos.X},{(int)realPos.Y})";
-                //txtTrackPosition.Text = mainFlowHandler.GetTransferStepsCount() > 0 ? "Cmd : " + posText : "NoCmd : " + posText;
 
                 if (mainFlowHandler.GetTransferStepsCount() > 0)
                 {
@@ -1195,11 +1330,7 @@ namespace Mirle.Agv.View
                     txtTrackPosition.Text = $"{stepIndex},{moveIndex}";
                 }
 
-                picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
                 txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSection().Id}";
-
-                picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);
-
             }
             catch (Exception ex)
             {
@@ -1562,7 +1693,7 @@ namespace Mirle.Agv.View
                                 else
                                 {
                                     theVehicle.ThePlcVehicle.CassetteId = "";
-                                }                               
+                                }
                             }
                         }
                         break;
@@ -1587,7 +1718,7 @@ namespace Mirle.Agv.View
             {
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return false;
-            }          
+            }
         }
 
         private void btnStopAndClear_Click(object sender, EventArgs e)
@@ -1690,7 +1821,7 @@ namespace Mirle.Agv.View
         {
             var anti = !IsAgvcConnect;
             middleAgent.TriggerConnect(anti);
-        }        
+        }
 
         private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2047,6 +2178,20 @@ namespace Mirle.Agv.View
             btnLoadOk.Visible = plcForm.chkFakeForking.Checked;
             btnMoveOk.Visible = plcForm.chkFakeForking.Checked;
             btnUnloadOk.Visible = plcForm.chkFakeForking.Checked;
+        }
+
+        private void btnPrintScreen_Click(object sender, EventArgs e)
+        {
+            Image image = new Bitmap(1920, 1080);
+            Graphics graphics = Graphics.FromImage(image);
+            graphics.CopyFromScreen(0, 0, 0, 0, new Size(1920, 1080));
+            IntPtr intPtr = graphics.GetHdc();
+            graphics.ReleaseHdc(intPtr);
+            PictureBox pictureBox = new PictureBox();
+            pictureBox.Image = image;
+            string timeStamp = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".jpeg";
+            string savename = Path.Combine(Environment.CurrentDirectory, "Log", timeStamp);
+            image.Save(savename);
         }
     }
 }
