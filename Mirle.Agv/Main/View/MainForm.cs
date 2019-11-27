@@ -401,8 +401,6 @@ namespace Mirle.Agv.View
         private void ShowMsgOnMainForm(object sender, string msg)
         {
             AppendDebugLogMsg(msg);
-
-            //Task.Run(() => RichTextBoxAppendHead(richTextBox1, msg));
             LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
 
@@ -892,8 +890,8 @@ namespace Mirle.Agv.View
                                       $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\r\n",
                                       $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\r\n",
                                       $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\r\n",
-                                      $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]\r\n",
-                                      TransferCommandMsg);
+                                      $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]\r\n"
+                                      );
 
                 if (TransferCommandMsg.Length > 32767)
                 {
@@ -999,7 +997,7 @@ namespace Mirle.Agv.View
         }
         private void SetTransferStepMsg(string msg)
         {
-            TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg, "\r\n", TransferStepMsg);
+            TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg);
 
             if (TransferStepMsg.Length > 32767)
             {
@@ -1535,43 +1533,61 @@ namespace Mirle.Agv.View
 
         public bool SwitchAutoStatus()
         {
-            bool switchResult = false;
-            switch (Vehicle.Instance.AutoState)
+            try
             {
-                case EnumAutoState.Manual:
-                    if (cbSimulationMode.Checked)
-                    {
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        switchResult = true;
-                    }
-                    else
-                    {
-                        if (mainFlowHandler.SetManualToAuto())
+                bool switchResult = false;
+                switch (Vehicle.Instance.AutoState)
+                {
+                    case EnumAutoState.Manual:
+                        if (mainFlowHandler.IsSimulation)
                         {
-                            alarmHandler.ResetAllAlarms();
                             mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                             Vehicle.Instance.AutoState = EnumAutoState.Auto;
                             switchResult = true;
+                            AppendDebugLogMsg($"Manual 切換 Auto 成功");
                         }
-                    }
-                    break;
-                case EnumAutoState.Auto:
-                default:
-                    {
-                        Vehicle.Instance.AutoState = EnumAutoState.PreManual;
-                        mainFlowHandler.StopAndClear();
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
-                        Vehicle.Instance.AutoState = EnumAutoState.Manual;
-                        var msg = $"Auto 切換 Manual 成功";
-                        //RichTextBoxAppendHead(richTextBox1, msg);
-                        mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
-                        switchResult = true;
-                    }
-                    break;
+                        else
+                        {
+                            if (mainFlowHandler.SetManualToAuto())
+                            {
+                                alarmHandler.ResetAllAlarms();
+                                mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
+                                Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                                switchResult = true;
+                                if (theVehicle.ThePlcVehicle.Loading)
+                                {
+                                    string errMsg = "";
+                                    plcAgent.triggerCassetteIDReader(ref errMsg);
+                                }
+                                else
+                                {
+                                    theVehicle.ThePlcVehicle.CassetteId = "";
+                                }                               
+                            }
+                        }
+                        break;
+                    case EnumAutoState.Auto:
+                    default:
+                        {
+                            Vehicle.Instance.AutoState = EnumAutoState.PreManual;
+                            mainFlowHandler.StopAndClear();
+                            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
+                            Vehicle.Instance.AutoState = EnumAutoState.Manual;
+                            var msg = $"Auto 切換 Manual 成功";
+                            AppendDebugLogMsg(msg);
+                            mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
+                            switchResult = true;
+                            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                        }
+                        break;
+                }
+                return switchResult;
             }
-
-            return switchResult;
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return false;
+            }          
         }
 
         private void btnStopAndClear_Click(object sender, EventArgs e)
@@ -1674,21 +1690,7 @@ namespace Mirle.Agv.View
         {
             var anti = !IsAgvcConnect;
             middleAgent.TriggerConnect(anti);
-        }
-
-        private void cbSimulationMode_CheckedChanged(object sender, EventArgs e)
-        {
-            moveCommandDebugMode.button_SimulationMode_Click(this, e);
-            plcForm.chkFakeForking.Checked = cbSimulationMode.Checked;
-            if (cbSimulationMode.Checked)
-            {
-                mainFlowHandler.SetupVehicleSoc(100);
-            }
-
-            btnLoadOk.Visible = cbSimulationMode.Checked;
-            btnMoveOk.Visible = cbSimulationMode.Checked;
-            btnUnloadOk.Visible = cbSimulationMode.Checked;
-        }
+        }        
 
         private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2036,6 +2038,7 @@ namespace Mirle.Agv.View
         {
             moveCommandDebugMode.button_SimulationMode_Click(this, e);
             plcForm.chkFakeForking.Checked = !plcForm.chkFakeForking.Checked;
+            mainFlowHandler.IsSimulation = !mainFlowHandler.IsSimulation;
             if (plcForm.chkFakeForking.Checked)
             {
                 mainFlowHandler.SetupVehicleSoc(100);

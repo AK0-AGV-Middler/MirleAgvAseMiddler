@@ -794,7 +794,7 @@ namespace Mirle.Agv.Controller
                                                 }
 
 
-                                                if (AlarmCode == 1150 || AlarmCode == 1160 || 
+                                                if (AlarmCode == 1150 || AlarmCode == 1160 || AlarmCode == 1152|| AlarmCode == 1162||
                                                     AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126 || AlarmCode == 140 )
                                                 {
                                                     Task.Run(() =>
@@ -2890,9 +2890,7 @@ namespace Mirle.Agv.Controller
             CassetteID = strCassetteID;
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CassetteId) + " Success"));
 
-            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
-
-            
+            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);            
         }
 
         public void testTriggerCassetteIDReader(ref string CassetteID)

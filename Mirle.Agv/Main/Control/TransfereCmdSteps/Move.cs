@@ -24,9 +24,17 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     {
                         if (mainFlowHandler.StopCharge())
                         {
-                            if (mainFlowHandler.IsOverrideMove || mainFlowHandler.IsAvoidMove)
+                            if (mainFlowHandler.IsOverrideMove)
                             {
                                 if (mainFlowHandler.CallMoveControlOverride(moveCmd))
+                                {
+                                    mainFlowHandler.IsMoveEnd = false;
+                                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
+                                }
+                            }
+                            else if (mainFlowHandler.IsAvoidMove)
+                            {
+                                if (mainFlowHandler.CallMoveControlAvoid(moveCmd))
                                 {
                                     mainFlowHandler.IsMoveEnd = false;
                                     mainFlowHandler.PrepareForAskingReserve(moveCmd);

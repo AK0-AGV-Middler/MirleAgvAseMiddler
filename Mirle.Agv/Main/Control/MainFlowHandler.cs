@@ -137,6 +137,7 @@ namespace Mirle.Agv.Controller
         public bool NeedRename { get; set; } = false;
         public bool IsBcrReadReply { get; set; } = false;
         public bool IsMoveEnd { get; set; } = false;
+        public bool IsSimulation { get; set; }
         #endregion
 
         public MainFlowHandler()
@@ -1946,25 +1947,25 @@ namespace Mirle.Agv.Controller
                 {
                     //Task.Run(() =>
                     //{
-                        try
+                    try
+                    {
+                        Stopwatch sw = new Stopwatch();
+                        sw.Start();
+                        while (!theVehicle.ThePlcVehicle.Loading)
                         {
-                            Stopwatch sw = new Stopwatch();
-                            sw.Start();
-                            while (!theVehicle.ThePlcVehicle.Loading)
+                            if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
                             {
-                                if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
-                                {
-                                    break;
-                                }
-                                SpinWait.SpinUntil(() => false, 50);
+                                break;
                             }
-                            SpinWait.SpinUntil(() => false, loadingChargeIntervalMs);
-                            StopCharge();
+                            SpinWait.SpinUntil(() => false, 50);
                         }
-                        catch (Exception ex)
-                        {
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                        }
+                        SpinWait.SpinUntil(() => false, loadingChargeIntervalMs);
+                        StopCharge();
+                    }
+                    catch (Exception ex)
+                    {
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
                     //});
                 }
             }
@@ -2080,7 +2081,7 @@ namespace Mirle.Agv.Controller
         private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
         {
             try
-            {
+            {               
                 if (string.IsNullOrEmpty(cstId))
                 {
                     var msg = $"貨物ID讀取失敗";
@@ -2163,8 +2164,12 @@ namespace Mirle.Agv.Controller
 
         public void DoTransfer()
         {
-            OnDoTransferStepEvent?.Invoke(this, GetCurTransferStep());
             transferStatus.DoTransfer(this);
+        }
+
+        public void PublishOnDoTransferStepEvent(TransferStep transferStep)
+        {
+            OnDoTransferStepEvent?.Invoke(this, transferStep);
         }
 
         public void Unload(UnloadCmdInfo unloadCmd)
@@ -2182,6 +2187,7 @@ namespace Mirle.Agv.Controller
                     if (!plcAgent.IsForkCommandExist())
                     {
                         middleAgent.Unloading();
+                        PublishOnDoTransferStepEvent(unloadCmd);
                         PlcForkUnloadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
                         Task.Run(() => plcAgent.AddForkComand(PlcForkUnloadCommand));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
@@ -2215,6 +2221,7 @@ namespace Mirle.Agv.Controller
                     if (!plcAgent.IsForkCommandExist())
                     {
                         middleAgent.Loading();
+                        PublishOnDoTransferStepEvent(loadCmd);
                         PlcForkLoadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
                         Task.Run(() => plcAgent.AddForkComand(PlcForkLoadCommand));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
@@ -2250,21 +2257,22 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                {
-                    var msg = $"MainFlow : 通知MoveControlHandler傳送";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                }
+
+                var msg1 = $"MainFlow : 通知MoveControlHandler傳送";
+                OnMessageShowEvent?.Invoke(this, msg1);
+
                 string errorMsg = "";
                 if (moveControlHandler.TransferMove(moveCmd, ref errorMsg))
                 {
-                    var msg = $"MainFlow : 通知MoveControlHandler傳送，回報可行.";
-                    OnMessageShowEvent?.Invoke(this, msg);
+                    var msg2 = $"MainFlow : 通知MoveControlHandler傳送，回報可行.";
+                    OnMessageShowEvent?.Invoke(this, msg2);
+                    PublishOnDoTransferStepEvent(moveCmd);
                     return true;
                 }
                 else
                 {
-                    var msg = $"MainFlow : 通知MoveControlHandler傳送，回報失敗。{errorMsg}";
-                    OnMessageShowEvent?.Invoke(this, msg);
+                    var msg2 = $"MainFlow : 通知MoveControlHandler傳送，回報失敗。{errorMsg}";
+                    OnMessageShowEvent?.Invoke(this, msg2);
                     MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
                     return false;
                 }
@@ -2280,21 +2288,52 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                {
-                    var msg = $"MainFlow : 通知MoveControlHandler[替代路徑]";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                }
+                var msg1 = $"MainFlow : 通知MoveControlHandler[替代路徑]";
+                OnMessageShowEvent?.Invoke(this, msg1);
                 string errorMsg = "";
                 if (moveControlHandler.TransferMove_Override(moveCmd, ref errorMsg))
                 {
-                    var msg = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報可行.";
-                    OnMessageShowEvent?.Invoke(this, msg);
+                    var msg2 = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報可行.";
+                    OnMessageShowEvent?.Invoke(this, msg2);
+                    PublishOnDoTransferStepEvent(moveCmd);
                     return true;
                 }
                 else
                 {
-                    var msg = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報失敗。{errorMsg}";
-                    OnMessageShowEvent?.Invoke(this, msg);
+                    var msg2 = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報失敗。{errorMsg}";
+                    OnMessageShowEvent?.Invoke(this, msg2);
+                    MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
+                    return false;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
+                return false;
+            }
+        }
+        public bool CallMoveControlAvoid(MoveCmdInfo moveCmd)
+        {
+            try
+            {
+                var msg1 = $"MainFlow : 通知MoveControlHandler[避車路徑]";
+                OnMessageShowEvent?.Invoke(this, msg1);
+
+                string errorMsg = "";
+                if (moveControlHandler.TransferMove_Override(moveCmd, ref errorMsg))
+                {
+                    var msg2 = $"MainFlow : 通知MoveControlHandler[避車路徑]，回報可行.";
+                    OnMessageShowEvent?.Invoke(this, msg1);
+                    PublishOnDoTransferStepEvent(moveCmd);
+                    return true;
+                }
+                else
+                {
+                    var msg2 = $"MainFlow : 通知MoveControlHandler[避車路徑]，回報失敗。{errorMsg}";
+                    OnMessageShowEvent?.Invoke(this, msg2);
                     MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
                     return false;
                 }
