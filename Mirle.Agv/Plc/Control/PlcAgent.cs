@@ -1,21 +1,19 @@
-﻿    //#define  DebugTestThread 
+﻿//#define  DebugTestThread 
 //#define  DebugTest 
 
 using ClsMCProtocol;
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model;
+using Mirle.Agv.View;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Mirle.Agv.View;
-using System.Runtime.CompilerServices;
-using Mirle.Agv.Model.Configs;
-using System.IO;
-using System.Text;
 
 namespace Mirle.Agv.Controller
 {
@@ -96,6 +94,7 @@ namespace Mirle.Agv.Controller
             //    boolConnectionState = value;
             //}
         }
+        private int nowErrorCode = 0;
 
         public void SendVehicleDecreaseSpeedFlag()
         {
@@ -797,16 +796,21 @@ namespace Mirle.Agv.Controller
                                                 if (AlarmCode == 1150 || AlarmCode == 1160 || AlarmCode == 1152|| AlarmCode == 1162||
                                                     AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126 || AlarmCode == 140 )
                                                 {
-                                                    Task.Run(() =>
+                                                    if (nowErrorCode == 0)
                                                     {
-                                                        Thread.Sleep(2000);
-                                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Trigger ForkCommandInterlockErrorEvent. AlarmCode: " + AlarmCode));
-                                                        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                                        OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
-                                                    });
+                                                        nowErrorCode = AlarmCode;
+                                                        Task.Run(() =>
+                                                        {
+                                                            Thread.Sleep(10000);
+                                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Trigger ForkCommandInterlockErrorEvent. AlarmCode: " + AlarmCode));
+                                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+                                                            Thread.Sleep(4000);
+                                                            nowErrorCode = 0;
+                                                        });
+                                                    }
                                                 }
-
-
+                                                
                                             }
                                         }
 
