@@ -333,10 +333,6 @@ namespace Mirle.Agv.View
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            Task.Run(() => OnSetAlarmEvent(alarm));
-        }
-        private void OnSetAlarmEvent(Alarm alarm)
-        {
             try
             {
                 var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
@@ -351,12 +347,16 @@ namespace Mirle.Agv.View
                     alarmForm.BringToFront();
                     alarmForm.Show();
                 }
+                else
+                {
+                    plcAgent.WritePLCBuzzserStop();
+                }
             }
             catch (Exception ex)
             {
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
+        }        
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             try
