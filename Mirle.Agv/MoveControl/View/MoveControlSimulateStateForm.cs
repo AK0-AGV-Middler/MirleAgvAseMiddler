@@ -16,12 +16,17 @@ namespace Mirle.Agv.View
     {
         private SimulateState fakeState;
         private MoveControlHandler moveControl;
+        private bool hideFunctionOn;
 
-        public MoveControlSimulateStateForm(MoveControlHandler moveControl)
+        public MoveControlSimulateStateForm(MoveControlHandler moveControl, bool hideFunctionOn)
         {
             this.moveControl = moveControl;
+            this.hideFunctionOn = hideFunctionOn;
             this.fakeState = moveControl.FakeState;
             InitializeComponent();
+
+            if (hideFunctionOn)
+                this.ForeColor = Color.Red;
 
             switch (fakeState.BeamSensorState)
             {
@@ -67,9 +72,15 @@ namespace Mirle.Agv.View
                 radioButton_SimulateForkHome.Checked = true;
         }
 
+        public void ResetHideFunctionOnOff(bool hideFunctionOnOff)
+        {
+            this.hideFunctionOn = hideFunctionOnOff;
+            this.ForeColor = hideFunctionOnOff ? Color.Red : Color.Black;
+        }
+
         private void button_Pause_Click(object sender, EventArgs e)
         {
-            moveControl.VehclePause();
+            moveControl.VehclePause(hideFunctionOn);
         }
 
         private void button_Continue_Click(object sender, EventArgs e)

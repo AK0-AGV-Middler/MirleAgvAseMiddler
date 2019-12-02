@@ -15,12 +15,14 @@ using Mirle.Agv.Model.TransferSteps;
 using Mirle.Agv;
 using Mirle.Agv.Controller.Tools;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Mirle.Agv.View
 {
     public partial class MainForm : Form
     {
-        private MainFlowHandler mainFlowHandler;
+        public MainFlowHandler mainFlowHandler;
+        public MainForm mainForm;
         private MoveControlHandler moveControlHandler;
         private MiddleAgent middleAgent;
         private MiddlerForm middlerForm;
@@ -30,8 +32,9 @@ namespace Mirle.Agv.View
         private PlcAgent plcAgent;
         private MCProtocol mcProtocol;
         private MoveCommandDebugModeForm moveCommandDebugMode;
-        private JogPitchForm jogPitch;
+        private JogPitchForm jogPitchForm;
         private WarningForm warningForm;
+        private ConfigForm configForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
         private Panel panelRightUp;
@@ -48,6 +51,15 @@ namespace Mirle.Agv.View
         private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
         private int lastAlarmId = 0;
         public bool IsAgvcConnect { get; set; } = false;
+        public string DebugLogMsg { get; set; } = "";
+        public string TransferCommandMsg { get; set; } = "";
+        public string TransferStepMsg { get; set; } = "";
+        public string MainFlowAbnormalReasonMsg { get; set; } = "";
+        public string MiddlerAbnormalReasonMsg { get; set; } = "";
+        public string MoveControllerAbnormalReasonMsg { get; set; } = "";
+        public string RobotAbnormalReasonMsg { get; set; } = "";
+        public string BatterysAbnormalReasonMsg { get; set; } = "";
+        public Dictionary<string, string> MainFormMsgs { get; set; } = new Dictionary<string, string>();
 
         #region PaintingItems
         private Image image;
@@ -82,6 +94,7 @@ namespace Mirle.Agv.View
             plcAgent = mainFlowHandler.GetPlcAgent();
             mcProtocol = mainFlowHandler.GetMcProtocol();
             middleAgent = mainFlowHandler.GetMiddleAgent();
+            mainForm = this;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -93,6 +106,37 @@ namespace Mirle.Agv.View
             ResetImageAndPb();
             InitialSoc();
             InitialConnectionAndCstStatus();
+            InitialThdPads();
+            InitialAbnormalMsgs();
+            //InitialMainFormMsgs();
+            plcAgent.SetOutSideObj(this);
+            var msg = "MainForm : 讀取主畫面";
+            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+        }
+
+        private void InitialAbnormalMsgs()
+        {
+            txtMainFlowAbnormalReason.Text = "";
+            txtMiddlerAbnormalReason.Text = "";
+            txtMoveControlAbnormalReason.Text = "";
+            txtRobotAbnormalReason.Text = "";
+            txtBatterysAbnormalReason.Text = "";
+        }
+
+        private void InitialMainFormMsgs()
+        {
+            try
+            {
+                MainFormMsgs.Add("MainFlowAbnormalReason", "");
+                MainFormMsgs.Add("MiddlerAbnormalReason", "");
+                MainFormMsgs.Add("MoveControllerAbnormalReason", "");
+                MainFormMsgs.Add("RobotAbnormalReason", "");
+                MainFormMsgs.Add("BatterysAbnormalReason", "");
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void InitialForms()
@@ -107,11 +151,16 @@ namespace Mirle.Agv.View
             middlerForm.Show();
             middlerForm.Hide();
 
+            configForm = new ConfigForm(mainFlowHandler);
+            configForm.WindowState = FormWindowState.Normal;
+            configForm.Show();
+            configForm.Hide();
+
             var middlerConfig = middleAgent.GetMiddlerConfig();
             tstextClientName.Text = $"[{ middlerConfig.ClientName}]";
             tstextRemoteIp.Text = $"[{middlerConfig.RemoteIp}]";
             tstextRemotePort.Text = $"[{middlerConfig.RemotePort}]";
-            //this.Text = $"主畫面  Remote[{middlerConfig.RemoteIp}] [{middlerConfig.RemotePort}]";
+            this.Text = $"主畫面 版本編號為[{Application.ProductVersion}]";
 
             alarmForm = new AlarmForm(mainFlowHandler);
             alarmForm.WindowState = FormWindowState.Normal;
@@ -123,10 +172,10 @@ namespace Mirle.Agv.View
             plcForm.Show();
             plcForm.Hide();
 
-            jogPitch = new JogPitchForm(moveControlHandler);
-            jogPitch.WindowState = FormWindowState.Normal;
-            jogPitch.Show();
-            jogPitch.Hide();
+            jogPitchForm = new JogPitchForm(moveControlHandler);
+            jogPitchForm.WindowState = FormWindowState.Normal;
+            jogPitchForm.Show();
+            jogPitchForm.Hide();
 
             warningForm = new WarningForm();
             warningForm.WindowState = FormWindowState.Normal;
@@ -153,6 +202,15 @@ namespace Mirle.Agv.View
             aPen = new Pen(Color.Black, 1);
             aPen.DashStyle = DashStyle.DashDot;
             allPens.Add("BlackDashDot1", aPen);
+
+            aPen = new Pen(Color.Red, 4);
+            allPens.Add("NotGetReserveSection", aPen);
+
+            aPen = new Pen(Color.Green, 4);
+            allPens.Add("GetReserveSection", aPen);
+
+            aPen = new Pen(Color.Blue);
+            allPens.Add("NormalSection", aPen);
 
             ucVehicleImage.Parent = pictureBox1;
             ucVehicleImage.BringToFront();
@@ -182,12 +240,23 @@ namespace Mirle.Agv.View
         {
             mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
+            mainFlowHandler.OnPrepareForAskingReserveEvent += MainFlowHandler_OnPrepareForAskingReserveEvent;
+            mainFlowHandler.OnMoveArrivalEvent += MainFlowHandler_OnMoveArrivalEvent;
+            mainFlowHandler.OnTransferCommandCheckedEvent += MainFlowHandler_OnTransferCommandCheckedEvent;
+            mainFlowHandler.OnOverrideCommandCheckedEvent += MainFlowHandler_OnOverrideCommandCheckedEvent;
+            mainFlowHandler.OnAvoidCommandCheckedEvent += MainFlowHandler_OnAvoidCommandCheckedEvent;
+            mainFlowHandler.OnDoTransferStepEvent += MainFlowHandler_OnDoTransferStepEvent;
             middleAgent.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
+            middleAgent.OnReserveOkEvent += MiddleAgent_OnReserveOkEvent;
+            middleAgent.OnPassReserveSectionEvent += MiddleAgent_OnPassReserveSectionEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
             theVehicle.OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
+            moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
         }
+
+
 
         private void InitialSoc()
         {
@@ -207,48 +276,137 @@ namespace Mirle.Agv.View
             }
         }
 
+        private void InitialThdPads()
+        {
+            //ucThdVisitTransferSteps.SetupTitleText("Visit Transfer Steps");
+        }
+
+        private void MainFlowHandler_OnPrepareForAskingReserveEvent(object sender, MoveCmdInfo moveCmd)
+        {
+            try
+            {
+                //Task.Run(() => SetMovingSectionAndEndPosition(moveCmd.MovingSections, moveCmd.EndAddress));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private void MainFlowHandler_OnMoveArrivalEvent(object sender, EventArgs e)
+        {
+            try
+            {
+                //Task.Run(() => ResetSectionColor());
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
         private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
         {
             IsAgvcConnect = isConnect;
         }
+        private void MiddleAgent_OnReserveOkEvent(object sender, string sectionId)
+        {
+            try
+            {
+                //Task.Run(() => GetReserveSection(sectionId));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private void MiddleAgent_OnPassReserveSectionEvent(object sender, string passSectionId)
+        {
+            try
+            {
+                //Task.Run(() => ChangeToNormalSection(passSectionId));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
-            RichTextBoxAppendHead(richTextBox1, msg);
-
-            if (alarm.Level == EnumAlarmLevel.Alarm)
+            Task.Run(() => OnSetAlarmEvent(alarm));
+        }
+        private void OnSetAlarmEvent(Alarm alarm)
+        {
+            try
             {
-                if (alarmForm.IsDisposed)
+                var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
+                AppendDebugLogMsg(msg);
+
+                if (alarm.Level == EnumAlarmLevel.Alarm)
                 {
-                    alarmForm = new AlarmForm(mainFlowHandler);
+                    if (alarmForm.IsDisposed)
+                    {
+                        alarmForm = new AlarmForm(mainFlowHandler);
+                    }
+                    alarmForm.BringToFront();
+                    alarmForm.Show();
                 }
-                alarmForm.BringToFront();
-                alarmForm.Show();
-                //var warnMsg = $"[Id={alarm.Id}][Text={alarm.AlarmText}]" + Environment.NewLine + $"[{alarm.Description}]";
-                //warningForm.WarningMsg = warnMsg;
-                //warningForm.BringToFront();
-                //warningForm.Show();
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
-            btnAlarmReset.Enabled = false;
-            RichTextBoxAppendHead(richTextBox1, msg);
-            Thread.Sleep(500);
-            btnAlarmReset.Enabled = true;
+            try
+            {
+                Task.Run(() => OnResetAllAlarmsEvent(msg));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private void OnResetAllAlarmsEvent(string msg)
+        {
+            try
+            {
+                btnAlarmReset.Enabled = false;
+                AppendDebugLogMsg(msg);
+                Thread.Sleep(500);
+                btnAlarmReset.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
 
-            //alarmForm.SendToBack();
-            //alarmForm.Hide();
-            //warningForm.SendToBack();
-            //warningForm.Hide();
+        private void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete e)
+        {
+            try
+            {
+                //Task.Run(() => ResetSectionColor());
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void TheVehicle_OnBeamDisableChangeEvent(object sender, BeamDisableArgs e)
         {
-            var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor開關 {DisableParse(!e.IsDisable)}";
-            ShowMsgOnMainForm(this, msg);
-            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            try
+            {
+                var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor開關 {DisableParse(!e.IsDisable)}";
+                Task.Run(() => ShowMsgOnMainForm(this, msg));
+                LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private object DisableParse(bool v)
@@ -275,8 +433,25 @@ namespace Mirle.Agv.View
 
         private void ShowMsgOnMainForm(object sender, string msg)
         {
-            RichTextBoxAppendHead(richTextBox1, msg);
-            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            AppendDebugLogMsg(msg);
+            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+        }
+
+        private void AppendDebugLogMsg(string msg)
+        {
+            try
+            {
+                DebugLogMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", msg, "\r\n", DebugLogMsg);
+
+                if (DebugLogMsg.Length > 65535)
+                {
+                    DebugLogMsg = DebugLogMsg.Substring(65535);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         public void DrawBasicMap()
@@ -379,7 +554,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -476,11 +651,18 @@ namespace Mirle.Agv.View
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mainFlowHandler.StopAndClear();
+            try
+            {
+                moveControlHandler.CloseMoveControlHandler();
+                mainFlowHandler.StopAndClear();
 
-            Application.Exit();
-            Environment.Exit(Environment.ExitCode);
-
+                Application.Exit();
+                Environment.Exit(Environment.ExitCode);
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void MiddlerPage_Click(object sender, EventArgs e)
@@ -524,14 +706,24 @@ namespace Mirle.Agv.View
             plcForm.Show();
         }
 
+        private void VehicleStatusPage_Click(object sender, EventArgs e)
+        {
+            if (configForm.IsDisposed)
+            {
+                configForm = new ConfigForm(mainFlowHandler);
+            }
+            configForm.BringToFront();
+            configForm.Show();
+        }
+
         private void JogPage_Click(object sender, EventArgs e)
         {
-            if (jogPitch.IsDisposed)
+            if (jogPitchForm.IsDisposed)
             {
-                jogPitch = new JogPitchForm(moveControlHandler);
+                jogPitchForm = new JogPitchForm(moveControlHandler);
             }
-            jogPitch.BringToFront();
-            jogPitch.Show();
+            jogPitchForm.BringToFront();
+            jogPitchForm.Show();
         }
 
         public delegate void DelRenewUI(Control control, string msg);
@@ -704,17 +896,174 @@ namespace Mirle.Agv.View
 
         #endregion
 
+        private void MainFlowHandler_OnAvoidCommandCheckedEvent(object sender, AgvcMoveCmd agvcMoveCmd)
+        {
+            SetTransferCommandMsg("[避車路徑]", agvcMoveCmd);
+        }
+
+        private void MainFlowHandler_OnOverrideCommandCheckedEvent(object sender, AgvcOverrideCmd agvcOverrideCmd)
+        {
+            SetTransferCommandMsg("[替代路徑]", agvcOverrideCmd);
+        }
+
+        private void MainFlowHandler_OnTransferCommandCheckedEvent(object sender, AgvcTransCmd agvcTransCmd)
+        {
+            SetTransferCommandMsg("[一般路徑]", agvcTransCmd);
+        }
+
+        private void SetTransferCommandMsg(string type, AgvcTransCmd agvcTransCmd)
+        {
+            try
+            {
+                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n",
+                                      type, "\t", $"{agvcTransCmd.CommandType}", "\r\n",
+                                      $"[命令號={agvcTransCmd.CommandId}]\t[貨號={agvcTransCmd.CassetteId}]\r\n",
+                                      $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
+                                      $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n",
+                                      $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\r\n",
+                                      $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\r\n",
+                                      $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\r\n",
+                                      $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]\r\n"
+                                      );
+
+                if (TransferCommandMsg.Length > 32767)
+                {
+                    TransferCommandMsg = TransferCommandMsg.Substring(32767);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+
+        }
+
+        private void MainFlowHandler_OnDoTransferStepEvent(object sender, TransferStep transferStep)
+        {
+            try
+            {
+                string msg = "";
+                switch (transferStep.GetTransferStepType())
+                {
+                    case EnumTransferStepType.Load:
+                        msg = GetTransferStepMsgFromLoadCmdInfo(transferStep);
+                        break;
+                    case EnumTransferStepType.Unload:
+                        msg = GetTransferStepMsgFromUnLoadCmdInfo(transferStep);
+                        break;
+                    case EnumTransferStepType.Move:
+                    case EnumTransferStepType.MoveToCharger:
+                        msg = GetTransferStepMsgFromMoveCmdInfo(transferStep);
+                        break;
+                    case EnumTransferStepType.Empty:
+                    default:
+                        return;
+                }
+
+                SetTransferStepMsg(msg);
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+        private string GetTransferStepMsgFromMoveCmdInfo(TransferStep transferStep)
+        {
+            try
+            {
+                MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
+
+                string result = string.Concat($"移動\t{moveCmdInfo.GetTransferStepType()}\r\n",
+                                       $"[命令號={moveCmdInfo.CmdId}]\r\n",
+                                       $"[Addresses={GetListMovingAddressToString(moveCmdInfo.MovingAddress)}]\r\n",
+                                       $"[Sections={GetListMovingSectionsToString(moveCmdInfo.MovingSections)}]"
+                                       );
+                AppendDebugLogMsg(result);
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return "";
+            }
+        }
+        private string GetTransferStepMsgFromUnLoadCmdInfo(TransferStep transferStep)
+        {
+            try
+            {
+                UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
+                return string.Concat($"放貨\t{unloadCmdInfo.GetTransferStepType()}\r\n",
+                                      $"[命令號={unloadCmdInfo.CmdId}]\t[貨號={unloadCmdInfo.CstId}]\r\n",
+                                      $"[放貨站={unloadCmdInfo.UnloadAddress}]\r\n",
+                                      $"[放貨方向={unloadCmdInfo.StageDirection}]\r\n",
+                                      $"[StageNum={unloadCmdInfo.StageNum}]\r\n",
+                                      $"[是否PIO通訊={unloadCmdInfo.IsEqPio}]\r\n",
+                                      $"[手臂速度={unloadCmdInfo.ForkSpeed}]");
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return "";
+            }
+        }
+        private string GetTransferStepMsgFromLoadCmdInfo(TransferStep transferStep)
+        {
+            try
+            {
+                LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
+                return string.Concat($"取貨\t{loadCmdInfo.GetTransferStepType()}\r\n",
+                                      $"[命令號={loadCmdInfo.CmdId}]\t[貨號={loadCmdInfo.CstId}]\r\n",
+                                      $"[取貨站={loadCmdInfo.LoadAddress}]\r\n",
+                                      $"[取貨方向={loadCmdInfo.StageDirection}]\r\n",
+                                      $"[StageNum={loadCmdInfo.StageNum}]\r\n",
+                                      $"[是否PIO通訊={loadCmdInfo.IsEqPio}]\r\n",
+                                      $"[手臂速度={loadCmdInfo.ForkSpeed}]");
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return "";
+            }
+        }
+        private void SetTransferStepMsg(string msg)
+        {
+            TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg);
+
+            if (TransferStepMsg.Length > 32767)
+            {
+                TransferStepMsg = TransferStepMsg.Substring(32767);
+            }
+        }
+
         private void timeUpdateUI_Tick(object sender, EventArgs e)
         {
+            //try
+            //{
             //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
             //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
-            ucSoc.TagValue = Vehicle.Instance.ThePlcVehicle.Batterys.Percentage.ToString("F2");
-            if (!middleAgent.GetAskingReserveSectionClone().Id.Equals(LastAskingReserveSectionId))
+
+            tbxDebugLogMsg.Text = DebugLogMsg;
+
+            //if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
+            //{
+            //    ResetSectionColor();
+            //    ClearColor();
+            //    SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
+            //    moveCommandDebugMode.MainShowRunSectionList = false;
+            //}
+            var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
+            ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
+            if (middleAgent.GetAskingReserveSection().Id != LastAskingReserveSectionId)
             {
-                LastAskingReserveSectionId = middleAgent.GetAskingReserveSectionClone().Id;
+                LastAskingReserveSectionId = middleAgent.GetAskingReserveSection().Id;
                 lbxAskReserveSection.Items.Clear();
                 lbxAskReserveSection.Items.Add(LastAskingReserveSectionId);
             }
+
+
             UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
             UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
 
@@ -722,155 +1071,225 @@ namespace Mirle.Agv.View
             UpdateVehLocation();
             UpdateCharginAndLoading();
             //DrawReserveSections();
+            UpdateAbnormalText();
             UpdateThreadPicture();
-            UpdateRtbAgvcTransCmd();
-            UpdateRtbTransferStep();
+            UpdateTbxAgvcTransCmd();
+            UpdateTbxTransferStep();
             UpdateLastAlarm();
             UpdateAgvcConnection();
+            //UpdateAgvFailResult();
+            //}
+            //catch (Exception ex)
+            //{
+            //    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            //}
+        }
+
+        private void SetAbnormalAllGreen()
+        {
+            try
+            {
+                txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+
+                txtRobotAbnormal.BackColor = Color.LightGreen;
+                txtRobotAbnormalReason.Text = "";
+
+                txtBatterysAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+
+                txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+
+                txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                txtMoveControlAbnormalReason.Text = "";
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void UpdateAbnormalText()
+        {
+            try
+            {
+                if (mainFlowHandler.IsMoveStep())
+                {
+                    MoveControllerAbnormalReasonMsg = moveControlHandler.AGVStopResult;
+                    if (string.IsNullOrEmpty(MoveControllerAbnormalReasonMsg))
+                    {
+                        txtMoveControlAbnormal.BackColor = Color.LightGreen;
+                        txtMoveControlAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtMoveControlAbnormal.BackColor = Color.Pink;
+                        txtMoveControlAbnormalReason.Text = MoveControllerAbnormalReasonMsg;
+                        txtMoveControlAbnormalReason.BringToFront();
+                    }
+
+                }
+                else if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Load || mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Unload)
+                {
+                    if (string.IsNullOrEmpty(RobotAbnormalReasonMsg))
+                    {
+                        txtRobotAbnormal.BackColor = Color.LightGreen;
+                        txtRobotAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtRobotAbnormal.BackColor = Color.Pink;
+                        txtRobotAbnormalReason.Text = RobotAbnormalReasonMsg;
+                        txtRobotAbnormalReason.BringToFront();
+                    }
+
+                }
+                else
+                {
+                    MainFlowAbnormalReasonMsg = mainFlowHandler.MainFlowAbnormalMsg;
+                    if (string.IsNullOrEmpty(MainFlowAbnormalReasonMsg))
+                    {
+                        txtMainFlowAbnormal.BackColor = Color.LightGreen;
+                        txtMainFlowAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtMainFlowAbnormal.BackColor = Color.Pink;
+                        txtMainFlowAbnormalReason.Text = MainFlowAbnormalReasonMsg;
+                        txtMainFlowAbnormalReason.BringToFront();
+                    }
+
+                    MiddlerAbnormalReasonMsg = middleAgent.MiddlerAbnormalMsg;
+                    if (string.IsNullOrEmpty(MiddlerAbnormalReasonMsg))
+                    {
+                        txtMiddlerAbnormal.BackColor = Color.LightGreen;
+                        txtMiddlerAbnormalReason.Text = "";
+                    }
+                    else
+                    {
+                        txtMiddlerAbnormal.BackColor = Color.Pink;
+                        txtMiddlerAbnormalReason.Text = MiddlerAbnormalReasonMsg;
+                        txtMiddlerAbnormalReason.BringToFront();
+                    }
+                }
+
+                if (string.IsNullOrEmpty(BatterysAbnormalReasonMsg))
+                {
+                    txtBatterysAbnormal.BackColor = Color.LightGreen;
+                    txtBatterysAbnormalReason.Text = "";
+                }
+                else
+                {
+                    txtBatterysAbnormal.BackColor = Color.Pink;
+                    txtBatterysAbnormalReason.Text = BatterysAbnormalReasonMsg;
+                    txtBatterysAbnormalReason.BringToFront();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void UpdateAgvFailResult()
+        {
+            try
+            {
+                var result = moveControlHandler.AGVStopResult;
+                txtMoveControlAbnormalReason.Text = string.IsNullOrWhiteSpace(result) ? "" : result;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         public void UpdateAgvcConnection()
         {
-            if (IsAgvcConnect)
+            try
             {
-                txtAgvcConnection.Text = "AGVC 連線中";
-                txtAgvcConnection.BackColor = Color.LightGreen;
-                radOnline.Checked = true;
+                if (IsAgvcConnect)
+                {
+                    txtAgvcConnection.Text = "AGVC 連線中";
+                    txtAgvcConnection.BackColor = Color.LightGreen;
+                    radOnline.Checked = true;
+                }
+                else
+                {
+                    txtAgvcConnection.Text = "AGVC 斷線";
+                    txtAgvcConnection.BackColor = Color.Pink;
+                    radOffline.Checked = true;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                txtAgvcConnection.Text = "AGVC 斷線";
-                txtAgvcConnection.BackColor = Color.Pink;
-                radOffline.Checked = true;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
         private void UpdateLastAlarm()
         {
-            var alarm = alarmHandler.LastAlarm;
-            if (!lastAlarmId.Equals(alarm.Id))
+            try
             {
-                lastAlarmId = alarm.Id;
-                var msg = $"[{alarm.Id}]\n[{alarm.AlarmText}]";
-                txtLastAlarm.Text = msg;
+                var alarm = alarmHandler.LastAlarm;
+                if (!lastAlarmId.Equals(alarm.Id))
+                {
+                    lastAlarmId = alarm.Id;
+                    var msg = $"[{alarm.Id}]\r\n[{alarm.AlarmText}]";
+                    txtLastAlarm.Text = msg;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-        private void UpdateRtbTransferStep()
+        private void UpdateTbxTransferStep()
         {
-            if (mainFlowHandler.GetTransferStepsCount() == 0)
+            try
             {
-                return;
+                tbxTransferStepMsg.Text = TransferStepMsg;
+                tspbCommding.Maximum = mainFlowHandler.GetTransferStepsCount() - 1;
+                if (mainFlowHandler.TransferStepsIndex >= tspbCommding.Maximum)
+                {
+                    tspbCommding.Value = tspbCommding.Maximum;
+                }
+                else
+                {
+                    tspbCommding.Value = mainFlowHandler.TransferStepsIndex;
+                }
             }
-
-            TransferStep transferStep = mainFlowHandler.GetCurTransferStep();
-
-            if (transferStep.GetTransferStepType() == LastTransferStepType && mainFlowHandler.GetAgvcTransCmd().CommandId == LastAgvcTransferCommandId)
+            catch (Exception ex)
             {
-                return;
-            }
-            LastTransferStepType = transferStep.GetTransferStepType();
-
-            switch (transferStep.GetTransferStepType())
-            {
-                case EnumTransferStepType.Move:
-                case EnumTransferStepType.MoveToCharger:
-                    UpdateMoveCmdInfo(transferStep);
-                    break;
-                case EnumTransferStepType.Load:
-                    UpdateLoadCmdInfo(transferStep);
-                    break;
-                case EnumTransferStepType.Unload:
-                    UpdateUnloadCmdInfo(transferStep);
-                    break;
-                case EnumTransferStepType.Empty:
-                default:
-                    break;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-        private void UpdateRtbAgvcTransCmd()
+        private void UpdateTbxAgvcTransCmd()
         {
-            if (mainFlowHandler.IsAgvcTransferCommandEmpty())
+            try
             {
-                return;
+                tbxTransferCommandMsg.Text = TransferCommandMsg;
             }
-
-            AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
-
-            if (agvcTransCmd.CommandId.Equals(LastAgvcTransferCommandId))
+            catch (Exception ex)
             {
-                return;
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-            LastAgvcTransferCommandId = agvcTransCmd.CommandId;
-
-            var cmdInfo = $"\n" +
-                          $"[SeqNum={agvcTransCmd.SeqNum}] [Type={agvcTransCmd.CommandType}]\n" +
-                          $"[CmdId={agvcTransCmd.CommandId}] [CstId={agvcTransCmd.CassetteId}]\n" +
-                          $"[LoadAdr={agvcTransCmd.LoadAddressId}] [UnloadAdr={agvcTransCmd.UnloadAddressId}]\n" +
-                          $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\n" +
-                          $"[LoadSecs={GuideListToString(agvcTransCmd.ToLoadSectionIds)}]\n" +
-                          $"[UnloadAdrs={GuideListToString(agvcTransCmd.ToUnloadAddressIds)}]\n" +
-                          $"[UnloadSecs={GuideListToString(agvcTransCmd.ToUnloadSectionIds)}]";
-
-            RichTextBoxAppendHead(rtbAgvcTransCmd, cmdInfo);
         }
-        private void UpdateUnloadCmdInfo(TransferStep transferStep)
-        {
-            UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
-
-            var cmdInfo = $"\n" +
-               $"[Type={transferStep.GetTransferStepType()}]\n" +
-               $"[CmdId={unloadCmdInfo.CmdId}] [CstId={unloadCmdInfo.CstId}]\n" +
-               $"[UnoadAdr={unloadCmdInfo.UnloadAddress}]\n" +
-               $"[StageDirection={unloadCmdInfo.StageDirection}]\n" +
-               $"[StageNum={unloadCmdInfo.StageNum}]\n" +
-               $"[IsEqPio={unloadCmdInfo.IsEqPio}]\n" +
-               $"[ForkSpeed={unloadCmdInfo.ForkSpeed}]";
-
-            RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
-        }
-        private void UpdateLoadCmdInfo(TransferStep transferStep)
-        {
-            LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
-
-            var cmdInfo = $"\n" +
-               $"[Type={transferStep.GetTransferStepType()}]\n" +
-               $"[CmdId={loadCmdInfo.CmdId}] [CstId={loadCmdInfo.CstId}]\n" +
-               $"[LoadAdr={loadCmdInfo.LoadAddress}]\n" +
-               $"[StageDirection={loadCmdInfo.StageDirection}]\n" +
-               $"[StageNum={loadCmdInfo.StageNum}]\n" +
-               $"[IsEqPio={loadCmdInfo.IsEqPio}]\n" +
-               $"[ForkSpeed={loadCmdInfo.ForkSpeed}]";
-
-            RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
-        }
-        private void UpdateMoveCmdInfo(TransferStep transferStep)
-        {
-            MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
-
-            var cmdInfo = $"\n" +
-                         $"[Type={transferStep.GetTransferStepType()}]\n" +
-                         $"[CmdId={moveCmdInfo.CmdId}] [CstId={moveCmdInfo.CstId}]\n" +
-                         $"[Adrs={GuideListToString(moveCmdInfo.AddressIds)}]\n" +
-                         $"[Secs={GuideListToString(moveCmdInfo.SectionIds)}]\n" +
-                         $"[Positions={GetListPositionsToString(moveCmdInfo.AddressPositions)}]\n" +
-                         $"[Actions={GetListActionsToString(moveCmdInfo.AddressActions)}]\n" +
-                         $"[Speeds={GetListSpeedsToString(moveCmdInfo.SectionSpeedLimits)}]";
-
-            RichTextBoxAppendHead(rtbTransferStep, cmdInfo);
-        }
-        private object GetListSpeedsToString(List<double> speeds)
+        private string GetListMovingAddressToString(List<MapAddress> movingAddress)
         {
             List<string> result = new List<string>();
-            foreach (var speed in speeds)
+            foreach (var adr in movingAddress)
             {
-                result.Add($"({(int)speed})");
+                result.Add($"({adr.Id})");
             }
             return GuideListToString(result);
         }
-        private string GetListActionsToString(List<EnumAddressAction> actions)
+        private string GetListMovingSectionsToString(List<MapSection> movingSections)
         {
             List<string> result = new List<string>();
-            foreach (var action in actions)
+            foreach (var sec in movingSections)
             {
-                result.Add($"({action})");
+                result.Add($"({sec.Id})");
             }
             return GuideListToString(result);
         }
@@ -889,36 +1308,34 @@ namespace Mirle.Agv.View
         }
         private void UpdateThreadPicture()
         {
-            Vehicle theVehicle = Vehicle.Instance;
-
-            picVisitTransferSteps.BackColor = GetThreadStatusColor(theVehicle.VisitTransferStepsStatus);
-            txtTransferStep.Text = mainFlowHandler.GetCurrentTransferStepType().ToString();
-
-            picTrackPosition.BackColor = GetThreadStatusColor(theVehicle.TrackPositionStatus);
-            //var realPos = Vehicle.Instance.CurVehiclePosition.RealPosition;
-            //var posText = $"({(int)realPos.X},{(int)realPos.Y})";
-            //txtTrackPosition.Text = mainFlowHandler.GetTransferStepsCount() > 0 ? "Cmd : " + posText : "NoCmd : " + posText;
-
-            if (mainFlowHandler.GetTransferStepsCount() > 0)
+            try
             {
-                var stepIndex = mainFlowHandler.TransferStepsIndex;
-                var moveIndex = 0;
-                if (mainFlowHandler.IsMoveStep())
+                Vehicle theVehicle = Vehicle.Instance;
+
+                txtTransferStep.Text = mainFlowHandler.GetCurrentTransferStepType().ToString();
+
+                if (mainFlowHandler.GetTransferStepsCount() > 0)
                 {
-                    var moveCmd = (MoveCmdInfo)mainFlowHandler.GetCurTransferStep();
-                    if (moveCmd.MovingSections.Count > 0)
+                    var stepIndex = mainFlowHandler.TransferStepsIndex;
+                    var moveIndex = 0;
+                    if (mainFlowHandler.IsMoveStep())
                     {
-                        moveIndex = moveCmd.MovingSectionsIndex;
+                        var moveCmd = (MoveCmdInfo)mainFlowHandler.GetCurTransferStep();
+                        if (moveCmd.MovingSections.Count > 0)
+                        {
+                            moveIndex = moveCmd.MovingSectionsIndex;
+                        }
+
                     }
-
+                    txtTrackPosition.Text = $"{stepIndex},{moveIndex}";
                 }
-                txtTrackPosition.Text = $"{stepIndex},{moveIndex}";
+
+                txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSection().Id}";
             }
-
-            picAskReserve.BackColor = GetThreadStatusColor(theVehicle.AskReserveStatus);
-            txtAskingReserve.Text = $"ID:{middleAgent.GetAskingReserveSectionClone().Id}";
-
-            picWatchLowPower.BackColor = GetThreadStatusColor(theVehicle.WatchLowPowerStatus);
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
         {
@@ -939,18 +1356,41 @@ namespace Mirle.Agv.View
         }
         private void UpdateAutoManual()
         {
-            switch (Vehicle.Instance.AutoState)
+            try
             {
-                case EnumAutoState.Manual:
-                    btnAutoManual.BackColor = Color.Pink;
-                    break;
-                case EnumAutoState.Auto:
-                default:
-                    btnAutoManual.BackColor = Color.LightGreen;
-                    break;
-            }
+                switch (Vehicle.Instance.AutoState)
+                {
+                    case EnumAutoState.Manual:
+                        btnAutoManual.BackColor = Color.Pink;
+                        txtCanAuto.Visible = true;
+                        txtCannotAutoReason.Visible = true;
+                        if (jogPitchForm.CanAuto)
+                        {
+                            txtCanAuto.BackColor = Color.LightGreen;
+                            txtCanAuto.Text = "可以 Auto";
+                        }
+                        else
+                        {
+                            txtCanAuto.BackColor = Color.Pink;
+                            txtCanAuto.Text = "不行 Auto";
+                        }
+                        break;
+                    case EnumAutoState.Auto:
+                    default:
+                        btnAutoManual.BackColor = Color.LightGreen;
+                        txtCanAuto.Visible = false;
+                        txtCannotAutoReason.Visible = false;
+                        break;
+                }
 
-            btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
+                btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
+
+                txtCannotAutoReason.Text = jogPitchForm.CantAutoResult;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         private void DrawReserveSections()
         {
@@ -982,43 +1422,58 @@ namespace Mirle.Agv.View
         }
         private void UpdateVehLocation()
         {
-            var location = theVehicle.CurVehiclePosition;
+            try
+            {
+                var location = theVehicle.VehicleLocation;
 
-            var realPos = location.RealPosition;
-            ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
-            tstextRealPosX.Text = realPos.X.ToString("F2");
-            tstextRealPosY.Text = realPos.Y.ToString("F2");
+                var realPos = location.RealPosition;
+                ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
+                tstextRealPosX.Text = realPos.X.ToString("F2");
+                tstextRealPosY.Text = realPos.Y.ToString("F2");
 
-            var barPos = location.BarcodePosition;
-            ucBarcodePosition.TagValue = $"({(int)barPos.X},{(int)barPos.Y})";
+                var barPos = location.BarcodePosition;
+                ucBarcodePosition.TagValue = $"({(int)barPos.X},{(int)barPos.Y})";
 
-            var curAddress = location.LastAddress;
-            ucMapAddress.TagValue = curAddress.Id;
+                var curAddress = location.LastAddress;
+                ucMapAddress.TagValue = curAddress.Id;
 
-            var curSection = location.LastSection;
-            ucMapSection.TagValue = curSection.Id;
+                var curSection = location.LastSection;
+                ucMapSection.TagValue = curSection.Id;
 
-            var dis = location.LastSection.Distance;
-            ucDistance.TagValue = dis.ToString("F");
+                var dis = location.LastSection.VehicleDistanceSinceHead;
+                ucDistance.TagValue = dis.ToString("F");
 
-            ucVehicleImage.Hide();
-            ucVehicleImage.Location = MapPixelExchange(realPos);
-            ucVehicleImage.FixToCenter();
-            ucVehicleImage.Show();
-            ucVehicleImage.BringToFront();
+                ucVehicleImage.Hide();
+                ucVehicleImage.Location = MapPixelExchange(realPos);
+                ucVehicleImage.FixToCenter();
+                ucVehicleImage.Show();
+                ucVehicleImage.BringToFront();
 
-            //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
-            //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
+                //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
+                //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         private void UpdateCharginAndLoading()
         {
-            var loading = !string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId);
-            ucLoading.TagValue = loading ? "Yes" : "No";
-            ucVehicleImage.Loading = loading;
-            ucCstId.TagValue = loading ? theVehicle.ThePlcVehicle.CassetteId : "";
+            try
+            {
+                var loading = !string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId);
+                ucLoading.TagValue = loading ? "Yes" : "No";
+                ucVehicleImage.Loading = loading;
+                ucCstId.TagValue = loading ? theVehicle.ThePlcVehicle.CassetteId : "";
 
-            var charging = theVehicle.ThePlcVehicle.Batterys.Charging;
-            ucCharging.TagValue = charging ? "Yes" : "No";
+                var charging = theVehicle.ThePlcVehicle.Batterys.Charging;
+                ucCharging.TagValue = charging ? "Yes" : "No";
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
         private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
         {
@@ -1027,13 +1482,20 @@ namespace Mirle.Agv.View
         }
         private void UpdateListBoxSections(ListBox aListBox, List<MapSection> aListOfSections)
         {
-            aListBox.Items.Clear();
-            if (aListOfSections.Count > 0)
+            try
             {
-                for (int i = 0; i < aListOfSections.Count; i++)
+                aListBox.Items.Clear();
+                if (aListOfSections.Count > 0)
                 {
-                    aListBox.Items.Add(aListOfSections[i].Id);
+                    for (int i = 0; i < aListOfSections.Count; i++)
+                    {
+                        aListBox.Items.Add(aListOfSections[i].Id);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -1041,7 +1503,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                VehiclePosition curVehPos = Vehicle.Instance.CurVehiclePosition;
+                VehicleLocation curVehPos = Vehicle.Instance.VehicleLocation;
                 int posX = (int)numPositionX.Value;
                 int posY = (int)numPositionY.Value;
                 curVehPos.SetRealPos(new MapPosition(posX, posY));
@@ -1053,7 +1515,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
         }
@@ -1130,8 +1592,8 @@ namespace Mirle.Agv.View
         #region Thd Ask Reserve
         private void btnAutoApplyReserveOnce_Click(object sender, EventArgs e)
         {
-            middleAgent.OnGetReserveOk();
-            RichTextBoxAppendHead(richTextBox1, $"Auto Apply Reserve Once by MainForm");
+            middleAgent.OnGetReserveOk("XXX");
+            AppendDebugLogMsg($"Auto Apply Reserve Once by MainForm");
         }
 
         private void btnStartAskReserve_Click(object sender, EventArgs e)
@@ -1193,46 +1655,70 @@ namespace Mirle.Agv.View
         private void btnAutoManual_Click(object sender, EventArgs e)
         {
             btnAutoManual.Enabled = false;
-            switch (Vehicle.Instance.AutoState)
-            {
-                case EnumAutoState.Manual:
-                    if (cbSimulationMode.Checked)
-                    {
-                        mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                    }
-                    else
-                    {
-                        if (mainFlowHandler.SetManualToAuto())
-                        {
-                            mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
-                            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-                            Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                            //mainFlowHandler.StartWatchLowPower();
-                        }
-                    }
-
-                    break;
-                case EnumAutoState.Auto:
-                default:
-                    {
-                        Vehicle.Instance.AutoState = EnumAutoState.PreManual;
-                        mainFlowHandler.StopAndClear();
-                        //mainFlowHandler.StopWatchLowPower();
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
-                        Vehicle.Instance.AutoState = EnumAutoState.Manual;
-                        var msg = $"Auto 切換 Manual 成功";
-                        RichTextBoxAppendHead(richTextBox1, msg);
-                        mainFlowHandler.CmdEndVehiclePosition = theVehicle.CurVehiclePosition;
-                        mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = true;
-                    }
-
-                    break;
-            }
-
+            SwitchAutoStatus();
+            ClearColor();
+            // ResetSectionColor();
             Thread.Sleep(500);
             btnAutoManual.Enabled = true;
+        }
+
+        public bool SwitchAutoStatus()
+        {
+            try
+            {
+                bool switchResult = false;
+                switch (Vehicle.Instance.AutoState)
+                {
+                    case EnumAutoState.Manual:
+                        if (mainFlowHandler.IsSimulation)
+                        {
+                            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
+                            Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                            switchResult = true;
+                            AppendDebugLogMsg($"Manual 切換 Auto 成功");
+                        }
+                        else
+                        {
+                            if (mainFlowHandler.SetManualToAuto())
+                            {
+                                alarmHandler.ResetAllAlarms();
+                                mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
+                                Vehicle.Instance.AutoState = EnumAutoState.Auto;
+                                switchResult = true;
+                                if (theVehicle.ThePlcVehicle.Loading)
+                                {
+                                    string errMsg = "";
+                                    plcAgent.triggerCassetteIDReader(ref errMsg);
+                                }
+                                else
+                                {
+                                    theVehicle.ThePlcVehicle.CassetteId = "";
+                                }
+                            }
+                        }
+                        break;
+                    case EnumAutoState.Auto:
+                    default:
+                        {
+                            Vehicle.Instance.AutoState = EnumAutoState.PreManual;
+                            mainFlowHandler.StopAndClear();
+                            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
+                            Vehicle.Instance.AutoState = EnumAutoState.Manual;
+                            var msg = $"Auto 切換 Manual 成功";
+                            AppendDebugLogMsg(msg);
+                            mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
+                            switchResult = true;
+                            LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                        }
+                        break;
+                }
+                return switchResult;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                return false;
+            }
         }
 
         private void btnStopAndClear_Click(object sender, EventArgs e)
@@ -1258,46 +1744,6 @@ namespace Mirle.Agv.View
         private void btnGetReserveOkClear_Click(object sender, EventArgs e)
         {
             middleAgent.DequeueGotReserveOkSections();
-        }
-
-        private void btnTestSomething_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-            Vehicle.Instance.AutoState = EnumAutoState.Auto;
-
-            //MapSection mapSection = theMapInfo.allMapSections["sec003"];
-            //middleAgent.SetupAskingReserveSection(mapSection);
-
-            //middleAgent.Send_Cmd136_AskReserve();
-
-            //middleAgent.Send_Cmd141_ModeChangeResponse();
-
-
-            //List<MapSection> mapSections = new List<MapSection>();
-            //MapSection mapSection;
-            //mapSection = theMapInfo.allMapSections["102"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["101"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["92"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["91"];
-            //mapSections.Add(mapSection);
-            //mapSection = theMapInfo.allMapSections["111"];
-            //mapSections.Add(mapSection);
-
-            //mainFlowHandler.SetupTestMoveCmd(mapSections);
-            //middleAgent.StopAskReserve();
-            //middleAgent.SetupNeedReserveSections(mapSections);
-            //middleAgent.StartAskReserve();
-            //RichTextBoxAppendHead(rtbTransferStep, "line001");
-            //RichTextBoxAppendHead(rtbTransferStep, "line002");
-            //RichTextBoxAppendHead(rtbTransferStep, "line003");
-
-            //var xx = rtbTransferStep.Text.ToList();
-
-            //Console.WriteLine();
-
         }
 
         private void btnSetupTestAgvcTransferCmd_Click(object sender, EventArgs e)
@@ -1331,28 +1777,6 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void btnSemiAutoManual_Click(object sender, EventArgs e)
-        {
-            switch (Vehicle.Instance.AutoState)
-            {
-                case EnumAutoState.Manual:
-                    {
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        //mainFlowHandler.StartWatchLowPower();
-                    }
-                    break;
-                case EnumAutoState.Auto:
-                default:
-                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
-                    mainFlowHandler.StopAndClear();
-                    //mainFlowHandler.StopWatchLowPower();
-                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
-                    Vehicle.Instance.AutoState = EnumAutoState.Manual;
-                    break;
-            }
-        }
-
         private void ucAddressImageItem_DoubleClick(object sender, MouseEventArgs e)
         {
             Control control = ((Control)sender).Parent;
@@ -1360,11 +1784,21 @@ namespace Mirle.Agv.View
 
             try
             {
-                if (moveCommandDebugMode != null)
+                if (theVehicle.AutoState == EnumAutoState.Manual)
                 {
-                    moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
-                    moveCommandDebugMode.Show();
-                    moveCommandDebugMode.BringToFront();
+                    if (ucAddressImage.BackColor != Color.Black)
+                    {
+                        ucAddressImage.BackColor = Color.Black;
+                        mainFormAddNodes.Add(ucAddressImage.Address);
+                        changeColorAddressList.Add(ucAddressImage);
+                    }
+
+                    if (moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed)
+                    {
+                        moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
+                        moveCommandDebugMode.Show();
+                        moveCommandDebugMode.BringToFront();
+                    }
                 }
             }
             catch
@@ -1378,63 +1812,15 @@ namespace Mirle.Agv.View
             ResetImageAndPb();
         }
 
-        private void txtBarNum_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                var barNum = int.Parse(txtBarNum.Text);
-                if (theMapInfo.allMapBarcodes.ContainsKey(barNum))
-                {
-                    var mapBar = theMapInfo.allMapBarcodes[barNum];
-                    ucBarPos.TagValue = $"({(int)mapBar.Position.X},{(int)mapBar.Position.Y})";
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
-
         private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            switch (Vehicle.Instance.AutoState)
-            {
-                case EnumAutoState.Manual:
-                    {
-                        mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
-                        Vehicle.Instance.AutoState = EnumAutoState.Auto;
-                        //mainFlowHandler.StartWatchLowPower();
-                    }
-                    break;
-                case EnumAutoState.Auto:
-                default:
-                    Vehicle.Instance.AutoState = EnumAutoState.PreManual;
-                    mainFlowHandler.StopAndClear();
-                    //mainFlowHandler.StopWatchLowPower();
-                    mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
-                    Vehicle.Instance.AutoState = EnumAutoState.Manual;
-                    break;
-            }
+
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             var anti = !IsAgvcConnect;
             middleAgent.TriggerConnect(anti);
-        }
-
-        private void cbSimulationMode_CheckedChanged(object sender, EventArgs e)
-        {
-            moveCommandDebugMode.button_SimulationMode_Click(this, e);
-            plcForm.chkFakeForking.Checked = cbSimulationMode.Checked;
-            if (cbSimulationMode.Checked)
-            {
-                mainFlowHandler.SetupVehicleSoc(100);               
-            }
-
-            btnLoadOk.Visible = cbSimulationMode.Checked;
-            btnMoveOk.Visible = cbSimulationMode.Checked;
-            btnUnloadOk.Visible = cbSimulationMode.Checked;
         }
 
         private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1450,8 +1836,8 @@ namespace Mirle.Agv.View
         private void btnLoadOk_Click(object sender, EventArgs e)
         {
             theVehicle.ThePlcVehicle.Loading = true;
-            theVehicle.ThePlcVehicle.CassetteId = "CA0070";
-            PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load,"1", EnumStageDirection.Left,false, 100);
+            //theVehicle.ThePlcVehicle.CassetteId = "CA0070";
+            PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load, "1", EnumStageDirection.Left, false, 100);
             mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
         }
 
@@ -1471,6 +1857,341 @@ namespace Mirle.Agv.View
                 mainFlowHandler.SetupVehicleSoc(initialSoc);
                 timer_SetupInitialSoc.Enabled = false;
             }
+        }
+
+        public JogPitchForm GetJogPitchForm() => jogPitchForm;
+
+        private void ClearColor()
+        {
+            foreach (UcAddressImage ucAddressImage in changeColorAddressList)
+            {
+                ucAddressImage.BackColor = Color.FromArgb(0, 255, 255, 255);
+            }
+
+            changeColorAddressList = new List<UcAddressImage>();
+        }
+
+        private bool SimulateAGVCMoveCommand()
+        {
+            if (mainFormAddNodes == null || mainFormAddNodes.Count < 2)
+                return false;
+
+            List<MapAddress> nodeMapAddressList = new List<MapAddress>();
+
+            List<string> agvcAddressList = new List<string>();
+            List<string> agvcSectionList = new List<string>();
+            string endAddressId = mainFormAddNodes[mainFormAddNodes.Count - 1].Id;
+
+            MapAddress startAddresee = null;
+            MapAddress endAddresee = null;
+
+            int lastLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[0].Position, mainFormAddNodes[1].Position);
+            int nowLineAngle;
+
+            nodeMapAddressList.Add(mainFormAddNodes[0]);
+
+            for (int i = 1; i < mainFormAddNodes.Count - 1; i++)
+            {
+                nowLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[i].Position, mainFormAddNodes[i + 1].Position);
+                if (nowLineAngle != lastLineAngle)
+                    nodeMapAddressList.Add(mainFormAddNodes[i]);
+
+                lastLineAngle = nowLineAngle;
+            }
+
+            nodeMapAddressList.Add(mainFormAddNodes[mainFormAddNodes.Count - 1]);
+            MapSection section = null;
+            MapSection lastAddressSection = null;
+
+            for (int i = 0; i < nodeMapAddressList.Count - 1; i++)
+            {
+                startAddresee = nodeMapAddressList[i];
+                endAddresee = nodeMapAddressList[i + 1];
+
+                if (theMapInfo.allMapSections.ContainsKey(endAddresee.InsideSectionId))
+                {
+                    if (i != nodeMapAddressList.Count - 2)
+                        return false;
+
+                    lastAddressSection = theMapInfo.allMapSections[endAddresee.InsideSectionId];
+                }
+
+                while (startAddresee != endAddresee)
+                {
+                    if (theMapInfo.allMapSections.ContainsKey(startAddresee.InsideSectionId))
+                    {
+                        if (i != 0)
+                            return false;
+
+                        section = theMapInfo.allMapSections[startAddresee.InsideSectionId];
+                        double distanceToSectionHead = Math.Sqrt(Math.Pow(section.HeadAddress.Position.X - endAddresee.Position.X, 2) +
+                                                                 Math.Pow(section.HeadAddress.Position.Y - endAddresee.Position.Y, 2));
+                        double distanceToSectionTail = Math.Sqrt(Math.Pow(section.TailAddress.Position.X - endAddresee.Position.X, 2) +
+                                                                 Math.Pow(section.TailAddress.Position.Y - endAddresee.Position.Y, 2));
+
+                        agvcSectionList.Add(section.Id);
+
+                        if (distanceToSectionHead > distanceToSectionTail)
+                        {
+                            agvcAddressList.Add(section.HeadAddress.Id);
+                            startAddresee = section.TailAddress;
+                        }
+                        else
+                        {
+                            agvcAddressList.Add(section.TailAddress.Id);
+                            startAddresee = section.HeadAddress;
+                        }
+                    }
+                    else
+                    {
+                        agvcAddressList.Add(startAddresee.Id);
+                        lastLineAngle = computeFunction.ComputeAngleInt(startAddresee.Position, endAddresee.Position);
+
+                        bool findNextSection = false;
+
+                        foreach (var valuePair in theMapInfo.allMapSections)
+                        {
+                            section = valuePair.Value;
+
+                            if (section.HeadAddress == startAddresee)
+                            {
+                                nowLineAngle = computeFunction.ComputeAngleInt(section.HeadAddress.Position, section.TailAddress.Position);
+
+                                if (nowLineAngle == lastLineAngle)
+                                {
+                                    agvcSectionList.Add(section.Id);
+                                    startAddresee = section.TailAddress;
+                                    findNextSection = true;
+                                    break;
+                                }
+                            }
+                            else if (section.TailAddress == startAddresee)
+                            {
+                                nowLineAngle = computeFunction.ComputeAngleInt(section.TailAddress.Position, section.HeadAddress.Position);
+
+                                if (nowLineAngle == lastLineAngle)
+                                {
+                                    agvcSectionList.Add(section.Id);
+                                    startAddresee = section.HeadAddress;
+                                    findNextSection = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!findNextSection)
+                            return false;
+                    }
+
+                    if (section != null && lastAddressSection != null && section == lastAddressSection)
+                    {
+                        if (startAddresee == lastAddressSection.HeadAddress || startAddresee == lastAddressSection.TailAddress)
+                            endAddresee = startAddresee;
+                        else
+                            startAddresee = endAddresee;
+                    }
+                }
+            }
+
+            if (endAddresee != null)
+                agvcAddressList.Add(endAddresee.Id);
+
+            string debugMessage = "address : ";
+            for (int i = 0; i < agvcAddressList.Count; i++)
+                debugMessage = debugMessage + agvcAddressList[i] + " ";
+
+            debugMessage += "\r\nsection : ";
+
+            for (int i = 0; i < agvcSectionList.Count; i++)
+                debugMessage = debugMessage + agvcSectionList[i] + " ";
+
+            debugMessage += "\r\nendAddress : " + endAddressId;
+
+            //MessageBox.Show(debugMessage);
+            return true;
+        }
+
+        private List<MapAddress> mainFormAddNodes = new List<MapAddress>();
+        private List<UcAddressImage> changeColorAddressList = new List<UcAddressImage>();
+        private ComputeFunction computeFunction = new ComputeFunction();
+
+        private MapAddress endAddress = null;
+        private List<UcSectionImage> changeColorSectionList = new List<UcSectionImage>();
+        private int changeColorSectionListIndex = 0;
+        private int removeSectionIndex = 0;
+
+        public delegate void UcSectionImageSetColorCallback(UcSectionImage ucSectionImage, string keyword);
+        public void UcSectionImageSetColor(UcSectionImage ucSectionImage, string keyword)
+        {
+            if (ucSectionImage.InvokeRequired)
+            {
+                UcSectionImageSetColorCallback mydel = new UcSectionImageSetColorCallback(UcSectionImageSetColor);
+                this.Invoke(mydel, new object[] { ucSectionImage, keyword });
+            }
+            else
+            {
+                ucSectionImage.SetColor(allPens[keyword]);
+            }
+        }
+
+        public delegate void RefreshMapCallback(MainForm mainForm);
+        public void RefreshMap(MainForm mainForm)
+        {
+            if (mainForm.InvokeRequired)
+            {
+                RefreshMapCallback del = new RefreshMapCallback(RefreshMap);
+                this.Invoke(del, mainForm);
+            }
+            else
+            {
+                mainForm.Refresh();
+            }
+        }
+
+        public void ChangeToNormalSection(string sectionId)
+        {
+            try
+            {
+                if (removeSectionIndex < changeColorSectionList.Count &&
+                    changeColorSectionList[removeSectionIndex].Id == sectionId)
+                {
+                    //changeColorSectionList[removeSectionIndex].SetColor(allPens["NormalSection"]);
+                    UcSectionImageSetColor(changeColorSectionList[removeSectionIndex], "NormalSection");
+                    removeSectionIndex++;
+                    RefreshMap(mainForm);
+                }
+            }
+            catch { }
+        }
+
+        private void GetReserveSection(string sectionId)
+        {
+            try
+            {
+                if (changeColorSectionListIndex < changeColorSectionList.Count &&
+                    changeColorSectionList[changeColorSectionListIndex].Id == sectionId)
+                {
+                    //changeColorSectionList[changeColorSectionListIndex].SetColor(allPens["GetReserveSection"]);
+                    UcSectionImageSetColor(changeColorSectionList[changeColorSectionListIndex], "GetReserveSection");
+                    changeColorSectionListIndex++;
+                    RefreshMap(mainForm);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        public void ResetSectionColor()
+        {
+            try
+            {
+                if (changeColorSectionList == null)
+                    changeColorSectionList = new List<UcSectionImage>();
+                else if (changeColorSectionList.Count != 0)
+                {
+                    for (int i = removeSectionIndex; i < changeColorSectionList.Count; i++)
+                    {
+                        //changeColorSectionList[i].SetColor(allPens["NormalSection"]);
+                        UcSectionImageSetColor(changeColorSectionList[i], "NormalSection");
+                    }
+
+
+                    changeColorSectionList = new List<UcSectionImage>();
+                }
+
+                changeColorSectionListIndex = 0;
+                removeSectionIndex = 0;
+
+                if (endAddress != null)
+                {
+                    if (allUcAddressImages.ContainsKey(endAddress.Id))
+                        allUcAddressImages[endAddress.Id].BackColor = Color.Transparent;
+
+                    endAddress = null;
+                }
+
+                RefreshMap(mainForm);
+            }
+            catch { }
+        }
+
+        public void SetMovingSectionAndEndPosition(List<MapSection> movingSection, MapAddress movingEndAddress)
+        {
+            try
+            {
+                ResetSectionColor();
+
+                foreach (MapSection section in movingSection)
+                {
+                    if (allUcSectionImages.ContainsKey(section.Id))
+                    {
+                        var ucSectionImage = allUcSectionImages[section.Id];
+                        changeColorSectionList.Add(ucSectionImage);
+                        UcSectionImageSetColor(ucSectionImage, "NotGetReserveSection");
+                    }
+                }
+
+                changeColorSectionListIndex = 0;
+                removeSectionIndex = 0;
+
+                if (movingEndAddress != null)
+                {
+                    if (allUcAddressImages.ContainsKey(movingEndAddress.Id))
+                    {
+                        allUcAddressImages[movingEndAddress.Id].BackColor = Color.Green;
+                        endAddress = movingEndAddress;
+                    }
+                }
+
+                RefreshMap(mainForm);
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void btnReloadConfig_Click(object sender, EventArgs e)
+        {
+            ClearColor();
+            SimulateAGVCMoveCommand();
+            mainFormAddNodes = new List<MapAddress>();
+
+            //if (theVehicle.AutoState == EnumAutoState.Manual)
+            //{
+            //    mainFlowHandler.ReloadConfig();
+            //}
+        }
+
+        private void 模擬測試ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            moveCommandDebugMode.button_SimulationMode_Click(this, e);
+            plcForm.chkFakeForking.Checked = !plcForm.chkFakeForking.Checked;
+            mainFlowHandler.IsSimulation = !mainFlowHandler.IsSimulation;
+            if (plcForm.chkFakeForking.Checked)
+            {
+                mainFlowHandler.SetupVehicleSoc(100);
+            }
+
+            btnLoadOk.Visible = plcForm.chkFakeForking.Checked;
+            btnMoveOk.Visible = plcForm.chkFakeForking.Checked;
+            btnUnloadOk.Visible = plcForm.chkFakeForking.Checked;
+        }
+
+        private void btnPrintScreen_Click(object sender, EventArgs e)
+        {
+            Image image = new Bitmap(1920, 1080);
+            Graphics graphics = Graphics.FromImage(image);
+            graphics.CopyFromScreen(0, 0, 0, 0, new Size(1920, 1080));
+            IntPtr intPtr = graphics.GetHdc();
+            graphics.ReleaseHdc(intPtr);
+            PictureBox pictureBox = new PictureBox();
+            pictureBox.Image = image;
+            string timeStamp = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".jpeg";
+            string savename = Path.Combine(Environment.CurrentDirectory, "Log", timeStamp);
+            image.Save(savename);
         }
     }
 }

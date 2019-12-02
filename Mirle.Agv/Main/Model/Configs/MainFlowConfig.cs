@@ -13,10 +13,10 @@ namespace Mirle.Agv.Model.Configs
         public int VisitTransferStepsSleepTimeMs { get; set; }
         public int TrackPositionSleepTimeMs { get; set; }
         public int WatchLowPowerSleepTimeMs { get; set; }
-        public int StopWatchLowPowerWaitingTimeMs { get; set; }
         public int ReportPositionIntervalMs { get; set; }
         public int StartChargeWaitingTimeoutMs { get; set; }
         public int StopChargeWaitingTimeoutMs { get; set; }
         public int RealPositionRangeMm { get; set; }
+        public int LoadingChargeIntervalMs { get; set; }
     }
 }

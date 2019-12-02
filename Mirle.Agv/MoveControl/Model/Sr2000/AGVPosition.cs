@@ -9,6 +9,7 @@ namespace Mirle.Agv.Model
     public class AGVPosition
     {
         public MapPosition Position { get; set; }
+        public MapPosition BarcodeCenter { get; set; }
         public double AGVAngle { get; set; }
         public double BarcodeAngle { get; set; }
         public int ScanTime { get; set; }
@@ -16,22 +17,26 @@ namespace Mirle.Agv.Model
         public uint Count { get; set; }
         public double BarcodeAngleInMap { get; set; }
         public EnumBarcodeMaterial Type { get; set; }
+        public string BarcodeLineID { get; set; }
 
-        public AGVPosition(MapPosition agvPosition, double agvAngle, double barcodeAngle, int scanTime, DateTime getDataTime, uint count, double barcodeAngleInMap, EnumBarcodeMaterial type)
+        public AGVPosition(MapPosition agvPosition, MapPosition barcodeCenter, double agvAngle, double barcodeAngle, int scanTime, DateTime getDataTime, uint count, double barcodeAngleInMap, EnumBarcodeMaterial type, string lineID)
         {
             Position = agvPosition;
             AGVAngle = agvAngle;
+            BarcodeCenter = barcodeCenter;
             BarcodeAngle = barcodeAngle;
             ScanTime = scanTime;
             GetDataTime = getDataTime;
             Count = count;
             BarcodeAngleInMap = barcodeAngleInMap;
             Type = type;
+            BarcodeLineID = lineID;
         }
 
         public AGVPosition()
         {
             Position = new MapPosition();
+            BarcodeCenter = new MapPosition();
         }
     }
 }

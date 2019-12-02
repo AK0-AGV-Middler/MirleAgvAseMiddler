@@ -47,6 +47,9 @@ namespace Mirle.Agv.Controller
         private double offsetValue = 0;
         private string device = "Elmo driver";
 
+        public string ElmoLog { get; set; } = "";
+        private const int elmoLogMaxLength = 10000;
+
         private void SendAlarmCode(int alarmCode)
         {
             try
@@ -94,11 +97,18 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                WriteLog("Elmo", "1", device, "", "Excption : " + ex.ToString());
-                WriteLog("Error", "1", device, "", "Elmo 連線失敗, Excption : " + ex.ToString());
+                WriteLog("Elmo", "5", device, "", "Excption : " + ex.ToString());
+                WriteLog("Error", "5", device, "", "Elmo 連線失敗, Excption : " + ex.ToString());
                 SendAlarmCode(100000);
                 Connected = false;
             }
+        }
+
+        private void SetElmoLog(string functionName, string message)
+        {
+            ElmoLog = DateTime.Now.ToString("HH:mm:ss.fff") + "\t" + functionName + "\t" + message + "\r\n" + ElmoLog;
+            if (ElmoLog.Length > elmoLogMaxLength)
+                ElmoLog = ElmoLog.Substring(0, elmoLogMaxLength);
         }
 
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
@@ -108,6 +118,7 @@ namespace Mirle.Agv.Controller
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
             loggerAgent.LogMsg(logFormat.Category, logFormat);
+            SetElmoLog(memberName, message);
         }
 
         #region 讀取XML.
@@ -337,7 +348,7 @@ namespace Mirle.Agv.Controller
 
             if (MMCConnection.ConnectRPC(controlIP, cardIP, elmoControlPort, out handler) != 0)
             {
-                WriteLog("Error", "1", device, "", "Elmo 連線失敗!");
+                WriteLog("Error", "5", device, "", "Elmo 連線失敗!");
                 return false;
             }
 
@@ -873,7 +884,6 @@ namespace Mirle.Agv.Controller
             catch (MMCException ex)
             {
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
-                SendAlarmCode(100003);
             }
         }
 
@@ -914,7 +924,6 @@ namespace Mirle.Agv.Controller
             catch (MMCException ex)
             {
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
-                SendAlarmCode(100003);
                 return false;
             }
         }
@@ -985,7 +994,6 @@ namespace Mirle.Agv.Controller
             {
                 for (int i = 0; i < allAxis[axis].Config.GroupOrder.Count; i++)
                     allAxis[allAxis[axis].Config.GroupOrder[i]].NeedAssignLastCommandPosition = true;
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "LastCommand ::" +
                              "TFL : " + allAxis[EnumAxis.TFL].LastCommandPosition.ToString("0.00") +
                             ",TFR : " + allAxis[EnumAxis.TFR].LastCommandPosition.ToString("0.00") +
@@ -1041,7 +1049,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1073,7 +1080,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1106,7 +1112,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1132,7 +1137,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1153,7 +1157,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1251,7 +1254,6 @@ namespace Mirle.Agv.Controller
             }
             catch (MMCException ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
             }
         }
@@ -1279,7 +1281,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return -1;
             }
@@ -1306,7 +1307,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return -1;
             }
@@ -1323,7 +1323,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1340,7 +1339,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return null;
             }
@@ -1365,9 +1363,83 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
+            }
+        }
+
+        public bool MoveAxisStop([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && !allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Move)
+                    {
+                        if (!allAxisList[i].FeedbackData.Disable && !allAxisList[i].FeedbackData.StandStill)
+                            return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                return false;
+            }
+        }
+
+        public bool TurnAxisStop([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && !allAxisList[i].Config.IsVirtualDevice && allAxisList[i].Config.Type == EnumAxisType.Turn)
+                    {
+                        if (!allAxisList[i].FeedbackData.Disable && !allAxisList[i].FeedbackData.StandStill)
+                            return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                return false;
+            }
+        }
+
+        public bool AllAxisStop([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && !allAxisList[i].Config.IsVirtualDevice)
+                    {
+                        if (!allAxisList[i].FeedbackData.Disable && !allAxisList[i].FeedbackData.StandStill)
+                            return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                return false;
             }
         }
 
@@ -1391,7 +1463,6 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return true;
             }
@@ -1411,34 +1482,215 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                SendAlarmCode(100003);
                 WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
                 return false;
             }
         }
 
-        public bool CheckAxisNoError()
+        public bool CheckAxisAllError()
         {
-            for (int i = 0; i < MAX_AXIS; i++)
+            try
             {
-                if (!allAxisList[i].Config.IsGroup && allAxisList[i].FeedbackData.ErrorStop)
+                if (!Connected)
                     return false;
-            }
 
-            return true;
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && !allAxisList[i].FeedbackData.ErrorStop)
+                        return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool CheckAxisNoError(ref int alarmcode)
+        {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && allAxisList[i].FeedbackData.ErrorStop)
+                    {
+                        switch (allAxisList[i].Config.ID)
+                        {
+                            case EnumAxis.XFL:
+                                alarmcode = 142000;
+                                break;
+                            case EnumAxis.XFR:
+                                alarmcode = 142001;
+                                break;
+                            case EnumAxis.XRL:
+                                alarmcode = 142002;
+                                break;
+                            case EnumAxis.XRR:
+                                alarmcode = 142003;
+                                break;
+                            case EnumAxis.TFL:
+                                alarmcode = 142004;
+                                break;
+                            case EnumAxis.TFR:
+                                alarmcode = 142005;
+                                break;
+                            case EnumAxis.TRL:
+                                alarmcode = 142006;
+                                break;
+                            case EnumAxis.TRR:
+                                alarmcode = 142007;
+                                break;
+                            case EnumAxis.VXFL:
+                                alarmcode = 142100;
+                                break;
+                            case EnumAxis.VXFR:
+                                alarmcode = 142101;
+                                break;
+                            case EnumAxis.VXRL:
+                                alarmcode = 142102;
+                                break;
+                            case EnumAxis.VXRR:
+                                alarmcode = 142103;
+                                break;
+                            case EnumAxis.VTFL:
+                                alarmcode = 142104;
+                                break;
+                            case EnumAxis.VTFR:
+                                alarmcode = 142105;
+                                break;
+                            case EnumAxis.VTRL:
+                                alarmcode = 142106;
+                                break;
+                            case EnumAxis.VTRR:
+                                alarmcode = 142107;
+                                break;
+
+                            case EnumAxis.GT:
+                            case EnumAxis.GX:
+                            default:
+                                alarmcode = 159998;
+                                break;
+                        }
+
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public bool CheckAxisEnableAndLinked()
         {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (allAxisList[i].FeedbackData.Disable)
+                        return false;
+
+                    if (allAxisList[i].Config.IsVirtualDevice && !allAxisList[i].Linking)
+                        return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool ElmoAxisTypeAllServoOn(EnumAxisType type)
+        {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                for (int i = 0; i < MAX_AXIS; i++)
+                {
+                    if (!allAxisList[i].Config.IsGroup && allAxisList[i].Config.Type == type && allAxisList[i].FeedbackData.Disable)
+                        return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool CehckVirtualAxisLink(EnumAxis axis)
+        {
+            try
+            {
+                if (!Connected)
+                    return true;
+
+                if (!allAxis[axis].Config.IsVirtualDevice)
+                    return false;
+
+                if (allAxis[allAxis[axis].Config.VirtualDev4ID].FeedbackData.Disable)
+                    return false;
+
+                uint SR_value = 0;
+                uint MLR_value = 0;
+                allAxis[axis].SingleAxis.GetStatusRegister(ref SR_value, ref MLR_value);
+
+                return (int)SR_value == 678912;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool SetAllVirtualServoOnAndLinked([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            WriteLog("Elmo", "7", device, memberName, "start!");
+
+            int retryTimes = 3;
+
             for (int i = 0; i < MAX_AXIS; i++)
             {
-                if (allAxisList[i].FeedbackData.Disable)
-                    return false;
+                if (allAxisList[i].Config.IsVirtualDevice)
+                {
+                    for (int j = 0; j < retryTimes; j++)
+                    {
+                        if (CehckVirtualAxisLink(allAxisList[i].Config.ID))
+                            break;
+                        else
+                        {
+                            DisableAxis(allAxisList[i].Config.ID);
+                            Thread.Sleep(200);
+                            EnableAxis(allAxisList[i].Config.ID);
+                            Thread.Sleep(200);
+                        }
+                    }
 
-                if (allAxisList[i].Config.IsVirtualDevice && !allAxisList[i].Linking)
-                    return false;
+                    if (!CehckVirtualAxisLink(allAxisList[i].Config.ID))
+                    {
+                        WriteLog("Elmo", "7", device, memberName, "end : Fail!");
+                        return false;
+                    }
+                }
             }
 
+            WriteLog("Elmo", "7", device, memberName, "end : Sucess!");
             return true;
         }
     }

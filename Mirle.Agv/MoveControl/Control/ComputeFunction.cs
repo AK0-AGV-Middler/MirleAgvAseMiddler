@@ -1,6 +1,8 @@
 ﻿using Mirle.Agv.Model;
 using Mirle.Agv.Model.TransferSteps;
 using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Mirle.Agv.Controller
 {
@@ -26,6 +28,11 @@ namespace Mirle.Agv.Controller
         {
             agvAngleInMap = GetAGVAngle(agvAngleInMap);
             return (agvAngleInMap + barcodeAngleInMap + wheelAngle) % 180 == 0;
+        }
+
+        public double GetTwoPositionDistance(MapPosition start, MapPosition end)
+        {
+            return Math.Sqrt(Math.Pow(start.X - end.X, 2) + Math.Pow(start.Y - end.Y, 2));
         }
 
         // angle : start to end.
@@ -190,6 +197,12 @@ namespace Mirle.Agv.Controller
             int endSectionAngle = ComputeAngleInt(tr, end);
             int delta = endSectionAngle - startSectionAngle;
 
+            if (delta == 0)
+            {
+                errorMessage = "Section 差0度,不該存在這種TR!";
+                return -1;
+            }
+
             if (delta < -90)
                 delta += 360;
             else if (delta > 90)
@@ -335,7 +348,7 @@ namespace Mirle.Agv.Controller
             {
                 vel = startVel - deltaVelocity;
                 double jerkDistance = startVel * time - jerk * Math.Pow(time, 3) / 6;
-                return jerkDistance ;
+                return jerkDistance;
             }
             else
             {
@@ -437,6 +450,315 @@ namespace Mirle.Agv.Controller
             }
 
             return true;
+        }
+
+        public double GetCurrectAngle(double angle)
+        {
+            while (angle > 180 || angle <= -180)
+            {
+                if (angle > 180)
+                    angle -= 360;
+                else
+                    angle += 360;
+            }
+
+            return angle;
+        }
+
+        private void FindFileLastWriteDataRecursive(string path, ref DateTime time)
+        {
+            try
+            {
+                DateTime dt;
+
+                foreach (string fileName in Directory.GetFiles(path))
+                {
+                    dt = File.GetLastWriteTime(fileName);
+
+                    if (DateTime.Compare(dt, time) > 0)
+                        time = dt;
+                }
+
+                foreach (string data in Directory.GetDirectories(path))
+                {
+                    FindFileLastWriteDataRecursive(data, ref time);
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        public string GetFileLastTime(string path)
+        {
+            try
+            {
+                string str = System.IO.Directory.GetCurrentDirectory();
+
+                DateTime test = new DateTime(2000, 1, 1, 0, 0, 0);
+
+                FindFileLastWriteDataRecursive(path, ref test);
+
+                if (DateTime.Compare(test, new DateTime(2000, 1, 1, 0, 0, 0)) != 0)
+                    return test.ToString("yyyy.MM.dd-HH:mm");
+                else
+                {
+                    path = System.IO.Directory.GetCurrentDirectory();
+
+                    test = File.GetLastWriteTime(Path.Combine(path, "Mirle.Agv.exe"));
+                    return test.ToString("yyyy.MM.dd-HH:mm");
+                }
+            }
+            catch (Exception e)
+            {
+                return "excption!";
+            }
+        }
+
+        private double GetDistanceToWall(WallData wall, MapPosition position)
+        {
+            if (wall.HeadPosition.X == wall.TailPosition.X)
+            {
+                return Math.Abs(position.X - wall.HeadPosition.X);
+            }
+            else
+            {
+                double a = (wall.HeadPosition.Y - wall.TailPosition.Y) / (wall.HeadPosition.X - wall.TailPosition.X);
+                double b = wall.HeadPosition.Y - a * wall.HeadPosition.X;
+
+                return Math.Abs(a * position.X - position.Y + b) / Math.Sqrt(1 + a * a);
+            }
+        }
+
+        public EnumInWallLocate GetInWallLocate(WallData wall, MapPosition position)
+        {
+            double a;
+            double headB;
+            double tailB;
+
+            if (wall.HeadPosition.Y == wall.TailPosition.Y)
+            {
+                if ((wall.HeadPosition.X - position.X) * (wall.TailPosition.X - position.X) < 0)
+                    return EnumInWallLocate.Center;
+                else if ((wall.HeadPosition.X - position.X) * (wall.HeadPosition.X - wall.TailPosition.X) > 0)
+                    return EnumInWallLocate.Tail;
+                else
+                    return EnumInWallLocate.Head;
+            }
+            else if (wall.HeadPosition.X == wall.TailPosition.X)
+            {
+                a = 0;
+                headB = wall.HeadPosition.Y;
+                tailB = wall.TailPosition.Y;
+            }
+            else
+            {
+                a = -(wall.HeadPosition.X - wall.TailPosition.X) / (wall.HeadPosition.Y - wall.TailPosition.Y);
+                headB = wall.HeadPosition.Y - a * wall.HeadPosition.X;
+                tailB = wall.TailPosition.Y - a * wall.TailPosition.X;
+            }
+
+            if ((a * position.X + headB - position.Y) * (a * position.X + tailB - position.Y) < 0)
+                return EnumInWallLocate.Center;
+            else if ((a * position.X + headB - position.Y) * (a * wall.TailPosition.X + headB - wall.TailPosition.Y) > 0)
+                return EnumInWallLocate.Tail;
+            else
+                return EnumInWallLocate.Head;
+        }
+
+        private double GetByPassDistance(WallData wall, EnumInWallLocate locate, double distance, MapSection section)
+        {
+            double returnDouble;
+            double temp1;
+            double temp2;
+            int wallAngle = ComputeAngleInt(wall.HeadPosition, wall.TailPosition);
+
+            if (locate == EnumInWallLocate.Center && distance < wall.ByPassDistance)
+                return 0;
+            else
+            {
+                if (locate == EnumInWallLocate.Center)
+                {
+                    return distance - wall.ByPassDistance;
+                }
+                else
+                {
+                    if (wallAngle == 0 || wallAngle == 180)
+                    {
+                        if (locate == EnumInWallLocate.Tail)
+                        {
+                            temp1 = Math.Abs(section.TailAddress.Position.X - wall.TailPosition.X);
+                            temp2 = Math.Abs(section.HeadAddress.Position.X - wall.TailPosition.X);
+                        }
+                        else
+                        {
+                            temp1 = Math.Abs(section.TailAddress.Position.X - wall.HeadPosition.X);
+                            temp2 = Math.Abs(section.HeadAddress.Position.X - wall.HeadPosition.X);
+                        }
+                    }
+                    else
+                    {
+                        if (locate == EnumInWallLocate.Tail)
+                        {
+                            temp1 = Math.Abs(section.TailAddress.Position.Y - wall.TailPosition.Y);
+                            temp2 = Math.Abs(section.HeadAddress.Position.Y - wall.TailPosition.Y);
+                        }
+                        else
+                        {
+                            temp1 = Math.Abs(section.TailAddress.Position.Y - wall.HeadPosition.Y);
+                            temp2 = Math.Abs(section.HeadAddress.Position.Y - wall.HeadPosition.Y);
+                        }
+                    }
+                }
+            }
+
+            returnDouble = (temp1 < temp2) ? temp1 : temp2;
+            return returnDouble;
+        }
+
+        private EnumBeamSensorLocate GetBeamByPassLocate(WallData wall, MapSection section, double startDistance)
+        {
+            double x = section.HeadAddress.Position.X + (section.TailAddress.Position.X - section.HeadAddress.Position.X) * (startDistance / section.HeadToTailDistance);
+            double y = section.HeadAddress.Position.Y + (section.TailAddress.Position.Y - section.HeadAddress.Position.Y) * (startDistance / section.HeadToTailDistance);
+
+            double wallX, wallY;
+
+            if (wall.Angle == 0 || wall.Angle == 180)
+            {
+                wallX = x;
+                wallY = wall.HeadPosition.Y;
+            }
+            else
+            {
+                wallX = wall.HeadPosition.X;
+                wallY = y;
+            }
+
+            MapPosition sectionNode = new MapPosition(x, y);
+            MapPosition wallNode = new MapPosition(wallX, wallY);
+
+            double agvToWallAngle = ComputeAngleInt(sectionNode, wallNode);
+
+            switch (GetCurrectAngle(agvToWallAngle - section.VehicleDistanceSinceHead))
+            {
+                case 0:
+                    return EnumBeamSensorLocate.Front;
+                case 90:
+                    return EnumBeamSensorLocate.Left;
+                case -90:
+                    return EnumBeamSensorLocate.Right;
+                case 180:
+                    return EnumBeamSensorLocate.Back;
+                default:
+                    return EnumBeamSensorLocate.Front;
+            }
+        }
+
+        public void ComputeWallByPass(Dictionary<string, MapSection> sectionList, WallData wall, ref List<MapSectionBeamDisable> SectionBeamDisableList)
+        {
+            double headDistance;
+            double tailDistance;
+            EnumInWallLocate headLocate;
+            EnumInWallLocate tailLocate;
+            double byPassHead;
+            double byPassTail;
+
+            wall.Angle = ComputeAngleInt(wall.HeadPosition, wall.TailPosition);
+            if (wall.Angle != 0 && wall.Angle != 90 && wall.Angle != -90 && wall.Angle != 180)
+                return;
+
+            foreach (var valuePair in sectionList)
+            {
+                MapSection section = valuePair.Value;
+
+                if (section.Type != EnumSectionType.R2000)
+                {
+                    headDistance = GetDistanceToWall(wall, section.HeadAddress.Position);
+                    tailDistance = GetDistanceToWall(wall, section.TailAddress.Position);
+
+                    headLocate = GetInWallLocate(wall, section.HeadAddress.Position);
+                    tailLocate = GetInWallLocate(wall, section.TailAddress.Position);
+
+                    if (headLocate != tailLocate || tailLocate == EnumInWallLocate.Center)
+                    {
+                        if (headDistance < wall.ByPassDistance ||
+                            tailDistance < wall.ByPassDistance)
+                        {
+                            byPassHead = GetByPassDistance(wall, headLocate, headDistance, section);
+                            byPassTail = GetByPassDistance(wall, tailLocate, tailDistance, section);
+
+                            MapSectionBeamDisable temp = new MapSectionBeamDisable();
+                            temp.SectionId = section.Id;
+                            temp.Min = byPassHead;
+                            temp.Max = section.HeadToTailDistance - byPassTail;
+                            temp.FrontDisable = false;
+                            temp.BackDisable = false;
+                            temp.LeftDisable = false;
+                            temp.RightDisable = false;
+
+                            switch (GetBeamByPassLocate(wall, section, byPassHead))
+                            {
+                                case EnumBeamSensorLocate.Front:
+                                    temp.FrontDisable = true;
+                                    break;
+                                case EnumBeamSensorLocate.Back:
+                                    temp.BackDisable = true;
+                                    break;
+                                case EnumBeamSensorLocate.Left:
+                                    temp.LeftDisable = true;
+                                    break;
+                                case EnumBeamSensorLocate.Right:
+                                    temp.RightDisable = true;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            SectionBeamDisableList.Add(temp);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void ComputeWallListByPass(Dictionary<string, MapSection> sectionList, List<WallData> wallList, ref List<MapSectionBeamDisable> sectionBeamDisableList)
+        {
+            foreach (WallData wall in wallList)
+            {
+                ComputeWallByPass(sectionList, wall, ref sectionBeamDisableList);
+            }
+        }
+
+
+        public bool IsInStartEnd(double start, double end, double num)
+        {
+            if (start > end)
+                return start > num && num > end;
+            else
+                return start < num && num < end;
+        }
+
+        public double GetDistanceToStart(double start, double end, double num)
+        {
+            if (start > end)
+            {
+                if (num > start)
+                    return 0;
+                else if (num < end)
+                    return Math.Abs(start - end);
+
+                return Math.Abs(num - start);
+            }
+            else
+            {
+                if (num < start)
+                    return 0;
+                else if (num > end)
+                    return Math.Abs(start - end);
+
+                return Math.Abs(num - start);
+            }
         }
     }
 }

@@ -9,13 +9,13 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.View
 {
-    public partial class btnBeamSensorSignalSet : Form
+    public partial class PlcForm : Form
     {
         private MCProtocol mcProtocol;
         private PlcAgent plcAgent;
         private EnumAutoState IpcAutoState;
 
-        public btnBeamSensorSignalSet(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
+        public PlcForm(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
         {
             InitializeComponent();
             //mcProtocol = new MCProtocol();
@@ -29,11 +29,6 @@ namespace Mirle.Agv.View
             //plcAgent = new PlcAgent(mcProtocol, null);
             //一些Form Control要給進去Entity物件
             FormControlAddToEnityClass();
-            //this.plcAgent.OnForkCommandExecutingEvent += PLCAgent_OnForkCommandExecutingEvent;
-            //this.plcAgent.OnForkCommandFinishEvent += PLCAgent_OnForkCommandFinishEvent;
-            //this.plcAgent.OnForkCommandErrorEvent += PLCAgent_OnForkCommandErrorEvent;
-            //this.plcAgent.OnCassetteIDReadFinishEvent += PLCAgent_OnCassetteIDReadFinishEvent;
-            //OnCassetteIDReadFinishEvent
             EventInitial();
 
 
@@ -62,6 +57,7 @@ namespace Mirle.Agv.View
             plcAgent.OnForkCommandExecutingEvent += PlcAgent_OnForkCommandExecutingEvent;
             plcAgent.OnForkCommandFinishEvent += PlcAgent_OnForkCommandFinishEvent;
             plcAgent.OnForkCommandErrorEvent += PlcAgent_OnForkCommandErrorEvent;
+            plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
             plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
             plcAgent.OnIpcAutoManualChangeEvent += PlcAgent_OnIpcAutoManualChangeEvent;
         }
@@ -140,6 +136,11 @@ namespace Mirle.Agv.View
         private void PlcAgent_OnForkCommandFinishEvent(Object sender, PlcForkCommand aForkCommand)
         {
             triggerEvent = "PLCAgent_OnForkCommandFinishEvent";
+        }
+
+        private void PlcAgent_OnForkCommandInterlockErrorEvent(Object sender, PlcForkCommand aForkCommand)
+        {
+            triggerEvent = "OnForkCommandInterlockErrorEvent";
         }
 
         private void PlcAgent_OnCassetteIDReadFinishEvent(Object sender, String cassetteID)
@@ -659,9 +660,234 @@ namespace Mirle.Agv.View
                 lblBumperAlarm.BackColor = Color.LightGreen;
             }
 
+            #region tab JogOperation
+
+            displayTabJogOperation_OperateStatus();
+            displayTabJogOperation_ElmoStatus();
+            displayTabJogOperation_VehicleOperation();
+
+            #endregion
+            
+        }
+
+
+        #region Display and change label bgcolor functions
+        private void displayTabJogOperation_OperateStatus()
+        {
+            if (plcAgent.APLCVehicle.JogOperation.ModeOperation == true)
+            {
+                lblPlcModeAuto.BackColor = Color.LightGreen;
+                lblPlcModeManual.BackColor = Color.Transparent;
+            }
+            else
+            {
+                lblPlcModeAuto.BackColor = Color.Transparent;
+                lblPlcModeManual.BackColor = Color.LightGreen;
+            }
+
+            if (plcAgent.APLCVehicle.JogOperation.ModeVehicle == EnumJogVehicleMode.Auto)
+            {
+                lblVehicleModeAuto.BackColor = Color.LightGreen;
+                lblVehicleModeManual.BackColor = Color.Transparent;
+            }
+            else
+            {
+                lblVehicleModeAuto.BackColor = Color.Transparent;
+                lblVehicleModeManual.BackColor = Color.LightGreen;
+            }
+        }
+
+        private void displayTabJogOperation_ElmoStatus()
+        {
+            switch (plcAgent.APLCVehicle.JogOperation.JogElmoFunction)
+            {
+                case EnumJogElmoFunction.Disable:
+                    lblElmoDisable.BackColor = Color.LightGreen;
+                    lblElmoEnable.BackColor = Color.Transparent;
+                    lblElmoAllReset.BackColor = Color.Transparent;
+                    break;
+                case EnumJogElmoFunction.Enable:
+                    lblElmoDisable.BackColor = Color.Transparent;
+                    lblElmoEnable.BackColor = Color.LightGreen;
+                    lblElmoAllReset.BackColor = Color.Transparent;
+                    break;
+                case EnumJogElmoFunction.All_Reset:
+                    lblElmoDisable.BackColor = Color.Transparent;
+                    lblElmoEnable.BackColor = Color.Transparent;
+                    lblElmoAllReset.BackColor = Color.LightGreen;
+                    break;
+                default:
+                    lblElmoDisable.BackColor = Color.Transparent;
+                    lblElmoEnable.BackColor = Color.Transparent;
+                    lblElmoAllReset.BackColor = Color.Transparent;
+                    break;
+            }
+        }
+        private void displayTabJogOperation_VehicleOperation()
+        {
+
+            switch (plcAgent.APLCVehicle.JogOperation.JogRunMode)
+            {
+                case EnumJogRunMode.Normal:
+                    lblVehicleOperationModeNormal.BackColor = Color.LightGreen;
+                    lblVehicleOperationModeTFWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTBWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeSpinTurn.BackColor = Color.Transparent;
+                    break;
+                case EnumJogRunMode.ForwardWheel:
+                    lblVehicleOperationModeNormal.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTFWheel.BackColor = Color.LightGreen;
+                    lblVehicleOperationModeTBWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeSpinTurn.BackColor = Color.Transparent;
+                    break;
+                case EnumJogRunMode.BackwardWheel:
+                    lblVehicleOperationModeNormal.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTFWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTBWheel.BackColor = Color.LightGreen;
+                    lblVehicleOperationModeSpinTurn.BackColor = Color.Transparent;
+                    break;
+                case EnumJogRunMode.SpinTurn:
+                    lblVehicleOperationModeNormal.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTFWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTBWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeSpinTurn.BackColor = Color.LightGreen;
+                    break;
+                default:
+                    lblVehicleOperationModeNormal.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTFWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeTBWheel.BackColor = Color.Transparent;
+                    lblVehicleOperationModeSpinTurn.BackColor = Color.Transparent;
+                    break;
+            }
+
+            switch (plcAgent.APLCVehicle.JogOperation.JogTurnSpeed)
+            {
+                case EnumJogTurnSpeed.High:
+                    lblTSpeedFast.BackColor = Color.LightGreen;
+                    lblTSpeedMedium.BackColor = Color.Transparent;
+                    lblTSpeedSlow.BackColor = Color.Transparent;
+                    break;
+                case EnumJogTurnSpeed.Medium:
+                    lblTSpeedFast.BackColor = Color.Transparent;
+                    lblTSpeedMedium.BackColor = Color.LightGreen;
+                    lblTSpeedSlow.BackColor = Color.Transparent;
+                    break;
+                case EnumJogTurnSpeed.Low:
+                    lblTSpeedFast.BackColor = Color.Transparent;
+                    lblTSpeedMedium.BackColor = Color.Transparent;
+                    lblTSpeedSlow.BackColor = Color.LightGreen;
+                    break;
+                default:
+                    lblTSpeedFast.BackColor = Color.Transparent;
+                    lblTSpeedMedium.BackColor = Color.Transparent;
+                    lblTSpeedSlow.BackColor = Color.Transparent;
+                    break;
+            }
+
+            switch (plcAgent.APLCVehicle.JogOperation.JogMoveVelocity)
+            {
+                case EnumJogMoveVelocity.ThreeHundred:
+                    lblMVelocity300.BackColor = Color.LightGreen;
+                    lblMVelocity100.BackColor = Color.Transparent;
+                    lblMVelocity50.BackColor = Color.Transparent;
+                    lblMVelocity10.BackColor = Color.Transparent;
+                    break;
+                case EnumJogMoveVelocity.OneHundred:
+                    lblMVelocity300.BackColor = Color.Transparent;
+                    lblMVelocity100.BackColor = Color.LightGreen;
+                    lblMVelocity50.BackColor = Color.Transparent;
+                    lblMVelocity10.BackColor = Color.Transparent;
+                    break;
+                case EnumJogMoveVelocity.Fifty:
+                    lblMVelocity300.BackColor = Color.Transparent;
+                    lblMVelocity100.BackColor = Color.Transparent;
+                    lblMVelocity50.BackColor = Color.LightGreen;
+                    lblMVelocity10.BackColor = Color.Transparent;
+                    break;
+                case EnumJogMoveVelocity.Ten:
+                    lblMVelocity300.BackColor = Color.Transparent;
+                    lblMVelocity100.BackColor = Color.Transparent;
+                    lblMVelocity50.BackColor = Color.Transparent;
+                    lblMVelocity10.BackColor = Color.LightGreen;
+                    break;
+                default:
+                    lblMVelocity300.BackColor = Color.Transparent;
+                    lblMVelocity100.BackColor = Color.Transparent;
+                    lblMVelocity50.BackColor = Color.Transparent;
+                    lblMVelocity10.BackColor = Color.Transparent;
+                    break;
 
         }
 
+            switch (plcAgent.APLCVehicle.JogOperation.JogOperation)
+            {
+                case EnumJogOperation.TurnLeft:
+                    lblOperationTurnLeft.BackColor = Color.LightGreen;
+                    lblOperationTurnRight.BackColor = Color.Transparent;
+                    lblOperationMoveForward.BackColor = Color.Transparent;
+                    lblOperationMoveBackward.BackColor = Color.Transparent;
+                    lblOperationStop.BackColor = Color.Transparent;
+                    break;
+                case EnumJogOperation.TurnRight:
+                    lblOperationTurnLeft.BackColor = Color.Transparent;
+                    lblOperationTurnRight.BackColor = Color.LightGreen;
+                    lblOperationMoveForward.BackColor = Color.Transparent;
+                    lblOperationMoveBackward.BackColor = Color.Transparent;
+                    lblOperationStop.BackColor = Color.Transparent;
+                    break;
+                case EnumJogOperation.MoveForward:
+                    lblOperationTurnLeft.BackColor = Color.Transparent;
+                    lblOperationTurnRight.BackColor = Color.Transparent;
+                    lblOperationMoveForward.BackColor = Color.LightGreen;
+                    lblOperationMoveBackward.BackColor = Color.Transparent;
+                    lblOperationStop.BackColor = Color.Transparent;
+                    break;
+                case EnumJogOperation.MoveBackward:
+                    lblOperationTurnLeft.BackColor = Color.Transparent;
+                    lblOperationTurnRight.BackColor = Color.Transparent;
+                    lblOperationMoveForward.BackColor = Color.Transparent;
+                    lblOperationMoveBackward.BackColor = Color.LightGreen;
+                    lblOperationStop.BackColor = Color.Transparent;
+                    break;
+                case EnumJogOperation.Stop:
+                    lblOperationTurnLeft.BackColor = Color.Transparent;
+                    lblOperationTurnRight.BackColor = Color.Transparent;
+                    lblOperationMoveForward.BackColor = Color.Transparent;
+                    lblOperationMoveBackward.BackColor = Color.Transparent;
+                    lblOperationStop.BackColor = Color.LightGreen;
+                    break;
+                default:
+                    lblOperationTurnLeft.BackColor = Color.Transparent;
+                    lblOperationTurnRight.BackColor = Color.Transparent;
+                    lblOperationMoveForward.BackColor = Color.Transparent;
+                    lblOperationMoveBackward.BackColor = Color.Transparent;
+                    lblOperationStop.BackColor = Color.Transparent;
+                    break;
+
+            }
+
+            if (plcAgent.APLCVehicle.JogOperation.JogMoveOntimeRevise) {
+                lblOperationRevise.BackColor = Color.LightGreen;
+            }else
+            {
+                lblOperationRevise.BackColor = Color.Transparent;
+            }
+
+            if (plcAgent.APLCVehicle.JogOperation.JogMaxDistance != 0)
+            {
+                lblDistanceMm.Text = plcAgent.APLCVehicle.JogOperation.JogMaxDistance.ToString() + "  mm";
+                lblDistanceMm.BackColor = Color.LightGreen;
+            }else
+            {
+                lblDistanceMm.Text = "000000  mm";
+                lblDistanceMm.BackColor = Color.Transparent;
+            }
+            
+        }
+
+        #endregion
+
+        
         private void showSideBeamcolor(List<PlcBeamSensor> listBeamSensor)
         {
             foreach (PlcBeamSensor aBeamSensor in listBeamSensor)
@@ -1425,12 +1651,9 @@ namespace Mirle.Agv.View
 
         private void chkFakeForking_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkFakeForking.Checked)
+            if (this.plcAgent != null)
             {
-                if (this.plcAgent != null)
-                {
-                    this.plcAgent.IsFakeForking = chkFakeForking.Checked;
-                }
+                this.plcAgent.IsFakeForking = chkFakeForking.Checked;
             }
         }
 
@@ -1484,14 +1707,14 @@ namespace Mirle.Agv.View
 
         private void btnCstIDSet_Click(object sender, EventArgs e)
         {
-            string strCstID = txtCassetteID.Text;
+            string strCstID = txtCassetteIDSet.Text;
             if (strCstID=="")
             {
                 this.plcAgent.APLCVehicle.CassetteId = "";
             }
             else
             {
-                this.plcAgent.triggerCassetteIDReader(ref strCstID);
+                this.plcAgent.testTriggerCassetteIDReader(ref strCstID);
             }
         }
 
@@ -1532,5 +1755,16 @@ namespace Mirle.Agv.View
             };
             plcAgent.WritePlcConfigToXML(dicSetValue);
         }
+
+        private void btnFakeInterlockError_Click(object sender, EventArgs e)
+        {
+            plcAgent.triggerForkCommandInterlockErrorEvent();
+        }
+
+        private void ckbHmiThreadControl_CheckedChanged(object sender, EventArgs e)
+        {
+            plcAgent.plcOperationRun_ThreadControl(ckbHmiThreadControl.Checked);
+        }
+
     }
 }

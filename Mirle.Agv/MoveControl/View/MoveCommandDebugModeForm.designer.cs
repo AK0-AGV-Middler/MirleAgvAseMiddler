@@ -30,51 +30,22 @@ namespace Mirle.Agv.View
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.CommandList = new System.Windows.Forms.ListBox();
-            this.ReserveList = new System.Windows.Forms.ListBox();
-            this.label_CommandList = new System.Windows.Forms.Label();
-            this.label_ReserveList = new System.Windows.Forms.Label();
-            this.button_SendList = new System.Windows.Forms.Button();
-            this.button_StopMove = new System.Windows.Forms.Button();
-            this.button_ClearCommand = new System.Windows.Forms.Button();
             this.timer_UpdateData = new System.Windows.Forms.Timer(this.components);
-            this.tbC_Debug = new System.Windows.Forms.TabControl();
-            this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
-            this.button_AddReadPosition = new System.Windows.Forms.Button();
-            this.label_LockResult = new System.Windows.Forms.Label();
-            this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.tB_PositionY = new System.Windows.Forms.TextBox();
-            this.tB_PositionX = new System.Windows.Forms.TextBox();
-            this.button_DebugModeSend = new System.Windows.Forms.Button();
-            this.listCmdSpeedLimits = new System.Windows.Forms.ListBox();
-            this.listMapSpeedLimits = new System.Windows.Forms.ListBox();
-            this.listCmdAddressActions = new System.Windows.Forms.ListBox();
-            this.listMapAddressActions = new System.Windows.Forms.ListBox();
-            this.listCmdAddressPositions = new System.Windows.Forms.ListBox();
-            this.btnAddressPositionsClear = new System.Windows.Forms.Button();
-            this.btnRemoveLastAddressPosition = new System.Windows.Forms.Button();
-            this.btnPositionXY = new System.Windows.Forms.Button();
-            this.btnAddAddressPosition = new System.Windows.Forms.Button();
-            this.listMapAddressPositions = new System.Windows.Forms.ListBox();
-            this.btnClearMoveCmdInfo = new System.Windows.Forms.Button();
-            this.btnClearSpeedLimit = new System.Windows.Forms.Button();
-            this.btnRemoveSpeedLimit = new System.Windows.Forms.Button();
-            this.btnAddSpeedLimit = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
-            this.btnClearAddressActions = new System.Windows.Forms.Button();
-            this.btnRemoveLastAddressAction = new System.Windows.Forms.Button();
-            this.btnAddAddressAction = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
+            this.tP_Admin = new System.Windows.Forms.TabPage();
+            this.button_SimulationModeChange = new System.Windows.Forms.Button();
+            this.label_SimulationMode = new System.Windows.Forms.Label();
+            this.tbP_LogMessage = new System.Windows.Forms.TabPage();
+            this.label_ElmoMessage = new System.Windows.Forms.Label();
+            this.tbxLogView_CreateCommandMessage = new System.Windows.Forms.TextBox();
+            this.tbxLogView_ElmoMessage = new System.Windows.Forms.TextBox();
+            this.label_CreateCommandMessage = new System.Windows.Forms.Label();
             this.tbP_List = new System.Windows.Forms.TabPage();
             this.button_SimulateState = new System.Windows.Forms.Button();
-            this.label_FlowStop = new System.Windows.Forms.Label();
             this.label_Psuse = new System.Windows.Forms.Label();
             this.label_WaitReserveIndex = new System.Windows.Forms.Label();
             this.label_BeamState = new System.Windows.Forms.Label();
             this.label_BumpState = new System.Windows.Forms.Label();
-            this.label_FlowStop_Label = new System.Windows.Forms.Label();
             this.label_Psuse_Label = new System.Windows.Forms.Label();
             this.label_WaitReserveIndex_Label = new System.Windows.Forms.Label();
             this.label_BeamState_Label = new System.Windows.Forms.Label();
@@ -88,6 +59,9 @@ namespace Mirle.Agv.View
             this.label_MoveCommandID = new System.Windows.Forms.Label();
             this.label_MoveCommandIDLabel = new System.Windows.Forms.Label();
             this.cB_GetAllReserve = new System.Windows.Forms.CheckBox();
+            this.button_ClearCommand = new System.Windows.Forms.Button();
+            this.label_ReserveList = new System.Windows.Forms.Label();
+            this.label_CommandList = new System.Windows.Forms.Label();
             this.ucLabelTB_EncoderPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_Velocity = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_EncoderOffset = new Mirle.Agv.UcLabelTextBox();
@@ -97,141 +71,79 @@ namespace Mirle.Agv.View
             this.ucLabelTB_RealPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_Delta = new Mirle.Agv.UcLabelTextBox();
             this.ucLabelTB_RealEncoder = new Mirle.Agv.UcLabelTextBox();
+            this.ReserveList = new System.Windows.Forms.ListBox();
+            this.button_SendList = new System.Windows.Forms.Button();
             this.ucLabelTextBox1 = new Mirle.Agv.UcLabelTextBox();
-            this.tbP_Debug = new System.Windows.Forms.TabPage();
-            this.button_DebugListClear = new System.Windows.Forms.Button();
-            this.label_DebugList = new System.Windows.Forms.Label();
-            this.DebugList = new System.Windows.Forms.ListBox();
-            this.tbP_DebugCSV = new System.Windows.Forms.TabPage();
-            this.button_CSVListDisViewRang = new System.Windows.Forms.Button();
-            this.button_CSVListShowAll = new System.Windows.Forms.Button();
-            this.dataGridView_CSVList = new System.Windows.Forms.DataGridView();
-            this.time = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.moveState = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.realEncoder = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.nextCommand = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.triggerEncoder = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.delta = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.offset = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.realX = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.realY = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.barcodeX = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.barcodeY = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.encoderPositionX = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.encoderPositionY = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LGetDataTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LScanTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LMapX = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LMapY = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LMapTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LBarcodeAngle = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LDelta = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LBarcode1ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000LBarcode2ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RGetDataTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RScanTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RMapX = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RMapY = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RMapTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RBarcodeAngle = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RDelta = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RTheta = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RBarcode1ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sr2000RBarcode2ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.button_DebugCSV = new System.Windows.Forms.Button();
-            this.button_DebugCSVClear = new System.Windows.Forms.Button();
-            this.label_DebugCSVList = new System.Windows.Forms.Label();
-            this.tP_Admin = new System.Windows.Forms.TabPage();
-            this.button_SimulationModeChange = new System.Windows.Forms.Button();
-            this.label_SimulationMode = new System.Windows.Forms.Label();
-            this.tbxLogView_MoveControlDebugMessage = new System.Windows.Forms.TextBox();
-            this.tbC_Debug.SuspendLayout();
-            this.tbP_CreateCommand.SuspendLayout();
-            this.tbP_List.SuspendLayout();
-            this.tbP_Debug.SuspendLayout();
-            this.tbP_DebugCSV.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_CSVList)).BeginInit();
+            this.CommandList = new System.Windows.Forms.ListBox();
+            this.button_StopMove = new System.Windows.Forms.Button();
+            this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
+            this.button_CreateCommandList_StopAndClear = new System.Windows.Forms.Button();
+            this.button_CreateCommandList_Stop = new System.Windows.Forms.Button();
+            this.cB_OverrideTest = new System.Windows.Forms.CheckBox();
+            this.button_FromTo = new System.Windows.Forms.Button();
+            this.label_FormTo = new System.Windows.Forms.Label();
+            this.button_ReveseAddressList = new System.Windows.Forms.Button();
+            this.button_RunTimesOdd = new System.Windows.Forms.Button();
+            this.button_RunTimesEven = new System.Windows.Forms.Button();
+            this.tB_RunTimes = new System.Windows.Forms.TextBox();
+            this.tB_HorizontalVelocity = new System.Windows.Forms.TextBox();
+            this.tB_LineVelocity = new System.Windows.Forms.TextBox();
+            this.tB_ChangeVelocity = new System.Windows.Forms.TextBox();
+            this.tB_PositionY = new System.Windows.Forms.TextBox();
+            this.tB_PositionX = new System.Windows.Forms.TextBox();
+            this.label_RunTimes = new System.Windows.Forms.Label();
+            this.label_HorizontalVelocity = new System.Windows.Forms.Label();
+            this.label_LineVelocity = new System.Windows.Forms.Label();
+            this.cB_ChangeAction = new System.Windows.Forms.ComboBox();
+            this.label_DebugFormCreateCommandVelocitys = new System.Windows.Forms.Label();
+            this.label_DebugFormCreateCommandActions = new System.Windows.Forms.Label();
+            this.Button_AutoCreate = new System.Windows.Forms.Button();
+            this.button_AddReadPosition = new System.Windows.Forms.Button();
+            this.label_LockResult = new System.Windows.Forms.Label();
+            this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.button_DebugModeSend = new System.Windows.Forms.Button();
+            this.listCmdSpeedLimits = new System.Windows.Forms.ListBox();
+            this.listCmdAddressActions = new System.Windows.Forms.ListBox();
+            this.listCmdAddressPositions = new System.Windows.Forms.ListBox();
+            this.btnRemoveLastAddressPosition = new System.Windows.Forms.Button();
+            this.btnPositionXY = new System.Windows.Forms.Button();
+            this.btnAddAddressPosition = new System.Windows.Forms.Button();
+            this.listMapAddressPositions = new System.Windows.Forms.ListBox();
+            this.btnClearMoveCmdInfo = new System.Windows.Forms.Button();
+            this.label_DebugFormCreateCommandPositions = new System.Windows.Forms.Label();
+            this.tbC_Debug = new System.Windows.Forms.TabControl();
+            this.tP_CheckBarcodePosition = new System.Windows.Forms.TabPage();
+            this.button_ComputeDelta = new System.Windows.Forms.Button();
+            this.button_Back = new System.Windows.Forms.Button();
+            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.button_CheckTRStartStop = new System.Windows.Forms.Button();
+            this.button_Front = new System.Windows.Forms.Button();
+            this.tB_MoveDistance = new System.Windows.Forms.TextBox();
+            this.label_MoveDistance = new System.Windows.Forms.Label();
+            this.button_GTMove = new System.Windows.Forms.Button();
+            this.tB_GTMoveAngle = new System.Windows.Forms.TextBox();
+            this.button_GTRight = new System.Windows.Forms.Button();
+            this.button_GTLeft = new System.Windows.Forms.Button();
+            this.button_GT0 = new System.Windows.Forms.Button();
+            this.ucBox_WheelAngle = new Mirle.Agv.UcLabelTextBox();
+            this.ucBox_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucBox_NowPosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucBox_NodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.tP_SettingConfigs = new System.Windows.Forms.TabPage();
+            this.tC_Configs = new System.Windows.Forms.TabControl();
+            this.tB_MoveControlConst = new System.Windows.Forms.TabPage();
+            this.tB_MoveControlDictory = new System.Windows.Forms.TabPage();
+            this.tB_MoveControlTurn = new System.Windows.Forms.TabPage();
             this.tP_Admin.SuspendLayout();
+            this.tbP_LogMessage.SuspendLayout();
+            this.tbP_List.SuspendLayout();
+            this.tbP_CreateCommand.SuspendLayout();
+            this.tbC_Debug.SuspendLayout();
+            this.tP_CheckBarcodePosition.SuspendLayout();
+            this.tP_SettingConfigs.SuspendLayout();
+            this.tC_Configs.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // CommandList
-            // 
-            this.CommandList.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.CommandList.FormattingEnabled = true;
-            this.CommandList.HorizontalScrollbar = true;
-            this.CommandList.ItemHeight = 16;
-            this.CommandList.Location = new System.Drawing.Point(6, 27);
-            this.CommandList.Name = "CommandList";
-            this.CommandList.ScrollAlwaysVisible = true;
-            this.CommandList.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
-            this.CommandList.Size = new System.Drawing.Size(1000, 420);
-            this.CommandList.TabIndex = 36;
-            // 
-            // ReserveList
-            // 
-            this.ReserveList.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.ReserveList.FormattingEnabled = true;
-            this.ReserveList.HorizontalScrollbar = true;
-            this.ReserveList.ItemHeight = 16;
-            this.ReserveList.Location = new System.Drawing.Point(1012, 27);
-            this.ReserveList.Name = "ReserveList";
-            this.ReserveList.ScrollAlwaysVisible = true;
-            this.ReserveList.Size = new System.Drawing.Size(265, 420);
-            this.ReserveList.TabIndex = 38;
-            this.ReserveList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ReserveList_MouseDoubleClick);
-            // 
-            // label_CommandList
-            // 
-            this.label_CommandList.AutoSize = true;
-            this.label_CommandList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_CommandList.Location = new System.Drawing.Point(6, 5);
-            this.label_CommandList.Name = "label_CommandList";
-            this.label_CommandList.Size = new System.Drawing.Size(127, 19);
-            this.label_CommandList.TabIndex = 40;
-            this.label_CommandList.Text = "Command List :";
-            // 
-            // label_ReserveList
-            // 
-            this.label_ReserveList.AutoSize = true;
-            this.label_ReserveList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_ReserveList.Location = new System.Drawing.Point(1015, 5);
-            this.label_ReserveList.Name = "label_ReserveList";
-            this.label_ReserveList.Size = new System.Drawing.Size(110, 19);
-            this.label_ReserveList.TabIndex = 41;
-            this.label_ReserveList.Text = "Reserve List :";
-            // 
-            // button_SendList
-            // 
-            this.button_SendList.Location = new System.Drawing.Point(1104, 475);
-            this.button_SendList.Name = "button_SendList";
-            this.button_SendList.Size = new System.Drawing.Size(173, 36);
-            this.button_SendList.TabIndex = 44;
-            this.button_SendList.Text = "執行移動命令";
-            this.button_SendList.UseVisualStyleBackColor = true;
-            this.button_SendList.Click += new System.EventHandler(this.button_SendList_Click);
-            // 
-            // button_StopMove
-            // 
-            this.button_StopMove.Location = new System.Drawing.Point(1034, 561);
-            this.button_StopMove.Name = "button_StopMove";
-            this.button_StopMove.Size = new System.Drawing.Size(104, 36);
-            this.button_StopMove.TabIndex = 45;
-            this.button_StopMove.Text = "Stop";
-            this.button_StopMove.UseVisualStyleBackColor = true;
-            this.button_StopMove.Click += new System.EventHandler(this.button_StopMove_Click);
-            // 
-            // button_ClearCommand
-            // 
-            this.button_ClearCommand.Location = new System.Drawing.Point(1159, 561);
-            this.button_ClearCommand.Name = "button_ClearCommand";
-            this.button_ClearCommand.Size = new System.Drawing.Size(104, 36);
-            this.button_ClearCommand.TabIndex = 46;
-            this.button_ClearCommand.Text = "清除命令";
-            this.button_ClearCommand.UseVisualStyleBackColor = true;
-            this.button_ClearCommand.Click += new System.EventHandler(this.button_ClearCommand_Click);
             // 
             // timer_UpdateData
             // 
@@ -239,348 +151,116 @@ namespace Mirle.Agv.View
             this.timer_UpdateData.Interval = 200;
             this.timer_UpdateData.Tick += new System.EventHandler(this.timer_UpdateData_Tick);
             // 
-            // tbC_Debug
+            // tbxLogView_MoveControlDebugMessage
             // 
-            this.tbC_Debug.Controls.Add(this.tbP_CreateCommand);
-            this.tbC_Debug.Controls.Add(this.tbP_List);
-            this.tbC_Debug.Controls.Add(this.tbP_Debug);
-            this.tbC_Debug.Controls.Add(this.tbP_DebugCSV);
-            this.tbC_Debug.Controls.Add(this.tP_Admin);
-            this.tbC_Debug.Location = new System.Drawing.Point(2, 3);
-            this.tbC_Debug.Name = "tbC_Debug";
-            this.tbC_Debug.SelectedIndex = 0;
-            this.tbC_Debug.Size = new System.Drawing.Size(1291, 627);
-            this.tbC_Debug.TabIndex = 50;
+            this.tbxLogView_MoveControlDebugMessage.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxLogView_MoveControlDebugMessage.Location = new System.Drawing.Point(6, 636);
+            this.tbxLogView_MoveControlDebugMessage.MaxLength = 65550;
+            this.tbxLogView_MoveControlDebugMessage.Multiline = true;
+            this.tbxLogView_MoveControlDebugMessage.Name = "tbxLogView_MoveControlDebugMessage";
+            this.tbxLogView_MoveControlDebugMessage.ReadOnly = true;
+            this.tbxLogView_MoveControlDebugMessage.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
+            this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
             // 
-            // tbP_CreateCommand
+            // tP_Admin
             // 
-            this.tbP_CreateCommand.Controls.Add(this.button_AddReadPosition);
-            this.tbP_CreateCommand.Controls.Add(this.label_LockResult);
-            this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
-            this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommand_BarcodePosition);
-            this.tbP_CreateCommand.Controls.Add(this.tB_PositionY);
-            this.tbP_CreateCommand.Controls.Add(this.tB_PositionX);
-            this.tbP_CreateCommand.Controls.Add(this.button_DebugModeSend);
-            this.tbP_CreateCommand.Controls.Add(this.listCmdSpeedLimits);
-            this.tbP_CreateCommand.Controls.Add(this.listMapSpeedLimits);
-            this.tbP_CreateCommand.Controls.Add(this.listCmdAddressActions);
-            this.tbP_CreateCommand.Controls.Add(this.listMapAddressActions);
-            this.tbP_CreateCommand.Controls.Add(this.listCmdAddressPositions);
-            this.tbP_CreateCommand.Controls.Add(this.btnAddressPositionsClear);
-            this.tbP_CreateCommand.Controls.Add(this.btnRemoveLastAddressPosition);
-            this.tbP_CreateCommand.Controls.Add(this.btnPositionXY);
-            this.tbP_CreateCommand.Controls.Add(this.btnAddAddressPosition);
-            this.tbP_CreateCommand.Controls.Add(this.listMapAddressPositions);
-            this.tbP_CreateCommand.Controls.Add(this.btnClearMoveCmdInfo);
-            this.tbP_CreateCommand.Controls.Add(this.btnClearSpeedLimit);
-            this.tbP_CreateCommand.Controls.Add(this.btnRemoveSpeedLimit);
-            this.tbP_CreateCommand.Controls.Add(this.btnAddSpeedLimit);
-            this.tbP_CreateCommand.Controls.Add(this.label4);
-            this.tbP_CreateCommand.Controls.Add(this.btnClearAddressActions);
-            this.tbP_CreateCommand.Controls.Add(this.btnRemoveLastAddressAction);
-            this.tbP_CreateCommand.Controls.Add(this.btnAddAddressAction);
-            this.tbP_CreateCommand.Controls.Add(this.label3);
-            this.tbP_CreateCommand.Controls.Add(this.label1);
-            this.tbP_CreateCommand.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbP_CreateCommand.Location = new System.Drawing.Point(4, 22);
-            this.tbP_CreateCommand.Name = "tbP_CreateCommand";
-            this.tbP_CreateCommand.Padding = new System.Windows.Forms.Padding(3);
-            this.tbP_CreateCommand.Size = new System.Drawing.Size(1283, 601);
-            this.tbP_CreateCommand.TabIndex = 0;
-            this.tbP_CreateCommand.Text = "產生命令";
-            this.tbP_CreateCommand.UseVisualStyleBackColor = true;
+            this.tP_Admin.Controls.Add(this.button_SimulationModeChange);
+            this.tP_Admin.Controls.Add(this.label_SimulationMode);
+            this.tP_Admin.Location = new System.Drawing.Point(4, 22);
+            this.tP_Admin.Name = "tP_Admin";
+            this.tP_Admin.Size = new System.Drawing.Size(1283, 601);
+            this.tP_Admin.TabIndex = 4;
+            this.tP_Admin.Text = "Admin";
+            this.tP_Admin.UseVisualStyleBackColor = true;
+            this.tP_Admin.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tP_Admin_MouseDoubleClick);
             // 
-            // button_AddReadPosition
+            // button_SimulationModeChange
             // 
-            this.button_AddReadPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button_AddReadPosition.Location = new System.Drawing.Point(358, 564);
-            this.button_AddReadPosition.Name = "button_AddReadPosition";
-            this.button_AddReadPosition.Size = new System.Drawing.Size(82, 29);
-            this.button_AddReadPosition.TabIndex = 81;
-            this.button_AddReadPosition.Text = "Add";
-            this.button_AddReadPosition.UseVisualStyleBackColor = true;
-            this.button_AddReadPosition.Click += new System.EventHandler(this.button_AddReadPosition_Click);
+            this.button_SimulationModeChange.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_SimulationModeChange.Location = new System.Drawing.Point(136, 23);
+            this.button_SimulationModeChange.Name = "button_SimulationModeChange";
+            this.button_SimulationModeChange.Size = new System.Drawing.Size(80, 30);
+            this.button_SimulationModeChange.TabIndex = 1;
+            this.button_SimulationModeChange.Text = "關閉中";
+            this.button_SimulationModeChange.UseVisualStyleBackColor = true;
+            this.button_SimulationModeChange.Click += new System.EventHandler(this.button_SimulationMode_Click);
             // 
-            // label_LockResult
+            // label_SimulationMode
             // 
-            this.label_LockResult.AutoSize = true;
-            this.label_LockResult.ForeColor = System.Drawing.Color.Red;
-            this.label_LockResult.Location = new System.Drawing.Point(907, 522);
-            this.label_LockResult.Name = "label_LockResult";
-            this.label_LockResult.Size = new System.Drawing.Size(112, 19);
-            this.label_LockResult.TabIndex = 80;
-            this.label_LockResult.Text = "Lock Result : ";
+            this.label_SimulationMode.AutoSize = true;
+            this.label_SimulationMode.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_SimulationMode.Location = new System.Drawing.Point(30, 29);
+            this.label_SimulationMode.Name = "label_SimulationMode";
+            this.label_SimulationMode.Size = new System.Drawing.Size(100, 19);
+            this.label_SimulationMode.TabIndex = 0;
+            this.label_SimulationMode.Text = "模擬模式 : ";
             // 
-            // ucLabelTB_CreateCommandState
+            // tbP_LogMessage
             // 
-            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(658, 554);
-            this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8);
-            this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
-            this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
-            this.ucLabelTB_CreateCommandState.TabIndex = 78;
-            this.ucLabelTB_CreateCommandState.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucLabelTB_CreateCommandState.TagName = "label1";
-            this.ucLabelTB_CreateCommandState.TagValue = "";
+            this.tbP_LogMessage.Controls.Add(this.label_ElmoMessage);
+            this.tbP_LogMessage.Controls.Add(this.tbxLogView_CreateCommandMessage);
+            this.tbP_LogMessage.Controls.Add(this.tbxLogView_ElmoMessage);
+            this.tbP_LogMessage.Controls.Add(this.label_CreateCommandMessage);
+            this.tbP_LogMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbP_LogMessage.Location = new System.Drawing.Point(4, 22);
+            this.tbP_LogMessage.Name = "tbP_LogMessage";
+            this.tbP_LogMessage.Size = new System.Drawing.Size(1283, 601);
+            this.tbP_LogMessage.TabIndex = 2;
+            this.tbP_LogMessage.Text = "LogMessage";
+            this.tbP_LogMessage.UseVisualStyleBackColor = true;
             // 
-            // ucLabelTB_CreateCommand_BarcodePosition
+            // label_ElmoMessage
             // 
-            this.ucLabelTB_CreateCommand_BarcodePosition.Location = new System.Drawing.Point(18, 566);
-            this.ucLabelTB_CreateCommand_BarcodePosition.Margin = new System.Windows.Forms.Padding(5);
-            this.ucLabelTB_CreateCommand_BarcodePosition.Name = "ucLabelTB_CreateCommand_BarcodePosition";
-            this.ucLabelTB_CreateCommand_BarcodePosition.Size = new System.Drawing.Size(332, 27);
-            this.ucLabelTB_CreateCommand_BarcodePosition.TabIndex = 77;
-            this.ucLabelTB_CreateCommand_BarcodePosition.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucLabelTB_CreateCommand_BarcodePosition.TagName = "label1";
-            this.ucLabelTB_CreateCommand_BarcodePosition.TagValue = "";
+            this.label_ElmoMessage.AutoSize = true;
+            this.label_ElmoMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_ElmoMessage.Location = new System.Drawing.Point(3, 311);
+            this.label_ElmoMessage.Name = "label_ElmoMessage";
+            this.label_ElmoMessage.Size = new System.Drawing.Size(92, 19);
+            this.label_ElmoMessage.TabIndex = 57;
+            this.label_ElmoMessage.Text = "Elmo Log :";
             // 
-            // tB_PositionY
+            // tbxLogView_CreateCommandMessage
             // 
-            this.tB_PositionY.Location = new System.Drawing.Point(140, 526);
-            this.tB_PositionY.Name = "tB_PositionY";
-            this.tB_PositionY.Size = new System.Drawing.Size(123, 30);
-            this.tB_PositionY.TabIndex = 76;
+            this.tbxLogView_CreateCommandMessage.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxLogView_CreateCommandMessage.Location = new System.Drawing.Point(0, 35);
+            this.tbxLogView_CreateCommandMessage.MaxLength = 65550;
+            this.tbxLogView_CreateCommandMessage.Multiline = true;
+            this.tbxLogView_CreateCommandMessage.Name = "tbxLogView_CreateCommandMessage";
+            this.tbxLogView_CreateCommandMessage.ReadOnly = true;
+            this.tbxLogView_CreateCommandMessage.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxLogView_CreateCommandMessage.Size = new System.Drawing.Size(1283, 264);
+            this.tbxLogView_CreateCommandMessage.TabIndex = 56;
             // 
-            // tB_PositionX
+            // tbxLogView_ElmoMessage
             // 
-            this.tB_PositionX.Location = new System.Drawing.Point(18, 526);
-            this.tB_PositionX.Name = "tB_PositionX";
-            this.tB_PositionX.Size = new System.Drawing.Size(123, 30);
-            this.tB_PositionX.TabIndex = 75;
+            this.tbxLogView_ElmoMessage.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxLogView_ElmoMessage.Location = new System.Drawing.Point(0, 334);
+            this.tbxLogView_ElmoMessage.MaxLength = 65550;
+            this.tbxLogView_ElmoMessage.Multiline = true;
+            this.tbxLogView_ElmoMessage.Name = "tbxLogView_ElmoMessage";
+            this.tbxLogView_ElmoMessage.ReadOnly = true;
+            this.tbxLogView_ElmoMessage.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbxLogView_ElmoMessage.Size = new System.Drawing.Size(1283, 264);
+            this.tbxLogView_ElmoMessage.TabIndex = 55;
             // 
-            // button_DebugModeSend
+            // label_CreateCommandMessage
             // 
-            this.button_DebugModeSend.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button_DebugModeSend.Location = new System.Drawing.Point(968, 547);
-            this.button_DebugModeSend.Name = "button_DebugModeSend";
-            this.button_DebugModeSend.Size = new System.Drawing.Size(160, 40);
-            this.button_DebugModeSend.TabIndex = 74;
-            this.button_DebugModeSend.Text = "DebugModeSend";
-            this.button_DebugModeSend.UseVisualStyleBackColor = true;
-            this.button_DebugModeSend.Click += new System.EventHandler(this.button_DebugModeSend_Click);
-            // 
-            // listCmdSpeedLimits
-            // 
-            this.listCmdSpeedLimits.FormattingEnabled = true;
-            this.listCmdSpeedLimits.ItemHeight = 19;
-            this.listCmdSpeedLimits.Location = new System.Drawing.Point(1085, 74);
-            this.listCmdSpeedLimits.Name = "listCmdSpeedLimits";
-            this.listCmdSpeedLimits.ScrollAlwaysVisible = true;
-            this.listCmdSpeedLimits.Size = new System.Drawing.Size(180, 441);
-            this.listCmdSpeedLimits.TabIndex = 70;
-            // 
-            // listMapSpeedLimits
-            // 
-            this.listMapSpeedLimits.FormattingEnabled = true;
-            this.listMapSpeedLimits.ItemHeight = 19;
-            this.listMapSpeedLimits.Location = new System.Drawing.Point(899, 74);
-            this.listMapSpeedLimits.Name = "listMapSpeedLimits";
-            this.listMapSpeedLimits.ScrollAlwaysVisible = true;
-            this.listMapSpeedLimits.Size = new System.Drawing.Size(180, 441);
-            this.listMapSpeedLimits.TabIndex = 68;
-            this.listMapSpeedLimits.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listMapSpeedLimits_MouseDoubleClick);
-            // 
-            // listCmdAddressActions
-            // 
-            this.listCmdAddressActions.FormattingEnabled = true;
-            this.listCmdAddressActions.ItemHeight = 19;
-            this.listCmdAddressActions.Location = new System.Drawing.Point(706, 75);
-            this.listCmdAddressActions.Name = "listCmdAddressActions";
-            this.listCmdAddressActions.ScrollAlwaysVisible = true;
-            this.listCmdAddressActions.Size = new System.Drawing.Size(180, 441);
-            this.listCmdAddressActions.TabIndex = 69;
-            // 
-            // listMapAddressActions
-            // 
-            this.listMapAddressActions.FormattingEnabled = true;
-            this.listMapAddressActions.ItemHeight = 19;
-            this.listMapAddressActions.Location = new System.Drawing.Point(520, 75);
-            this.listMapAddressActions.Name = "listMapAddressActions";
-            this.listMapAddressActions.ScrollAlwaysVisible = true;
-            this.listMapAddressActions.Size = new System.Drawing.Size(180, 441);
-            this.listMapAddressActions.TabIndex = 67;
-            this.listMapAddressActions.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listMapAddressActions_MouseDoubleClick);
-            // 
-            // listCmdAddressPositions
-            // 
-            this.listCmdAddressPositions.FormattingEnabled = true;
-            this.listCmdAddressPositions.ItemHeight = 19;
-            this.listCmdAddressPositions.Location = new System.Drawing.Point(267, 75);
-            this.listCmdAddressPositions.Name = "listCmdAddressPositions";
-            this.listCmdAddressPositions.ScrollAlwaysVisible = true;
-            this.listCmdAddressPositions.Size = new System.Drawing.Size(243, 441);
-            this.listCmdAddressPositions.TabIndex = 66;
-            // 
-            // btnAddressPositionsClear
-            // 
-            this.btnAddressPositionsClear.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnAddressPositionsClear.Location = new System.Drawing.Point(420, 20);
-            this.btnAddressPositionsClear.Name = "btnAddressPositionsClear";
-            this.btnAddressPositionsClear.Size = new System.Drawing.Size(90, 32);
-            this.btnAddressPositionsClear.TabIndex = 65;
-            this.btnAddressPositionsClear.Text = "Clear";
-            this.btnAddressPositionsClear.UseVisualStyleBackColor = true;
-            this.btnAddressPositionsClear.Click += new System.EventHandler(this.btnAddressPositionsClear_Click);
-            // 
-            // btnRemoveLastAddressPosition
-            // 
-            this.btnRemoveLastAddressPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRemoveLastAddressPosition.Location = new System.Drawing.Point(324, 20);
-            this.btnRemoveLastAddressPosition.Name = "btnRemoveLastAddressPosition";
-            this.btnRemoveLastAddressPosition.Size = new System.Drawing.Size(90, 32);
-            this.btnRemoveLastAddressPosition.TabIndex = 64;
-            this.btnRemoveLastAddressPosition.Text = "Remove";
-            this.btnRemoveLastAddressPosition.UseVisualStyleBackColor = true;
-            this.btnRemoveLastAddressPosition.Click += new System.EventHandler(this.btnRemoveLastAddressPosition_Click);
-            // 
-            // btnPositionXY
-            // 
-            this.btnPositionXY.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnPositionXY.Location = new System.Drawing.Point(267, 526);
-            this.btnPositionXY.Name = "btnPositionXY";
-            this.btnPositionXY.Size = new System.Drawing.Size(124, 32);
-            this.btnPositionXY.TabIndex = 63;
-            this.btnPositionXY.Text = "Add";
-            this.btnPositionXY.UseVisualStyleBackColor = true;
-            this.btnPositionXY.Click += new System.EventHandler(this.btnPositionXY_Click);
-            // 
-            // btnAddAddressPosition
-            // 
-            this.btnAddAddressPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnAddAddressPosition.Location = new System.Drawing.Point(228, 20);
-            this.btnAddAddressPosition.Name = "btnAddAddressPosition";
-            this.btnAddAddressPosition.Size = new System.Drawing.Size(90, 32);
-            this.btnAddAddressPosition.TabIndex = 62;
-            this.btnAddAddressPosition.Text = "Add";
-            this.btnAddAddressPosition.UseVisualStyleBackColor = true;
-            this.btnAddAddressPosition.Click += new System.EventHandler(this.btnAddAddressPosition_Click);
-            // 
-            // listMapAddressPositions
-            // 
-            this.listMapAddressPositions.FormattingEnabled = true;
-            this.listMapAddressPositions.ItemHeight = 19;
-            this.listMapAddressPositions.Location = new System.Drawing.Point(18, 74);
-            this.listMapAddressPositions.Name = "listMapAddressPositions";
-            this.listMapAddressPositions.ScrollAlwaysVisible = true;
-            this.listMapAddressPositions.Size = new System.Drawing.Size(243, 441);
-            this.listMapAddressPositions.TabIndex = 61;
-            this.listMapAddressPositions.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listMapAddressPositions_MouseDoubleClick);
-            // 
-            // btnClearMoveCmdInfo
-            // 
-            this.btnClearMoveCmdInfo.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnClearMoveCmdInfo.Location = new System.Drawing.Point(1145, 547);
-            this.btnClearMoveCmdInfo.Name = "btnClearMoveCmdInfo";
-            this.btnClearMoveCmdInfo.Size = new System.Drawing.Size(95, 40);
-            this.btnClearMoveCmdInfo.TabIndex = 54;
-            this.btnClearMoveCmdInfo.Text = "Clear";
-            this.btnClearMoveCmdInfo.UseVisualStyleBackColor = true;
-            this.btnClearMoveCmdInfo.Click += new System.EventHandler(this.btnClearMoveCmdInfo_Click);
-            // 
-            // btnClearSpeedLimit
-            // 
-            this.btnClearSpeedLimit.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnClearSpeedLimit.Location = new System.Drawing.Point(1175, 20);
-            this.btnClearSpeedLimit.Name = "btnClearSpeedLimit";
-            this.btnClearSpeedLimit.Size = new System.Drawing.Size(90, 32);
-            this.btnClearSpeedLimit.TabIndex = 51;
-            this.btnClearSpeedLimit.Text = "Clear";
-            this.btnClearSpeedLimit.UseVisualStyleBackColor = true;
-            this.btnClearSpeedLimit.Click += new System.EventHandler(this.btnClearSpeedLimit_Click);
-            // 
-            // btnRemoveSpeedLimit
-            // 
-            this.btnRemoveSpeedLimit.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRemoveSpeedLimit.Location = new System.Drawing.Point(1082, 20);
-            this.btnRemoveSpeedLimit.Name = "btnRemoveSpeedLimit";
-            this.btnRemoveSpeedLimit.Size = new System.Drawing.Size(90, 32);
-            this.btnRemoveSpeedLimit.TabIndex = 50;
-            this.btnRemoveSpeedLimit.Text = "Remove";
-            this.btnRemoveSpeedLimit.UseVisualStyleBackColor = true;
-            this.btnRemoveSpeedLimit.Click += new System.EventHandler(this.btnRemoveSpeedLimit_Click);
-            // 
-            // btnAddSpeedLimit
-            // 
-            this.btnAddSpeedLimit.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnAddSpeedLimit.Location = new System.Drawing.Point(990, 20);
-            this.btnAddSpeedLimit.Name = "btnAddSpeedLimit";
-            this.btnAddSpeedLimit.Size = new System.Drawing.Size(90, 32);
-            this.btnAddSpeedLimit.TabIndex = 49;
-            this.btnAddSpeedLimit.Text = "Add";
-            this.btnAddSpeedLimit.UseVisualStyleBackColor = true;
-            this.btnAddSpeedLimit.Click += new System.EventHandler(this.btnAddSpeedLimit_Click);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label4.Location = new System.Drawing.Point(893, 25);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(93, 19);
-            this.label4.TabIndex = 48;
-            this.label4.Text = "SpeedLimit";
-            // 
-            // btnClearAddressActions
-            // 
-            this.btnClearAddressActions.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnClearAddressActions.Location = new System.Drawing.Point(796, 20);
-            this.btnClearAddressActions.Name = "btnClearAddressActions";
-            this.btnClearAddressActions.Size = new System.Drawing.Size(90, 32);
-            this.btnClearAddressActions.TabIndex = 47;
-            this.btnClearAddressActions.Text = "Clear";
-            this.btnClearAddressActions.UseVisualStyleBackColor = true;
-            this.btnClearAddressActions.Click += new System.EventHandler(this.btnClearAddressActions_Click);
-            // 
-            // btnRemoveLastAddressAction
-            // 
-            this.btnRemoveLastAddressAction.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRemoveLastAddressAction.Location = new System.Drawing.Point(697, 20);
-            this.btnRemoveLastAddressAction.Name = "btnRemoveLastAddressAction";
-            this.btnRemoveLastAddressAction.Size = new System.Drawing.Size(90, 32);
-            this.btnRemoveLastAddressAction.TabIndex = 46;
-            this.btnRemoveLastAddressAction.Text = "Remove";
-            this.btnRemoveLastAddressAction.UseVisualStyleBackColor = true;
-            this.btnRemoveLastAddressAction.Click += new System.EventHandler(this.btnRemoveLastAddressAction_Click);
-            // 
-            // btnAddAddressAction
-            // 
-            this.btnAddAddressAction.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnAddAddressAction.Location = new System.Drawing.Point(598, 20);
-            this.btnAddAddressAction.Name = "btnAddAddressAction";
-            this.btnAddAddressAction.Size = new System.Drawing.Size(90, 32);
-            this.btnAddAddressAction.TabIndex = 45;
-            this.btnAddAddressAction.Text = "Add";
-            this.btnAddAddressAction.UseVisualStyleBackColor = true;
-            this.btnAddAddressAction.Click += new System.EventHandler(this.btnAddAddressAction_Click);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label3.Location = new System.Drawing.Point(517, 26);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(65, 19);
-            this.label3.TabIndex = 44;
-            this.label3.Text = "Actions";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label1.Location = new System.Drawing.Point(18, 25);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(75, 19);
-            this.label1.TabIndex = 43;
-            this.label1.Text = "Positions";
+            this.label_CreateCommandMessage.AutoSize = true;
+            this.label_CreateCommandMessage.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_CreateCommandMessage.Location = new System.Drawing.Point(3, 13);
+            this.label_CreateCommandMessage.Name = "label_CreateCommandMessage";
+            this.label_CreateCommandMessage.Size = new System.Drawing.Size(180, 19);
+            this.label_CreateCommandMessage.TabIndex = 41;
+            this.label_CreateCommandMessage.Text = "Create Command Log :";
             // 
             // tbP_List
             // 
             this.tbP_List.Controls.Add(this.button_SimulateState);
-            this.tbP_List.Controls.Add(this.label_FlowStop);
             this.tbP_List.Controls.Add(this.label_Psuse);
             this.tbP_List.Controls.Add(this.label_WaitReserveIndex);
             this.tbP_List.Controls.Add(this.label_BeamState);
             this.tbP_List.Controls.Add(this.label_BumpState);
-            this.tbP_List.Controls.Add(this.label_FlowStop_Label);
             this.tbP_List.Controls.Add(this.label_Psuse_Label);
             this.tbP_List.Controls.Add(this.label_WaitReserveIndex_Label);
             this.tbP_List.Controls.Add(this.label_BeamState_Label);
@@ -632,17 +312,6 @@ namespace Mirle.Agv.View
             this.button_SimulateState.Visible = false;
             this.button_SimulateState.Click += new System.EventHandler(this.button_SimulateState_Click);
             // 
-            // label_FlowStop
-            // 
-            this.label_FlowStop.AutoSize = true;
-            this.label_FlowStop.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_FlowStop.ForeColor = System.Drawing.Color.Red;
-            this.label_FlowStop.Location = new System.Drawing.Point(544, 508);
-            this.label_FlowStop.Name = "label_FlowStop";
-            this.label_FlowStop.Size = new System.Drawing.Size(45, 19);
-            this.label_FlowStop.TabIndex = 113;
-            this.label_FlowStop.Text = "State";
-            // 
             // label_Psuse
             // 
             this.label_Psuse.AutoSize = true;
@@ -686,17 +355,6 @@ namespace Mirle.Agv.View
             this.label_BumpState.Size = new System.Drawing.Size(45, 19);
             this.label_BumpState.TabIndex = 109;
             this.label_BumpState.Text = "State";
-            // 
-            // label_FlowStop_Label
-            // 
-            this.label_FlowStop_Label.AutoSize = true;
-            this.label_FlowStop_Label.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_FlowStop_Label.ForeColor = System.Drawing.Color.Black;
-            this.label_FlowStop_Label.Location = new System.Drawing.Point(529, 482);
-            this.label_FlowStop_Label.Name = "label_FlowStop_Label";
-            this.label_FlowStop_Label.Size = new System.Drawing.Size(79, 19);
-            this.label_FlowStop_Label.TabIndex = 108;
-            this.label_FlowStop_Label.Text = "FlowStop";
             // 
             // label_Psuse_Label
             // 
@@ -829,12 +487,44 @@ namespace Mirle.Agv.View
             // cB_GetAllReserve
             // 
             this.cB_GetAllReserve.AutoSize = true;
+            this.cB_GetAllReserve.Checked = true;
+            this.cB_GetAllReserve.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cB_GetAllReserve.Location = new System.Drawing.Point(1159, 3);
             this.cB_GetAllReserve.Name = "cB_GetAllReserve";
             this.cB_GetAllReserve.Size = new System.Drawing.Size(123, 23);
             this.cB_GetAllReserve.TabIndex = 80;
             this.cB_GetAllReserve.Text = "取得所有點";
             this.cB_GetAllReserve.UseVisualStyleBackColor = true;
+            // 
+            // button_ClearCommand
+            // 
+            this.button_ClearCommand.Location = new System.Drawing.Point(1159, 561);
+            this.button_ClearCommand.Name = "button_ClearCommand";
+            this.button_ClearCommand.Size = new System.Drawing.Size(104, 36);
+            this.button_ClearCommand.TabIndex = 46;
+            this.button_ClearCommand.Text = "清除狀態";
+            this.button_ClearCommand.UseVisualStyleBackColor = true;
+            this.button_ClearCommand.Click += new System.EventHandler(this.button_ClearCommand_Click);
+            // 
+            // label_ReserveList
+            // 
+            this.label_ReserveList.AutoSize = true;
+            this.label_ReserveList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_ReserveList.Location = new System.Drawing.Point(1015, 5);
+            this.label_ReserveList.Name = "label_ReserveList";
+            this.label_ReserveList.Size = new System.Drawing.Size(110, 19);
+            this.label_ReserveList.TabIndex = 41;
+            this.label_ReserveList.Text = "Reserve List :";
+            // 
+            // label_CommandList
+            // 
+            this.label_CommandList.AutoSize = true;
+            this.label_CommandList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_CommandList.Location = new System.Drawing.Point(6, 5);
+            this.label_CommandList.Name = "label_CommandList";
+            this.label_CommandList.Size = new System.Drawing.Size(127, 19);
+            this.label_CommandList.TabIndex = 40;
+            this.label_CommandList.Text = "Command List :";
             // 
             // ucLabelTB_EncoderPosition
             // 
@@ -935,6 +625,29 @@ namespace Mirle.Agv.View
             this.ucLabelTB_RealEncoder.TagName = "label1";
             this.ucLabelTB_RealEncoder.TagValue = "";
             // 
+            // ReserveList
+            // 
+            this.ReserveList.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.ReserveList.FormattingEnabled = true;
+            this.ReserveList.HorizontalScrollbar = true;
+            this.ReserveList.ItemHeight = 16;
+            this.ReserveList.Location = new System.Drawing.Point(1012, 27);
+            this.ReserveList.Name = "ReserveList";
+            this.ReserveList.ScrollAlwaysVisible = true;
+            this.ReserveList.Size = new System.Drawing.Size(265, 420);
+            this.ReserveList.TabIndex = 38;
+            this.ReserveList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ReserveList_MouseDoubleClick);
+            // 
+            // button_SendList
+            // 
+            this.button_SendList.Location = new System.Drawing.Point(1104, 475);
+            this.button_SendList.Name = "button_SendList";
+            this.button_SendList.Size = new System.Drawing.Size(173, 36);
+            this.button_SendList.TabIndex = 44;
+            this.button_SendList.Text = "執行移動命令";
+            this.button_SendList.UseVisualStyleBackColor = true;
+            this.button_SendList.Click += new System.EventHandler(this.button_SendList_Click);
+            // 
             // ucLabelTextBox1
             // 
             this.ucLabelTextBox1.Location = new System.Drawing.Point(1802, 238);
@@ -946,383 +659,688 @@ namespace Mirle.Agv.View
             this.ucLabelTextBox1.TagName = "label1";
             this.ucLabelTextBox1.TagValue = "";
             // 
-            // tbP_Debug
-            // 
-            this.tbP_Debug.Controls.Add(this.button_DebugListClear);
-            this.tbP_Debug.Controls.Add(this.label_DebugList);
-            this.tbP_Debug.Controls.Add(this.DebugList);
-            this.tbP_Debug.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbP_Debug.Location = new System.Drawing.Point(4, 22);
-            this.tbP_Debug.Name = "tbP_Debug";
-            this.tbP_Debug.Size = new System.Drawing.Size(1283, 601);
-            this.tbP_Debug.TabIndex = 2;
-            this.tbP_Debug.Text = "Debug";
-            this.tbP_Debug.UseVisualStyleBackColor = true;
-            // 
-            // button_DebugListClear
-            // 
-            this.button_DebugListClear.Location = new System.Drawing.Point(1192, 9);
-            this.button_DebugListClear.Name = "button_DebugListClear";
-            this.button_DebugListClear.Size = new System.Drawing.Size(85, 27);
-            this.button_DebugListClear.TabIndex = 42;
-            this.button_DebugListClear.Text = "清除";
-            this.button_DebugListClear.UseVisualStyleBackColor = true;
-            // 
-            // label_DebugList
-            // 
-            this.label_DebugList.AutoSize = true;
-            this.label_DebugList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_DebugList.Location = new System.Drawing.Point(6, 13);
-            this.label_DebugList.Name = "label_DebugList";
-            this.label_DebugList.Size = new System.Drawing.Size(100, 19);
-            this.label_DebugList.TabIndex = 41;
-            this.label_DebugList.Text = "Debug List :";
-            // 
-            // DebugList
-            // 
-            this.DebugList.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.DebugList.FormattingEnabled = true;
-            this.DebugList.HorizontalScrollbar = true;
-            this.DebugList.ItemHeight = 16;
-            this.DebugList.Location = new System.Drawing.Point(6, 46);
-            this.DebugList.Name = "DebugList";
-            this.DebugList.ScrollAlwaysVisible = true;
-            this.DebugList.Size = new System.Drawing.Size(1271, 548);
-            this.DebugList.TabIndex = 37;
-            // 
-            // tbP_DebugCSV
-            // 
-            this.tbP_DebugCSV.Controls.Add(this.button_CSVListDisViewRang);
-            this.tbP_DebugCSV.Controls.Add(this.button_CSVListShowAll);
-            this.tbP_DebugCSV.Controls.Add(this.dataGridView_CSVList);
-            this.tbP_DebugCSV.Controls.Add(this.button_DebugCSV);
-            this.tbP_DebugCSV.Controls.Add(this.button_DebugCSVClear);
-            this.tbP_DebugCSV.Controls.Add(this.label_DebugCSVList);
-            this.tbP_DebugCSV.Location = new System.Drawing.Point(4, 22);
-            this.tbP_DebugCSV.Name = "tbP_DebugCSV";
-            this.tbP_DebugCSV.Size = new System.Drawing.Size(1283, 601);
-            this.tbP_DebugCSV.TabIndex = 3;
-            this.tbP_DebugCSV.Text = "DebugCSV";
-            this.tbP_DebugCSV.UseVisualStyleBackColor = true;
-            // 
-            // button_CSVListDisViewRang
-            // 
-            this.button_CSVListDisViewRang.Location = new System.Drawing.Point(702, 11);
-            this.button_CSVListDisViewRang.Name = "button_CSVListDisViewRang";
-            this.button_CSVListDisViewRang.Size = new System.Drawing.Size(96, 27);
-            this.button_CSVListDisViewRang.TabIndex = 48;
-            this.button_CSVListDisViewRang.Text = "隱藏區域開啟";
-            this.button_CSVListDisViewRang.UseVisualStyleBackColor = true;
-            this.button_CSVListDisViewRang.Click += new System.EventHandler(this.button_CSVListDisViewRang_Click);
-            // 
-            // button_CSVListShowAll
-            // 
-            this.button_CSVListShowAll.Location = new System.Drawing.Point(858, 11);
-            this.button_CSVListShowAll.Name = "button_CSVListShowAll";
-            this.button_CSVListShowAll.Size = new System.Drawing.Size(85, 27);
-            this.button_CSVListShowAll.TabIndex = 47;
-            this.button_CSVListShowAll.Text = "顯示全部";
-            this.button_CSVListShowAll.UseVisualStyleBackColor = true;
-            this.button_CSVListShowAll.Click += new System.EventHandler(this.button_CSVListShowAll_Click);
-            // 
-            // dataGridView_CSVList
-            // 
-            this.dataGridView_CSVList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView_CSVList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.time,
-            this.moveState,
-            this.realEncoder,
-            this.nextCommand,
-            this.triggerEncoder,
-            this.delta,
-            this.offset,
-            this.realX,
-            this.realY,
-            this.barcodeX,
-            this.barcodeY,
-            this.encoderPositionX,
-            this.encoderPositionY,
-            this.sr2000LCount,
-            this.sr2000LGetDataTime,
-            this.sr2000LScanTime,
-            this.sr2000LMapX,
-            this.sr2000LMapY,
-            this.sr2000LMapTheta,
-            this.sr2000LBarcodeAngle,
-            this.sr2000LDelta,
-            this.sr2000LTheta,
-            this.sr2000LBarcode1ID,
-            this.sr2000LBarcode2ID,
-            this.sr2000RCount,
-            this.sr2000RGetDataTime,
-            this.sr2000RScanTime,
-            this.sr2000RMapX,
-            this.sr2000RMapY,
-            this.sr2000RMapTheta,
-            this.sr2000RBarcodeAngle,
-            this.sr2000RDelta,
-            this.sr2000RTheta,
-            this.sr2000RBarcode1ID,
-            this.sr2000RBarcode2ID});
-            this.dataGridView_CSVList.Cursor = System.Windows.Forms.Cursors.Default;
-            this.dataGridView_CSVList.Location = new System.Drawing.Point(6, 44);
-            this.dataGridView_CSVList.Name = "dataGridView_CSVList";
-            this.dataGridView_CSVList.RowTemplate.Height = 24;
-            this.dataGridView_CSVList.Size = new System.Drawing.Size(1271, 551);
-            this.dataGridView_CSVList.TabIndex = 46;
-            this.dataGridView_CSVList.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_CSVList_ColumnHeaderMouseClick);
-            this.dataGridView_CSVList.ColumnHeaderMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_CSVList_ColumnHeaderMouseDoubleClick);
-            // 
-            // time
-            // 
-            this.time.Frozen = true;
-            this.time.HeaderText = "Time";
-            this.time.Name = "time";
-            // 
-            // moveState
-            // 
-            this.moveState.HeaderText = "State";
-            this.moveState.Name = "moveState";
-            this.moveState.Width = 50;
-            // 
-            // realEncoder
-            // 
-            this.realEncoder.HeaderText = "RealEncoder";
-            this.realEncoder.Name = "realEncoder";
-            // 
-            // nextCommand
-            // 
-            this.nextCommand.HeaderText = "Command";
-            this.nextCommand.Name = "nextCommand";
-            // 
-            // triggerEncoder
-            // 
-            this.triggerEncoder.HeaderText = "Trigger";
-            this.triggerEncoder.Name = "triggerEncoder";
-            // 
-            // delta
-            // 
-            this.delta.HeaderText = "Delta";
-            this.delta.Name = "delta";
-            // 
-            // offset
-            // 
-            this.offset.HeaderText = "offset";
-            this.offset.Name = "offset";
-            // 
-            // realX
-            // 
-            this.realX.HeaderText = "RealX";
-            this.realX.Name = "realX";
-            // 
-            // realY
-            // 
-            this.realY.HeaderText = "RealY";
-            this.realY.Name = "realY";
-            // 
-            // barcodeX
-            // 
-            this.barcodeX.HeaderText = "BarcodeX";
-            this.barcodeX.Name = "barcodeX";
-            // 
-            // barcodeY
-            // 
-            this.barcodeY.HeaderText = "BarcodeY";
-            this.barcodeY.Name = "barcodeY";
-            // 
-            // encoderPositionX
-            // 
-            this.encoderPositionX.HeaderText = "EncoderX";
-            this.encoderPositionX.Name = "encoderPositionX";
-            // 
-            // encoderPositionY
-            // 
-            this.encoderPositionY.HeaderText = "EncoderY";
-            this.encoderPositionY.Name = "encoderPositionY";
-            // 
-            // sr2000LCount
-            // 
-            this.sr2000LCount.HeaderText = "SR2000LCount";
-            this.sr2000LCount.Name = "sr2000LCount";
-            // 
-            // sr2000LGetDataTime
-            // 
-            this.sr2000LGetDataTime.HeaderText = "SR2000LGetTime";
-            this.sr2000LGetDataTime.Name = "sr2000LGetDataTime";
-            // 
-            // sr2000LScanTime
-            // 
-            this.sr2000LScanTime.HeaderText = "SR2000LScanTime";
-            this.sr2000LScanTime.Name = "sr2000LScanTime";
-            // 
-            // sr2000LMapX
-            // 
-            this.sr2000LMapX.HeaderText = "SR2000LMapX";
-            this.sr2000LMapX.Name = "sr2000LMapX";
-            // 
-            // sr2000LMapY
-            // 
-            this.sr2000LMapY.HeaderText = "SR2000LMapY";
-            this.sr2000LMapY.Name = "sr2000LMapY";
-            // 
-            // sr2000LMapTheta
-            // 
-            this.sr2000LMapTheta.HeaderText = "SR2000LMapTheta";
-            this.sr2000LMapTheta.Name = "sr2000LMapTheta";
-            // 
-            // sr2000LBarcodeAngle
-            // 
-            this.sr2000LBarcodeAngle.HeaderText = "SR2000LAngle";
-            this.sr2000LBarcodeAngle.Name = "sr2000LBarcodeAngle";
-            // 
-            // sr2000LDelta
-            // 
-            this.sr2000LDelta.HeaderText = "SR2000Ldelta";
-            this.sr2000LDelta.Name = "sr2000LDelta";
-            // 
-            // sr2000LTheta
-            // 
-            this.sr2000LTheta.HeaderText = "SR2000LTheta";
-            this.sr2000LTheta.Name = "sr2000LTheta";
-            // 
-            // sr2000LBarcode1ID
-            // 
-            this.sr2000LBarcode1ID.HeaderText = "SR2000LID1";
-            this.sr2000LBarcode1ID.Name = "sr2000LBarcode1ID";
-            // 
-            // sr2000LBarcode2ID
-            // 
-            this.sr2000LBarcode2ID.HeaderText = "SR2000LID2";
-            this.sr2000LBarcode2ID.Name = "sr2000LBarcode2ID";
-            // 
-            // sr2000RCount
-            // 
-            this.sr2000RCount.HeaderText = "SR2000RCount";
-            this.sr2000RCount.Name = "sr2000RCount";
-            // 
-            // sr2000RGetDataTime
-            // 
-            this.sr2000RGetDataTime.HeaderText = "SR2000RGetTime";
-            this.sr2000RGetDataTime.Name = "sr2000RGetDataTime";
-            // 
-            // sr2000RScanTime
-            // 
-            this.sr2000RScanTime.HeaderText = "SR2000RScanTime";
-            this.sr2000RScanTime.Name = "sr2000RScanTime";
-            // 
-            // sr2000RMapX
-            // 
-            this.sr2000RMapX.HeaderText = "SR2000RMapX";
-            this.sr2000RMapX.Name = "sr2000RMapX";
-            // 
-            // sr2000RMapY
-            // 
-            this.sr2000RMapY.HeaderText = "SR2000RMapY";
-            this.sr2000RMapY.Name = "sr2000RMapY";
-            // 
-            // sr2000RMapTheta
-            // 
-            this.sr2000RMapTheta.HeaderText = "SR2000RMapTheta";
-            this.sr2000RMapTheta.Name = "sr2000RMapTheta";
-            // 
-            // sr2000RBarcodeAngle
-            // 
-            this.sr2000RBarcodeAngle.HeaderText = "SR2000RAngle";
-            this.sr2000RBarcodeAngle.Name = "sr2000RBarcodeAngle";
-            // 
-            // sr2000RDelta
-            // 
-            this.sr2000RDelta.HeaderText = "SR2000RDelta";
-            this.sr2000RDelta.Name = "sr2000RDelta";
-            // 
-            // sr2000RTheta
-            // 
-            this.sr2000RTheta.HeaderText = "SR2000RTheta";
-            this.sr2000RTheta.Name = "sr2000RTheta";
-            // 
-            // sr2000RBarcode1ID
-            // 
-            this.sr2000RBarcode1ID.HeaderText = "SR2000RID1";
-            this.sr2000RBarcode1ID.Name = "sr2000RBarcode1ID";
-            // 
-            // sr2000RBarcode2ID
-            // 
-            this.sr2000RBarcode2ID.HeaderText = "SR2000RID2";
-            this.sr2000RBarcode2ID.Name = "sr2000RBarcode2ID";
-            // 
-            // button_DebugCSV
-            // 
-            this.button_DebugCSV.Location = new System.Drawing.Point(1020, 11);
-            this.button_DebugCSV.Name = "button_DebugCSV";
-            this.button_DebugCSV.Size = new System.Drawing.Size(85, 27);
-            this.button_DebugCSV.TabIndex = 44;
-            this.button_DebugCSV.Text = "開啟";
-            this.button_DebugCSV.UseVisualStyleBackColor = true;
-            this.button_DebugCSV.Click += new System.EventHandler(this.button_DebugCSV_Click);
-            // 
-            // button_DebugCSVClear
-            // 
-            this.button_DebugCSVClear.Location = new System.Drawing.Point(1192, 11);
-            this.button_DebugCSVClear.Name = "button_DebugCSVClear";
-            this.button_DebugCSVClear.Size = new System.Drawing.Size(85, 27);
-            this.button_DebugCSVClear.TabIndex = 43;
-            this.button_DebugCSVClear.Text = "清除";
-            this.button_DebugCSVClear.UseVisualStyleBackColor = true;
-            this.button_DebugCSVClear.Click += new System.EventHandler(this.button_DebugCSVClear_Click);
-            // 
-            // label_DebugCSVList
-            // 
-            this.label_DebugCSVList.AutoSize = true;
-            this.label_DebugCSVList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_DebugCSVList.Location = new System.Drawing.Point(6, 13);
-            this.label_DebugCSVList.Name = "label_DebugCSVList";
-            this.label_DebugCSVList.Size = new System.Drawing.Size(135, 19);
-            this.label_DebugCSVList.TabIndex = 42;
-            this.label_DebugCSVList.Text = "DebugCSV List :";
-            // 
-            // tP_Admin
-            // 
-            this.tP_Admin.Controls.Add(this.button_SimulationModeChange);
-            this.tP_Admin.Controls.Add(this.label_SimulationMode);
-            this.tP_Admin.Location = new System.Drawing.Point(4, 22);
-            this.tP_Admin.Name = "tP_Admin";
-            this.tP_Admin.Size = new System.Drawing.Size(1283, 601);
-            this.tP_Admin.TabIndex = 4;
-            this.tP_Admin.Text = "Admin";
-            this.tP_Admin.UseVisualStyleBackColor = true;
-            // 
-            // button_SimulationModeChange
-            // 
-            this.button_SimulationModeChange.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button_SimulationModeChange.Location = new System.Drawing.Point(136, 23);
-            this.button_SimulationModeChange.Name = "button_SimulationModeChange";
-            this.button_SimulationModeChange.Size = new System.Drawing.Size(79, 30);
-            this.button_SimulationModeChange.TabIndex = 1;
-            this.button_SimulationModeChange.Text = "關閉中";
-            this.button_SimulationModeChange.UseVisualStyleBackColor = true;
-            this.button_SimulationModeChange.Click += new System.EventHandler(this.button_SimulationMode_Click);
-            // 
-            // label_SimulationMode
-            // 
-            this.label_SimulationMode.AutoSize = true;
-            this.label_SimulationMode.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label_SimulationMode.Location = new System.Drawing.Point(30, 29);
-            this.label_SimulationMode.Name = "label_SimulationMode";
-            this.label_SimulationMode.Size = new System.Drawing.Size(100, 19);
-            this.label_SimulationMode.TabIndex = 0;
-            this.label_SimulationMode.Text = "模擬模式 : ";
-            // 
-            // tbxLogView_MoveControlDebugMessage
-            // 
-            this.tbxLogView_MoveControlDebugMessage.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxLogView_MoveControlDebugMessage.Location = new System.Drawing.Point(6, 636);
-            this.tbxLogView_MoveControlDebugMessage.MaxLength = 65550;
-            this.tbxLogView_MoveControlDebugMessage.Multiline = true;
-            this.tbxLogView_MoveControlDebugMessage.Name = "tbxLogView_MoveControlDebugMessage";
-            this.tbxLogView_MoveControlDebugMessage.ReadOnly = true;
-            this.tbxLogView_MoveControlDebugMessage.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbxLogView_MoveControlDebugMessage.Size = new System.Drawing.Size(1283, 223);
-            this.tbxLogView_MoveControlDebugMessage.TabIndex = 53;
+            // CommandList
+            // 
+            this.CommandList.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.CommandList.FormattingEnabled = true;
+            this.CommandList.HorizontalScrollbar = true;
+            this.CommandList.ItemHeight = 16;
+            this.CommandList.Location = new System.Drawing.Point(6, 27);
+            this.CommandList.Name = "CommandList";
+            this.CommandList.ScrollAlwaysVisible = true;
+            this.CommandList.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.CommandList.Size = new System.Drawing.Size(1000, 420);
+            this.CommandList.TabIndex = 36;
+            // 
+            // button_StopMove
+            // 
+            this.button_StopMove.Location = new System.Drawing.Point(1034, 561);
+            this.button_StopMove.Name = "button_StopMove";
+            this.button_StopMove.Size = new System.Drawing.Size(104, 36);
+            this.button_StopMove.TabIndex = 45;
+            this.button_StopMove.Text = "Stop";
+            this.button_StopMove.UseVisualStyleBackColor = true;
+            this.button_StopMove.Click += new System.EventHandler(this.button_StopMove_Click);
+            // 
+            // tbP_CreateCommand
+            // 
+            this.tbP_CreateCommand.Controls.Add(this.button_CreateCommandList_StopAndClear);
+            this.tbP_CreateCommand.Controls.Add(this.button_CreateCommandList_Stop);
+            this.tbP_CreateCommand.Controls.Add(this.cB_OverrideTest);
+            this.tbP_CreateCommand.Controls.Add(this.button_FromTo);
+            this.tbP_CreateCommand.Controls.Add(this.label_FormTo);
+            this.tbP_CreateCommand.Controls.Add(this.button_ReveseAddressList);
+            this.tbP_CreateCommand.Controls.Add(this.button_RunTimesOdd);
+            this.tbP_CreateCommand.Controls.Add(this.button_RunTimesEven);
+            this.tbP_CreateCommand.Controls.Add(this.tB_RunTimes);
+            this.tbP_CreateCommand.Controls.Add(this.tB_HorizontalVelocity);
+            this.tbP_CreateCommand.Controls.Add(this.tB_LineVelocity);
+            this.tbP_CreateCommand.Controls.Add(this.tB_ChangeVelocity);
+            this.tbP_CreateCommand.Controls.Add(this.tB_PositionY);
+            this.tbP_CreateCommand.Controls.Add(this.tB_PositionX);
+            this.tbP_CreateCommand.Controls.Add(this.label_RunTimes);
+            this.tbP_CreateCommand.Controls.Add(this.label_HorizontalVelocity);
+            this.tbP_CreateCommand.Controls.Add(this.label_LineVelocity);
+            this.tbP_CreateCommand.Controls.Add(this.cB_ChangeAction);
+            this.tbP_CreateCommand.Controls.Add(this.label_DebugFormCreateCommandVelocitys);
+            this.tbP_CreateCommand.Controls.Add(this.label_DebugFormCreateCommandActions);
+            this.tbP_CreateCommand.Controls.Add(this.Button_AutoCreate);
+            this.tbP_CreateCommand.Controls.Add(this.button_AddReadPosition);
+            this.tbP_CreateCommand.Controls.Add(this.label_LockResult);
+            this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommandState);
+            this.tbP_CreateCommand.Controls.Add(this.ucLabelTB_CreateCommand_BarcodePosition);
+            this.tbP_CreateCommand.Controls.Add(this.button_DebugModeSend);
+            this.tbP_CreateCommand.Controls.Add(this.listCmdSpeedLimits);
+            this.tbP_CreateCommand.Controls.Add(this.listCmdAddressActions);
+            this.tbP_CreateCommand.Controls.Add(this.listCmdAddressPositions);
+            this.tbP_CreateCommand.Controls.Add(this.btnRemoveLastAddressPosition);
+            this.tbP_CreateCommand.Controls.Add(this.btnPositionXY);
+            this.tbP_CreateCommand.Controls.Add(this.btnAddAddressPosition);
+            this.tbP_CreateCommand.Controls.Add(this.listMapAddressPositions);
+            this.tbP_CreateCommand.Controls.Add(this.btnClearMoveCmdInfo);
+            this.tbP_CreateCommand.Controls.Add(this.label_DebugFormCreateCommandPositions);
+            this.tbP_CreateCommand.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbP_CreateCommand.Location = new System.Drawing.Point(4, 22);
+            this.tbP_CreateCommand.Name = "tbP_CreateCommand";
+            this.tbP_CreateCommand.Padding = new System.Windows.Forms.Padding(3);
+            this.tbP_CreateCommand.Size = new System.Drawing.Size(1283, 601);
+            this.tbP_CreateCommand.TabIndex = 0;
+            this.tbP_CreateCommand.Text = "產生命令";
+            this.tbP_CreateCommand.UseVisualStyleBackColor = true;
+            // 
+            // button_CreateCommandList_StopAndClear
+            // 
+            this.button_CreateCommandList_StopAndClear.Location = new System.Drawing.Point(1060, 468);
+            this.button_CreateCommandList_StopAndClear.Name = "button_CreateCommandList_StopAndClear";
+            this.button_CreateCommandList_StopAndClear.Size = new System.Drawing.Size(104, 36);
+            this.button_CreateCommandList_StopAndClear.TabIndex = 100;
+            this.button_CreateCommandList_StopAndClear.Text = "清除狀態";
+            this.button_CreateCommandList_StopAndClear.UseVisualStyleBackColor = true;
+            this.button_CreateCommandList_StopAndClear.Click += new System.EventHandler(this.button_ClearCommand_Click);
+            // 
+            // button_CreateCommandList_Stop
+            // 
+            this.button_CreateCommandList_Stop.Location = new System.Drawing.Point(935, 468);
+            this.button_CreateCommandList_Stop.Name = "button_CreateCommandList_Stop";
+            this.button_CreateCommandList_Stop.Size = new System.Drawing.Size(104, 36);
+            this.button_CreateCommandList_Stop.TabIndex = 99;
+            this.button_CreateCommandList_Stop.Text = "Stop";
+            this.button_CreateCommandList_Stop.UseVisualStyleBackColor = true;
+            this.button_CreateCommandList_Stop.Click += new System.EventHandler(this.button_StopMove_Click);
+            // 
+            // cB_OverrideTest
+            // 
+            this.cB_OverrideTest.AutoSize = true;
+            this.cB_OverrideTest.Location = new System.Drawing.Point(1185, 481);
+            this.cB_OverrideTest.Name = "cB_OverrideTest";
+            this.cB_OverrideTest.Size = new System.Drawing.Size(92, 23);
+            this.cB_OverrideTest.TabIndex = 98;
+            this.cB_OverrideTest.Text = "Override";
+            this.cB_OverrideTest.UseVisualStyleBackColor = true;
+            this.cB_OverrideTest.Visible = false;
+            // 
+            // button_FromTo
+            // 
+            this.button_FromTo.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_FromTo.Location = new System.Drawing.Point(1166, 316);
+            this.button_FromTo.Name = "button_FromTo";
+            this.button_FromTo.Size = new System.Drawing.Size(106, 30);
+            this.button_FromTo.TabIndex = 97;
+            this.button_FromTo.Text = "路徑計算";
+            this.button_FromTo.UseVisualStyleBackColor = true;
+            this.button_FromTo.Click += new System.EventHandler(this.button_FromTo_Click);
+            // 
+            // label_FormTo
+            // 
+            this.label_FormTo.AutoSize = true;
+            this.label_FormTo.Location = new System.Drawing.Point(952, 321);
+            this.label_FormTo.Name = "label_FormTo";
+            this.label_FormTo.Size = new System.Drawing.Size(208, 19);
+            this.label_FormTo.TabIndex = 96;
+            this.label_FormTo.Text = "From to : (只需要點終點)";
+            // 
+            // button_ReveseAddressList
+            // 
+            this.button_ReveseAddressList.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_ReveseAddressList.Location = new System.Drawing.Point(1009, 248);
+            this.button_ReveseAddressList.Name = "button_ReveseAddressList";
+            this.button_ReveseAddressList.Size = new System.Drawing.Size(156, 30);
+            this.button_ReveseAddressList.TabIndex = 95;
+            this.button_ReveseAddressList.Text = " 路徑全部顛倒";
+            this.button_ReveseAddressList.UseVisualStyleBackColor = true;
+            this.button_ReveseAddressList.Click += new System.EventHandler(this.button_ReveseAddressList_Click);
+            // 
+            // button_RunTimesOdd
+            // 
+            this.button_RunTimesOdd.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_RunTimesOdd.Location = new System.Drawing.Point(1194, 179);
+            this.button_RunTimesOdd.Name = "button_RunTimesOdd";
+            this.button_RunTimesOdd.Size = new System.Drawing.Size(68, 30);
+            this.button_RunTimesOdd.TabIndex = 94;
+            this.button_RunTimesOdd.Text = "次";
+            this.button_RunTimesOdd.UseVisualStyleBackColor = true;
+            this.button_RunTimesOdd.Click += new System.EventHandler(this.button_RunTimesOdd_Click);
+            // 
+            // button_RunTimesEven
+            // 
+            this.button_RunTimesEven.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_RunTimesEven.Location = new System.Drawing.Point(1112, 179);
+            this.button_RunTimesEven.Name = "button_RunTimesEven";
+            this.button_RunTimesEven.Size = new System.Drawing.Size(68, 30);
+            this.button_RunTimesEven.TabIndex = 93;
+            this.button_RunTimesEven.Text = "趟";
+            this.button_RunTimesEven.UseVisualStyleBackColor = true;
+            this.button_RunTimesEven.Click += new System.EventHandler(this.button_RunTimesEven_Click);
+            // 
+            // tB_RunTimes
+            // 
+            this.tB_RunTimes.Location = new System.Drawing.Point(1030, 179);
+            this.tB_RunTimes.Name = "tB_RunTimes";
+            this.tB_RunTimes.Size = new System.Drawing.Size(72, 30);
+            this.tB_RunTimes.TabIndex = 92;
+            this.tB_RunTimes.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tB_RunTimes.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tB_RunTimes_KeyPress);
+            // 
+            // tB_HorizontalVelocity
+            // 
+            this.tB_HorizontalVelocity.Location = new System.Drawing.Point(1101, 106);
+            this.tB_HorizontalVelocity.Name = "tB_HorizontalVelocity";
+            this.tB_HorizontalVelocity.Size = new System.Drawing.Size(117, 30);
+            this.tB_HorizontalVelocity.TabIndex = 90;
+            this.tB_HorizontalVelocity.Text = "400";
+            this.tB_HorizontalVelocity.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tB_HorizontalVelocity.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tB_HorizontalVelocity_KeyPress);
+            // 
+            // tB_LineVelocity
+            // 
+            this.tB_LineVelocity.Location = new System.Drawing.Point(1101, 66);
+            this.tB_LineVelocity.Name = "tB_LineVelocity";
+            this.tB_LineVelocity.Size = new System.Drawing.Size(117, 30);
+            this.tB_LineVelocity.TabIndex = 89;
+            this.tB_LineVelocity.Text = "400";
+            this.tB_LineVelocity.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tB_LineVelocity.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tB_LineVelocity_KeyPress);
+            // 
+            // tB_ChangeVelocity
+            // 
+            this.tB_ChangeVelocity.Location = new System.Drawing.Point(743, 63);
+            this.tB_ChangeVelocity.Name = "tB_ChangeVelocity";
+            this.tB_ChangeVelocity.Size = new System.Drawing.Size(117, 30);
+            this.tB_ChangeVelocity.TabIndex = 86;
+            this.tB_ChangeVelocity.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tB_ChangeVelocity.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tB_ChangeVelocity_KeyPress);
+            // 
+            // tB_PositionY
+            // 
+            this.tB_PositionY.Location = new System.Drawing.Point(140, 526);
+            this.tB_PositionY.Name = "tB_PositionY";
+            this.tB_PositionY.Size = new System.Drawing.Size(123, 30);
+            this.tB_PositionY.TabIndex = 76;
+            // 
+            // tB_PositionX
+            // 
+            this.tB_PositionX.Location = new System.Drawing.Point(18, 526);
+            this.tB_PositionX.Name = "tB_PositionX";
+            this.tB_PositionX.Size = new System.Drawing.Size(123, 30);
+            this.tB_PositionX.TabIndex = 75;
+            // 
+            // label_RunTimes
+            // 
+            this.label_RunTimes.AutoSize = true;
+            this.label_RunTimes.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_RunTimes.Location = new System.Drawing.Point(952, 186);
+            this.label_RunTimes.Name = "label_RunTimes";
+            this.label_RunTimes.Size = new System.Drawing.Size(71, 19);
+            this.label_RunTimes.TabIndex = 91;
+            this.label_RunTimes.Text = "來回跑:";
+            // 
+            // label_HorizontalVelocity
+            // 
+            this.label_HorizontalVelocity.AutoSize = true;
+            this.label_HorizontalVelocity.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_HorizontalVelocity.Location = new System.Drawing.Point(952, 110);
+            this.label_HorizontalVelocity.Name = "label_HorizontalVelocity";
+            this.label_HorizontalVelocity.Size = new System.Drawing.Size(133, 19);
+            this.label_HorizontalVelocity.TabIndex = 88;
+            this.label_HorizontalVelocity.Text = "橫移速度設定 :";
+            // 
+            // label_LineVelocity
+            // 
+            this.label_LineVelocity.AutoSize = true;
+            this.label_LineVelocity.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_LineVelocity.Location = new System.Drawing.Point(952, 71);
+            this.label_LineVelocity.Name = "label_LineVelocity";
+            this.label_LineVelocity.Size = new System.Drawing.Size(133, 19);
+            this.label_LineVelocity.TabIndex = 87;
+            this.label_LineVelocity.Text = "直線速度設定 :";
+            // 
+            // cB_ChangeAction
+            // 
+            this.cB_ChangeAction.FormattingEnabled = true;
+            this.cB_ChangeAction.Location = new System.Drawing.Point(536, 63);
+            this.cB_ChangeAction.Name = "cB_ChangeAction";
+            this.cB_ChangeAction.Size = new System.Drawing.Size(117, 27);
+            this.cB_ChangeAction.TabIndex = 85;
+            this.cB_ChangeAction.SelectedIndexChanged += new System.EventHandler(this.cB_ChangeAction_SelectedIndexChanged);
+            // 
+            // label_DebugFormCreateCommandVelocitys
+            // 
+            this.label_DebugFormCreateCommandVelocitys.AutoSize = true;
+            this.label_DebugFormCreateCommandVelocitys.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_DebugFormCreateCommandVelocitys.Location = new System.Drawing.Point(739, 25);
+            this.label_DebugFormCreateCommandVelocitys.Name = "label_DebugFormCreateCommandVelocitys";
+            this.label_DebugFormCreateCommandVelocitys.Size = new System.Drawing.Size(78, 19);
+            this.label_DebugFormCreateCommandVelocitys.TabIndex = 84;
+            this.label_DebugFormCreateCommandVelocitys.Text = "Velocitys";
+            // 
+            // label_DebugFormCreateCommandActions
+            // 
+            this.label_DebugFormCreateCommandActions.AutoSize = true;
+            this.label_DebugFormCreateCommandActions.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_DebugFormCreateCommandActions.Location = new System.Drawing.Point(543, 25);
+            this.label_DebugFormCreateCommandActions.Name = "label_DebugFormCreateCommandActions";
+            this.label_DebugFormCreateCommandActions.Size = new System.Drawing.Size(65, 19);
+            this.label_DebugFormCreateCommandActions.TabIndex = 83;
+            this.label_DebugFormCreateCommandActions.Text = "Actions";
+            // 
+            // Button_AutoCreate
+            // 
+            this.Button_AutoCreate.AutoEllipsis = true;
+            this.Button_AutoCreate.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.Button_AutoCreate.Location = new System.Drawing.Point(777, 547);
+            this.Button_AutoCreate.Name = "Button_AutoCreate";
+            this.Button_AutoCreate.Size = new System.Drawing.Size(179, 40);
+            this.Button_AutoCreate.TabIndex = 82;
+            this.Button_AutoCreate.Text = "產生動作及速度";
+            this.Button_AutoCreate.UseVisualStyleBackColor = true;
+            this.Button_AutoCreate.Click += new System.EventHandler(this.Button_AutoCreate_Click);
+            // 
+            // button_AddReadPosition
+            // 
+            this.button_AddReadPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_AddReadPosition.Location = new System.Drawing.Point(358, 564);
+            this.button_AddReadPosition.Name = "button_AddReadPosition";
+            this.button_AddReadPosition.Size = new System.Drawing.Size(125, 29);
+            this.button_AddReadPosition.TabIndex = 81;
+            this.button_AddReadPosition.Text = "Add目前位置";
+            this.button_AddReadPosition.UseVisualStyleBackColor = true;
+            this.button_AddReadPosition.Click += new System.EventHandler(this.button_AddReadPosition_Click);
+            // 
+            // label_LockResult
+            // 
+            this.label_LockResult.AutoSize = true;
+            this.label_LockResult.ForeColor = System.Drawing.Color.Red;
+            this.label_LockResult.Location = new System.Drawing.Point(907, 522);
+            this.label_LockResult.Name = "label_LockResult";
+            this.label_LockResult.Size = new System.Drawing.Size(112, 19);
+            this.label_LockResult.TabIndex = 80;
+            this.label_LockResult.Text = "Lock Result : ";
+            // 
+            // ucLabelTB_CreateCommandState
+            // 
+            this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(493, 557);
+            this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8);
+            this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
+            this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
+            this.ucLabelTB_CreateCommandState.TabIndex = 78;
+            this.ucLabelTB_CreateCommandState.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucLabelTB_CreateCommandState.TagName = "label1";
+            this.ucLabelTB_CreateCommandState.TagValue = "";
+            // 
+            // ucLabelTB_CreateCommand_BarcodePosition
+            // 
+            this.ucLabelTB_CreateCommand_BarcodePosition.Location = new System.Drawing.Point(18, 565);
+            this.ucLabelTB_CreateCommand_BarcodePosition.Margin = new System.Windows.Forms.Padding(5);
+            this.ucLabelTB_CreateCommand_BarcodePosition.Name = "ucLabelTB_CreateCommand_BarcodePosition";
+            this.ucLabelTB_CreateCommand_BarcodePosition.Size = new System.Drawing.Size(332, 27);
+            this.ucLabelTB_CreateCommand_BarcodePosition.TabIndex = 77;
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagName = "label1";
+            this.ucLabelTB_CreateCommand_BarcodePosition.TagValue = "";
+            // 
+            // button_DebugModeSend
+            // 
+            this.button_DebugModeSend.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button_DebugModeSend.Location = new System.Drawing.Point(979, 547);
+            this.button_DebugModeSend.Name = "button_DebugModeSend";
+            this.button_DebugModeSend.Size = new System.Drawing.Size(160, 40);
+            this.button_DebugModeSend.TabIndex = 84;
+            this.button_DebugModeSend.Text = "產生移動命令";
+            this.button_DebugModeSend.UseVisualStyleBackColor = true;
+            this.button_DebugModeSend.Click += new System.EventHandler(this.button_DebugModeSend_Click);
+            // 
+            // listCmdSpeedLimits
+            // 
+            this.listCmdSpeedLimits.FormattingEnabled = true;
+            this.listCmdSpeedLimits.ItemHeight = 19;
+            this.listCmdSpeedLimits.Location = new System.Drawing.Point(743, 63);
+            this.listCmdSpeedLimits.Name = "listCmdSpeedLimits";
+            this.listCmdSpeedLimits.ScrollAlwaysVisible = true;
+            this.listCmdSpeedLimits.Size = new System.Drawing.Size(180, 441);
+            this.listCmdSpeedLimits.TabIndex = 70;
+            this.listCmdSpeedLimits.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listCmdSpeedLimits_MouseDoubleClick);
+            // 
+            // listCmdAddressActions
+            // 
+            this.listCmdAddressActions.FormattingEnabled = true;
+            this.listCmdAddressActions.ItemHeight = 19;
+            this.listCmdAddressActions.Location = new System.Drawing.Point(536, 63);
+            this.listCmdAddressActions.Name = "listCmdAddressActions";
+            this.listCmdAddressActions.ScrollAlwaysVisible = true;
+            this.listCmdAddressActions.Size = new System.Drawing.Size(180, 441);
+            this.listCmdAddressActions.TabIndex = 69;
+            this.listCmdAddressActions.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listCmdAddressActions_MouseDoubleClick);
+            // 
+            // listCmdAddressPositions
+            // 
+            this.listCmdAddressPositions.FormattingEnabled = true;
+            this.listCmdAddressPositions.ItemHeight = 19;
+            this.listCmdAddressPositions.Location = new System.Drawing.Point(267, 63);
+            this.listCmdAddressPositions.Name = "listCmdAddressPositions";
+            this.listCmdAddressPositions.ScrollAlwaysVisible = true;
+            this.listCmdAddressPositions.Size = new System.Drawing.Size(243, 441);
+            this.listCmdAddressPositions.TabIndex = 66;
+            // 
+            // btnRemoveLastAddressPosition
+            // 
+            this.btnRemoveLastAddressPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRemoveLastAddressPosition.Location = new System.Drawing.Point(324, 20);
+            this.btnRemoveLastAddressPosition.Name = "btnRemoveLastAddressPosition";
+            this.btnRemoveLastAddressPosition.Size = new System.Drawing.Size(90, 32);
+            this.btnRemoveLastAddressPosition.TabIndex = 64;
+            this.btnRemoveLastAddressPosition.Text = "Remove";
+            this.btnRemoveLastAddressPosition.UseVisualStyleBackColor = true;
+            this.btnRemoveLastAddressPosition.Click += new System.EventHandler(this.btnRemoveLastAddressPosition_Click);
+            // 
+            // btnPositionXY
+            // 
+            this.btnPositionXY.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnPositionXY.Location = new System.Drawing.Point(267, 526);
+            this.btnPositionXY.Name = "btnPositionXY";
+            this.btnPositionXY.Size = new System.Drawing.Size(124, 32);
+            this.btnPositionXY.TabIndex = 63;
+            this.btnPositionXY.Text = "Add";
+            this.btnPositionXY.UseVisualStyleBackColor = true;
+            this.btnPositionXY.Click += new System.EventHandler(this.btnPositionXY_Click);
+            // 
+            // btnAddAddressPosition
+            // 
+            this.btnAddAddressPosition.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnAddAddressPosition.Location = new System.Drawing.Point(228, 20);
+            this.btnAddAddressPosition.Name = "btnAddAddressPosition";
+            this.btnAddAddressPosition.Size = new System.Drawing.Size(90, 32);
+            this.btnAddAddressPosition.TabIndex = 62;
+            this.btnAddAddressPosition.Text = "Add";
+            this.btnAddAddressPosition.UseVisualStyleBackColor = true;
+            this.btnAddAddressPosition.Click += new System.EventHandler(this.btnAddAddressPosition_Click);
+            // 
+            // listMapAddressPositions
+            // 
+            this.listMapAddressPositions.FormattingEnabled = true;
+            this.listMapAddressPositions.ItemHeight = 19;
+            this.listMapAddressPositions.Location = new System.Drawing.Point(18, 62);
+            this.listMapAddressPositions.Name = "listMapAddressPositions";
+            this.listMapAddressPositions.ScrollAlwaysVisible = true;
+            this.listMapAddressPositions.Size = new System.Drawing.Size(243, 441);
+            this.listMapAddressPositions.TabIndex = 61;
+            this.listMapAddressPositions.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listMapAddressPositions_MouseDoubleClick);
+            // 
+            // btnClearMoveCmdInfo
+            // 
+            this.btnClearMoveCmdInfo.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnClearMoveCmdInfo.Location = new System.Drawing.Point(1145, 547);
+            this.btnClearMoveCmdInfo.Name = "btnClearMoveCmdInfo";
+            this.btnClearMoveCmdInfo.Size = new System.Drawing.Size(95, 40);
+            this.btnClearMoveCmdInfo.TabIndex = 54;
+            this.btnClearMoveCmdInfo.Text = "Clear";
+            this.btnClearMoveCmdInfo.UseVisualStyleBackColor = true;
+            this.btnClearMoveCmdInfo.Click += new System.EventHandler(this.btnClearMoveCmdInfo_Click);
+            // 
+            // label_DebugFormCreateCommandPositions
+            // 
+            this.label_DebugFormCreateCommandPositions.AutoSize = true;
+            this.label_DebugFormCreateCommandPositions.Font = new System.Drawing.Font("新細明體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label_DebugFormCreateCommandPositions.Location = new System.Drawing.Point(18, 25);
+            this.label_DebugFormCreateCommandPositions.Name = "label_DebugFormCreateCommandPositions";
+            this.label_DebugFormCreateCommandPositions.Size = new System.Drawing.Size(75, 19);
+            this.label_DebugFormCreateCommandPositions.TabIndex = 43;
+            this.label_DebugFormCreateCommandPositions.Text = "Positions";
+            // 
+            // tbC_Debug
+            // 
+            this.tbC_Debug.Controls.Add(this.tbP_CreateCommand);
+            this.tbC_Debug.Controls.Add(this.tbP_List);
+            this.tbC_Debug.Controls.Add(this.tbP_LogMessage);
+            this.tbC_Debug.Controls.Add(this.tP_Admin);
+            this.tbC_Debug.Controls.Add(this.tP_SettingConfigs);
+            this.tbC_Debug.Controls.Add(this.tP_CheckBarcodePosition);
+            this.tbC_Debug.Location = new System.Drawing.Point(2, 3);
+            this.tbC_Debug.Name = "tbC_Debug";
+            this.tbC_Debug.SelectedIndex = 0;
+            this.tbC_Debug.Size = new System.Drawing.Size(1291, 627);
+            this.tbC_Debug.TabIndex = 50;
+            // 
+            // tP_CheckBarcodePosition
+            // 
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_ComputeDelta);
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_Back);
+            this.tP_CheckBarcodePosition.Controls.Add(this.textBox3);
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_CheckTRStartStop);
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_Front);
+            this.tP_CheckBarcodePosition.Controls.Add(this.tB_MoveDistance);
+            this.tP_CheckBarcodePosition.Controls.Add(this.label_MoveDistance);
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_GTMove);
+            this.tP_CheckBarcodePosition.Controls.Add(this.tB_GTMoveAngle);
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_GTRight);
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_GTLeft);
+            this.tP_CheckBarcodePosition.Controls.Add(this.button_GT0);
+            this.tP_CheckBarcodePosition.Controls.Add(this.ucBox_WheelAngle);
+            this.tP_CheckBarcodePosition.Controls.Add(this.ucBox_BarcodePosition);
+            this.tP_CheckBarcodePosition.Controls.Add(this.ucBox_NowPosition);
+            this.tP_CheckBarcodePosition.Controls.Add(this.ucBox_NodePosition);
+            this.tP_CheckBarcodePosition.Location = new System.Drawing.Point(4, 22);
+            this.tP_CheckBarcodePosition.Name = "tP_CheckBarcodePosition";
+            this.tP_CheckBarcodePosition.Size = new System.Drawing.Size(1283, 601);
+            this.tP_CheckBarcodePosition.TabIndex = 5;
+            this.tP_CheckBarcodePosition.Text = "踩點專用";
+            this.tP_CheckBarcodePosition.UseVisualStyleBackColor = true;
+            // 
+            // button_ComputeDelta
+            // 
+            this.button_ComputeDelta.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_ComputeDelta.Location = new System.Drawing.Point(755, 206);
+            this.button_ComputeDelta.Name = "button_ComputeDelta";
+            this.button_ComputeDelta.Size = new System.Drawing.Size(75, 28);
+            this.button_ComputeDelta.TabIndex = 94;
+            this.button_ComputeDelta.Text = "計算";
+            this.button_ComputeDelta.UseVisualStyleBackColor = true;
+            // 
+            // button_Back
+            // 
+            this.button_Back.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_Back.Location = new System.Drawing.Point(816, 101);
+            this.button_Back.Name = "button_Back";
+            this.button_Back.Size = new System.Drawing.Size(58, 30);
+            this.button_Back.TabIndex = 93;
+            this.button_Back.Text = "往後";
+            this.button_Back.UseVisualStyleBackColor = true;
+            // 
+            // textBox3
+            // 
+            this.textBox3.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.textBox3.Location = new System.Drawing.Point(81, 253);
+            this.textBox3.MaxLength = 65550;
+            this.textBox3.Multiline = true;
+            this.textBox3.Name = "textBox3";
+            this.textBox3.ReadOnly = true;
+            this.textBox3.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox3.Size = new System.Drawing.Size(808, 89);
+            this.textBox3.TabIndex = 54;
+            // 
+            // button_CheckTRStartStop
+            // 
+            this.button_CheckTRStartStop.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_CheckTRStartStop.Location = new System.Drawing.Point(344, 35);
+            this.button_CheckTRStartStop.Name = "button_CheckTRStartStop";
+            this.button_CheckTRStartStop.Size = new System.Drawing.Size(75, 28);
+            this.button_CheckTRStartStop.TabIndex = 89;
+            this.button_CheckTRStartStop.Text = "開始";
+            this.button_CheckTRStartStop.UseVisualStyleBackColor = true;
+            this.button_CheckTRStartStop.Click += new System.EventHandler(this.button_CheckTRStartStop_Click);
+            // 
+            // button_Front
+            // 
+            this.button_Front.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_Front.Location = new System.Drawing.Point(737, 101);
+            this.button_Front.Name = "button_Front";
+            this.button_Front.Size = new System.Drawing.Size(58, 31);
+            this.button_Front.TabIndex = 88;
+            this.button_Front.Text = "往前";
+            this.button_Front.UseVisualStyleBackColor = true;
+            // 
+            // tB_MoveDistance
+            // 
+            this.tB_MoveDistance.Font = new System.Drawing.Font("新細明體", 14F);
+            this.tB_MoveDistance.Location = new System.Drawing.Point(608, 101);
+            this.tB_MoveDistance.Name = "tB_MoveDistance";
+            this.tB_MoveDistance.Size = new System.Drawing.Size(105, 30);
+            this.tB_MoveDistance.TabIndex = 87;
+            // 
+            // label_MoveDistance
+            // 
+            this.label_MoveDistance.AutoSize = true;
+            this.label_MoveDistance.Font = new System.Drawing.Font("新細明體", 14F);
+            this.label_MoveDistance.Location = new System.Drawing.Point(477, 107);
+            this.label_MoveDistance.Name = "label_MoveDistance";
+            this.label_MoveDistance.Size = new System.Drawing.Size(100, 19);
+            this.label_MoveDistance.TabIndex = 86;
+            this.label_MoveDistance.Text = "移動距離 : ";
+            // 
+            // button_GTMove
+            // 
+            this.button_GTMove.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_GTMove.Location = new System.Drawing.Point(1181, 32);
+            this.button_GTMove.Name = "button_GTMove";
+            this.button_GTMove.Size = new System.Drawing.Size(75, 31);
+            this.button_GTMove.TabIndex = 85;
+            this.button_GTMove.Text = "旋轉";
+            this.button_GTMove.UseVisualStyleBackColor = true;
+            this.button_GTMove.Click += new System.EventHandler(this.button_GTMove_Click);
+            // 
+            // tB_GTMoveAngle
+            // 
+            this.tB_GTMoveAngle.Font = new System.Drawing.Font("新細明體", 14F);
+            this.tB_GTMoveAngle.Location = new System.Drawing.Point(1084, 32);
+            this.tB_GTMoveAngle.Name = "tB_GTMoveAngle";
+            this.tB_GTMoveAngle.Size = new System.Drawing.Size(79, 30);
+            this.tB_GTMoveAngle.TabIndex = 84;
+            // 
+            // button_GTRight
+            // 
+            this.button_GTRight.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_GTRight.Location = new System.Drawing.Point(952, 32);
+            this.button_GTRight.Name = "button_GTRight";
+            this.button_GTRight.Size = new System.Drawing.Size(75, 31);
+            this.button_GTRight.TabIndex = 83;
+            this.button_GTRight.Text = "-90";
+            this.button_GTRight.UseVisualStyleBackColor = true;
+            this.button_GTRight.Click += new System.EventHandler(this.button_GTRight_Click);
+            // 
+            // button_GTLeft
+            // 
+            this.button_GTLeft.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_GTLeft.Location = new System.Drawing.Point(845, 32);
+            this.button_GTLeft.Name = "button_GTLeft";
+            this.button_GTLeft.Size = new System.Drawing.Size(75, 31);
+            this.button_GTLeft.TabIndex = 82;
+            this.button_GTLeft.Text = "90";
+            this.button_GTLeft.UseVisualStyleBackColor = true;
+            this.button_GTLeft.Click += new System.EventHandler(this.button_GTLeft_Click);
+            // 
+            // button_GT0
+            // 
+            this.button_GT0.Font = new System.Drawing.Font("新細明體", 14F);
+            this.button_GT0.Location = new System.Drawing.Point(734, 32);
+            this.button_GT0.Name = "button_GT0";
+            this.button_GT0.Size = new System.Drawing.Size(75, 31);
+            this.button_GT0.TabIndex = 81;
+            this.button_GT0.Text = "0";
+            this.button_GT0.UseVisualStyleBackColor = true;
+            this.button_GT0.Click += new System.EventHandler(this.button_GT0_Click);
+            // 
+            // ucBox_WheelAngle
+            // 
+            this.ucBox_WheelAngle.Location = new System.Drawing.Point(446, 35);
+            this.ucBox_WheelAngle.Margin = new System.Windows.Forms.Padding(8);
+            this.ucBox_WheelAngle.Name = "ucBox_WheelAngle";
+            this.ucBox_WheelAngle.Size = new System.Drawing.Size(267, 27);
+            this.ucBox_WheelAngle.TabIndex = 92;
+            this.ucBox_WheelAngle.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucBox_WheelAngle.TagName = "label1";
+            this.ucBox_WheelAngle.TagValue = "";
+            // 
+            // ucBox_BarcodePosition
+            // 
+            this.ucBox_BarcodePosition.Location = new System.Drawing.Point(32, 158);
+            this.ucBox_BarcodePosition.Margin = new System.Windows.Forms.Padding(8);
+            this.ucBox_BarcodePosition.Name = "ucBox_BarcodePosition";
+            this.ucBox_BarcodePosition.Size = new System.Drawing.Size(267, 27);
+            this.ucBox_BarcodePosition.TabIndex = 91;
+            this.ucBox_BarcodePosition.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucBox_BarcodePosition.TagName = "label1";
+            this.ucBox_BarcodePosition.TagValue = "";
+            // 
+            // ucBox_NowPosition
+            // 
+            this.ucBox_NowPosition.Location = new System.Drawing.Point(32, 96);
+            this.ucBox_NowPosition.Margin = new System.Windows.Forms.Padding(8);
+            this.ucBox_NowPosition.Name = "ucBox_NowPosition";
+            this.ucBox_NowPosition.Size = new System.Drawing.Size(267, 27);
+            this.ucBox_NowPosition.TabIndex = 90;
+            this.ucBox_NowPosition.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucBox_NowPosition.TagName = "label1";
+            this.ucBox_NowPosition.TagValue = "";
+            // 
+            // ucBox_NodePosition
+            // 
+            this.ucBox_NodePosition.Location = new System.Drawing.Point(32, 36);
+            this.ucBox_NodePosition.Margin = new System.Windows.Forms.Padding(8);
+            this.ucBox_NodePosition.Name = "ucBox_NodePosition";
+            this.ucBox_NodePosition.Size = new System.Drawing.Size(267, 27);
+            this.ucBox_NodePosition.TabIndex = 79;
+            this.ucBox_NodePosition.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucBox_NodePosition.TagName = "label1";
+            this.ucBox_NodePosition.TagValue = "";
+            // 
+            // tP_SettingConfigs
+            // 
+            this.tP_SettingConfigs.Controls.Add(this.tC_Configs);
+            this.tP_SettingConfigs.Location = new System.Drawing.Point(4, 22);
+            this.tP_SettingConfigs.Name = "tP_SettingConfigs";
+            this.tP_SettingConfigs.Size = new System.Drawing.Size(1283, 601);
+            this.tP_SettingConfigs.TabIndex = 6;
+            this.tP_SettingConfigs.Text = "Configs";
+            this.tP_SettingConfigs.UseVisualStyleBackColor = true;
+            // 
+            // tC_Configs
+            // 
+            this.tC_Configs.Controls.Add(this.tB_MoveControlConst);
+            this.tC_Configs.Controls.Add(this.tB_MoveControlDictory);
+            this.tC_Configs.Controls.Add(this.tB_MoveControlTurn);
+            this.tC_Configs.Location = new System.Drawing.Point(3, 3);
+            this.tC_Configs.Name = "tC_Configs";
+            this.tC_Configs.SelectedIndex = 0;
+            this.tC_Configs.Size = new System.Drawing.Size(1274, 595);
+            this.tC_Configs.TabIndex = 0;
+            // 
+            // tB_MoveControlConst
+            // 
+            this.tB_MoveControlConst.Location = new System.Drawing.Point(4, 22);
+            this.tB_MoveControlConst.Name = "tB_MoveControlConst";
+            this.tB_MoveControlConst.Padding = new System.Windows.Forms.Padding(3);
+            this.tB_MoveControlConst.Size = new System.Drawing.Size(1266, 569);
+            this.tB_MoveControlConst.TabIndex = 0;
+            this.tB_MoveControlConst.Text = "MoveControl";
+            this.tB_MoveControlConst.UseVisualStyleBackColor = true;
+            // 
+            // tB_MoveControlDictory
+            // 
+            this.tB_MoveControlDictory.Location = new System.Drawing.Point(4, 22);
+            this.tB_MoveControlDictory.Name = "tB_MoveControlDictory";
+            this.tB_MoveControlDictory.Padding = new System.Windows.Forms.Padding(3);
+            this.tB_MoveControlDictory.Size = new System.Drawing.Size(1266, 569);
+            this.tB_MoveControlDictory.TabIndex = 1;
+            this.tB_MoveControlDictory.Text = "MoveControlDictory";
+            this.tB_MoveControlDictory.UseVisualStyleBackColor = true;
+            // 
+            // tB_MoveControlTurn
+            // 
+            this.tB_MoveControlTurn.Location = new System.Drawing.Point(4, 22);
+            this.tB_MoveControlTurn.Name = "tB_MoveControlTurn";
+            this.tB_MoveControlTurn.Size = new System.Drawing.Size(1266, 569);
+            this.tB_MoveControlTurn.TabIndex = 2;
+            this.tB_MoveControlTurn.Text = "MoveControlTurn";
+            this.tB_MoveControlTurn.UseVisualStyleBackColor = true;
             // 
             // MoveCommandDebugModeForm
             // 
@@ -1335,145 +1353,131 @@ namespace Mirle.Agv.View
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MoveCommandDebugModeForm";
-            this.Text = "MoveCommandMonitor";
+            this.Text = "MoveControlDebugForm";
             this.Load += new System.EventHandler(this.MoveCommandMonitor_Load);
-            this.Leave += new System.EventHandler(this.MoveCommandDebugMode_Leave);
-            this.tbC_Debug.ResumeLayout(false);
-            this.tbP_CreateCommand.ResumeLayout(false);
-            this.tbP_CreateCommand.PerformLayout();
-            this.tbP_List.ResumeLayout(false);
-            this.tbP_List.PerformLayout();
-            this.tbP_Debug.ResumeLayout(false);
-            this.tbP_Debug.PerformLayout();
-            this.tbP_DebugCSV.ResumeLayout(false);
-            this.tbP_DebugCSV.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_CSVList)).EndInit();
             this.tP_Admin.ResumeLayout(false);
             this.tP_Admin.PerformLayout();
+            this.tbP_LogMessage.ResumeLayout(false);
+            this.tbP_LogMessage.PerformLayout();
+            this.tbP_List.ResumeLayout(false);
+            this.tbP_List.PerformLayout();
+            this.tbP_CreateCommand.ResumeLayout(false);
+            this.tbP_CreateCommand.PerformLayout();
+            this.tbC_Debug.ResumeLayout(false);
+            this.tP_CheckBarcodePosition.ResumeLayout(false);
+            this.tP_CheckBarcodePosition.PerformLayout();
+            this.tP_SettingConfigs.ResumeLayout(false);
+            this.tC_Configs.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.ListBox CommandList;
-        private UcLabelTextBox ucLabelTextBox1;
-        private System.Windows.Forms.ListBox ReserveList;
-        private System.Windows.Forms.Label label_CommandList;
-        private System.Windows.Forms.Label label_ReserveList;
-        private System.Windows.Forms.Button button_SendList;
-        private System.Windows.Forms.Button button_StopMove;
-        private System.Windows.Forms.Button button_ClearCommand;
         private System.Windows.Forms.Timer timer_UpdateData;
-        private System.Windows.Forms.TabControl tbC_Debug;
-        private System.Windows.Forms.TabPage tbP_CreateCommand;
+        private System.Windows.Forms.TextBox tbxLogView_MoveControlDebugMessage;
+        private System.Windows.Forms.TabPage tP_Admin;
+        private System.Windows.Forms.Button button_SimulationModeChange;
+        private System.Windows.Forms.Label label_SimulationMode;
+        private System.Windows.Forms.TabPage tbP_LogMessage;
+        private System.Windows.Forms.Label label_ElmoMessage;
+        private System.Windows.Forms.TextBox tbxLogView_CreateCommandMessage;
+        private System.Windows.Forms.TextBox tbxLogView_ElmoMessage;
+        private System.Windows.Forms.Label label_CreateCommandMessage;
         private System.Windows.Forms.TabPage tbP_List;
+        private System.Windows.Forms.Button button_SimulateState;
+        private System.Windows.Forms.Label label_Psuse;
+        private System.Windows.Forms.Label label_WaitReserveIndex;
+        private System.Windows.Forms.Label label_BeamState;
+        private System.Windows.Forms.Label label_BumpState;
+        private System.Windows.Forms.Label label_Psuse_Label;
+        private System.Windows.Forms.Label label_WaitReserveIndex_Label;
+        private System.Windows.Forms.Label label_BeamState_Label;
+        private System.Windows.Forms.Label label_BumpState_Label;
+        private System.Windows.Forms.Label label_SensorState_Label;
+        private System.Windows.Forms.Label label_LoopTime_Label;
+        private System.Windows.Forms.Label label_LoopTime;
+        private System.Windows.Forms.Label label_SensorState;
+        private System.Windows.Forms.Label label_AlarmMessage;
+        private System.Windows.Forms.Label label_AlarmMessageName;
+        private System.Windows.Forms.Label label_MoveCommandID;
+        private System.Windows.Forms.Label label_MoveCommandIDLabel;
+        private System.Windows.Forms.CheckBox cB_GetAllReserve;
+        private System.Windows.Forms.Button button_ClearCommand;
+        private System.Windows.Forms.Label label_ReserveList;
+        private System.Windows.Forms.Label label_CommandList;
+        private UcLabelTextBox ucLabelTB_EncoderPosition;
+        private UcLabelTextBox ucLabelTB_Velocity;
+        private UcLabelTextBox ucLabelTB_EncoderOffset;
+        private UcLabelTextBox ucLabelTB_ElmoEncoder;
+        private UcLabelTextBox ucLabelTtB_CommandListState;
+        private UcLabelTextBox ucLabelTB_BarcodePosition;
+        private UcLabelTextBox ucLabelTB_RealPosition;
+        private UcLabelTextBox ucLabelTB_Delta;
+        private UcLabelTextBox ucLabelTB_RealEncoder;
+        private System.Windows.Forms.ListBox ReserveList;
+        private System.Windows.Forms.Button button_SendList;
+        private UcLabelTextBox ucLabelTextBox1;
+        private System.Windows.Forms.ListBox CommandList;
+        private System.Windows.Forms.Button button_StopMove;
+        private System.Windows.Forms.TabPage tbP_CreateCommand;
+        private System.Windows.Forms.CheckBox cB_OverrideTest;
+        private System.Windows.Forms.Button button_FromTo;
+        private System.Windows.Forms.Label label_FormTo;
+        private System.Windows.Forms.Button button_ReveseAddressList;
+        private System.Windows.Forms.Button button_RunTimesOdd;
+        private System.Windows.Forms.Button button_RunTimesEven;
+        private System.Windows.Forms.TextBox tB_RunTimes;
+        private System.Windows.Forms.TextBox tB_HorizontalVelocity;
+        private System.Windows.Forms.TextBox tB_LineVelocity;
+        private System.Windows.Forms.TextBox tB_ChangeVelocity;
+        private System.Windows.Forms.TextBox tB_PositionY;
+        private System.Windows.Forms.TextBox tB_PositionX;
+        private System.Windows.Forms.Label label_RunTimes;
+        private System.Windows.Forms.Label label_HorizontalVelocity;
+        private System.Windows.Forms.Label label_LineVelocity;
+        private System.Windows.Forms.ComboBox cB_ChangeAction;
+        private System.Windows.Forms.Label label_DebugFormCreateCommandVelocitys;
+        private System.Windows.Forms.Label label_DebugFormCreateCommandActions;
+        private System.Windows.Forms.Button Button_AutoCreate;
+        private System.Windows.Forms.Button button_AddReadPosition;
+        private System.Windows.Forms.Label label_LockResult;
+        private UcLabelTextBox ucLabelTB_CreateCommandState;
+        private UcLabelTextBox ucLabelTB_CreateCommand_BarcodePosition;
         private System.Windows.Forms.Button button_DebugModeSend;
         private System.Windows.Forms.ListBox listCmdSpeedLimits;
-        private System.Windows.Forms.ListBox listMapSpeedLimits;
         private System.Windows.Forms.ListBox listCmdAddressActions;
-        private System.Windows.Forms.ListBox listMapAddressActions;
         private System.Windows.Forms.ListBox listCmdAddressPositions;
-        private System.Windows.Forms.Button btnAddressPositionsClear;
         private System.Windows.Forms.Button btnRemoveLastAddressPosition;
         private System.Windows.Forms.Button btnPositionXY;
         private System.Windows.Forms.Button btnAddAddressPosition;
         private System.Windows.Forms.ListBox listMapAddressPositions;
         private System.Windows.Forms.Button btnClearMoveCmdInfo;
-        private System.Windows.Forms.Button btnClearSpeedLimit;
-        private System.Windows.Forms.Button btnRemoveSpeedLimit;
-        private System.Windows.Forms.Button btnAddSpeedLimit;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button btnClearAddressActions;
-        private System.Windows.Forms.Button btnRemoveLastAddressAction;
-        private System.Windows.Forms.Button btnAddAddressAction;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TabPage tbP_Debug;
-        private UcLabelTextBox ucLabelTB_BarcodePosition;
-        private UcLabelTextBox ucLabelTB_RealPosition;
-        private UcLabelTextBox ucLabelTB_Delta;
-        private UcLabelTextBox ucLabelTB_RealEncoder;
-        private UcLabelTextBox ucLabelTB_CreateCommand_BarcodePosition;
-        private System.Windows.Forms.TextBox tB_PositionY;
-        private System.Windows.Forms.TextBox tB_PositionX;
-        private UcLabelTextBox ucLabelTB_CreateCommandState;
-        private UcLabelTextBox ucLabelTtB_CommandListState;
-        private System.Windows.Forms.ListBox DebugList;
-        private System.Windows.Forms.TabPage tbP_DebugCSV;
-        private System.Windows.Forms.Button button_DebugListClear;
-        private System.Windows.Forms.Label label_DebugList;
-        private System.Windows.Forms.Button button_DebugCSVClear;
-        private System.Windows.Forms.Label label_DebugCSVList;
-        private System.Windows.Forms.Button button_DebugCSV;
-        private System.Windows.Forms.DataGridView dataGridView_CSVList;
-        private System.Windows.Forms.Button button_CSVListShowAll;
-        private System.Windows.Forms.Button button_CSVListDisViewRang;
-        private System.Windows.Forms.TabPage tP_Admin;
-        private System.Windows.Forms.Button button_SimulationModeChange;
-        private System.Windows.Forms.Label label_SimulationMode;
-        private System.Windows.Forms.CheckBox cB_GetAllReserve;
-        private UcLabelTextBox ucLabelTB_Velocity;
-        private UcLabelTextBox ucLabelTB_EncoderOffset;
-        private UcLabelTextBox ucLabelTB_ElmoEncoder;
-        private System.Windows.Forms.Label label_MoveCommandID;
-        private System.Windows.Forms.Label label_MoveCommandIDLabel;
-        private System.Windows.Forms.Label label_AlarmMessage;
-        private System.Windows.Forms.Label label_AlarmMessageName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn time;
-        private System.Windows.Forms.DataGridViewTextBoxColumn moveState;
-        private System.Windows.Forms.DataGridViewTextBoxColumn realEncoder;
-        private System.Windows.Forms.DataGridViewTextBoxColumn nextCommand;
-        private System.Windows.Forms.DataGridViewTextBoxColumn triggerEncoder;
-        private System.Windows.Forms.DataGridViewTextBoxColumn delta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn offset;
-        private System.Windows.Forms.DataGridViewTextBoxColumn realX;
-        private System.Windows.Forms.DataGridViewTextBoxColumn realY;
-        private System.Windows.Forms.DataGridViewTextBoxColumn barcodeX;
-        private System.Windows.Forms.DataGridViewTextBoxColumn barcodeY;
-        private System.Windows.Forms.DataGridViewTextBoxColumn encoderPositionX;
-        private System.Windows.Forms.DataGridViewTextBoxColumn encoderPositionY;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LCount;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LGetDataTime;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LScanTime;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LMapX;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LMapY;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LMapTheta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LBarcodeAngle;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LDelta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LTheta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LBarcode1ID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000LBarcode2ID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RCount;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RGetDataTime;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RScanTime;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RMapX;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RMapY;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RMapTheta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcodeAngle;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RDelta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RTheta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcode1ID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sr2000RBarcode2ID;
-        private UcLabelTextBox ucLabelTB_EncoderPosition;
-        private System.Windows.Forms.TextBox tbxLogView_MoveControlDebugMessage;
-        private System.Windows.Forms.Label label_SensorState;
-        private System.Windows.Forms.Label label_LockResult;
-        private System.Windows.Forms.Label label_SensorState_Label;
-        private System.Windows.Forms.Button button_AddReadPosition;
-        private System.Windows.Forms.Label label_LoopTime_Label;
-        private System.Windows.Forms.Label label_LoopTime;
-        private System.Windows.Forms.Label label_FlowStop;
-        private System.Windows.Forms.Label label_Psuse;
-        private System.Windows.Forms.Label label_WaitReserveIndex;
-        private System.Windows.Forms.Label label_BeamState;
-        private System.Windows.Forms.Label label_BumpState;
-        private System.Windows.Forms.Label label_FlowStop_Label;
-        private System.Windows.Forms.Label label_Psuse_Label;
-        private System.Windows.Forms.Label label_WaitReserveIndex_Label;
-        private System.Windows.Forms.Label label_BeamState_Label;
-        private System.Windows.Forms.Label label_BumpState_Label;
-        private System.Windows.Forms.Button button_SimulateState;
+        private System.Windows.Forms.Label label_DebugFormCreateCommandPositions;
+        private System.Windows.Forms.TabControl tbC_Debug;
+        private System.Windows.Forms.TabPage tP_CheckBarcodePosition;
+        private System.Windows.Forms.TextBox textBox3;
+        private UcLabelTextBox ucBox_BarcodePosition;
+        private UcLabelTextBox ucBox_NowPosition;
+        private System.Windows.Forms.Button button_CheckTRStartStop;
+        private System.Windows.Forms.Button button_Front;
+        private System.Windows.Forms.TextBox tB_MoveDistance;
+        private System.Windows.Forms.Label label_MoveDistance;
+        private System.Windows.Forms.Button button_GTMove;
+        private System.Windows.Forms.TextBox tB_GTMoveAngle;
+        private System.Windows.Forms.Button button_GTRight;
+        private System.Windows.Forms.Button button_GTLeft;
+        private System.Windows.Forms.Button button_GT0;
+        private UcLabelTextBox ucBox_NodePosition;
+        private UcLabelTextBox ucBox_WheelAngle;
+        private System.Windows.Forms.Button button_Back;
+        private System.Windows.Forms.Button button_ComputeDelta;
+        private System.Windows.Forms.Button button_CreateCommandList_StopAndClear;
+        private System.Windows.Forms.Button button_CreateCommandList_Stop;
+        private System.Windows.Forms.TabPage tP_SettingConfigs;
+        private System.Windows.Forms.TabControl tC_Configs;
+        private System.Windows.Forms.TabPage tB_MoveControlConst;
+        private System.Windows.Forms.TabPage tB_MoveControlDictory;
+        private System.Windows.Forms.TabPage tB_MoveControlTurn;
     }
 }

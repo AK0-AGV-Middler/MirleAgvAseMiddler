@@ -22,22 +22,34 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     MoveCmdInfo moveCmd = (MoveCmdInfo)curTransferStep;
                     if (moveCmd.MovingSections.Count > 0)
                     {
-                        if (!mainFlowHandler.IsOverrideCanceling)
+                        if (mainFlowHandler.StopCharge())
                         {
-                            if (mainFlowHandler.StopCharge())
+                            if (mainFlowHandler.IsOverrideMove)
+                            {
+                                if (mainFlowHandler.CallMoveControlOverride(moveCmd))
+                                {
+                                    mainFlowHandler.IsMoveEnd = false;
+                                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
+                                }
+                            }
+                            else if (mainFlowHandler.IsAvoidMove)
+                            {
+                                if (mainFlowHandler.CallMoveControlAvoid(moveCmd))
+                                {
+                                    mainFlowHandler.IsMoveEnd = false;
+                                    mainFlowHandler.PrepareForAskingReserve(moveCmd);
+                                }
+                            }
+                            else
                             {
                                 if (mainFlowHandler.CallMoveControlWork(moveCmd))
                                 {
-                                    mainFlowHandler.CmdEndVehiclePosition.IsMoveEnd = false;
+                                    mainFlowHandler.IsMoveEnd = false;
                                     mainFlowHandler.PrepareForAskingReserve(moveCmd);
                                 }
                             }
                         }
-                        else
-                        {
-                            mainFlowHandler.GoNextTransferStep = true;
-                        }
-                        
+
                         break;
                     }
                     else

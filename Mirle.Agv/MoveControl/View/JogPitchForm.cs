@@ -16,8 +16,9 @@ namespace Mirle.Agv.View
 {
     public partial class JogPitchForm : Form
     {
+        public JogPitchData jogPitchData = new JogPitchData();
+
         private Thread ontimeRevise;
-        private Thread homeThread;
         private EnumJogPitchMode mode;
         private AgvMoveRevise agvRevise;
         private bool changingMode = false;
@@ -29,8 +30,13 @@ namespace Mirle.Agv.View
                                                 EnumAxis.VXFL, EnumAxis.VXFR, EnumAxis.VXRL, EnumAxis.VXRR,
                                                 EnumAxis.VTFL, EnumAxis.VTFR, EnumAxis.VTRL, EnumAxis.VTRR,
                                                 EnumAxis.GX, EnumAxis.GT};
-        private bool homing = false;
         private bool formEnable = true;
+        public bool CanAuto { get; set; }
+        public string CantAutoResult { get; set; } = "";
+
+        private int retryTimes = 2;
+        private string elmoAllResetMessage = "";
+        private string temp;
 
         public JogPitchForm(MoveControlHandler moveControl)
         {
@@ -92,23 +98,133 @@ namespace Mirle.Agv.View
             button_JogPitchHide.Enabled = true;
         }
 
+        private void UpdateCanAuto()
+        {
+            int errorcode = 0;
+            bool canAuto = true;
+            string cantAutoResult = "";
+
+
+            label_AGVStateValue.Text = moveControl.MoveState.ToString();
+            label_AGVStateValue.ForeColor = (label_AGVStateValue.Text == EnumMoveState.Idle.ToString() ? Color.Green : Color.Red);
+            if (label_AGVStateValue.Text != EnumMoveState.Idle.ToString())
+            {
+                canAuto = false;
+
+
+                if (cantAutoResult == "")
+                {
+                    if (label_AGVStateValue.Text == EnumMoveState.Error.ToString())
+                        cantAutoResult = "AGV Error狀態!";
+                    else
+                        cantAutoResult = "流程移動中!";
+                }
+            }
+
+            if (moveControl.location.Real == null)
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "迷航中,沒讀取到鐵Barcode!";
+
+                label_ReadIronValue.Text = "無";
+                label_ReadIronValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_ReadIronValue.Text = "有";
+                label_ReadIronValue.ForeColor = Color.Green;
+            }
+
+            if (Vehicle.Instance.VehicleLocation.LastAddress.Id == "" || Vehicle.Instance.VehicleLocation.LastSection.Id == "")
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "迷航中,認不出目前所在Address、Section!";
+
+                label_CheckAddressSectionValue.Text = "-----";
+                label_CheckAddressSectionValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_CheckAddressSectionValue.Text = Vehicle.Instance.VehicleLocation.LastAddress.Id;
+                label_CheckAddressSectionValue.ForeColor = Color.Green;
+            }
+
+            if (!moveControl.elmoDriver.CheckAxisNoError(ref errorcode))
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "有軸異常!";
+
+                label_AxisErrorValue.Text = "有";
+                label_AxisErrorValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_AxisErrorValue.Text = "無";
+                label_AxisErrorValue.ForeColor = Color.Green;
+            }
+
+            if (!moveControl.elmoDriver.ElmoAxisTypeAllServoOn(EnumAxisType.Turn))
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "請Enable所有軸!";
+
+                label_TurnServoOnValue.Text = "無";
+                label_TurnServoOnValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_TurnServoOnValue.Text = "有";
+                label_TurnServoOnValue.ForeColor = Color.Green;
+            }
+
+            if (!moveControl.elmoDriver.MoveAxisStop())
+            {
+                if (cantAutoResult == "")
+                    cantAutoResult = "AGV移動中!";
+
+                label_MoveStopValue.Text = "Moving";
+                label_MoveStopValue.ForeColor = Color.Red;
+                canAuto = false;
+            }
+            else
+            {
+                label_MoveStopValue.Text = "Stop";
+                label_MoveStopValue.ForeColor = Color.Green;
+            }
+
+            label_CanAutoValue.Text = (canAuto ? "可以" : "不能");
+            label_CanAutoValue.ForeColor = (canAuto ? Color.Green : Color.Red);
+
+            CanAuto = canAuto;
+            CantAutoResult = cantAutoResult;
+        }
+
         private void timerUpdate_Tick(object sender, EventArgs e)
         {
             if (moveControl == null)
                 return;
 
+            if (Vehicle.Instance.AutoState == EnumAutoState.Manual)
+                UpdateCanAuto();
+            
             #region Update Sr2000
-            AGVPosition agvPosition;
-            ThetaSectionDeviation thetaSectionDeviation;
+            AGVPosition agvPositionL = null;
+            AGVPosition agvPositionR = null;
+            ThetaSectionDeviation thetaSectionDeviationL = null;
+            ThetaSectionDeviation thetaSectionDeviationR = null;
 
             if (moveControl.DriverSr2000List.Count > 0)
             {
-                agvPosition = moveControl.DriverSr2000List[0].GetAGVPosition();
-                if (agvPosition != null)
+                agvPositionL = moveControl.DriverSr2000List[0].GetAGVPosition();
+                if (agvPositionL != null)
                 {
-                    tB_JogPitch_MapX_L.Text = agvPosition.Position.X.ToString("0.0");
-                    tB_JogPitch_MapY_L.Text = agvPosition.Position.Y.ToString("0.0");
-                    tB_JogPitch_MapTheta_L.Text = agvPosition.AGVAngle.ToString("0.0");
+                    tB_JogPitch_MapX_L.Text = agvPositionL.Position.X.ToString("0.0");
+                    tB_JogPitch_MapY_L.Text = agvPositionL.Position.Y.ToString("0.0");
+                    tB_JogPitch_MapTheta_L.Text = agvPositionL.AGVAngle.ToString("0.0");
                 }
                 else
                 {
@@ -117,11 +233,11 @@ namespace Mirle.Agv.View
                     tB_JogPitch_MapTheta_L.Text = "-----";
                 }
 
-                thetaSectionDeviation = moveControl.DriverSr2000List[0].GetThetaSectionDeviation();
-                if (thetaSectionDeviation != null)
+                thetaSectionDeviationL = moveControl.DriverSr2000List[0].GetThetaSectionDeviation();
+                if (thetaSectionDeviationL != null)
                 {
-                    tB_JogPitch_SectionDeviation_L.Text = thetaSectionDeviation.SectionDeviation.ToString("0.0");
-                    tB_JogPitch_Theta_L.Text = thetaSectionDeviation.Theta.ToString("0.0");
+                    tB_JogPitch_SectionDeviation_L.Text = thetaSectionDeviationL.SectionDeviation.ToString("0.0");
+                    tB_JogPitch_Theta_L.Text = thetaSectionDeviationL.Theta.ToString("0.0");
                 }
                 else
                 {
@@ -132,12 +248,12 @@ namespace Mirle.Agv.View
 
             if (moveControl.DriverSr2000List.Count > 1)
             {
-                agvPosition = moveControl.DriverSr2000List[1].GetAGVPosition();
-                if (agvPosition != null)
+                agvPositionR = moveControl.DriverSr2000List[1].GetAGVPosition();
+                if (agvPositionR != null)
                 {
-                    tB_JogPitch_MapX_R.Text = agvPosition.Position.X.ToString("0.0");
-                    tB_JogPitch_MapY_R.Text = agvPosition.Position.Y.ToString("0.0");
-                    tB_JogPitch_MapTheta_R.Text = agvPosition.AGVAngle.ToString("0.0");
+                    tB_JogPitch_MapX_R.Text = agvPositionR.Position.X.ToString("0.0");
+                    tB_JogPitch_MapY_R.Text = agvPositionR.Position.Y.ToString("0.0");
+                    tB_JogPitch_MapTheta_R.Text = agvPositionR.AGVAngle.ToString("0.0");
                 }
                 else
                 {
@@ -146,17 +262,59 @@ namespace Mirle.Agv.View
                     tB_JogPitch_MapTheta_R.Text = "-----";
                 }
 
-                thetaSectionDeviation = moveControl.DriverSr2000List[1].GetThetaSectionDeviation();
-                if (thetaSectionDeviation != null)
+                thetaSectionDeviationR = moveControl.DriverSr2000List[1].GetThetaSectionDeviation();
+                if (thetaSectionDeviationR != null)
                 {
-                    tB_JogPitch_SectionDeviation_R.Text = thetaSectionDeviation.SectionDeviation.ToString("0.0");
-                    tB_JogPitch_Theta_R.Text = thetaSectionDeviation.Theta.ToString("0.0");
+                    tB_JogPitch_SectionDeviation_R.Text = thetaSectionDeviationR.SectionDeviation.ToString("0.0");
+                    tB_JogPitch_Theta_R.Text = thetaSectionDeviationR.Theta.ToString("0.0");
                 }
                 else
                 {
                     tB_JogPitch_SectionDeviation_R.Text = "-----";
                     tB_JogPitch_Theta_R.Text = "-----";
                 }
+            }
+
+            if ((agvPositionL != null && agvPositionL.Type == EnumBarcodeMaterial.Iron) ||
+                (agvPositionR != null && agvPositionR.Type == EnumBarcodeMaterial.Iron))
+            {
+                if (agvPositionL != null && agvPositionL.Type == EnumBarcodeMaterial.Iron)
+                {
+                    jogPitchData.MapX = agvPositionL.Position.X;
+                    jogPitchData.MapY = agvPositionL.Position.Y;
+                    jogPitchData.MapTheta = agvPositionL.AGVAngle;
+                }
+                else
+                {
+                    jogPitchData.MapX = agvPositionR.Position.X;
+                    jogPitchData.MapY = agvPositionR.Position.Y;
+                    jogPitchData.MapTheta = agvPositionR.AGVAngle;
+                }
+            }
+            else
+            {
+                jogPitchData.MapX = 0;
+                jogPitchData.MapY = 0;
+                jogPitchData.MapTheta = 0;
+            }
+
+            if (thetaSectionDeviationL != null || thetaSectionDeviationR != null)
+            {
+                if (thetaSectionDeviationL != null)
+                {
+                    jogPitchData.SectionDeviation = thetaSectionDeviationL.SectionDeviation;
+                    jogPitchData.Theta = thetaSectionDeviationL.Theta;
+                }
+                else
+                {
+                    jogPitchData.SectionDeviation = thetaSectionDeviationR.SectionDeviation;
+                    jogPitchData.Theta = thetaSectionDeviationR.Theta;
+                }
+            }
+            else
+            {
+                jogPitchData.SectionDeviation = 0;
+                jogPitchData.Theta = 0;
             }
             #endregion
 
@@ -168,6 +326,19 @@ namespace Mirle.Agv.View
             for (int i = 0; i < AxisList.Count(); i++)
             {
                 tempData = moveControl.elmoDriver.ElmoGetFeedbackData(AxisList[i]);
+
+                try
+                {
+                    if (AxisList[i] == EnumAxis.GX || AxisList[i] == EnumAxis.GT)
+                        tempData.StandStill = moveControl.elmoDriver.MoveCompelete(AxisList[i]);
+
+                    jogPitchData.AxisData[AxisList[i]] = tempData;
+                }
+                catch
+                {
+                    jogPitchData.AxisData[AxisList[i]] = null;
+                }
+
                 if (tempData != null)
                 {
                     position = tempData.Feedback_Position.ToString("0");
@@ -185,7 +356,7 @@ namespace Mirle.Agv.View
 
             if (changingMode)
             {
-                if (moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && !homing)
+                if (moveControl.elmoDriver.MoveAxisStop() && moveControl.elmoDriver.TurnAxisStop())
                 {
                     changingMode = false;
                     EnalbeDisableButton(true);
@@ -201,9 +372,9 @@ namespace Mirle.Agv.View
                 lockResult = "Lock Result : Elmo drive連線失敗!";
             else if (Vehicle.Instance.AutoState != EnumAutoState.Manual)
                 lockResult = "Lock Result : AutoMode中!";
-            else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
-                     Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
-                lockResult = "Lock Result : 主流程動作中!";
+            //else if (Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.None &&
+            //         Vehicle.Instance.VisitTransferStepsStatus != EnumThreadStatus.Stop)
+            //    lockResult = "Lock Result : 主流程動作中!";
             else if (moveControl.MoveState != EnumMoveState.Idle)
                 lockResult = "Lock Result : MoveState動作中!";
             else if (button_Skip.Text != "強制\r\n手動" && moveControl.IsCharging())
@@ -254,7 +425,7 @@ namespace Mirle.Agv.View
             button_JogPitch_ForwardWheel.Enabled = flag;
             button_JogPitch_BackwardWheel.Enabled = flag;
             button_JogPitch_SpinTurn.Enabled = flag;
-            button_JogPitch_Home.Enabled = flag;
+            button_JogpitchResetAll.Enabled = flag;
 
             if (flag)
             {
@@ -344,14 +515,8 @@ namespace Mirle.Agv.View
                 moveControl.moveControlConfig.Turn.Jerk);
         }
 
-        private void button_JogPitch_STOP_Click(object sender, EventArgs e)
+        public void button_JogPitch_STOP_Click(object sender, EventArgs e)
         {
-            if (homing)
-            {
-                homeThread.Abort();
-                homing = false;
-            }
-
             moveControl.elmoDriver.ElmoStop(EnumAxis.VTFL);
             moveControl.elmoDriver.ElmoStop(EnumAxis.VTFR);
             moveControl.elmoDriver.ElmoStop(EnumAxis.VTRL);
@@ -369,22 +534,22 @@ namespace Mirle.Agv.View
             ChangeMode(EnumJogPitchMode.Normal);
         }
 
-        private void button_JogPitch_Normal_Click(object sender, EventArgs e)
+        public void button_JogPitch_Normal_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.Normal);
         }
 
-        private void button_JogPitch_ForwardWheel_Click(object sender, EventArgs e)
+        public void button_JogPitch_ForwardWheel_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.ForwardWheel);
         }
 
-        private void button_JogPitch_BackwardWheel_Click(object sender, EventArgs e)
+        public void button_JogPitch_BackwardWheel_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.BackwardWheel);
         }
 
-        private void button_JogPitch_SpinTurn_Click(object sender, EventArgs e)
+        public void button_JogPitch_SpinTurn_Click(object sender, EventArgs e)
         {
             ChangeMode(EnumJogPitchMode.SpinTurn);
         }
@@ -412,7 +577,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void button_JogPitch_Turn_MouseUp(object sender, MouseEventArgs e)
+        public void button_JogPitch_Turn_MouseUp(object sender, MouseEventArgs e)
         {
             moveControl.elmoDriver.ElmoStop(EnumAxis.GT, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
             moveControl.location.Real = null;
@@ -447,12 +612,12 @@ namespace Mirle.Agv.View
             moveControl.elmoDriver.ElmoMove(EnumAxis.GT, turn[0], turn[1], turn[2], turn[3], vel, EnumMoveType.Absolute, acc, dec, jerk);
         }
 
-        private void button_JogPitch_TurnRight_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_TurnRight_MouseDown(object sender, MouseEventArgs e)
         {
             Turn_MouseDown(-90);
         }
 
-        private void button_JogPitch_TurnLeft_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_TurnLeft_MouseDown(object sender, MouseEventArgs e)
         {
             Turn_MouseDown(90);
         }
@@ -530,35 +695,50 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void button_JogPitch_Forward_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_Forward_MouseDown(object sender, MouseEventArgs e)
         {
             Move_MouseDown(true);
         }
 
-        private void button_JogPitch_Backward_MouseDown(object sender, MouseEventArgs e)
+        public void button_JogPitch_Backward_MouseDown(object sender, MouseEventArgs e)
         {
             Move_MouseDown(false);
         }
 
-        private void button_JogPitch_Move_MouseUp(object sender, MouseEventArgs e)
+        public void button_JogPitch_Move_MouseUp(object sender, MouseEventArgs e)
         {
             moveControl.elmoDriver.ElmoStop(EnumAxis.GX, moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
             moveControl.location.Real = null;
         }
 
-        private void button_JogPitch_ElmoEnable_Click(object sender, EventArgs e)
+        public void button_JogPitch_ElmoEnable_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() => { moveControl.elmoDriver.EnableAllAxis(); });
+            jogPitchData.ElmoFunctionCompelete = false;
+            Task.Factory.StartNew(() =>
+            {
+                moveControl.elmoDriver.EnableAllAxis();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
         }
 
-        private void button_JogPitch_ElmoDisable_Click(object sender, EventArgs e)
+        public void button_JogPitch_ElmoDisable_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() => { moveControl.elmoDriver.DisableAllAxis(); });
+            jogPitchData.ElmoFunctionCompelete = false;
+            Task.Factory.StartNew(() =>
+            {
+                moveControl.elmoDriver.DisableAllAxis();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
         }
 
-        private void button_JogPitch_ElmoReset_Click(object sender, EventArgs e)
+        public void button_JogPitch_ElmoReset_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() => { moveControl.elmoDriver.ResetErrorAll(); });
+            jogPitchData.ElmoFunctionCompelete = false;
+            Task.Factory.StartNew(() =>
+            {
+                moveControl.elmoDriver.ResetErrorAll();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
         }
 
         private bool GetVelocityAndDistanceAndSingleAxis(ref EnumAxis axis, ref double velocity, ref double distance)
@@ -604,158 +784,6 @@ namespace Mirle.Agv.View
                 return;
 
             moveControl.elmoDriver.ElmoMove(axis, -distance, velocity, EnumMoveType.Relative);
-        }
-
-        private void HomeThread()
-        {
-            double oneCycleDistance = Math.PI * Math.Sqrt(Math.Pow(1400, 2) + Math.Pow(2400, 2));
-            double spinDistance;
-            System.Diagnostics.Stopwatch servoOnTimer = new System.Diagnostics.Stopwatch();
-            ThetaSectionDeviation reviseData = null;
-
-            for (int i = 0; i < moveControl.DriverSr2000List.Count; i++)
-            {
-                reviseData = moveControl.DriverSr2000List[i].GetThetaSectionDeviation();
-                if (reviseData != null)
-                {
-                    if (computeFunction.IsSameAngle(reviseData.BarcodeAngleInMap, reviseData.AGVAngleInMap, 0))
-                        break;
-                    else
-                        reviseData = null;
-                }
-            }
-
-            if (reviseData == null)
-            {
-                MessageBox.Show("請移至可以讀取到和軌道平行的Barocde上!");
-                homing = false;
-                return;
-            }
-
-            if (Math.Abs(reviseData.Theta) > 20 || Math.Abs(reviseData.SectionDeviation) > 50)
-            {
-                MessageBox.Show("偏差過大,請手動調整(角度超過20度或偏差超過50mm)");
-                homing = false;
-                return;
-            }
-
-            if (Math.Abs(reviseData.Theta) > 0.1)
-            {
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GT, -59.744, 59.744, 59.744, -59.744, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
-                            moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
-
-                spinDistance = reviseData.Theta / 360 * oneCycleDistance;
-                double[] move = new double[4] { -spinDistance, spinDistance, -spinDistance, spinDistance };
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GT);
-                    MessageBox.Show("轉向角度至Spin Turn角度時Timeout!");
-                    homing = false;
-                    return;
-                }
-
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, move[0], move[1], move[2], move[3], 10, EnumMoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
-                                         moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
-                    MessageBox.Show("Spin Turn至軌道平行時Timeout!");
-                    homing = false;
-                    return;
-                }
-            }
-
-            for (int i = 0; i < moveControl.DriverSr2000List.Count; i++)
-            {
-                reviseData = moveControl.DriverSr2000List[i].GetThetaSectionDeviation();
-                if (reviseData != null)
-                {
-                    if (computeFunction.IsSameAngle(reviseData.BarcodeAngleInMap, reviseData.AGVAngleInMap, 0))
-                        break;
-                    else
-                        reviseData = null;
-                }
-            }
-
-            if (reviseData == null)
-            {
-                MessageBox.Show("請移至可以讀取到和軌道平行的Barocde上!");
-                homing = false;
-                return;
-            }
-
-            if (Math.Abs(reviseData.SectionDeviation) > 5)
-            {
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GT, 90, 90, 90, 90, moveControl.moveControlConfig.Turn.Velocity, EnumMoveType.Absolute,
-                moveControl.moveControlConfig.Turn.Acceleration, moveControl.moveControlConfig.Turn.Deceleration, moveControl.moveControlConfig.Turn.Jerk);
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GT))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GT);
-                    MessageBox.Show("轉向角度至90度時Timeout!");
-                    homing = false;
-                    return;
-                }
-
-                moveControl.elmoDriver.ElmoMove(EnumAxis.GX, reviseData.SectionDeviation, 50, EnumMoveType.Relative, moveControl.moveControlConfig.Move.Acceleration,
-                                         moveControl.moveControlConfig.Move.Deceleration, moveControl.moveControlConfig.Move.Jerk);
-
-                servoOnTimer.Reset();
-                servoOnTimer.Start();
-
-                while (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX) && servoOnTimer.ElapsedMilliseconds < moveControl.moveControlConfig.TurnTimeoutValue)
-                {
-                    Thread.Sleep(50);
-                }
-
-                if (!moveControl.elmoDriver.MoveCompelete(EnumAxis.GX))
-                {
-                    moveControl.elmoDriver.ElmoStop(EnumAxis.GX);
-                    MessageBox.Show("平移行時Timeout!");
-                    homing = false;
-                    return;
-                }
-
-                homing = false;
-            }
-        }
-
-        private void button_JogPitch_Home_Click(object sender, EventArgs e)
-        {
-            if (!homing)
-            {
-                homing = true;
-                changingMode = true;
-                EnalbeDisableButton(false);
-                homeThread = new Thread(HomeThread);
-                homeThread.Start();
-            }
         }
 
         private void JogPitchForm_Shown(object sender, EventArgs e)
@@ -887,6 +915,270 @@ namespace Mirle.Agv.View
             button_Skip.Text = (button_Skip.Text == "強制\r\n手動") ? "一般\r\n模式" : "強制\r\n手動";
             button_Skip.BackColor = (button_Skip.Text == "強制\r\n手動") ? Color.Red : Color.Transparent;
             button_Skip.Enabled = true;
+        }
+
+
+        #region PlcJog
+
+        public delegate void plcJog_SettingValue();
+        public plcJog_SettingValue plcJog_mySettingValue;
+        public EnumJogTurnSpeed turnS;
+        public EnumJogMoveVelocity moveV;
+        public double distance;
+
+        public void PlcJog_SettingDelegate(EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
+        {
+            this.turnS = turnS;
+            this.moveV = moveV;
+            this.distance = distance;
+            plcJog_mySettingValue = new plcJog_SettingValue(PlcJog_SetOperationValue);
+        }
+
+        public void PlcJog_RunSettingDelegate()
+        {
+            this.Invoke(plcJog_mySettingValue);
+        }
+
+        public void PlcJog_SetOperationValue()
+        {
+            switch (turnS)
+            {
+                case EnumJogTurnSpeed.High:
+                    rB_JogPitch_TurnSpeed_High.Checked = true;
+                    break;
+                case EnumJogTurnSpeed.Medium:
+                    rB_JogPitch_TurnSpeed_Medium.Checked = true;
+                    break;
+                case EnumJogTurnSpeed.Low:
+                    rB_JogPitch_TurnSpeed_Low.Checked = true;
+                    break;
+                default:
+                    rB_JogPitch_TurnSpeed_Low.Checked = true;
+                    break;
+            }
+
+            switch (moveV)
+            {
+                case EnumJogMoveVelocity.ThreeHundred:
+                    rB_JogPitch_MoveVelocity_300.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.OneHundred:
+                    rB_JogPitch_MoveVelocity_100.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.Fifty:
+                    rB_JogPitch_MoveVelocity_50.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.Ten:
+                    rB_JogPitch_MoveVelocity_10.Checked = true;
+                    break;
+                default:
+                    rB_JogPitch_MoveVelocity_10.Checked = true;
+                    break;
+            }
+            tB_JogPitch_Distance.Text = distance.ToString();
+        }
+
+        public void PlcJog_SetOperationValue(EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
+        {
+            switch (turnS)
+            {
+                case EnumJogTurnSpeed.High:
+                    rB_JogPitch_TurnSpeed_High.Checked = true;
+                    break;
+                case EnumJogTurnSpeed.Medium:
+                    rB_JogPitch_TurnSpeed_Medium.Checked = true;
+                    break;
+                case EnumJogTurnSpeed.Low:
+                    rB_JogPitch_TurnSpeed_Low.Checked = true;
+                    break;
+                default:
+                    rB_JogPitch_TurnSpeed_Low.Checked = true;
+                    break;
+            }
+
+            switch (moveV)
+            {
+                case EnumJogMoveVelocity.ThreeHundred:
+                    rB_JogPitch_MoveVelocity_300.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.OneHundred:
+                    rB_JogPitch_MoveVelocity_100.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.Fifty:
+                    rB_JogPitch_MoveVelocity_50.Checked = true;
+                    break;
+                case EnumJogMoveVelocity.Ten:
+                    rB_JogPitch_MoveVelocity_10.Checked = true;
+                    break;
+                default:
+                    rB_JogPitch_MoveVelocity_10.Checked = true;
+                    break;
+            }
+
+            tB_JogPitch_Distance.Text = distance.ToString();
+
+
+        }
+
+        public void PlcJog_GetOperationStatus(ref PlcOperation ipcOperation)
+        {
+
+            if (ipcOperation.JogElmoFunction != EnumJogElmoFunction.All_Reset)
+            {
+                ipcOperation.JogElmoFunction = EnumJogElmoFunction.Enable;
+                bool bElmoStatus = true;
+                foreach (KeyValuePair<EnumAxis, ElmoAxisFeedbackData> item in jogPitchData.AxisData)
+                {
+                    if (null != item.Value)
+                    {
+                        bElmoStatus = bElmoStatus & item.Value.StandStill;
+                        if (bElmoStatus == false)
+                        {
+                            ipcOperation.JogElmoFunction = EnumJogElmoFunction.Disable;
+                            break;
+                        }
+                    }
+
+                }
+            }
+
+            EnumJogRunMode runMode = EnumJogRunMode.No_Use;
+
+            switch (mode)
+            {
+                case EnumJogPitchMode.BackwardWheel:
+                    runMode = EnumJogRunMode.BackwardWheel;
+                    break;
+                case EnumJogPitchMode.ForwardWheel:
+                    runMode = EnumJogRunMode.ForwardWheel;
+                    break;
+                case EnumJogPitchMode.Normal:
+                    runMode = EnumJogRunMode.Normal;
+                    break;
+                case EnumJogPitchMode.SpinTurn:
+                    runMode = EnumJogRunMode.SpinTurn;
+                    break;
+
+            }
+            ipcOperation.JogRunMode = runMode;
+
+            EnumJogTurnSpeed turnS = EnumJogTurnSpeed.No_Use;
+            if (rB_JogPitch_TurnSpeed_High.Checked)
+            {
+                turnS = EnumJogTurnSpeed.High;
+            }
+            if (rB_JogPitch_TurnSpeed_Medium.Checked)
+            {
+                turnS = EnumJogTurnSpeed.Medium;
+            }
+            if (rB_JogPitch_TurnSpeed_Low.Checked)
+            {
+                turnS = EnumJogTurnSpeed.Low;
+            }
+            ipcOperation.JogTurnSpeed = turnS;
+
+            EnumJogMoveVelocity moveVelocity = EnumJogMoveVelocity.No_Use;
+            if (rB_JogPitch_MoveVelocity_300.Checked)
+            {
+                moveVelocity = EnumJogMoveVelocity.ThreeHundred;
+            }
+            if (rB_JogPitch_MoveVelocity_100.Checked)
+            {
+                moveVelocity = EnumJogMoveVelocity.OneHundred;
+            }
+            if (rB_JogPitch_MoveVelocity_50.Checked)
+            {
+                moveVelocity = EnumJogMoveVelocity.Fifty;
+            }
+            if (rB_JogPitch_MoveVelocity_10.Checked)
+            {
+                moveVelocity = EnumJogMoveVelocity.Ten;
+            }
+
+            ipcOperation.JogMoveVelocity = moveVelocity;
+
+
+            if (cB_JogPitch_MoveAndOntimeRevise.Checked)
+            {
+                ipcOperation.JogMoveOntimeRevise = true;
+            }
+            else
+            {
+                ipcOperation.JogMoveOntimeRevise = false;
+            }
+
+            //  ipcOperation.JogOperation = EnumJogOperation.No_Use; 不進行任何判斷
+            ipcOperation.JogMaxDistance = Convert.ToDouble(tB_JogPitch_Distance.Text);
+
+        }
+        #endregion
+
+        private void ElmoResetAndCheckLinked()
+        {
+            int errorCode = 0;
+
+            for (int i = 0; i < retryTimes; i++)
+            {
+                if (!moveControl.elmoDriver.CheckAxisNoError(ref errorCode))
+                {
+                    moveControl.elmoDriver.ResetErrorAll();
+                    Thread.Sleep(500);
+                }
+
+                moveControl.elmoDriver.DisableAllAxis();
+                Thread.Sleep(500);
+                moveControl.elmoDriver.EnableAllAxis();
+                Thread.Sleep(500);
+                if (moveControl.elmoDriver.CheckAxisNoError(ref errorCode))
+                    break;
+
+                if (retryTimes == i)
+                {
+                    elmoAllResetMessage = "axis error 清除不掉!";
+                    return;
+                }
+            }
+
+            if (!moveControl.elmoDriver.ElmoAxisTypeAllServoOn(EnumAxisType.Move) || !moveControl.elmoDriver.ElmoAxisTypeAllServoOn(EnumAxisType.Turn))
+            {
+                elmoAllResetMessage = "ServoOn all Axis 失敗!";
+                return;
+            }
+
+            if (moveControl.elmoDriver.SetAllVirtualServoOnAndLinked())
+                elmoAllResetMessage = "Elmo Reset 成功!";
+            else
+                elmoAllResetMessage = "Elmo Reset 失敗!";
+        }
+
+        private void button_JogpitchResetAll_Click(object sender, EventArgs e)
+        {
+            jogPitchData.ElmoFunctionCompelete = false;
+            Task.Factory.StartNew(() =>
+            {
+                ElmoResetAndCheckLinked();
+                jogPitchData.ElmoFunctionCompelete = true;
+            });
+        }
+
+        private void ElmoFunctionFlagChange(bool compelete)
+        {
+            button_JogPitch_ElmoEnable.Enabled = compelete;
+            button_JogPitch_ElmoDisable.Enabled = compelete;
+            button_JogPitch_ElmoReset.Enabled = compelete;
+            button_JogpitchResetAll.Enabled = compelete;
+        }
+
+        private void timer_UpdateElmoFunction_Tick(object sender, EventArgs e)
+        {
+            if (elmoAllResetMessage != "")
+            {
+                temp = elmoAllResetMessage;
+                elmoAllResetMessage = "";
+                MessageBox.Show(temp);
+            }
+
+            ElmoFunctionFlagChange(jogPitchData.ElmoFunctionCompelete);
         }
     }
 }

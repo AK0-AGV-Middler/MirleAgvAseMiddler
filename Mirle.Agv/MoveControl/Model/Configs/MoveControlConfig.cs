@@ -31,9 +31,32 @@ namespace Mirle.Agv.Model.Configs
         public double NormalStopDistance { get; set; }
         public double VelocitySafetyRange { get; set; }
         public double VChangeSafetyDistanceMagnification { get; set; }
+        public double OverrideTimeoutValue { get; set; } = 2000;
         public Dictionary<EnumMoveControlSafetyType, SafetyData> Safety { get; set; } = new Dictionary<EnumMoveControlSafetyType, SafetyData>();
         public Dictionary<EnumSensorSafetyType, SafetyData> SensorByPass { get; set; } = new Dictionary<EnumSensorSafetyType, SafetyData>();
 
         public Dictionary<EnumAddressAction, AGVTurnParameter> TurnParameter { get; set; } = new Dictionary<EnumAddressAction, AGVTurnParameter>();
+
+        public MoveControlConfig()
+        {
+            SafetyData tempSensorData;
+
+            foreach (EnumCommandType item in (EnumCommandType[])Enum.GetValues(typeof(EnumCommandType)))
+            {
+                SafteyDistance.Add(item, 100);
+            }
+
+            foreach (EnumMoveControlSafetyType item in (EnumMoveControlSafetyType[])Enum.GetValues(typeof(EnumMoveControlSafetyType)))
+            {
+                tempSensorData = new SafetyData();
+                Safety.Add(item, tempSensorData);
+            }
+
+            foreach (EnumSensorSafetyType item in (EnumSensorSafetyType[])Enum.GetValues(typeof(EnumSensorSafetyType)))
+            {
+                tempSensorData = new SafetyData();
+                SensorByPass.Add(item, tempSensorData);
+            }
+        }
     }
 }

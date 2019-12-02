@@ -43,7 +43,7 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 //. 參考出問題,可能CPU x64 x86 anyCPU參考用錯,或sr2000Config = null. 或Connect Excpition.
-                WriteLog("Error", "1", device, "", "Initail Excption : " + ex.ToString());
+                WriteLog("Error", "5", device, "", "Initail Excption : " + ex.ToString());
                 SendAlarmCode(101000);
             }
         }
@@ -400,8 +400,8 @@ namespace Mirle.Agv.Controller
                 sr2000ReadData.TargetCenter.Y + (float)(sr2000Config.ReaderToCenterDistance *
                 Math.Sin(-(agvAngleInMap + sr2000Config.ReaderToCenterDegree + 180) / 180 * Math.PI)));
 
-            sr2000ReadData.AGV = new AGVPosition(agvPosition, agvAngleInMap, barcodeAngleInView, sr2000ReadData.ScanTime,
-                                                 sr2000ReadData.GetDataTime, sr2000ReadData.Count, barcodeAngleInMap, sr2000ReadData.Barcode1.Type);
+            sr2000ReadData.AGV = new AGVPosition(agvPosition, sr2000ReadData.TargetCenter, agvAngleInMap, barcodeAngleInView, sr2000ReadData.ScanTime,
+                                                 sr2000ReadData.GetDataTime, sr2000ReadData.Count, barcodeAngleInMap, sr2000ReadData.Barcode1.Type, sr2000ReadData.Barcode1.LineId);
 
             sr2000ReadData.AngleOfMapInReader = barcodeAngleInView - barcodeAngleInMap;
             if (sr2000ReadData.AngleOfMapInReader > 180)

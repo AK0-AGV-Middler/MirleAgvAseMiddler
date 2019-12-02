@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using TcpIpClientSample;
+using System.Threading.Tasks;
 
 namespace Mirle.Agv.View
 {
@@ -51,20 +52,34 @@ namespace Mirle.Agv.View
         }
 
         private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
-        {
-            if (isConnect)
+        {         
+            try
             {
-                ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Connect");
+                if (isConnect)
+                {
+                    Task.Run(() => ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Connect"));                    
+                }
+                else
+                {
+                    Task.Run(() => ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Disconnect"));
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Disconnect");
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
         public void SendOrReceiveCmdToRichTextBox(object sender, string e)
         {
-            RichTextBoxAppendHead(richTextBox1, e);
+            try
+            {
+                //Task.Run(() => RichTextBoxAppendHead(richTextBox1, e));
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         public delegate void ToolStripStatusLabelTextChangeCallback(ToolStripStatusLabel toolStripStatusLabel, string msg);
@@ -439,11 +454,11 @@ namespace Mirle.Agv.View
         {
             if (middleAgent.IsClientAgentNull())
             {
-                RichTextBoxAppendHead(richTextBox1, "ClientAgent is null");
+                //RichTextBoxAppendHead(richTextBox1, "ClientAgent is null");
             }
             else
             {
-                RichTextBoxAppendHead(richTextBox1, "ClientAgent is not null");
+                //RichTextBoxAppendHead(richTextBox1, "ClientAgent is not null");
             }
         }       
 
@@ -466,7 +481,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 

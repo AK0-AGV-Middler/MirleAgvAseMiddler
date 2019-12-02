@@ -98,9 +98,7 @@ namespace Mirle.Agv
         Moving,
         TR,
         R2000,
-        Error,
-        WaitForReserve,
-        WaitForResume
+        Error
     }
 
     public enum EnumMoveComplete
@@ -126,9 +124,13 @@ namespace Mirle.Agv
         OntimeReviseTheta,
         OntimeReviseSectionDeviationLine,
         OntimeReviseSectionDeviationHorizontal,
-        UpdateDeltaPositionRange,
         OneTimeRevise,
-        VChangeSafetyDistance
+        VChangeSafetyDistance,
+        TRPathMonitoring,
+        IdleNotWriteLog,
+        BarcodePositionSafety,
+        StopWithoutReason,
+        BeamSensorR2000
     }
 
     public enum EnumSensorSafetyType
@@ -138,11 +140,11 @@ namespace Mirle.Agv
         BeamSensor,
         BeamSensorTR,
         TRFlowStart,
-        BeamSensorR2000,
         R2000FlowStat,
         Bumper,
         CheckAxisState,
-        TRPathMonitoring
+        EndPositionOffset,
+        SecondCorrectionBySide
     }
 
     public enum EnumMoveStartType
@@ -159,7 +161,9 @@ namespace Mirle.Agv
         TRTurn,
         R2000Turn,
         SensorSlow,
-        EQ
+        EQ,
+        SlowStop,
+        TurnOut
     }
 
     public enum EnumGetThetaSectionDeviationType
@@ -184,5 +188,13 @@ namespace Mirle.Agv
         SpeedLower,
         MoveStartSpeedLower
     }
+
+    public enum EnumInWallLocate
+    {
+        Center,
+        Head,
+        Tail
+    }
+    
     #endregion
 }

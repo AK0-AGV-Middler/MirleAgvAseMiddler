@@ -27,7 +27,6 @@ namespace Mirle.Agv.Controller
         private string lastReadAdrId = "";
         private string lastReadSecId = "";
 
-
         public MapHandler(MapConfig mapConfig)
         {
             this.mapConfig = mapConfig;
@@ -46,6 +45,9 @@ namespace Mirle.Agv.Controller
             ReadBarcodeLineCsv();
             ReadAddressCsv();
             ReadSectionCsv();
+            WriteBarcodeBackup();
+            WriteAddressBackup();
+            WriteSectionBackup();
         }
 
         public void ReadBarcodeLineCsv()
@@ -54,7 +56,7 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrWhiteSpace(BarcodePath))
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , $"IsBarcodePathNull={string.IsNullOrWhiteSpace(BarcodePath)}"));
                     return;
                 }
@@ -64,7 +66,7 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(BarcodePath);
                 if (allRows == null || allRows.Length < 2)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , "There are no barcodes in file"));
                     return;
                 }
@@ -108,14 +110,14 @@ namespace Mirle.Agv.Controller
 
                         lastReadBcrLineId = oneRow.Id;
 
-                        loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                          , $"LoadBarcodeLineCsv oneRow ok. [lastReadBcrLineId={lastReadBcrLineId}]"));
+                        //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        //  , $"LoadBarcodeLineCsv oneRow ok. [lastReadBcrLineId={lastReadBcrLineId}]"));
 
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load lineBarcode read oneRow. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load lineBarcode read oneRow. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     }
 
 
@@ -123,7 +125,7 @@ namespace Mirle.Agv.Controller
                     int absCount = Math.Abs(count);
                     if (absCount % 3 != 0)
                     {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                             , $"BarcodeLineNum mod 3 is not zero, [Id = {oneRow.Id}][HeadNum={oneRow.HeadBarcode.Number}][TailNum={oneRow.TailBarcode.Number}]"));
                         break;
                     }
@@ -149,8 +151,8 @@ namespace Mirle.Agv.Controller
                         }
                         catch (Exception ex)
                         {
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                         }
                     }
                     else
@@ -173,52 +175,26 @@ namespace Mirle.Agv.Controller
                         }
                         catch (Exception ex)
                         {
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                         }
                     }
 
-                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}]"));
+                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    // , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}]"));
 
                     lastReadBcrLineId = oneRow.Id;
                     TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
                 }
 
-                WriteBarcodeBackup();
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , $"Load Barcode File Ok. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
-
-        private void WriteBarcodeBackup()
-        {
-            var directionName = Path.GetDirectoryName(BarcodePath);
-            if (!Directory.Exists(directionName))
-            {
-                Directory.CreateDirectory(directionName);
-            }
-
-            var barcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
-
-            string titleRow = "Id,BarcodeHeadNum,HeadX,HeadY,BarcodeTailNum,TailX,TailY,OffsetX,OffsetY,Material";
-            File.WriteAllText(barcodeBackupPath, titleRow);
-
-            List<string> barcodeLineInfos = new List<string>();
-            barcodeLineInfos.Add(Environment.NewLine);
-            foreach (var item in TheMapInfo.allMapBarcodeLines.Values)
-            {
-                var head = item.HeadBarcode;
-                var tail = item.TailBarcode;
-                var barcodeLineInfo = string.Format("{0},{1},{2:F2},{3:F2},{4},{5:F2},{6:F2},{7:F2},{8:F2},{9}", item.Id, head.Number, head.Position.X, head.Position.Y, tail.Number, tail.Position.X, tail.Position.Y, item.Offset.X, item.Offset.Y, item.Material);
-                barcodeLineInfos.Add(barcodeLineInfo);
-            }
-            File.AppendAllLines(barcodeBackupPath, barcodeLineInfos);
         }
 
         public void ReadAddressCsv()
@@ -227,7 +203,7 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrWhiteSpace(AddressPath))
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                        , $"IsAddressPathNull={string.IsNullOrWhiteSpace(AddressPath)}"));
                     return;
                 }
@@ -237,7 +213,7 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(AddressPath);
                 if (allRows == null || allRows.Length < 2)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"There are no address in file"));
                     return;
                 }
@@ -249,9 +225,10 @@ namespace Mirle.Agv.Controller
                 int nColumns = titleRow.Length;
 
                 Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
-                //Id,PositionX,PositionY,
-                //IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,
-                //IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,IsTR50
+                //Id,PositionX,PositionY,IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,
+                //IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,PioDirection,IsTR50,
+                //InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle
+
                 for (int i = 0; i < nColumns; i++)
                 {
                     var keyword = titleRow[i].Trim();
@@ -265,6 +242,7 @@ namespace Mirle.Agv.Controller
                 {
                     string[] getThisRow = allRows[i].Split(',');
                     MapAddress oneRow = new MapAddress();
+                    MapAddressOffset offset = new MapAddressOffset();
                     try
                     {
                         oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
@@ -282,13 +260,27 @@ namespace Mirle.Agv.Controller
                         oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
                         oneRow.PioDirection = oneRow.PioDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
                         oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
-                        oneRow.InsideSectionId = getThisRow[dicHeaderIndexes["InsideSectionId"]];
+                        if (dicHeaderIndexes.ContainsKey("InsideSectionId"))
+                        {
+                            oneRow.InsideSectionId = FitZero(getThisRow[dicHeaderIndexes["InsideSectionId"]]);
+                        }
+                        if (dicHeaderIndexes.ContainsKey("OffsetX"))
+                        {
+                            offset.OffsetX = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
+                            offset.OffsetY = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
+                            offset.OffsetTheta = double.Parse(getThisRow[dicHeaderIndexes["OffsetTheta"]]);
+                        }
+                        oneRow.AddressOffset = offset;
+                        if (dicHeaderIndexes.ContainsKey("VehicleHeadAngle"))
+                        {
+                            oneRow.VehicleHeadAngle = double.Parse(getThisRow[dicHeaderIndexes["VehicleHeadAngle"]]);
+                        }
 
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv read oneRow : [lastReadAdrId={lastReadAdrId}]"));
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv read oneRow : [lastReadAdrId={lastReadAdrId}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     }
 
                     lastReadAdrId = oneRow.Id;
@@ -300,16 +292,22 @@ namespace Mirle.Agv.Controller
 
                 }
 
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"Load Address File Ok. [lastReadAdrId={lastReadAdrId}]"));
 
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv : [lastReadAdrId={lastReadAdrId}]"));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv : [lastReadAdrId={lastReadAdrId}]"));
 
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+        }
+
+        private string FitZero(string v)
+        {
+            int sectionIdToInt = int.Parse(v);
+            return sectionIdToInt.ToString("0000");
         }
 
         public void ReadSectionCsv()
@@ -318,7 +316,7 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrWhiteSpace(SectionPath))
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , $"IsSectionPathNull={string.IsNullOrWhiteSpace(SectionPath)}"));
                     return;
                 }
@@ -327,7 +325,7 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(SectionPath);
                 if (allRows == null || allRows.Length < 2)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"There are no section in file"));
                     return;
                 }
@@ -358,17 +356,17 @@ namespace Mirle.Agv.Controller
                         oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
                         if (!TheMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["FromAddress"]]))
                         {
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, headAddress is not in the map : [secId={oneRow.Id}][headAddress={getThisRow[dicHeaderIndexes["FromAddress"]]}]"));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, headAddress is not in the map : [secId={oneRow.Id}][headAddress={getThisRow[dicHeaderIndexes["FromAddress"]]}]"));
                         }
                         oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.HeadAddress);
                         if (!TheMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["ToAddress"]]))
                         {
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, tailAddress is not in the map : [secId={oneRow.Id}][tailAddress={getThisRow[dicHeaderIndexes["ToAddress"]]}]"));
+                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, tailAddress is not in the map : [secId={oneRow.Id}][tailAddress={getThisRow[dicHeaderIndexes["ToAddress"]]}]"));
                         }
                         oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.TailAddress);
-                        oneRow.Distance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
+                        oneRow.HeadToTailDistance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
                         oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
                         oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
                         oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
@@ -376,8 +374,8 @@ namespace Mirle.Agv.Controller
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail : [lastReadSecId={lastReadSecId}]"));
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail : [lastReadSecId={lastReadSecId}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     }
 
                     lastReadSecId = oneRow.Id;
@@ -388,15 +386,89 @@ namespace Mirle.Agv.Controller
 
                 AddInsideAddresses();
 
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                   , $"Load Section File Ok. [lastReadSecId={lastReadSecId}]"));
 
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv : [lastReadSecId={lastReadSecId}]"));
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv : [lastReadSecId={lastReadSecId}]"));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+        }
+
+        private void WriteBarcodeBackup()
+        {
+            var directionName = Path.GetDirectoryName(BarcodePath);
+            if (!Directory.Exists(directionName))
+            {
+                Directory.CreateDirectory(directionName);
+            }
+
+            var barcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
+
+            string titleRow = "Id,BarcodeHeadNum,HeadX,HeadY,BarcodeTailNum,TailX,TailY,OffsetX,OffsetY,Material" + Environment.NewLine;
+            File.WriteAllText(barcodeBackupPath, titleRow);
+
+            List<string> barcodeLineInfos = new List<string>();
+            foreach (var item in TheMapInfo.allMapBarcodeLines.Values)
+            {
+                var head = item.HeadBarcode;
+                var tail = item.TailBarcode;
+                var barcodeLineInfo = string.Format("{0},{1},{2:F2},{3:F2},{4},{5:F2},{6:F2},{7:F2},{8:F2},{9}", item.Id, head.Number, head.Position.X, head.Position.Y, tail.Number, tail.Position.X, tail.Position.Y, item.Offset.X, item.Offset.Y, item.Material);
+                barcodeLineInfos.Add(barcodeLineInfo);
+            }
+            File.AppendAllLines(barcodeBackupPath, barcodeLineInfos);
+        }
+
+        private void WriteAddressBackup()
+        {
+            var directionName = Path.GetDirectoryName(AddressPath);
+            if (!Directory.Exists(directionName))
+            {
+                Directory.CreateDirectory(directionName);
+            }
+
+            var backupPath = Path.ChangeExtension(AddressPath, ".backup.csv");
+
+            string titleRow = "Id,PositionX,PositionY,IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,PioDirection,IsTR50,InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle" + Environment.NewLine;
+            File.WriteAllText(backupPath, titleRow);
+            List<string> lineInfos = new List<string>();
+            foreach (var item in TheMapInfo.allMapAddresses.Values)
+            {
+                var lineInfo = string.Format("{0},{1:F0},{2:F0},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15:0000},{16:F2},{17:F2},{18:F2},{19:N0}",
+                    item.Id, item.Position.X, item.Position.Y, item.IsWorkStation, item.CanLeftLoad, item.CanLeftUnload, item.CanRightLoad, item.CanRightUnload,
+                    item.IsCharger, item.CouplerId, item.ChargeDirection,
+                    item.IsSegmentPoint, item.CanSpin, item.PioDirection, item.IsTR50,
+                   int.Parse(item.InsideSectionId), item.AddressOffset.OffsetX, item.AddressOffset.OffsetY, item.AddressOffset.OffsetTheta,
+                   item.VehicleHeadAngle
+                    );
+                lineInfos.Add(lineInfo);
+            }
+            File.AppendAllLines(backupPath, lineInfos);
+        }
+
+        private void WriteSectionBackup()
+        {
+            var directionName = Path.GetDirectoryName(SectionPath);
+            if (!Directory.Exists(directionName))
+            {
+                Directory.CreateDirectory(directionName);
+            }
+
+            var backupPath = Path.ChangeExtension(SectionPath, ".backup.csv");
+
+            string titleRow = "Id,FromAddress,ToAddress,Speed, Type,PermitDirection" + Environment.NewLine;
+            File.WriteAllText(backupPath, titleRow);
+            List<string> lineInfos = new List<string>();
+            foreach (var item in TheMapInfo.allMapSections.Values)
+            {
+                var lineInfo = string.Format("{0},{1},{2},{3},{4},{5}",
+                    item.Id, item.HeadAddress.Id, item.TailAddress.Id, item.Speed, item.Type, item.PermitDirection
+                    );
+                lineInfos.Add(lineInfo);
+            }
+            File.AppendAllLines(backupPath, lineInfos);
         }
 
         private void AddInsideAddresses()
@@ -405,20 +477,18 @@ namespace Mirle.Agv.Controller
             {
                 foreach (var adr in TheMapInfo.allMapAddresses.Values)
                 {
-                    lastReadAdrId = adr.Id;
-                    lastReadSecId = adr.InsideSectionId;
                     if (TheMapInfo.allMapSections.ContainsKey(adr.InsideSectionId))
                     {
                         TheMapInfo.allMapSections[adr.InsideSectionId].InsideAddresses.Add(adr);
                     }
                 }
 
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                   , $"AddInsideAddresses Ok."));
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"AddInsideAddresses FAIL at Sec[{lastReadSecId}] and Adr[{lastReadAdrId}]" + ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"AddInsideAddresses FAIL at Sec[{lastReadSecId}] and Adr[{lastReadAdrId}]" + ex.StackTrace));
             }
         }
 
@@ -428,7 +498,7 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrWhiteSpace(SectionBeamDisablePath))
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , $"IsSectionBeamDisablePathNull={string.IsNullOrWhiteSpace(SectionBeamDisablePath)}"));
                     return;
                 }
@@ -436,7 +506,7 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(SectionBeamDisablePath);
                 if (allRows == null || allRows.Length < 2)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                          , $"There are no beam-disable in file"));
                     return;
                 }
@@ -474,20 +544,20 @@ namespace Mirle.Agv.Controller
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadBeamSensorDisable read oneRow, [SecId={oneRow.SectionId}][Max={(int)oneRow.Max}][Min={(int)oneRow.Min}]"));
-                        loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadBeamSensorDisable read oneRow, [SecId={oneRow.SectionId}][Max={(int)oneRow.Max}][Min={(int)oneRow.Min}]"));
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                     }
 
                     AddMapSectionBeamDisableIntoList(oneRow);
                 }
 
-                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"Load BeamDisable File Ok."));
 
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -497,47 +567,44 @@ namespace Mirle.Agv.Controller
             {
                 if (!TheMapInfo.allMapSections.ContainsKey(oneRow.SectionId))
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"AddMapSectionBeamDisableIntoList +++FAIL+++. AllMapSections.ContainsKey({oneRow.SectionId})={false}"));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , $"Section[{oneRow.SectionId}]加入Beam Sensor Disable清單失敗，圖資不包含Section[{oneRow.SectionId}]"));
 
                     return;
                 }
                 MapSection mapSection = TheMapInfo.allMapSections[oneRow.SectionId];
-                if (oneRow.Min < 0)
+                if (oneRow.Min < -30)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"Min < 0. [SectionId={oneRow.SectionId}][Min={oneRow.Min}]"));
                     return;
                 }
-                if (oneRow.Max > mapSection.Distance + 1)
+                if (oneRow.Max > mapSection.HeadToTailDistance + 31)
                 {
-                    loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"Max > Distance. [SectionId={oneRow.SectionId}][Max={oneRow.Max}][Distance={mapSection.Distance}]"));
+                    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , $"Max > Distance. [SectionId={oneRow.SectionId}][Max={oneRow.Max}][Distance={mapSection.HeadToTailDistance}]"));
 
                     return;
                 }
                 if (oneRow.Min == 0 && oneRow.Max == 0)
                 {
-                    oneRow.Max = mapSection.Distance;
+                    oneRow.Min = -30;
+                    oneRow.Max = mapSection.HeadToTailDistance + 30;
                 }
 
                 mapSection.BeamSensorDisables.Add(oneRow);
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
-        public bool IsPositionInThisSection(MapPosition aPosition, MapSection aSection, ref VehiclePosition vehicleLocation)
+        public bool IsPositionInThisSection(MapSection aSection, MapPosition position)
         {
             try
             {
-                //當前Pos還在當前Address範圍內則不更新位置
-                if (IsPositionInThisAddress(vehicleLocation.RealPosition, vehicleLocation.LastAddress.Position))
-                {
-                    return true;
-                }
+                MapPosition aPosition = position;
 
                 #region NotInSection 2019.09.23
                 double secMinX, secMaxX, secMinY, secMaxY;
@@ -564,102 +631,21 @@ namespace Mirle.Agv.Controller
                     secMinY = aSection.HeadAddress.Position.Y - AddressAreaMm;
                 }
 
-                #region Not in Section
+
                 if (!(aPosition.X <= secMaxX && aPosition.X >= secMinX && aPosition.Y <= secMaxY && aPosition.Y >= secMinY))
                 {
-                    var msg = string.Format("Position({0:F2},{1:F2})不在[{2}]Section[{3}]內，MinX={4:F2},MaxX={5:F2},MinY={6:F2},MaxY={7:F2}。", aPosition.X, aPosition.Y, aSection.Type, aSection.Id, secMinX, secMaxX, secMinY, secMaxY);
-                    loggerAgent.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                            , msg));
-
                     return false;
                 }
                 #endregion
 
-
-                #endregion
-
-                #region NotInSection 2019.09.19
-
-                //MapAddress myHeadAddr = aSection.HeadAddress;
-                //MapAddress myTailAddr = aSection.TailAddress;
-
-                //switch (aSection.Type)
-                //{
-                //    case EnumSectionType.Vertical:
-                //        {
-                //            if ((int)aSection.HeadAddress.Position.Y > (int)aSection.TailAddress.Position.Y)
-                //            {
-                //                myHeadAddr = aSection.TailAddress;
-                //                myTailAddr = aSection.HeadAddress;
-                //            }
-                //        }
-                //        break;
-                //    case EnumSectionType.Horizontal:
-                //    case EnumSectionType.R2000:
-                //        {
-                //            if ((int)aSection.HeadAddress.Position.X > (int)aSection.TailAddress.Position.X)
-                //            {
-                //                myHeadAddr = aSection.TailAddress;
-                //                myTailAddr = aSection.HeadAddress;
-                //            }
-                //        }
-                //        break;
-                //    case EnumSectionType.None:
-                //    default:
-                //        break;
-                //}
-
-
-
-                //#region Not in Section
-                ////Position 在 Head 西方過遠
-                //if (aPosition.X + AddressAreaMm < myHeadAddr.Position.X)
-                //{
-                //    return false;
-                //}
-                ////Position 在 Tail 東方過遠
-                //if (aPosition.X > myTailAddr.Position.X + AddressAreaMm)
-                //{
-                //    return false;
-                //}
-                ////Position 在 Head 北方過遠
-                //if (aPosition.Y < myHeadAddr.Position.Y - AddressAreaMm)
-                //{
-                //    return false;
-                //}
-                ////Position 在 Tail 南方過遠
-                //if (aPosition.Y - AddressAreaMm > myTailAddr.Position.Y)
-                //{
-                //    return false;
-                //}
-                //#endregion
-
-                #endregion
-
-                #region In Section    
-                if (!IsPositionInThisAddress(aPosition, vehicleLocation.LastAddress.Position))
-                {
-                    foreach (var insideAddress in aSection.InsideAddresses)
-                    {
-                        if (IsPositionInThisAddress(aPosition, insideAddress.Position))
-                        {
-                            vehicleLocation.LastAddress = insideAddress;
-                            break;
-                        }
-                    }
-                }
-
-                vehicleLocation.LastSection = aSection;
-
-                vehicleLocation.LastSection.Distance = GetDistance(aPosition, aSection.HeadAddress.Position);
-
+                #region In Section                   
                 return true;
                 #endregion
 
             }
             catch (Exception ex)
             {
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return false;
             }
         }

@@ -22,12 +22,16 @@ namespace Mirle.Agv.Model.TransferSteps
         public List<string> AddressIds { get; set; } = new List<string>();
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
-        public string EndAddressId { get; set; } = "";
-        public string StartAddressId { get; set; } = "";
+        public MapAddress StartAddress { get; set; } = new MapAddress();
+        public MapAddress EndAddress { get; set; } = new MapAddress();
         protected int HalfR2000Radius { get; set; } = 1000;
         public string Info { get; set; } = "";
         public bool IsDuelStartPosition { get; set; } = false;
         public bool IsLoadPortToUnloadPort { get; set; } = false;
+        public EnumStageDirection StageDirection { get; set; } = EnumStageDirection.None;
+        public bool IsMoveEndDoLoadUnload { get; set; } = false;
+
+        public List<MapAddress> MovingAddress = new List<MapAddress>();
 
         public MoveCmdInfo() : this(new MainFlowHandler()) { }
         public MoveCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
@@ -35,54 +39,128 @@ namespace Mirle.Agv.Model.TransferSteps
             type = EnumTransferStepType.Move;
         }
 
-        public void SetupMovingSections()
+        public void FilterUselessFirstSection()
+        {
+            try
+            {
+                VehicleLocation vehicleLocation = theVehicle.VehicleLocation;
+                if (AddressIds.Count > 1)
+                {
+                    if (vehicleLocation.LastAddress.Id == AddressIds[1] && mainFlowHandler.IsPositionInThisAddress(vehicleLocation.RealPosition, vehicleLocation.LastAddress.Position))
+                    {
+                        SectionIds.RemoveAt(0);
+                        AddressIds.RemoveAt(0);
+                        IsDuelStartPosition = true;
+                        mainFlowHandler.LogDuel();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+
+        public void FilterUselessNextToLoadFirstSection()
+        {
+            try
+            {
+                VehicleLocation vehicleLocation = theVehicle.VehicleLocation;
+                if (AddressIds.Count > 1)
+                {
+                    if (StartAddress.Id == AddressIds[1])
+                    {
+                        SectionIds.RemoveAt(0);
+                        AddressIds.RemoveAt(0);
+                        IsDuelStartPosition = true;
+                        mainFlowHandler.LogDuel();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        public void SetupStartAddress()
+        {
+            try
+            {
+                VehicleLocation vehicleLocation = theVehicle.VehicleLocation;
+
+                if (mainFlowHandler.IsPositionInThisAddress(vehicleLocation.RealPosition, vehicleLocation.LastAddress.Position))
+                {
+                    StartAddress = vehicleLocation.LastAddress;
+                }
+                else
+                {
+                    StartAddress = new MapAddress();
+                    StartAddress.Id = "StartAddress";
+                    switch (vehicleLocation.LastSection.Type)
+                    {                        
+                        case EnumSectionType.Horizontal:
+                            StartAddress.Position = new MapPosition(vehicleLocation.RealPosition.X, vehicleLocation.LastAddress.Position.Y);
+                            break;
+                        case EnumSectionType.Vertical:
+                            StartAddress.Position = new MapPosition(vehicleLocation.LastAddress.Position.X, vehicleLocation.RealPosition.Y);
+                            break;
+                        case EnumSectionType.R2000:                         
+                        case EnumSectionType.None:                           
+                        default:
+                            StartAddress.Position = vehicleLocation.RealPosition;
+                            break;
+                    }
+                    
+                    StartAddress.AddressOffset = new MapAddressOffset();
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        public void SetupMovingSectionsAndAddresses()
         {
             MovingSections = new List<MapSection>();
             if (SectionIds.Count > 0)
             {
                 for (int i = 0; i < SectionIds.Count; i++)
                 {
-                    MapSection mapSection = new MapSection();
-                    mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();
+                    MapSection mapSection = theMapInfo.allMapSections[SectionIds[i]].DeepClone();                    
                     mapSection.CmdDirection = (mapSection.HeadAddress.Id == AddressIds[i]) ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
                     MovingSections.Add(mapSection);
                 }
-
-                var endAddress = theMapInfo.allMapAddresses[EndAddressId].DeepClone();
+               
                 var endSection = MovingSections[MovingSections.Count - 1];
                 if (endSection.CmdDirection == EnumPermitDirection.Forward)
                 {
-                    endSection.TailAddress = endAddress;
+                    endSection.TailAddress = EndAddress;
                 }
                 else
                 {
-                    endSection.HeadAddress = endAddress;
+                    endSection.HeadAddress = EndAddress;
                 }
             }
 
-            //CheckIsDuelStartPosition();
-
-            //if (IsDuelStartPosition)
-            //{
-            //    MovingSections.RemoveAt(0);
-            //    SectionIds.RemoveAt(0);
-            //    AddressIds.RemoveAt(0);
-            //}
-
-            //RebuildLastSectionForInsideEndAddress();
+            SetupMovingAddress();
         }
 
-        private void CheckIsDuelStartPosition()
+        public void SetupMovingAddress()
         {
-            var curLocation = theVehicle.CurVehiclePosition;
-            MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[1]];
-            if (mainFlowHandler.IsPositionInThisAddress(curLocation.RealPosition, mapAddress.Position))
+            MovingAddress = new List<MapAddress>();           
+            if (AddressIds.Count > 0)
             {
-                if (mainFlowHandler.IsAddressInThisSection(MovingSections[0], mapAddress) && mainFlowHandler.IsAddressInThisSection(MovingSections[1], mapAddress))
+                MovingAddress.Add(StartAddress);
+                for (int i = 1; i < AddressIds.Count-1; i++)
                 {
-                    IsDuelStartPosition = true;
-                    mainFlowHandler.LogDuel();
-                }
+                    MapAddress mapAddress = theMapInfo.allMapAddresses[AddressIds[i]];
+                    MovingAddress.Add(mapAddress);
+                }              
+                MovingAddress.Add(EndAddress);
             }
         }
 
@@ -92,44 +170,55 @@ namespace Mirle.Agv.Model.TransferSteps
 
             try
             {
-                if (MovingSections.Count > 0)
+                #region version 1.0
+                //if (MovingSections.Count > 0)
+                //{
+                //    //Setup first position inside MovingSections[0];
+                //    var realPos = Vehicle.Instance.VehicleLocation.RealPosition;
+                //    MapPosition firstPosition = new MapPosition(realPos.X, realPos.Y);
+
+                //    switch (MovingSections[0].Type)
+                //    {
+                //        case EnumSectionType.None:
+                //            break;
+                //        case EnumSectionType.Horizontal:
+                //            firstPosition.Y = MovingSections[0].HeadAddress.Position.Y;
+                //            break;
+                //        case EnumSectionType.Vertical:
+                //            firstPosition.X = MovingSections[0].HeadAddress.Position.X;
+                //            break;
+                //        case EnumSectionType.R2000:
+                //            firstPosition = theMapInfo.allMapAddresses[AddressIds[0]].Position;
+                //            break;
+                //        default:
+                //            break;
+                //    }
+
+                //    AddressPositions.Add(firstPosition);
+
+                //    for (int i = 0; i < MovingSections.Count - 1; i++)
+                //    {
+                //        MapAddress mapAddress = MovingSections[i].CmdDirection == EnumPermitDirection.Backward ? MovingSections[i].HeadAddress : MovingSections[i].TailAddress;
+                //        var pos = mapAddress.Position;
+                //        AddressPositions.Add(mapAddress.Position);
+                //    }
+                //}
+
+                //var endPosition = theMapInfo.allMapAddresses[EndAddress.Id].Position;
+                //AddressPositions.Add(endPosition);
+
+                #endregion
+
+                #region version 2.0
+                foreach (var mapAddress in MovingAddress)
                 {
-                    //Setup first position inside MovingSections[0];
-                    var firstPosition = Vehicle.Instance.CurVehiclePosition.RealPosition.DeepClone();
-
-                    switch (MovingSections[0].Type)
-                    {
-                        case EnumSectionType.None:
-                            break;
-                        case EnumSectionType.Horizontal:
-                            firstPosition.Y = MovingSections[0].HeadAddress.Position.Y;
-                            break;
-                        case EnumSectionType.Vertical:
-                            firstPosition.X = MovingSections[0].HeadAddress.Position.X;
-                            break;
-                        case EnumSectionType.R2000:
-                            firstPosition = theMapInfo.allMapAddresses[AddressIds[0]].Position;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    AddressPositions.Add(firstPosition);
-
-                    for (int i = 0; i < MovingSections.Count - 1; i++)
-                    {
-                        MapAddress mapAddress = MovingSections[i].CmdDirection == EnumPermitDirection.Backward ? MovingSections[i].HeadAddress : MovingSections[i].TailAddress;
-                        var pos = mapAddress.Position;
-                        AddressPositions.Add(mapAddress.Position);
-                    }
+                    AddressPositions.Add(mapAddress.Position);
                 }
-
-                var endPosition = theMapInfo.allMapAddresses[EndAddressId].Position;
-                AddressPositions.Add(endPosition);
+                #endregion
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -140,7 +229,7 @@ namespace Mirle.Agv.Model.TransferSteps
             {
                 if (MovingSections.Count > 0)
                 {
-                    var firstPosition = theMapInfo.allMapAddresses[StartAddressId].Position;
+                    var firstPosition = theMapInfo.allMapAddresses[StartAddress.Id].Position;
                     AddressPositions.Add(firstPosition);
 
                     for (int i = 0; i < MovingSections.Count - 1; i++)
@@ -150,12 +239,12 @@ namespace Mirle.Agv.Model.TransferSteps
                     }
                 }
 
-                var endPosition = theMapInfo.allMapAddresses[EndAddressId].Position;
+                var endPosition = theMapInfo.allMapAddresses[EndAddress.Id].Position;
                 AddressPositions.Add(endPosition);
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -176,7 +265,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -249,7 +338,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
 
             //theVehicle.CurVehiclePosition.WheelAngle = WheelAngle;
@@ -670,44 +759,31 @@ namespace Mirle.Agv.Model.TransferSteps
                 {
                     Info += $"({Convert.ToInt32(pos.X)},{Convert.ToInt32(pos.Y)})";
                 }
-                Info += "]" + Environment.NewLine + "[AddressActions=";
-                foreach (var act in AddressActions)
-                {
-                    Info += $"({act})";
-                }
+                //Info += "]" + Environment.NewLine + "[AddressActions=";
+                //foreach (var act in AddressActions)
+                //{
+                //    Info += $"({act})";
+                //}
                 Info += "]" + Environment.NewLine + "[SectionSpeedLimits=";
                 foreach (var speed in SectionSpeedLimits)
                 {
                     Info += $"({Convert.ToInt32(speed)})";
                 }
+                Info += "]" + Environment.NewLine + "[MovingAddress=";
+                foreach (var addr in MovingAddress)
+                {
+                    Info += $"({addr.Id})";
+                }
                 Info += "]";
 
-                //LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", Info));
+                //LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", Info));
 
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }
-
-        public MoveCmdInfo DeepClone()
-        {
-            MoveCmdInfo moveCmd = new MoveCmdInfo();
-            moveCmd.AddressActions = AddressActions.DeepClone();
-            moveCmd.AddressPositions = AddressPositions.DeepClone();
-            moveCmd.SectionSpeedLimits = SectionSpeedLimits.DeepClone();
-            moveCmd.SectionIds = SectionIds.DeepClone();
-            moveCmd.AddressIds = AddressIds.DeepClone();
-            moveCmd.MovingSections = MovingSections.DeepClone();
-            moveCmd.MovingSectionsIndex = MovingSectionsIndex;
-            moveCmd.CmdId = CmdId;
-            moveCmd.CstId = CstId;
-            moveCmd.type = type;
-
-            return moveCmd;
-        }
-
+        }        
     }
 
     [Serializable]
@@ -717,5 +793,7 @@ namespace Mirle.Agv.Model.TransferSteps
         {
             type = EnumTransferStepType.MoveToCharger;
         }
+
+
     }
 }

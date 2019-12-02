@@ -192,7 +192,7 @@ namespace Mirle.Agv.Controller.Tools
 
         private static bool CheckIsTrue(string result)
         {
-            return (result.ToLower().Trim() == "true" || result == "1");
+            return (result.ToLower().Trim() == "true" || result == "5");
         }
 
         // 3.寫入資料

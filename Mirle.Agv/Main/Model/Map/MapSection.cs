@@ -13,7 +13,8 @@ namespace Mirle.Agv.Model
         public string Id { get; set; } = "";
         public MapAddress HeadAddress { get; set; } = new MapAddress();
         public MapAddress TailAddress { get; set; } = new MapAddress();
-        public double Distance { get; set; }
+        public double HeadToTailDistance { get; set; }
+        public double VehicleDistanceSinceHead { get; set; }
         public double Speed { get; set; }
         public EnumSectionType Type { get; set; } = EnumSectionType.None;
         public EnumPermitDirection PermitDirection { get; set; } = EnumPermitDirection.None;

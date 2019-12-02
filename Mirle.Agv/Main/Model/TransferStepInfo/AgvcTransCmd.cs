@@ -14,16 +14,22 @@ namespace Mirle.Agv.Model.TransferSteps
     [Serializable]
     public class AgvcTransCmd
     {
-        public EnumAgvcTransCommandType CommandType { get; set; }
+        public EnumAgvcTransCommandType CommandType { get; set; } = EnumAgvcTransCommandType.Else;
         public List<string> ToLoadSectionIds { get; set; } = new List<string>();
         public List<string> ToUnloadSectionIds { get; set; } = new List<string>();
         public List<string> ToLoadAddressIds { get; set; } = new List<string>();
         public List<string> ToUnloadAddressIds { get; set; } = new List<string>();
         public string LoadAddressId { get; set; } = "";
         public string UnloadAddressId { get; set; } = "";
+        public string AvoidEndAddressId { get; set; } = "";
         public string CassetteId { get; set; } = "";
         public string CommandId { get; set; } = "";
         public ushort SeqNum { get; set; }
+        public double CommandDistance { get; set; }
+        public CompleteStatus CompleteStatus { get; set; }
+        public VhStopSingle PauseStatus { get; set; } = VhStopSingle.StopSingleOff;
+        public VhStopSingle ReserveStatus { get; set; } = VhStopSingle.StopSingleOff;
+        public bool IsAvoidComplete { get; set; }
 
         public AgvcTransCmd()
         {
@@ -35,6 +41,43 @@ namespace Mirle.Agv.Model.TransferSteps
             CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID.Trim();
             CommandType = SetupCommandType(transRequest.ActType);
             SeqNum = aSeqNum;
+            CompleteStatus = SetupCompleteStatus(transRequest.ActType);
+        }
+
+        protected CompleteStatus SetupCompleteStatus(ActiveType actType)
+        {
+            switch (actType)
+            {
+                case ActiveType.Move:
+                    return CompleteStatus.CmpStatusMove;
+                case ActiveType.Load:
+                    return CompleteStatus.CmpStatusLoad;
+                case ActiveType.Unload:
+                    return CompleteStatus.CmpStatusUnload;
+                case ActiveType.Loadunload:
+                    return CompleteStatus.CmpStatusLoadunload;
+                case ActiveType.Home:
+                    break;
+                case ActiveType.Override:
+                    break;
+                case ActiveType.Cstidrename:
+                    break;
+                case ActiveType.Mtlhome:
+                    break;
+                case ActiveType.Movetocharger:
+                    return CompleteStatus.CmpStatusMoveToCharger;
+                case ActiveType.Systemout:
+                    break;
+                case ActiveType.Systemin:
+                    break;
+                case ActiveType.Techingmove:
+                    break;
+                case ActiveType.Round:
+                    break;
+                default:
+                    break;
+            }
+            return CompleteStatus.CmpStatusVehicleAbort;
         }
 
         protected EnumAgvcTransCommandType SetupCommandType(ActiveType activeType)
@@ -119,29 +162,19 @@ namespace Mirle.Agv.Model.TransferSteps
             }
         }
 
-        public AgvcTransCmd DeepClone()
-        {
-            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
-            agvcTransCmd.CommandType = CommandType;
-            agvcTransCmd.ToLoadSectionIds = ToLoadSectionIds.DeepClone();
-            agvcTransCmd.ToLoadAddressIds = ToLoadAddressIds.DeepClone();
-            agvcTransCmd.ToUnloadSectionIds = ToUnloadSectionIds.DeepClone();
-            agvcTransCmd.ToUnloadAddressIds = ToUnloadAddressIds.DeepClone();
-            agvcTransCmd.LoadAddressId = LoadAddressId;
-            agvcTransCmd.UnloadAddressId = UnloadAddressId;
-            agvcTransCmd.CassetteId = CassetteId;
-            agvcTransCmd.CommandId = CommandId;
-            agvcTransCmd.SeqNum = SeqNum;
-
-            return agvcTransCmd;
-        }
-
         public void ExchangeSectionsAndAddress(AgvcOverrideCmd agvcOverrideCmd)
         {
             ToLoadSectionIds = agvcOverrideCmd.ToLoadSectionIds;
             ToLoadAddressIds = agvcOverrideCmd.ToLoadAddressIds;
             ToUnloadSectionIds = agvcOverrideCmd.ToUnloadSectionIds;
             ToUnloadAddressIds = agvcOverrideCmd.ToUnloadAddressIds;
+        }
+
+        public void CombineAvoid(AgvcMoveCmd agvcMoveCmd)
+        {
+            ToUnloadSectionIds = agvcMoveCmd.ToUnloadSectionIds;
+            ToUnloadAddressIds = agvcMoveCmd.ToUnloadAddressIds;
+            AvoidEndAddressId = agvcMoveCmd.UnloadAddressId;
         }
     }
 
@@ -158,7 +191,23 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        public AgvcMoveCmd(ID_51_AVOID_REQUEST transRequest, ushort aSeqNum)
+        {
+            try
+            {
+                CommandType = EnumAgvcTransCommandType.Move;
+                SeqNum = aSeqNum;
+                SecToUnloadSections(transRequest.GuideSections);
+                SetToUnloadAddresses(transRequest.GuideAddresses);
+                UnloadAddressId = transRequest.DestinationAdr;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
@@ -182,7 +231,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
@@ -199,7 +248,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
@@ -219,7 +268,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }
@@ -252,7 +301,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
     }

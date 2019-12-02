@@ -13,7 +13,7 @@ namespace Mirle.Agv.Model
         public bool DirFlag { get; set; }
         public int StartWheelAngle { get; set; }
         public int NowWheelAngle { get; set; }
-        public int InsertIndex { get; set; } = 0;
+        public int StartMoveIndex { get; set; } = 0;
         public int MoveCmdStartReserveNumber { get; set; } = 0;
         public int NextMoveCmdStartReserveNumber { get; set; } = 0;
         public int IndexOfReserveList { get; set; } = 0;

@@ -22,6 +22,8 @@ namespace Mirle.Agv.View
         private AlarmHandler alarmHandler;
         private MainFlowHandler mainFlowHandler;
         //private string historyAlarmsFilePath = Path.Combine(Environment.CurrentDirectory, "Log", "AlarmHistory", "AlarmHistory.log");
+        public string HappenedingAlarmsMsg { get; set; } = "";
+        public string HistoryAlarmsMsg { get; set; } = "";
 
         public AlarmForm(MainFlowHandler mainFlowHandler)
         {
@@ -35,28 +37,29 @@ namespace Mirle.Agv.View
 
         private void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
         {
-            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][ResetTime={alarm.ResetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
-            RichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
+            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
+            AppendHappenedingAlarmsMsg(msgForHappeningAlarms);
 
-            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][ResetTime={alarm.ResetTime.ToString("yyyy/MM/dd_HH/mm")}]";
-            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
+            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("yyyy/MM/dd_HH/mm")}]";
+            AppendHistoryAlarmsMsg(msgForHistoryAlarms);
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][SetTime={alarm.SetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
-            RichTextBoxAppendHead(rtbHappeningAlarms, msgForHappeningAlarms);
+            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
+            AppendHappenedingAlarmsMsg(msgForHappeningAlarms);
 
-            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][SetTime={alarm.SetTime.ToString("yyyy/MM/dd_HH/mm")}]";
-            RichTextBoxAppendHead(rtbHistoryAlarms, msgForHistoryAlarms);
+            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("yyyy/MM/dd_HH/mm")}]";
+            AppendHistoryAlarmsMsg(msgForHistoryAlarms);
         }
 
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             btnAlarmReset.Enabled = false;
 
-            RichTextBoxAppendHead(rtbHistoryAlarms, msg);
-            rtbHappeningAlarms.Clear();
+            AppendHistoryAlarmsMsg(msg);
+            HappenedingAlarmsMsg = "";
+
             Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
         }
@@ -71,31 +74,6 @@ namespace Mirle.Agv.View
             mainFlowHandler.GetPlcAgent().WritePLCBuzzserStop();
         }
 
-        public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
-        public void RichTextBoxAppendHead(RichTextBox richTextBox, string msg)
-        {
-            if (richTextBox.InvokeRequired)
-            {
-                RichTextBoxAppendHeadCallback mydel = new RichTextBoxAppendHeadCallback(RichTextBoxAppendHead);
-                this.Invoke(mydel, new object[] { richTextBox, msg });
-            }
-            else
-            {
-                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff] ");
-                msg = Environment.NewLine + msg + Environment.NewLine;
-                richTextBox.Text = string.Concat(timeStamp, msg, richTextBox.Text);
-
-                int RichTextBoxMaxLines = 10000;  // middlerConfig.RichTextBoxMaxLines;
-
-                if (richTextBox.Lines.Count() > RichTextBoxMaxLines)
-                {
-                    string[] sNewLines = new string[RichTextBoxMaxLines];
-                    Array.Copy(richTextBox.Lines, 0, sNewLines, 0, sNewLines.Length);
-                    richTextBox.Lines = sNewLines;
-                }
-            }
-        }
-
         private void btnTestSetAlarm_Click(object sender, EventArgs e)
         {
             try
@@ -105,7 +83,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -113,6 +91,53 @@ namespace Mirle.Agv.View
         {
             this.SendToBack();
             this.Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var id = Convert.ToInt32(num1.Value);
+            alarmHandler.SetAlarm(id);
+        }
+
+
+        private void AppendHappenedingAlarmsMsg(string msg)
+        {
+            try
+            {
+                HappenedingAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg, "\r\n", HappenedingAlarmsMsg);
+
+                if (HappenedingAlarmsMsg.Length > 65535)
+                {
+                    HappenedingAlarmsMsg = HappenedingAlarmsMsg.Substring(65535);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void AppendHistoryAlarmsMsg(string msg)
+        {
+            try
+            {
+                HistoryAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg, "\r\n", HistoryAlarmsMsg);
+
+                if (HistoryAlarmsMsg.Length > 65535)
+                {
+                    HistoryAlarmsMsg = HistoryAlarmsMsg.Substring(65535);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void timeUpdateUI_Tick(object sender, EventArgs e)
+        {
+            tbxHappendingAlarms.Text = HappenedingAlarmsMsg;
+            tbxHistoryAlarms.Text = HistoryAlarmsMsg;
         }
     }
 }

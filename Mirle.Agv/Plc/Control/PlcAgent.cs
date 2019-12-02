@@ -4,18 +4,16 @@
 using ClsMCProtocol;
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model;
+using Mirle.Agv.View;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Mirle.Agv.View;
-using System.Runtime.CompilerServices;
-using Mirle.Agv.Model.Configs;
-using System.IO;
-using System.Text;
 
 namespace Mirle.Agv.Controller
 {
@@ -27,6 +25,8 @@ namespace Mirle.Agv.Controller
         private const int Fork_Not_Busy_timeout = 270003;
         private const int Fork_Command_Executing_timeout = 270004;
         private const int Batterys_Charging_Time_Out = 270005;
+
+        private const int ModeChangeError = 270006;
         #endregion
 
         private MCProtocol aMCProtocol;
@@ -54,6 +54,7 @@ namespace Mirle.Agv.Controller
         public Boolean IsFirstMeterAhGet { get; set; } = false;
 
         public PlcVehicle APLCVehicle;
+        public VehicleCorrectValue AVehicleCorrectValue = new VehicleCorrectValue();
 
         public EnumVehicleSafetyAction VehicleSafetyAction_Old { get; set; } = EnumVehicleSafetyAction.Normal;
 
@@ -62,6 +63,7 @@ namespace Mirle.Agv.Controller
 
         private Thread plcOtherControlThread = null;
         private Thread plcForkCommandControlThread = null;
+        private Thread plcOperationThread = null;
 
         private Thread TestThread = null;
 
@@ -69,12 +71,14 @@ namespace Mirle.Agv.Controller
         private UInt32 alarmReadIndex = 0;
 
         private JogPitchForm jogPitchForm = null;
+        private MainForm mainForm = null;
 
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
         public event EventHandler<UInt16> OnBatteryPercentageChangeEvent;
         public event EventHandler<string> OnCassetteIDReadFinishEvent;
+        public event EventHandler<PlcForkCommand> OnForkCommandInterlockErrorEvent;
 
         public event EventHandler<EnumAutoState> OnIpcAutoManualChangeEvent;
 
@@ -90,13 +94,20 @@ namespace Mirle.Agv.Controller
             //    boolConnectionState = value;
             //}
         }
+        private int nowErrorCode = 0;
+
+        public void SendVehicleDecreaseSpeedFlag()
+        {
+
+        }
 
         private AlarmHandler aAlarmHandler = null;
 
-        public void SetOutSideObj(ref JogPitchForm jogPitchForm)
+        public void SetOutSideObj(MainForm mainForm)
         {
-            this.jogPitchForm = jogPitchForm;
-
+            this.mainForm = mainForm;
+            this.jogPitchForm = mainForm.GetJogPitchForm();
+            //this.mainForm = mainForm;  , ref MainForm mainForm
             //this.APLCVehicle.Hmi.beforeFromPlcWord = this.APLCVehicle.Hmi.FromPlcWord.DeepClone();
         }
 
@@ -204,6 +215,9 @@ namespace Mirle.Agv.Controller
             ValueCompare<double>(this.APLCVehicle.Batterys.FBatteryTemperature, ref MinFBatteryTemperature, 1);
             ValueCompare<double>(this.APLCVehicle.Batterys.BBatteryTemperature, ref MinBBatteryTemperature, 1);
 
+
+            
+
             if (sw.ElapsedMilliseconds > ms)
             {
                 string csvLog = "", Separator = ",";
@@ -213,7 +227,7 @@ namespace Mirle.Agv.Controller
                 now = DateTime.Now;
                 csvLog = now.ToString("HH:mm:ss.ff");
 
-
+                csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Percentage.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.MeterCurrent.ToString();
                 csvLog = csvLog + Separator + this.MaxMeterCurrent.ToString();
                 csvLog = csvLog + Separator + this.MinMeterCurrent.ToString();
@@ -269,6 +283,17 @@ namespace Mirle.Agv.Controller
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Remain_Capacity.ToString();
                 csvLog = csvLog + Separator + this.APLCVehicle.Batterys.Design_Capacity.ToString();
 
+                try
+                {
+                    csvLog = csvLog + Separator + this.APLCVehicle.Robot.ForkHome;
+                    csvLog = csvLog + Separator + mainForm.mainFlowHandler.GetCurTransferStep().GetType().ToString();
+                    csvLog = csvLog + Separator + Vehicle.Instance.VehicleLocation.LastAddress.Id;
+                    csvLog = csvLog + Separator + this.aMCProtocol.get_ItemByTag("PLCBigDataTT01").AsUInt16;
+                } catch (Exception ex)
+                {
+
+                }
+
                 BatteryLogger.SavePureLog(csvLog);
 
                 sw.Stop();
@@ -314,7 +339,7 @@ namespace Mirle.Agv.Controller
             errLogger = loggerAgent.GetLooger("Error");
             portPIOLogger = loggerAgent.GetLooger("PortPIO");
             chargerPIOLogger = loggerAgent.GetLooger("ChargerPIO");
-            plcJogPitchLogger = loggerAgent.GetLooger("plcJogPitchLogger");
+            plcJogPitchLogger = loggerAgent.GetLooger("PlcJogPitch");
 
             BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");
             //BatteryPercentage = LoggerAgent.Instance.GetLooger("BatteryPercentage");
@@ -422,11 +447,6 @@ namespace Mirle.Agv.Controller
                 }
             }
         }
-        //private void ReadXml()
-        //{
-        //    XmlHandler xmlHandler = new XmlHandler();
-        //    plcConfig = xmlHandler.ReadXml<PlcConfig>("Plc.xml");
-        //}
 
         private void MCProtocol_OnDataChangeEvent(string sMessage, ClsMCProtocol.clsColParameter oColParam)
         {
@@ -465,14 +485,14 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
-                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far"));
+                                    //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
+                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far"));
                                 }
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("RBeamSensor"))
@@ -487,15 +507,15 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-                                    LogFormat logFormat = new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    LogFormat logFormat = new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
                                     LogPlcMsg(loggerAgent, logFormat);
                                 }
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("WBeamSensor"))
@@ -510,14 +530,14 @@ namespace Mirle.Agv.Controller
                                 }
                                 else
                                 {
-                                    //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep"));
+                                    //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
+                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep"));
                                 }
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("Bumper"))
@@ -530,8 +550,8 @@ namespace Mirle.Agv.Controller
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("EMO_"))
@@ -544,8 +564,8 @@ namespace Mirle.Agv.Controller
                             }
                             else
                             {
-                                //errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
+                                //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
+                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("Cell_"))
@@ -596,6 +616,45 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "MeterVoltage":
                                     this.APLCVehicle.Batterys.MeterVoltage = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
+
+                                    switch (this.APLCVehicle.Batterys.BatteryType)
+                                    {
+                                        case EnumBatteryType.Gotech:
+                                            if (this.APLCVehicle.Batterys.MeterVoltage < this.APLCVehicle.Batterys.GotechMinVol + 1.5)
+                                            {
+                                                if (this.APLCVehicle.Batterys.bVoltageAbnormal == false)
+                                                {
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
+                                                    setSOC(10);
+                                                    this.APLCVehicle.Batterys.bVoltageAbnormal = true;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                this.APLCVehicle.Batterys.bVoltageAbnormal = false;
+                                            }
+                                            break;
+                                        case EnumBatteryType.Yinda:
+                                            if (this.APLCVehicle.Batterys.MeterVoltage < this.APLCVehicle.Batterys.YindaMinVol + 1.5)
+                                            {
+                                                if (this.APLCVehicle.Batterys.bVoltageAbnormal == false)
+                                                {
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
+                                                    setSOC(10);
+                                                    this.APLCVehicle.Batterys.bVoltageAbnormal = true;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                this.APLCVehicle.Batterys.bVoltageAbnormal = false;
+                                            }
+                                            break;
+
+                                        default:
+                                            break;
+
+                                    }
+                                    
                                     break;
                                 case "MeterCurrent":
                                     this.APLCVehicle.Batterys.MeterCurrent = this.DECToDouble(oColParam.Item(i).AsUInt16, 1);
@@ -627,6 +686,18 @@ namespace Mirle.Agv.Controller
                                             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "MeterAH data change but new value is 0.0"));
                                         }
                                     }
+                                    break;
+                                case "GotechMaxVol":
+                                    this.APLCVehicle.Batterys.GotechMaxVol = this.DECToDouble(aMCProtocol.get_ItemByTag("GotechMaxVol").AsUInt16, 1, 2);
+                                    break;
+                                case "GotechMinVol":
+                                    this.APLCVehicle.Batterys.GotechMinVol = this.DECToDouble(aMCProtocol.get_ItemByTag("GotechMinVol").AsUInt16, 1, 2);
+                                    break;
+                                case "YindaMaxVol":
+                                    this.APLCVehicle.Batterys.YindaMaxVol = this.DECToDouble(aMCProtocol.get_ItemByTag("YindaMaxVol").AsUInt16, 1, 2);
+                                    break;
+                                case "YindaMinVol":
+                                    this.APLCVehicle.Batterys.YindaMinVol = this.DECToDouble(aMCProtocol.get_ItemByTag("YindaMinVol").AsUInt16, 1, 2);
                                     break;
                                 case "FullChargeIndex":
                                     //if (this.APLCVehicle.Batterys.FullChargeIndex == 0)
@@ -720,6 +791,26 @@ namespace Mirle.Agv.Controller
                                                 {
 
                                                 }
+
+
+                                                if (AlarmCode == 1150 || AlarmCode == 1160 || AlarmCode == 1152|| AlarmCode == 1162||
+                                                    AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126 || AlarmCode == 140 )
+                                                {
+                                                    if (nowErrorCode == 0)
+                                                    {
+                                                        nowErrorCode = AlarmCode;
+                                                        Task.Run(() =>
+                                                        {
+                                                            Thread.Sleep(10000);
+                                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Trigger ForkCommandInterlockErrorEvent. AlarmCode: " + AlarmCode));
+                                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+                                                            Thread.Sleep(4000);
+                                                            nowErrorCode = 0;
+                                                        });
+                                                    }
+                                                }
+                                                
                                             }
                                         }
 
@@ -739,8 +830,8 @@ namespace Mirle.Agv.Controller
                                     }
                                     catch (Exception ex)
                                     {
-                                        //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                                        LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                                        //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                                        LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                                     }
 
                                     //Console.Out.Write("alarm");
@@ -767,7 +858,8 @@ namespace Mirle.Agv.Controller
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkNG == true)
                                     {
-                                        RecordForkAlignmentValue("ForkCommandNG");
+                                        RecordForkAndVeihcleCorrectValue("ForkCommandNG");
+                                        ClearForkAndVehicleCorrectValue();
                                     }
 
                                     break;
@@ -778,10 +870,39 @@ namespace Mirle.Agv.Controller
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkFinish == true)
                                     {
-                                        RecordForkAlignmentValue("ForkCommandFinish");
+                                        RecordForkAndVeihcleCorrectValue("ForkCommandFinish");
+                                        ClearForkAndVehicleCorrectValue();
                                     }
 
                                     break;
+                                case "ForkPrePioFail":
+                                    this.APLCVehicle.Robot.ForkPrePioFail = aMCProtocol.get_ItemByTag("ForkPrePioFail").AsBoolean;
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPrePioFail = {this.APLCVehicle.Robot.ForkPrePioFail}"));
+
+                                    //if (this.APLCVehicle.Robot.ForkPrePioFail == true)
+                                    //{
+                                    //    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Reset plc alarm and warn."));
+
+                                    //    Task.Run(() =>
+                                    //    {
+                                    //        Thread.Sleep(1500);
+                                    //        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger."));
+                                    //        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                    //        OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+                                    //    });
+                                    //}
+                                    break;
+
+                                case "ForkBusyFail":
+                                    this.APLCVehicle.Robot.ForkBusyFail = aMCProtocol.get_ItemByTag("ForkBusyFail").AsBoolean;
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkBusyFail = {this.APLCVehicle.Robot.ForkBusyFail}"));
+                                    break;
+
+                                case "ForkPostPioFail":
+                                    this.APLCVehicle.Robot.ForkBusyFail = aMCProtocol.get_ItemByTag("ForkPostPioFail").AsBoolean;
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPostPioFail = {this.APLCVehicle.Robot.ForkPostPioFail}"));
+                                    break;
+
                                 case "StageLoading":
                                     this.APLCVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"StageLoading = {this.APLCVehicle.Loading}"));
@@ -847,14 +968,46 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ForkAlignmentB = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultB").AsUInt32, 2, 2);
                                     break;
 
+                                case "PLCOperateMode":
+                                    this.APLCVehicle.JogOperation.ModeOperation = aMCProtocol.get_ItemByTag("PLCOperateMode").AsBoolean;
+                                    break;
 
+                                case "PLCVehicleMode":
+                                    this.APLCVehicle.JogOperation.ModeVehicle = (EnumJogVehicleMode)aMCProtocol.get_ItemByTag("PLCVehicleMode").AsUInt16;
+                                    break;
+
+                                case "PLCJogElmoFunction":
+                                    this.APLCVehicle.JogOperation.JogElmoFunction = (EnumJogElmoFunction)aMCProtocol.get_ItemByTag("PLCJogElmoFunction").AsUInt16;
+                                    break;
+                                case "PLCJogRunMode":
+                                    this.APLCVehicle.JogOperation.JogRunMode = (EnumJogRunMode)aMCProtocol.get_ItemByTag("PLCJogRunMode").AsUInt16;
+                                    break;
+                                case "PLCJogTurnSpeed":
+                                    this.APLCVehicle.JogOperation.JogTurnSpeed = (EnumJogTurnSpeed)aMCProtocol.get_ItemByTag("PLCJogTurnSpeed").AsUInt16;
+                                    break;
+                                case "PLCJogMoveVelocity":
+                                    this.APLCVehicle.JogOperation.JogMoveVelocity = (EnumJogMoveVelocity)aMCProtocol.get_ItemByTag("PLCJogMoveVelocity").AsUInt16;
+                                    break;
+                                case "PLCJogOperation":
+                                    this.APLCVehicle.JogOperation.JogOperation = (EnumJogOperation)aMCProtocol.get_ItemByTag("PLCJogOperation").AsUInt16;
+                                    break;
+                                case "PLCJogMoveOntimeRevise":
+                                    this.APLCVehicle.JogOperation.JogMoveOntimeRevise = aMCProtocol.get_ItemByTag("PLCJogMoveOntimeRevise").AsBoolean;
+                                    break;
+                                case "PLCJogMaxDistance":
+                                    this.APLCVehicle.JogOperation.JogMaxDistance = this.DECToDouble(aMCProtocol.get_ItemByTag("PLCJogMaxDistance").AsUInt32, 2, 2);
+                                    break;
+                                case "PLCJogBatteryReplaceIndex":
+                                    this.APLCVehicle.BatteryReplaceIndex = aMCProtocol.get_ItemByTag("PLCJogBatteryReplaceIndex").AsUInt16;
+                                    //this.mainForm.mainFlowHandler
+                                    break;
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString());
-                        LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString()));
+                        //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString());
+                        LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString()));
                     }
 
 
@@ -862,10 +1015,16 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
             }
         }
+
+        public void triggerForkCommandInterlockErrorEvent()
+        {
+            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+        }
+            
         private void ccModeAHSet()
         {
 
@@ -974,13 +1133,92 @@ namespace Mirle.Agv.Controller
             return returnValue;
         }
 
+        private String DoubleToDECString(double inputNum, int Wordlength, int digit = 0)
+        {
+            string str = "";
+            
+            if (digit <= 0)
+            {
+                str = "";
+            }
+            else
+            {
+                for (int i = 0; i < digit; i++)
+                {
+                    str += "0";
+                }
+            }
+            str = "#." + str;
+
+            String strInputNum = inputNum.ToString(str);
+            strInputNum = strInputNum.Replace(".", "");
+            inputNum = Convert.ToDouble(strInputNum);
+
+            // Check inputNum 的大小正確
+            switch (Wordlength)
+            {
+                case 1:
+                    if (inputNum < -32768)
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        return "-32768";
+                    }
+                    if (inputNum > 32767)
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        return "32767";
+                    }
+                    break;
+                case 2:
+                    if (inputNum < -2147483648)
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        return "-2147483648";
+                    }
+                    if (inputNum > 2147483647)
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        return "2147483647";
+                    }
+                    break;
+            }
+
+
+            switch (Wordlength)
+            {
+                case 1:
+                    if (inputNum < 0)
+                    {
+                        str = (inputNum + 65536).ToString();
+                    }
+                    else
+                    {
+                        str = inputNum.ToString();
+                    }
+                    break;
+                case 2:
+
+                    if (inputNum < 0)
+                    {
+                        str = (inputNum + 4294967296).ToString();
+                    }
+                    else
+                    {
+                        str = inputNum.ToString();
+                    }
+                    break;
+            }
+
+            return str;
+        }
+
         #region 特殊 Log 紀錄
         //紀錄 Fork alignment value 
-        private void RecordForkAlignmentValue(String status)
+        private void RecordForkAndVeihcleCorrectValue(String status)
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
 
-            String strLog = new StringBuilder().Append(status)
+            String strLog1 = new StringBuilder().Append(status)
                     .Append(", Fork alignment value - P: ").Append(APLCVehicle.Robot.ForkAlignmentP)
                     .Append(", Y: ").Append(APLCVehicle.Robot.ForkAlignmentY)
                     .Append(", Phi: ").Append(APLCVehicle.Robot.ForkAlignmentPhi)
@@ -989,7 +1227,38 @@ namespace Mirle.Agv.Controller
                     .Append(", C: ").Append(APLCVehicle.Robot.ForkAlignmentC)
                     .Append(", B: ").Append(APLCVehicle.Robot.ForkAlignmentB)
                     .ToString();
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog));
+
+            String strLog2 = "";
+            if (AVehicleCorrectValue.otherMessage.Equals(""))
+            {
+                strLog2 = new StringBuilder().Append(status)
+                                    .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
+                                    .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
+                                    .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
+                                    .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
+                                    .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
+                                    .ToString();
+            }else
+            {
+                strLog2 = new StringBuilder().Append(status)
+                    .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
+                    .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
+                    .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
+                    .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
+                    .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
+                    .Append(", other: ").Append(AVehicleCorrectValue.VehicleHead)
+                    .ToString();
+            }
+            
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
+
+            if (status.Equals("ForkCommandNG"))
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog1));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog2));
+            }
+            
         }
 
         private void RecordSafetyValueChanged()
@@ -1066,6 +1335,7 @@ namespace Mirle.Agv.Controller
                 try //20190730_Rudy 新增try catch
                 {
                     //========Clock Working========
+                    double startTime = DateTime.Now.Ticks;
                     sw500msClock.Start();
                     if (sw500msClock.ElapsedMilliseconds >= 500)
                     {
@@ -1400,11 +1670,16 @@ namespace Mirle.Agv.Controller
                         RecordSafetyValueChanged();
                     }
                     
+
+                    // Write related data to plc
+                    //this.plcOperationRun_WritePlcDisplayData(plcOperationRun_IpcJogPitchData);
+                    double endTime = DateTime.Now.Ticks;
+                    //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Empty", "Thread cycle time: " + (endTime - startTime) / 10000 + " ms"));
                 }
                 catch (Exception ex)
                 {
-                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                    //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                 }
                 System.Threading.Thread.Sleep(1);
             }
@@ -1988,6 +2263,14 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("StageDirection").AsUInt16 = Convert.ToUInt16(direction);
             this.aMCProtocol.get_ItemByTag("EQPIO").AsBoolean = eQIF;
             this.aMCProtocol.get_ItemByTag("ForkSpeed").AsUInt16 = forkSpeed;
+
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteForkCommandInfo: " +
+                            "CommandNo - " + commandNo +
+                            ", ForkCommandType - " + enumForkCommand +
+                            ", StageNo - " + stageNo +
+                            ", Direction - " + direction +
+                            ", IsEqPio - " + eQIF));
+
             if (this.aMCProtocol.WritePLC())
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, ");
@@ -2144,7 +2427,7 @@ namespace Mirle.Agv.Controller
                         this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
                     }
                 }
-
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", liArrayWord.ToString()));
                 foreach (string word in liWarningWord)
                 {
                     for (int i = 0; i < 16; i++)
@@ -2153,6 +2436,8 @@ namespace Mirle.Agv.Controller
                         this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
                     }
                 }
+
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", liWarningWord.ToString()));
                 if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset Success"));
@@ -2166,7 +2451,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
             }
             liArrayWord.Clear();
             liWarningWord.Clear();
@@ -2210,7 +2495,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
             }
             return result;
         }
@@ -2266,6 +2551,7 @@ namespace Mirle.Agv.Controller
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", OldCCModeAH = " + APLCVehicle.Batterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.Batterys.MeterAh.ToString()));
             this.APLCVehicle.Batterys.SetCcModeAh(this.APLCVehicle.Batterys.MeterAh + this.APLCVehicle.Batterys.AhWorkingRange * (100.0 - SOC) / 100.00, false);
             //CcModeAh
+            BatteryPercentageWriteLog(Convert.ToUInt16(SOC));
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", NewCCModeAH = " + APLCVehicle.Batterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.Batterys.MeterAh.ToString()));
 
         }
@@ -2608,11 +2894,23 @@ namespace Mirle.Agv.Controller
             CassetteID = strCassetteID;
             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CassetteId) + " Success"));
 
-            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
-
-            
+            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);            
         }
 
+        public void testTriggerCassetteIDReader(ref string CassetteID)
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
+            string strCassetteID = CassetteID;
+            //this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
+            this.APLCVehicle.CassetteId = strCassetteID;
+            //CassetteID = strCassetteID;
+            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "testTriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CassetteId) + " Success"));
+
+            OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
+
+
+        }
 
         public void ClearExecutingForkCommand()
         {
@@ -2645,6 +2943,7 @@ namespace Mirle.Agv.Controller
                         {
                             case EnumForkCommandState.Queue:
 
+                                #region Not used
                                 //if (this.IsFakeForking)
                                 //{
                                 //    System.Threading.Thread.Sleep(3000);
@@ -2677,6 +2976,7 @@ namespace Mirle.Agv.Controller
 
                                 //    break;
                                 //}
+                                #endregion
 
                                 //送出指令                              
                                 if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
@@ -2905,10 +3205,10 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    //this.errLogger.SaveLogFile("Error", "1", functionName, this.PlcId, "", ex.ToString());
+                    //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
 
-                    //LogFormat logFormat = new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString());
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                    //LogFormat logFormat = new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString());
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                 }
                 System.Threading.Thread.Sleep(5);
             }
@@ -3064,7 +3364,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "1", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
             }
             return result;
         }
@@ -3381,6 +3681,771 @@ namespace Mirle.Agv.Controller
                 WriteDirectionalLight(EnumDirectionalLightType.SteerFL);
             }
 
+        }
+
+
+
+        public void SetVehiclePositionValue(String deltaX, String deltaY, String theta, String vehicleHead, String vehicleTwiceReviseDistance, String otherMessage = "")
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            try
+            {
+                this.AVehicleCorrectValue.VehicleDeltaX = deltaX;
+                this.AVehicleCorrectValue.VehicleDeltaY = deltaY;
+                this.AVehicleCorrectValue.VehicleTheta = theta;
+                this.AVehicleCorrectValue.VehicleHead = vehicleHead;
+                this.AVehicleCorrectValue.VehicleTwiceReviseDistance = vehicleTwiceReviseDistance;
+                this.AVehicleCorrectValue.otherMessage = otherMessage;
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "9", functionName, this.PlcId, "", ex.ToString()));
+            }
+        }
+
+
+        /// <summary>
+        /// 清除紀錄值
+        /// </summary>
+        private void ClearForkAndVehicleCorrectValue()
+        {
+            this.AVehicleCorrectValue.VehicleDeltaX = "";
+            this.AVehicleCorrectValue.VehicleDeltaY = "";
+            this.AVehicleCorrectValue.VehicleTheta = "";
+            this.AVehicleCorrectValue.VehicleHead = "";
+            this.AVehicleCorrectValue.VehicleTwiceReviseDistance = "";
+            this.AVehicleCorrectValue.otherMessage = "";
+
+            this.APLCVehicle.Robot.ForkAlignmentP = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentY = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentPhi = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentF = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentCode = 0;
+            this.APLCVehicle.Robot.ForkAlignmentC = 0f;
+            this.APLCVehicle.Robot.ForkAlignmentB = 0f;
+
+        }
+
+
+        private void WritePLCBatteryBigData(BatteryLog batteryLog)
+        {
+
+            //String datetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            //LogRecord(NLog.LogLevel.Info, "WriteDateTimeCalibrationReport", "DateTime: " + datetime);
+            //this.aMCProtocol.get_ItemByTag("YearMonth").AsHex = datetime.Substring(2, 4);
+            //this.aMCProtocol.get_ItemByTag("DayHour").AsHex = datetime.Substring(6, 4);
+            //this.aMCProtocol.get_ItemByTag("MinSec").AsHex = datetime.Substring(10, 4);
+            //DateTime dateTime = DateTime.ParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture);
+
+            ushort iMoveDistance = 0;
+            ushort iLoadUnloadCount = 0;
+            ushort iChargeCount = 0;
+
+            try
+            {
+                iMoveDistance = (ushort)(batteryLog.MoveDistanceTotalM / 1000);
+                iLoadUnloadCount = (ushort)batteryLog.LoadUnloadCount;
+                iChargeCount = (ushort)batteryLog.ChargeCount;
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Change value to ushort error"));
+            }
+            
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetYearMonth").AsHex = "1911";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetDayHour").AsHex = "2012";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetMinSec").AsHex = "5959";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryMoveDistance").AsUInt16 = iMoveDistance;
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryLoadUnloadCount").AsUInt16 = iLoadUnloadCount;
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryChargeCount").AsUInt16 = iChargeCount;
+
+            if (this.aMCProtocol.WritePLC())
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC Success"));
+            }
+            else
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC fail"));
+            }
+        }
+
+        private JogPitchData plcOperationRun_IpcJogPitchData = new JogPitchData();
+        private bool plcOperationRun_bActionRunningStatus = false;
+        private EnumPlcOperationStep plcOperationRun_enumNowStep = EnumPlcOperationStep.No_Use;
+        private EnumPlcOperationStep plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+        private PlcOperation plcOperationRun_PlcOper = new PlcOperation();  // 為了Plc jog 功能使用
+        private PlcOperation plcOperationRun_PlcOperLast = new PlcOperation();  // 為了Plc jog 功能使用
+        private PlcOperation plcOperationRun_IpcOper = new PlcOperation();
+
+        public void plcOperationRun_ThreadControl(bool open)
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+            try
+            {
+                if (open)
+                {
+                    plcOperationThread = new Thread(plcOperationRun);
+                    plcOperationThread.Start();
+                }
+                else
+                {
+                    if (plcOperationThread != null)
+                    {
+                        plcOperationThread.Abort();
+                    }
+                }
+            } catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Error: action {open} is failed."));
+            }
+
+        }
+
+        private void plcOperationRun()
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+            EnumPlcOperationStep inner_enumLastStep = EnumPlcOperationStep.No_Use;
+            plcOperationRun_PlcOper = APLCVehicle.JogOperation.DeepClone();
+            plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Enable;
+
+            while (true)
+            {
+                // Write related data to plc
+                plcOperationRun_WritePlcDisplayData(plcOperationRun_IpcJogPitchData);
+                double startTime = DateTime.Now.Ticks;
+                try
+                {
+                    // 取得目前 JogPitchForm 操作狀態 plcOperationRun_IpcOper
+                    plcOperationRun_GetOperationStatusFromJogPitchForm(ref plcOperationRun_IpcOper);
+
+                    // 取得目前資訊值
+                    plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData);
+
+                    plcOperationRun_PlcOperLast = plcOperationRun_PlcOper.DeepClone();
+                    plcOperationRun_PlcOper = APLCVehicle.JogOperation.DeepClone();
+
+                    // 取得這次 Thread 所使用的 Last Step
+                    inner_enumLastStep = plcOperationRun_enumLastStep;
+
+                    // Set base value from plc to jogpitch form
+                    plcOperationRun_SetPlcOperValueToJogPitchForm(ref plcOperationRun_PlcOper, ref plcOperationRun_PlcOperLast);
+
+                    // get action step from plc 
+                    plcOperationRun_GetNowStep(ref plcOperationRun_enumNowStep, ref inner_enumLastStep, ref plcOperationRun_PlcOper, ref plcOperationRun_PlcOperLast);
+
+                    if (plcOperationRun_enumNowStep != inner_enumLastStep)
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Get Now Step: {plcOperationRun_enumNowStep.ToString()}"));
+                    }
+
+
+                    // 比較新的訊號: 當新的訊號跟舊的訊號不同時, 先停再說
+                    if (plcOperationRun_enumNowStep == inner_enumLastStep)
+                    {
+                        // do nothing
+                    }
+                    else
+                    {
+                        if (inner_enumLastStep != EnumPlcOperationStep.No_Use)
+                        {
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare Stop Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
+                            plcOperationRun_ClearAndStopSteps(ref plcOperationRun_IpcJogPitchData, ref inner_enumLastStep, ref plcOperationRun_IpcOper);
+                            plcOperationRun_enumLastStep = inner_enumLastStep;
+                        }
+
+                    }
+
+                    Thread.Sleep(1); // take a break
+
+                    // 執行 PLC signal 功能
+                    if (inner_enumLastStep == EnumPlcOperationStep.No_Use)
+                    {
+                        if (plcOperationRun_enumNowStep != inner_enumLastStep)
+                        {
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare xecute Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
+                            plcOperationRun_ExecuteSteps();
+                        }
+                    }
+                    else
+                    {
+                        // do nothing
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    //  發生錯誤時停止所有狀態
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", $"Error: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", ex.ToString()));
+
+                    // 取得目前資訊值
+                    plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData);
+                    plcOperationRun_ClearAndStopSteps(ref plcOperationRun_IpcJogPitchData, ref plcOperationRun_enumLastStep, ref plcOperationRun_IpcOper);
+                    //break;
+                }
+                double endTime = DateTime.Now.Ticks;
+                //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Empty", "Thread cycle time: " + (endTime - startTime) / 10000 + " ms"));
+
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", "Thread cycle end: now - " + plcOperationRun_enumNowStep + ", last - " + plcOperationRun_enumLastStep));
+
+                Thread.Sleep(1000);
+                // endWhile
+            }
+            
+
+        }
+
+        private UInt16 plcOperationRun_ConvertAxisStatusToUint16(ElmoAxisFeedbackData axisData)
+        {
+            UInt16 iRetVal = 0;
+
+            if (axisData.StandStill ^ axisData.Disable)
+            {
+                if (axisData.StandStill)
+                {
+                    iRetVal = (int)EnumElmoStatus.StandStill;
+                }
+                else if (axisData.Disable)
+                {
+                    iRetVal = (int)EnumElmoStatus.Disable;
+                }
+            }
+            else
+            {
+                iRetVal = 0;
+            }
+
+            return iRetVal;
+        }
+
+        private void plcOperationRun_GetJogPitchDataFromJogPitchForm(ref JogPitchData ipcJogPitchData)
+        {
+            // 取得目前資訊值
+            ipcJogPitchData.MapX = this.jogPitchForm.jogPitchData.MapX;
+            ipcJogPitchData.MapY = this.jogPitchForm.jogPitchData.MapX;
+            ipcJogPitchData.Theta = this.jogPitchForm.jogPitchData.Theta;
+            ipcJogPitchData.MapTheta = this.jogPitchForm.jogPitchData.MapTheta;
+            ipcJogPitchData.SectionDeviation = this.jogPitchForm.jogPitchData.SectionDeviation;
+            ipcJogPitchData.ElmoFunctionCompelete = this.jogPitchForm.jogPitchData.ElmoFunctionCompelete;
+            ipcJogPitchData.AxisData = this.jogPitchForm.jogPitchData.AxisData;
+        }
+
+        private void plcOperationRun_WritePlcDisplayData(JogPitchData plcJogPitchData)
+        {
+            try
+            {
+                String strConcateKey = "";
+
+                this.aMCProtocol.get_ItemByTag("SR2000MapX").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000MapX", plcJogPitchData.MapX, 2, 2));
+                this.aMCProtocol.get_ItemByTag("SR2000MapY").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000MapY", plcJogPitchData.MapY, 2, 2));
+                this.aMCProtocol.get_ItemByTag("SR2000MapTheta").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000MapTheta", plcJogPitchData.MapTheta, 2, 2));
+                this.aMCProtocol.get_ItemByTag("SR2000PathDeviation").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000PathDeviation", plcJogPitchData.SectionDeviation, 2, 2));
+                this.aMCProtocol.get_ItemByTag("SR2000ThetaDeviation").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000ThetaDeviation", plcJogPitchData.Theta, 2, 2));
+
+                foreach (EnumAxis enumAxis in (EnumAxis[])Enum.GetValues(typeof(EnumAxis)))
+                {
+                    if (plcJogPitchData.AxisData.ContainsKey(enumAxis))
+                    {
+                        if (null != plcJogPitchData.AxisData[enumAxis])
+                        {
+                            strConcateKey = enumAxis.ToString() + "Status";
+                            this.aMCProtocol.get_ItemByTag(strConcateKey).AsUInt16 = plcOperationRun_ConvertAxisStatusToUint16(plcJogPitchData.AxisData[enumAxis]);
+                            strConcateKey = enumAxis.ToString() + "Position";
+                            this.aMCProtocol.get_ItemByTag(strConcateKey).AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber(strConcateKey, plcJogPitchData.AxisData[enumAxis].Feedback_Position, 2, 2));
+                            strConcateKey = enumAxis.ToString() + "Tocque";
+                            this.aMCProtocol.get_ItemByTag(strConcateKey).AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber(strConcateKey, plcJogPitchData.AxisData[enumAxis].Feedback_Torque, 2, 2));
+                        }
+                    }
+                }
+
+                this.aMCProtocol.get_ItemByTag("IpcVehicleMode").AsUInt16 = (ushort)plcOperationRun_IpcOper.ModeVehicle;
+                this.aMCProtocol.get_ItemByTag("IpcJogElmoFunction").AsUInt16 = (ushort)plcOperationRun_IpcOper.JogElmoFunction;
+                this.aMCProtocol.get_ItemByTag("IpcJogRunMode").AsUInt16 = (ushort)plcOperationRun_IpcOper.JogRunMode;
+                this.aMCProtocol.get_ItemByTag("IpcJogTurnSpeed").AsUInt16 = (ushort)plcOperationRun_IpcOper.JogTurnSpeed;
+                this.aMCProtocol.get_ItemByTag("IpcJogMoveVelocity").AsUInt16 = (ushort)plcOperationRun_IpcOper.JogMoveVelocity;
+                this.aMCProtocol.get_ItemByTag("IpcJogOperation").AsUInt16 = (ushort)plcOperationRun_IpcOper.JogOperation;
+                this.aMCProtocol.get_ItemByTag("IpcJogMoveOntimeRevise").AsBoolean = plcOperationRun_IpcOper.JogMoveOntimeRevise;
+                this.aMCProtocol.get_ItemByTag("IpcJogMaxDistance").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("IpcJogMaxDistance", plcOperationRun_IpcOper.JogMaxDistance, 2, 2));
+                //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"plcOperationRun_IpcOper.JogMaxDistance: {plcOperationRun_IpcOper.JogMaxDistance}"));
+                this.aMCProtocol.get_ItemByTag("IpcJogActionStatus").AsBoolean = plcOperationRun_bActionRunningStatus;
+
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogElmoFunction: {plcOperationRun_IpcOper.JogElmoFunction}"));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogRunMode: {plcOperationRun_IpcOper.JogRunMode}"));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogTurnSpeed: {plcOperationRun_IpcOper.JogTurnSpeed}"));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogMoveVelocity: {plcOperationRun_IpcOper.JogMoveVelocity}"));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogOperation: {plcOperationRun_IpcOper.JogOperation}"));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogMaxDistance: {plcOperationRun_IpcOper.JogMaxDistance}"));
+
+
+                if (this.aMCProtocol.WritePLC())
+                {
+                    //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "9", GetFunName(), PlcId, "Empty", "Write data Success."));
+                }
+                else
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", "Write data fail."));
+                }
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", ex.ToString()));
+            }
+        }
+        
+
+        private String plcOperationRun_WritePlcDisplayData_TryParseNumber(String numberName, double inputNum, int Wordlength, int digit = 0)
+        {
+            String value = "0";
+            try
+            {
+                value = this.DoubleToDECString(inputNum, Wordlength, digit);
+            }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", numberName + " : " + inputNum + " is out of range."));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", ex.ToString()));
+            }
+
+            return value;
+        }
+
+        private void plcOperationRun_SetPlcOperValueToJogPitchForm(ref PlcOperation plcOper, ref PlcOperation plcOperLast)
+        {
+            if (plcOper.JogTurnSpeed != plcOperLast.JogTurnSpeed 
+                || plcOper.JogMoveVelocity != plcOperLast.JogMoveVelocity 
+                || plcOper.JogMaxDistance != plcOperLast.JogMaxDistance)
+            {
+                //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"plcOper.JogMaxDistance : {plcOper.JogMaxDistance}"));
+                this.jogPitchForm.PlcJog_SettingDelegate(plcOper.JogTurnSpeed, plcOper.JogMoveVelocity, plcOper.JogMaxDistance);
+                this.jogPitchForm.PlcJog_RunSettingDelegate();
+            }
+        }
+
+        private void plcOperationRun_GetOperationStatusFromJogPitchForm(ref PlcOperation plcOperationRun_IpcOper)
+        {
+            if (Vehicle.Instance.AutoState == EnumAutoState.Auto)
+            {
+                plcOperationRun_IpcOper.ModeVehicle = EnumJogVehicleMode.Auto;
+            }
+            else
+            {
+                plcOperationRun_IpcOper.ModeVehicle = EnumJogVehicleMode.Manual;
+            }
+            this.jogPitchForm.PlcJog_GetOperationStatus(ref plcOperationRun_IpcOper);
+        }
+
+
+        private void plcOperationRun_GetNowStep(ref EnumPlcOperationStep enumNowStep, ref EnumPlcOperationStep enumLastStep, ref PlcOperation plcOper, ref PlcOperation plcOperLast)
+        {
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+            enumNowStep = EnumPlcOperationStep.No_Use;
+            
+            if (enumLastStep == EnumPlcOperationStep.No_Use || enumLastStep == EnumPlcOperationStep.JogOperationMoveForward ||
+                enumLastStep == EnumPlcOperationStep.JogOperationMoveBackward || enumLastStep == EnumPlcOperationStep.JogOperationTurnLeft ||
+                enumLastStep == EnumPlcOperationStep.JogOperationTurnRight || enumLastStep == EnumPlcOperationStep.JogOperationStop)
+            {
+                // 這些動作必須要判斷現有訊號值 & 上一次訊號值, 來確認動作
+            }
+            else if (enumLastStep == EnumPlcOperationStep.ElmoEnable || 
+                enumLastStep == EnumPlcOperationStep.ElmoDisable || 
+                enumLastStep == EnumPlcOperationStep.ElmoAllReset)
+            {
+
+            }
+            else if (enumLastStep == EnumPlcOperationStep.VehicleModeAuto ||
+                enumLastStep == EnumPlcOperationStep.VehicleModeManual)
+            {
+                enumNowStep = enumLastStep;
+            }
+            else
+            {
+                enumNowStep = enumLastStep;
+                return;
+            }
+            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error",
+                    $"Initial   enumNowStep: {enumNowStep.ToString()}, enumLastStep: {enumLastStep.ToString()}"));
+            if (plcOper.ModeVehicle != plcOperLast.ModeVehicle)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", 
+                    $"hahaha   plcOper.ModeVehicle: {plcOper.ModeVehicle}, plcOperLast.ModeVehicle: {plcOperLast.ModeVehicle}"));
+                if (plcOper.ModeVehicle == EnumJogVehicleMode.Auto)
+                {
+                    enumNowStep = EnumPlcOperationStep.VehicleModeAuto;
+                }
+                else if (plcOper.ModeVehicle == EnumJogVehicleMode.Manual)
+                {
+                    enumNowStep = EnumPlcOperationStep.VehicleModeManual;
+                }
+            }
+            
+            if (enumNowStep != EnumPlcOperationStep.No_Use)
+            {
+                return;
+            }
+
+            if (plcOper.JogElmoFunction != plcOperLast.JogElmoFunction)
+            {
+                switch (plcOper.JogElmoFunction)
+                    {
+                        case EnumJogElmoFunction.Enable:
+                        enumNowStep = EnumPlcOperationStep.ElmoEnable;
+                            break;
+                        case EnumJogElmoFunction.Disable:
+                        enumNowStep = EnumPlcOperationStep.ElmoDisable;
+                            break;
+                        case EnumJogElmoFunction.All_Reset:
+                        enumNowStep = EnumPlcOperationStep.ElmoAllReset;
+                            break;
+                        default:
+                        enumNowStep = EnumPlcOperationStep.No_Use;
+                        break;
+                }
+            }
+
+            if (enumNowStep != EnumPlcOperationStep.No_Use)
+            {
+                return;
+                    }
+
+            if (plcOper.JogRunMode != plcOperLast.JogRunMode)
+            {
+                switch (plcOper.JogRunMode)
+                    {
+                        case EnumJogRunMode.Normal:
+                        enumNowStep = EnumPlcOperationStep.RunModeNormal;
+                            break;
+                        case EnumJogRunMode.ForwardWheel:
+                        enumNowStep = EnumPlcOperationStep.RunModeForwardWheel;
+                            break;
+                        case EnumJogRunMode.BackwardWheel:
+                        enumNowStep = EnumPlcOperationStep.RunModeBackwardWheel;
+                            break;
+                        case EnumJogRunMode.SpinTurn:
+                        enumNowStep = EnumPlcOperationStep.RunModeSpinTurn;
+                            break;
+                        default:
+                        enumNowStep = EnumPlcOperationStep.No_Use;
+                        break;
+                }
+                
+            }
+
+            if (enumNowStep != EnumPlcOperationStep.No_Use)
+            {
+                return;
+            }
+
+            if (plcOper.JogOperation != plcOperLast.JogOperation)
+            {
+                switch (plcOper.JogOperation)
+                {
+                    case EnumJogOperation.TurnLeft:
+                        enumNowStep = EnumPlcOperationStep.JogOperationTurnLeft;
+                        break;
+
+                    case EnumJogOperation.TurnRight:
+                        enumNowStep = EnumPlcOperationStep.JogOperationTurnRight;
+                        break;
+
+                    case EnumJogOperation.MoveForward:
+                        enumNowStep = EnumPlcOperationStep.JogOperationMoveForward;
+                        break;
+
+                    case EnumJogOperation.MoveBackward:
+                        enumNowStep = EnumPlcOperationStep.JogOperationMoveBackward;
+                        break;
+
+                    case EnumJogOperation.Stop:
+                        enumNowStep = EnumPlcOperationStep.JogOperationStop;
+                        break;
+
+                    default:
+                        enumNowStep = EnumPlcOperationStep.No_Use;
+                        break;
+
+                }
+            }
+            else
+            {
+                enumNowStep = enumLastStep;
+            }
+
+            return;
+        }
+
+        private void plcOperationRun_ClearAndStopSteps(ref JogPitchData plcJogPitchData, ref EnumPlcOperationStep enumLastStep, ref PlcOperation ipcOper)
+        {
+            switch (enumLastStep)
+            {
+                case EnumPlcOperationStep.VehicleModeAuto:
+                case EnumPlcOperationStep.VehicleModeManual:
+                    // 等做完
+                    break;
+                case EnumPlcOperationStep.ElmoEnable:
+                case EnumPlcOperationStep.ElmoDisable:
+                case EnumPlcOperationStep.ElmoAllReset:
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"plcJogPitchData.ElmoFunctionCompelete: {plcJogPitchData.ElmoFunctionCompelete}"));
+                    
+                    break;
+
+                case EnumPlcOperationStep.RunModeNormal:
+                case EnumPlcOperationStep.RunModeForwardWheel:
+                case EnumPlcOperationStep.RunModeBackwardWheel:
+                case EnumPlcOperationStep.RunModeSpinTurn:
+                    // 等做完
+                    break;
+
+                case EnumPlcOperationStep.JogOperationTurnLeft:
+                case EnumPlcOperationStep.JogOperationTurnRight:
+                    this.jogPitchForm.button_JogPitch_Turn_MouseUp(null, null);
+                    plcOperationRun_bActionRunningStatus = false;
+                    enumLastStep = EnumPlcOperationStep.No_Use;
+                    ipcOper.JogOperation = EnumJogOperation.No_Use;
+                    break;
+
+                case EnumPlcOperationStep.JogOperationMoveForward:
+                case EnumPlcOperationStep.JogOperationMoveBackward:
+                    this.jogPitchForm.button_JogPitch_Move_MouseUp(null, null);
+                    plcOperationRun_bActionRunningStatus = false;
+                    enumLastStep = EnumPlcOperationStep.No_Use;
+                    ipcOper.JogOperation = EnumJogOperation.No_Use;
+                            break;
+
+                case EnumPlcOperationStep.JogOperationStop:
+                    if (plcOperationRun_bActionRunningStatus == false)
+                    {
+                        enumLastStep = EnumPlcOperationStep.No_Use;
+                        ipcOper.JogOperation = EnumJogOperation.No_Use;
+                    }
+                    break;
+                default:
+                    //enumLastStep = EnumPlcOperationStep.No_Use;
+                    break;
+
+
+                }
+        }
+
+        private void plcOperationRun_ExecuteSteps()
+        {
+            switch (plcOperationRun_enumNowStep)
+            {
+                case EnumPlcOperationStep.VehicleModeAuto:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.VehicleModeAuto;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Manual to Auto."));
+                        bool flag = this.mainForm.SwitchAutoStatus();
+                        if (flag)
+                        {
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto."));
+                        }
+                else
+                {
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto Error, change back to Manual"));
+                }
+                        plcOperationRun_bActionRunningStatus = false;
+                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    });
+
+                    break;
+
+                case EnumPlcOperationStep.VehicleModeManual:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.VehicleModeManual;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Auto to Manual."));
+                        this.mainForm.SwitchAutoStatus();
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Auto to Manual."));
+                        plcOperationRun_bActionRunningStatus = false;
+                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    });
+                    
+                    break;
+                case EnumPlcOperationStep.ElmoEnable:
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoEnable"));
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoEnable;
+                    plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Enable;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_ElmoEnable_Click(null, null);
+                        double startTime = DateTime.Now.Ticks;
+                        double endTime = DateTime.Now.Ticks;
+                        while (true)
+                        {
+                            if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
+                            {
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                                break;
+                            }
+                            endTime = DateTime.Now.Ticks;
+                            if (endTime - startTime > 100000000)
+                            {
+                                break;
+                            }
+                            Thread.Sleep(1000);
+                        }
+
+                    });
+                    break;
+
+                case EnumPlcOperationStep.ElmoDisable:
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoDisable"));
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoDisable;
+                    plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Disable;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_ElmoDisable_Click(null, null);
+                        double startTime = DateTime.Now.Ticks;
+                        double endTime = DateTime.Now.Ticks;
+                        while (true)
+                        {
+                            if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
+                            {
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                            }
+                            endTime = DateTime.Now.Ticks;
+                            if (endTime - startTime > 100000000)
+                            {
+                                break;
+                            }
+                            Thread.Sleep(1000);
+            }
+            
+                    });
+                    break;
+
+                case EnumPlcOperationStep.ElmoAllReset:
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoAllReset"));
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoAllReset;
+                    plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.All_Reset;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_ElmoReset_Click(null, null);
+                        double startTime = DateTime.Now.Ticks;
+                        double endTime = DateTime.Now.Ticks;
+                        while (true)
+                        {
+                            if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
+                            {
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+        }
+                            endTime = DateTime.Now.Ticks;
+                            if (endTime - startTime > 100000000)
+                            {
+                                break;
+                            }
+                            Thread.Sleep(1000);
+                        }
+
+                    });
+                    break;
+
+                case EnumPlcOperationStep.RunModeNormal:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeNormal;
+                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.Normal;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_Normal_Click(null, null);
+                        plcOperationRun_bActionRunningStatus = false;
+                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    });
+                    break;
+
+                case EnumPlcOperationStep.RunModeForwardWheel:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeForwardWheel;
+                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.ForwardWheel;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_ForwardWheel_Click(null, null);
+                        plcOperationRun_bActionRunningStatus = false;
+                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    });
+                    break;
+
+                case EnumPlcOperationStep.RunModeBackwardWheel:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeBackwardWheel;
+                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.BackwardWheel;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_BackwardWheel_Click(null, null);
+                        plcOperationRun_bActionRunningStatus = false;
+                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    });
+                    break;
+
+                case EnumPlcOperationStep.RunModeSpinTurn:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeSpinTurn;
+                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.SpinTurn;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_SpinTurn_Click(null, null);
+                        plcOperationRun_bActionRunningStatus = false;
+                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    });
+                    break;
+
+                case EnumPlcOperationStep.JogOperationTurnLeft:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationTurnLeft;
+                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.TurnLeft;
+                    plcOperationRun_bActionRunningStatus = true;
+                    this.jogPitchForm.button_JogPitch_TurnLeft_MouseDown(null, null);
+                    break;
+
+                case EnumPlcOperationStep.JogOperationTurnRight:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationTurnRight;
+                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.TurnRight;
+                    plcOperationRun_bActionRunningStatus = true;
+                    this.jogPitchForm.button_JogPitch_TurnRight_MouseDown(null, null);
+                    break;
+
+                case EnumPlcOperationStep.JogOperationMoveForward:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationMoveForward;
+                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.MoveForward;
+                    plcOperationRun_bActionRunningStatus = true;
+                    this.jogPitchForm.button_JogPitch_Forward_MouseDown(null, null);
+                    break;
+
+                case EnumPlcOperationStep.JogOperationMoveBackward:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationMoveBackward;
+                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.MoveBackward;
+                    plcOperationRun_bActionRunningStatus = true;
+                    this.jogPitchForm.button_JogPitch_Backward_MouseDown(null, null);
+                    break;
+
+                case EnumPlcOperationStep.JogOperationStop:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationStop;
+                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.Stop;
+                    plcOperationRun_bActionRunningStatus = true;
+                    Task.Run(() =>
+                    {
+                        this.jogPitchForm.button_JogPitch_STOP_Click(null, null);
+                        plcOperationRun_bActionRunningStatus = false;
+                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    });
+                    break;
+
+                default:
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                    break;
+
+            }
         }
 
 

@@ -8,7 +8,7 @@ namespace Mirle.Agv.Model
 {
     public class SafetyData
     {
-        public bool Enable { get; set; } = true;
-        public double Range { get; set; }
+        public bool Enable { get; set; } = false;
+        public double Range { get; set; } = 0;
     }
 }

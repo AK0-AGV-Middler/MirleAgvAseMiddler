@@ -12,10 +12,12 @@ namespace Mirle.Agv.Model
     {
         public PlcBatterys Batterys = new PlcBatterys();
         public PlcRobot Robot = new PlcRobot();
+        public PlcOperation JogOperation = new PlcOperation();
 
         public bool Loading { get; set; }
         public string CassetteId { get; set; } = "";
         public string FakeCassetteId { get; set; } = "";
+        public string RenameCassetteId { get; set; } = "";
 
         //以下屬性會影響方向燈,語音和Beam sensor sleep
         public bool Forward { get; set; }
@@ -69,6 +71,7 @@ namespace Mirle.Agv.Model
         public Boolean BeamSensorDisableNormalSpeed { get; set; } = false;
 
         public int BatteryCellNum = 17;
+        public int BatteryReplaceIndex = 17;
 
         public PlcVehicle()
         {

@@ -17,17 +17,21 @@ namespace Mirle.Agv.Model
         public double MeterVoltage { get; set; }
         public double MeterWatt { get; set; }
         public double MeterWattHour { get; set; }
+        public double GotechMaxVol { get; set; }
+        public double GotechMinVol { get; set; }
+        public double YindaMaxVol { get; set; }
+        public double YindaMinVol { get; set; }
 
-        public ushort Cell_number { get; set; }     
-        public List<BatteryCell> BatteryCells = new List<BatteryCell>();     
+        public ushort Cell_number { get; set; }
+        public List<BatteryCell> BatteryCells = new List<BatteryCell>();
 
-        public ushort Temperature_sensor_number { get; set; }  
-        public double Temperature_1_MOSFET { get; set; }       
-        public double Temperature_2_Cell { get; set; }         
-        public double Temperature_3_MCU { get; set; }          
-        public double BatteryCurrent { get; set; }             
-        public double Packet_Voltage { get; set; }             
-        public ushort Remain_Capacity { get; set; }            
+        public ushort Temperature_sensor_number { get; set; }
+        public double Temperature_1_MOSFET { get; set; }
+        public double Temperature_2_Cell { get; set; }
+        public double Temperature_3_MCU { get; set; }
+        public double BatteryCurrent { get; set; }
+        public double Packet_Voltage { get; set; }
+        public ushort Remain_Capacity { get; set; }
         public ushort Design_Capacity { get; set; }
 
         public ushort BatterySOCFormPlc { get; set; }//PLC->IPC
@@ -102,7 +106,7 @@ namespace Mirle.Agv.Model
                 {
                     dblAhWorkingRange = value;
                     //CcModeAh = dblAHWorkingRange;
-                    SetCcModeAh(dblAhWorkingRange, false);
+                    //SetCcModeAh(dblAhWorkingRange, false);
                     CountPercentage();
                 }
             }
@@ -135,6 +139,7 @@ namespace Mirle.Agv.Model
 
         //改由毛哥卡CC mode停止,抓FullChargeIndex變化,代表達到CC mode
         public double CCModeStopVoltage { get; set; } = 61.5; //CC Mode充電停止電壓 (User config)
+        public Boolean bVoltageAbnormal { get; set; } = false;
         private void CountPercentage()
         {
             if (!boolSetMeterAhToZeroFlag)
@@ -172,6 +177,7 @@ namespace Mirle.Agv.Model
             }
 
         }
+
 
     }
 }

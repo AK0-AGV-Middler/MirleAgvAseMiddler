@@ -21,7 +21,7 @@ namespace Mirle.Agv.Model
         public MapInfo TheMapInfo { get; set; } = new MapInfo();
         public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
         public AgvcTransCmd CurAgvcTransCmd { get; set; } = new AgvcTransCmd();
-        public VehiclePosition CurVehiclePosition { get; set; } = new VehiclePosition();
+        public VehicleLocation VehicleLocation { get; set; } = new VehicleLocation();
         private EnumAutoState autoState = EnumAutoState.Manual;
         public EnumAutoState AutoState
         {
@@ -68,7 +68,6 @@ namespace Mirle.Agv.Model
                 }
             }
         }
-
         private bool backBeamDisable = false;
         public bool BackBeamDisable
         {
@@ -121,18 +120,11 @@ namespace Mirle.Agv.Model
         public VhStopSingle ObstacleStatus { get; set; }
         public int ObstDistance { get; set; }
         public string ObstVehicleID { get; set; } = "";
-        public VhStopSingle PauseStatus { get; set; }
         public VhPowerStatus PowerStatus { get; set; }
-        public VhStopSingle ReserveStatus { get; set; }
         public string StoppedBlockID { get; set; } = "";
         public VhStopSingle ErrorStatus { get; set; }
-        public ActiveType Cmd131ActType { get; set; }
-        public CompleteStatus CompleteStatus { get; set; }
         public uint CmdPowerConsume { get; set; }
         public int CmdDistance { get; set; }
-        public EventType Cmd134EventType { get; set; }
-        public CMDCancelType Cmd137ActType { get; set; }
-        public PauseEvent Cmd139EventType { get; set; }
         public string TeachingFromAddress { get; internal set; } = "";
         public string TeachingToAddress { get; internal set; } = "";
         #endregion
