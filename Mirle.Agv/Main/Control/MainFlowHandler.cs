@@ -1119,7 +1119,8 @@ namespace Mirle.Agv.Controller
             #region 替代路徑生成
             try
             {
-                middleAgent.StopAskReserve();
+                //middleAgent.StopAskReserve();
+                middleAgent.ClearAskReserve();
                 agvcTransCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
                 agvcTransCmd.AvoidEndAddressId = "";
                 agvcTransCmd.IsAvoidComplete = false;
@@ -1275,7 +1276,8 @@ namespace Mirle.Agv.Controller
             #region 避車命令生成
             try
             {
-                middleAgent.StopAskReserve();
+                //middleAgent.StopAskReserve();
+                middleAgent.ClearAskReserve();
                 agvcTransCmd.CombineAvoid(agvcMoveCmd);
                 agvcTransCmd.IsAvoidComplete = false;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
@@ -1805,27 +1807,16 @@ namespace Mirle.Agv.Controller
         }
         #endregion
 
-        public void UpdateMoveControlReserveOkPositions(MapSection aReserveOkSection)
+        public void UpdateMoveControlReserveOkPositions(MapSection mapSection)
         {
             try
-            {
-                MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
-                var reserveOkSection = moveCmd.MovingSections.Find(x => x.Id == aReserveOkSection.Id);
-
-                if (reserveOkSection == null)
-                {
-                    var msg = $"延攬通行權{aReserveOkSection.Id}失敗，該路徑不在移動路徑內。";
-                    LoggerAgent.Instance.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
-                    StopVisitTransferSteps();
-                    return;
-                }
-
-                MapAddress address = reserveOkSection.CmdDirection == EnumPermitDirection.Forward
-                    ? reserveOkSection.TailAddress
-                    : reserveOkSection.HeadAddress;
+            {              
+                MapAddress address = mapSection.CmdDirection == EnumPermitDirection.Forward
+                    ? mapSection.TailAddress
+                    : mapSection.HeadAddress;
 
                 bool updateResult = moveControlHandler.AddReservedMapPosition(address.Position);
-                OnMessageShowEvent?.Invoke(this, $"延攬通行權{aReserveOkSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
+                OnMessageShowEvent?.Invoke(this, $"通知MoveControl延攬通行權{mapSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
             }
             catch (Exception ex)
             {
@@ -1892,7 +1883,7 @@ namespace Mirle.Agv.Controller
                 #endregion
 
                 #region EnumMoveComplete.Success
-                middleAgent.StopAskReserve();
+                //middleAgent.StopAskReserve();
 
                 MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
 
@@ -2350,18 +2341,19 @@ namespace Mirle.Agv.Controller
             try
             {
                 #region 1.0
-                middleAgent.StopAskReserve();
-                middleAgent.NeedReserveSections = moveCmd.MovingSections;
-                middleAgent.ReportSectionPass(EventType.AdrPass);
-                OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
-                middleAgent.StartAskReserve();
+                //middleAgent.StopAskReserve();
+                //middleAgent.NeedReserveSections = moveCmd.MovingSections;
+                //middleAgent.ReportSectionPass(EventType.AdrPass);
+                //OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
+                //middleAgent.StartAskReserve();
                 #endregion
 
                 #region 2.0
-                middleAgent.PauseAskReserve();                
-                middleAgent.NeedReserveSections = moveCmd.MovingSections;
+                //middleAgent.PauseAskReserve();
                 middleAgent.ReportSectionPass(EventType.AdrPass);
-                middleAgent.ResumeAskReserve();
+                middleAgent.ClearAskReserve();
+                middleAgent.SetupNeedReserveSections(moveCmd.MovingSections);             
+                //middleAgent.ResumeAskReserve();
                 #endregion
 
             }
@@ -2843,8 +2835,9 @@ namespace Mirle.Agv.Controller
         public void StopAndClear()
         {
             PauseVisitTransferSteps();
-            middleAgent.PauseAskReserve();
-            middleAgent.StopAskReserve();
+            //middleAgent.PauseAskReserve();
+            //middleAgent.StopAskReserve();
+            middleAgent.ClearAskReserve();
             StopVehicle();
             StopVisitTransferSteps();
             theVehicle.VehicleLocation.WheelAngle = moveControlHandler.ControlData.WheelAngle;
@@ -3191,7 +3184,8 @@ namespace Mirle.Agv.Controller
                         middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
                         moveControlHandler.VehcleCancel();
-                        middleAgent.StopAskReserve();
+                        //middleAgent.StopAskReserve();
+                        middleAgent.ClearAskReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
@@ -3212,7 +3206,8 @@ namespace Mirle.Agv.Controller
                         OnMessageShowEvent(this, msg);
                         middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
-                        middleAgent.StopAskReserve();
+                        //middleAgent.StopAskReserve();
+                        middleAgent.ClearAskReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";

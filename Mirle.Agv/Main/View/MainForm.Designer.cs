@@ -83,7 +83,6 @@
             this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
             this.gbReserve = new System.Windows.Forms.GroupBox();
             this.lbxReserveOkSections = new System.Windows.Forms.ListBox();
-            this.lbxAskReserveSection = new System.Windows.Forms.ListBox();
             this.lbxNeedReserveSections = new System.Windows.Forms.ListBox();
             this.btnAutoManual = new System.Windows.Forms.Button();
             this.txtLastAlarm = new System.Windows.Forms.Label();
@@ -732,7 +731,6 @@
             // gbReserve
             // 
             this.gbReserve.Controls.Add(this.lbxReserveOkSections);
-            this.gbReserve.Controls.Add(this.lbxAskReserveSection);
             this.gbReserve.Controls.Add(this.lbxNeedReserveSections);
             this.gbReserve.Location = new System.Drawing.Point(424, 241);
             this.gbReserve.Name = "gbReserve";
@@ -746,24 +744,11 @@
             this.lbxReserveOkSections.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.lbxReserveOkSections.FormattingEnabled = true;
             this.lbxReserveOkSections.ItemHeight = 19;
-            this.lbxReserveOkSections.Location = new System.Drawing.Point(147, 78);
+            this.lbxReserveOkSections.Location = new System.Drawing.Point(147, 21);
             this.lbxReserveOkSections.Name = "lbxReserveOkSections";
             this.lbxReserveOkSections.ScrollAlwaysVisible = true;
-            this.lbxReserveOkSections.Size = new System.Drawing.Size(127, 118);
+            this.lbxReserveOkSections.Size = new System.Drawing.Size(127, 175);
             this.lbxReserveOkSections.TabIndex = 42;
-            // 
-            // lbxAskReserveSection
-            // 
-            this.lbxAskReserveSection.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lbxAskReserveSection.FormattingEnabled = true;
-            this.lbxAskReserveSection.ItemHeight = 19;
-            this.lbxAskReserveSection.Items.AddRange(new object[] {
-            "Empty"});
-            this.lbxAskReserveSection.Location = new System.Drawing.Point(147, 21);
-            this.lbxAskReserveSection.Name = "lbxAskReserveSection";
-            this.lbxAskReserveSection.ScrollAlwaysVisible = true;
-            this.lbxAskReserveSection.Size = new System.Drawing.Size(127, 42);
-            this.lbxAskReserveSection.TabIndex = 47;
             // 
             // lbxNeedReserveSections
             // 
@@ -1354,7 +1339,6 @@
         private UcLabelTextBox ucPerformanceCounterRam;
         private UcLabelTextBox ucPerformanceCounterCpu;
         private System.Windows.Forms.ToolStripMenuItem PlcPage;
-        private System.Windows.Forms.ListBox lbxAskReserveSection;
         private System.Windows.Forms.Label txtLastAlarm;
         private UcLabelTextBox ucSoc;
         private System.Windows.Forms.PictureBox pictureBox1;

@@ -46,7 +46,6 @@ namespace Mirle.Agv.View
         private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
         private Vehicle theVehicle = Vehicle.Instance;
         private bool IsAskingReserve { get; set; }
-        private string LastAskingReserveSectionId { get; set; } = "";
         private string LastAgvcTransferCommandId { get; set; } = "";
         private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
         private int lastAlarmId = 0;
@@ -1056,13 +1055,6 @@ namespace Mirle.Agv.View
             //}
             var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
             ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
-            if (middleAgent.GetAskingReserveSection().Id != LastAskingReserveSectionId)
-            {
-                LastAskingReserveSectionId = middleAgent.GetAskingReserveSection().Id;
-                lbxAskReserveSection.Items.Clear();
-                lbxAskReserveSection.Items.Add(LastAskingReserveSectionId);
-            }
-
 
             UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
             UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
@@ -1249,15 +1241,15 @@ namespace Mirle.Agv.View
             try
             {
                 tbxTransferStepMsg.Text = TransferStepMsg;
-                tspbCommding.Maximum = mainFlowHandler.GetTransferStepsCount() - 1;
-                if (mainFlowHandler.TransferStepsIndex >= tspbCommding.Maximum)
-                {
-                    tspbCommding.Value = tspbCommding.Maximum;
-                }
-                else
-                {
-                    tspbCommding.Value = mainFlowHandler.TransferStepsIndex;
-                }
+                //tspbCommding.Maximum = mainFlowHandler.GetTransferStepsCount() - 1;
+                //if (mainFlowHandler.TransferStepsIndex >= tspbCommding.Maximum)
+                //{
+                //    tspbCommding.Value = tspbCommding.Maximum;
+                //}
+                //else
+                //{
+                //    tspbCommding.Value = mainFlowHandler.TransferStepsIndex;
+                //}
             }
             catch (Exception ex)
             {
@@ -1537,100 +1529,6 @@ namespace Mirle.Agv.View
             }
         }
 
-        #region Thd Visit TransferSteps
-        private void btnStartVisitTransferSteps_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StartVisitTransferSteps();
-        }
-
-        private void btnPauseVisitTransferSteps_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.PauseVisitTransferSteps();
-        }
-
-        private void btnResumeVisitTransferSteps_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.ResumeVisitTransferSteps();
-        }
-
-        private void btnStopVisitTransferSteps_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StopVisitTransferSteps();
-        }
-        #endregion
-
-        #region Thd Track Position
-        private void btnStartTrackPosition_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StartTrackPosition();
-        }
-
-        private void btnPauseTrackPosition_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.PauseTrackPosition();
-        }
-
-        private void btnResumeTrackPostiion_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.ResumeTrackPosition();
-        }
-
-        private void btnStopTrackPosition_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StopTrackPosition();
-        }
-        #endregion
-
-        #region Thd Ask Reserve
-        private void btnAutoApplyReserveOnce_Click(object sender, EventArgs e)
-        {
-            middleAgent.OnGetReserveOk("XXX");
-            AppendDebugLogMsg($"Auto Apply Reserve Once by MainForm");
-        }
-
-        private void btnStartAskReserve_Click(object sender, EventArgs e)
-        {
-            middleAgent.StartAskReserve();
-        }
-
-        private void btnPauseAskReserve_Click(object sender, EventArgs e)
-        {
-            middleAgent.PauseAskReserve();
-        }
-
-        private void btnResumeAskReserve_Click(object sender, EventArgs e)
-        {
-            middleAgent.ResumeAskReserve();
-        }
-
-        private void btnStopAskReserve_Click(object sender, EventArgs e)
-        {
-            middleAgent.StopAskReserve();
-        }
-        #endregion
-
-        #region Thd Watch LowPower
-        private void btnStartWatchLowPower_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StartWatchLowPower();
-        }
-
-        private void btnPauseWatchLowPower_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.PauseWatchLowPower();
-        }
-
-        private void btnResumeWatchLowPower_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.ResumeWatchLowPower();
-        }
-
-        private void btnStopWatchLowPower_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StopWatchLowPower();
-        }
-        #endregion
-
         private void btnAlarmReset_Click(object sender, EventArgs e)
         {
             btnAlarmReset.Enabled = false;
@@ -1711,36 +1609,6 @@ namespace Mirle.Agv.View
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return false;
             }
-        }
-
-        private void btnStopAndClear_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StopAndClear();
-        }
-
-        private void btnStopVehicle_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.StopVehicle();
-        }
-
-        private void btnNeedReserveClear_Click(object sender, EventArgs e)
-        {
-            middleAgent.DequeueNeedReserveSections();
-        }
-
-        private void btnAskReserveClear_Click(object sender, EventArgs e)
-        {
-            middleAgent.ClearAskingReserveSection();
-        }
-
-        private void btnGetReserveOkClear_Click(object sender, EventArgs e)
-        {
-            middleAgent.DequeueGotReserveOkSections();
-        }
-
-        private void btnSetupTestAgvcTransferCmd_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.SetupTestAgvcTransferCmd();
         }
 
         private void btnKeyInSoc_Click(object sender, EventArgs e)
