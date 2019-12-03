@@ -159,6 +159,7 @@ namespace Mirle.Agv.View
                 {
                     case EnumSensorSafetyType.Charging:
                         tempSensor.SetLabelString("充電檢查 : ");
+                        tempSensor.DisableButton();
                         break;
                     case EnumSensorSafetyType.ForkHome:
                         tempSensor.SetLabelString("Fork原點 : ");
@@ -214,7 +215,7 @@ namespace Mirle.Agv.View
         #region timer Update
         private void Timer_Update_CreateCommand()
         {
-            AGVPosition tempBarcodePosition = moveControl.location.Barcode;
+            AGVPosition tempBarcodePosition = moveControl.location.agvPosition;
 
             if (tempBarcodePosition != null)
             {
@@ -287,7 +288,7 @@ namespace Mirle.Agv.View
                 label_MoveCommandID.Text = commandID;
             }
 
-            AGVPosition tempBarcodePosition = moveControl.location.Barcode;
+            AGVPosition tempBarcodePosition = moveControl.location.agvPosition;
 
             label_AlarmMessage.Text = moveControl.AGVStopResult;
 

@@ -195,6 +195,14 @@ namespace Mirle.Agv
         Head,
         Tail
     }
-    
+
+    public enum EnumSLAMType
+    {
+        None,
+        Nav350,
+        Sick,
+        R2S
+    }
+
     #endregion
 }

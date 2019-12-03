@@ -377,7 +377,7 @@ namespace Mirle.Agv.View
             //    lockResult = "Lock Result : 主流程動作中!";
             else if (moveControl.MoveState != EnumMoveState.Idle)
                 lockResult = "Lock Result : MoveState動作中!";
-            else if (button_Skip.Text != "強制\r\n手動" && moveControl.IsCharging())
+            else if (/*button_Skip.Text != "強制\r\n手動" &&*/ moveControl.IsCharging())
             {
                 skipLock = true;
                 lockResult = "Lock Result : Charging中!";

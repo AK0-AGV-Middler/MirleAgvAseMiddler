@@ -18,6 +18,7 @@ namespace Mirle.Agv.Controller
     public class MoveControlHandler
     {
         public CreateMoveControlList CreateMoveCommandList { get; set; }
+        private SLAMControl slamControl = new SLAMControl();
         public EnumMoveState MoveState { get; private set; } = EnumMoveState.Idle;
         public MoveControlConfig moveControlConfig;
         private MapInfo theMapInfo = new MapInfo();
@@ -333,6 +334,7 @@ namespace Mirle.Agv.Controller
             this.theMapInfo = theMapInfo;
             this.plcAgent = plcAgent;
             ReadMoveControlConfigXML(@"D:\AgvConfigs\MoveControlConfig.xml");
+            slamControl.InitailSLAM("");
             WriteSafetyAndSensorByPassLog();
             SetTRTimeToAngleRange();
             InitailSr2000(moveControlConfig.Sr2000ConfigPath);
@@ -1120,9 +1122,9 @@ namespace Mirle.Agv.Controller
             double realEncoder;
 
             if (secondCorrection && moveControlConfig.SensorByPass[EnumSensorSafetyType.SecondCorrectionBySide].Enable)
-                realEncoder = MapPositionToEncoder(command.SectionLineList[command.IndexOflisSectionLine], location.Barcode.BarcodeCenter);
+                realEncoder = MapPositionToEncoder(command.SectionLineList[command.IndexOflisSectionLine], location.agvPosition.BarcodeCenter);
             else
-                realEncoder = MapPositionToEncoder(command.SectionLineList[command.IndexOflisSectionLine], location.Barcode.Position);
+                realEncoder = MapPositionToEncoder(command.SectionLineList[command.IndexOflisSectionLine], location.agvPosition.Position);
 
             // 此Barcode是多久之前的資料,基本上為正值(s).
             double deltaTime = ((double)location.ScanTime + (DateTime.Now - location.BarcodeGetDataTime).TotalMilliseconds) / 1000;
@@ -1134,7 +1136,7 @@ namespace Mirle.Agv.Controller
 
         private void UpdateThetaSectionDeviationAndSafetyCheck()
         {
-            if (location.Barcode == null)
+            if (location.agvPosition == null)
             {
                 location.ThetaAndSectionDeviation = null;
                 return;
@@ -1142,7 +1144,7 @@ namespace Mirle.Agv.Controller
 
             double sectionDeviation = 0;
             double theta =
-                location.Barcode.AGVAngle + (command.SectionLineList[command.IndexOflisSectionLine].DirFlag ? 0 : 180) +
+                location.agvPosition.AGVAngle + (command.SectionLineList[command.IndexOflisSectionLine].DirFlag ? 0 : 180) +
                 ControlData.WheelAngle - command.SectionLineList[command.IndexOflisSectionLine].SectionAngle;
 
             while (theta > 180 || theta <= -180)
@@ -1156,36 +1158,36 @@ namespace Mirle.Agv.Controller
             switch (command.SectionLineList[command.IndexOflisSectionLine].SectionAngle)
             {
                 case 0:
-                    sectionDeviation = location.Barcode.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y;
+                    sectionDeviation = location.agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y;
                     ControlData.SectionDeviationOffset = command.EndOffsetY;
                     break;
                 case 180:
-                    sectionDeviation = -(location.Barcode.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y);
+                    sectionDeviation = -(location.agvPosition.Position.Y - command.SectionLineList[command.IndexOflisSectionLine].Start.Y);
                     ControlData.SectionDeviationOffset = -command.EndOffsetY;
                     break;
                 case 90:
-                    sectionDeviation = location.Barcode.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X;
+                    sectionDeviation = location.agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X;
                     ControlData.SectionDeviationOffset = command.EndOffsetX;
                     break;
                 case -90:
-                    sectionDeviation = -(location.Barcode.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X);
+                    sectionDeviation = -(location.agvPosition.Position.X - command.SectionLineList[command.IndexOflisSectionLine].Start.X);
                     ControlData.SectionDeviationOffset = -command.EndOffsetX;
                     break;
                 default:
                     break;
             }
 
-            location.ThetaAndSectionDeviation = new ThetaSectionDeviation(theta, sectionDeviation, location.Barcode.Count);
+            location.ThetaAndSectionDeviation = new ThetaSectionDeviation(theta, sectionDeviation, location.agvPosition.Count);
 
             if (moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Enable)
             {
                 if (Math.Abs(location.ThetaAndSectionDeviation.Theta) >
                     moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range)
                 {
-                    WriteLog("MoveControl", "7", device, "", String.Concat("nowAGV車資 : ", location.Barcode.AGVAngle, ", section index : ", command.IndexOflisSectionLine,
+                    WriteLog("MoveControl", "7", device, "", String.Concat("nowAGV車資 : ", location.agvPosition.AGVAngle, ", section index : ", command.IndexOflisSectionLine,
                                                                            ", dirFlag : ", command.SectionLineList[command.IndexOflisSectionLine].DirFlag.ToString(),
                                                                            ", SectionAngle : ", command.SectionLineList[command.IndexOflisSectionLine].SectionAngle));
-                    EMSControl(String.Concat("nowAGV車資 : ", location.Barcode.AGVAngle, ", 角度偏差", location.ThetaAndSectionDeviation.Theta.ToString("0.0"),
+                    EMSControl(String.Concat("nowAGV車資 : ", location.agvPosition.AGVAngle, ", 角度偏差", location.ThetaAndSectionDeviation.Theta.ToString("0.0"),
                         "度,已超過安全設置的", moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseTheta].Range.ToString("0.0"),
                         "度,因此啟動EMS!"));
                     SendAlarmCode(154000);
@@ -1199,7 +1201,7 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range)
                     {
-                        EMSControl(String.Concat("nowBarcodePosition : ( ", location.Barcode.Position.X.ToString(), ", ", location.Barcode.Position.Y.ToString(),
+                        EMSControl(String.Concat("nowBarcodePosition : ( ", location.agvPosition.Position.X.ToString(), ", ", location.agvPosition.Position.Y.ToString(),
                                                  " ), ", "橫移偏差", location.ThetaAndSectionDeviation.SectionDeviation.ToString("0"), "mm,已超過安全設置的",
                                                  moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationHorizontal].Range.ToString("0"),
                                                  "mm,因此啟動EMS!"));
@@ -1210,7 +1212,7 @@ namespace Mirle.Agv.Controller
                 {
                     if (Math.Abs(location.ThetaAndSectionDeviation.SectionDeviation) > moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range)
                     {
-                        EMSControl(String.Concat("nowBarcodePosition : ( ", location.Barcode.Position.X.ToString(), ", ", location.Barcode.Position.Y.ToString(),
+                        EMSControl(String.Concat("nowBarcodePosition : ( ", location.agvPosition.Position.X.ToString(), ", ", location.agvPosition.Position.Y.ToString(),
                                                  " ), ", "橫移偏差", location.ThetaAndSectionDeviation.SectionDeviation.ToString("0"), "mm,已超過安全設置的",
                                                  moveControlConfig.Safety[EnumMoveControlSafetyType.OntimeReviseSectionDeviationLine].Range.ToString("0"),
                                                  "mm,因此啟動EMS!"));
@@ -1220,12 +1222,13 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private bool UpdateSR2000()
+        private bool UpdateSR2000(bool moving)
         {
             if (!SimulationMode)
             {
                 AGVPosition temp = null;
                 AGVPosition agvPosition = null;
+                int index = 0;
 
                 for (int i = 0; i < DriverSr2000List.Count; i++)
                 {
@@ -1236,36 +1239,42 @@ namespace Mirle.Agv.Controller
                     else if (i == 1)
                         location.BarcodeRight = temp;
 
-                    if (temp != null && computeFunction.IsSameAngle(temp.BarcodeAngleInMap, temp.AGVAngle, ControlData.WheelAngle))
+                    if (temp != null && (computeFunction.IsSameAngle(temp.BarcodeAngleInMap, temp.AGVAngle, ControlData.WheelAngle) || !moving))
                     {
                         if (agvPosition == null || (agvPosition.Type != EnumBarcodeMaterial.Iron && temp.Type == EnumBarcodeMaterial.Iron))
                         {
                             agvPosition = temp;
+                            index = i;
                         }
                     }
                 }
 
-                if (agvPosition != null)
+                if (agvPosition != null && !(location.LastBarcodeCount == agvPosition.Count && location.IndexOfSr2000List == index))
                 {   // 有資料且和上次的不是同一筆.
-                    location.Barcode = agvPosition;
+                    location.LastBarcodeCount = agvPosition.Count;
+                    location.IndexOfSr2000List = index;
+                    location.agvPosition = agvPosition;
                     location.ScanTime = agvPosition.ScanTime;
                     location.BarcodeGetDataTime = agvPosition.GetDataTime;
 
-                    if (location.Barcode.Type == EnumBarcodeMaterial.Iron)
+                    if (location.agvPosition.Type == EnumBarcodeMaterial.Iron)
                     {
-                        location.LastPositingBarcodeID = location.Barcode.BarcodeLineID;
-                        Vehicle.Instance.VehicleLocation.BarcodePosition = location.Barcode.Position;
+                        if (location.PositingBarcodeID != location.LastPositingBarcodeID)
+                            location.LastPositingBarcodeID = location.PositingBarcodeID;
+
+                        location.PositingBarcodeID = location.agvPosition.BarcodeLineID;
                     }
 
+                    Vehicle.Instance.VehicleLocation.BarcodePosition = location.agvPosition.Position;
                     return true;
                 }
             }
             else
             {
-                if (location.Barcode == null)
+                if (location.agvPosition == null)
                 {
                     MapPosition tempPosition = new MapPosition(0, 0);
-                    location.Barcode = new AGVPosition(tempPosition, tempPosition, 0, 0, 20, DateTime.Now, 0, 0, EnumBarcodeMaterial.Iron, "Simulate");
+                    location.agvPosition = new AGVPosition(tempPosition, tempPosition, 0, 0, 20, DateTime.Now, 0, 0, EnumBarcodeMaterial.Iron, "Simulate");
                     //location.Barcode = new AGVPosition(tempPosition, 90, 0, 20, DateTime.Now, 0, 0, EnumBarcodeMaterial.Iron);
                     return true;
                 }
@@ -1416,10 +1425,12 @@ namespace Mirle.Agv.Controller
             loopTimeTimer.Start();
 
             UpdateElmo();
-            bool newBarcode = UpdateSR2000();
+            bool newBarcode;
 
             if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error)
             {
+                newBarcode = UpdateSR2000(true);
+
                 if (MoveState != EnumMoveState.TR && MoveState != EnumMoveState.R2000)
                 {
                     if (newBarcode)
@@ -1431,7 +1442,7 @@ namespace Mirle.Agv.Controller
                         location.ThetaAndSectionDeviation.Theta += command.EndOffsetTheta;
                     }
 
-                    if (newBarcode && location.Barcode.Type == EnumBarcodeMaterial.Iron)
+                    if (newBarcode && location.agvPosition.Type == EnumBarcodeMaterial.Iron)
                         UpdateDelta(secondCorrection);
                 }
 
@@ -1440,9 +1451,70 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                if (Vehicle.Instance.AutoState != EnumAutoState.Auto && newBarcode && location.Barcode.Type == EnumBarcodeMaterial.Iron)
+                newBarcode = UpdateSR2000(false);
+
+                if (Vehicle.Instance.AutoState != EnumAutoState.Auto && newBarcode)
                 {
-                    location.Real = location.Barcode;
+                    location.Real = location.agvPosition;
+                    location.Real.AGVAngle = computeFunction.GetAGVAngle(location.Real.AGVAngle);
+                    Vehicle.Instance.VehicleLocation.RealPosition = location.Real.Position;
+                    Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
+                }
+            }
+        }
+        #endregion
+
+        #region
+        private bool UpdateAGVPosition()
+        {
+            if (UpdateSR2000(MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error))
+                return true;
+
+            AGVPosition temp = null;
+
+            if (slamControl.GetAGVPosition(ref temp))
+            {
+                location.agvPosition = temp;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private void UpdateLocation(bool secondCorrection = false)
+        {
+            LoopTime = loopTimeTimer.ElapsedMilliseconds;
+            loopTimeTimer.Restart();
+
+            UpdateElmo();
+
+            bool newAGVPosition = UpdateAGVPosition();
+
+            if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error)
+            {
+                if (MoveState != EnumMoveState.TR && MoveState != EnumMoveState.R2000)
+                {
+                    if (newAGVPosition)
+                        UpdateThetaSectionDeviationAndSafetyCheck();
+
+                    if (location.ThetaAndSectionDeviation != null && ControlData.EQVChange)
+                    {
+                        location.ThetaAndSectionDeviation.SectionDeviation += ControlData.SectionDeviationOffset;
+                        location.ThetaAndSectionDeviation.Theta += command.EndOffsetTheta;
+                    }
+
+                    if (newAGVPosition && location.agvPosition.Type == EnumBarcodeMaterial.Iron)
+                        UpdateDelta(secondCorrection);
+                }
+
+                UpdateReal();
+                SafetyTurnOutAndLineBarcodeInterval(newAGVPosition);
+            }
+            else
+            {
+                if (Vehicle.Instance.AutoState != EnumAutoState.Auto && newAGVPosition)
+                {
+                    location.Real = location.agvPosition;
                     location.Real.AGVAngle = computeFunction.GetAGVAngle(location.Real.AGVAngle);
                     Vehicle.Instance.VehicleLocation.RealPosition = location.Real.Position;
                     Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
@@ -1471,7 +1543,12 @@ namespace Mirle.Agv.Controller
 
             double idealAngle = GetTRFlowAngleChange(Math.Abs(location.ElmoEncoder - ControlData.TurnStartEncoder));
 
-            return Math.Abs(idealAngle - nowAngle) <= range;
+            bool result = Math.Abs(idealAngle - nowAngle) <= range;
+
+            if (!result)
+                WriteLog("MoveControl", "7", device, "", String.Concat("四輪平均角度 : ", nowAngle.ToString("0"), ", 預計平均角度 : ", idealAngle.ToString("0")));
+
+            return result;
         }
 
         private bool TurnGorupAxisNearlyAngle(double range)
@@ -1484,6 +1561,10 @@ namespace Mirle.Agv.Controller
             bool result = (Math.Abs(angle_TFL - angle_TFR) <= range) && (Math.Abs(angle_TFL - angle_TRL) <= range) &&
                           (Math.Abs(angle_TFL - angle_TRR) <= range) && (Math.Abs(angle_TFR - angle_TRL) <= range) &&
                           (Math.Abs(angle_TFR - angle_TRR) <= range) && (Math.Abs(angle_TRL - angle_TRR) <= range);
+
+            if (!result)
+                WriteLog("MoveControl", "7", device, "", String.Concat("四輪角度 TFL : ", angle_TFL.ToString("0"), ", TFR : ", angle_TFR.ToString("0"),
+                                                                                ",TRL : ", angle_TRL.ToString("0"), ",TRR : ", angle_TRR.ToString("0")));
 
             return result;
         }
@@ -2394,15 +2475,15 @@ namespace Mirle.Agv.Controller
 
             elmoDriver.DisableMoveAxis();
 
-            bool newBarcode = UpdateSR2000();
+            bool newBarcode = UpdateSR2000(true);
 
             try
             {
-                if (newBarcode && location.Barcode.Type == EnumBarcodeMaterial.Iron)
+                if (newBarcode && location.agvPosition.Type == EnumBarcodeMaterial.Iron)
                 {
-                    double deltaX = location.Barcode.Position.X - command.End.X;
-                    double deltaY = location.Barcode.Position.Y - command.End.Y;
-                    double theta = location.Barcode.AGVAngle - location.Real.AGVAngle;
+                    double deltaX = location.agvPosition.Position.X - command.End.X;
+                    double deltaY = location.agvPosition.Position.Y - command.End.Y;
+                    double theta = location.agvPosition.AGVAngle - location.Real.AGVAngle;
                     plcAgent.SetVehiclePositionValue(deltaX.ToString("0.0"), deltaY.ToString("0.0"), theta.ToString("0.00"), location.Real.AGVAngle.ToString("0"), endEncoderDelta.ToString("0.0"));
                     WriteLog("MoveControl", "7", device, "", "send plc : x = " + deltaX.ToString("0.0") + ", y = " +
                                                               deltaY.ToString("0.0") + ", theta = " + theta.ToString("0.00") + ", AGV車頭方向 = " +
@@ -2558,6 +2639,7 @@ namespace Mirle.Agv.Controller
                     if ((cmd.DirFlag && location.RealEncoder > cmd.TriggerEncoder + cmd.SafetyDistance) ||
                        (!cmd.DirFlag && location.RealEncoder < cmd.TriggerEncoder - cmd.SafetyDistance))
                     {
+                        WriteLog("MoveControl", "7", device, "", String.Concat("LastPositingBarcodeID : ", location.LastPositingBarcodeID, ", PositingBarcodeID : ", location.PositingBarcodeID));
                         EMSControl(String.Concat("Command : ", cmd.CmdType.ToString(), ", 超過Triiger觸發區間,EMS.. dirFlag : ", (ControlData.DirFlag ? "往前" : "往後"),
                                      ", Encoder : ", location.RealEncoder.ToString("0.0"), ", triggerEncoder : ", cmd.TriggerEncoder.ToString("0.0")));
                         SendAlarmCode(150002);
@@ -2568,7 +2650,7 @@ namespace Mirle.Agv.Controller
                     {
                         WriteLog("MoveControl", "7", device, "", String.Concat("Command : ", cmd.CmdType.ToString(), ", 觸發, dirFlag : ",
                                   (ControlData.DirFlag ? "往前" : "往後"), ", Encoder : ", location.RealEncoder.ToString("0.0"),
-                                  ", triggerEncoder : ", cmd.TriggerEncoder.ToString("0.0"), ", 定位Barcode ID : ", location.LastPositingBarcodeID));
+                                  ", triggerEncoder : ", cmd.TriggerEncoder.ToString("0.0"), ", 定位Barcode ID : ", location.PositingBarcodeID));
                         return true;
                     }
                 }
@@ -2582,7 +2664,7 @@ namespace Mirle.Agv.Controller
         {
             if (command.IndexOfCmdList < command.CommandList.Count && TriggerCommand(command.CommandList[command.IndexOfCmdList]))
             {
-                WriteLog("MoveControl", "7", device, "", String.Concat("Barcode Position ( ", location.Barcode.Position.X.ToString("0"), ", " + location.Barcode.Position.Y.ToString("0"),
+                WriteLog("MoveControl", "7", device, "", String.Concat("Barcode Position ( ", location.agvPosition.Position.X.ToString("0"), ", " + location.agvPosition.Position.Y.ToString("0"),
                                                                        " ), Real Position ( ", location.Real.Position.X.ToString("0"), ", ", location.Real.Position.Y.ToString("0"),
                                                                        " ), Encoder Position ( ", location.Encoder.Position.X.ToString("0"), ", " + location.Encoder.Position.Y.ToString("0") + " )"));
 
@@ -4495,7 +4577,7 @@ namespace Mirle.Agv.Controller
 
                     //  BarcodePosition
                     //  X Y
-                    logAGVPosition = location.Barcode;
+                    logAGVPosition = location.agvPosition;
                     if (logAGVPosition != null)
                     {
                         AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));

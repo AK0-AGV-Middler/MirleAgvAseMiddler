@@ -911,6 +911,7 @@ namespace Mirle.Agv.Controller
                 triggerPosition = computeFunction.GetPositionFormEndDistance(data.LastNode, position, distanceToPosition);
                 command.TriggerEncoder = data.MoveStartEncoder + (data.DirFlag ? data.CommandDistance - distanceToPosition : -(data.CommandDistance - distanceToPosition));
                 command.Position = triggerPosition;
+                AddCommandToCommandList(ref moveCmdList, command, data);
             }
             else
             {
