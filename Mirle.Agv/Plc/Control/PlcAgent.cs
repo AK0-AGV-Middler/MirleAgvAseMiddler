@@ -793,9 +793,10 @@ namespace Mirle.Agv.Controller
                                                 }
 
 
-                                                if (AlarmCode == 1150 || AlarmCode == 1160 || AlarmCode == 1152|| AlarmCode == 1162||
-                                                    AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126 || AlarmCode == 140 )
+                                                if (AlarmCode == 1150 || AlarmCode == 1160 || AlarmCode == 1152|| AlarmCode == 1162 )
                                                 {
+
+                                                    //AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126 || AlarmCode == 140
                                                     if (nowErrorCode == 0)
                                                     {
                                                         nowErrorCode = AlarmCode;
