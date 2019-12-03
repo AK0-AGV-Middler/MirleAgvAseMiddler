@@ -42,7 +42,6 @@ namespace Mirle.Agv.Controller
 
         private Thread thdAskReserve;
         private ManualResetEvent askReserveShutdownEvent = new ManualResetEvent(false);
-        private ManualResetEvent askReservePauseEvent = new ManualResetEvent(true);
         private EnumThreadStatus askReserveStatus = EnumThreadStatus.None;
         public EnumThreadStatus AskReserveStatus
         {
@@ -61,6 +60,9 @@ namespace Mirle.Agv.Controller
         private MapSection askingReserveSection = new MapSection();
         private EnumCstIdReadResult readResult = EnumCstIdReadResult.Noraml;
         private bool ReserveOkAskNext { get; set; } = false;
+        private ConcurrentBag<MapSection> CbagNeedReserveSections { get; set; } = new ConcurrentBag<MapSection>();
+        private bool IsAskReservePause { get; set; }
+        private bool IsAskReserveStop { get; set; }
 
         public TcpIpAgent ClientAgent { get; private set; }
         public bool IsCancelByCstIdRead { get; set; } = false;
@@ -466,16 +468,19 @@ namespace Mirle.Agv.Controller
             PreAskReserve();
             Stopwatch sw = new Stopwatch();
             long total = 0;
-            while (!queNeedReserveSections.IsEmpty)
+            while (true)
             {
                 try
                 {
                     sw.Restart();
 
                     #region Pause And Stop Check
-                    askReservePauseEvent.WaitOne(Timeout.Infinite);
+                    if (IsAskReservePause) continue;
                     if (askReserveShutdownEvent.WaitOne(0)) break;
                     #endregion
+
+                    if (queNeedReserveSections.IsEmpty) break;
+                 
 
                     AskReserveStatus = EnumThreadStatus.Working;
                     if (CanAskReserve())
@@ -504,7 +509,8 @@ namespace Mirle.Agv.Controller
         }        
         public void StartAskReserve()
         {
-            askReservePauseEvent.Set();
+            IsAskReservePause = false;
+            IsAskReserveStop = false;
             askReserveShutdownEvent.Reset();
             thdAskReserve = new Thread(new ThreadStart(AskReserve));
             thdAskReserve.IsBackground = true;
@@ -512,40 +518,28 @@ namespace Mirle.Agv.Controller
             AskReserveStatus = EnumThreadStatus.Start;
             var msg = $"Middler : 開始詢問通行權";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //         , msg));
         }
         public void PauseAskReserve()
         {
-            askReservePauseEvent.Reset();
-            PreAskReserveStatus = AskReserveStatus;
+            IsAskReservePause = true;
+            PreAskReserveStatus = AskReserveStatus;               
             AskReserveStatus = EnumThreadStatus.Pause;
             var msg = $"Middler : 暫停詢問通行權, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public void ResumeAskReserve()
         {
-            askReservePauseEvent.Set();
-            var tempStatus = AskReserveStatus;
+            IsAskReservePause = false;
             AskReserveStatus = PreAskReserveStatus;
-            PreAskReserveStatus = tempStatus;
             var msg = $"Middler : 恢復詢問通行權, [AskingReserveSectionId={askingReserveSection.Id}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
-
         }
         public void StopAskReserve()
         {
             askReserveShutdownEvent.Set();
-            askReservePauseEvent.Set();
+            IsAskReservePause = true;
 
-            if (AskReserveStatus != EnumThreadStatus.None)
-            {
-                AskReserveStatus = EnumThreadStatus.Stop;
-            }
+            AskReserveStatus = EnumThreadStatus.Stop;
 
             ClearAskReserve();
 
@@ -567,12 +561,12 @@ namespace Mirle.Agv.Controller
         }
         private void AfterAskReserve(long total)
         {
-            queNeedReserveSections = new ConcurrentQueue<MapSection>();
-            askingReserveSection = new MapSection();
+            //queNeedReserveSections = new ConcurrentQueue<MapSection>();
+            //askingReserveSection = new MapSection();
             AskReserveStatus = EnumThreadStatus.None;
-            AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
-            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
-            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+            //AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
+            //agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
+            //StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             var msg = $"MainFlow : 詢問通行權 後處理, [ThreadStatus={AskReserveStatus}][TotalSpendMs={total}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }

@@ -562,8 +562,6 @@ namespace Mirle.Agv.Controller
             WatchLowPowerStatus = EnumThreadStatus.None;
             var msg = $"MainFlow : 監看自動充電 後處理, [ThreadStatus={WatchLowPowerStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
         private bool IsLowPower()
         {
@@ -2082,7 +2080,7 @@ namespace Mirle.Agv.Controller
         private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
         {
             try
-            {               
+            {
                 if (string.IsNullOrEmpty(cstId))
                 {
                     var msg = $"貨物ID讀取失敗";
@@ -2349,11 +2347,28 @@ namespace Mirle.Agv.Controller
 
         public void PrepareForAskingReserve(MoveCmdInfo moveCmd)
         {
-            middleAgent.StopAskReserve();
-            middleAgent.NeedReserveSections = moveCmd.MovingSections;
-            middleAgent.ReportSectionPass(EventType.AdrPass);
-            OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
-            middleAgent.StartAskReserve();
+            try
+            {
+                #region 1.0
+                middleAgent.StopAskReserve();
+                middleAgent.NeedReserveSections = moveCmd.MovingSections;
+                middleAgent.ReportSectionPass(EventType.AdrPass);
+                OnPrepareForAskingReserveEvent?.Invoke(this, moveCmd);
+                middleAgent.StartAskReserve();
+                #endregion
+
+                #region 2.0
+                middleAgent.PauseAskReserve();                
+                middleAgent.NeedReserveSections = moveCmd.MovingSections;
+                middleAgent.ReportSectionPass(EventType.AdrPass);
+                middleAgent.ResumeAskReserve();
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private bool UpdateVehiclePositionInMovingStep(MoveCmdInfo moveCmdInfo, VehicleLocation vehicleLocation)

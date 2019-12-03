@@ -1040,12 +1040,12 @@ namespace Mirle.Agv.View
 
         private void timeUpdateUI_Tick(object sender, EventArgs e)
         {
-            //try
-            //{
-            //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
-            //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
+            try
+            {
+                //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
+                //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
 
-            tbxDebugLogMsg.Text = DebugLogMsg;
+                tbxDebugLogMsg.Text = DebugLogMsg;
 
             //if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
             //{
@@ -1077,12 +1077,12 @@ namespace Mirle.Agv.View
             UpdateTbxTransferStep();
             UpdateLastAlarm();
             UpdateAgvcConnection();
-            //UpdateAgvFailResult();
-            //}
-            //catch (Exception ex)
-            //{
-            //    LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            //}
+                //UpdateAgvFailResult();
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         private void SetAbnormalAllGreen()
@@ -1449,9 +1449,6 @@ namespace Mirle.Agv.View
                 ucVehicleImage.Show();
                 ucVehicleImage.BringToFront();
 
-                //var isRealPositionNotNull = moveControlHandler.IsLocationRealNotNull();
-                //ucRealPosition.TagColor = isRealPositionNotNull ? Color.ForestGreen : Color.OrangeRed;
-
             }
             catch (Exception ex)
             {
@@ -1507,11 +1504,6 @@ namespace Mirle.Agv.View
                 int posX = (int)numPositionX.Value;
                 int posY = (int)numPositionY.Value;
                 curVehPos.SetRealPos(new MapPosition(posX, posY));
-                //int tempRealPosRangeMm = curVehPos.RealPositionRangeMm;
-                //curVehPos.RealPositionRangeMm = 0;
-                //curVehPos.RealPosition = new MapPosition(posX, posY);
-                //curVehPos.RealPositionRangeMm = tempRealPosRangeMm;
-
             }
             catch (Exception ex)
             {

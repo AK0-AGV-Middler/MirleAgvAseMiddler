@@ -31,14 +31,14 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AlarmForm));
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.tbxHistoryAlarms = new System.Windows.Forms.TextBox();
+            this.tbxHappendingAlarms = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
             this.num1 = new System.Windows.Forms.NumericUpDown();
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.tbxHappendingAlarms = new System.Windows.Forms.TextBox();
-            this.tbxHistoryAlarms = new System.Windows.Forms.TextBox();
             this.timeUpdateUI = new System.Windows.Forms.Timer(this.components);
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -62,6 +62,28 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1311, 728);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
+            // tbxHistoryAlarms
+            // 
+            this.tbxHistoryAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbxHistoryAlarms.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxHistoryAlarms.Location = new System.Drawing.Point(658, 3);
+            this.tbxHistoryAlarms.Multiline = true;
+            this.tbxHistoryAlarms.Name = "tbxHistoryAlarms";
+            this.tbxHistoryAlarms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxHistoryAlarms.Size = new System.Drawing.Size(650, 581);
+            this.tbxHistoryAlarms.TabIndex = 61;
+            // 
+            // tbxHappendingAlarms
+            // 
+            this.tbxHappendingAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbxHappendingAlarms.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxHappendingAlarms.Location = new System.Drawing.Point(3, 3);
+            this.tbxHappendingAlarms.Multiline = true;
+            this.tbxHappendingAlarms.Name = "tbxHappendingAlarms";
+            this.tbxHappendingAlarms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxHappendingAlarms.Size = new System.Drawing.Size(649, 581);
+            this.tbxHappendingAlarms.TabIndex = 60;
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.button2);
@@ -83,7 +105,6 @@
             this.button2.TabIndex = 10;
             this.button2.Text = "button2";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Visible = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // num1
@@ -133,28 +154,6 @@
             this.button1.Text = "X";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // tbxHappendingAlarms
-            // 
-            this.tbxHappendingAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbxHappendingAlarms.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxHappendingAlarms.Location = new System.Drawing.Point(3, 3);
-            this.tbxHappendingAlarms.Multiline = true;
-            this.tbxHappendingAlarms.Name = "tbxHappendingAlarms";
-            this.tbxHappendingAlarms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbxHappendingAlarms.Size = new System.Drawing.Size(649, 581);
-            this.tbxHappendingAlarms.TabIndex = 60;
-            // 
-            // tbxHistoryAlarms
-            // 
-            this.tbxHistoryAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbxHistoryAlarms.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxHistoryAlarms.Location = new System.Drawing.Point(658, 3);
-            this.tbxHistoryAlarms.Multiline = true;
-            this.tbxHistoryAlarms.Name = "tbxHistoryAlarms";
-            this.tbxHistoryAlarms.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbxHistoryAlarms.Size = new System.Drawing.Size(650, 581);
-            this.tbxHistoryAlarms.TabIndex = 61;
             // 
             // timeUpdateUI
             // 
