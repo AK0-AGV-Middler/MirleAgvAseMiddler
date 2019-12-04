@@ -2007,11 +2007,14 @@ namespace Mirle.Agv.Controller
                             ReserveOkAskNext = false;
                             string msg = $"收到{sectionId}通行權不可行";
                             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                            if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
+                            if (mainFlowHandler.IsMoveStopByNoReserve())
                             {
-                                agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
-                                StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                            }
+                                if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
+                                {
+                                    agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
+                                    StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                                }
+                            }                            
                         }
                         IsAskReservePause = false;
                     }
