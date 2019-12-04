@@ -17,6 +17,8 @@ namespace Mirle.Agv.View
     {
         private MiddleAgent middleAgent;
         private MiddlerConfig middlerConfig;
+        private string CommLogMsg { get; set; } = "";
+        private string ConnectionMsg { get; set; } = "";
 
         public MiddlerForm(MiddleAgent middleAgent)
         {
@@ -35,7 +37,7 @@ namespace Mirle.Agv.View
                 {
                     toolStripStatusLabel1.Text = "Connect";
                 }
-            }           
+            }
         }
 
         private void ConfigToUI()
@@ -46,22 +48,22 @@ namespace Mirle.Agv.View
 
         private void EventInital()
         {
-            middleAgent.OnCmdReceiveEvent += SendOrReceiveCmdToRichTextBox;
-            middleAgent.OnCmdSendEvent += SendOrReceiveCmdToRichTextBox;
+            middleAgent.OnCmdReceiveEvent += SendOrReceiveCmdToTextBox;
+            middleAgent.OnCmdSendEvent += SendOrReceiveCmdToTextBox;
             middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
         }
 
         private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
-        {         
+        {
             try
             {
                 if (isConnect)
                 {
-                    Task.Run(() => ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Connect"));                    
+                    ConnectionMsg = "連線中";
                 }
                 else
                 {
-                    Task.Run(() => ToolStripStatusLabelTextChange(toolStripStatusLabel1, "Disconnect"));
+                    ConnectionMsg = "已斷線";
                 }
             }
             catch (Exception ex)
@@ -70,11 +72,11 @@ namespace Mirle.Agv.View
             }
         }
 
-        public void SendOrReceiveCmdToRichTextBox(object sender, string e)
+        public void SendOrReceiveCmdToTextBox(object sender, string msg)
         {
             try
             {
-                //Task.Run(() => RichTextBoxAppendHead(richTextBox1, e));
+                AppendCommLogMsg(msg);
             }
             catch (Exception ex)
             {
@@ -82,42 +84,20 @@ namespace Mirle.Agv.View
             }
         }
 
-        public delegate void ToolStripStatusLabelTextChangeCallback(ToolStripStatusLabel toolStripStatusLabel, string msg);
-        public void ToolStripStatusLabelTextChange(ToolStripStatusLabel toolStripStatusLabel, string msg)
+        private void AppendCommLogMsg(string msg)
         {
-            if (this.InvokeRequired)
+            try
             {
-                ToolStripStatusLabelTextChangeCallback mydel = new ToolStripStatusLabelTextChangeCallback(ToolStripStatusLabelTextChange);
-                this.Invoke(mydel, new object[] { toolStripStatusLabel, msg });
-            }
-            else
-            {
-                toolStripStatusLabel.Text = msg;
-            }
-        }
+                CommLogMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", msg, "\r\n", CommLogMsg);
 
-        public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
-        public void RichTextBoxAppendHead(RichTextBox richTextBox, string msg)
-        {
-            if (richTextBox.InvokeRequired)
-            {
-                RichTextBoxAppendHeadCallback mydel = new RichTextBoxAppendHeadCallback(RichTextBoxAppendHead);
-                this.Invoke(mydel, new object[] { richTextBox, msg });
-            }
-            else
-            {
-                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff] ");
-
-                richTextBox.Text = timeStamp + msg + Environment.NewLine + richTextBox.Text;
-
-                int RichTextBoxMaxLines = middlerConfig.RichTextBoxMaxLines;
-
-                if (richTextBox.Lines.Count() > RichTextBoxMaxLines)
+                if (CommLogMsg.Length > 65535)
                 {
-                    string[] sNewLines = new string[RichTextBoxMaxLines];
-                    Array.Copy(richTextBox.Lines, 0, sNewLines, 0, sNewLines.Length);
-                    richTextBox.Lines = sNewLines;
+                    CommLogMsg = CommLogMsg.Substring(65535);
                 }
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -134,13 +114,13 @@ namespace Mirle.Agv.View
             for (int i = 0; i < numOfCmdItems; i++)
             {
                 var row = dataGridView1.Rows[i];
-                msg += $"[{row.Cells[0].Value},{row.Cells[1].Value}]";
+                msg = string.Concat(msg, $"[{row.Cells[0].Value},{row.Cells[1].Value}]");
                 if (!string.IsNullOrEmpty(row.Cells[0].Value.ToString()))
                 {
                     pairs[row.Cells[0].Value.ToString()] = row.Cells[1].Value.ToString();
                 }
             }
-            //RichTextBoxAppendHead(richTextBox1, msg);
+            AppendCommLogMsg(msg);
 
             middleAgent.SendMiddlerFormCommands(cmdNum, pairs);
         }
@@ -454,13 +434,13 @@ namespace Mirle.Agv.View
         {
             if (middleAgent.IsClientAgentNull())
             {
-                //RichTextBoxAppendHead(richTextBox1, "ClientAgent is null");
+                AppendCommLogMsg("ClientAgent is null.");
             }
             else
             {
-                //RichTextBoxAppendHead(richTextBox1, "ClientAgent is not null");
+                AppendCommLogMsg("ClientAgent is not null.");
             }
-        }       
+        }
 
         private void btnDisConnect_Click(object sender, EventArgs e)
         {
@@ -494,6 +474,19 @@ namespace Mirle.Agv.View
         {
             this.SendToBack();
             this.Hide();
+        }
+
+        private void timerUI_Tick(object sender, EventArgs e)
+        {           
+            try
+            {
+                tbxCommLogMsg.Text = CommLogMsg;
+                toolStripStatusLabel1.Text = ConnectionMsg;
+            }
+            catch (Exception ex)
+            {
+                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
     }
 }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MiddlerForm));
             this.btnDisConnect = new System.Windows.Forms.Button();
             this.btnConnect = new System.Windows.Forms.Button();
@@ -35,7 +36,6 @@
             this.txtRemotePort = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.txtRemoteIp = new System.Windows.Forms.TextBox();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.CmdItem = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.CmdValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -48,6 +48,8 @@
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnIsClientAgentNull = new System.Windows.Forms.Button();
             this.btnHide = new System.Windows.Forms.Button();
+            this.tbxCommLogMsg = new System.Windows.Forms.TextBox();
+            this.timerUI = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -109,14 +111,6 @@
             this.txtRemoteIp.Name = "txtRemoteIp";
             this.txtRemoteIp.Size = new System.Drawing.Size(141, 27);
             this.txtRemoteIp.TabIndex = 15;
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.Location = new System.Drawing.Point(0, 465);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(1295, 381);
-            this.richTextBox1.TabIndex = 25;
-            this.richTextBox1.Text = "";
             // 
             // dataGridView1
             // 
@@ -264,6 +258,22 @@
             this.btnHide.UseVisualStyleBackColor = true;
             this.btnHide.Click += new System.EventHandler(this.btnHide_Click);
             // 
+            // tbxCommLogMsg
+            // 
+            this.tbxCommLogMsg.Font = new System.Drawing.Font("新細明體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxCommLogMsg.Location = new System.Drawing.Point(0, 465);
+            this.tbxCommLogMsg.Multiline = true;
+            this.tbxCommLogMsg.Name = "tbxCommLogMsg";
+            this.tbxCommLogMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxCommLogMsg.Size = new System.Drawing.Size(1295, 381);
+            this.tbxCommLogMsg.TabIndex = 60;
+            // 
+            // timerUI
+            // 
+            this.timerUI.Enabled = true;
+            this.timerUI.Interval = 500;
+            this.timerUI.Tick += new System.EventHandler(this.timerUI_Tick);
+            // 
             // MiddlerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -272,9 +282,9 @@
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.ClientSize = new System.Drawing.Size(1295, 871);
             this.ControlBox = false;
+            this.Controls.Add(this.tbxCommLogMsg);
             this.Controls.Add(this.btnHide);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbSend);
@@ -309,7 +319,6 @@
         private System.Windows.Forms.TextBox txtRemotePort;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtRemoteIp;
-        private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.DataGridViewTextBoxColumn CmdItem;
         private System.Windows.Forms.DataGridViewTextBoxColumn CmdValue;
@@ -322,5 +331,7 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
         private System.Windows.Forms.Button btnIsClientAgentNull;
         private System.Windows.Forms.Button btnHide;
+        private System.Windows.Forms.TextBox tbxCommLogMsg;
+        private System.Windows.Forms.Timer timerUI;
     }
 }

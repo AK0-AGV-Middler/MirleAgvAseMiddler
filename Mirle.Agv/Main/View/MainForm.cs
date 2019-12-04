@@ -222,7 +222,7 @@ namespace Mirle.Agv.View
 
         private void InitialEvents()
         {
-            mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToRichTextBox;
+            mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
             mainFlowHandler.OnPrepareForAskingReserveEvent += MainFlowHandler_OnPrepareForAskingReserveEvent;
             mainFlowHandler.OnMoveArrivalEvent += MainFlowHandler_OnMoveArrivalEvent;
