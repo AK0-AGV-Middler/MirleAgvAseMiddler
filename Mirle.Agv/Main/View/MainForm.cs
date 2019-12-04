@@ -58,7 +58,8 @@ namespace Mirle.Agv.View
         public string MoveControllerAbnormalReasonMsg { get; set; } = "";
         public string RobotAbnormalReasonMsg { get; set; } = "";
         public string BatterysAbnormalReasonMsg { get; set; } = "";
-        public Dictionary<string, string> MainFormMsgs { get; set; } = new Dictionary<string, string>();
+        public string LastAlarmMsg { get; set; } = "";
+
 
         #region PaintingItems
         private Image image;
@@ -107,7 +108,7 @@ namespace Mirle.Agv.View
             InitialConnectionAndCstStatus();
             InitialThdPads();
             InitialAbnormalMsgs();
-            //InitialMainFormMsgs();
+            txtLastAlarm.Text = "";
             plcAgent.SetOutSideObj(this);
             var msg = "MainForm : 讀取主畫面";
             LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
@@ -120,22 +121,6 @@ namespace Mirle.Agv.View
             txtMoveControlAbnormalReason.Text = "";
             txtRobotAbnormalReason.Text = "";
             txtBatterysAbnormalReason.Text = "";
-        }
-
-        private void InitialMainFormMsgs()
-        {
-            try
-            {
-                MainFormMsgs.Add("MainFlowAbnormalReason", "");
-                MainFormMsgs.Add("MiddlerAbnormalReason", "");
-                MainFormMsgs.Add("MoveControllerAbnormalReason", "");
-                MainFormMsgs.Add("RobotAbnormalReason", "");
-                MainFormMsgs.Add("BatterysAbnormalReason", "");
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
         }
 
         private void InitialForms()
@@ -337,6 +322,8 @@ namespace Mirle.Agv.View
                 var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
                 AppendDebugLogMsg(msg);
 
+                LastAlarmMsg = $"[Id={alarm.Id}]\r\n[Text={alarm.AlarmText}]";
+
                 if (alarm.Level == EnumAlarmLevel.Alarm)
                 {
                     if (alarmForm.IsDisposed)
@@ -355,24 +342,14 @@ namespace Mirle.Agv.View
             {
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
-        }        
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
-        {
-            try
-            {
-                Task.Run(() => OnResetAllAlarmsEvent(msg));
-            }
-            catch (Exception ex)
-            {
-                LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
         }
-        private void OnResetAllAlarmsEvent(string msg)
+        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             try
             {
                 btnAlarmReset.Enabled = false;
                 AppendDebugLogMsg(msg);
+                LastAlarmMsg = "";
                 Thread.Sleep(500);
                 btnAlarmReset.Enabled = true;
             }
@@ -398,9 +375,8 @@ namespace Mirle.Agv.View
         {
             try
             {
-                var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor開關 {DisableParse(!e.IsDisable)}";
-                Task.Run(() => ShowMsgOnMainForm(this, msg));
-                LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor {DisableParse(!e.IsDisable)}";
+                ShowMsgOnMainForm(this, msg);
             }
             catch (Exception ex)
             {
@@ -408,7 +384,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private object DisableParse(bool v)
+        private string DisableParse(bool v)
         {
             return v ? "打開" : "關閉";
         }
@@ -916,7 +892,8 @@ namespace Mirle.Agv.View
             {
                 TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n",
                                       type, "\t", $"{agvcTransCmd.CommandType}", "\r\n",
-                                      $"[命令號={agvcTransCmd.CommandId}]\t[貨號={agvcTransCmd.CassetteId}]\r\n",
+                                      $"[命令號={agvcTransCmd.CommandId}]\r\n",
+                                      $"[貨號={agvcTransCmd.CassetteId}]\r\n",
                                       $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
                                       $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n",
                                       $"[LoadAdrs={GuideListToString(agvcTransCmd.ToLoadAddressIds)}]\r\n",
@@ -994,7 +971,8 @@ namespace Mirle.Agv.View
             {
                 UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
                 return string.Concat($"放貨\t{unloadCmdInfo.GetTransferStepType()}\r\n",
-                                      $"[命令號={unloadCmdInfo.CmdId}]\t[貨號={unloadCmdInfo.CstId}]\r\n",
+                                      $"[命令號={unloadCmdInfo.CmdId}]\r\n",
+                                      $"[貨號={unloadCmdInfo.CstId}]\r\n",
                                       $"[放貨站={unloadCmdInfo.UnloadAddress}]\r\n",
                                       $"[放貨方向={unloadCmdInfo.StageDirection}]\r\n",
                                       $"[StageNum={unloadCmdInfo.StageNum}]\r\n",
@@ -1014,7 +992,8 @@ namespace Mirle.Agv.View
             {
                 LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
                 return string.Concat($"取貨\t{loadCmdInfo.GetTransferStepType()}\r\n",
-                                      $"[命令號={loadCmdInfo.CmdId}]\t[貨號={loadCmdInfo.CstId}]\r\n",
+                                      $"[命令號={loadCmdInfo.CmdId}]\r\n",
+                                      $"[貨號={loadCmdInfo.CstId}]\r\n",
                                       $"[取貨站={loadCmdInfo.LoadAddress}]\r\n",
                                       $"[取貨方向={loadCmdInfo.StageDirection}]\r\n",
                                       $"[StageNum={loadCmdInfo.StageNum}]\r\n",
@@ -1046,29 +1025,29 @@ namespace Mirle.Agv.View
 
                 tbxDebugLogMsg.Text = DebugLogMsg;
 
-            //if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
-            //{
-            //    ResetSectionColor();
-            //    ClearColor();
-            //    SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
-            //    moveCommandDebugMode.MainShowRunSectionList = false;
-            //}
-            var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
-            ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
+                //if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
+                //{
+                //    ResetSectionColor();
+                //    ClearColor();
+                //    SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
+                //    moveCommandDebugMode.MainShowRunSectionList = false;
+                //}
+                var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
+                ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
 
-            UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
-            UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
+                UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
+                UpdateListBoxSections(lbxReserveOkSections, middleAgent.GetReserveOkSections());
 
-            UpdateAutoManual();
-            UpdateVehLocation();
-            UpdateCharginAndLoading();
-            //DrawReserveSections();
-            UpdateAbnormalText();
-            UpdateThreadPicture();
-            UpdateTbxAgvcTransCmd();
-            UpdateTbxTransferStep();
-            UpdateLastAlarm();
-            UpdateAgvcConnection();
+                UpdateAutoManual();
+                UpdateVehLocation();
+                UpdateCharginAndLoading();
+                //DrawReserveSections();
+                UpdateAbnormalText();
+                UpdateThreadPicture();
+                UpdateTbxAgvcTransCmd();
+                UpdateTbxTransferStep();
+                UpdateLastAlarm();
+                UpdateAgvcConnection();
                 //UpdateAgvFailResult();
             }
             catch (Exception ex)
@@ -1223,13 +1202,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                var alarm = alarmHandler.LastAlarm;
-                if (!lastAlarmId.Equals(alarm.Id))
-                {
-                    lastAlarmId = alarm.Id;
-                    var msg = $"[{alarm.Id}]\r\n[{alarm.AlarmText}]";
-                    txtLastAlarm.Text = msg;
-                }
+                txtLastAlarm.Text = LastAlarmMsg;
             }
             catch (Exception ex)
             {
