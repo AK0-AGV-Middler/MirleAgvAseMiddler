@@ -1453,7 +1453,7 @@ namespace Mirle.Agv.Controller
             {
                 newBarcode = UpdateSR2000(false);
 
-                if (Vehicle.Instance.AutoState != EnumAutoState.Auto && newBarcode)
+                if (Vehicle.Instance.AutoState != EnumAutoState.Auto && newBarcode && location.agvPosition.Type == EnumBarcodeMaterial.Iron)
                 {
                     location.Real = location.agvPosition;
                     location.Real.AGVAngle = computeFunction.GetAGVAngle(location.Real.AGVAngle);
