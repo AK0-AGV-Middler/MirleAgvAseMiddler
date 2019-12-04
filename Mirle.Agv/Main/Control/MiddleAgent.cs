@@ -545,7 +545,7 @@ namespace Mirle.Agv.Controller
         {
             IsAskReserveStop = true;
             AskReserveStatus = EnumThreadStatus.Stop;
-            ClearAskReserve();
+            ClearAllReserve();
             var msg = $"Middler : 停止詢問通行權";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
@@ -674,7 +674,7 @@ namespace Mirle.Agv.Controller
                 }
             }
         }
-        public void ClearAskReserve()
+        public void ClearAllReserve()
         {
             IsAskReservePause = true;
             ClearGotReserveOkSections();

@@ -399,8 +399,6 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : 暫停搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
         public void ResumeVisitTransferSteps()
         {
@@ -413,8 +411,6 @@ namespace Mirle.Agv.Controller
             VisitTransferStepsStatus = VisitTransferStepsStatusBeforePause;
             var msg = $"MainFlow : 恢復搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
         public void StopVisitTransferSteps()
         {
@@ -427,8 +423,6 @@ namespace Mirle.Agv.Controller
 
             var msg = $"MainFlow : 停止搬送流程, [StepIndex={TransferStepsIndex}][TotalSteps={transferSteps.Count}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //  , msg));
         }
         private void PreVisitTransferSteps()
         {
@@ -1120,7 +1114,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 //middleAgent.StopAskReserve();
-                middleAgent.ClearAskReserve();
+                middleAgent.ClearAllReserve();
                 agvcTransCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
                 agvcTransCmd.AvoidEndAddressId = "";
                 agvcTransCmd.IsAvoidComplete = false;
@@ -1277,7 +1271,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 //middleAgent.StopAskReserve();
-                middleAgent.ClearAskReserve();
+                middleAgent.ClearAllReserve();
                 agvcTransCmd.CombineAvoid(agvcMoveCmd);
                 agvcTransCmd.IsAvoidComplete = false;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
@@ -1836,6 +1830,7 @@ namespace Mirle.Agv.Controller
                 #region Not EnumMoveComplete.Success
                 if (status == EnumMoveComplete.Fail)
                 {
+                    middleAgent.ClearAllReserve();
                     if (IsAvoidMove)
                     {
                         middleAgent.AvoidFail();
@@ -1883,7 +1878,7 @@ namespace Mirle.Agv.Controller
                 #endregion
 
                 #region EnumMoveComplete.Success
-                //middleAgent.StopAskReserve();
+                middleAgent.ClearAllReserve();
 
                 MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
 
@@ -1906,8 +1901,8 @@ namespace Mirle.Agv.Controller
                         if (IsNextTransferStepIdle())
                         {
                             middleAgent.MoveArrival();
-                            OnMessageShowEvent?.Invoke(this, $"MainFlow : 走行移動完成");
                         }
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 走行移動完成");
 
                         VisitNextTransferStep();
                     }
@@ -2351,7 +2346,7 @@ namespace Mirle.Agv.Controller
                 #region 2.0
                 //middleAgent.PauseAskReserve();
                 middleAgent.ReportSectionPass(EventType.AdrPass);
-                middleAgent.ClearAskReserve();
+                middleAgent.ClearAllReserve();
                 middleAgent.SetupNeedReserveSections(moveCmd.MovingSections);             
                 //middleAgent.ResumeAskReserve();
                 #endregion
@@ -2835,9 +2830,7 @@ namespace Mirle.Agv.Controller
         public void StopAndClear()
         {
             PauseVisitTransferSteps();
-            //middleAgent.PauseAskReserve();
-            //middleAgent.StopAskReserve();
-            middleAgent.ClearAskReserve();
+            middleAgent.ClearAllReserve();
             StopVehicle();
             StopVisitTransferSteps();
             theVehicle.VehicleLocation.WheelAngle = moveControlHandler.ControlData.WheelAngle;
@@ -3185,7 +3178,7 @@ namespace Mirle.Agv.Controller
 
                         moveControlHandler.VehcleCancel();
                         //middleAgent.StopAskReserve();
-                        middleAgent.ClearAskReserve();
+                        middleAgent.ClearAllReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
@@ -3207,7 +3200,7 @@ namespace Mirle.Agv.Controller
                         middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
                         //middleAgent.StopAskReserve();
-                        middleAgent.ClearAskReserve();
+                        middleAgent.ClearAllReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
