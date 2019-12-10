@@ -488,5 +488,10 @@ namespace Mirle.Agv.View
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            middleAgent.TEST();
+        }
     }
 }

@@ -2026,5 +2026,7 @@ namespace Mirle.Agv.View
             string savename = Path.Combine(Environment.CurrentDirectory, "Log", timeStamp);
             image.Save(savename);
         }
+
+        
     }
 }

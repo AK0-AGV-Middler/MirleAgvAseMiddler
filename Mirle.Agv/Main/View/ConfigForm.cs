@@ -37,7 +37,7 @@ namespace Mirle.Agv.View
                     UpdateMainFlowConfigCv();
                     break;
                 case 1:
-                    UpdateMainFlowConfigCv();
+                    UpdateMiddlerConfigCv();
                     break;
                 default:
                     break;
@@ -193,6 +193,7 @@ namespace Mirle.Agv.View
                 tbxRetryCountCv.Text = middlerConfig.RetryCount.ToString("F0");
                 tbxResrveLengthMeterCv.Text = middlerConfig.ReserveLengthMeter.ToString("F0");
                 tbxAskReserveMsCv.Text = middlerConfig.AskReserveIntervalMs.ToString("F0");
+                tbxRecvTimeoutMsCv.Text = middlerConfig.RecvTimeoutMs.ToString("F0");
             }
             catch (Exception ex)
             {
@@ -212,6 +213,7 @@ namespace Mirle.Agv.View
                 tbxRetryCountSv.Text = middlerConfig.RetryCount.ToString("F0");
                 tbxResrveLengthMeterSv.Text = middlerConfig.ReserveLengthMeter.ToString("F0");
                 tbxAskReserveMsSv.Text = middlerConfig.AskReserveIntervalMs.ToString("F0");
+                tbxRecvTimeoutMsSv.Text = middlerConfig.RecvTimeoutMs.ToString("F0");
             }
             catch (Exception ex)
             {
@@ -244,7 +246,7 @@ namespace Mirle.Agv.View
                 tempMiddlerConfig.MaxReconnectionCount = middlerConfig.MaxReconnectionCount;
                 tempMiddlerConfig.NeerlyNoMoveRangeMm = middlerConfig.NeerlyNoMoveRangeMm;
                 tempMiddlerConfig.ReconnectionIntervalMs = middlerConfig.ReconnectionIntervalMs;
-                tempMiddlerConfig.RecvTimeoutMs = middlerConfig.RecvTimeoutMs;
+                tempMiddlerConfig.RecvTimeoutMs = int.Parse(tbxRecvTimeoutMsSv.Text);
                 tempMiddlerConfig.RichTextBoxMaxLines = middlerConfig.RichTextBoxMaxLines;
                 tempMiddlerConfig.SendTimeoutMs = middlerConfig.SendTimeoutMs;
                 tempMiddlerConfig.SleepTime = middlerConfig.SleepTime;
@@ -255,7 +257,7 @@ namespace Mirle.Agv.View
                 tempMiddlerConfig.LocalPort = int.Parse(tbxLocalPortSv.Text);
                 tempMiddlerConfig.RetryCount = int.Parse(tbxRetryCountSv.Text);
                 tempMiddlerConfig.ReserveLengthMeter = int.Parse(tbxResrveLengthMeterSv.Text);
-                tempMiddlerConfig.AskReserveIntervalMs = int.Parse(tbxAskReserveMsSv.Text);
+                tempMiddlerConfig.AskReserveIntervalMs = int.Parse(tbxAskReserveMsSv.Text);                
 
                 middlerConfig = tempMiddlerConfig;
                 mainFlowHandler.SetMiddlerConfig(middlerConfig);

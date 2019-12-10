@@ -93,6 +93,9 @@
             this.tbxAskReserveMsSv = new System.Windows.Forms.TextBox();
             this.timerUpdateConfigs = new System.Windows.Forms.Timer(this.components);
             this.btnHide = new System.Windows.Forms.Button();
+            this.tbxRecvTimeoutMsCv = new System.Windows.Forms.TextBox();
+            this.tbxRecvTimeoutMsSv = new System.Windows.Forms.TextBox();
+            this.label21 = new System.Windows.Forms.Label();
             this.tabConfigs.SuspendLayout();
             this.tbP_Mainflow.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -107,7 +110,7 @@
             this.tabConfigs.Location = new System.Drawing.Point(22, 42);
             this.tabConfigs.Name = "tabConfigs";
             this.tabConfigs.SelectedIndex = 0;
-            this.tabConfigs.Size = new System.Drawing.Size(661, 489);
+            this.tabConfigs.Size = new System.Drawing.Size(661, 517);
             this.tabConfigs.TabIndex = 0;
             // 
             // tbP_Mainflow
@@ -116,7 +119,7 @@
             this.tbP_Mainflow.Location = new System.Drawing.Point(4, 28);
             this.tbP_Mainflow.Name = "tbP_Mainflow";
             this.tbP_Mainflow.Padding = new System.Windows.Forms.Padding(3);
-            this.tbP_Mainflow.Size = new System.Drawing.Size(653, 457);
+            this.tbP_Mainflow.Size = new System.Drawing.Size(653, 485);
             this.tbP_Mainflow.TabIndex = 0;
             this.tbP_Mainflow.Text = "主流程";
             this.tbP_Mainflow.UseVisualStyleBackColor = true;
@@ -454,7 +457,7 @@
             this.tbP_Middler.Location = new System.Drawing.Point(4, 28);
             this.tbP_Middler.Name = "tbP_Middler";
             this.tbP_Middler.Padding = new System.Windows.Forms.Padding(3);
-            this.tbP_Middler.Size = new System.Drawing.Size(653, 457);
+            this.tbP_Middler.Size = new System.Drawing.Size(653, 485);
             this.tbP_Middler.TabIndex = 1;
             this.tbP_Middler.Text = "通訊";
             this.tbP_Middler.UseVisualStyleBackColor = true;
@@ -465,7 +468,7 @@
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 200F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Controls.Add(this.btnReconnect, 0, 10);
+            this.tableLayoutPanel2.Controls.Add(this.btnReconnect, 0, 11);
             this.tableLayoutPanel2.Controls.Add(this.label11, 1, 0);
             this.tableLayoutPanel2.Controls.Add(this.label12, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.label13, 2, 0);
@@ -475,8 +478,8 @@
             this.tableLayoutPanel2.Controls.Add(this.label17, 0, 5);
             this.tableLayoutPanel2.Controls.Add(this.label18, 0, 6);
             this.tableLayoutPanel2.Controls.Add(this.label19, 0, 7);
-            this.tableLayoutPanel2.Controls.Add(this.btnLoadMiddlerConfig, 1, 10);
-            this.tableLayoutPanel2.Controls.Add(this.btnSaveMiddlerConfig, 2, 10);
+            this.tableLayoutPanel2.Controls.Add(this.btnLoadMiddlerConfig, 1, 11);
+            this.tableLayoutPanel2.Controls.Add(this.btnSaveMiddlerConfig, 2, 11);
             this.tableLayoutPanel2.Controls.Add(this.tbxClientNameCv, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.tbxRemoteIpCv, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.tbxRemotePortCv, 1, 3);
@@ -494,9 +497,12 @@
             this.tableLayoutPanel2.Controls.Add(this.label20, 0, 8);
             this.tableLayoutPanel2.Controls.Add(this.tbxAskReserveMsCv, 1, 8);
             this.tableLayoutPanel2.Controls.Add(this.tbxAskReserveMsSv, 2, 8);
+            this.tableLayoutPanel2.Controls.Add(this.tbxRecvTimeoutMsCv, 1, 9);
+            this.tableLayoutPanel2.Controls.Add(this.tbxRecvTimeoutMsSv, 2, 9);
+            this.tableLayoutPanel2.Controls.Add(this.label21, 0, 9);
             this.tableLayoutPanel2.Location = new System.Drawing.Point(6, 3);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 11;
+            this.tableLayoutPanel2.RowCount = 12;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
@@ -508,15 +514,17 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(641, 450);
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(641, 479);
             this.tableLayoutPanel2.TabIndex = 1;
             // 
             // btnReconnect
             // 
             this.btnReconnect.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnReconnect.Location = new System.Drawing.Point(3, 403);
+            this.btnReconnect.Location = new System.Drawing.Point(3, 443);
             this.btnReconnect.Name = "btnReconnect";
-            this.btnReconnect.Size = new System.Drawing.Size(194, 44);
+            this.btnReconnect.Size = new System.Drawing.Size(194, 34);
             this.btnReconnect.TabIndex = 82;
             this.btnReconnect.Text = "Reconnect";
             this.btnReconnect.UseVisualStyleBackColor = true;
@@ -624,9 +632,9 @@
             // btnLoadMiddlerConfig
             // 
             this.btnLoadMiddlerConfig.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnLoadMiddlerConfig.Location = new System.Drawing.Point(203, 403);
+            this.btnLoadMiddlerConfig.Location = new System.Drawing.Point(203, 443);
             this.btnLoadMiddlerConfig.Name = "btnLoadMiddlerConfig";
-            this.btnLoadMiddlerConfig.Size = new System.Drawing.Size(214, 44);
+            this.btnLoadMiddlerConfig.Size = new System.Drawing.Size(214, 34);
             this.btnLoadMiddlerConfig.TabIndex = 9;
             this.btnLoadMiddlerConfig.Text = "Load";
             this.btnLoadMiddlerConfig.UseVisualStyleBackColor = true;
@@ -635,9 +643,9 @@
             // btnSaveMiddlerConfig
             // 
             this.btnSaveMiddlerConfig.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnSaveMiddlerConfig.Location = new System.Drawing.Point(423, 403);
+            this.btnSaveMiddlerConfig.Location = new System.Drawing.Point(423, 443);
             this.btnSaveMiddlerConfig.Name = "btnSaveMiddlerConfig";
-            this.btnSaveMiddlerConfig.Size = new System.Drawing.Size(215, 44);
+            this.btnSaveMiddlerConfig.Size = new System.Drawing.Size(215, 34);
             this.btnSaveMiddlerConfig.TabIndex = 10;
             this.btnSaveMiddlerConfig.Text = "Save";
             this.btnSaveMiddlerConfig.UseVisualStyleBackColor = true;
@@ -815,6 +823,35 @@
             this.btnHide.UseVisualStyleBackColor = true;
             this.btnHide.Click += new System.EventHandler(this.btnHide_Click);
             // 
+            // tbxRecvTimeoutMsCv
+            // 
+            this.tbxRecvTimeoutMsCv.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxRecvTimeoutMsCv.Location = new System.Drawing.Point(203, 366);
+            this.tbxRecvTimeoutMsCv.Name = "tbxRecvTimeoutMsCv";
+            this.tbxRecvTimeoutMsCv.ReadOnly = true;
+            this.tbxRecvTimeoutMsCv.Size = new System.Drawing.Size(214, 27);
+            this.tbxRecvTimeoutMsCv.TabIndex = 80;
+            this.tbxRecvTimeoutMsCv.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // tbxRecvTimeoutMsSv
+            // 
+            this.tbxRecvTimeoutMsSv.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxRecvTimeoutMsSv.Location = new System.Drawing.Point(423, 366);
+            this.tbxRecvTimeoutMsSv.Name = "tbxRecvTimeoutMsSv";
+            this.tbxRecvTimeoutMsSv.Size = new System.Drawing.Size(215, 27);
+            this.tbxRecvTimeoutMsSv.TabIndex = 81;
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label21.Location = new System.Drawing.Point(3, 360);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(194, 40);
+            this.label21.TabIndex = 79;
+            this.label21.Text = "Recv Timeout Ms";
+            this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // ConfigForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -905,5 +942,8 @@
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.TextBox tbxAskReserveMsCv;
         private System.Windows.Forms.TextBox tbxAskReserveMsSv;
+        private System.Windows.Forms.TextBox tbxRecvTimeoutMsCv;
+        private System.Windows.Forms.TextBox tbxRecvTimeoutMsSv;
+        private System.Windows.Forms.Label label21;
     }
 }

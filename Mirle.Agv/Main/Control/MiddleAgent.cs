@@ -235,10 +235,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                string msg = $"[SEND] [SeqNum = {wrapper.SeqNum}][{wrapper.ID}][{(EnumCmdNum)wrapper.ID}] {wrapper}";
-                OnCmdSendEvent?.Invoke(this, msg);
-                loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                LogSendMsg(wrapper);
 
                 if (delay != 0)
                 {
@@ -458,6 +455,20 @@ namespace Mirle.Agv.Controller
             }
 
             return false;
+        }
+        private void LogSendMsg(WrapperMessage wrapper)
+        {
+            try
+            {
+                string msg = $"[SEND] [SeqNum = {wrapper.SeqNum}][{wrapper.ID}][{(EnumCmdNum)wrapper.ID}] {wrapper}";
+                OnCmdSendEvent?.Invoke(this, msg);
+                loggerAgent.LogMsg("Comm", new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                     , msg));
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         #endregion
@@ -1818,6 +1829,8 @@ namespace Mirle.Agv.Controller
             }
         }
 
+
+
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
             try
@@ -1984,40 +1997,41 @@ namespace Mirle.Agv.Controller
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.agvcTransCmd;
                 if (receive.EventType == EventType.ReserveReq)
                 {
-                    if (CanDoReserveWork())
-                    {
-                        IsAskReservePause = true;
-                        string sectionId = receive.ReserveInfos[0].ReserveSectionID;
-                        if (receive.IsReserveSuccess == ReserveResult.Success)
-                        {
-                            string msg = $"收到{sectionId}通行權可行";
-                            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                            if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOn)
-                            {
-                                agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
-                                StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                            }
-                            if (!IsAskReserveStop && !mainFlowHandler.IsMoveEnd)
-                            {
-                                OnGetReserveOk(sectionId);
-                            }
-                        }
-                        else
-                        {
-                            ReserveOkAskNext = false;
-                            string msg = $"收到{sectionId}通行權不可行";
-                            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                            if (mainFlowHandler.IsMoveStopByNoReserve())
-                            {
-                                if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
-                                {
-                                    agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
-                                    StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                                }
-                            }                            
-                        }
-                        IsAskReservePause = false;
-                    }
+                    //OnReceiveReserveReply(receive);
+                    //if (CanDoReserveWork())
+                    //{
+                    //    IsAskReservePause = true;
+                    //    string sectionId = receive.ReserveInfos[0].ReserveSectionID;
+                    //    if (receive.IsReserveSuccess == ReserveResult.Success)
+                    //    {
+                    //        string msg = $"收到{sectionId}通行權可行";
+                    //        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                    //        if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOn)
+                    //        {
+                    //            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
+                    //            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                    //        }
+                    //        if (!IsAskReserveStop && !mainFlowHandler.IsMoveEnd)
+                    //        {
+                    //            OnGetReserveOk(sectionId);
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        ReserveOkAskNext = false;
+                    //        string msg = $"收到{sectionId}通行權不可行";
+                    //        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                    //        if (mainFlowHandler.IsMoveStopByNoReserve())
+                    //        {
+                    //            if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
+                    //            {
+                    //                agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
+                    //                StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                    //            }
+                    //        }                            
+                    //    }
+                    //    IsAskReservePause = false;
+                    //}
                 }
                 else if (receive.EventType == EventType.Bcrread)
                 {
@@ -2189,7 +2203,29 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                SendCommandWrapper(wrappers);
+                #region 1.0
+                //SendCommandWrapper(wrappers);
+                #endregion
+
+                #region 2.0
+                LogSendMsg(wrappers);
+
+                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
+                string rtnMsg = "";
+
+                var returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, middlerConfig.RecvTimeoutMs, 0);
+
+                if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                {
+                    OnReceiveReserveReply(response);
+                }
+                else
+                {
+                    string xxmsg = $"詢問{mapSection.Id}通行權結果[{returnCode}][{rtnMsg}]";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, xxmsg);
+                }
+                #endregion
+
             }
             catch (Exception ex)
             {
@@ -2214,6 +2250,45 @@ namespace Mirle.Agv.Controller
                 reserveInfo.DriveDirction = DriveDirction.DriveDirForward;
             }
             reserveInfos.Add(reserveInfo);
+        }
+        private void OnReceiveReserveReply(ID_36_TRANS_EVENT_RESPONSE receive)
+        {
+            AgvcTransCmd agvcTransCmd = mainFlowHandler.agvcTransCmd;
+            if (CanDoReserveWork())
+            {
+                IsAskReservePause = true;
+                string sectionId = receive.ReserveInfos[0].ReserveSectionID;
+                if (receive.IsReserveSuccess == ReserveResult.Success)
+                {
+                    string msg = $"收到{sectionId}通行權可行";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                    if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOn)
+                    {
+                        agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
+                        StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                    }
+                    if (!IsAskReserveStop && !mainFlowHandler.IsMoveEnd)
+                    {
+                        OnGetReserveOk(sectionId);
+                    }
+                }
+                else
+                {
+                    ReserveOkAskNext = false;
+                    string msg = $"收到{sectionId}通行權不可行";
+                    OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                    if (mainFlowHandler.IsMoveStopByNoReserve())
+                    {
+                        if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
+                        {
+                            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
+                            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                        }
+                    }
+                }
+                IsAskReservePause = false;
+            }
+
         }
 
         public void Receive_Cmd35_CarrierIdRenameRequest(object sender, TcpIpEventArgs e)
@@ -2741,6 +2816,62 @@ namespace Mirle.Agv.Controller
             }
         }
         #endregion
+
+        public async void TEST()
+        {
+            try
+            {
+                ID_194_ALARM_REPORT iD_194_ALARM_REPORT = new ID_194_ALARM_REPORT();
+                iD_194_ALARM_REPORT.ErrCode = "12";
+                iD_194_ALARM_REPORT.ErrStatus = ErrorStatus.ErrSet;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.AlarmRepFieldNumber;
+                wrappers.AlarmRep = iD_194_ALARM_REPORT;
+
+                ID_94_ALARM_RESPONSE reply;
+                string xxx;
+
+                //var result = Task.Run<TrxTcpIp.ReturnCode>(() =>
+                // {
+                //     TrxTcpIp.ReturnCode returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out reply, out xxx, 2000, 1);
+                //     return returnCode;
+                // });
+
+                ID_94_ALARM_RESPONSE response;
+                TrxTcpIp.ReturnCode returnCode;
+                for (int i = 0; i < 5; i++)
+                {
+                    OnCmdSendEvent?.Invoke(this, $"{i} \t {wrappers.SeqNum}");
+
+                    var result2 = await Task.Run<ID_94_ALARM_RESPONSE>(() =>
+                    {
+
+                        returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out xxx, 2000, 1);
+                        return response;
+                    });
+
+
+                    OnCmdSendEvent?.Invoke(this, $"{i * 10} \t {wrappers.SeqNum}");
+                }
+
+                //Task.Run(() =>
+                //{
+                //    SpinWait.SpinUntil(() => false, delay);
+                //    ClientAgent.TrxTcpIp.SendGoogleMsg(wrapper, isReply);
+                //});
+
+                var seqNum = wrappers.SeqNum;
+
+                LogSendMsg(wrappers);
+
+
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
     }
 
 }
