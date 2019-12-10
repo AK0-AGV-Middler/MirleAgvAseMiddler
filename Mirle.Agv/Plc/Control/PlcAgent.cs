@@ -791,32 +791,14 @@ namespace Mirle.Agv.Controller
                                                 {
 
                                                 }
-
-
-                                                if (AlarmCode == 1150 || AlarmCode == 1160 || AlarmCode == 1152|| AlarmCode == 1162 )
-                                                {
-
-                                                    //AlarmCode == 123 || AlarmCode == 124 || AlarmCode == 125 || AlarmCode == 126 || AlarmCode == 140
-                                                    if (nowErrorCode == 0)
-                                                    {
-                                                        nowErrorCode = AlarmCode;
-                                                        Task.Run(() =>
-                                                        {
-                                                            Thread.Sleep(10000);
-                                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Trigger ForkCommandInterlockErrorEvent. AlarmCode: " + AlarmCode));
-                                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                                            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
-                                                            Thread.Sleep(4000);
-                                                            nowErrorCode = 0;
-                                                        });
-                                                    }
-                                                }
                                                 
                                             }
                                         }
 
                                         alarmReadIndex++;
                                         alarmReadIndex = alarmReadIndex % 65535 + 1;
+                                        this.aMCProtocol.get_ItemByTag("IPCAlarmWarningIndex").AsUInt16 = (ushort)alarmReadIndex;
+
                                         if (this.aMCProtocol.WritePLC())
                                         {
                                             //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC success");
@@ -880,18 +862,18 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ForkPrePioFail = aMCProtocol.get_ItemByTag("ForkPrePioFail").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPrePioFail = {this.APLCVehicle.Robot.ForkPrePioFail}"));
 
-                                    //if (this.APLCVehicle.Robot.ForkPrePioFail == true)
-                                    //{
-                                    //    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Reset plc alarm and warn."));
+                                    if (this.APLCVehicle.Robot.ForkPrePioFail == true)
+                                    {
+                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Prepare to call Interlock Event."));
 
-                                    //    Task.Run(() =>
-                                    //    {
-                                    //        Thread.Sleep(1500);
-                                    //        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger."));
-                                    //        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                    //        OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
-                                    //    });
-                                    //}
+                                        Task.Run(() =>
+                                        {
+                                            Thread.Sleep(10000);
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger."));
+                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+                                        });
+                                    }
                                     break;
 
                                 case "ForkBusyFail":
@@ -3131,6 +3113,21 @@ namespace Mirle.Agv.Controller
                                         OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                         break;
                                     }
+
+                                    if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
+                                    {
+                                        this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                        this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                        this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
+                                        //Raise Alarm
+                                        //this.aAlarmHandler.SetAlarm(270001);
+                                        //this.setAlarm(270001);
+                                        this.setAlarm(Fork_Command_Format_NG);
+                                        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                        OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+
+                                        break;
+                                    }
                                 }
                                 sw.Stop();
                                 sw.Reset();
@@ -3753,8 +3750,8 @@ namespace Mirle.Agv.Controller
                 LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Change value to ushort error"));
             }
             
-            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetYearMonth").AsHex = "1911";
-            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetDayHour").AsHex = "2012";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetYearMonth").AsHex = "1912";
+            this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetDayHour").AsHex = "0912";
             this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetMinSec").AsHex = "5959";
             this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryMoveDistance").AsUInt16 = iMoveDistance;
             this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryLoadUnloadCount").AsUInt16 = iLoadUnloadCount;
@@ -3771,6 +3768,7 @@ namespace Mirle.Agv.Controller
         }
 
         private JogPitchData plcOperationRun_IpcJogPitchData = new JogPitchData();
+        private bool plcOperationRun_IpcJogPitchData_CanAuto = false;
         private bool plcOperationRun_bActionRunningStatus = false;
         private EnumPlcOperationStep plcOperationRun_enumNowStep = EnumPlcOperationStep.No_Use;
         private EnumPlcOperationStep plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
@@ -3811,10 +3809,14 @@ namespace Mirle.Agv.Controller
             plcOperationRun_PlcOper = APLCVehicle.JogOperation.DeepClone();
             plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Enable;
 
+            plcOperationRun_WritePlcDisplayData(plcOperationRun_IpcJogPitchData, plcOperationRun_IpcJogPitchData_CanAuto);
+
+            Thread.Sleep(5000);
+
             while (true)
             {
                 // Write related data to plc
-                plcOperationRun_WritePlcDisplayData(plcOperationRun_IpcJogPitchData);
+                plcOperationRun_WritePlcDisplayData(plcOperationRun_IpcJogPitchData, plcOperationRun_IpcJogPitchData_CanAuto);
                 double startTime = DateTime.Now.Ticks;
                 try
                 {
@@ -3822,7 +3824,7 @@ namespace Mirle.Agv.Controller
                     plcOperationRun_GetOperationStatusFromJogPitchForm(ref plcOperationRun_IpcOper);
 
                     // 取得目前資訊值
-                    plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData);
+                    plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData, ref plcOperationRun_IpcJogPitchData_CanAuto);
 
                     plcOperationRun_PlcOperLast = plcOperationRun_PlcOper.DeepClone();
                     plcOperationRun_PlcOper = APLCVehicle.JogOperation.DeepClone();
@@ -3883,7 +3885,7 @@ namespace Mirle.Agv.Controller
                     LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", ex.ToString()));
 
                     // 取得目前資訊值
-                    plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData);
+                    plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData, ref plcOperationRun_IpcJogPitchData_CanAuto);
                     plcOperationRun_ClearAndStopSteps(ref plcOperationRun_IpcJogPitchData, ref plcOperationRun_enumLastStep, ref plcOperationRun_IpcOper);
                     //break;
                 }
@@ -3922,7 +3924,7 @@ namespace Mirle.Agv.Controller
             return iRetVal;
         }
 
-        private void plcOperationRun_GetJogPitchDataFromJogPitchForm(ref JogPitchData ipcJogPitchData)
+        private void plcOperationRun_GetJogPitchDataFromJogPitchForm(ref JogPitchData ipcJogPitchData, ref bool plcOperationRun_IpcJogPitchData_CanAuto)
         {
             // 取得目前資訊值
             ipcJogPitchData.MapX = this.jogPitchForm.jogPitchData.MapX;
@@ -3932,9 +3934,10 @@ namespace Mirle.Agv.Controller
             ipcJogPitchData.SectionDeviation = this.jogPitchForm.jogPitchData.SectionDeviation;
             ipcJogPitchData.ElmoFunctionCompelete = this.jogPitchForm.jogPitchData.ElmoFunctionCompelete;
             ipcJogPitchData.AxisData = this.jogPitchForm.jogPitchData.AxisData;
+            plcOperationRun_IpcJogPitchData_CanAuto = this.jogPitchForm.CanAuto;
         }
 
-        private void plcOperationRun_WritePlcDisplayData(JogPitchData plcJogPitchData)
+        private void plcOperationRun_WritePlcDisplayData(JogPitchData plcJogPitchData, bool locationCanAuto)
         {
             try
             {
@@ -3945,6 +3948,7 @@ namespace Mirle.Agv.Controller
                 this.aMCProtocol.get_ItemByTag("SR2000MapTheta").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000MapTheta", plcJogPitchData.MapTheta, 2, 2));
                 this.aMCProtocol.get_ItemByTag("SR2000PathDeviation").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000PathDeviation", plcJogPitchData.SectionDeviation, 2, 2));
                 this.aMCProtocol.get_ItemByTag("SR2000ThetaDeviation").AsUInt32 = Convert.ToUInt32(plcOperationRun_WritePlcDisplayData_TryParseNumber("SR2000ThetaDeviation", plcJogPitchData.Theta, 2, 2));
+                this.aMCProtocol.get_ItemByTag("IpcJogLocationReady").AsBoolean = locationCanAuto;
 
                 foreach (EnumAxis enumAxis in (EnumAxis[])Enum.GetValues(typeof(EnumAxis)))
                 {
@@ -4018,10 +4022,11 @@ namespace Mirle.Agv.Controller
         {
             if (plcOper.JogTurnSpeed != plcOperLast.JogTurnSpeed 
                 || plcOper.JogMoveVelocity != plcOperLast.JogMoveVelocity 
-                || plcOper.JogMaxDistance != plcOperLast.JogMaxDistance)
+                || plcOper.JogMaxDistance != plcOperLast.JogMaxDistance
+                || plcOper.JogMoveOntimeRevise != plcOperLast.JogMoveOntimeRevise)
             {
                 //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"plcOper.JogMaxDistance : {plcOper.JogMaxDistance}"));
-                this.jogPitchForm.PlcJog_SettingDelegate(plcOper.JogTurnSpeed, plcOper.JogMoveVelocity, plcOper.JogMaxDistance);
+                this.jogPitchForm.PlcJog_SettingDelegate(plcOper.JogTurnSpeed, plcOper.JogMoveVelocity, plcOper.JogMaxDistance, plcOper.JogMoveOntimeRevise);
                 this.jogPitchForm.PlcJog_RunSettingDelegate();
             }
         }
@@ -4314,6 +4319,7 @@ namespace Mirle.Agv.Controller
                             {
                                 plcOperationRun_bActionRunningStatus = false;
                                 plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                                break;
                             }
                             endTime = DateTime.Now.Ticks;
                             if (endTime - startTime > 100000000)
@@ -4321,7 +4327,7 @@ namespace Mirle.Agv.Controller
                                 break;
                             }
                             Thread.Sleep(1000);
-            }
+                        }
             
                     });
                     break;
@@ -4333,18 +4339,19 @@ namespace Mirle.Agv.Controller
                     plcOperationRun_bActionRunningStatus = true;
                     Task.Run(() =>
                     {
-                        this.jogPitchForm.button_JogPitch_ElmoReset_Click(null, null);
-                        double startTime = DateTime.Now.Ticks;
-                        double endTime = DateTime.Now.Ticks;
+                        this.jogPitchForm.button_JogpitchResetAll_Click(null, null);
+                        double startTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                        double endTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
                         while (true)
                         {
                             if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
                             {
                                 plcOperationRun_bActionRunningStatus = false;
                                 plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-        }
-                            endTime = DateTime.Now.Ticks;
-                            if (endTime - startTime > 100000000)
+                                break;
+                            }
+                            endTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                            if (endTime - startTime > 11000)
                             {
                                 break;
                             }

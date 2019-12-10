@@ -33,20 +33,7 @@ namespace Mirle.Agv.Controller
                 this.theMapInfo = theMapInfo;
                 this.sr2000Config = sr2000Config;
                 this.indexNumber = indexNumber * 100;
-                //device = sr2000Config.ID;
-
-                switch (indexNumber)
-                {
-                    case 0:
-                        device = "SR2000L";
-                        break;
-                    case 1:
-                        device = "SR2000R";
-                        break;
-                    default:
-                        device = "";
-                        break;
-                }
+                device = sr2000Config.ID;
 
                 logger = LoggerAgent.Instance.GetLooger(device);
 
@@ -76,19 +63,19 @@ namespace Mirle.Agv.Controller
             {
                 if (sr2000Config.LogMode)
                 {
-                    string csvLog = String.Concat(sr2000ReadData.GetDataTime.ToString("yyyy/MM/dd HH:mm:ss.fff"),
-                                                  sr2000ReadData.Count.ToString(),
-                                                    sr2000ReadData.Barcode1.ID.ToString(),
-                                                    sr2000ReadData.Barcode1.ViewPosition.X.ToString(),
-                                                    sr2000ReadData.Barcode1.ViewPosition.Y.ToString(),
-                                                    sr2000ReadData.Barcode1.MapPosition.X.ToString(),
-                                                    sr2000ReadData.Barcode1.MapPosition.Y.ToString(),
-                                                    sr2000ReadData.Barcode2.ViewPosition.X.ToString(),
-                                                    sr2000ReadData.Barcode2.ViewPosition.Y.ToString(),
-                                                    sr2000ReadData.Barcode2.MapPosition.X.ToString(),
-                                                    sr2000ReadData.Barcode2.MapPosition.Y.ToString(),
-                                                  sr2000ReadData.AGV.Position.X.ToString(),
-                                                  sr2000ReadData.AGV.Position.Y.ToString(),
+                    string csvLog = String.Concat(sr2000ReadData.GetDataTime.ToString("yyyy/MM/dd HH:mm:ss.fff"),",",
+                                                  sr2000ReadData.Count.ToString(), ",",
+                                                    sr2000ReadData.Barcode1.ID.ToString(), ",",
+                                                    sr2000ReadData.Barcode1.ViewPosition.X.ToString(), ",",
+                                                    sr2000ReadData.Barcode1.ViewPosition.Y.ToString(), ",",
+                                                    sr2000ReadData.Barcode1.MapPosition.X.ToString(), ",",
+                                                    sr2000ReadData.Barcode1.MapPosition.Y.ToString(), ",",
+                                                    sr2000ReadData.Barcode2.ViewPosition.X.ToString(), ",",
+                                                    sr2000ReadData.Barcode2.ViewPosition.Y.ToString(), ",",
+                                                    sr2000ReadData.Barcode2.MapPosition.X.ToString(), ",",
+                                                    sr2000ReadData.Barcode2.MapPosition.Y.ToString(), ",",
+                                                  sr2000ReadData.AGV.Position.X.ToString(), ",",
+                                                  sr2000ReadData.AGV.Position.Y.ToString(), ",",
                                                   sr2000ReadData.AGV.AGVAngle.ToString());
                     logger.SavePureLog(csvLog);
                 }

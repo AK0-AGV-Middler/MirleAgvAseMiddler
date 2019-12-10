@@ -925,12 +925,14 @@ namespace Mirle.Agv.View
         public EnumJogTurnSpeed turnS;
         public EnumJogMoveVelocity moveV;
         public double distance;
+        public bool JogPitchRevise = false;
 
-        public void PlcJog_SettingDelegate(EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
+        public void PlcJog_SettingDelegate(EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance, bool revise)
         {
             this.turnS = turnS;
             this.moveV = moveV;
             this.distance = distance;
+            this.JogPitchRevise = revise;
             plcJog_mySettingValue = new plcJog_SettingValue(PlcJog_SetOperationValue);
         }
 
@@ -976,6 +978,7 @@ namespace Mirle.Agv.View
                     break;
             }
             tB_JogPitch_Distance.Text = distance.ToString();
+            cB_JogPitch_MoveAndOntimeRevise.Checked = JogPitchRevise;
         }
 
         public void PlcJog_SetOperationValue(EnumJogTurnSpeed turnS, EnumJogMoveVelocity moveV, double distance)
@@ -1151,7 +1154,7 @@ namespace Mirle.Agv.View
                 elmoAllResetMessage = "Elmo Reset 失敗!";
         }
 
-        private void button_JogpitchResetAll_Click(object sender, EventArgs e)
+        public void button_JogpitchResetAll_Click(object sender, EventArgs e)
         {
             jogPitchData.ElmoFunctionCompelete = false;
             Task.Factory.StartNew(() =>
