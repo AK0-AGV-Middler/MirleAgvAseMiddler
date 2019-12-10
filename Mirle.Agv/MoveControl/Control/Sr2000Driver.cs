@@ -15,15 +15,14 @@ namespace Mirle.Agv.Controller
         private Sr2000Config sr2000Config;
         private Sr2000Info sr2000Info;
         private LoggerAgent loggerAgent;
-
         private AlarmHandler alarmHandler;
         private Sr2000ReadData returnData = null;
-        private ConcurrentQueue<Sr2000ReadData> readDataQueue = new ConcurrentQueue<Sr2000ReadData>();
         private string LON = "LON", LOFF = "LOFF", ChangeMode = "BLOAD,3";
         private uint count = 0;
         private const int AllowableTheta = 10;
         private int indexNumber;
         private string device;
+        private Logger logger;
 
         public Sr2000Driver(Sr2000Config sr2000Config, MapInfo theMapInfo, int indexNumber, AlarmHandler alarmHandler)
         {
@@ -34,16 +33,31 @@ namespace Mirle.Agv.Controller
                 this.theMapInfo = theMapInfo;
                 this.sr2000Config = sr2000Config;
                 this.indexNumber = indexNumber * 100;
-                device = sr2000Config.ID;
+                //device = sr2000Config.ID;
+
+                switch (indexNumber)
+                {
+                    case 0:
+                        device = "SR2000L";
+                        break;
+                    case 1:
+                        device = "SR2000R";
+                        break;
+                    default:
+                        device = "";
+                        break;
+                }
+
+                logger = LoggerAgent.Instance.GetLooger(device);
 
                 sr2000Info = new Sr2000Info(sr2000Config.IP);
                 if (!Connect())
                     SendAlarmCode(101000);
             }
             catch (Exception ex)
-            {
-                //. 參考出問題,可能CPU x64 x86 anyCPU參考用錯,或sr2000Config = null. 或Connect Excpition.
+            {   //. 參考出問題,可能CPU x64 x86 anyCPU參考用錯,或sr2000Config = null. 或Connect Excpition.
                 WriteLog("Error", "5", device, "", "Initail Excption : " + ex.ToString());
+                WriteLog("MoveControl", "5", device, "", "Initail Excption : " + ex.ToString());
                 SendAlarmCode(101000);
             }
         }
@@ -53,26 +67,33 @@ namespace Mirle.Agv.Controller
         {
             string classMethodName = GetType().Name + ":" + memberName;
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
-
             loggerAgent.LogMsg(logFormat.Category, logFormat);
         }
 
         private void WriteLog(Sr2000ReadData sr2000ReadData)
         {
-            Sr2000ReadData deletaQueue;
-            readDataQueue.Enqueue(sr2000ReadData);
-            if (sr2000ReadData.Count > 3000)
-                readDataQueue.TryDequeue(out deletaQueue);
-
-            if (sr2000Config.LogMode)
+            try
             {
-                if (sr2000ReadData == null)
+                if (sr2000Config.LogMode)
                 {
-                }
-                else
-                {
+                    string csvLog = String.Concat(sr2000ReadData.GetDataTime.ToString("yyyy/MM/dd HH:mm:ss.fff"),
+                                                  sr2000ReadData.Count.ToString(),
+                                                    sr2000ReadData.Barcode1.ID.ToString(),
+                                                    sr2000ReadData.Barcode1.ViewPosition.X.ToString(),
+                                                    sr2000ReadData.Barcode1.ViewPosition.Y.ToString(),
+                                                    sr2000ReadData.Barcode1.MapPosition.X.ToString(),
+                                                    sr2000ReadData.Barcode1.MapPosition.Y.ToString(),
+                                                    sr2000ReadData.Barcode2.ViewPosition.X.ToString(),
+                                                    sr2000ReadData.Barcode2.ViewPosition.Y.ToString(),
+                                                    sr2000ReadData.Barcode2.MapPosition.X.ToString(),
+                                                    sr2000ReadData.Barcode2.MapPosition.Y.ToString(),
+                                                  sr2000ReadData.AGV.Position.X.ToString(),
+                                                  sr2000ReadData.AGV.Position.Y.ToString(),
+                                                  sr2000ReadData.AGV.AGVAngle.ToString());
+                    logger.SavePureLog(csvLog);
                 }
             }
+            catch { }
         }
 
         private void SendAlarmCode(int alarmCode)
@@ -81,12 +102,12 @@ namespace Mirle.Agv.Controller
 
             try
             {
-                WriteLog("Error", "3", device, "", "SetAlarm, alarmCode : " + alarmCode.ToString());
+                WriteLog("MoveControl", "3", device, "", "SetAlarm, alarmCode : " + alarmCode.ToString());
                 alarmHandler.SetAlarm(alarmCode);
             }
             catch (Exception ex)
             {
-                WriteLog("Error", "3", device, "", "SetAlarm失敗, Excption : " + ex.ToString());
+                WriteLog("MoveControl", "3", device, "", "SetAlarm失敗, Excption : " + ex.ToString());
             }
         }
 
@@ -102,11 +123,7 @@ namespace Mirle.Agv.Controller
                     sr2000Info.Connect = false;
                 }
             }
-            catch
-            {
-                //. Dispose Excption, 不該發生.
-
-            }
+            catch { }
         }
 
         public bool Trigger
@@ -154,19 +171,6 @@ namespace Mirle.Agv.Controller
             return returnData.AGV;
         }
 
-        public bool LogMode
-        {
-            get
-            {
-                return sr2000Config.LogMode;
-            }
-
-            set
-            {
-                sr2000Config.LogMode = value;
-            }
-        }
-
         private MapPosition XChangeTheta55Single(MapPosition barcode)
         {
             double mid = (sr2000Config.Up + sr2000Config.Down) / 2;
@@ -212,7 +216,6 @@ namespace Mirle.Agv.Controller
 
                     if (splitResult.Length == 7)
                     {
-
                         sr2000ReadData = new Sr2000ReadData(splitResult, LON, receivedData, count);
 
                         XChangeTheta55ALL(sr2000ReadData);
@@ -225,8 +228,9 @@ namespace Mirle.Agv.Controller
                             sr2000ReadData.ReviseData.BarcodeAngleInMap = sr2000ReadData.AGV.BarcodeAngleInMap;
                             sr2000ReadData.ReviseData.AGVAngleInMap = sr2000ReadData.AGV.AGVAngle;
                             //}
+
+                            WriteLog(sr2000ReadData);
                         }
-                        // scanTime > timeoutvalue ??
                     }
                     else
                     {
@@ -252,13 +256,9 @@ namespace Mirle.Agv.Controller
                 {
                     string receivedData = sr2000Info.Reader.ExecCommand(LOFF);
                     Sr2000ReadData sr2000ReadData = new Sr2000ReadData(LOFF, receivedData);
-                    WriteLog(sr2000ReadData);
                 });
             }
-            catch
-            {
-                // log..
-            }
+            catch { }
         }
 
         private void SendCommandChangeMode()
@@ -267,12 +267,8 @@ namespace Mirle.Agv.Controller
             {
                 string receivedData = sr2000Info.Reader.ExecCommand(ChangeMode);
                 Sr2000ReadData sr2000ReadData = new Sr2000ReadData(ChangeMode, receivedData);
-                WriteLog(sr2000ReadData);
             }
-            catch
-            {
-                // log..
-            }
+            catch { }
         }
 
         private bool Connect()
@@ -355,17 +351,8 @@ namespace Mirle.Agv.Controller
             }
             catch
             {
-                // log..
                 return returnAngle;
             }
-        }
-
-        private double Interpolation(double start, double startValue, double end, double endValue, double target)
-        {
-            if (start == end)
-                return (startValue + endValue) / 2;
-            else
-                return startValue + (endValue - startValue) * (target - start) / (end - start);
         }
 
         private void ComputeMapPosition(Sr2000ReadData sr2000ReadData)
@@ -498,7 +485,6 @@ namespace Mirle.Agv.Controller
 
                 count++;
                 returnData = sr2000ReadData;
-                WriteLog(sr2000ReadData);
                 Thread.Sleep(sr2000Config.SleepTime);
             }
         }

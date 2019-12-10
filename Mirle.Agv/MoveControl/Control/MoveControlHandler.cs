@@ -217,7 +217,10 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                angle = 90;
+                if (nowEncoder > trTimeToAngle.TimeRange[6] * moveControlConfig.TurnParameter[ControlData.TurnType].Velocity + moveControlConfig.SafteyDistance[EnumCommandType.Move] / 2)
+                    angle = -90;
+                else
+                    angle = 90;
             }
 
             return angle;
@@ -1722,7 +1725,7 @@ namespace Mirle.Agv.Controller
                 SendAlarmCode(152003);
             }
 
-            while (!elmoDriver.WheelAngleCompare(wheelAngle, moveControlConfig.StartWheelAngleRange))
+            while (!elmoDriver.WheelGTCompare(wheelAngle, moveControlConfig.StartWheelAngleRange))
             {
                 UpdatePosition();
                 SensorSafety();
@@ -2732,14 +2735,15 @@ namespace Mirle.Agv.Controller
             {
                 while (true)
                 {
-                    UpdatePosition();
-
                     if (MoveState != EnumMoveState.Idle && MoveState != EnumMoveState.Error)
                     {
+                        UpdatePosition();
                         ExecuteCommandList();
                         SensorSafety();
                         FinalBarcodePositionSafety();
                     }
+                    else
+                        UpdatePosition();
 
                     if (MoveState == EnumMoveState.Moving && ControlData.OntimeReviseFlag)
                     {
@@ -3902,7 +3906,6 @@ namespace Mirle.Agv.Controller
             ControlData.CanPause = true;
 
             ResetEncoder(command.SectionLineList[0].Start, command.SectionLineList[0].End, command.SectionLineList[0].DirFlag);
-            UpdatePosition();
             Task.Factory.StartNew(() =>
             {
                 elmoDriver.EnableMoveAxis();

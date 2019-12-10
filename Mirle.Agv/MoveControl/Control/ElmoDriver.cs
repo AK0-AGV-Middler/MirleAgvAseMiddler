@@ -934,6 +934,28 @@ namespace Mirle.Agv.Controller
             return WheelAngleCompare(angle_ALL, angle_ALL, angle_ALL, angle_ALL, range, memberName);
         }
 
+        public bool WheelGTCompare(double angle_ALL, double range,
+            [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            try
+            {
+                if (!Connected)
+                    return false;
+
+                double angleGT = (allAxis[EnumAxis.TFL].FeedbackData.Feedback_Position +
+                                  allAxis[EnumAxis.TFR].FeedbackData.Feedback_Position +
+                                  allAxis[EnumAxis.TRL].FeedbackData.Feedback_Position +
+                                  allAxis[EnumAxis.TRR].FeedbackData.Feedback_Position) / 4;
+
+                return Math.Abs(angleGT - angle_ALL) < range;
+            }
+            catch (MMCException ex)
+            {
+                WriteLog("Elmo", "3", device, memberName, "Excption : " + ex.ToString());
+                return false;
+            }
+        }
+
         #region Move VChange
         private void ElmoMoveGroupAxisAbsolute(EnumAxis axis, double distance_FL, double distance_FR, double distance_RL, double distance_RR,
                                                   double velocity, double acceleration, double deceleration, double jerk,
