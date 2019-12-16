@@ -258,6 +258,7 @@ namespace Mirle.Agv.Controller
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
+                moveControlHandler.OnRetryMoveFinished += MoveControlHandler_OnRetryMoveFinished;
 
                 //來自PlcAgent的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 plcAgent.OnForkCommandFinishEvent += PlcAgent_OnForkCommandFinishEvent;
@@ -292,6 +293,8 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+
 
         private void VehicleLocationInitial()
         {
@@ -1804,7 +1807,7 @@ namespace Mirle.Agv.Controller
         public void UpdateMoveControlReserveOkPositions(MapSection mapSection)
         {
             try
-            {              
+            {
                 MapAddress address = mapSection.CmdDirection == EnumPermitDirection.Forward
                     ? mapSection.TailAddress
                     : mapSection.HeadAddress;
@@ -1917,6 +1920,17 @@ namespace Mirle.Agv.Controller
                 IsOverrideMove = false;
 
                 #endregion
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void MoveControlHandler_OnRetryMoveFinished(object sender, EnumMoveComplete e)
+        {
+            try
+            {
             }
             catch (Exception ex)
             {
@@ -2347,7 +2361,7 @@ namespace Mirle.Agv.Controller
                 //middleAgent.PauseAskReserve();
                 middleAgent.ReportSectionPass(EventType.AdrPass);
                 middleAgent.ClearAllReserve();
-                middleAgent.SetupNeedReserveSections(moveCmd.MovingSections);             
+                middleAgent.SetupNeedReserveSections(moveCmd.MovingSections);
                 //middleAgent.ResumeAskReserve();
                 #endregion
 

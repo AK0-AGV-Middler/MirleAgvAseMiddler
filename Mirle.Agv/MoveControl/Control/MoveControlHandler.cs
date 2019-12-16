@@ -27,6 +27,7 @@ namespace Mirle.Agv.Controller
         private string device = "MoveControl";
         private Dictionary<EnumAddressAction, TRTimeToAngleRange> trTimeToAngleRange = new Dictionary<EnumAddressAction, TRTimeToAngleRange>();
         public event EventHandler<EnumMoveComplete> OnMoveFinished;
+        public event EventHandler<EnumMoveComplete> OnRetryMoveFinished;
         public ElmoDriver elmoDriver;
         public List<Sr2000Driver> DriverSr2000List = new List<Sr2000Driver>();
         public OntimeReviseConfig ontimeReviseConfig = null;
@@ -4005,6 +4006,12 @@ namespace Mirle.Agv.Controller
             MoveState = EnumMoveState.Moving;
             WriteLog("MoveControl", "7", device, "", "sucess! 開始執行動作~!");
             return true;
+        }
+
+        public void TransferMove_RetryMove()
+        {
+            SpinWait.SpinUntil(() => false, 5000);
+            OnRetryMoveFinished?.Invoke(this, EnumMoveComplete.Success);
         }
 
         public bool TransferMove_Override(MoveCmdInfo moveCmd, ref string errorMessage)
