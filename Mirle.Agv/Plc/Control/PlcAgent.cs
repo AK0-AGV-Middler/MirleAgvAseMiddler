@@ -27,6 +27,7 @@ namespace Mirle.Agv.Controller
         private const int Batterys_Charging_Time_Out = 270005;
 
         private const int ModeChangeError = 270006;
+        private const int Fork_Home_Flag_Waiting_timeout = 270007;
         #endregion
 
         private MCProtocol aMCProtocol;
@@ -3172,10 +3173,28 @@ namespace Mirle.Agv.Controller
 
                                 }
 
-                                ////ForkCommand aForkCommand = executingForkCommand;
-                                eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
-                                clearExecutingForkCommandFlag = true;
+                                sw.Stop();
+                                sw.Reset();
+                                sw.Start();
+
+                                while (true)
+                                {
+                                    if (this.APLCVehicle.Robot.ForkHome)
+                                    {
+                                        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                        OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                                        clearExecutingForkCommandFlag = true;
+                                        break;
+                                    }
+                                    else if (sw.Elapsed.TotalSeconds > 30)
+                                    {
+                                        this.setAlarm(Fork_Home_Flag_Waiting_timeout);
+                                        break;
+                                    }
+                                    Thread.Sleep(50);
+                                }
+                                sw.Stop();
+                                sw.Reset();
                                 break;
                         }
                         bComdIsNullReqForkComdOK = true;
