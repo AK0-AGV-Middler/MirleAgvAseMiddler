@@ -91,11 +91,14 @@
             this.label20 = new System.Windows.Forms.Label();
             this.tbxAskReserveMsCv = new System.Windows.Forms.TextBox();
             this.tbxAskReserveMsSv = new System.Windows.Forms.TextBox();
-            this.timerUpdateConfigs = new System.Windows.Forms.Timer(this.components);
-            this.btnHide = new System.Windows.Forms.Button();
             this.tbxRecvTimeoutMsCv = new System.Windows.Forms.TextBox();
             this.tbxRecvTimeoutMsSv = new System.Windows.Forms.TextBox();
             this.label21 = new System.Windows.Forms.Label();
+            this.timerUpdateConfigs = new System.Windows.Forms.Timer(this.components);
+            this.btnHide = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.label22 = new System.Windows.Forms.Label();
             this.tabConfigs.SuspendLayout();
             this.tbP_Mainflow.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -139,8 +142,8 @@
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.label8, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.label9, 0, 7);
-            this.tableLayoutPanel1.Controls.Add(this.btnLoadMainFlowConfig, 1, 10);
-            this.tableLayoutPanel1.Controls.Add(this.btnSaveMainFlowConfig, 2, 10);
+            this.tableLayoutPanel1.Controls.Add(this.btnLoadMainFlowConfig, 1, 11);
+            this.tableLayoutPanel1.Controls.Add(this.btnSaveMainFlowConfig, 2, 11);
             this.tableLayoutPanel1.Controls.Add(this.tbxVisitTransferStepsCv, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.tbxTrackPositionCv, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.tbxWatchLowPowerCv, 1, 3);
@@ -158,9 +161,12 @@
             this.tableLayoutPanel1.Controls.Add(this.label10, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.tbxLoadingChargeCv, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.tbxLoadingChargeSv, 2, 8);
+            this.tableLayoutPanel1.Controls.Add(this.textBox1, 1, 9);
+            this.tableLayoutPanel1.Controls.Add(this.textBox2, 2, 9);
+            this.tableLayoutPanel1.Controls.Add(this.label22, 0, 9);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(6, 6);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 11;
+            this.tableLayoutPanel1.RowCount = 12;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
@@ -172,7 +178,8 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(641, 450);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(641, 476);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // label1
@@ -277,9 +284,9 @@
             // btnLoadMainFlowConfig
             // 
             this.btnLoadMainFlowConfig.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnLoadMainFlowConfig.Location = new System.Drawing.Point(203, 403);
+            this.btnLoadMainFlowConfig.Location = new System.Drawing.Point(203, 443);
             this.btnLoadMainFlowConfig.Name = "btnLoadMainFlowConfig";
-            this.btnLoadMainFlowConfig.Size = new System.Drawing.Size(214, 44);
+            this.btnLoadMainFlowConfig.Size = new System.Drawing.Size(214, 34);
             this.btnLoadMainFlowConfig.TabIndex = 9;
             this.btnLoadMainFlowConfig.Text = "Load";
             this.btnLoadMainFlowConfig.UseVisualStyleBackColor = true;
@@ -288,9 +295,9 @@
             // btnSaveMainFlowConfig
             // 
             this.btnSaveMainFlowConfig.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnSaveMainFlowConfig.Location = new System.Drawing.Point(423, 403);
+            this.btnSaveMainFlowConfig.Location = new System.Drawing.Point(423, 443);
             this.btnSaveMainFlowConfig.Name = "btnSaveMainFlowConfig";
-            this.btnSaveMainFlowConfig.Size = new System.Drawing.Size(215, 44);
+            this.btnSaveMainFlowConfig.Size = new System.Drawing.Size(215, 34);
             this.btnSaveMainFlowConfig.TabIndex = 10;
             this.btnSaveMainFlowConfig.Text = "Save";
             this.btnSaveMainFlowConfig.UseVisualStyleBackColor = true;
@@ -806,23 +813,6 @@
             this.tbxAskReserveMsSv.Size = new System.Drawing.Size(215, 27);
             this.tbxAskReserveMsSv.TabIndex = 81;
             // 
-            // timerUpdateConfigs
-            // 
-            this.timerUpdateConfigs.Enabled = true;
-            this.timerUpdateConfigs.Interval = 200;
-            this.timerUpdateConfigs.Tick += new System.EventHandler(this.timerUpdateConfigs_Tick);
-            // 
-            // btnHide
-            // 
-            this.btnHide.ForeColor = System.Drawing.Color.OrangeRed;
-            this.btnHide.Location = new System.Drawing.Point(628, 12);
-            this.btnHide.Name = "btnHide";
-            this.btnHide.Size = new System.Drawing.Size(75, 39);
-            this.btnHide.TabIndex = 1;
-            this.btnHide.Text = "X";
-            this.btnHide.UseVisualStyleBackColor = true;
-            this.btnHide.Click += new System.EventHandler(this.btnHide_Click);
-            // 
             // tbxRecvTimeoutMsCv
             // 
             this.tbxRecvTimeoutMsCv.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -851,6 +841,52 @@
             this.label21.TabIndex = 79;
             this.label21.Text = "Recv Timeout Ms";
             this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // timerUpdateConfigs
+            // 
+            this.timerUpdateConfigs.Enabled = true;
+            this.timerUpdateConfigs.Interval = 200;
+            this.timerUpdateConfigs.Tick += new System.EventHandler(this.timerUpdateConfigs_Tick);
+            // 
+            // btnHide
+            // 
+            this.btnHide.ForeColor = System.Drawing.Color.OrangeRed;
+            this.btnHide.Location = new System.Drawing.Point(628, 12);
+            this.btnHide.Name = "btnHide";
+            this.btnHide.Size = new System.Drawing.Size(75, 39);
+            this.btnHide.TabIndex = 1;
+            this.btnHide.Text = "X";
+            this.btnHide.UseVisualStyleBackColor = true;
+            this.btnHide.Click += new System.EventHandler(this.btnHide_Click);
+            // 
+            // textBox1
+            // 
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox1.Location = new System.Drawing.Point(203, 366);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
+            this.textBox1.Size = new System.Drawing.Size(214, 27);
+            this.textBox1.TabIndex = 80;
+            this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // textBox2
+            // 
+            this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox2.Location = new System.Drawing.Point(423, 366);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(215, 27);
+            this.textBox2.TabIndex = 81;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label22.Location = new System.Drawing.Point(3, 360);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(194, 40);
+            this.label22.TabIndex = 79;
+            this.label22.Text = "Fork Ng Retry Times";
+            this.label22.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // ConfigForm
             // 
@@ -945,5 +981,8 @@
         private System.Windows.Forms.TextBox tbxRecvTimeoutMsCv;
         private System.Windows.Forms.TextBox tbxRecvTimeoutMsSv;
         private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Label label22;
     }
 }

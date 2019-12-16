@@ -30,6 +30,7 @@ namespace Mirle.Agv.Model.TransferSteps
         public VhStopSingle PauseStatus { get; set; } = VhStopSingle.StopSingleOff;
         public VhStopSingle ReserveStatus { get; set; } = VhStopSingle.StopSingleOff;
         public bool IsAvoidComplete { get; set; }
+        public int ForkNgRetryTimes { get; set; } = 1;
 
         public AgvcTransCmd()
         {

@@ -139,6 +139,7 @@ namespace Mirle.Agv.Controller
         public bool IsMoveEnd { get; set; } = false;
         public bool IsSimulation { get; set; }
         public string MainFlowAbnormalMsg { get; set; }
+        public bool IsRetryArrival { get; set; } = false;
         #endregion
 
         public MainFlowHandler()
@@ -293,8 +294,6 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-
-
 
         private void VehicleLocationInitial()
         {
@@ -738,6 +737,7 @@ namespace Mirle.Agv.Controller
             #region 搬送路徑生成
             try
             {
+                agvcTransCmd.ForkNgRetryTimes = mainFlowConfig.ForkNgRetryTimes;
                 this.agvcTransCmd = agvcTransCmd;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupTransferSteps();
@@ -1752,13 +1752,21 @@ namespace Mirle.Agv.Controller
             var unloadAddressId = agvcTransCmd.UnloadAddressId;
             if (curAddress.Id == unloadAddressId)
             {
-                middleAgent.UnloadArrivals();
+                if (IsRetryArrival)
+                {
+                    IsRetryArrival = false;
+                }
+                else
+                {
+                    middleAgent.UnloadArrivals();
+                }
                 var msg = $"MainFlow : 到達放貨站,[Port={unloadAddressId}]";
                 OnMessageShowEvent?.Invoke(this, msg);
                 return true;
             }
             else
             {
+                IsRetryArrival = false;
                 alarmHandler.SetAlarm(000009);
                 return false;
             }
@@ -1771,13 +1779,22 @@ namespace Mirle.Agv.Controller
 
             if (curAddress.Id == loadAddressId)
             {
-                middleAgent.LoadArrivals();
+                if (IsRetryArrival)
+                {
+                    IsRetryArrival = false;
+                }
+                else
+                {
+                    middleAgent.LoadArrivals();
+                }
+
                 var msg = $"MainFlow : 到達取貨站, [Port={loadAddressId}]";
                 OnMessageShowEvent?.Invoke(this, msg);
                 return true;
             }
             else
             {
+                IsRetryArrival = false;
                 alarmHandler.SetAlarm(000015);
                 return false;
             }
@@ -1931,6 +1948,55 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，觸發重試機制，到站。");
+
+                ForkNgRetryArrivalStartCharge();
+
+                IsRetryArrival = true;
+
+                GoNextTransferStep = true;
+            }
+            catch (Exception ex)
+            {
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
+        private void ForkNgRetryArrivalStartCharge()
+        {
+            MoveCmdInfo moveCmd = (MoveCmdInfo)GetPreTransferStep();
+
+            ArrivalStartCharge(moveCmd.EndAddress);
+
+            RetryArrivalStopCharge(mainFlowConfig.LoadingChargeIntervalMs);
+        }
+
+        private void RetryArrivalStopCharge(int loadingChargeIntervalMs)
+        {
+            try
+            {
+                if (GetCurrentTransferStepType() == EnumTransferStepType.Load && loadingChargeIntervalMs > 0)
+                {
+                    try
+                    {
+                        Stopwatch sw = new Stopwatch();
+                        sw.Start();
+                        while (!theVehicle.ThePlcVehicle.Loading)
+                        {
+                            if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
+                            {
+                                break;
+                            }
+                            SpinWait.SpinUntil(() => false, 50);
+                        }
+                        SpinWait.SpinUntil(() => false, loadingChargeIntervalMs);
+                        StopCharge();
+                    }
+                    catch (Exception ex)
+                    {
+                        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -1978,8 +2044,6 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                //Task.Run(() =>
-                //{
                 try
                 {
                     StartCharge(endAddress);
@@ -1988,7 +2052,6 @@ namespace Mirle.Agv.Controller
                 {
                     loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 }
-                //});
             }
             catch (Exception ex)
             {
@@ -2000,6 +2063,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
+                agvcTransCmd.ForkNgRetryTimes = mainFlowConfig.ForkNgRetryTimes;
                 if (forkCommand.ForkCommandType == EnumForkCommand.Load)
                 {
                     middleAgent.LoadComplete();
@@ -2141,6 +2205,17 @@ namespace Mirle.Agv.Controller
             if (TransferStepsIndex < transferSteps.Count)
             {
                 transferStep = transferSteps[TransferStepsIndex];
+            }
+            return transferStep;
+        }
+
+        public TransferStep GetPreTransferStep()
+        {
+            TransferStep transferStep = new EmptyTransferStep(this);
+            var preTransferStepsIndex = TransferStepsIndex - 1;
+            if (preTransferStepsIndex < transferSteps.Count && preTransferStepsIndex >= 0)
+            {
+                transferStep = transferSteps[preTransferStepsIndex];
             }
             return transferStep;
         }
@@ -2780,10 +2855,9 @@ namespace Mirle.Agv.Controller
 
         public bool StopCharge()
         {
-            var msg = $"MainFlow : Stop Charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
+            var msg = $"MainFlow : 嘗試停止充電, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
             loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                  , msg));
-
 
             if (!theVehicle.ThePlcVehicle.Batterys.Charging)
             {
@@ -3264,11 +3338,45 @@ namespace Mirle.Agv.Controller
 
         private void PlcAgent_OnForkCommandInterlockErrorEvent(object sender, PlcForkCommand e)
         {
-            var msg = $"MainFlow : Fork Interlock Error AbortCmd";
-            OnMessageShowEvent?.Invoke(this, msg);
-            agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
-            StopAndClear();
-            alarmHandler.ResetAllAlarms();
+            try
+            {
+                if (GetCurrentTransferStepType() == EnumTransferStepType.Load || GetCurrentTransferStepType() == EnumTransferStepType.Unload)
+                {
+                    var msg = $"MainFlow : 取放貨異常[InterlockError]，剩餘重試次數[{agvcTransCmd.ForkNgRetryTimes}]";
+                    OnMessageShowEvent?.Invoke(this, msg);
+
+                    #region 2019.12.11 Abort
+                    //agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
+                    //StopAndClear();
+                    //alarmHandler.ResetAllAlarms();
+                    #endregion
+
+                    #region 2019.12.16 Retry
+                    if (agvcTransCmd.ForkNgRetryTimes > 0)
+                    {
+                        agvcTransCmd.ForkNgRetryTimes--;
+                        if (StopCharge())
+                        {
+                            OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
+                            IsRetryArrival = false;
+                            moveControlHandler.TransferMove_RetryMove();
+                            return;
+                        }
+                    }
+
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，流程放棄。");
+                    agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
+                    StopAndClear();
+                    alarmHandler.ResetAllAlarms();
+
+                    #endregion
+                }
+            }
+            catch (Exception ex)
+            {
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，異常跳出。");
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
         }
 
         public void LoadMainFlowConfig()
