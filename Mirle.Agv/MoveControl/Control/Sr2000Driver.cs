@@ -33,7 +33,12 @@ namespace Mirle.Agv.Controller
                 this.theMapInfo = theMapInfo;
                 this.sr2000Config = sr2000Config;
                 this.indexNumber = indexNumber * 100;
-                device = sr2000Config.ID;
+
+                if (indexNumber == 0)
+                    device = "SR2000L";
+                else
+                    device = "SR2000R";
+                //device = sr2000Config.ID;
 
                 logger = LoggerAgent.Instance.GetLooger(device);
 

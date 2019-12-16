@@ -32,6 +32,7 @@ namespace Mirle.Agv.Model.Configs
         public double VelocitySafetyRange { get; set; }
         public double VChangeSafetyDistanceMagnification { get; set; }
         public double OverrideTimeoutValue { get; set; } = 2000;
+        public double RetryMoveDistance { get; set; } = 100;
         public Dictionary<EnumMoveControlSafetyType, SafetyData> Safety { get; set; } = new Dictionary<EnumMoveControlSafetyType, SafetyData>();
         public Dictionary<EnumSensorSafetyType, SafetyData> SensorByPass { get; set; } = new Dictionary<EnumSensorSafetyType, SafetyData>();
 

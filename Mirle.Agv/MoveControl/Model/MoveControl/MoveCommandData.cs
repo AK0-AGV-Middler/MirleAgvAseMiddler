@@ -27,6 +27,8 @@ namespace Mirle.Agv.Model
 
 
         public MapPosition End { get; set; }
+        public MapPosition RetryMovePosition { get; set; }
+        public bool IsRetryMove { get; set; } = false;
         public double EndOffsetX { get; set; }
         public double EndOffsetY { get; set; }
         public double EndOffsetTheta { get; set; }

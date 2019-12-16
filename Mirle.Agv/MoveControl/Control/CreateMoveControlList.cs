@@ -2451,6 +2451,13 @@ namespace Mirle.Agv.Controller
                         moveCmd.SectionSpeedLimits[i] = moveControlConfig.Move.Velocity;
                 }
 
+                double distance = computeFunction.GetTwoPositionDistance(moveCmd.AddressPositions[moveCmd.AddressPositions.Count - 2], moveCmd.AddressPositions[moveCmd.AddressPositions.Count - 1]);
+
+                if (distance > moveControlConfig.RetryMoveDistance)
+                    distance = moveControlConfig.RetryMoveDistance;
+
+                MapPosition retryMovePosition = computeFunction.GetPositionFormEndDistance(moveCmd.AddressPositions[moveCmd.AddressPositions.Count - 2], moveCmd.AddressPositions[moveCmd.AddressPositions.Count - 1], distance);
+
                 if (BreakDownMoveCmd(moveCmd, ref moveCmdList, ref sectionLineList, ref leftBarcodeList, ref rightBarcodeList, reserveList, nowAGV, wheelAngle, ref errorMessage))
                 {
                     ResetReserveList(ref reserveList);
@@ -2484,6 +2491,7 @@ namespace Mirle.Agv.Controller
                     }
 
                     returnCommand.End = reserveList[reserveList.Count - 1].Position;
+                    returnCommand.RetryMovePosition = retryMovePosition;
 
                     WriteLog("MoveControl", "7", device, "", "命令分解成功, 分解時間 : " + createListTimer.ElapsedMilliseconds + "ms!");
                     return returnCommand;

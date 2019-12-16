@@ -330,7 +330,8 @@ namespace Mirle.Agv.View
             label_Psuse.ForeColor = (label_Psuse.Text == "Normal") ? System.Drawing.Color.Green : System.Drawing.Color.Red;
 
             button_SimulateState.BackColor = (hideFunctionOn ? Color.Red : Color.Transparent);
-
+            button_RetryMove.Enabled = moveControl.MoveState == EnumMoveState.Idle;
+            button_RetryMove.Visible = hideFunctionOn;
             try
             {
                 int tempResserveIndex = moveControl.GetReserveIndex();
@@ -1813,5 +1814,10 @@ namespace Mirle.Agv.View
             }
         }
         #endregion
+
+        private void button_RetryMove_Click(object sender, EventArgs e)
+        {
+            moveControl.TransferMove_RetryMove();
+        }
     }
 }

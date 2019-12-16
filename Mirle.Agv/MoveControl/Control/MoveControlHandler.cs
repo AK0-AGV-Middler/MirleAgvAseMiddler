@@ -2502,7 +2502,7 @@ namespace Mirle.Agv.Controller
             }
 
             MoveState = EnumMoveState.Idle;
-            MoveFinished(EnumMoveComplete.Success);
+            MoveFinished(EnumMoveComplete.Success, command.IsRetryMove);
             ControlData.SecondCorrection = false;
             WriteLog("MoveControl", "7", device, "", "end");
             WriteLog("MoveControl", "7", device, "", "Move Compelete !");
@@ -2616,7 +2616,7 @@ namespace Mirle.Agv.Controller
                 elmoDriver.DisableMoveAxis();
             }
 
-            MoveFinished(EnumMoveComplete.Fail);
+            MoveFinished(EnumMoveComplete.Fail, command.IsRetryMove);
             ControlData.OntimeReviseFlag = false;
             ControlData.SecondCorrection = false;
             simulationIsMoving = false;
@@ -2767,7 +2767,7 @@ namespace Mirle.Agv.Controller
                             ControlData.PauseAlready = true;
                             ControlData.PauseRequest = false;
 
-                            MoveFinished(EnumMoveComplete.Pause);
+                            MoveFinished(EnumMoveComplete.Pause, command.IsRetryMove);
                         }
                     }
 
@@ -2790,7 +2790,7 @@ namespace Mirle.Agv.Controller
                         ControlData.CancelRequest = false;
                         MoveState = EnumMoveState.Idle;
 
-                        MoveFinished(EnumMoveComplete.Cancel);
+                        MoveFinished(EnumMoveComplete.Cancel, command.IsRetryMove);
                         WriteLog("MoveControl", "7", device, "", "AGV已經停止 Cancel已完成!");
                     }
 
@@ -3767,7 +3767,7 @@ namespace Mirle.Agv.Controller
         #endregion
 
         #region 外部連結 : 產生List、DebugForm相關、狀態、移動完成.
-        public void MoveFinished(EnumMoveComplete status)
+        public void MoveFinished(EnumMoveComplete status, bool isRetryMove = false)
         {
             bool sendEvent = true;
             WriteLog("MoveControl", "7", device, "", "status : " + status.ToString());
@@ -3815,7 +3815,10 @@ namespace Mirle.Agv.Controller
             if (isAGVMCommand && sendEvent)
             {
                 WriteLog("MoveControl", "7", device, "", "send event to middler : " + status.ToString());
-                OnMoveFinished?.Invoke(this, status);
+                if (!isRetryMove)
+                    OnMoveFinished?.Invoke(this, status);
+                else
+                    OnRetryMoveFinished?.Invoke(this, status);
             }
 
             UpdateAGVState();
@@ -4008,12 +4011,6 @@ namespace Mirle.Agv.Controller
             return true;
         }
 
-        public void TransferMove_RetryMove()
-        {
-            SpinWait.SpinUntil(() => false, 5000);
-            OnRetryMoveFinished?.Invoke(this, EnumMoveComplete.Success);
-        }
-
         public bool TransferMove_Override(MoveCmdInfo moveCmd, ref string errorMessage)
         {
             WriteLog("MoveControl", "7", device, "", "Override start");
@@ -4084,6 +4081,118 @@ namespace Mirle.Agv.Controller
 
             WriteLog("MoveControl", "7", device, "", "Override 成功!");
             return true;
+        }
+
+        public void TransferMove_RetryMove()
+        {
+            WriteLog("MoveControl", "7", device, "", "start!");
+
+            if (command.End != null && command.RetryMovePosition != null)
+            {
+                MoveCmdInfo temp = new MoveCmdInfo();
+                temp.StartAddress = new MapAddress();
+                temp.StartAddress.AddressOffset = new MapAddressOffset();
+                temp.StartAddress.AddressOffset.OffsetX = 0;
+                temp.StartAddress.AddressOffset.OffsetY = 0;
+                temp.StartAddress.AddressOffset.OffsetTheta = 0;
+                temp.EndAddress.AddressOffset = new MapAddressOffset();
+                temp.EndAddress.AddressOffset.OffsetX = 0;
+                temp.EndAddress.AddressOffset.OffsetY = 0;
+                temp.EndAddress.AddressOffset.OffsetTheta = 0;
+                temp.MovingSections = new List<MapSection>();
+                MapSection tempMovingSection = new MapSection();
+                tempMovingSection.Speed = moveControlConfig.EQ.Velocity;
+                tempMovingSection.Type = EnumSectionType.None;
+                temp.MovingSections.Add(tempMovingSection);
+                temp.MovingSections.Add(tempMovingSection);
+                temp.SectionSpeedLimits.Add(moveControlConfig.EQ.Velocity);
+                temp.SectionSpeedLimits.Add(moveControlConfig.EQ.Velocity);
+                temp.AddressActions = new List<EnumAddressAction>();
+                temp.MovingAddress = new List<MapAddress>();
+                MapAddress tempMapAddress = new MapAddress();
+                tempMapAddress.Position = command.End;
+                temp.MovingAddress.Add(tempMapAddress);
+                tempMapAddress = new MapAddress();
+                tempMapAddress.Position = command.RetryMovePosition;
+                temp.MovingAddress.Add(tempMapAddress);
+                tempMapAddress = new MapAddress();
+                tempMapAddress.Position = command.End;
+                temp.MovingAddress.Add(tempMapAddress);
+                temp.AddressPositions.Add(command.End);
+                temp.AddressPositions.Add(command.RetryMovePosition);
+                temp.AddressPositions.Add(command.End);
+
+                bool result = true;
+                if (ControlData.CloseMoveControl)
+                    result = false;
+                else if ((MoveState != EnumMoveState.Error && MoveState != EnumMoveState.Idle))
+                    result = false;
+                else if (IsCharging())
+                    result = false;
+                else if (ForkNotHome())
+                    result = false;
+
+                if (location.Real != null)
+                {
+                    double distance = Math.Sqrt(Math.Pow(location.Real.Position.X - command.End.X, 2) +
+                                                Math.Pow(location.Real.Position.Y - command.End.Y, 2));
+
+                    if (distance > 50)
+                        result = false;
+                }
+                else
+                    result = false;
+
+                string errorMessage = "";
+
+                if (result)
+                {
+                    UpdateWheelAngle();
+                    MoveCommandData tempCommand = CreateMoveCommandList.CreateMoveControlListSectionListReserveList(
+                                                  temp, location.Real, ControlData.WheelAngle, ref errorMessage);
+
+                    if (tempCommand == null)
+                    {
+                        WriteLog("MoveControl", "7", device, "", "命令分解失敗~!,直接報完成!");
+
+                        Task.Factory.StartNew(() =>
+                        {
+                            Thread.Sleep(1000);
+                            MoveFinished(EnumMoveComplete.Success, true);
+                        });
+                    }
+                    else
+                    {
+                        tempCommand.IsRetryMove = true;
+                        command = tempCommand;
+                        ResetFlag();
+                        MoveCommandID = temp.CmdId;
+                        isAGVMCommand = true;
+                        MoveState = EnumMoveState.Moving;
+                        AddAllReserve();
+                    }
+                }
+                else
+                {
+                    WriteLog("MoveControl", "7", device, "", "狀態檢查未通過,直接報完成!");
+
+                    Task.Factory.StartNew(() =>
+                    {
+                        Thread.Sleep(1000);
+                        MoveFinished(EnumMoveComplete.Success, true);
+                    });
+                }
+            }
+            else
+            {
+                WriteLog("MoveControl", "7", device, "", "無RetryMove可以嘗試,直接報完成!");
+
+                Task.Factory.StartNew(() =>
+                {
+                    Thread.Sleep(1000);
+                    MoveFinished(EnumMoveComplete.Success, true);
+                });
+            }
         }
 
         public void StopAndClear([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
