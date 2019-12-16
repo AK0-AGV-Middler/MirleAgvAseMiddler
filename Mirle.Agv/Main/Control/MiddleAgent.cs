@@ -56,7 +56,6 @@ namespace Mirle.Agv.Controller
 
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
-        private EnumCstIdReadResult readResult = EnumCstIdReadResult.Noraml;
         private bool ReserveOkAskNext { get; set; } = false;
         private ConcurrentBag<MapSection> CbagNeedReserveSections { get; set; } = new ConcurrentBag<MapSection>();
         public bool IsAskReservePause { get; private set; }
@@ -64,7 +63,6 @@ namespace Mirle.Agv.Controller
         private bool IsWaitReserveReply { get; set; }
 
         public TcpIpAgent ClientAgent { get; private set; }
-        public bool IsCancelByCstIdRead { get; set; } = false;
         public string MiddlerAbnormalMsg { get; set; } = "";
 
         public MiddleAgent(MainFlowHandler mainFlowHandler)
@@ -1276,10 +1274,10 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd136_TransferEventReport(EventType.Vhloading);
         }
-        public void CstIdRead(EnumCstIdReadResult result)
+        public bool CstIdRead(EnumCstIdReadResult result)
         {
-            readResult = result;
-            Send_Cmd136_CstIdReadReport(result);
+            Task<bool> actionResult = Send_Cmd136_CstIdReadReport(result);
+            return actionResult.Result;
         }
         public void TransferComplete(AgvcTransCmd agvcTransCmd)
         {
@@ -1948,12 +1946,9 @@ namespace Mirle.Agv.Controller
                         break;
                     case CMDCancelType.CmdCancelIdMismatch:
                     case CMDCancelType.CmdCancelIdReadFailed:
-                        if (IsCancelByCstIdRead)
-                        {
-                            // mainFlowHandler.Middler_OnCmdCarrierIdReadCancelAbortEvent(e.iSeqNum, receive.CmdID, receive.ActType,receive.);
-                        }
+                        alarmHandler.ResetAllAlarms();
+                        mainFlowHandler.StopAndClear();
                         break;
-                    //break;
                     case CMDCancelType.CmdNone:
                     default:
                         replyCode = 1;
@@ -1994,7 +1989,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
-                AgvcTransCmd agvcTransCmd = mainFlowHandler.agvcTransCmd;
+                //AgvcTransCmd agvcTransCmd = mainFlowHandler.agvcTransCmd;
                 if (receive.EventType == EventType.ReserveReq)
                 {
                     //OnReceiveReserveReply(receive);
@@ -2035,24 +2030,24 @@ namespace Mirle.Agv.Controller
                 }
                 else if (receive.EventType == EventType.Bcrread)
                 {
-                    theVehicle.ThePlcVehicle.RenameCassetteId = string.IsNullOrEmpty(receive.RenameCarrierID) ? "" : receive.RenameCarrierID;
-                    mainFlowHandler.NeedRename = !string.IsNullOrEmpty(receive.RenameCarrierID);
+                    //theVehicle.ThePlcVehicle.RenameCassetteId = string.IsNullOrEmpty(receive.RenameCarrierID) ? "" : receive.RenameCarrierID;
+                    //mainFlowHandler.NeedRename = !string.IsNullOrEmpty(receive.RenameCarrierID);
 
-                    switch (receive.ReplyActiveType)
-                    {
-                        case CMDCancelType.CmdCancel:
-                        case CMDCancelType.CmdAbort:
-                        case CMDCancelType.CmdCancelIdMismatch:
-                        case CMDCancelType.CmdCancelIdReadFailed:
-                            agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(receive.ReplyActiveType, agvcTransCmd.CompleteStatus);
-                            mainFlowHandler.IsCancelByCstIdRead = true;
-                            mainFlowHandler.IsBcrReadReply = true;
-                            return;
-                        case CMDCancelType.CmdNone:
-                        default:
-                            mainFlowHandler.IsBcrReadReply = true;
-                            return;
-                    }
+                    //switch (receive.ReplyActiveType)
+                    //{
+                    //    case CMDCancelType.CmdCancel:
+                    //    case CMDCancelType.CmdAbort:
+                    //    case CMDCancelType.CmdCancelIdMismatch:
+                    //    case CMDCancelType.CmdCancelIdReadFailed:
+                    //        agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(receive.ReplyActiveType, agvcTransCmd.CompleteStatus);
+                    //        mainFlowHandler.IsCancelByCstIdRead = true;
+                    //        mainFlowHandler.IsBcrReadReply = true;
+                    //        return;
+                    //    case CMDCancelType.CmdNone:
+                    //    default:
+                    //        mainFlowHandler.IsBcrReadReply = true;
+                    //        return;
+                    //}
                 }
                 else
                 {
@@ -2084,6 +2079,22 @@ namespace Mirle.Agv.Controller
 
             return completeStatus;
         }
+        private CompleteStatus GetCancelCompleteStatus(EnumCstIdReadResult readResult, CompleteStatus completeStatus)
+        {
+            switch (readResult)
+            {
+                case EnumCstIdReadResult.Noraml:
+                    break;
+                case EnumCstIdReadResult.Mismatch:
+                    return CompleteStatus.CmpStatusIdmisMatch;
+                case EnumCstIdReadResult.Fail:
+                    return CompleteStatus.CmpStatusIdreadFailed;
+                default:
+                    break;
+            }
+
+            return completeStatus;
+        }
         public void Send_Cmd136_TransferEventReport(EventType eventType)
         {
             VehicleLocation vehLocation = theVehicle.VehicleLocation;
@@ -2108,7 +2119,7 @@ namespace Mirle.Agv.Controller
             }
 
         }
-        public void Send_Cmd136_CstIdReadReport(EnumCstIdReadResult readResult)
+        public async Task<bool> Send_Cmd136_CstIdReadReport(EnumCstIdReadResult readResult, bool isLoadComplete = true)
         {
             VehicleLocation vehLocation = theVehicle.VehicleLocation;
             try
@@ -2125,64 +2136,69 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                SendCommandWrapper(wrappers);
+                #region 2019.12.11 TaskSend
+                //SendCommandWrapper(wrappers);
+                #endregion
+
+                #region 2019.12.16 SendWait
+                LogSendMsg(wrappers);
+
+                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
+                string rtnMsg = "";
+
+                TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, middlerConfig.RecvTimeoutMs, 0));
+
+                if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                {
+                    if (response.ReplyActiveType != CMDCancelType.CmdNone)
+                    {
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨異常，處理方式為[{response.ReplyActiveType}]，CstID變更為[{response.RenameCarrierID}]");
+                        alarmHandler.ResetAllAlarms();
+                        if (!string.IsNullOrEmpty(response.RenameCarrierID))
+                        {
+                            theVehicle.ThePlcVehicle.CassetteId = response.RenameCarrierID;
+                        }
+                        if (isLoadComplete) LoadComplete();
+                        mainFlowHandler.agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(response.ReplyActiveType, mainFlowHandler.agvcTransCmd.CompleteStatus);
+                        mainFlowHandler.StopAndClear();
+                        return false;
+                    }
+                    else
+                    {
+                        if (isLoadComplete)
+                        {
+                            LoadComplete();
+                            OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨完成");
+                        }
+                        return true;                        
+                    }
+                }
+                else
+                {
+                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨異常，等待回應逾時");
+                    alarmHandler.ResetAllAlarms();
+                    if (isLoadComplete) LoadComplete();
+                    mainFlowHandler.agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(readResult, mainFlowHandler.agvcTransCmd.CompleteStatus);
+                    mainFlowHandler.StopAndClear();
+                    return false;
+                }
+
+                #endregion
             }
             catch (Exception ex)
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨異常，Exception");
+                alarmHandler.ResetAllAlarms();
+                LoadComplete();
+                mainFlowHandler.agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(readResult, mainFlowHandler.agvcTransCmd.CompleteStatus);
+                mainFlowHandler.StopAndClear();
+                return false;
             }
-
         }
-        //public void Send_Cmd136_RequestBlock(string requestBlockID)
-        //{
-        //    VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
 
-        //    try
-        //    {
-        //        ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-        //        iD_136_TRANS_EVENT_REP.EventType = EventType.BlockReq;
-        //        iD_136_TRANS_EVENT_REP.RequestBlockID = requestBlockID;
-        //        iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
-        //        iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
-        //        iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
-        //        iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
 
-        //        WrapperMessage wrappers = new WrapperMessage();
-        //        wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-        //        wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-        //        SendCommandWrapper(wrappers);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-        //    }
-        //}
-        //public void Send_Cmd136_ReleaseBlock(string releaseBlockAdrID)
-        //{
-        //    VehiclePosition vehLocation = theVehicle.CurVehiclePosition;
-
-        //    try
-        //    {
-        //        ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-        //        iD_136_TRANS_EVENT_REP.EventType = EventType.BlockRelease;
-        //        iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
-        //        iD_136_TRANS_EVENT_REP.ReleaseBlockAdrID = releaseBlockAdrID;
-        //        iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
-        //        iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
-        //        iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.Distance;
-
-        //        WrapperMessage wrappers = new WrapperMessage();
-        //        wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-        //        wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
-
-        //        SendCommandWrapper(wrappers);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-        //    }
-        //}
         public void Send_Cmd136_AskReserve(MapSection mapSection)
         {
             var msg = $"詢問{mapSection.Id}通行權";

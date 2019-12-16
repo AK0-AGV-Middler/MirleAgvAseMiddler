@@ -133,9 +133,7 @@ namespace Mirle.Agv.Controller
         public PlcForkCommand PlcForkUnloadCommand { get; set; }
         public double InitialSoc { get; set; } = 70;
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Noraml;
-        public bool IsCancelByCstIdRead { get; set; } = false;
         public bool NeedRename { get; set; } = false;
-        public bool IsBcrReadReply { get; set; } = false;
         public bool IsMoveEnd { get; set; } = false;
         public bool IsSimulation { get; set; }
         public string MainFlowAbnormalMsg { get; set; }
@@ -262,7 +260,9 @@ namespace Mirle.Agv.Controller
                 moveControlHandler.OnRetryMoveFinished += MoveControlHandler_OnRetryMoveFinished;
 
                 //來自PlcAgent的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
                 plcAgent.OnForkCommandFinishEvent += PlcAgent_OnForkCommandFinishEvent;
+                plcAgent.OnForkCommandErrorEvent += PlcAgent_OnForkCommandErrorEvent;
 
                 //來自PlcBattery的電量改變訊息，通知middleAgent
                 plcAgent.OnBatteryPercentageChangeEvent += middleAgent.PlcAgent_OnBatteryPercentageChangeEvent;
@@ -271,7 +271,6 @@ namespace Mirle.Agv.Controller
                 //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
                 //plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
                 plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
-                plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
@@ -294,6 +293,8 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        
 
         private void VehicleLocationInitial()
         {
@@ -390,12 +391,12 @@ namespace Mirle.Agv.Controller
         }
         public void PauseVisitTransferSteps()
         {
+            visitTransferStepsPauseEvent.Reset();
             if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOff)
             {
                 agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOn;
                 middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             }
-            visitTransferStepsPauseEvent.Reset();
             VisitTransferStepsStatusBeforePause = VisitTransferStepsStatus;
             VisitTransferStepsStatus = EnumThreadStatus.Pause;
 
@@ -701,6 +702,13 @@ namespace Mirle.Agv.Controller
                 {
                     var reason = $"Agv already have a [{agvcTransCmd.CommandType}] command [{agvcTransCmd.CommandId}].";
                     RejectTransferCommandAndResume(000001, reason, agvcTransCmd);
+                    return;
+                }
+
+                if (!theVehicle.ThePlcVehicle.Robot.ForkHome)
+                {
+                    var reason = $"Fork is not at home.";
+                    RejectTransferCommandAndResume(000027, reason, agvcTransCmd);
                     return;
                 }
 
@@ -2065,59 +2073,65 @@ namespace Mirle.Agv.Controller
             {
                 agvcTransCmd.ForkNgRetryTimes = mainFlowConfig.ForkNgRetryTimes;
                 if (forkCommand.ForkCommandType == EnumForkCommand.Load)
-                {
-                    middleAgent.LoadComplete();
-                    Stopwatch sw = new Stopwatch();
-                    int bcrReadRetryTimeoutTotal = 0;
-                    int bcrReadRetryTimeoutMs = middlerConfig.BcrReadRetryTimeoutSec * 1000;
-                    int bcrReadRetryIntervalMs = middlerConfig.BcrReadRetryIntervalMs;
-                    sw.Start();
-                    while (true)
+                {                    
+                    if (middleAgent.CstIdRead(ReadResult))
                     {
-                        sw.Stop();
-                        if (sw.ElapsedMilliseconds > bcrReadRetryIntervalMs)
-                        {
-                            middleAgent.CstIdRead(ReadResult);
-
-                            sw.Reset();
-                            bcrReadRetryTimeoutTotal += bcrReadRetryIntervalMs;
-                            if (bcrReadRetryTimeoutTotal > bcrReadRetryTimeoutMs)
-                            {
-                                alarmHandler.SetAlarm(000029);
-                                break;
-                            }
-                        }
-                        sw.Start();
-
-                        SpinWait.SpinUntil(() => false, 100);
-
-                        try
-                        {
-                            if (!IsBcrReadReply)
-                            {
-                                continue;
-                            }
-
-                            if (IsCancelByCstIdRead)
-                            {
-                                OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成，貨物ID讀取異常。");
-                                StopAndClear();
-                                break;
-                            }
-                            else
-                            {
-                                OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");
-                                VisitNextTransferStep();
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                        }
+                        //middleAgent.LoadComplete();
+                        //OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");
+                        VisitNextTransferStep();
                     }
+                    //else
+                    //{
 
-                    IsBcrReadReply = false;
+                    //}
+                    
+                    //Stopwatch sw = new Stopwatch();
+                    //int bcrReadRetryTimeoutTotal = 0;
+                    //int bcrReadRetryTimeoutMs = middlerConfig.BcrReadRetryTimeoutSec * 1000;
+                    //int bcrReadRetryIntervalMs = middlerConfig.BcrReadRetryIntervalMs;
+                    //sw.Start();
+                    //while (true)
+                    //{
+                    //    sw.Stop();
+                    //    if (sw.ElapsedMilliseconds > bcrReadRetryIntervalMs)
+                    //    {
+                    //        middleAgent.CstIdRead(ReadResult);
+
+                    //        sw.Reset();
+                    //        bcrReadRetryTimeoutTotal += bcrReadRetryIntervalMs;
+                    //        if (bcrReadRetryTimeoutTotal > bcrReadRetryTimeoutMs)
+                    //        {
+                    //            alarmHandler.SetAlarm(000029);
+                    //            break;
+                    //        }
+                    //    }
+                    //    sw.Start();
+
+                    //    SpinWait.SpinUntil(() => false, 100);
+
+                    //    try
+                    //    {
+
+
+                    //        //if (IsCancelByCstIdRead)
+                    //        //{
+                    //        //    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成，貨物ID讀取異常。");
+                    //        //    StopAndClear();
+                    //        //    break;
+                    //        //}
+                    //        //else
+                    //        //{
+                    //        //    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");
+                    //        //    VisitNextTransferStep();
+                    //        //    break;
+                    //        //}
+                    //    }
+                    //    catch (Exception ex)
+                    //    {
+                    //        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    //    }
+                    //}
+
 
                 }
                 else /*if (forkCommand.ForkCommandType == EnumForkCommand.Unload)*/
@@ -2140,34 +2154,56 @@ namespace Mirle.Agv.Controller
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
-
+        private void PlcAgent_OnForkCommandErrorEvent(object sender, PlcForkCommand e)
+        {
+            middleAgent.CstIdRead(ReadResult);
+        }
         private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
         {
             try
             {
-                if (string.IsNullOrEmpty(cstId))
+                #region 2019.12.11
+                //if (string.IsNullOrEmpty(cstId) || cstId == "ERROR")
+                //{
+                //    PauseVisitTransferSteps();
+                //    var msg = $"貨物ID讀取失敗";
+                //    OnMessageShowEvent?.Invoke(this, msg);
+                //    ReadResult = EnumCstIdReadResult.Fail;
+                //    alarmHandler.SetAlarm(000004);
+                //}
+                //else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != cstId)
+                //{
+                //    PauseVisitTransferSteps();
+                //    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合"; ;
+                //    OnMessageShowEvent?.Invoke(this, msg);
+                //    ReadResult = EnumCstIdReadResult.Mismatch;
+                //    alarmHandler.SetAlarm(000028);
+                //}
+                //else
+                //{
+                //    var msg = $"貨物ID[{cstId}]讀取成功";
+                //    OnMessageShowEvent?.Invoke(this, msg);
+                //    ReadResult = EnumCstIdReadResult.Noraml;
+                //}
+                //middleAgent.CstIdRead(ReadResult);
+
+                #endregion
+
+                #region 2019.12.16 Report to Agvc when ForkFinished
+
+                if (string.IsNullOrEmpty(cstId) || cstId == "ERROR")
                 {
                     var msg = $"貨物ID讀取失敗";
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Fail;
                     alarmHandler.SetAlarm(000004);
-                    PauseVisitTransferSteps();
-                }
-                else if (cstId == "ERROR")
-                {
-                    var msg = $"貨物ID讀取失敗";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    ReadResult = EnumCstIdReadResult.Fail;
-                    alarmHandler.SetAlarm(000005);
-                    PauseVisitTransferSteps();
                 }
                 else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != cstId)
                 {
-                    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合"; ;
+                    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合";
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Mismatch;
                     alarmHandler.SetAlarm(000028);
-                    PauseVisitTransferSteps();
                 }
                 else
                 {
@@ -2175,7 +2211,9 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Noraml;
                 }
-                middleAgent.CstIdRead(ReadResult);
+                theVehicle.ThePlcVehicle.CassetteId = cstId;
+
+                #endregion
             }
             catch (Exception ex)
             {
@@ -2296,6 +2334,7 @@ namespace Mirle.Agv.Controller
                     {
                         middleAgent.Loading();
                         PublishOnDoTransferStepEvent(loadCmd);
+                        ReadResult = EnumCstIdReadResult.Noraml;
                         PlcForkLoadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
                         Task.Run(() => plcAgent.AddForkComand(PlcForkLoadCommand));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
@@ -2922,8 +2961,6 @@ namespace Mirle.Agv.Controller
             StopVehicle();
             StopVisitTransferSteps();
             theVehicle.VehicleLocation.WheelAngle = moveControlHandler.ControlData.WheelAngle;
-            IsCancelByCstIdRead = false;
-            middleAgent.IsCancelByCstIdRead = false;
 
             if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
             {
@@ -2936,19 +2973,25 @@ namespace Mirle.Agv.Controller
                 agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
             }
 
-            if (NeedRename)
+            if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
             {
-                NeedRename = false;
-                theVehicle.ThePlcVehicle.CassetteId = theVehicle.ThePlcVehicle.RenameCassetteId;
+                string cstId = "";
+                plcAgent.triggerCassetteIDReader(ref cstId);
             }
-            else
-            {
-                if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
-                {
-                    string cstId = "";
-                    plcAgent.triggerCassetteIDReader(ref cstId);
-                }
-            }
+
+            //if (NeedRename)
+            //{
+            //    NeedRename = false;
+            //    theVehicle.ThePlcVehicle.CassetteId = theVehicle.ThePlcVehicle.RenameCassetteId;
+            //}
+            //else
+            //{
+            //    if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
+            //    {
+            //        string cstId = "";
+            //        plcAgent.triggerCassetteIDReader(ref cstId);
+            //    }
+            //}
             ReadResult = EnumCstIdReadResult.Noraml;
 
             var msg = $"MainFlow : Stop And Clear";
@@ -3357,6 +3400,7 @@ namespace Mirle.Agv.Controller
                         agvcTransCmd.ForkNgRetryTimes--;
                         if (StopCharge())
                         {
+                            alarmHandler.ResetAllAlarms();
                             OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
                             IsRetryArrival = false;
                             moveControlHandler.TransferMove_RetryMove();
@@ -3364,10 +3408,11 @@ namespace Mirle.Agv.Controller
                         }
                     }
 
+                    alarmHandler.ResetAllAlarms();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，流程放棄。");
                     agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
                     StopAndClear();
-                    alarmHandler.ResetAllAlarms();
+
 
                     #endregion
                 }

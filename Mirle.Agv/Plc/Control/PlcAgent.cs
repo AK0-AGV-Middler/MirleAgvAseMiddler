@@ -3223,6 +3223,11 @@ namespace Mirle.Agv.Controller
                                     else if (sw.Elapsed.TotalSeconds > 30)
                                     {
                                         this.setAlarm(Fork_Home_Flag_Waiting_timeout);
+
+                                        this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                        this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandFinishTimeout";
+                                        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                        OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                         break;
                                     }
                                     

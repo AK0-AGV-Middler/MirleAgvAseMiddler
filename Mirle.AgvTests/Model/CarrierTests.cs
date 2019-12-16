@@ -75,5 +75,39 @@ namespace Mirle.Agv.Model.Tests
             Assert.True(true);
         }
 
+        [Test()]
+        public void NullTrimTest()
+        {
+            //string xx = null;
+            //var xx1 = string.IsNullOrEmpty(xx);
+            //var xx2 = xx.Trim();
+
+            string xx3 = "";
+            var xx4 = xx3.Trim();
+
+            Assert.True(true);
+        }
+
+        [Test()]
+        public void AsyncAwaitTest()
+        {
+            Task<int> xx1 = foo2();
+            var xx2 = xx1.Result;
+
+
+            Assert.AreEqual(2,xx2);
+        }
+
+        public int foo1()
+        {
+            return 1;
+        }
+
+        public async Task<int> foo2()
+        {
+            int xxx = await Task.Run(() => foo1());
+            return 2;
+        }
+
     }
 }

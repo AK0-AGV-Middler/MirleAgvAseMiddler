@@ -56,11 +56,9 @@ namespace Mirle.Agv.View
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             btnAlarmReset.Enabled = false;
-
             AppendHistoryAlarmsMsg(msg);
             HappenedingAlarmsMsg = "";
-
-            Thread.Sleep(500);
+            SpinWait.SpinUntil(() =>false, 500);
             btnAlarmReset.Enabled = true;
         }
 
