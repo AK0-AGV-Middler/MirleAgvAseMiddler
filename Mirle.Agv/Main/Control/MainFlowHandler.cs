@@ -294,8 +294,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        
-
         private void VehicleLocationInitial()
         {
             if (IsRealPositionEmpty())
@@ -1397,6 +1395,8 @@ namespace Mirle.Agv.Controller
 
         }
 
+       
+
         private void SetupAvoidTransferSteps()
         {
             MoveCmdInfo moveCmd = GetAvoidMoveCmdInfo(agvcTransCmd);
@@ -1962,6 +1962,30 @@ namespace Mirle.Agv.Controller
 
                 IsRetryArrival = true;
 
+                int timeoutCount = 10;
+                while (true)
+                {
+                    if (plcAgent.IsForkCommandExist())
+                    {
+                        plcAgent.ClearExecutingForkCommand();
+                        SpinWait.SpinUntil(() => false, 200);
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                    if (timeoutCount > 0)
+                    {
+                        timeoutCount--;
+                    }
+                    else
+                    {
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，觸發重試機制，到站。無法清除ForkCommand");
+                        return;
+                    }
+                }
+
                 GoNextTransferStep = true;
             }
             catch (Exception ex)
@@ -2073,7 +2097,7 @@ namespace Mirle.Agv.Controller
             {
                 agvcTransCmd.ForkNgRetryTimes = mainFlowConfig.ForkNgRetryTimes;
                 if (forkCommand.ForkCommandType == EnumForkCommand.Load)
-                {                    
+                {
                     if (middleAgent.CstIdRead(ReadResult))
                     {
                         //middleAgent.LoadComplete();
@@ -2084,7 +2108,7 @@ namespace Mirle.Agv.Controller
                     //{
 
                     //}
-                    
+
                     //Stopwatch sw = new Stopwatch();
                     //int bcrReadRetryTimeoutTotal = 0;
                     //int bcrReadRetryTimeoutMs = middlerConfig.BcrReadRetryTimeoutSec * 1000;
@@ -2156,7 +2180,7 @@ namespace Mirle.Agv.Controller
         }
         private void PlcAgent_OnForkCommandErrorEvent(object sender, PlcForkCommand e)
         {
-            middleAgent.CstIdRead(ReadResult);
+            //middleAgent.CstIdRead(ReadResult);
         }
         private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
         {
@@ -2219,6 +2243,54 @@ namespace Mirle.Agv.Controller
             {
                 loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ex.StackTrace));
+            }
+        }
+        private void PlcAgent_OnForkCommandInterlockErrorEvent(object sender, PlcForkCommand e)
+        {
+            try
+            {
+                if (GetCurrentTransferStepType() == EnumTransferStepType.Load || GetCurrentTransferStepType() == EnumTransferStepType.Unload)
+                {
+                    var msg = $"MainFlow : 取放貨異常[InterlockError]，剩餘重試次數[{agvcTransCmd.ForkNgRetryTimes}]";
+                    OnMessageShowEvent?.Invoke(this, msg);
+
+                    #region 2019.12.11 Abort
+                    //agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
+                    //StopAndClear();
+                    //alarmHandler.ResetAllAlarms();
+                    #endregion
+
+                    #region 2019.12.16 Retry
+
+                    if (theVehicle.ThePlcVehicle.Robot.ForkHome)
+                    {
+                        if (agvcTransCmd.ForkNgRetryTimes > 0)
+                        {
+                            agvcTransCmd.ForkNgRetryTimes--;
+                            if (StopCharge())
+                            {
+                                alarmHandler.ResetAllAlarms();
+                                OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
+                                IsRetryArrival = false;
+                                moveControlHandler.TransferMove_RetryMove();
+                                return;
+                            }
+                        }
+                    }
+
+                    alarmHandler.ResetAllAlarms();
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，流程放棄。");
+                    agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
+                    StopAndClear();
+
+
+                    #endregion
+                }
+            }
+            catch (Exception ex)
+            {
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，異常跳出。");
+                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -2296,20 +2368,57 @@ namespace Mirle.Agv.Controller
             {
                 try
                 {
-                    if (!plcAgent.IsForkCommandExist())
+                    int timeoutCount = 10;
+                    while (true)
                     {
-                        middleAgent.Unloading();
-                        PublishOnDoTransferStepEvent(unloadCmd);
-                        PlcForkUnloadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
-                        Task.Run(() => plcAgent.AddForkComand(PlcForkUnloadCommand));
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
-                        batteryLog.LoadUnloadCount++;
-                        SaveBatteryLog();
+                        if (plcAgent.IsForkCommandExist())
+                        {
+                            plcAgent.ClearExecutingForkCommand();
+                            SpinWait.SpinUntil(() => false, 200);
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        if (timeoutCount > 0)
+                        {
+                            timeoutCount--;
+                        }
+                        else
+                        {                          
+                            alarmHandler.ResetAllAlarms();
+                            var errorMsg = $"MainFlow : 放貨異常，無法清除Robot命令，流程放棄。";
+                            OnMessageShowEvent?.Invoke(this, errorMsg);
+                            MainFlowAbnormalMsg = errorMsg;
+                            agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
+                            StopAndClear();
+                            return;
+                        }
                     }
-                    else
+
+                    if (plcAgent.IsForkCommandExist())
                     {
-                        alarmHandler.SetAlarm(000008);
+                        plcAgent.ClearExecutingForkCommand();
+                        SpinWait.SpinUntil(() => false, 500);
                     }
+
+                    middleAgent.Unloading();
+                    PublishOnDoTransferStepEvent(unloadCmd);
+                    PlcForkUnloadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
+                    Task.Run(() => plcAgent.AddForkComand(PlcForkUnloadCommand));
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
+                    batteryLog.LoadUnloadCount++;
+                    SaveBatteryLog();
+
+
+                    //if (!plcAgent.IsForkCommandExist())
+                    //{
+                    //}
+                    //else
+                    //{
+                    //    alarmHandler.SetAlarm(000008);
+                    //}
                 }
                 catch (Exception ex)
                 {
@@ -2330,21 +2439,52 @@ namespace Mirle.Agv.Controller
             {
                 try
                 {
-                    if (!plcAgent.IsForkCommandExist())
+                    int timeoutCount = 10;
+                    while (true)
                     {
-                        middleAgent.Loading();
-                        PublishOnDoTransferStepEvent(loadCmd);
-                        ReadResult = EnumCstIdReadResult.Noraml;
-                        PlcForkLoadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
-                        Task.Run(() => plcAgent.AddForkComand(PlcForkLoadCommand));
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
-                        batteryLog.LoadUnloadCount++;
-                        SaveBatteryLog();
+                        if (plcAgent.IsForkCommandExist())
+                        {
+                            plcAgent.ClearExecutingForkCommand();
+                            SpinWait.SpinUntil(() => false, 200);
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        if (timeoutCount > 0)
+                        {
+                            timeoutCount--;
+                        }
+                        else
+                        {
+                            alarmHandler.ResetAllAlarms();
+                            var errorMsg = $"MainFlow : 取貨異常，無法清除Robot命令，流程放棄。";
+                            MainFlowAbnormalMsg = errorMsg;
+                            OnMessageShowEvent?.Invoke(this, errorMsg);
+                            agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
+                            StopAndClear();
+                            return;
+                        }
                     }
-                    else
-                    {
-                        alarmHandler.SetAlarm(000010);
-                    }
+
+
+                    middleAgent.Loading();
+                    PublishOnDoTransferStepEvent(loadCmd);
+                    ReadResult = EnumCstIdReadResult.Noraml;
+                    PlcForkLoadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
+                    Task.Run(() => plcAgent.AddForkComand(PlcForkLoadCommand));
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
+                    batteryLog.LoadUnloadCount++;
+                    SaveBatteryLog();
+
+                    //if (!plcAgent.IsForkCommandExist())
+                    //{
+                    //}
+                    //else
+                    //{
+                    //    alarmHandler.SetAlarm(000010);
+                    //}
                 }
                 catch (Exception ex)
                 {
@@ -3379,50 +3519,6 @@ namespace Mirle.Agv.Controller
             return (int)theVehicle.VehicleLocation.VehicleAngle; //車頭方向角度(0,90,180,-90)  
         }
 
-        private void PlcAgent_OnForkCommandInterlockErrorEvent(object sender, PlcForkCommand e)
-        {
-            try
-            {
-                if (GetCurrentTransferStepType() == EnumTransferStepType.Load || GetCurrentTransferStepType() == EnumTransferStepType.Unload)
-                {
-                    var msg = $"MainFlow : 取放貨異常[InterlockError]，剩餘重試次數[{agvcTransCmd.ForkNgRetryTimes}]";
-                    OnMessageShowEvent?.Invoke(this, msg);
-
-                    #region 2019.12.11 Abort
-                    //agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
-                    //StopAndClear();
-                    //alarmHandler.ResetAllAlarms();
-                    #endregion
-
-                    #region 2019.12.16 Retry
-                    if (agvcTransCmd.ForkNgRetryTimes > 0)
-                    {
-                        agvcTransCmd.ForkNgRetryTimes--;
-                        if (StopCharge())
-                        {
-                            alarmHandler.ResetAllAlarms();
-                            OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
-                            IsRetryArrival = false;
-                            moveControlHandler.TransferMove_RetryMove();
-                            return;
-                        }
-                    }
-
-                    alarmHandler.ResetAllAlarms();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，流程放棄。");
-                    agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
-                    StopAndClear();
-
-
-                    #endregion
-                }
-            }
-            catch (Exception ex)
-            {
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，異常跳出。");
-                loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
-        }
 
         public void LoadMainFlowConfig()
         {
@@ -3472,6 +3568,6 @@ namespace Mirle.Agv.Controller
             batteryLog = tempBatteryLog;
             //TODO: Middler
 
-        }
+        }       
     }
 }

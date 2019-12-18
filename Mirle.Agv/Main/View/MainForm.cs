@@ -1505,6 +1505,7 @@ namespace Mirle.Agv.View
         private void btnAlarmReset_Click(object sender, EventArgs e)
         {
             btnAlarmReset.Enabled = false;
+            TakeAPicture();
             mainFlowHandler.ResetAllarms();
             Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
@@ -1539,11 +1540,13 @@ namespace Mirle.Agv.View
                             Vehicle.Instance.AutoState = EnumAutoState.Auto;
                             switchResult = true;
                             AppendDebugLogMsg($"Manual 切換 Auto 成功");
+                            ResetAllAbnormalMsg();
                         }
                         else
                         {
                             if (mainFlowHandler.SetManualToAuto())
                             {
+                                TakeAPicture();
                                 alarmHandler.ResetAllAlarms();
                                 mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                                 Vehicle.Instance.AutoState = EnumAutoState.Auto;
@@ -1557,6 +1560,7 @@ namespace Mirle.Agv.View
                                 {
                                     theVehicle.ThePlcVehicle.CassetteId = "";
                                 }
+                                ResetAllAbnormalMsg();
                             }
                         }
                         break;
@@ -1569,6 +1573,7 @@ namespace Mirle.Agv.View
                             Vehicle.Instance.AutoState = EnumAutoState.Manual;
                             var msg = $"Auto 切換 Manual 成功";
                             AppendDebugLogMsg(msg);
+                            
                             mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
                             switchResult = true;
                             LoggerAgent.Instance.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
@@ -1582,6 +1587,16 @@ namespace Mirle.Agv.View
                 LoggerAgent.Instance.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return false;
             }
+        }
+
+        private void ResetAllAbnormalMsg()
+        {
+            mainFlowHandler.MainFlowAbnormalMsg = "";
+            middleAgent.MiddlerAbnormalMsg = "";
+            moveControlHandler.AGVStopResult = "";
+            RobotAbnormalReasonMsg = "";
+            BatterysAbnormalReasonMsg = "";
+
         }
 
         private void btnKeyInSoc_Click(object sender, EventArgs e)
@@ -2015,6 +2030,11 @@ namespace Mirle.Agv.View
 
         private void btnPrintScreen_Click(object sender, EventArgs e)
         {
+            TakeAPicture();
+        }
+
+        private void TakeAPicture()
+        {
             Image image = new Bitmap(1920, 1080);
             Graphics graphics = Graphics.FromImage(image);
             graphics.CopyFromScreen(0, 0, 0, 0, new Size(1920, 1080));
@@ -2026,7 +2046,5 @@ namespace Mirle.Agv.View
             string savename = Path.Combine(Environment.CurrentDirectory, "Log", timeStamp);
             image.Save(savename);
         }
-
-        
     }
 }
