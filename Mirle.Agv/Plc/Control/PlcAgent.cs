@@ -40,9 +40,9 @@ namespace Mirle.Agv.Controller
         public string LocalIp { get; set; } = "192.168.3.100";
         public string LocalPort { get; set; } = "3001";
 
-        public Int64 ForkCommandReadTimeout { get; set; } = 5000;
-        public Int64 ForkCommandBusyTimeout { get; set; } = 5000;
-        public Int64 ForkCommandMovingTimeout { get; set; } = 120000;
+        public Int64 ForkCommandReadTimeout { get; set; } = 850000;
+        public Int64 ForkCommandBusyTimeout { get; set; } = 850000;
+        public Int64 ForkCommandMovingTimeout { get; set; } = 850000;
 
         private LoggerAgent loggerAgent = LoggerAgent.Instance;
         private Logger plcAgentLogger;
@@ -988,35 +988,31 @@ namespace Mirle.Agv.Controller
                                     //this.mainForm.mainFlowHandler
                                     break;
                                 case "ForkInterfaceT1Timeout":
-                                case "ForkInterfaceT3Timeout":
-                                case "ForkInterfaceT4Timeout":
-                                case "ForkInterfaceT5Timeout":
-                                case "ForkInterfaceT6Timeout":
-
-                                    int iTimeoutSum = aMCProtocol.get_ItemByTag("ForkInterfaceT1Timeout").AsUInt16
-                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT3Timeout").AsUInt16
-                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT4Timeout").AsUInt16
-                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16
-                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16;
-
-                                    string sTempRecord = String.Concat("Fork interface timeout change: ", aMCProtocol.get_ItemByTag("ForkInterfaceT1Timeout").AsUInt16,
-                                        ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT3Timeout").AsUInt16,
-                                        ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT4Timeout").AsUInt16,
-                                        ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16,
-                                        ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16);
-
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", sTempRecord));
-
-                                    if (iTimeoutSum > 650)
-                                    {
-                                        ForkCommandReadTimeout = iTimeoutSum + 100;
-                                        ForkCommandBusyTimeout = iTimeoutSum + 100;
-                                        ForkCommandMovingTimeout = iTimeoutSum + 100;
-
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Change program timeout time: {iTimeoutSum}"));
-                                    }
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T1 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT1Timeout").AsUInt16}."));
+                                    SetForkCommandTimeout();
 
                                     break;
+                                case "ForkInterfaceT3Timeout":
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T3 timeout to {aMCProtocol.get_ItemByTag("ForkInterfaceT3Timeout").AsUInt16}."));
+                                    SetForkCommandTimeout();
+
+                                    break;
+                                case "ForkInterfaceT4Timeout":
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T4 timeout changeto {aMCProtocol.get_ItemByTag("ForkInterfaceT4Timeout").AsUInt16}."));
+                                    SetForkCommandTimeout();
+
+                                    break;
+                                case "ForkInterfaceT5Timeout":
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T5 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16}."));
+                                    SetForkCommandTimeout();
+
+                                    break;
+                                case "ForkInterfaceT6Timeout":
+                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T6 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16}."));
+                                    SetForkCommandTimeout();
+
+                                    break;
+                                    
                             }
                         }
                     }
@@ -1035,6 +1031,45 @@ namespace Mirle.Agv.Controller
                 LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
             }
         }
+
+
+        public void SetForkCommandTimeout()
+        {
+            try
+            {
+                long iTimeoutSum = aMCProtocol.get_ItemByTag("ForkInterfaceT1Timeout").AsUInt16 * 100
+                                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT3Timeout").AsUInt16 * 100
+                                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT4Timeout").AsUInt16 * 100
+                                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16 * 100
+                                                        + aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16 * 100;
+
+                string sTempRecord = String.Concat("Fork interface timeout change: ", aMCProtocol.get_ItemByTag("ForkInterfaceT1Timeout").AsUInt16,
+                    ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT3Timeout").AsUInt16,
+                    ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT4Timeout").AsUInt16,
+                    ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16,
+                    ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16);
+
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", sTempRecord));
+
+                if (iTimeoutSum > 850000)
+                {
+                    ForkCommandReadTimeout = iTimeoutSum + 100000;
+                    ForkCommandBusyTimeout = iTimeoutSum + 100000;
+                    ForkCommandMovingTimeout = iTimeoutSum + 100000;
+
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", $"Change program timeout time: {iTimeoutSum / 1000}"));
+                }
+                else
+                {
+
+                }
+            } catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", ex.StackTrace));
+            }
+            
+        }
+
 
         public void triggerForkCommandInterlockErrorEvent()
         {
@@ -1234,7 +1269,9 @@ namespace Mirle.Agv.Controller
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
 
-            String strLog1 = new StringBuilder().Append(status)
+            try
+            {
+                String strLog1 = new StringBuilder().Append(status)
                     .Append(", Fork alignment value - P: ").Append(APLCVehicle.Robot.ForkAlignmentP)
                     .Append(", Y: ").Append(APLCVehicle.Robot.ForkAlignmentY)
                     .Append(", Phi: ").Append(APLCVehicle.Robot.ForkAlignmentPhi)
@@ -1244,37 +1281,52 @@ namespace Mirle.Agv.Controller
                     .Append(", B: ").Append(APLCVehicle.Robot.ForkAlignmentB)
                     .ToString();
 
-            String strLog2 = "";
-            if (AVehicleCorrectValue.otherMessage.Equals(""))
-            {
-                strLog2 = new StringBuilder().Append(status)
-                                    .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
-                                    .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
-                                    .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
-                                    .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
-                                    .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
-                                    .ToString();
-            }
-            else
-            {
-                strLog2 = new StringBuilder().Append(status)
-                    .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
-                    .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
-                    .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
-                    .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
-                    .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
-                    .Append(", other: ").Append(AVehicleCorrectValue.VehicleHead)
-                    .ToString();
-            }
+                String strLog2 = "";
+                if (AVehicleCorrectValue.otherMessage.Equals(""))
+                {
+                    strLog2 = new StringBuilder().Append(status)
+                                        .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
+                                        .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
+                                        .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
+                                        .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
+                                        .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
+                                        .ToString();
+                }
+                else
+                {
+                    strLog2 = new StringBuilder().Append(status)
+                        .Append(", Vehicle position value - delta X: ").Append(AVehicleCorrectValue.VehicleDeltaX)
+                        .Append(", delta Y: ").Append(AVehicleCorrectValue.VehicleDeltaY)
+                        .Append(", theta: ").Append(AVehicleCorrectValue.VehicleTheta)
+                        .Append(", vehicle head: ").Append(AVehicleCorrectValue.VehicleHead)
+                        .Append(", twice revise distance: ").Append(AVehicleCorrectValue.VehicleTwiceReviseDistance)
+                        .Append(", other: ").Append(AVehicleCorrectValue.VehicleHead)
+                        .ToString();
+                }
+                String strLog3 = "";
+                strLog3 = new StringBuilder().Append(status)
+                        .Append(", DoubleStoreSensor(L): ").Append(aMCProtocol.get_ItemByTag("DoubleStoreSensor(L)").AsBoolean)
+                        .Append(", DoubleStoreSensor(R): ").Append(aMCProtocol.get_ItemByTag("DoubleStoreSensor(R)").AsBoolean)
+                        .Append(", Loading1: ").Append(aMCProtocol.get_ItemByTag("Loading1").AsBoolean)
+                        .Append(", Loading2: ").Append(aMCProtocol.get_ItemByTag("Loading2").AsBoolean)
+                        .ToString();
 
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog3));
 
-            if (status.Equals("ForkCommandNG"))
-            {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog1));
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog2));
+                if (status.Equals("ForkCommandNG"))
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog1));
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog2));
+                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog3));
+                }
             }
+            catch (Exception ex)
+            {
+                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", ex.StackTrace));
+            }
+            
 
         }
 
@@ -1322,6 +1374,7 @@ namespace Mirle.Agv.Controller
             this.WriteIPCStatus(EnumIPCStatus.Initial);
             this.WriteAlarmWarningStatus(false, false);
             this.WriteIPCReady(true);
+            this.SetForkCommandTimeout();
         }
 
         private int beforeDay = DateTime.Now.Day;
@@ -2929,6 +2982,8 @@ namespace Mirle.Agv.Controller
 
         }
 
+
+
         public void ClearExecutingForkCommand()
         {
             clearExecutingForkCommandFlag = true;
@@ -2936,8 +2991,8 @@ namespace Mirle.Agv.Controller
 
         public void plcForkCommandControlRun()
         {
-
-            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            int iCommandNGCounter = 0;
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
 
             while (true)
             {
@@ -3016,17 +3071,24 @@ namespace Mirle.Agv.Controller
                                         }
                                         else if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
                                         {
-                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                            this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
-                                            this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
-                                            //Raise Alarm
-                                            //this.aAlarmHandler.SetAlarm(270001);
-                                            //this.setAlarm(270001);
-                                            this.setAlarm(Fork_Command_Format_NG);
-                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                            OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                            iCommandNGCounter++;
+                                            if (iCommandNGCounter > 10)
+                                            {
+                                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                                this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
+                                                //Raise Alarm
+                                                //this.aAlarmHandler.SetAlarm(270001);
+                                                //this.setAlarm(270001);
+                                                this.setAlarm(Fork_Command_Format_NG);
+                                                eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                                iCommandNGCounter = 0;
+                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
 
-                                            break;
+                                                break;
+                                            }
+                                            
                                         }
                                         else
                                         {
@@ -3053,8 +3115,8 @@ namespace Mirle.Agv.Controller
                                                 this.setAlarm(Fork_Command_Read_timeout);
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                                //Raise Alarm
-                                                //return;
+                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of Fork_Command_Read_timeout"));
+                                                
                                                 break;
                                             }
 
@@ -3094,7 +3156,30 @@ namespace Mirle.Agv.Controller
                                                 this.setAlarm(Fork_Not_Busy_timeout);
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of Fork_Not_Busy_timeout"));
                                                 break;
+                                            }
+
+                                            if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
+                                            {
+                                                iCommandNGCounter++;
+                                                if (iCommandNGCounter > 10)
+                                                {
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
+                                                    this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                                    this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
+                                                    //Raise Alarm
+                                                    //this.aAlarmHandler.SetAlarm(270001);
+                                                    //this.setAlarm(270001);
+                                                    this.setAlarm(Fork_Command_Format_NG);
+                                                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                    OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                                    iCommandNGCounter = 0;
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
+
+                                                    break;
+                                                }
+
                                             }
                                         }
                                         else
@@ -3150,7 +3235,6 @@ namespace Mirle.Agv.Controller
 
                                     if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
                                     {
-                                        this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
                                         this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
                                         this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
                                         //Raise Alarm
@@ -3159,6 +3243,7 @@ namespace Mirle.Agv.Controller
                                         this.setAlarm(Fork_Command_Format_NG);
                                         eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                         OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
 
                                         break;
                                     }
