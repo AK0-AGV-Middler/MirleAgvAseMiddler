@@ -3971,21 +3971,26 @@ namespace Mirle.Agv.Controller
                 {
                     // 取得目前 JogPitchForm 操作狀態 plcOperationRun_IpcOper
                     plcOperationRun_GetOperationStatusFromJogPitchForm(ref plcOperationRun_IpcOper);
+                    Thread.Sleep(1);
 
                     // 取得目前資訊值
                     plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData, ref plcOperationRun_IpcJogPitchData_CanAuto);
+                    Thread.Sleep(1);
 
                     plcOperationRun_PlcOperLast = plcOperationRun_PlcOper.DeepClone();
                     plcOperationRun_PlcOper = APLCVehicle.JogOperation.DeepClone();
 
                     // 取得這次 Thread 所使用的 Last Step
                     inner_enumLastStep = plcOperationRun_enumLastStep;
+                    Thread.Sleep(1);
 
                     // Set base value from plc to jogpitch form
                     plcOperationRun_SetPlcOperValueToJogPitchForm(ref plcOperationRun_PlcOper, ref plcOperationRun_PlcOperLast);
+                    Thread.Sleep(1);
 
                     // get action step from plc 
                     plcOperationRun_GetNowStep(ref plcOperationRun_enumNowStep, ref inner_enumLastStep, ref plcOperationRun_PlcOper, ref plcOperationRun_PlcOperLast);
+                    Thread.Sleep(1);
 
                     if (plcOperationRun_enumNowStep != inner_enumLastStep)
                     {
@@ -4005,6 +4010,7 @@ namespace Mirle.Agv.Controller
                             LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare Stop Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
                             plcOperationRun_ClearAndStopSteps(ref plcOperationRun_IpcJogPitchData, ref inner_enumLastStep, ref plcOperationRun_IpcOper);
                             plcOperationRun_enumLastStep = inner_enumLastStep;
+                            Thread.Sleep(1);
                         }
 
                     }
@@ -4018,6 +4024,7 @@ namespace Mirle.Agv.Controller
                         {
                             LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare xecute Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
                             plcOperationRun_ExecuteSteps();
+                            Thread.Sleep(1);
                         }
                     }
                     else
