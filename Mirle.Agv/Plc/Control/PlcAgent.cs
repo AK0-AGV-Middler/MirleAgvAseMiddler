@@ -1439,7 +1439,8 @@ namespace Mirle.Agv.Controller
                         {
                             ChgStasOffDelayCount = 0;
                             this.APLCVehicle.Batterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;//false
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", "ChargeStatus Set Off"));
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. Plc ChargeStatus: {aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean}"));
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. Batterys.Charging: {this.APLCVehicle.Batterys.Charging}"));
                         }
                     }
                     else
@@ -2453,10 +2454,11 @@ namespace Mirle.Agv.Controller
                 LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command fail, "));
 
             }
+            
             return result;
 
         }
-
+        
         public Boolean WriteAGVCOnline(Boolean OnlineFlag)
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
@@ -2507,7 +2509,6 @@ namespace Mirle.Agv.Controller
                     }
                 }
 
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", liWarningWord.ToString()));
                 if (this.aMCProtocol.WritePLC())
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset Success"));
@@ -3964,8 +3965,12 @@ namespace Mirle.Agv.Controller
 
             while (true)
             {
-                // Write related data to plc
-                plcOperationRun_WritePlcDisplayData(plcOperationRun_IpcJogPitchData, plcOperationRun_IpcJogPitchData_CanAuto);
+                if (Vehicle.Instance.AutoState == EnumAutoState.Manual)
+                {
+                    // Write related data to plc
+                    plcOperationRun_WritePlcDisplayData(plcOperationRun_IpcJogPitchData, plcOperationRun_IpcJogPitchData_CanAuto);
+                }
+
                 double startTime = DateTime.Now.Ticks;
                 try
                 {
@@ -4394,222 +4399,238 @@ namespace Mirle.Agv.Controller
 
         private void plcOperationRun_ExecuteSteps()
         {
-            switch (plcOperationRun_enumNowStep)
+            if (plcOperationRun_enumNowStep == EnumPlcOperationStep.VehicleModeAuto)
             {
-                case EnumPlcOperationStep.VehicleModeAuto:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.VehicleModeAuto;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
+                plcOperationRun_enumLastStep = EnumPlcOperationStep.VehicleModeAuto;
+                plcOperationRun_bActionRunningStatus = true;
+                Task.Run(() =>
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Manual to Auto."));
+                    bool flag = this.mainForm.SwitchAutoStatus();
+                    if (flag)
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Manual to Auto."));
-                        bool flag = this.mainForm.SwitchAutoStatus();
-                        if (flag)
-                        {
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto."));
-                        }
-                        else
-                        {
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto Error, change back to Manual"));
-                        }
-                        plcOperationRun_bActionRunningStatus = false;
-                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    });
-
-                    break;
-
-                case EnumPlcOperationStep.VehicleModeManual:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.VehicleModeManual;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto."));
+                    }
+                    else
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Auto to Manual."));
-                        this.mainForm.SwitchAutoStatus();
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Auto to Manual."));
-                        plcOperationRun_bActionRunningStatus = false;
-                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    });
-
-                    break;
-                case EnumPlcOperationStep.ElmoEnable:
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoEnable"));
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoEnable;
-                    plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Enable;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogPitch_ElmoEnable_Click(null, null);
-                        double startTime = DateTime.Now.Ticks;
-                        double endTime = DateTime.Now.Ticks;
-                        while (true)
-                        {
-                            if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
-                            {
-                                plcOperationRun_bActionRunningStatus = false;
-                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                                break;
-                            }
-                            endTime = DateTime.Now.Ticks;
-                            if (endTime - startTime > 100000000)
-                            {
-                                break;
-                            }
-                            Thread.Sleep(1000);
-                        }
-
-                    });
-                    break;
-
-                case EnumPlcOperationStep.ElmoDisable:
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoDisable"));
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoDisable;
-                    plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Disable;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogPitch_ElmoDisable_Click(null, null);
-                        double startTime = DateTime.Now.Ticks;
-                        double endTime = DateTime.Now.Ticks;
-                        while (true)
-                        {
-                            if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
-                            {
-                                plcOperationRun_bActionRunningStatus = false;
-                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                                break;
-                            }
-                            endTime = DateTime.Now.Ticks;
-                            if (endTime - startTime > 100000000)
-                            {
-                                break;
-                            }
-                            Thread.Sleep(1000);
-                        }
-
-                    });
-                    break;
-
-                case EnumPlcOperationStep.ElmoAllReset:
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoAllReset"));
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoAllReset;
-                    plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.All_Reset;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogpitchResetAll_Click(null, null);
-                        double startTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-                        double endTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-                        while (true)
-                        {
-                            if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
-                            {
-                                plcOperationRun_bActionRunningStatus = false;
-                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                                break;
-                            }
-                            endTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-                            if (endTime - startTime > 11000)
-                            {
-                                break;
-                            }
-                            Thread.Sleep(1000);
-                        }
-
-                    });
-                    break;
-
-                case EnumPlcOperationStep.RunModeNormal:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeNormal;
-                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.Normal;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogPitch_Normal_Click(null, null);
-                        plcOperationRun_bActionRunningStatus = false;
-                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    });
-                    break;
-
-                case EnumPlcOperationStep.RunModeForwardWheel:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeForwardWheel;
-                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.ForwardWheel;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogPitch_ForwardWheel_Click(null, null);
-                        plcOperationRun_bActionRunningStatus = false;
-                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    });
-                    break;
-
-                case EnumPlcOperationStep.RunModeBackwardWheel:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeBackwardWheel;
-                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.BackwardWheel;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogPitch_BackwardWheel_Click(null, null);
-                        plcOperationRun_bActionRunningStatus = false;
-                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    });
-                    break;
-
-                case EnumPlcOperationStep.RunModeSpinTurn:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeSpinTurn;
-                    //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.SpinTurn;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogPitch_SpinTurn_Click(null, null);
-                        plcOperationRun_bActionRunningStatus = false;
-                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    });
-                    break;
-
-                case EnumPlcOperationStep.JogOperationTurnLeft:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationTurnLeft;
-                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.TurnLeft;
-                    plcOperationRun_bActionRunningStatus = true;
-                    this.jogPitchForm.button_JogPitch_TurnLeft_MouseDown(null, null);
-                    break;
-
-                case EnumPlcOperationStep.JogOperationTurnRight:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationTurnRight;
-                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.TurnRight;
-                    plcOperationRun_bActionRunningStatus = true;
-                    this.jogPitchForm.button_JogPitch_TurnRight_MouseDown(null, null);
-                    break;
-
-                case EnumPlcOperationStep.JogOperationMoveForward:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationMoveForward;
-                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.MoveForward;
-                    plcOperationRun_bActionRunningStatus = true;
-                    this.jogPitchForm.button_JogPitch_Forward_MouseDown(null, null);
-                    break;
-
-                case EnumPlcOperationStep.JogOperationMoveBackward:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationMoveBackward;
-                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.MoveBackward;
-                    plcOperationRun_bActionRunningStatus = true;
-                    this.jogPitchForm.button_JogPitch_Backward_MouseDown(null, null);
-                    break;
-
-                case EnumPlcOperationStep.JogOperationStop:
-                    plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationStop;
-                    plcOperationRun_IpcOper.JogOperation = EnumJogOperation.Stop;
-                    plcOperationRun_bActionRunningStatus = true;
-                    Task.Run(() =>
-                    {
-                        this.jogPitchForm.button_JogPitch_STOP_Click(null, null);
-                        plcOperationRun_bActionRunningStatus = false;
-                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    });
-                    break;
-
-                default:
+                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto Error, change back to Manual"));
+                    }
+                    plcOperationRun_bActionRunningStatus = false;
                     plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
-                    break;
-
+                });
             }
+            else if (plcOperationRun_enumNowStep == EnumPlcOperationStep.VehicleModeManual)
+            {
+                plcOperationRun_enumLastStep = EnumPlcOperationStep.VehicleModeManual;
+                plcOperationRun_bActionRunningStatus = true;
+                Task.Run(() =>
+                {
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Auto to Manual."));
+                    this.mainForm.SwitchAutoStatus();
+                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Auto to Manual."));
+                    plcOperationRun_bActionRunningStatus = false;
+                    plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                });
+            }
+            else
+            {
+                if (Vehicle.Instance.AutoState == EnumAutoState.Manual)
+                {
+                    switch (plcOperationRun_enumNowStep)
+                    {
+                        case EnumPlcOperationStep.VehicleModeAuto:
+                            break;
+
+                        case EnumPlcOperationStep.VehicleModeManual:
+                            break;
+
+                        case EnumPlcOperationStep.ElmoEnable:
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoEnable"));
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoEnable;
+                            plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Enable;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogPitch_ElmoEnable_Click(null, null);
+                                double startTime = DateTime.Now.Ticks;
+                                double endTime = DateTime.Now.Ticks;
+                                while (true)
+                                {
+                                    if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
+                                    {
+                                        plcOperationRun_bActionRunningStatus = false;
+                                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                                        break;
+                                    }
+                                    endTime = DateTime.Now.Ticks;
+                                    if (endTime - startTime > 100000000)
+                                    {
+                                        break;
+                                    }
+                                    Thread.Sleep(1000);
+                                }
+
+                            });
+                            break;
+
+                        case EnumPlcOperationStep.ElmoDisable:
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoDisable"));
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoDisable;
+                            plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Disable;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogPitch_ElmoDisable_Click(null, null);
+                                double startTime = DateTime.Now.Ticks;
+                                double endTime = DateTime.Now.Ticks;
+                                while (true)
+                                {
+                                    if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
+                                    {
+                                        plcOperationRun_bActionRunningStatus = false;
+                                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                                        break;
+                                    }
+                                    endTime = DateTime.Now.Ticks;
+                                    if (endTime - startTime > 100000000)
+                                    {
+                                        break;
+                                    }
+                                    Thread.Sleep(1000);
+                                }
+
+                            });
+                            break;
+
+                        case EnumPlcOperationStep.ElmoAllReset:
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoAllReset"));
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoAllReset;
+                            plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.All_Reset;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogpitchResetAll_Click(null, null);
+                                double startTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                                double endTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                                while (true)
+                                {
+                                    if (this.jogPitchForm.jogPitchData.ElmoFunctionCompelete == true)
+                                    {
+                                        plcOperationRun_bActionRunningStatus = false;
+                                        plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                                        break;
+                                    }
+                                    endTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                                    if (endTime - startTime > 11000)
+                                    {
+                                        break;
+                                    }
+                                    Thread.Sleep(1000);
+                                }
+
+                            });
+                            break;
+
+                        case EnumPlcOperationStep.RunModeNormal:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeNormal;
+                            //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.Normal;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogPitch_Normal_Click(null, null);
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                            });
+                            break;
+
+                        case EnumPlcOperationStep.RunModeForwardWheel:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeForwardWheel;
+                            //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.ForwardWheel;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogPitch_ForwardWheel_Click(null, null);
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                            });
+                            break;
+
+                        case EnumPlcOperationStep.RunModeBackwardWheel:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeBackwardWheel;
+                            //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.BackwardWheel;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogPitch_BackwardWheel_Click(null, null);
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                            });
+                            break;
+
+                        case EnumPlcOperationStep.RunModeSpinTurn:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.RunModeSpinTurn;
+                            //plcOperationRun_IpcOper.JogRunMode = EnumJogRunMode.SpinTurn;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogPitch_SpinTurn_Click(null, null);
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                            });
+                            break;
+
+                        case EnumPlcOperationStep.JogOperationTurnLeft:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationTurnLeft;
+                            plcOperationRun_IpcOper.JogOperation = EnumJogOperation.TurnLeft;
+                            plcOperationRun_bActionRunningStatus = true;
+                            this.jogPitchForm.button_JogPitch_TurnLeft_MouseDown(null, null);
+                            break;
+
+                        case EnumPlcOperationStep.JogOperationTurnRight:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationTurnRight;
+                            plcOperationRun_IpcOper.JogOperation = EnumJogOperation.TurnRight;
+                            plcOperationRun_bActionRunningStatus = true;
+                            this.jogPitchForm.button_JogPitch_TurnRight_MouseDown(null, null);
+                            break;
+
+                        case EnumPlcOperationStep.JogOperationMoveForward:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationMoveForward;
+                            plcOperationRun_IpcOper.JogOperation = EnumJogOperation.MoveForward;
+                            plcOperationRun_bActionRunningStatus = true;
+                            this.jogPitchForm.button_JogPitch_Forward_MouseDown(null, null);
+                            break;
+
+                        case EnumPlcOperationStep.JogOperationMoveBackward:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationMoveBackward;
+                            plcOperationRun_IpcOper.JogOperation = EnumJogOperation.MoveBackward;
+                            plcOperationRun_bActionRunningStatus = true;
+                            this.jogPitchForm.button_JogPitch_Backward_MouseDown(null, null);
+                            break;
+
+                        case EnumPlcOperationStep.JogOperationStop:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.JogOperationStop;
+                            plcOperationRun_IpcOper.JogOperation = EnumJogOperation.Stop;
+                            plcOperationRun_bActionRunningStatus = true;
+                            Task.Run(() =>
+                            {
+                                this.jogPitchForm.button_JogPitch_STOP_Click(null, null);
+                                plcOperationRun_bActionRunningStatus = false;
+                                plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                            });
+                            break;
+
+                        default:
+                            plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
+                            break;
+
+                    }
+                }
+            }
+
+
+
+
+            
         }
 
 
