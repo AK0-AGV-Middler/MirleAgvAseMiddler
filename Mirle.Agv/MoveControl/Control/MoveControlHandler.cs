@@ -349,6 +349,21 @@ namespace Mirle.Agv.Controller
 
             agvRevise = new AgvMoveRevise(ontimeReviseConfig, elmoDriver, DriverSr2000List);
 
+
+            for ( int i = 0; i < 5 && !(elmoDriver.Connected && DriverSr2000List[0].sr2000Info.Connect && DriverSr2000List[1].sr2000Info.Connect) ; i++)
+            {
+                Thread.Sleep(500);
+
+                if (!elmoDriver.Connected)
+                    elmoDriver = new ElmoDriver(moveControlConfig.ElmoConfigPath, this.alarmHandler);
+
+                if (!DriverSr2000List[0].sr2000Info.Connect)
+                    DriverSr2000List[0].RetryConnect();
+
+                if (!DriverSr2000List[1].sr2000Info.Connect)
+                    DriverSr2000List[1].RetryConnect();
+            }
+
             loopTimeTimer.Reset();
             loopTimeTimer.Start();
 
@@ -1115,6 +1130,7 @@ namespace Mirle.Agv.Controller
                 location.Real.Position = GetMapPosition(command.SectionLineList[command.IndexOflisSectionLine], realElmoEncode);
                 location.Encoder.Position = GetMapPosition(command.SectionLineList[command.IndexOflisSectionLine], encoderPosition);
                 Vehicle.Instance.VehicleLocation.RealPosition = location.Real.Position;
+                Vehicle.Instance.VehicleLocation.AgvcPosition = location.Encoder.Position;
             }
         }
 
@@ -1325,6 +1341,7 @@ namespace Mirle.Agv.Controller
                 if (elmoData != null)
                 {
                     location.Velocity = elmoDriver.ElmoGetVelocity(EnumAxis.GX);
+                    Vehicle.Instance.VehicleLocation.Speed = Math.Abs(location.Velocity);
                     location.ElmoGetDataTime = elmoData.GetDataTime;
                     // 此筆Elmo資料是多久之前的,基本上時間會是正值(s).
                     double deltaTime = ((DateTime.Now - location.ElmoGetDataTime).TotalMilliseconds + moveControlConfig.SleepTime / 2) / 1000;
@@ -1337,11 +1354,13 @@ namespace Mirle.Agv.Controller
                 if (!simulationIsMoving)
                 {
                     location.Velocity = 0;
+                    Vehicle.Instance.VehicleLocation.Speed = 0;
                 }
                 else
                 {
                     location.Velocity = ControlData.DirFlag ? ControlData.RealVelocity : -ControlData.RealVelocity;
                     location.ElmoEncoder = location.ElmoEncoder + (double)moveControlConfig.SleepTime / 1000 * location.Velocity;
+                    Vehicle.Instance.VehicleLocation.Speed = ControlData.RealVelocity;
                 }
 
                 location.ElmoGetDataTime = DateTime.Now;
@@ -1463,6 +1482,7 @@ namespace Mirle.Agv.Controller
                     location.Real.AGVAngle = computeFunction.GetAGVAngle(location.Real.AGVAngle);
                     Vehicle.Instance.VehicleLocation.RealPosition = location.Real.Position;
                     Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
+                    Vehicle.Instance.VehicleLocation.AgvcPosition = location.Real.Position;
                 }
             }
         }
@@ -1648,6 +1668,7 @@ namespace Mirle.Agv.Controller
             location.Delta = location.Delta + (ControlData.DirFlag ? (distance - (location.ElmoEncoder - ControlData.TurnStartEncoder)) :
                                                -(distance - (ControlData.TurnStartEncoder - location.ElmoEncoder)));
             UpdatePosition();
+            Vehicle.Instance.VehicleLocation.MoveDirectionAngle = computeFunction.GetCurrectAngle(-(location.Real.AGVAngle + ControlData.WheelAngle + (ControlData.DirFlag ? 0 : 180)));
 
             MoveState = EnumMoveState.Moving;
             safetyData.TurningByPass = false;
@@ -1792,6 +1813,8 @@ namespace Mirle.Agv.Controller
             location.Delta = location.Delta + (ControlData.DirFlag ? (distance - (location.ElmoEncoder - ControlData.TurnStartEncoder)) :
                                                -(distance - (ControlData.TurnStartEncoder - location.ElmoEncoder)));
             UpdatePosition();
+            Vehicle.Instance.VehicleLocation.MoveDirectionAngle = computeFunction.GetCurrectAngle(-(location.Real.AGVAngle + ControlData.WheelAngle + (ControlData.DirFlag ? 0 : 180)));
+
 
             MoveState = EnumMoveState.Moving;
             safetyData.TurningByPass = false;
@@ -1887,6 +1910,7 @@ namespace Mirle.Agv.Controller
                 location.Real.AGVAngle += 360;
 
             Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
+            Vehicle.Instance.VehicleLocation.MoveDirectionAngle = computeFunction.GetCurrectAngle(-(location.Real.AGVAngle + ControlData.WheelAngle + (ControlData.DirFlag ? 0 : 180)));
 
             DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
 
@@ -2075,7 +2099,8 @@ namespace Mirle.Agv.Controller
                 location.Real.AGVAngle += 360;
 
             Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
-
+            Vehicle.Instance.VehicleLocation.MoveDirectionAngle = computeFunction.GetCurrectAngle(-(location.Real.AGVAngle + ControlData.WheelAngle + (ControlData.DirFlag ? 0 : 180)));
+            
             DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
 
             MoveState = EnumMoveState.Moving;
@@ -2363,6 +2388,8 @@ namespace Mirle.Agv.Controller
 
             if (ControlData.SensorState != EnumVehicleSafetyAction.Stop)
             {
+
+                Vehicle.Instance.VehicleLocation.MoveDirectionAngle = computeFunction.GetCurrectAngle(-(location.Real.AGVAngle + ControlData.WheelAngle + (ControlData.DirFlag ? 0 : 180)));
                 if (dirFlag)
                     elmoDriver.ElmoMove(EnumAxis.GX, distance, velocity, EnumMoveType.Relative, moveControlConfig.Move.Acceleration, moveControlConfig.Move.Deceleration, moveControlConfig.Move.Jerk);
                 else

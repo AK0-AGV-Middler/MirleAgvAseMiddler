@@ -202,6 +202,13 @@ namespace Mirle.Agv
         Left,
         Right
     }
+
+    public enum EnumVehicleLocation
+    {
+        None,
+        Section,
+        Address
+    }
     #endregion
 
     /// <summary>

@@ -2348,16 +2348,20 @@ namespace Mirle.Agv.Controller
 
             try
             {
-                ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
-                iD_134_TRANS_EVENT_REP.EventType = type;
-                iD_134_TRANS_EVENT_REP.CurrentAdrID = location.LastAddress.Id;
-                iD_134_TRANS_EVENT_REP.CurrentSecID = location.LastSection.Id;
-                iD_134_TRANS_EVENT_REP.SecDistance = (uint)location.LastSection.VehicleDistanceSinceHead;
-                iD_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(location.LastSection.CmdDirection);
+                ID_134_TRANS_EVENT_REP id_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
+                id_134_TRANS_EVENT_REP.EventType = type;
+                id_134_TRANS_EVENT_REP.CurrentAdrID = location.LastAddress.Id;
+                id_134_TRANS_EVENT_REP.CurrentSecID = location.LastSection.Id;
+                id_134_TRANS_EVENT_REP.SecDistance = (uint)location.LastSection.VehicleDistanceSinceHead;
+                id_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(location.LastSection.CmdDirection);
+                id_134_TRANS_EVENT_REP.XAxis = location.AgvcPosition.X;
+                id_134_TRANS_EVENT_REP.YAxis = location.AgvcPosition.Y;
+                id_134_TRANS_EVENT_REP.Angle = location.MoveDirectionAngle;
+                id_134_TRANS_EVENT_REP.Speed = location.Speed;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
-                wrappers.TransEventRep = iD_134_TRANS_EVENT_REP;
+                wrappers.TransEventRep = id_134_TRANS_EVENT_REP;
 
                 SendCommandWrapper(wrappers);
             }

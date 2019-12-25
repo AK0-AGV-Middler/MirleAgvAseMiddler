@@ -65,6 +65,9 @@ namespace Mirle.Agv.Controller
 
         public ElmoDriver(string elmoConfigPath, AlarmHandler alarmHandler)
         {
+            if (Connected)
+                return;
+
             this.alarmHandler = alarmHandler;
 
             if (elmoConfigPath == null || elmoConfigPath == "")

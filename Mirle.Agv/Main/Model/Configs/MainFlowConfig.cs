@@ -19,5 +19,6 @@ namespace Mirle.Agv.Model.Configs
         public int RealPositionRangeMm { get; set; }
         public int LoadingChargeIntervalMs { get; set; }
         public int ForkNgRetryTimes { get; set; }
+        public bool IsSimulation { get; set; }
     }
 }

@@ -41,6 +41,7 @@ namespace Mirle.Agv.View
             this.tbxLogView_ElmoMessage = new System.Windows.Forms.TextBox();
             this.label_CreateCommandMessage = new System.Windows.Forms.Label();
             this.tbP_List = new System.Windows.Forms.TabPage();
+            this.button_RetryMove = new System.Windows.Forms.Button();
             this.button_SimulateState = new System.Windows.Forms.Button();
             this.label_Psuse = new System.Windows.Forms.Label();
             this.label_WaitReserveIndex = new System.Windows.Forms.Label();
@@ -135,7 +136,6 @@ namespace Mirle.Agv.View
             this.ucBox_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBox_NowPosition = new Mirle.Agv.UcLabelTextBox();
             this.ucBox_NodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.button_RetryMove = new System.Windows.Forms.Button();
             this.tP_Admin.SuspendLayout();
             this.tbP_LogMessage.SuspendLayout();
             this.tbP_List.SuspendLayout();
@@ -155,7 +155,7 @@ namespace Mirle.Agv.View
             // tbxLogView_MoveControlDebugMessage
             // 
             this.tbxLogView_MoveControlDebugMessage.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxLogView_MoveControlDebugMessage.Location = new System.Drawing.Point(6, 636);
+            this.tbxLogView_MoveControlDebugMessage.Location = new System.Drawing.Point(1015, 204);
             this.tbxLogView_MoveControlDebugMessage.MaxLength = 65550;
             this.tbxLogView_MoveControlDebugMessage.Multiline = true;
             this.tbxLogView_MoveControlDebugMessage.Name = "tbxLogView_MoveControlDebugMessage";
@@ -301,6 +301,16 @@ namespace Mirle.Agv.View
             this.tbP_List.TabIndex = 1;
             this.tbP_List.Text = "CommandList資料";
             this.tbP_List.UseVisualStyleBackColor = true;
+            // 
+            // button_RetryMove
+            // 
+            this.button_RetryMove.Location = new System.Drawing.Point(791, 487);
+            this.button_RetryMove.Name = "button_RetryMove";
+            this.button_RetryMove.Size = new System.Drawing.Size(117, 29);
+            this.button_RetryMove.TabIndex = 115;
+            this.button_RetryMove.Text = "RetryMove";
+            this.button_RetryMove.UseVisualStyleBackColor = true;
+            this.button_RetryMove.Click += new System.EventHandler(this.button_RetryMove_Click);
             // 
             // button_SimulateState
             // 
@@ -961,7 +971,7 @@ namespace Mirle.Agv.View
             // ucLabelTB_CreateCommandState
             // 
             this.ucLabelTB_CreateCommandState.Location = new System.Drawing.Point(493, 557);
-            this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8, 8, 8, 8);
+            this.ucLabelTB_CreateCommandState.Margin = new System.Windows.Forms.Padding(8);
             this.ucLabelTB_CreateCommandState.Name = "ucLabelTB_CreateCommandState";
             this.ucLabelTB_CreateCommandState.Size = new System.Drawing.Size(250, 27);
             this.ucLabelTB_CreateCommandState.TabIndex = 78;
@@ -972,7 +982,7 @@ namespace Mirle.Agv.View
             // ucLabelTB_CreateCommand_BarcodePosition
             // 
             this.ucLabelTB_CreateCommand_BarcodePosition.Location = new System.Drawing.Point(18, 565);
-            this.ucLabelTB_CreateCommand_BarcodePosition.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            this.ucLabelTB_CreateCommand_BarcodePosition.Margin = new System.Windows.Forms.Padding(5);
             this.ucLabelTB_CreateCommand_BarcodePosition.Name = "ucLabelTB_CreateCommand_BarcodePosition";
             this.ucLabelTB_CreateCommand_BarcodePosition.Size = new System.Drawing.Size(332, 27);
             this.ucLabelTB_CreateCommand_BarcodePosition.TabIndex = 77;
@@ -1343,16 +1353,6 @@ namespace Mirle.Agv.View
             this.ucBox_NodePosition.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucBox_NodePosition.TagName = "label1";
             this.ucBox_NodePosition.TagValue = "";
-            // 
-            // button_RetryMove
-            // 
-            this.button_RetryMove.Location = new System.Drawing.Point(791, 487);
-            this.button_RetryMove.Name = "button_RetryMove";
-            this.button_RetryMove.Size = new System.Drawing.Size(117, 29);
-            this.button_RetryMove.TabIndex = 115;
-            this.button_RetryMove.Text = "RetryMove";
-            this.button_RetryMove.UseVisualStyleBackColor = true;
-            this.button_RetryMove.Click += new System.EventHandler(this.button_RetryMove_Click);
             // 
             // MoveCommandDebugModeForm
             // 

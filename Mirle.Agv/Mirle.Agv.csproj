@@ -317,7 +317,7 @@
       <DependentUpon>MiddlerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Main\Control\MainFlowHandler.cs" />
-    <Compile Include="Main\Model\Map\VehiclePosition.cs" />
+    <Compile Include="Main\Model\Map\VehicleLocation.cs" />
     <Compile Include="Main\Model\Vehicle.cs" />
     <Compile Include="Main\Control\MiddleAgent.cs" />
     <Compile Include="Main\Model\TransferStepInfo\AgvcTransCmd.cs" />

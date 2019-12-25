@@ -780,6 +780,7 @@ namespace Mirle.Agv.View
                         moveControl.location.Real.Position = theMapInfo.allMapAddresses[id].Position;
                         Vehicle.Instance.VehicleLocation.RealPosition = moveControl.location.Real.Position;
                         Vehicle.Instance.VehicleLocation.VehicleAngle = moveControl.location.Real.AGVAngle;
+                        Vehicle.Instance.VehicleLocation.AgvcPosition = moveControl.location.Real.Position;
                     }
                 }
             }

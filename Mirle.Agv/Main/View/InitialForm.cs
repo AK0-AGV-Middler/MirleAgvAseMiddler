@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using Mirle.Agv.Controller;
+using System.IO.MemoryMappedFiles;
+using System.IO;
 
 namespace Mirle.Agv.View
 {
@@ -21,9 +23,13 @@ namespace Mirle.Agv.View
         private MainFlowHandler mainFlowHandler;
         private MainForm mainForm;
 
+        private string mmfPath = Path.Combine(Environment.CurrentDirectory, "MMF.txt");
+        private string fileShortName = "Mirle.Agv";
+
         public InitialForm()
         {
             InitializeComponent();
+            SetMmfTxtExist();
             mainFlowHandler = new MainFlowHandler();
             mainFlowHandler.OnComponentIntialDoneEvent += MainFlowHandler_OnComponentIntialDoneEvent;
         }
@@ -33,10 +39,11 @@ namespace Mirle.Agv.View
             if (e.IsOk)
             {
                 var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss]");
-                var msg = timeStamp + e.ItemName + "初始化完成\n";                
+                var msg = timeStamp + e.ItemName + "初始化完成\n";
                 ListBoxAppend(lst_StartUpMsg, msg);
-                if (e.ItemName=="全部")
+                if (e.ItemName == "全部")
                 {
+                    WriteMmf("OK");
                     SpinWait.SpinUntil(() => false, 1000);
                     GoNextForm();
                 }
@@ -46,8 +53,9 @@ namespace Mirle.Agv.View
                 var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss]");
                 var msg = timeStamp + e.ItemName + "初始化失敗\n";
                 ListBoxAppend(lst_StartUpMsg, msg);
+                WriteMmf("NG");
             }
-           
+
         }
 
         private void GoNextForm()
@@ -108,6 +116,52 @@ namespace Mirle.Agv.View
 
             Application.Exit();
             Environment.Exit(Environment.ExitCode);
+        }
+
+        private void WriteMmf(string msg)
+        {
+            try
+            {
+                byte[] msgbytes = Encoding.UTF8.GetBytes(msg.Trim());
+
+                using (MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(mmfPath, FileMode.Create, "SAVE", msgbytes.Length))
+                {
+                    Mutex mutex;
+                    if (!Mutex.TryOpenExisting(fileShortName, out mutex))
+                    {
+                        mutex = new Mutex(true, fileShortName);
+
+                    }
+                    mutex.WaitOne();
+
+                    using (MemoryMappedViewStream stream = mmf.CreateViewStream())
+                    {
+                        if (stream.CanWrite)
+                        {
+                            stream.Write(msgbytes, 0, msgbytes.Length);
+                        }
+                    }
+                    mutex.ReleaseMutex();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.StackTrace);
+            }
+        }
+
+        private void SetMmfTxtExist()
+        {
+            try
+            {
+                if (!File.Exists(mmfPath))
+                {
+                    File.CreateText(mmfPath);
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

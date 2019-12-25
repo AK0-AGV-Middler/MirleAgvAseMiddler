@@ -3058,8 +3058,10 @@ namespace Mirle.Agv.Controller
                 Stopwatch sw = new Stopwatch();
                 bool isTimeOut = false;
                 sw.Start();
+                int simpleRetryCount = 0;
                 while (true)
                 {
+                    simpleRetryCount++;
                     sw.Stop();
                     if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
                     {
@@ -3070,6 +3072,11 @@ namespace Mirle.Agv.Controller
                     if (!theVehicle.ThePlcVehicle.Batterys.Charging)
                     {
                         break;
+                    }
+                    if (simpleRetryCount==1200)
+                    {
+                        plcAgent.ChargeStopCommand();
+                        simpleRetryCount = 0;
                     }
                     SpinWait.SpinUntil(() => false, 5);
                 }

@@ -13,7 +13,7 @@ namespace Mirle.Agv.Controller
     {
         private MapInfo theMapInfo;
         private Sr2000Config sr2000Config;
-        private Sr2000Info sr2000Info;
+        public Sr2000Info sr2000Info { get; set; }
         private LoggerAgent loggerAgent;
         private AlarmHandler alarmHandler;
         private Sr2000ReadData returnData = null;
@@ -54,6 +54,16 @@ namespace Mirle.Agv.Controller
             }
         }
 
+        public void RetryConnect()
+        {
+            if (sr2000Info.Connect)
+                return;
+
+            sr2000Info = new Sr2000Info(sr2000Config.IP);
+            if (!Connect())
+                SendAlarmCode(101000);
+        }
+
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
@@ -68,7 +78,7 @@ namespace Mirle.Agv.Controller
             {
                 if (sr2000Config.LogMode)
                 {
-                    string csvLog = String.Concat(sr2000ReadData.GetDataTime.ToString("yyyy/MM/dd HH:mm:ss.fff"),",",
+                    string csvLog = String.Concat(sr2000ReadData.GetDataTime.ToString("yyyy/MM/dd HH:mm:ss.fff"), ",",
                                                   sr2000ReadData.Count.ToString(), ",",
                                                     sr2000ReadData.Barcode1.ID.ToString(), ",",
                                                     sr2000ReadData.Barcode1.ViewPosition.X.ToString(), ",",
