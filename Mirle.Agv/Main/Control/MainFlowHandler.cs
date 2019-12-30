@@ -1395,7 +1395,7 @@ namespace Mirle.Agv.Controller
 
         }
 
-       
+
 
         private void SetupAvoidTransferSteps()
         {
@@ -2386,7 +2386,7 @@ namespace Mirle.Agv.Controller
                             timeoutCount--;
                         }
                         else
-                        {                          
+                        {
                             alarmHandler.ResetAllAlarms();
                             var errorMsg = $"MainFlow : 放貨異常，無法清除Robot命令，流程放棄。";
                             OnMessageShowEvent?.Invoke(this, errorMsg);
@@ -2743,8 +2743,17 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                MapSection lastSection = moveCmd.MovingSections.FindLast(x => x.Id != null);
-                lastSection = TheMapInfo.allMapSections[lastSection.Id];
+                MapSection lastSection = new MapSection();
+                if (moveCmd.MovingSections.Count > 0)
+                {
+                    lastSection = moveCmd.MovingSections.FindLast(x => x.Id != null);
+                    lastSection = TheMapInfo.allMapSections[lastSection.Id];
+                }
+                else
+                {
+                    lastSection = theVehicle.VehicleLocation.LastSection;
+                }               
+
                 var lastAddress = moveCmd.EndAddress;
                 CmdEndVehiclePosition = new VehicleLocation(theVehicle.VehicleLocation);
                 CmdEndVehiclePosition.RealPosition = lastAddress.Position;
@@ -3073,7 +3082,7 @@ namespace Mirle.Agv.Controller
                     {
                         break;
                     }
-                    if (simpleRetryCount==1200)
+                    if (simpleRetryCount == 1200)
                     {
                         plcAgent.ChargeStopCommand();
                         simpleRetryCount = 0;
@@ -3575,6 +3584,6 @@ namespace Mirle.Agv.Controller
             batteryLog = tempBatteryLog;
             //TODO: Middler
 
-        }       
+        }
     }
 }
