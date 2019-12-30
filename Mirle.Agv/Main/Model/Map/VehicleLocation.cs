@@ -24,12 +24,15 @@ namespace Mirle.Agv.Model
             LastSection = vehicleLocation.LastSection;
             LastAddress = vehicleLocation.LastAddress;
             BarcodePosition = vehicleLocation.BarcodePosition;
+            Speed = vehicleLocation.Speed;
+            MoveDirectionAngle = vehicleLocation.MoveDirectionAngle;
+            AgvcPosition = vehicleLocation.AgvcPosition;
             RealPosition = vehicleLocation.RealPosition;
             VehicleAngle = vehicleLocation.VehicleAngle;
             WheelAngle = vehicleLocation.WheelAngle;
             RealPositionRangeMm = vehicleLocation.RealPositionRangeMm;
             NeerlyAddress = vehicleLocation.NeerlyAddress;
-            WhereAmI = vehicleLocation.WhereAmI;
+            WhereAmI = vehicleLocation.WhereAmI;           
         }
 
         public VehicleLocation()

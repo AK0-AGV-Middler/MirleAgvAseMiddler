@@ -56,7 +56,8 @@
     <ApplicationIcon>Resource\VehHasCarrier.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ClsMCProtocol">
+    <Reference Include="ClsMCProtocol, Version=1.0.1.3, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>OutsideDll\ClsMCProtocol.dll</HintPath>
     </Reference>
     <Reference Include="Communication">
