@@ -872,6 +872,8 @@ namespace Mirle.Agv.Controller
                                         Task.Run(() =>
                                         {
                                             Thread.Sleep(10000);
+                                            this.WritePLCAlarmReset();
+                                            Thread.Sleep(5000);
                                             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger."));
                                             eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                             OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
@@ -2720,11 +2722,14 @@ namespace Mirle.Agv.Controller
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
                 }
-
+                
             });
-
-
         }
+
+
+
+
+
 
         public void WritePLCBuzzserStop()
         {
