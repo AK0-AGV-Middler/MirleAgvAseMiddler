@@ -344,7 +344,8 @@ message Timestamp {
 	int32 Cmd_Distance = 8;
 	double XAxis = 9;
 	double YAxis = 10;
-	double Angle = 11;
+	double DirectionAngle = 11;
+	double VehicleAngle = 12;
   }
 
   message ID_32_TRANS_COMPLETE_RESPONSE {
@@ -384,8 +385,9 @@ message Timestamp {
 	DriveDirction DrivingDirection=5;
 	double XAxis = 6;
 	double YAxis = 7;
-	double Angle = 8;
-	double Speed = 9;
+	double DirectionAngle = 8;
+	double VehicleAngle = 9;
+	double Speed = 10;
   }
 
   message ID_35_CST_ID_RENAME_REQUEST {
@@ -524,8 +526,9 @@ message Timestamp {
 	int32 BatteryTemperature = 25;
 	double XAxis = 26;
 	double YAxis = 27;
-	double Angle = 28;
-	double Speed = 29;
+	double DirectionAngle = 28;
+	double VehicleAngle = 29;
+	double Speed = 30;
   }
 
   message ID_144_STATUS_CHANGE_REP {
@@ -556,8 +559,9 @@ message Timestamp {
 	int32 BatteryTemperature = 25;
 	double XAxis = 26;
 	double YAxis = 27;
-	double Angle = 28;
-	double Speed = 29;
+	double DirectionAngle = 28;
+	double VehicleAngle = 29;
+	double Speed = 30;
   }
 
   message ID_44_STATUS_CHANGE_RESPONSE {

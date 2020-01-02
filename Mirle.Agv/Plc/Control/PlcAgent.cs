@@ -2878,14 +2878,14 @@ namespace Mirle.Agv.Controller
             {
                 if (this.IsFakeForking)
                 {
-                    this.APLCVehicle.Robot.ExecutingCommand = aForkCommand;
+                    //this.APLCVehicle.Robot.ExecutingCommand = aForkCommand;
                     System.Threading.Thread.Sleep(3000);
                     if (this.APLCVehicle.Batterys.Charging == true)
                     {
                         System.Threading.Thread.Sleep(27000);
                     }
 
-                    if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Load)
+                    if (aForkCommand.ForkCommandType == EnumForkCommand.Load)
                     {
                         this.APLCVehicle.Loading = true;
                         //this.APLCVehicle.CassetteId = "CA0070";
@@ -2894,7 +2894,7 @@ namespace Mirle.Agv.Controller
 
                         OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CassetteId);
                     }
-                    else if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType == EnumForkCommand.Unload)
+                    else if (aForkCommand.ForkCommandType == EnumForkCommand.Unload)
                     {
                         this.APLCVehicle.CassetteId = "";
                         this.APLCVehicle.Loading = false;
@@ -2904,10 +2904,11 @@ namespace Mirle.Agv.Controller
 
                     }
 
-                    eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                    OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
+                    //eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                    OnForkCommandFinishEvent?.Invoke(this, aForkCommand);
                     //clearExecutingForkCommandFlag = true;
                     this.APLCVehicle.Robot.ExecutingCommand = null;
+                    aForkCommand = null;
                     return true;
                 }
 

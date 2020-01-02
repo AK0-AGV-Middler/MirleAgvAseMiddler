@@ -1686,7 +1686,8 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
                 iD_144_STATUS_CHANGE_REP.XAxis = vehLocation.AgvcPosition.X;
                 iD_144_STATUS_CHANGE_REP.YAxis = vehLocation.AgvcPosition.Y;
-                iD_144_STATUS_CHANGE_REP.Angle = vehLocation.MoveDirectionAngle;
+                iD_144_STATUS_CHANGE_REP.DirectionAngle = vehLocation.MoveDirectionAngle;
+                iD_144_STATUS_CHANGE_REP.VehicleAngle = vehLocation.VehicleAngle;
                 iD_144_STATUS_CHANGE_REP.Speed = vehLocation.Speed;
     
                 WrapperMessage wrappers = new WrapperMessage();
@@ -1733,7 +1734,8 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
                 iD_144_STATUS_CHANGE_REP.XAxis = vehLocation.AgvcPosition.X;
                 iD_144_STATUS_CHANGE_REP.YAxis = vehLocation.AgvcPosition.Y;
-                iD_144_STATUS_CHANGE_REP.Angle = vehLocation.MoveDirectionAngle;
+                iD_144_STATUS_CHANGE_REP.DirectionAngle = vehLocation.MoveDirectionAngle;
+                iD_144_STATUS_CHANGE_REP.VehicleAngle = vehLocation.VehicleAngle;
                 iD_144_STATUS_CHANGE_REP.Speed = vehLocation.Speed;
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -1792,9 +1794,9 @@ namespace Mirle.Agv.Controller
                 iD_143_STATUS_RESPONSE.StoppedBlockID = theVehicle.StoppedBlockID;
                 iD_143_STATUS_RESPONSE.XAxis = vehLocation.AgvcPosition.X;
                 iD_143_STATUS_RESPONSE.YAxis = vehLocation.AgvcPosition.Y;
-                iD_143_STATUS_RESPONSE.Angle = vehLocation.MoveDirectionAngle;
                 iD_143_STATUS_RESPONSE.Speed = vehLocation.Speed;
-
+                iD_143_STATUS_RESPONSE.DirectionAngle = vehLocation.MoveDirectionAngle;
+                iD_143_STATUS_RESPONSE.VehicleAngle = vehLocation.VehicleAngle;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.StatusReqRespFieldNumber;
@@ -2368,11 +2370,12 @@ namespace Mirle.Agv.Controller
                 id_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(location.LastSection.CmdDirection);
                 id_134_TRANS_EVENT_REP.XAxis = location.AgvcPosition.X;
                 id_134_TRANS_EVENT_REP.YAxis = location.AgvcPosition.Y;
-                id_134_TRANS_EVENT_REP.Angle = location.MoveDirectionAngle;
-                loggerAgent.LogMsg("Info", new LogFormat("Info", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Angle=[{location.MoveDirectionAngle}]"));
-
                 id_134_TRANS_EVENT_REP.Speed = location.Speed;
+                id_134_TRANS_EVENT_REP.DirectionAngle = location.MoveDirectionAngle;
+                id_134_TRANS_EVENT_REP.VehicleAngle = location.VehicleAngle;               
 
+                loggerAgent.LogMsg("Info", new LogFormat("Info", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Angle=[{location.MoveDirectionAngle}]"));
+              
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                 wrappers.TransEventRep = id_134_TRANS_EVENT_REP;
@@ -2456,7 +2459,8 @@ namespace Mirle.Agv.Controller
                 iD_132_TRANS_COMPLETE_REPORT.CmdDistance = theVehicle.CmdDistance;
                 iD_132_TRANS_COMPLETE_REPORT.XAxis = vehLocation.AgvcPosition.X;
                 iD_132_TRANS_COMPLETE_REPORT.YAxis = vehLocation.AgvcPosition.Y;
-                iD_132_TRANS_COMPLETE_REPORT.Angle = vehLocation.MoveDirectionAngle;
+                iD_132_TRANS_COMPLETE_REPORT.DirectionAngle = vehLocation.MoveDirectionAngle;
+                iD_132_TRANS_COMPLETE_REPORT.VehicleAngle = vehLocation.VehicleAngle;
                 
 
                 WrapperMessage wrappers = new WrapperMessage();
