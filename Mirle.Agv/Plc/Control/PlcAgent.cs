@@ -3056,23 +3056,26 @@ namespace Mirle.Agv.Controller
                                 //    break;
                                 //}
                                 #endregion
-
+                                
                                 //送出指令                              
                                 if (this.aMCProtocol.get_ItemByTag("ForkReady").AsBoolean && this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
                                 {
                                     this.APLCVehicle.Robot.ExecutingCommand.Reason = "";
                                     this.WriteForkCommandInfo(Convert.ToUInt16(this.APLCVehicle.Robot.ExecutingCommand.CommandNo), this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType, this.APLCVehicle.Robot.ExecutingCommand.StageNo, this.APLCVehicle.Robot.ExecutingCommand.Direction, this.APLCVehicle.Robot.ExecutingCommand.IsEqPio, this.APLCVehicle.Robot.ExecutingCommand.ForkSpeed);
 
-                                    System.Threading.Thread.Sleep(500);
+                                    System.Threading.Thread.Sleep(50);
                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
                                     sw.Reset();
                                     sw.Start();
+                                    //<-- 2020/01/03 Modify by Ellison
+                                    int readTimeoutCounter = 0;
+                                    //-->
                                     while (true)
                                     {
                                         if (this.aMCProtocol.get_ItemByTag("ForkCommandOK").AsBoolean)
                                         {
                                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                            System.Threading.Thread.Sleep(1000);
+                                            System.Threading.Thread.Sleep(50);
                                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
                                             break;
                                         }
@@ -3101,12 +3104,27 @@ namespace Mirle.Agv.Controller
                                         {
                                             if (sw.ElapsedMilliseconds < ForkCommandReadTimeout)
                                             {
+                                                
                                                 if (clearExecutingForkCommandFlag)
                                                 {
                                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandReadTimeout clearExecutingForkCommandFlag = true"));
                                                     break;
                                                 }
-                                                System.Threading.Thread.Sleep(20);
+
+                                                //<-- 2020/01/03 Modify by Ellison
+                                                //System.Threading.Thread.Sleep(20);
+                                                SpinWait.SpinUntil(() => false, 5);
+                                                readTimeoutCounter++;
+                                                if (readTimeoutCounter==1200)
+                                                {
+                                                    this.APLCVehicle.Robot.ExecutingCommand.Reason = "";
+                                                    this.WriteForkCommandInfo(Convert.ToUInt16(this.APLCVehicle.Robot.ExecutingCommand.CommandNo), this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType, this.APLCVehicle.Robot.ExecutingCommand.StageNo, this.APLCVehicle.Robot.ExecutingCommand.Direction, this.APLCVehicle.Robot.ExecutingCommand.IsEqPio, this.APLCVehicle.Robot.ExecutingCommand.ForkSpeed);
+
+                                                    System.Threading.Thread.Sleep(500);
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
+                                                    readTimeoutCounter = 0;
+                                                }
+                                                //-->
                                             }
                                             else
                                             {
@@ -3140,18 +3158,36 @@ namespace Mirle.Agv.Controller
 
                                     sw.Reset();
                                     sw.Start();
+                                    //<-- 2020/01/03 Modify by Ellison
+                                    readTimeoutCounter = 0;
+                                    //-->
                                     while (true)
                                     {
                                         if (this.aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean == false)
                                         {
                                             if (sw.ElapsedMilliseconds < this.ForkCommandBusyTimeout)
                                             {
+                                                
                                                 if (clearExecutingForkCommandFlag)
                                                 {
                                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandBusyTimeout clearExecutingForkCommandFlag = true"));
                                                     break;
                                                 }
-                                                System.Threading.Thread.Sleep(20);
+
+                                                //<-- 2020/01/03 Modify by Ellison
+                                                //System.Threading.Thread.Sleep(20);
+                                                SpinWait.SpinUntil(() => false, 5);
+                                                readTimeoutCounter++;
+                                                if (readTimeoutCounter == 1200)
+                                                {
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                    System.Threading.Thread.Sleep(1000);
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                                    readTimeoutCounter = 0;
+                                                    break;
+                                                    
+                                                }
+                                                //-->
                                             }
                                             else
                                             {
@@ -3257,17 +3293,18 @@ namespace Mirle.Agv.Controller
                                 }
                                 sw.Stop();
                                 sw.Reset();
-                                if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean)
+
+
+                                //<-- 2020/01/03 modify by Ellison
+                                Task.Run(() =>
                                 {
                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                                    System.Threading.Thread.Sleep(1000);
-                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                    System.Threading.Thread.Sleep(100);
                                     this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
-                                }
-                                else
-                                {
-
-                                }
+                                    System.Threading.Thread.Sleep(1000);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);                                                           
+                                });
+                                //-->
 
                                 break;
                             case EnumForkCommandState.Finish:
@@ -3304,6 +3341,7 @@ namespace Mirle.Agv.Controller
 
                                 while (true)
                                 {
+                                    
                                     Thread.Sleep(50);
                                     if (this.APLCVehicle.Robot.ForkHome)
                                     {
