@@ -3063,7 +3063,7 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ExecutingCommand.Reason = "";
                                     this.WriteForkCommandInfo(Convert.ToUInt16(this.APLCVehicle.Robot.ExecutingCommand.CommandNo), this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType, this.APLCVehicle.Robot.ExecutingCommand.StageNo, this.APLCVehicle.Robot.ExecutingCommand.Direction, this.APLCVehicle.Robot.ExecutingCommand.IsEqPio, this.APLCVehicle.Robot.ExecutingCommand.ForkSpeed);
 
-                                    System.Threading.Thread.Sleep(50);
+                                    System.Threading.Thread.Sleep(500);
                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
                                     sw.Reset();
                                     sw.Start();
@@ -3075,7 +3075,7 @@ namespace Mirle.Agv.Controller
                                         if (this.aMCProtocol.get_ItemByTag("ForkCommandOK").AsBoolean)
                                         {
                                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                                            System.Threading.Thread.Sleep(50);
+                                            System.Threading.Thread.Sleep(1000);
                                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
                                             break;
                                         }
