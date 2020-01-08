@@ -11,6 +11,8 @@ using System.Threading;
 using Mirle.Agv.Controller;
 using System.IO.MemoryMappedFiles;
 using System.IO;
+using Mirle.Agv.Controller.Tools;
+using Mirle.Agv.Model.Configs;
 
 namespace Mirle.Agv.View
 {
@@ -19,6 +21,7 @@ namespace Mirle.Agv.View
         private Thread thdInitial;
         private ManualResetEvent ShutdownEvent = new ManualResetEvent(false);
         private ManualResetEvent PauseEvent = new ManualResetEvent(true);
+        private InitialConfig initialConfig;
 
         private MainFlowHandler mainFlowHandler;
         private MainForm mainForm;
@@ -29,7 +32,8 @@ namespace Mirle.Agv.View
         public InitialForm()
         {
             InitializeComponent();
-            SetMmfTxtExist();
+            MakeSureMmfTextFileExist();
+            initialConfig = new XmlHandler().ReadXml<InitialConfig>(@"D:\AgvConfigs\Initial.xml");
             mainFlowHandler = new MainFlowHandler();
             mainFlowHandler.OnComponentIntialDoneEvent += MainFlowHandler_OnComponentIntialDoneEvent;
         }
@@ -44,7 +48,7 @@ namespace Mirle.Agv.View
                 if (e.ItemName == "全部")
                 {
                     WriteMmf("OK");
-                    SpinWait.SpinUntil(() => false, 1000);
+                    SpinWait.SpinUntil(() => false, initialConfig.StartOkShowMs);
                     GoNextForm();
                 }
             }
@@ -54,6 +58,9 @@ namespace Mirle.Agv.View
                 var msg = timeStamp + e.ItemName + "初始化失敗\n";
                 ListBoxAppend(lst_StartUpMsg, msg);
                 WriteMmf("NG");
+
+                SpinWait.SpinUntil(() => false, initialConfig.StartNgCloseSec*1000);
+                ThisClose();
             }
 
         }
@@ -100,7 +107,7 @@ namespace Mirle.Agv.View
             mainFlowHandler.InitialMainFlowHandler();
         }
 
-        private void cmd_Close_Click(object sender, EventArgs e)
+        private void ThisClose()
         {
             ShutdownEvent.Set();
             PauseEvent.Set();
@@ -109,13 +116,14 @@ namespace Mirle.Agv.View
             Environment.Exit(Environment.ExitCode);
         }
 
+        private void cmd_Close_Click(object sender, EventArgs e)
+        {
+            ThisClose();
+        }
+
         private void InitialForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            ShutdownEvent.Set();
-            PauseEvent.Set();
-
-            Application.Exit();
-            Environment.Exit(Environment.ExitCode);
+            ThisClose();
         }
 
         private void WriteMmf(string msg)
@@ -150,7 +158,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void SetMmfTxtExist()
+        private void MakeSureMmfTextFileExist()
         {
             try
             {

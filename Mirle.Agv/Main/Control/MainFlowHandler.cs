@@ -179,7 +179,7 @@ namespace Mirle.Agv.Controller
                 //GetInitialSoc("BatteryPercentage.log");
                 batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");
                 InitialSoc = batteryLog.InitialSoc;
-
+               
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
             }
             catch (Exception)
