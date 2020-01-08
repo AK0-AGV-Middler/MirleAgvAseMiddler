@@ -48,6 +48,13 @@ namespace Mirle.Agv.Controller
                 throw new Exception(string.Concat("Please add Category in iniFile."));
             }
 
+            if (!dicLoggers.ContainsKey("LoggerException"))
+            {
+                LogType logType = new LogType();
+                Logger logger = new Logger(logType);
+                dicLoggers.Add("LoggerException", logger);
+            }
+
             // 讀取各個 Category 的資料
             for (int i = 1; i < logBasicConfigs.Number + 1; i++)
             {
@@ -70,15 +77,25 @@ namespace Mirle.Agv.Controller
 
                 dicLoggers.Add(aLogType.Name, logger);
             }
+
+            
         }
 
-        public void LogMsg(string type, LogFormat logFormat)
+        public void Log(string type, LogFormat logFormat)
         {
-            if (dicLoggers.ContainsKey(type))
+            try
             {
-                Logger logger = dicLoggers[type];
-                logger.SaveLogFile(type, logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
+                //string type = logFormat.Category;
+                if (dicLoggers.ContainsKey(type))
+                {
+                    Logger logger = dicLoggers[type];
+                    logger.Log(logFormat);
+                }
             }
+            catch (Exception ex)
+            {
+                dicLoggers["LoggerException"].LogString(ex.StackTrace);
+            }            
         }
 
         public void LogAlarmHistory(Alarm alarm)
@@ -88,7 +105,7 @@ namespace Mirle.Agv.Controller
                 Logger logger = dicLoggers["AlarmHistory"];
                 string timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff");
                 string msg = $"{timeStamp},{alarm.Id},{alarm.AlarmText},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
-                logger.SavePureLog(msg);
+                logger.LogString(msg);
             }
         }
 

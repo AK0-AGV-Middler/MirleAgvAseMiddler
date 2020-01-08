@@ -297,7 +297,7 @@ namespace Mirle.Agv.Controller
 
                 }
 
-                BatteryLogger.SavePureLog(csvLog);
+                BatteryLogger.LogString(csvLog);
 
                 sw.Stop();
                 sw.Reset();
@@ -1353,7 +1353,8 @@ namespace Mirle.Agv.Controller
         private void MCProtocol_OnConnectEvent(String message)
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
-            plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is connected");
+            //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is connected");
+            plcAgentLogger.Log(new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "PLC is connected"));
             this.boolConnectionState = true;
 
             if (plcOtherControlThread == null)
@@ -2086,7 +2087,8 @@ namespace Mirle.Agv.Controller
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
             this.boolConnectionState = false;
-            plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is disconnected");
+            //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC is disconnected");
+            plcAgentLogger.Log(new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "PLC is disconnected"));
         }
 
         public void SetBeamSensorSleepOn(EnumVehicleSide aSide)
@@ -3510,7 +3512,7 @@ namespace Mirle.Agv.Controller
         {
             strlogMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
             if (strlogMsg.Length > LogMsgMaxLength) strlogMsg = strlogMsg.Substring(0, LogMsgMaxLength);
-            clsLoggerAgent.LogMsg(clsLogFormat.Category, clsLogFormat);
+            clsLoggerAgent.Log(clsLogFormat.Category, clsLogFormat);
         }
 
         public bool WritePlcConfigToXML(Dictionary<string, string> dicSetValue, string file_address = "PLC_Config.xml")

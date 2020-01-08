@@ -423,7 +423,7 @@ namespace Mirle.Agv.Controller
             string classMethodName = String.Concat(GetType().Name, ":", memberName);
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.LogMsg(logFormat.Category, logFormat);
+            loggerAgent.Log(logFormat.Category, logFormat);
 
             if (category == "MoveControl")
                 SetDebugFlowLog(memberName, message);
@@ -4887,7 +4887,7 @@ namespace Mirle.Agv.Controller
                         AddCSV(ref csvLog, elmoDriver.MoveCompelete(order[i]) ? "Stop" : "Move");
                     }
 
-                    logger.SavePureLog(csvLog);
+                    logger.LogString(csvLog);
                 }
 
                 while (timer.ElapsedMilliseconds < moveControlConfig.CSVLogInterval)

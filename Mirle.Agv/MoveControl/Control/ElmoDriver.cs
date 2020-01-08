@@ -120,7 +120,7 @@ namespace Mirle.Agv.Controller
             string classMethodName = GetType().Name + ":" + memberName;
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.LogMsg(logFormat.Category, logFormat);
+            loggerAgent.Log(logFormat.Category, logFormat);
             SetElmoLog(memberName, message);
         }
 

@@ -69,7 +69,7 @@ namespace Mirle.Agv.Controller
         {
             string classMethodName = GetType().Name + ":" + memberName;
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
-            loggerAgent.LogMsg(logFormat.Category, logFormat);
+            loggerAgent.Log(logFormat.Category, logFormat);
         }
 
         private void WriteLog(Sr2000ReadData sr2000ReadData)
@@ -92,7 +92,7 @@ namespace Mirle.Agv.Controller
                                                   sr2000ReadData.AGV.Position.X.ToString(), ",",
                                                   sr2000ReadData.AGV.Position.Y.ToString(), ",",
                                                   sr2000ReadData.AGV.AGVAngle.ToString());
-                    logger.SavePureLog(csvLog);
+                    logger.LogString(csvLog);
                 }
             }
             catch { }

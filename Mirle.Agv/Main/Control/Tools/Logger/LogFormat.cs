@@ -27,6 +27,11 @@ namespace Mirle.Agv.Controller.Tools
         }
 
         public LogFormat(string Message) : this("Category", "9", "ClassFunctionName", "Device", "CarrierId", Message) { }
+
+        public string GetString()
+        {
+            return string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "@", Category, "@", LogLevel, "@", ClassFunctionName, "@", Device, "@", CarrierId, "@", Message);
+        }
     }
 
 }
