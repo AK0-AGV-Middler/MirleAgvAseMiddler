@@ -51,6 +51,7 @@ namespace Mirle.Agv.Controller
             if (!dicLoggers.ContainsKey("LoggerException"))
             {
                 LogType logType = new LogType();
+                logType.DirName = "LoggerException";
                 Logger logger = new Logger(logType);
                 dicLoggers.Add("LoggerException", logger);
             }

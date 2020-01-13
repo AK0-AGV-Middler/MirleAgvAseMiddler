@@ -213,7 +213,7 @@ namespace Mirle.Agv.Controller
         {
             foreach (var item in Enum.GetValues(typeof(EnumCmdNum)))
             {
-                ClientAgent.addTcpIpReceivedHandler((int)item, RecieveCmmandLog);
+                ClientAgent.addTcpIpReceivedHandler((int)item, LogRecvMsg);
                 ClientAgent.addTcpIpReceivedHandler((int)item, RecieveCommandMediator);
             }
 
@@ -249,7 +249,7 @@ namespace Mirle.Agv.Controller
                 }
             }
         }
-        private void RecieveCmmandLog(object sender, TcpIpEventArgs e)
+        private void LogRecvMsg(object sender, TcpIpEventArgs e)
         {
             string msg = $"[RECV] [SeqNum = {e.iSeqNum}][{e.iPacketID}][{(EnumCmdNum)int.Parse(e.iPacketID)}][ObjPacket = {e.objPacket}]";
             OnCmdReceiveEvent?.Invoke(this, msg);

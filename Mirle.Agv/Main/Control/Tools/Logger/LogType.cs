@@ -9,9 +9,9 @@ namespace Mirle.Agv.Controller.Tools
     [Serializable]
     public class LogType
     {                   
-        public string Name { get; set; }
-        public string LogFileName { get; set; }
-        public string DirName { get; set; }
+        public string Name { get; set; } = "LoggerException";
+        public string LogFileName { get; set; } = "LoggerException";
+        public string DirName { get; set; } = "LoggerException";
         public bool DelOverdueFile { get; set; } = true;
         public int FileKeepDay { get; set; } = 30;
         public int LogMaxSize { get; set; } = 2;

@@ -48,7 +48,6 @@ namespace Mirle.Agv.Controller.Tools
 
                 thdDataSave = new Thread(ThreadBufferDataSave);
                 thdDataSave.IsBackground = true;
-                thdDataSave.Name = "ThreadDataSave";
                 thdDataSave.Start();
 
                 lngLogMaxSize = logType.LogMaxSize * MB;
