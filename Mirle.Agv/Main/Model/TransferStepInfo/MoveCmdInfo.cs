@@ -115,6 +115,7 @@ namespace Mirle.Agv.Model.TransferSteps
                     }
                     
                     StartAddress.AddressOffset = new MapAddressOffset();
+                    StartAddress.VehicleHeadAngle = (vehicleLocation.LastSection.HeadAddress.VehicleHeadAngle + vehicleLocation.LastSection.TailAddress.VehicleHeadAngle) / 2;
                 }
             }
             catch (Exception ex)

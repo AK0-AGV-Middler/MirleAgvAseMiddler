@@ -1395,8 +1395,6 @@ namespace Mirle.Agv.Controller
 
         }
 
-
-
         private void SetupAvoidTransferSteps()
         {
             MoveCmdInfo moveCmd = GetAvoidMoveCmdInfo(agvcTransCmd);
