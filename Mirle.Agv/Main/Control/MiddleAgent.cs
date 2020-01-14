@@ -1274,7 +1274,7 @@ namespace Mirle.Agv.Controller
         {
             Send_Cmd136_TransferEventReport(EventType.Vhloading);
         }
-        public bool CstIdRead(EnumCstIdReadResult result)
+        public bool IsCstIdReadReplyOk(EnumCstIdReadResult result)
         {
             Task<bool> actionResult = Send_Cmd136_CstIdReadReport(result);
             return actionResult.Result;

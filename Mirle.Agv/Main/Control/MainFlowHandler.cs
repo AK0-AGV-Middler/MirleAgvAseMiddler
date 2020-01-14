@@ -156,14 +156,14 @@ namespace Mirle.Agv.Controller
             VehicleInitial();
             EventInitial();
             SetTransCmdsStep(new Idle());
-
+         
             VehicleLocationInitial();
 
             if (isIniOk)
             {
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "全部"));
             }
-        }
+        }        
 
         private void XmlInitial()
         {
@@ -222,7 +222,7 @@ namespace Mirle.Agv.Controller
             {
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "控制層"));
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -242,7 +242,7 @@ namespace Mirle.Agv.Controller
             {
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "台車"));
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -290,7 +290,7 @@ namespace Mirle.Agv.Controller
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "事件"));
 
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -305,13 +305,13 @@ namespace Mirle.Agv.Controller
                 catch (Exception ex)
                 {
                     theVehicle.VehicleLocation.RealPosition = new MapPosition();
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
             }
             StartTrackPosition();
             StartWatchLowPower();
-            loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"讀取到的電量為{batteryLog.InitialSoc}"));
-
+            var msg = $"讀取到的電量為{batteryLog.InitialSoc}";
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
         private bool IsRealPositionEmpty()
         {
@@ -362,7 +362,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
                 finally
                 {
@@ -487,7 +487,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
                 finally
                 {
@@ -623,7 +623,7 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
                 finally
                 {
@@ -733,7 +733,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
 
                 middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
                 return;
@@ -761,8 +761,7 @@ namespace Mirle.Agv.Controller
                 middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "");
                 var ngMsg = $"MainFlow : 收到 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 處理失敗。";
                 OnMessageShowEvent?.Invoke(this, ngMsg);
-
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
             #endregion
         }
@@ -809,24 +808,21 @@ namespace Mirle.Agv.Controller
             //測 AddressIds 為空
             if (addressIds.Count > 0)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"MainFlow : CheckInSituSectionIdAndAddressId +++FAIL+++, [{type}][InSitu] Address is not empty."));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"FAIL, [{type}][InSitu] Address is not empty.");
                 return false;
             }
 
             //測 終點存在於圖資
             if (!TheMapInfo.allMapAddresses.ContainsKey(lastAddress))
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"MainFlow : CheckInSituSectionIdAndAddressId +++FAIL+++, [{type}][InSitu] Address {lastAddress} is not in the map."));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"FAIL, [{type}][InSitu] Address {lastAddress} is not in the map.");
                 return false;
             }
 
             //測 現在還在終點
             if (!mapHandler.IsPositionInThisAddress(insituPosition, TheMapInfo.allMapAddresses[lastAddress].Position))
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"MainFlow : CheckInSituSectionIdAndAddressId +++FAIL+++, [{type}][InSitu] RealPos is not at {lastAddress}."));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"FAIL, [{type}][InSitu] RealPos is not at {lastAddress}.");
                 return false;
             }
 
@@ -842,8 +838,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，地圖沒有ID為[{id}]的路段。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , msg));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     return false;
                 }
             }
@@ -855,8 +850,7 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，地圖沒有ID為[{id}]的站點。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , msg));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     return false;
                 }
             }
@@ -869,17 +863,15 @@ namespace Mirle.Agv.Controller
                 {
                     var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i + 1}]個路段[{section.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     return false;
                 }
 
                 if (!IsAddressIdInMapSection(addressIds[i + 1], section))
                 {
-                    var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 2}]個站點[{addressIds[i + 1]}]不在第[{i + 1}]個路段[{section.Id}]內。";
+                    var msg = $"[{type}]命令檢查失敗，第[{i + 2}]個站點[{addressIds[i + 1]}]不在第[{i + 1}]個路段[{section.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     return false;
                 }
             }
@@ -890,20 +882,18 @@ namespace Mirle.Agv.Controller
                 var preSection = TheMapInfo.allMapSections[sectionIds[i - 1]];
                 if (!IsAddressIdInMapSection(addressIds[i], preSection))
                 {
-                    var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i}]個路段[{preSection.Id}]內。";
+                    var msg = $"[{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i}]個路段[{preSection.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     return false;
                 }
 
                 var nextSection = TheMapInfo.allMapSections[sectionIds[i]];
                 if (!IsAddressIdInMapSection(addressIds[i], nextSection))
                 {
-                    var msg = $"MainFlow : [{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i + 1}]個路段[{nextSection.Id}]內。";
+                    var msg = $"[{type}]命令檢查失敗，第[{i + 1}]個站點[{addressIds[i]}]不在第[{i + 1}]個路段[{nextSection.Id}]內。";
                     OnMessageShowEvent?.Invoke(this, msg);
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     return false;
                 }
             }
@@ -912,10 +902,9 @@ namespace Mirle.Agv.Controller
             var lastSection = TheMapInfo.allMapSections[sectionIds[sectionIds.Count - 1]];
             if (!IsAddressIdInMapSection(lastAddressId, lastSection))
             {
-                var msg = $"MainFlow : [{type}]命令檢查失敗，最後一個站點[{lastAddressId}]不在最後一個路段[{lastSection.Id}]內。";
+                var msg = $"[{type}]命令檢查失敗，最後一個站點[{lastAddressId}]不在最後一個路段[{lastSection.Id}]內。";
                 OnMessageShowEvent?.Invoke(this, msg);
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , msg));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 return false;
             }
 
@@ -954,7 +943,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1110,7 +1099,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
 
                 var reason = "替代路徑Exception";
                 RejectOverrideCommandAndResume(000026, reason, agvcOverrideCmd);
@@ -1145,7 +1134,7 @@ namespace Mirle.Agv.Controller
                 StopAndClear();
                 var reason = "替代路徑Exception";
                 RejectOverrideCommandAndResume(000026, reason, agvcOverrideCmd);
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
 
             #endregion
@@ -1172,7 +1161,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1188,7 +1177,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1268,9 +1257,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
-
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 var reason = "避車Exception";
                 RejectAvoidCommandAndResume(000036, reason, agvcMoveCmd);
             }
@@ -1300,8 +1287,7 @@ namespace Mirle.Agv.Controller
                 StopAndClear();
                 var reason = "避車Exception";
                 RejectAvoidCommandAndResume(000036, reason, agvcMoveCmd);
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
 
             #endregion
@@ -1325,7 +1311,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1532,7 +1518,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
             return moveCmd;
         }
@@ -1576,7 +1562,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
             return moveCmd;
         }
@@ -1604,7 +1590,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
             return moveCmd;
         }
@@ -1633,7 +1619,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
             return moveCmd;
         }
@@ -1661,7 +1647,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
             return moveCmd;
         }
@@ -1815,8 +1801,7 @@ namespace Mirle.Agv.Controller
             if (!result)
             {
                 var msg = $"MainFlow : CanVehMove, [RobotHome={plcVeh.Robot.ForkHome}][Charging={plcVeh.Batterys.Charging}]";
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
             }
 
             return result;
@@ -1840,7 +1825,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1946,7 +1931,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1988,7 +1973,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2024,13 +2009,13 @@ namespace Mirle.Agv.Controller
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                     }
                 }
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2059,14 +2044,14 @@ namespace Mirle.Agv.Controller
                     }
                     catch (Exception ex)
                     {
-                        loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                        LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                     }
                     //});
                 }
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2080,12 +2065,12 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2096,65 +2081,10 @@ namespace Mirle.Agv.Controller
                 agvcTransCmd.ForkNgRetryTimes = mainFlowConfig.ForkNgRetryTimes;
                 if (forkCommand.ForkCommandType == EnumForkCommand.Load)
                 {
-                    if (middleAgent.CstIdRead(ReadResult))
+                    if (middleAgent.IsCstIdReadReplyOk(ReadResult))
                     {
-                        //middleAgent.LoadComplete();
-                        //OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");
                         VisitNextTransferStep();
                     }
-                    //else
-                    //{
-
-                    //}
-
-                    //Stopwatch sw = new Stopwatch();
-                    //int bcrReadRetryTimeoutTotal = 0;
-                    //int bcrReadRetryTimeoutMs = middlerConfig.BcrReadRetryTimeoutSec * 1000;
-                    //int bcrReadRetryIntervalMs = middlerConfig.BcrReadRetryIntervalMs;
-                    //sw.Start();
-                    //while (true)
-                    //{
-                    //    sw.Stop();
-                    //    if (sw.ElapsedMilliseconds > bcrReadRetryIntervalMs)
-                    //    {
-                    //        middleAgent.CstIdRead(ReadResult);
-
-                    //        sw.Reset();
-                    //        bcrReadRetryTimeoutTotal += bcrReadRetryIntervalMs;
-                    //        if (bcrReadRetryTimeoutTotal > bcrReadRetryTimeoutMs)
-                    //        {
-                    //            alarmHandler.SetAlarm(000029);
-                    //            break;
-                    //        }
-                    //    }
-                    //    sw.Start();
-
-                    //    SpinWait.SpinUntil(() => false, 100);
-
-                    //    try
-                    //    {
-
-
-                    //        //if (IsCancelByCstIdRead)
-                    //        //{
-                    //        //    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成，貨物ID讀取異常。");
-                    //        //    StopAndClear();
-                    //        //    break;
-                    //        //}
-                    //        //else
-                    //        //{
-                    //        //    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨完成");
-                    //        //    VisitNextTransferStep();
-                    //        //    break;
-                    //        //}
-                    //    }
-                    //    catch (Exception ex)
-                    //    {
-                    //        loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                    //    }
-                    //}
-
-
                 }
                 else /*if (forkCommand.ForkCommandType == EnumForkCommand.Unload)*/
                 {
@@ -2173,7 +2103,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void PlcAgent_OnForkCommandErrorEvent(object sender, PlcForkCommand e)
@@ -2239,8 +2169,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void PlcAgent_OnForkCommandInterlockErrorEvent(object sender, PlcForkCommand e)
@@ -2269,6 +2198,7 @@ namespace Mirle.Agv.Controller
                             {
                                 alarmHandler.ResetAllAlarms();
                                 OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
+                                LogRetry(agvcTransCmd.ForkNgRetryTimes);
                                 IsRetryArrival = false;
                                 moveControlHandler.TransferMove_RetryMove();
                                 return;
@@ -2288,7 +2218,19 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，異常跳出。");
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void LogRetry(int forkNgRetryTimes)
+        {
+            try
+            {
+                var msg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), ",\t", alarmHandler.LastAlarm.AlarmText, ",\t", forkNgRetryTimes);
+                loggerAgent.LogString("RetryLog", msg);
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -2408,19 +2350,10 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
                     batteryLog.LoadUnloadCount++;
                     SaveBatteryLog();
-
-
-                    //if (!plcAgent.IsForkCommandExist())
-                    //{
-                    //}
-                    //else
-                    //{
-                    //    alarmHandler.SetAlarm(000008);
-                    //}
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
             }
         }
@@ -2475,18 +2408,10 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
                     batteryLog.LoadUnloadCount++;
                     SaveBatteryLog();
-
-                    //if (!plcAgent.IsForkCommandExist())
-                    //{
-                    //}
-                    //else
-                    //{
-                    //    alarmHandler.SetAlarm(000010);
-                    //}
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
             }
         }
@@ -2530,8 +2455,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return false;
             }
         }
@@ -2561,8 +2485,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return false;
             }
         }
@@ -2591,8 +2514,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return false;
             }
         }
@@ -2620,7 +2542,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2664,20 +2586,10 @@ namespace Mirle.Agv.Controller
                 }
                 catch (Exception ex)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                     break;
                 }
             }
-
-            //if (searchingSectionIndex >= MovingSections.Count)
-            //{
-            //    isUpdateSection = false;
-            //    alarmHandler.SetAlarm(000011);
-            //    var msg = $"MainFlow : 有命令下，車輛迷航, [Position=({vehicleLocation.RealPosition.X:F2},{vehicleLocation.RealPosition.Y:F2})]";
-            //    loggerAgent.LogMsg("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //         , msg));
-            //}
-
             return isUpdateSection;
         }
 
@@ -2733,7 +2645,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2760,15 +2672,13 @@ namespace Mirle.Agv.Controller
                 CmdEndVehiclePosition.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(lastAddress.Position, lastSection.HeadAddress.Position);
                 theVehicle.VehicleLocation = CmdEndVehiclePosition;
 
-                loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                      , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新。"));
+                var msg = $"車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新。";
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "7", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                         , $"MainFolw : 車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新失敗。"));
-                loggerAgent.Log("Error", new LogFormat("Error", "7", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"車輛抵達終點站{moveCmd.EndAddress.Id}，位置更新失敗。");
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2823,7 +2733,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2879,264 +2789,290 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"MainFlow : UpdateMiddlerGotReserveOkSections FAIL [SecId={id}][Index={getReserveOkSectionIndex}]"));
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"FAIL [SecId={id}][Index={getReserveOkSectionIndex}]");
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
 
         }
 
         private void StartCharge(MapAddress endAddress)
         {
-            var address = endAddress;
-            var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
-            var highPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeHighSoc;
-
-            if (address.IsCharger)
+            try
             {
-                if (theVehicle.ThePlcVehicle.Batterys.Charging)
-                {
-                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
-                    loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                          , msg));
-                    return;
-                }
+                var address = endAddress;
+                var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
+                var highPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeHighSoc;
 
-                if (IsHighPower())
+                if (address.IsCharger)
                 {
-                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} > {highPercentage:F2}(高水位門檻值), 故暫不充電";
-                    OnMessageShowEvent?.Invoke(this, msg);
-                    return;
-                }
-                else
-                {
-                    var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} < {highPercentage:F2}(高水位門檻值), 故送出充電信號";
-                    loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                         , msg));
-                    OnMessageShowEvent?.Invoke(this, msg);
-                }
-
-                middleAgent.ChargHandshaking();
-                EnumChargeDirection chargeDirection;
-                switch (address.ChargeDirection)
-                {
-                    case EnumChargeDirection.Left:
-                        chargeDirection = EnumChargeDirection.Left;
-                        break;
-                    case EnumChargeDirection.Right:
-                        chargeDirection = EnumChargeDirection.Right;
-                        break;
-                    case EnumChargeDirection.None:
-                    default:
-                        alarmHandler.SetAlarm(000012);
-                        return;
-                }
-                plcAgent.ChargeStartCommand(chargeDirection);
-
-                Stopwatch sw = new Stopwatch();
-                bool isTimeout = false;
-                sw.Start();
-                while (true)
-                {
-                    sw.Stop();
-                    if (sw.ElapsedMilliseconds > mainFlowConfig.StartChargeWaitingTimeoutMs)
-                    {
-                        isTimeout = true;
-                        break;
-                    }
-                    sw.Start();
                     if (theVehicle.ThePlcVehicle.Batterys.Charging)
                     {
-                        break;
+                        var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                        return;
                     }
-                    SpinWait.SpinUntil(() => false, 5);
+
+                    if (IsHighPower())
+                    {
+                        var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} > {highPercentage:F2}(高水位門檻值), 故暫不充電";
+                        OnMessageShowEvent?.Invoke(this, msg);
+                        return;
+                    }
+                    else
+                    {
+                        var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因SOC為{percentage:F2} < {highPercentage:F2}(高水位門檻值), 故送出充電信號";
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                        OnMessageShowEvent?.Invoke(this, msg);
+                    }
+
+                    middleAgent.ChargHandshaking();
+                    EnumChargeDirection chargeDirection;
+                    switch (address.ChargeDirection)
+                    {
+                        case EnumChargeDirection.Left:
+                            chargeDirection = EnumChargeDirection.Left;
+                            break;
+                        case EnumChargeDirection.Right:
+                            chargeDirection = EnumChargeDirection.Right;
+                            break;
+                        case EnumChargeDirection.None:
+                        default:
+                            alarmHandler.SetAlarm(000012);
+                            return;
+                    }
+                    plcAgent.ChargeStartCommand(chargeDirection);
+
+                    Stopwatch sw = new Stopwatch();
+                    bool isTimeout = false;
+                    sw.Start();
+                    while (true)
+                    {
+                        sw.Stop();
+                        if (sw.ElapsedMilliseconds > mainFlowConfig.StartChargeWaitingTimeoutMs)
+                        {
+                            isTimeout = true;
+                            break;
+                        }
+                        sw.Start();
+                        if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                        {
+                            break;
+                        }
+                        SpinWait.SpinUntil(() => false, 5);
+                    }
+
+                    if (!isTimeout)
+                    {
+                        middleAgent.Charging();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
+                        batteryLog.ChargeCount++;
+                        SaveBatteryLog();
+                    }
+                    else
+                    {
+                        alarmHandler.SetAlarm(000013);
+                    }
                 }
 
-                if (!isTimeout)
-                {
-                    middleAgent.Charging();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
-                    batteryLog.ChargeCount++;
-                    SaveBatteryLog();
-                }
-                else
-                {
-                    alarmHandler.SetAlarm(000013);
-                }
+            }
+            catch (Exception ex)
+            {
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void LowPowerStartCharge(MapAddress lastAddress)
         {
-            var address = lastAddress;
-            var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
-            var lowPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeLowSoc;
-            var pos = theVehicle.VehicleLocation.RealPosition;
-            if (address.IsCharger && mapHandler.IsPositionInThisAddress(pos, address.Position))
+            try
             {
-                if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                var address = lastAddress;
+                var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
+                var lowPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeLowSoc;
+                var pos = theVehicle.VehicleLocation.RealPosition;
+                if (address.IsCharger && mapHandler.IsPositionInThisAddress(pos, address.Position))
                 {
-                    var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
-                    loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                          , msg));
-                    //OnMessageShowEvent?.Invoke(this, msg);
-                    return;
-                }
-                else
-                {
-                    var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage:F2} < {lowPercentage:F2}(自動充電門檻值), 故送出充電信號";
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    //     , msg));
-                    OnMessageShowEvent?.Invoke(this, msg);
-                }
-
-
-                middleAgent.ChargHandshaking();
-                EnumChargeDirection chargeDirection;
-                switch (address.ChargeDirection)
-                {
-                    case EnumChargeDirection.Left:
-                        chargeDirection = EnumChargeDirection.Left;
-                        break;
-                    case EnumChargeDirection.Right:
-                        chargeDirection = EnumChargeDirection.Right;
-                        break;
-                    case EnumChargeDirection.None:
-                    default:
-                        alarmHandler.SetAlarm(000012);
-                        return;
-                }
-                plcAgent.ChargeStartCommand(chargeDirection);
-
-                Stopwatch sw = new Stopwatch();
-                bool isTimeout = false;
-                sw.Start();
-                while (true)
-                {
-                    sw.Stop();
-                    if (sw.ElapsedMilliseconds > mainFlowConfig.StartChargeWaitingTimeoutMs)
-                    {
-                        isTimeout = true;
-                        break;
-                    }
-                    sw.Start();
                     if (theVehicle.ThePlcVehicle.Batterys.Charging)
                     {
-                        break;
+                        var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                        //OnMessageShowEvent?.Invoke(this, msg);
+                        return;
                     }
-                    SpinWait.SpinUntil(() => false, 5);
-                }
+                    else
+                    {
+                        var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage:F2} < {lowPercentage:F2}(自動充電門檻值), 故送出充電信號";
+                        //LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                        OnMessageShowEvent?.Invoke(this, msg);
+                    }
 
-                if (!isTimeout)
-                {
-                    middleAgent.Charging();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
-                    batteryLog.ChargeCount++;
-                    SaveBatteryLog();
+
+                    middleAgent.ChargHandshaking();
+                    EnumChargeDirection chargeDirection;
+                    switch (address.ChargeDirection)
+                    {
+                        case EnumChargeDirection.Left:
+                            chargeDirection = EnumChargeDirection.Left;
+                            break;
+                        case EnumChargeDirection.Right:
+                            chargeDirection = EnumChargeDirection.Right;
+                            break;
+                        case EnumChargeDirection.None:
+                        default:
+                            alarmHandler.SetAlarm(000012);
+                            return;
+                    }
+                    plcAgent.ChargeStartCommand(chargeDirection);
+
+                    Stopwatch sw = new Stopwatch();
+                    bool isTimeout = false;
+                    sw.Start();
+                    while (true)
+                    {
+                        sw.Stop();
+                        if (sw.ElapsedMilliseconds > mainFlowConfig.StartChargeWaitingTimeoutMs)
+                        {
+                            isTimeout = true;
+                            break;
+                        }
+                        sw.Start();
+                        if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                        {
+                            break;
+                        }
+                        SpinWait.SpinUntil(() => false, 5);
+                    }
+
+                    if (!isTimeout)
+                    {
+                        middleAgent.Charging();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                        batteryLog.ChargeCount++;
+                        SaveBatteryLog();
+                    }
+                    else
+                    {
+                        alarmHandler.SetAlarm(000013);
+                    }
                 }
-                else
-                {
-                    alarmHandler.SetAlarm(000013);
-                }
+            }
+            catch (Exception ex)
+            {
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
         public bool StopCharge()
         {
-            var msg = $"MainFlow : 嘗試停止充電, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
-            loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                 , msg));
-
-            if (!theVehicle.ThePlcVehicle.Batterys.Charging)
+            try
             {
-                return true;
-            }
+                var beginMsg = $"MainFlow : 嘗試停止充電, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, beginMsg);
 
-            if (!mapHandler.IsPositionInThisAddress(theVehicle.VehicleLocation.RealPosition, theVehicle.VehicleLocation.LastAddress.Position))
-            {
-                loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , $"MainFlow : Stop charge fail, RealPos is not in LastAddress [Real=({(int)theVehicle.VehicleLocation.RealPosition.X},{(int)theVehicle.VehicleLocation.RealPosition.Y})][LastAddress={theVehicle.VehicleLocation.LastAddress.Id}]"));
-                return true;
-            }
-            var address = theVehicle.VehicleLocation.LastAddress;
-            if (address.IsCharger)
-            {
-                middleAgent.ChargHandshaking();
-                plcAgent.ChargeStopCommand();
-
-                Stopwatch sw = new Stopwatch();
-                bool isTimeOut = false;
-                sw.Start();
-                int simpleRetryCount = 0;
-                while (true)
+                if (!theVehicle.ThePlcVehicle.Batterys.Charging)
                 {
-                    simpleRetryCount++;
-                    sw.Stop();
-                    if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
-                    {
-                        isTimeOut = true;
-                        break;
-                    }
-                    sw.Start();
-                    if (!theVehicle.ThePlcVehicle.Batterys.Charging)
-                    {
-                        break;
-                    }
-                    if (simpleRetryCount == 1200)
-                    {
-                        plcAgent.ChargeStopCommand();
-                        simpleRetryCount = 0;
-                    }
-                    SpinWait.SpinUntil(() => false, 5);
-                }
-                sw.Stop();
-
-                if (!isTimeOut)
-                {
-                    middleAgent.ChargeOff();
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
                     return true;
+                }
+
+                if (!mapHandler.IsPositionInThisAddress(theVehicle.VehicleLocation.RealPosition, theVehicle.VehicleLocation.LastAddress.Position))
+                {
+                    var msg = $"Stop charge fail, RealPos is not in LastAddress [Real=({(int)theVehicle.VehicleLocation.RealPosition.X},{(int)theVehicle.VehicleLocation.RealPosition.Y})][LastAddress={theVehicle.VehicleLocation.LastAddress.Id}]";
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                    return true;
+                }
+                var address = theVehicle.VehicleLocation.LastAddress;
+                if (address.IsCharger)
+                {
+                    middleAgent.ChargHandshaking();
+                    plcAgent.ChargeStopCommand();
+
+                    Stopwatch sw = new Stopwatch();
+                    bool isTimeOut = false;
+                    sw.Start();
+                    int simpleRetryCount = 0;
+                    while (true)
+                    {
+                        simpleRetryCount++;
+                        sw.Stop();
+                        if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
+                        {
+                            isTimeOut = true;
+                            break;
+                        }
+                        sw.Start();
+                        if (!theVehicle.ThePlcVehicle.Batterys.Charging)
+                        {
+                            break;
+                        }
+                        if (simpleRetryCount == 1200)
+                        {
+                            plcAgent.ChargeStopCommand();
+                            simpleRetryCount = 0;
+                        }
+                        SpinWait.SpinUntil(() => false, 5);
+                    }
+                    sw.Stop();
+
+                    if (!isTimeOut)
+                    {
+                        middleAgent.ChargeOff();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                        return true;
+                    }
+                    else
+                    {
+                        alarmHandler.SetAlarm(000014);
+                        StopVehicle();
+                        return false;
+                    }
                 }
                 else
                 {
-                    alarmHandler.SetAlarm(000014);
-                    StopVehicle();
-                    return false;
+                    return true;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return true;
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                return false;
             }
         }
 
         public void StopAndClear()
         {
-            PauseVisitTransferSteps();
-            middleAgent.ClearAllReserve();
-            StopVehicle();
-            StopVisitTransferSteps();
-            theVehicle.VehicleLocation.WheelAngle = moveControlHandler.ControlData.WheelAngle;
-
-            if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
+            try
             {
-                agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
-                middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-            }
+                PauseVisitTransferSteps();
+                middleAgent.ClearAllReserve();
+                StopVehicle();
+                StopVisitTransferSteps();
+                theVehicle.VehicleLocation.WheelAngle = moveControlHandler.ControlData.WheelAngle;
 
-            if (!IsInterlockErrorOrBcrReadFail())
+                if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
+                {
+                    agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
+                    middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                }
+
+                if (!IsInterlockErrorOrBcrReadFail())
+                {
+                    agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
+                }
+
+                if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
+                {
+                    string cstId = "";
+                    plcAgent.triggerCassetteIDReader(ref cstId);
+                }
+
+                ReadResult = EnumCstIdReadResult.Noraml;
+
+                var msg = $"MainFlow : Stop And Clear";
+                OnMessageShowEvent?.Invoke(this, msg);
+
+            }
+            catch (Exception ex)
             {
-                agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-
-            if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
-            {
-                string cstId = "";
-                plcAgent.triggerCassetteIDReader(ref cstId);
-            }
-
-            ReadResult = EnumCstIdReadResult.Noraml;
-
-            var msg = $"MainFlow : Stop And Clear";
-            OnMessageShowEvent?.Invoke(this, msg);
         }
 
         private bool IsInterlockErrorOrBcrReadFail()
@@ -3160,7 +3096,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return EnumTransferStepType.Empty;
             }
         }
@@ -3180,7 +3116,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return EnumTransferStepType.Empty;
             }
         }
@@ -3305,8 +3241,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -3366,8 +3301,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -3416,8 +3350,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -3486,8 +3419,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ex.StackTrace));
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -3505,7 +3437,7 @@ namespace Mirle.Agv.Controller
         {
             var msg = "DuelStartSectionHappend";
             OnMessageShowEvent?.Invoke(this, msg);
-            loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
 
         public int GetCurWheelAngle()
@@ -3517,7 +3449,6 @@ namespace Mirle.Agv.Controller
         {
             return (int)theVehicle.VehicleLocation.VehicleAngle; //車頭方向角度(0,90,180,-90)  
         }
-
 
         public void LoadMainFlowConfig()
         {
@@ -3536,7 +3467,6 @@ namespace Mirle.Agv.Controller
         public void LoadMiddlerConfig()
         {
             XmlHandler xmlHandler = new XmlHandler();
-
             middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
         }
 
@@ -3549,8 +3479,15 @@ namespace Mirle.Agv.Controller
 
         private void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort batteryPercentage)
         {
-            batteryLog.InitialSoc = batteryPercentage;
-            SaveBatteryLog();
+            try
+            {
+                batteryLog.InitialSoc = batteryPercentage;
+                SaveBatteryLog();
+            }
+            catch (Exception ex)
+            {
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         public void SaveBatteryLog()
@@ -3568,5 +3505,29 @@ namespace Mirle.Agv.Controller
             //TODO: Middler
 
         }
+
+        private void LogError(string classMethodName, string exMsg)
+        {
+            try
+            {
+                loggerAgent.Log("Error", new LogFormat("Error", "5", classMethodName, middlerConfig.ClientName, "CarrierID", exMsg));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void LogDebug(string classMethodName, string msg)
+        {
+            try
+            {
+                loggerAgent.Log("Debug", new LogFormat("Debug", "5", classMethodName, middlerConfig.ClientName, "CarrierID", msg));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+
     }
 }

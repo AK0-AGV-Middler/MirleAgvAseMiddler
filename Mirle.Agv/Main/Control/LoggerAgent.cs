@@ -79,7 +79,7 @@ namespace Mirle.Agv.Controller
                 dicLoggers.Add(aLogType.Name, logger);
             }
 
-            
+
         }
 
         public void Log(string type, LogFormat logFormat)
@@ -96,7 +96,7 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 dicLoggers["LoggerException"].LogString(ex.StackTrace);
-            }            
+            }
         }
 
         public void LogString(string dirName, string msg)
@@ -106,7 +106,7 @@ namespace Mirle.Agv.Controller
                 if (dicLoggers.ContainsKey(dirName))
                 {
                     Logger logger = dicLoggers[dirName];
-                    logger.LogString(string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", msg));
+                    logger.LogString(msg);
                 }
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                LogType logType = new LogType();               
+                LogType logType = new LogType();
                 logType.Name = v;
                 logType.LogFileName = v;
                 logType.DirName = v;
