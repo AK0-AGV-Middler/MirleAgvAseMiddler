@@ -3076,10 +3076,20 @@ namespace Mirle.Agv.Controller
                                     {
                                         if (this.aMCProtocol.get_ItemByTag("ForkCommandOK").AsBoolean)
                                         {
+                                            //<-- 2020/01/13 Modify by dean  避免漏寫入硬改寫入三次
+                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                            System.Threading.Thread.Sleep(500);
+                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                            System.Threading.Thread.Sleep(500);
                                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
                                             System.Threading.Thread.Sleep(1000);
                                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                            System.Threading.Thread.Sleep(500);
+                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                            System.Threading.Thread.Sleep(500);
+                                            this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
                                             break;
+                                            //-->
                                         }
                                         else if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
                                         {
@@ -3134,7 +3144,14 @@ namespace Mirle.Agv.Controller
                                                 //this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
                                                 //System.Threading.Thread.Sleep(1000);
                                                 //this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+
+                                                //<-- 2020/01/13 Modify by dean  避免漏寫入硬改寫入三次
                                                 this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                System.Threading.Thread.Sleep(500);
+                                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                System.Threading.Thread.Sleep(500);
+                                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                //-->
                                                 this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
                                                 this.APLCVehicle.Robot.ExecutingCommand.Reason = "Fork Command Read timeout";
                                                 //this.aAlarmHandler.SetAlarm(270002);
@@ -3182,9 +3199,19 @@ namespace Mirle.Agv.Controller
                                                 readTimeoutCounter++;
                                                 if (readTimeoutCounter == 1200)
                                                 {
+                                                    //<-- 2020/01/13 Modify by dean  避免漏寫入硬改寫入三次
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                    System.Threading.Thread.Sleep(500);
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
+                                                    System.Threading.Thread.Sleep(500);
                                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
                                                     System.Threading.Thread.Sleep(1000);
                                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                                    System.Threading.Thread.Sleep(500);
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                                    System.Threading.Thread.Sleep(500);
+                                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, true);
+                                                    //-->
                                                     readTimeoutCounter = 0;
                                                     break;
                                                     
@@ -3240,8 +3267,13 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Executing;
                                     eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                     OnForkCommandExecutingEvent?.Invoke(this, eventForkCommand);
+                                    //<-- 2020/01/13 Modify by dean  避免漏寫入硬改寫入三次
                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
-                                    System.Threading.Thread.Sleep(1000);
+                                    System.Threading.Thread.Sleep(500);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
+                                    System.Threading.Thread.Sleep(500);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
+                                    //-->
 
                                 }
                                 else
@@ -3297,15 +3329,21 @@ namespace Mirle.Agv.Controller
                                 sw.Reset();
 
 
-                                //<-- 2020/01/03 modify by Ellison
-                                Task.Run(() =>
-                                {
-                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                                    System.Threading.Thread.Sleep(100);
-                                    this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
-                                    System.Threading.Thread.Sleep(1000);
-                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);                                                           
-                                });
+                                //<-- 2020/01/13 Modify by dean  避免漏寫入硬改寫入三次
+                                
+                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                                System.Threading.Thread.Sleep(500);
+                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                                System.Threading.Thread.Sleep(500);
+                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                                this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
+                                System.Threading.Thread.Sleep(1000);
+                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                System.Threading.Thread.Sleep(500);
+                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                System.Threading.Thread.Sleep(500);
+                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+
                                 //-->
 
                                 break;
