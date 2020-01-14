@@ -3135,25 +3135,10 @@ namespace Mirle.Agv.Controller
                 plcAgent.triggerCassetteIDReader(ref cstId);
             }
 
-            //if (NeedRename)
-            //{
-            //    NeedRename = false;
-            //    theVehicle.ThePlcVehicle.CassetteId = theVehicle.ThePlcVehicle.RenameCassetteId;
-            //}
-            //else
-            //{
-            //    if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
-            //    {
-            //        string cstId = "";
-            //        plcAgent.triggerCassetteIDReader(ref cstId);
-            //    }
-            //}
             ReadResult = EnumCstIdReadResult.Noraml;
 
             var msg = $"MainFlow : Stop And Clear";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
 
         private bool IsInterlockErrorOrBcrReadFail()

@@ -1954,13 +1954,16 @@ namespace Mirle.Agv.Controller
                 switch (receive.ActType)
                 {
                     case CMDCancelType.CmdCancel:
-                    case CMDCancelType.CmdAbort:
-                    case CMDCancelType.CmdEms:
+                    case CMDCancelType.CmdAbort:                   
                         mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, cmdId, receive.ActType);
                         break;
                     case CMDCancelType.CmdCancelIdMismatch:
                     case CMDCancelType.CmdCancelIdReadFailed:
                         alarmHandler.ResetAllAlarms();
+                        mainFlowHandler.StopAndClear();
+                        break;
+                    case CMDCancelType.CmdEms:
+                        alarmHandler.SetAlarm(000037);
                         mainFlowHandler.StopAndClear();
                         break;
                     case CMDCancelType.CmdNone:
