@@ -350,7 +350,7 @@ namespace Mirle.Agv.Controller
             agvRevise = new AgvMoveRevise(ontimeReviseConfig, elmoDriver, DriverSr2000List);
 
 
-            for ( int i = 0; i < 5 && !(elmoDriver.Connected && DriverSr2000List[0].sr2000Info.Connect && DriverSr2000List[1].sr2000Info.Connect) ; i++)
+            for (int i = 0; i < 5 && !(elmoDriver.Connected && DriverSr2000List[0].sr2000Info.Connect && DriverSr2000List[1].sr2000Info.Connect); i++)
             {
                 Thread.Sleep(500);
 
@@ -2100,7 +2100,7 @@ namespace Mirle.Agv.Controller
 
             Vehicle.Instance.VehicleLocation.VehicleAngle = location.Real.AGVAngle;
             Vehicle.Instance.VehicleLocation.MoveDirectionAngle = computeFunction.GetCurrectAngle(-(location.Real.AGVAngle + ControlData.WheelAngle + (ControlData.DirFlag ? 0 : 180)));
-            
+
             DirLightOnlyOn((ControlData.DirFlag ? EnumBeamSensorLocate.Front : EnumBeamSensorLocate.Back));
 
             MoveState = EnumMoveState.Moving;
@@ -4643,255 +4643,267 @@ namespace Mirle.Agv.Controller
             ThetaSectionDeviation logThetaDeviation;
             Sr2000ReadData logReadData;
             DateTime now;
+            MoveCommandData tempCommand;
+            int commandIndex;
 
-            while (true)
+            try
             {
-                timer.Reset();
-                timer.Start();
-
-                if (ControlData.ResetMoveControlCommandMoving)
+                while (true)
                 {
-                    ControlData.ResetMoveControlCommandMoving = false;
-                    ControlData.MoveControlCommandMoving = true;
-                    ControlData.MoveControlCommandComplete = false;
-                }
+                    timer.Reset();
+                    timer.Start();
 
-                if (moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Enable &&
-                                      ControlData.MoveControlCommandComplete)
-                {
-                    if (ControlData.MoveControlCommandCompleteTimer.ElapsedMilliseconds >
-                        moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Range)
+                    if (ControlData.ResetMoveControlCommandMoving)
                     {
+                        ControlData.ResetMoveControlCommandMoving = false;
+                        ControlData.MoveControlCommandMoving = true;
                         ControlData.MoveControlCommandComplete = false;
-                        ControlData.MoveControlCommandMoving = false;
-                    }
-                }
-
-                if (!moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Enable ||
-                    ControlData.MoveControlCommandMoving)
-                {
-                    //  Debug 
-                    //BarcodeX	BarocdeY	ElmoEncoder	elmoV	TurnP	TurnV
-
-                    //  Time
-                    now = DateTime.Now;
-                    csvLog = now.ToString("yyyy/MM/dd HH:mm:ss.fff");
-
-                    //  State
-                    if (MoveState != EnumMoveState.TR)
-                        AddCSV(ref csvLog, MoveState.ToString());
-                    else
-                        AddCSV(ref csvLog, ControlData.TurnType.ToString());
-
-                    //  RealEncoder
-                    AddCSV(ref csvLog, location.RealEncoder.ToString("0.0"));
-
-                    //  NextCommand	TriggerEncoder
-                    if (MoveState != EnumMoveState.Idle && command.IndexOfCmdList < command.CommandList.Count)
-                    {
-                        AddCSV(ref csvLog, command.CommandList[command.IndexOfCmdList].CmdType.ToString());
-
-                        if (command.CommandList[command.IndexOfCmdList].Position != null)
-                            AddCSV(ref csvLog, command.CommandList[command.IndexOfCmdList].TriggerEncoder.ToString("0"));
-                        else
-                            AddCSV(ref csvLog, "Now");
-                    }
-                    else
-                    {
-                        AddCSV(ref csvLog, "Empty");
-                        AddCSV(ref csvLog, "Empty");
                     }
 
-                    //  Delta
-                    AddCSV(ref csvLog, location.Delta.ToString("0.0"));
-
-                    //  Offset
-                    AddCSV(ref csvLog, location.Offset.ToString("0.0"));
-
-                    //  RealPosition
-                    logAGVPosition = location.Real;
-                    if (logAGVPosition != null)
+                    if (moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Enable &&
+                                          ControlData.MoveControlCommandComplete)
                     {
-                        AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
-                        AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
-                    }
-                    else
-                    {
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                    }
-
-                    //  BarcodePosition
-                    //  X Y
-                    logAGVPosition = location.agvPosition;
-                    if (logAGVPosition != null)
-                    {
-                        AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
-                        AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
-                    }
-                    else
-                    {
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                    }
-
-                    //  EncoderPosition
-                    //  X Y
-                    logAGVPosition = location.Encoder;
-                    if (logAGVPosition != null && logAGVPosition.Position != null)
-                    {
-                        AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
-                        AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
-                    }
-                    else
-                    {
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                    }
-
-                    logThetaDeviation = location.ThetaAndSectionDeviation;
-                    if (logThetaDeviation != null)
-                    {
-                        AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
-                        AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
-                    }
-                    else
-                    {
-                        AddCSV(ref csvLog, "N/A");
-                        AddCSV(ref csvLog, "N/A");
-                    }
-
-                    //  SR2000
-                    //  count	scanTime	X	Y	theta   BarcodeAngle    delta	theta   
-                    for (int i = 0; i < 2; i++)
-                    {
-                        if (DriverSr2000List.Count > i)
+                        if (ControlData.MoveControlCommandCompleteTimer.ElapsedMilliseconds >
+                            moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Range)
                         {
-                            logReadData = DriverSr2000List[i].GetReadData();
-                            if (logReadData != null)
+                            ControlData.MoveControlCommandComplete = false;
+                            ControlData.MoveControlCommandMoving = false;
+                        }
+                    }
+
+                    if (!moveControlConfig.Safety[EnumMoveControlSafetyType.IdleNotWriteLog].Enable ||
+                        ControlData.MoveControlCommandMoving)
+                    {
+                        //  Debug 
+                        //BarcodeX	BarocdeY	ElmoEncoder	elmoV	TurnP	TurnV
+
+                        //  Time
+                        now = DateTime.Now;
+                        csvLog = now.ToString("yyyy/MM/dd HH:mm:ss.fff");
+
+                        //  State
+                        if (MoveState != EnumMoveState.TR)
+                            AddCSV(ref csvLog, MoveState.ToString());
+                        else
+                            AddCSV(ref csvLog, ControlData.TurnType.ToString());
+
+                        //  RealEncoder
+                        AddCSV(ref csvLog, location.RealEncoder.ToString("0.0"));
+
+                        //  NextCommand	TriggerEncoder
+                        tempCommand = command;
+                        commandIndex = command.IndexOfCmdList;
+
+                        if (MoveState != EnumMoveState.Idle && commandIndex < tempCommand.CommandList.Count)
+                        {
+                            AddCSV(ref csvLog, tempCommand.CommandList[commandIndex].CmdType.ToString());
+
+                            if (tempCommand.CommandList[commandIndex].Position != null)
+                                AddCSV(ref csvLog, tempCommand.CommandList[commandIndex].TriggerEncoder.ToString("0"));
+                            else
+                                AddCSV(ref csvLog, "Now");
+                        }
+                        else
+                        {
+                            AddCSV(ref csvLog, "Empty");
+                            AddCSV(ref csvLog, "Empty");
+                        }
+
+                        //  Delta
+                        AddCSV(ref csvLog, location.Delta.ToString("0.0"));
+
+                        //  Offset
+                        AddCSV(ref csvLog, location.Offset.ToString("0.0"));
+
+                        //  RealPosition
+                        logAGVPosition = location.Real;
+                        if (logAGVPosition != null)
+                        {
+                            AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
+                            AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
+                        }
+                        else
+                        {
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                        }
+
+                        //  BarcodePosition
+                        //  X Y
+                        logAGVPosition = location.agvPosition;
+                        if (logAGVPosition != null)
+                        {
+                            AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
+                            AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
+                        }
+                        else
+                        {
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                        }
+
+                        //  EncoderPosition
+                        //  X Y
+                        logAGVPosition = location.Encoder;
+                        if (logAGVPosition != null && logAGVPosition.Position != null)
+                        {
+                            AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0.0"));
+                            AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0.0"));
+                        }
+                        else
+                        {
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                        }
+
+                        logThetaDeviation = location.ThetaAndSectionDeviation;
+                        if (logThetaDeviation != null)
+                        {
+                            AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
+                            AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
+                        }
+                        else
+                        {
+                            AddCSV(ref csvLog, "N/A");
+                            AddCSV(ref csvLog, "N/A");
+                        }
+
+                        //  SR2000
+                        //  count	scanTime	X	Y	theta   BarcodeAngle    delta	theta   
+                        for (int i = 0; i < 2; i++)
+                        {
+                            if (DriverSr2000List.Count > i)
                             {
-                                logAGVPosition = logReadData.AGV;
-                                logThetaDeviation = logReadData.ReviseData;
-                                if (logAGVPosition != null)
+                                logReadData = DriverSr2000List[i].GetReadData();
+                                if (logReadData != null)
                                 {
-                                    AddCSV(ref csvLog, logAGVPosition.Count.ToString("0"));
-                                    AddCSV(ref csvLog, logAGVPosition.GetDataTime.ToString("HH:mm:ss.ff"));
-                                    AddCSV(ref csvLog, logAGVPosition.ScanTime.ToString("0"));
-                                    AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0"));
-                                    AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0"));
-                                    AddCSV(ref csvLog, logAGVPosition.AGVAngle.ToString("0.0"));
-                                    AddCSV(ref csvLog, logAGVPosition.BarcodeAngleInMap.ToString("0"));
-                                }
-                                else
-                                {
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
-                                }
+                                    logAGVPosition = logReadData.AGV;
+                                    logThetaDeviation = logReadData.ReviseData;
+                                    if (logAGVPosition != null)
+                                    {
+                                        AddCSV(ref csvLog, logAGVPosition.Count.ToString("0"));
+                                        AddCSV(ref csvLog, logAGVPosition.GetDataTime.ToString("HH:mm:ss.ff"));
+                                        AddCSV(ref csvLog, logAGVPosition.ScanTime.ToString("0"));
+                                        AddCSV(ref csvLog, logAGVPosition.Position.X.ToString("0"));
+                                        AddCSV(ref csvLog, logAGVPosition.Position.Y.ToString("0"));
+                                        AddCSV(ref csvLog, logAGVPosition.AGVAngle.ToString("0.0"));
+                                        AddCSV(ref csvLog, logAGVPosition.BarcodeAngleInMap.ToString("0"));
+                                    }
+                                    else
+                                    {
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                    }
 
-                                if (logThetaDeviation != null)
-                                {
-                                    AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
-                                    AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
-                                }
-                                else
-                                {
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
-                                }
+                                    if (logThetaDeviation != null)
+                                    {
+                                        AddCSV(ref csvLog, logThetaDeviation.Theta.ToString("0.0"));
+                                        AddCSV(ref csvLog, logThetaDeviation.SectionDeviation.ToString("0.0"));
+                                    }
+                                    else
+                                    {
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                    }
 
-                                if (logReadData.Barcode1 != null && logReadData.Barcode2 != null)
-                                {
-                                    AddCSV(ref csvLog, logReadData.Barcode1.ID.ToString("0"));
-                                    AddCSV(ref csvLog, logReadData.Barcode2.ID.ToString("0"));
-                                }
-                                else
-                                {
-                                    AddCSV(ref csvLog, "N/A");
-                                    AddCSV(ref csvLog, "N/A");
+                                    if (logReadData.Barcode1 != null && logReadData.Barcode2 != null)
+                                    {
+                                        AddCSV(ref csvLog, logReadData.Barcode1.ID.ToString("0"));
+                                        AddCSV(ref csvLog, logReadData.Barcode2.ID.ToString("0"));
+                                    }
+                                    else
+                                    {
+                                        AddCSV(ref csvLog, "N/A");
+                                        AddCSV(ref csvLog, "N/A");
+                                    }
                                 }
                             }
+                            else
+                            {
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                            }
                         }
-                        else
+
+                        //  Elmo
+                        //  count   position	velocity	toc	disable	moveComplete	error
+                        for (int i = 0; i < 8; i++)
                         {
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
+                            feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
+                            if (feedBackData != null)
+                            {
+                                AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
+                                AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
+                                AddCSV(ref csvLog, feedBackData.Feedback_Velocity.ToString("0.0"));
+                                AddCSV(ref csvLog, feedBackData.Feedback_Position_Error.ToString("0.0"));
+                                AddCSV(ref csvLog, feedBackData.Feedback_Torque.ToString("0.0"));
+                                AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
+                                AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
+                                AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
+                            }
+                            else
+                            {
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                            }
                         }
+
+                        for (int i = 8; i < 16; i++)
+                        {
+                            feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
+                            if (feedBackData != null)
+                            {
+                                AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
+                                AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
+                                AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
+                                AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
+                                AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
+                            }
+                            else
+                            {
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                                AddCSV(ref csvLog, "N/A");
+                            }
+                        }
+
+                        for (int i = 16; i < 18; i++)
+                        {
+                            AddCSV(ref csvLog, elmoDriver.MoveCompelete(order[i]) ? "Stop" : "Move");
+                        }
+
+                        logger.LogString(csvLog);
                     }
 
-                    //  Elmo
-                    //  count   position	velocity	toc	disable	moveComplete	error
-                    for (int i = 0; i < 8; i++)
-                    {
-                        feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
-                        if (feedBackData != null)
-                        {
-                            AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
-                            AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
-                            AddCSV(ref csvLog, feedBackData.Feedback_Velocity.ToString("0.0"));
-                            AddCSV(ref csvLog, feedBackData.Feedback_Position_Error.ToString("0.0"));
-                            AddCSV(ref csvLog, feedBackData.Feedback_Torque.ToString("0.0"));
-                            AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
-                            AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
-                            AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
-                        }
-                        else
-                        {
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                        }
-                    }
-
-                    for (int i = 8; i < 16; i++)
-                    {
-                        feedBackData = elmoDriver.ElmoGetFeedbackData(order[i]);
-                        if (feedBackData != null)
-                        {
-                            AddCSV(ref csvLog, feedBackData.Count.ToString("0"));
-                            AddCSV(ref csvLog, feedBackData.Feedback_Position.ToString("0.0"));
-                            AddCSV(ref csvLog, feedBackData.Disable ? "Disable" : "Enable");
-                            AddCSV(ref csvLog, feedBackData.StandStill ? "Stop" : "Move");
-                            AddCSV(ref csvLog, feedBackData.ErrorStop ? "Error" : "Normal");
-                        }
-                        else
-                        {
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                            AddCSV(ref csvLog, "N/A");
-                        }
-                    }
-
-                    for (int i = 16; i < 18; i++)
-                    {
-                        AddCSV(ref csvLog, elmoDriver.MoveCompelete(order[i]) ? "Stop" : "Move");
-                    }
-
-                    logger.LogString(csvLog);
+                    while (timer.ElapsedMilliseconds < moveControlConfig.CSVLogInterval)
+                        Thread.Sleep(1);
                 }
-
-                while (timer.ElapsedMilliseconds < moveControlConfig.CSVLogInterval)
-                    Thread.Sleep(1);
+            }
+            catch
+            {
+                WriteLog("MoveControl", "3", device, "", "CSV Excption!!");
             }
         }
         #endregion
