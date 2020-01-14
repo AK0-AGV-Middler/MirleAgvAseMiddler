@@ -240,12 +240,6 @@
     <Compile Include="Main\Model\TransferStepInfo\UnloadCmdInfo.cs" />
     <Compile Include="Plc\Model\VehicleCorrectValue.cs" />
     <Compile Include="Plc\PlcDefine.cs" />
-    <Compile Include="UcThreadPad.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="UcThreadPad.Designer.cs">
-      <DependentUpon>UcThreadPad.cs</DependentUpon>
-    </Compile>
     <Compile Include="MoveControl\View\UserControls\SensorByPassInformation.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -380,9 +374,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="UcThreadPad.resx">
-      <DependentUpon>UcThreadPad.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MoveControl\View\UserControls\SensorByPassInformation.resx">
       <DependentUpon>SensorByPassInformation.cs</DependentUpon>
     </EmbeddedResource>

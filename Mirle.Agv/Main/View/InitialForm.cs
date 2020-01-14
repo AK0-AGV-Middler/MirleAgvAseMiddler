@@ -59,7 +59,7 @@ namespace Mirle.Agv.View
                 ListBoxAppend(lst_StartUpMsg, msg);
                 WriteMmf("NG");
 
-                SpinWait.SpinUntil(() => false, initialConfig.StartNgCloseSec*1000);
+                SpinWait.SpinUntil(() => false, initialConfig.StartNgCloseSec * 1000);
                 ThisClose();
             }
 

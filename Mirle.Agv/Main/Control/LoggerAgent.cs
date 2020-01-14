@@ -99,6 +99,22 @@ namespace Mirle.Agv.Controller
             }            
         }
 
+        public void LogString(string dirName, string msg)
+        {
+            try
+            {
+                if (dicLoggers.ContainsKey(dirName))
+                {
+                    Logger logger = dicLoggers[dirName];
+                    logger.LogString(string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", msg));
+                }
+            }
+            catch (Exception ex)
+            {
+                dicLoggers["LoggerException"].LogString(ex.StackTrace);
+            }
+        }
+
         public void LogAlarmHistory(Alarm alarm)
         {
             if (dicLoggers.ContainsKey("AlarmHistory"))
