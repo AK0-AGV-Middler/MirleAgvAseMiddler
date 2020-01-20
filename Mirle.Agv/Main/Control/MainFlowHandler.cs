@@ -3002,12 +3002,13 @@ namespace Mirle.Agv.Controller
                         {
                             break;
                         }
-                        if (simpleRetryCount == 1200)
+                        if (simpleRetryCount >= 120)
                         {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Try stop charge[{simpleRetryCount}]");
                             plcAgent.ChargeStopCommand();
                             simpleRetryCount = 0;
                         }
-                        SpinWait.SpinUntil(() => false, 5);
+                        SpinWait.SpinUntil(() => false, 50);
                     }
                     sw.Stop();
 
