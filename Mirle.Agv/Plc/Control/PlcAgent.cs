@@ -3518,7 +3518,7 @@ namespace Mirle.Agv.Controller
         }
         private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)
         {
-            strlogMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
+            strlogMsg = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
             if (strlogMsg.Length > LogMsgMaxLength) strlogMsg = strlogMsg.Substring(0, LogMsgMaxLength);
             clsLoggerAgent.Log(clsLogFormat.Category, clsLogFormat);
         }
@@ -3941,7 +3941,7 @@ namespace Mirle.Agv.Controller
 
             try
             {
-                dateTime = DateTime.ParseExact(batteryLog.ResetTime, "yyyy/MM/dd_HH:mm:ss.fff", CultureInfo.InvariantCulture);
+                dateTime = DateTime.ParseExact(batteryLog.ResetTime, "yyyy-MM-dd HH-mm-ss.fff", CultureInfo.InvariantCulture);
                 date = dateTime.ToString("yyyyMMddHHmmss");
                 iMoveDistance = (ushort)(batteryLog.MoveDistanceTotalM / 1000);
                 iLoadUnloadCount = (ushort)batteryLog.LoadUnloadCount;

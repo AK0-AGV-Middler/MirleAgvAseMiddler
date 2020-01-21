@@ -1654,6 +1654,9 @@ namespace Mirle.Agv.Controller
                             return false;
 
                         // 第一次移動命令加入在反折點SlowStop且移動方向改為反方向,加入到第一次移動命令.
+                        tempOnceMoveCmd.AddressActions = new List<EnumAddressAction>();
+                        tempOnceMoveCmd.AddressPositions = new List<MapPosition>();
+                        tempOnceMoveCmd.SectionSpeedLimits = new List<double>();
                         AddOneceMoveCommand(ref tempOnceMoveCmd, data.StartNode, EnumAddressAction.ST, moveCmd.SectionSpeedLimits[data.Index]);
                         AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
                         tempOnceMoveCmd.DirFlag = !tempOnceMoveCmd.DirFlag;
@@ -1683,6 +1686,13 @@ namespace Mirle.Agv.Controller
                             return false;
 
                         // 第一次移動命令加入在反折點SlowStop且移動方向改為反方向,加入到第一次移動命令.
+                        for ( int i = tempOnceMoveCmd.AddressPositions.Count -1; i > 0; i--)
+                        {
+                            tempOnceMoveCmd.AddressPositions.RemoveAt(i);
+                            tempOnceMoveCmd.AddressActions.RemoveAt(i);
+                            tempOnceMoveCmd.SectionSpeedLimits.RemoveAt(i);
+                        }
+
                         AddOneceMoveCommand(ref tempOnceMoveCmd, data.TempNode, EnumAddressAction.SlowStop, 0);
                         tempOnceMoveCmd.DirFlag = !tempOnceMoveCmd.DirFlag;
                         oneceMoveCommandList.Add(tempOnceMoveCmd);

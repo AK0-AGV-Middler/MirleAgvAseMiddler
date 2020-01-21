@@ -2226,7 +2226,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                var msg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), ",\t", alarmHandler.LastAlarm.AlarmText, ",\t", forkNgRetryTimes);
+                var msg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), ",\t", alarmHandler.LastAlarm.AlarmText, ",\t", forkNgRetryTimes);
                 loggerAgent.LogString("RetryLog", msg);
             }
             catch (Exception)
@@ -3500,7 +3500,7 @@ namespace Mirle.Agv.Controller
         public void ResetBatteryLog()
         {
             BatteryLog tempBatteryLog = new BatteryLog();
-            tempBatteryLog.ResetTime = DateTime.Now.ToString("yyyy/MM/dd_HH:mm:ss.fff");
+            tempBatteryLog.ResetTime = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff");
             tempBatteryLog.InitialSoc = batteryLog.InitialSoc;
             batteryLog = tempBatteryLog;
             //TODO: Middler

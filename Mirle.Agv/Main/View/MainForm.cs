@@ -416,7 +416,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                DebugLogMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", msg, "\r\n", DebugLogMsg);
+                DebugLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", DebugLogMsg);
 
                 if (DebugLogMsg.Length > 65535)
                 {
@@ -890,7 +890,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n",
+                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
                                       type, "\t", $"{agvcTransCmd.CommandType}", "\r\n",
                                       $"[命令號={agvcTransCmd.CommandId}]\r\n",
                                       $"[貨號={agvcTransCmd.CassetteId}]\r\n",
@@ -1008,7 +1008,7 @@ namespace Mirle.Agv.View
         }
         private void SetTransferStepMsg(string msg)
         {
-            TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg);
+            TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg);
 
             if (TransferStepMsg.Length > 32767)
             {
@@ -1486,7 +1486,7 @@ namespace Mirle.Agv.View
             }
             else
             {
-                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff] ");
+                var timeStamp = DateTime.Now.ToString("[yyyy-MM-dd HH-mm-ss.fff] ");
                 msg = msg + Environment.NewLine;
                 richTextBox.Text = string.Concat(timeStamp, msg, richTextBox.Text);
 
