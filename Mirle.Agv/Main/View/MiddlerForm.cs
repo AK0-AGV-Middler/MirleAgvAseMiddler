@@ -88,7 +88,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                CommLogMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", msg, "\r\n", CommLogMsg);
+                CommLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", CommLogMsg);
 
                 if (CommLogMsg.Length > 65535)
                 {

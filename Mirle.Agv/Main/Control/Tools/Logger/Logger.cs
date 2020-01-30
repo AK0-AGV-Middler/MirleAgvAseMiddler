@@ -109,7 +109,7 @@ namespace Mirle.Agv.Controller.Tools
                 {
                     using (StreamWriter sw = new StreamWriter(stream, Encoding.UTF8))
                     {
-                        sw.WriteLine(string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\t", aFunctionName, "\t", aMessage));
+                        sw.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm:ss.fff"), "\t", aFunctionName, "\t", aMessage));
                         sw.Flush();
                         sw.Close();
                     }
@@ -163,7 +163,7 @@ namespace Mirle.Agv.Controller.Tools
         {
             try
             {
-                LogToQueue(string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), ",\t", classMethodName, ",\t", aMessage));
+                LogToQueue(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), ",\t", classMethodName, ",\t", aMessage));
             }
             catch (Exception ex)
             {

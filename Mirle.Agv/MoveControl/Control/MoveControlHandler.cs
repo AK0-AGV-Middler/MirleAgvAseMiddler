@@ -4679,7 +4679,7 @@ namespace Mirle.Agv.Controller
 
                         //  Time
                         now = DateTime.Now;
-                        csvLog = now.ToString("yyyy/MM/dd HH:mm:ss.fff");
+                        csvLog = now.ToString("yyyy-MM-dd HH-mm-ss.fff");
 
                         //  State
                         if (MoveState != EnumMoveState.TR)

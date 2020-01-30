@@ -42,7 +42,7 @@ namespace Mirle.Agv.View
         {
             if (e.IsOk)
             {
-                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss]");
+                var timeStamp = DateTime.Now.ToString("[yyyy-MM-dd HH-mm-ss]");
                 var msg = timeStamp + e.ItemName + "初始化完成\n";
                 ListBoxAppend(lst_StartUpMsg, msg);
                 if (e.ItemName == "全部")
@@ -54,7 +54,7 @@ namespace Mirle.Agv.View
             }
             else
             {
-                var timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss]");
+                var timeStamp = DateTime.Now.ToString("[yyyy-MM-dd HH-mm-ss]");
                 var msg = timeStamp + e.ItemName + "初始化失敗\n";
                 ListBoxAppend(lst_StartUpMsg, msg);
                 WriteMmf("NG");

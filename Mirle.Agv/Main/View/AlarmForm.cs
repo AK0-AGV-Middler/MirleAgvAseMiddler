@@ -37,19 +37,19 @@ namespace Mirle.Agv.View
 
         private void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
         {
-            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
+            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("HH-mm-ss.fff")}][Description={alarm.Description}]";
             AppendHappenedingAlarmsMsg(msgForHappeningAlarms);
 
-            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("yyyy/MM/dd_HH/mm")}]";
+            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("yyyy-MM-dd HH-mm")}]";
             AppendHistoryAlarmsMsg(msgForHistoryAlarms);
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("HH/mm/ss.fff")}][Description={alarm.Description}]";
+            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("HH-mm-ss.fff")}][Description={alarm.Description}]";
             AppendHappenedingAlarmsMsg(msgForHappeningAlarms);
 
-            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("yyyy/MM/dd_HH/mm")}]";
+            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("yyyy-MM-dd HH-mm")}]";
             AppendHistoryAlarmsMsg(msgForHistoryAlarms);
         }
 
@@ -102,7 +102,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                HappenedingAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg, "\r\n", HappenedingAlarmsMsg);
+                HappenedingAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg, "\r\n", HappenedingAlarmsMsg);
 
                 if (HappenedingAlarmsMsg.Length > 65535)
                 {
@@ -119,7 +119,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                HistoryAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "\r\n", msg, "\r\n", HistoryAlarmsMsg);
+                HistoryAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg, "\r\n", HistoryAlarmsMsg);
 
                 if (HistoryAlarmsMsg.Length > 65535)
                 {

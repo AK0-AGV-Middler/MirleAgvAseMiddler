@@ -18,7 +18,7 @@ namespace Mirle.Agv.View
             get { return warningMsg; }
             set
             {
-                string timeStamp = DateTime.Now.ToString("[yyyy/MM/dd HH:mm:ss.fff]");
+                string timeStamp = DateTime.Now.ToString("[yyyy-MM-dd HH-mm-ss.fff]");
                 warningMsg = value;
                 textBox1.Text = timeStamp + Environment.NewLine + warningMsg;
             }

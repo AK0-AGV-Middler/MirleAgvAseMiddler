@@ -2657,7 +2657,10 @@ namespace Mirle.Agv.Controller
         }
         private void WriteBatterySOC()
         {
-            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+            string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            // this.aMCProtocol.WritePLCByTagDirectly("BatterySOC", this.APLCVehicle.Batterys.Percentage.ToString());
+
             this.aMCProtocol.get_ItemByTag("BatterySOC").AsUInt16 = Convert.ToUInt16(this.APLCVehicle.Batterys.Percentage);
 
             if (this.aMCProtocol.WritePLC())
@@ -2672,6 +2675,8 @@ namespace Mirle.Agv.Controller
         public void WriteIPCAlive()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
+
+            // this.aMCProtocol.WritePLCByTagDirectly("IPCAlive", IPCAliveCounter.ToString());
 
             //heart beat量大不記log
             this.aMCProtocol.get_ItemByTag("IPCAlive").AsUInt16 = IPCAliveCounter;
@@ -3065,7 +3070,7 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ExecutingCommand.Reason = "";
                                     this.WriteForkCommandInfo(Convert.ToUInt16(this.APLCVehicle.Robot.ExecutingCommand.CommandNo), this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType, this.APLCVehicle.Robot.ExecutingCommand.StageNo, this.APLCVehicle.Robot.ExecutingCommand.Direction, this.APLCVehicle.Robot.ExecutingCommand.IsEqPio, this.APLCVehicle.Robot.ExecutingCommand.ForkSpeed);
                                     System.Threading.Thread.Sleep(500);
-                                    this.WriteForkCommandInfo(Convert.ToUInt16(this.APLCVehicle.Robot.ExecutingCommand.CommandNo), this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType, this.APLCVehicle.Robot.ExecutingCommand.StageNo, this.APLCVehicle.Robot.ExecutingCommand.Direction, this.APLCVehicle.Robot.ExecutingCommand.IsEqPio, this.APLCVehicle.Robot.ExecutingCommand.ForkSpeed);
+									this.WriteForkCommandInfo(Convert.ToUInt16(this.APLCVehicle.Robot.ExecutingCommand.CommandNo), this.APLCVehicle.Robot.ExecutingCommand.ForkCommandType, this.APLCVehicle.Robot.ExecutingCommand.StageNo, this.APLCVehicle.Robot.ExecutingCommand.Direction, this.APLCVehicle.Robot.ExecutingCommand.IsEqPio, this.APLCVehicle.Robot.ExecutingCommand.ForkSpeed);
                                     System.Threading.Thread.Sleep(500);
                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, true);
                                     sw.Reset();
@@ -3248,13 +3253,7 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Executing;
                                     eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                     OnForkCommandExecutingEvent?.Invoke(this, eventForkCommand);
-                                    //<-- 2020/01/13 Modify by dean  避免漏寫入硬改寫入三次
                                     this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
-                                    System.Threading.Thread.Sleep(500);
-                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
-                                    System.Threading.Thread.Sleep(500);
-                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Start, false);
-                                    //-->
 
                                 }
                                 else
@@ -3280,7 +3279,7 @@ namespace Mirle.Agv.Controller
                                     else
                                     {
 
-                                        //executingForkCommand.ForkCommandState = EnumForkCommandState.Error;
+                                        this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
                                         this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommand Moving Timeout";
                                         //Raise Alarm?Warning?   
                                         //this.aAlarmHandler.SetAlarm(270004);
@@ -3309,12 +3308,15 @@ namespace Mirle.Agv.Controller
                                 sw.Stop();
                                 sw.Reset();
 
+                                if (this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState == EnumForkCommandState.Error)
+                                {
+                                    break;
+                                }
 
                                 this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
                                 this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
                                 System.Threading.Thread.Sleep(1000);
                                 this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
-                                
 
                                 break;
                             case EnumForkCommandState.Finish:
@@ -4687,6 +4689,19 @@ namespace Mirle.Agv.Controller
             
         }
 
+
+
+
+        public string displayHmiStatus()
+        {
+            string temp = this.aMCProtocol.get_ItemByTag("PLCStatus").AsUInt16.ToString();
+            return temp;
+        }
+
+        public void changeHmiStatus(ushort value)
+        {
+            this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = value;
+        }
 
     }
 }

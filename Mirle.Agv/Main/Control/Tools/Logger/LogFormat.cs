@@ -30,7 +30,7 @@ namespace Mirle.Agv.Controller.Tools
 
         public string GetString()
         {
-            return string.Concat(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), "@", Category, "@", LogLevel, "@", ClassFunctionName, "@", Device, "@", CarrierId, "@", Message);
+            return string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "@", Category, "@", LogLevel, "@", ClassFunctionName, "@", Device, "@", CarrierId, "@", Message);
         }
     }
 

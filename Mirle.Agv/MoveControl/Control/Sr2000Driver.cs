@@ -78,7 +78,7 @@ namespace Mirle.Agv.Controller
             {
                 if (sr2000Config.LogMode)
                 {
-                    string csvLog = String.Concat(sr2000ReadData.GetDataTime.ToString("yyyy/MM/dd HH:mm:ss.fff"), ",",
+                    string csvLog = String.Concat(sr2000ReadData.GetDataTime.ToString("yyyy-MM-dd HH-mm-ss.fff"), ",",
                                                   sr2000ReadData.Count.ToString(), ",",
                                                     sr2000ReadData.Barcode1.ID.ToString(), ",",
                                                     sr2000ReadData.Barcode1.ViewPosition.X.ToString(), ",",

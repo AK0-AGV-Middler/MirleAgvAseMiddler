@@ -2337,11 +2337,11 @@ namespace Mirle.Agv.Controller
                         }
                     }
 
-                    if (plcAgent.IsForkCommandExist())
-                    {
-                        plcAgent.ClearExecutingForkCommand();
-                        SpinWait.SpinUntil(() => false, 500);
-                    }
+                    //if (plcAgent.IsForkCommandExist())
+                    //{
+                    //    plcAgent.ClearExecutingForkCommand();
+                    //    SpinWait.SpinUntil(() => false, 500);
+                    //}
 
                     middleAgent.Unloading();
                     PublishOnDoTransferStepEvent(unloadCmd);
