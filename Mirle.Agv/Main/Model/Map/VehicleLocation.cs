@@ -14,7 +14,6 @@ namespace Mirle.Agv.Model
         public MapPosition AgvcPosition { get; set; } = new MapPosition();
         public MapPosition RealPosition { get; set; } = new MapPosition();
         public double VehicleAngle { get; set; } = 0;
-        public int WheelAngle { get; set; } = 0;
         public int RealPositionRangeMm { get; set; } = 15;
         public MapAddress NeerlyAddress { get; set; } = new MapAddress();
         public EnumVehicleLocation WhereAmI { get; set; } = EnumVehicleLocation.None;
@@ -29,7 +28,6 @@ namespace Mirle.Agv.Model
             AgvcPosition = vehicleLocation.AgvcPosition;
             RealPosition = vehicleLocation.RealPosition;
             VehicleAngle = vehicleLocation.VehicleAngle;
-            WheelAngle = vehicleLocation.WheelAngle;
             RealPositionRangeMm = vehicleLocation.RealPositionRangeMm;
             NeerlyAddress = vehicleLocation.NeerlyAddress;
             WhereAmI = vehicleLocation.WhereAmI;           

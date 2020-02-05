@@ -20,5 +20,6 @@ namespace Mirle.Agv.Model.Configs
         public int LoadingChargeIntervalMs { get; set; }
         public int ForkNgRetryTimes { get; set; }
         public bool IsSimulation { get; set; }
+        public string CustomerName { get; set; } = "AUO";
     }
 }

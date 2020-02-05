@@ -61,6 +61,7 @@ namespace Mirle.Agv.Controller
         public bool IsAskReservePause { get; private set; }
         public bool IsAskReserveStop { get; private set; }
         private bool IsWaitReserveReply { get; set; }
+        public bool IsAgvcRejectReserve { get; set; }
 
         public TcpIpAgent ClientAgent { get; private set; }
         public string MiddlerAbnormalMsg { get; set; } = "";
@@ -2006,65 +2007,11 @@ namespace Mirle.Agv.Controller
             try
             {
                 ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
-                //AgvcTransCmd agvcTransCmd = mainFlowHandler.agvcTransCmd;
                 if (receive.EventType == EventType.ReserveReq)
                 {
-                    //OnReceiveReserveReply(receive);
-                    //if (CanDoReserveWork())
-                    //{
-                    //    IsAskReservePause = true;
-                    //    string sectionId = receive.ReserveInfos[0].ReserveSectionID;
-                    //    if (receive.IsReserveSuccess == ReserveResult.Success)
-                    //    {
-                    //        string msg = $"收到{sectionId}通行權可行";
-                    //        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                    //        if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOn)
-                    //        {
-                    //            agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOff;
-                    //            StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                    //        }
-                    //        if (!IsAskReserveStop && !mainFlowHandler.IsMoveEnd)
-                    //        {
-                    //            OnGetReserveOk(sectionId);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        ReserveOkAskNext = false;
-                    //        string msg = $"收到{sectionId}通行權不可行";
-                    //        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-                    //        if (mainFlowHandler.IsMoveStopByNoReserve())
-                    //        {
-                    //            if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOff)
-                    //            {
-                    //                agvcTransCmd.ReserveStatus = VhStopSingle.StopSingleOn;
-                    //                StatusChangeReport(MethodBase.GetCurrentMethod().Name);
-                    //            }
-                    //        }                            
-                    //    }
-                    //    IsAskReservePause = false;
-                    //}
                 }
                 else if (receive.EventType == EventType.Bcrread)
                 {
-                    //theVehicle.ThePlcVehicle.RenameCassetteId = string.IsNullOrEmpty(receive.RenameCarrierID) ? "" : receive.RenameCarrierID;
-                    //mainFlowHandler.NeedRename = !string.IsNullOrEmpty(receive.RenameCarrierID);
-
-                    //switch (receive.ReplyActiveType)
-                    //{
-                    //    case CMDCancelType.CmdCancel:
-                    //    case CMDCancelType.CmdAbort:
-                    //    case CMDCancelType.CmdCancelIdMismatch:
-                    //    case CMDCancelType.CmdCancelIdReadFailed:
-                    //        agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(receive.ReplyActiveType, agvcTransCmd.CompleteStatus);
-                    //        mainFlowHandler.IsCancelByCstIdRead = true;
-                    //        mainFlowHandler.IsBcrReadReply = true;
-                    //        return;
-                    //    case CMDCancelType.CmdNone:
-                    //    default:
-                    //        mainFlowHandler.IsBcrReadReply = true;
-                    //        return;
-                    //}
                 }
                 else
                 {
@@ -2236,11 +2183,8 @@ namespace Mirle.Agv.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
 
-                #region 1.0
-                //SendCommandWrapper(wrappers);
-                #endregion
 
-                #region 2.0
+                #region Ask reserve and wait reply
                 LogSendMsg(wrappers);
 
                 ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
@@ -2254,6 +2198,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
+                    IsAgvcRejectReserve = true;
                     string xxmsg = $"詢問{mapSection.Id}通行權結果[{returnCode}][{rtnMsg}]";
                     OnMessageShowOnMainFormEvent?.Invoke(this, xxmsg);
                 }
@@ -2293,6 +2238,7 @@ namespace Mirle.Agv.Controller
                 string sectionId = receive.ReserveInfos[0].ReserveSectionID;
                 if (receive.IsReserveSuccess == ReserveResult.Success)
                 {
+                    IsAgvcRejectReserve = false;
                     string msg = $"收到{sectionId}通行權可行";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                     if (agvcTransCmd.ReserveStatus == VhStopSingle.StopSingleOn)
@@ -2307,6 +2253,7 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
+                    IsAgvcRejectReserve = true;
                     ReserveOkAskNext = false;
                     string msg = $"收到{sectionId}通行權不可行";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
@@ -2320,6 +2267,10 @@ namespace Mirle.Agv.Controller
                     }
                 }
                 IsAskReservePause = false;
+            }
+            else
+            {
+                IsAgvcRejectReserve = false;
             }
 
         }

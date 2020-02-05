@@ -58,7 +58,7 @@ namespace Mirle.Agv.Controller
 
         private AlarmHandler alarmHandler;
         private MapHandler mapHandler;
-        private MoveControlHandler moveControlHandler;
+        private MoveControlPlate moveControlPlate;
 
         #endregion
 
@@ -214,7 +214,7 @@ namespace Mirle.Agv.Controller
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
                 plcAgent = new PlcAgent(mcProtocol, alarmHandler);
-                moveControlHandler = new MoveControlHandler(TheMapInfo, alarmHandler, plcAgent);
+                moveControlPlate = new MoveControlFactory().GetMoveControl(mainFlowConfig.CustomerName, TheMapInfo,alarmHandler,plcAgent);                
                 middleAgent = new MiddleAgent(this);
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
@@ -256,8 +256,8 @@ namespace Mirle.Agv.Controller
                 middleAgent.OnAvoideRequestEvent += MiddleAgent_OnAvoideRequestEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-                moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
-                moveControlHandler.OnRetryMoveFinished += MoveControlHandler_OnRetryMoveFinished;
+                moveControlPlate.OnMoveFinish += MoveControl_OnMoveFinished;
+                moveControlPlate.OnRetryMoveFinish += MoveControl_OnRetryMoveFinished;
 
                 //來自PlcAgent的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
@@ -1142,7 +1142,7 @@ namespace Mirle.Agv.Controller
 
         public bool IsMoveStopByNoReserve()
         {
-            return moveControlHandler.elmoDriver.MoveCompelete(EnumAxis.GX) && IsPauseByNoReserve();
+            return moveControlPlate.IsVehicleStop() && IsPauseByNoReserve();
         }
 
         private void RejectTransferCommandAndResume(int alarmCode, string reason, AgvcTransCmd agvcTransferCmd)
@@ -1201,19 +1201,10 @@ namespace Mirle.Agv.Controller
 
         private bool IsPauseByNoReserve()
         {
-            #region IsPauseByNoReserve 2.0
-            var waitReserveIndex = moveControlHandler.ControlData.WaitReserveIndex;
+            #region 3.0
 
-            var vehicleStop = moveControlHandler.ControlData.SensorState;
+            return middleAgent.IsAgvcRejectReserve && moveControlPlate.IsPause();
 
-            if (waitReserveIndex > -1 && vehicleStop == EnumVehicleSafetyAction.Stop)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
             #endregion
         }
 
@@ -1506,12 +1497,9 @@ namespace Mirle.Agv.Controller
                 moveCmd.SetupStartAddress();
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
-                moveCmd.WheelAngle = GetCurWheelAngle();
-                moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupAddressPositions();
-                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1551,11 +1539,8 @@ namespace Mirle.Agv.Controller
                 moveCmd.SetupStartAddress();
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.UnloadAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
-                moveCmd.WheelAngle = GetCurWheelAngle();
-                moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.SetupAddressPositions();
-                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1607,12 +1592,9 @@ namespace Mirle.Agv.Controller
                 moveCmd.SetupStartAddress();
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.LoadAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
-                moveCmd.WheelAngle = GetCurWheelAngle();
-                moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.MovingSectionsIndex = 0;
                 moveCmd.SetupAddressPositions();
-                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1636,11 +1618,8 @@ namespace Mirle.Agv.Controller
                 moveCmd.SetupStartAddress();
                 moveCmd.EndAddress = TheMapInfo.allMapAddresses[agvcTransCmd.AvoidEndAddressId];
                 moveCmd.StageDirection = EnumStageDirectionParse(moveCmd.EndAddress.PioDirection);
-                moveCmd.WheelAngle = GetCurWheelAngle();
-                moveCmd.VehicleHeadAngle = GetCurVehicleAngle();
                 moveCmd.SetupMovingSectionsAndAddresses();
                 moveCmd.SetupAddressPositions();
-                //moveCmd.SetupAddressActions();
                 moveCmd.SetupSectionSpeedLimits();
                 moveCmd.SetupInfo();
                 OnMessageShowEvent?.Invoke(this, moveCmd.Info);
@@ -1820,7 +1799,7 @@ namespace Mirle.Agv.Controller
                     ? mapSection.TailAddress
                     : mapSection.HeadAddress;
 
-                bool updateResult = moveControlHandler.AddReservedMapPosition(address.Position);
+                bool updateResult = moveControlPlate.PartMove(address.Position);
                 OnMessageShowEvent?.Invoke(this, $"通知MoveControl延攬通行權{mapSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
             }
             catch (Exception ex)
@@ -1831,7 +1810,7 @@ namespace Mirle.Agv.Controller
 
         public bool IsMoveStep() => GetCurrentTransferStepType() == EnumTransferStepType.Move || GetCurrentTransferStepType() == EnumTransferStepType.MoveToCharger;
 
-        public void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete status)
+        public void MoveControl_OnMoveFinished(object sender, EnumMoveComplete status)
         {
             try
             {
@@ -1935,7 +1914,7 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void MoveControlHandler_OnRetryMoveFinished(object sender, EnumMoveComplete e)
+        private void MoveControl_OnRetryMoveFinished(object sender, EnumMoveComplete e)
         {
             try
             {
@@ -2200,7 +2179,7 @@ namespace Mirle.Agv.Controller
                                 OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
                                 LogRetry(agvcTransCmd.ForkNgRetryTimes);
                                 IsRetryArrival = false;
-                                moveControlHandler.TransferMove_RetryMove();
+                                moveControlPlate.RetryMove();
                                 return;
                             }
                         }
@@ -2423,7 +2402,7 @@ namespace Mirle.Agv.Controller
         public MainFlowConfig GetMainFlowConfig() => mainFlowConfig;
         public MapConfig GetMapConfig() => mapConfig;
         public MapHandler GetMapHandler() => mapHandler;
-        public MoveControlHandler GetMoveControlHandler() => moveControlHandler;
+        public MoveControlPlate GetMoveControl() => moveControlPlate;
         public PlcAgent GetPlcAgent() => plcAgent;
         public MCProtocol GetMcProtocol() => mcProtocol;
         public AlarmConfig GetAlarmConfig() => alarmConfig;
@@ -2434,22 +2413,22 @@ namespace Mirle.Agv.Controller
             try
             {
 
-                var msg1 = $"MainFlow : 通知MoveControlHandler傳送";
+                var msg1 = $"MainFlow : 通知MoveControl傳送";
                 OnMessageShowEvent?.Invoke(this, msg1);
 
                 string errorMsg = "";
-                if (moveControlHandler.TransferMove(moveCmd, ref errorMsg))
+                if (moveControlPlate.Move(moveCmd, ref errorMsg))
                 {
-                    var msg2 = $"MainFlow : 通知MoveControlHandler傳送，回報可行.";
+                    var msg2 = $"MainFlow : 通知MoveControl傳送，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg2);
                     PublishOnDoTransferStepEvent(moveCmd);
                     return true;
                 }
                 else
                 {
-                    var msg2 = $"MainFlow : 通知MoveControlHandler傳送，回報失敗。{errorMsg}";
+                    var msg2 = $"MainFlow : 通知MoveControl傳送，回報失敗。{errorMsg}";
                     OnMessageShowEvent?.Invoke(this, msg2);
-                    MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
+                    MoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
                     return false;
                 }
             }
@@ -2463,21 +2442,21 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                var msg1 = $"MainFlow : 通知MoveControlHandler[替代路徑]";
+                var msg1 = $"MainFlow : 通知MoveControl[替代路徑]";
                 OnMessageShowEvent?.Invoke(this, msg1);
                 string errorMsg = "";
-                if (moveControlHandler.TransferMove_Override(moveCmd, ref errorMsg))
+                if (moveControlPlate.Move(moveCmd, ref errorMsg))
                 {
-                    var msg2 = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報可行.";
+                    var msg2 = $"MainFlow : 通知MoveControl[替代路徑]，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg2);
                     PublishOnDoTransferStepEvent(moveCmd);
                     return true;
                 }
                 else
                 {
-                    var msg2 = $"MainFlow : 通知MoveControlHandler[替代路徑]，回報失敗。{errorMsg}";
+                    var msg2 = $"MainFlow : 通知MoveControl[替代路徑]，回報失敗。{errorMsg}";
                     OnMessageShowEvent?.Invoke(this, msg2);
-                    MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
+                    MoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
                     return false;
                 }
 
@@ -2493,22 +2472,22 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                var msg1 = $"MainFlow : 通知MoveControlHandler[避車路徑]";
+                var msg1 = $"MainFlow : 通知MoveControl[避車路徑]";
                 OnMessageShowEvent?.Invoke(this, msg1);
 
                 string errorMsg = "";
-                if (moveControlHandler.TransferMove_Override(moveCmd, ref errorMsg))
+                if (moveControlPlate.Move(moveCmd, ref errorMsg))
                 {
-                    var msg2 = $"MainFlow : 通知MoveControlHandler[避車路徑]，回報可行.";
+                    var msg2 = $"MainFlow : 通知MoveControl[避車路徑]，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg1);
                     PublishOnDoTransferStepEvent(moveCmd);
                     return true;
                 }
                 else
                 {
-                    var msg2 = $"MainFlow : 通知MoveControlHandler[避車路徑]，回報失敗。{errorMsg}";
+                    var msg2 = $"MainFlow : 通知MoveControl[避車路徑]，回報失敗。{errorMsg}";
                     OnMessageShowEvent?.Invoke(this, msg2);
-                    MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Fail);
+                    MoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
                     return false;
                 }
             }
@@ -3045,7 +3024,6 @@ namespace Mirle.Agv.Controller
                 middleAgent.ClearAllReserve();
                 StopVehicle();
                 StopVisitTransferSteps();
-                theVehicle.VehicleLocation.WheelAngle = moveControlHandler.ControlData.WheelAngle;
 
                 if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
                 {
@@ -3129,11 +3107,11 @@ namespace Mirle.Agv.Controller
 
         public void StopVehicle()
         {
-            moveControlHandler.StopAndClear();
+            moveControlPlate.StopAndClear();
             plcAgent.ClearExecutingForkCommand();
             plcAgent.ChargeStopCommand();
 
-            var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlHandler.MoveState}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
+            var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlPlate.MoveState}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
             OnMessageShowEvent?.Invoke(this, msg);
         }
 
@@ -3141,7 +3119,7 @@ namespace Mirle.Agv.Controller
         {
             StopAndClear();
             string reason = "";
-            if (!moveControlHandler.MoveControlCanAuto(ref reason))
+            if (!moveControlPlate.CanAuto(ref reason))
             {
                 reason = $"Manual 切換 Auto 失敗，原因： " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
@@ -3153,12 +3131,7 @@ namespace Mirle.Agv.Controller
                 OnMessageShowEvent?.Invoke(this, msg);
                 return true;
             }
-        }
-
-        private bool IsMoveStateIdle()
-        {
-            return moveControlHandler.MoveState == EnumMoveState.Idle;
-        }
+        }        
 
         public void SetupPlcAutoManualState(EnumIPCStatus status)
         {
@@ -3268,7 +3241,7 @@ namespace Mirle.Agv.Controller
                 PauseVisitTransferSteps();
                 if (IsMoveStep())
                 {
-                    if (moveControlHandler.VehclePause())
+                    if (moveControlPlate.VehclePause())
                     {
                         var msg = $"MainFlow : 接受[{type}]命令。";
                         OnMessageShowEvent(this, msg);
@@ -3317,7 +3290,7 @@ namespace Mirle.Agv.Controller
                         var msg = $"MainFlow : 接受[{type}]命令。";
                         OnMessageShowEvent(this, msg);
                         middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
-                        moveControlHandler.VehcleContinue();
+                        moveControlPlate.VehcleContinue();
                         ResumeVisitTransferSteps();
                         middleAgent.ResumeAskReserve();
                         IsMoveEnd = false;
@@ -3355,7 +3328,10 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private bool IsMoveControllPause() => moveControlHandler.ControlData.PauseRequest || moveControlHandler.ControlData.PauseAlready;
+        private bool IsMoveControllPause()
+        {
+            return moveControlPlate.IsPause();
+        }
 
         private void UpdateMiddlerNeedReserveSections(string reserveSectionID)
         {
@@ -3380,8 +3356,7 @@ namespace Mirle.Agv.Controller
                         OnMessageShowEvent(this, msg);
                         middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
-                        moveControlHandler.VehcleCancel();
-                        //middleAgent.StopAskReserve();
+                        moveControlPlate.VehcleCancel();
                         middleAgent.ClearAllReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
@@ -3439,16 +3414,6 @@ namespace Mirle.Agv.Controller
             var msg = "DuelStartSectionHappend";
             OnMessageShowEvent?.Invoke(this, msg);
             LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-        }
-
-        public int GetCurWheelAngle()
-        {
-            return moveControlHandler.ControlData.WheelAngle;
-        }
-
-        public int GetCurVehicleAngle()
-        {
-            return (int)theVehicle.VehicleLocation.VehicleAngle; //車頭方向角度(0,90,180,-90)  
         }
 
         public void LoadMainFlowConfig()

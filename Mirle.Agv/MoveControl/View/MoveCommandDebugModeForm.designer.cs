@@ -1,7 +1,10 @@
-﻿
+﻿using Mirle.Agv.Controller;
+using Mirle.Agv.Model;
+using System.Windows.Forms;
+
 namespace Mirle.Agv.View
 {
-    partial class MoveCommandDebugModeForm
+    partial class MoveCommandDebugModeForm : MoveCommandForm
     {
         /// <summary>
         /// Required designer variable.

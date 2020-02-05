@@ -55,7 +55,7 @@ namespace Mirle.Agv.Controller.Handler.TransCmdsSteps
                     else
                     {
                         //原地移動
-                        mainFlowHandler.MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Success);
+                        mainFlowHandler.MoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
                         break;
                     }
                 case EnumTransferStepType.Load:

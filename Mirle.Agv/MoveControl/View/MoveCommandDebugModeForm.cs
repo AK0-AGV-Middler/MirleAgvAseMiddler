@@ -12,14 +12,14 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.View
 {
-    public partial class MoveCommandDebugModeForm : Form
+    public partial class MoveCommandDebugModeForm : MoveCommandForm
     {
         public List<MapSection> RunSectionList { get; set; } = new List<MapSection>();
         public MapAddress RunEndAddress { get; set; }
         public bool MainShowRunSectionList { get; set; } = false;
         private MoveControlHandler moveControl;
         private MoveCommandData command;
-        private MapInfo theMapInfo = new MapInfo();
+        //private MapInfo theMapInfo = new MapInfo();
         private MoveCmdInfo moveCmdInfo = new MoveCmdInfo();
         private SimulateSettingAGVAngleForm settingAngleForm;
         private MoveControlSimulateStateForm simulateStateForm;
@@ -50,12 +50,12 @@ namespace Mirle.Agv.View
                                                         EnumAxis.GX, EnumAxis.GT};
 
         #region Initail
-        public MoveCommandDebugModeForm(MoveControlHandler moveControl, MapInfo theMapInfo)
+        public MoveCommandDebugModeForm(MoveControlPlate moveControlPlate, MapInfo theMapInfo) : base(moveControlPlate,theMapInfo)
         {
             InitializeComponent();
-            this.moveControl = moveControl;
-            this.theMapInfo = theMapInfo;
-            this.Text = this.Text + " Version : " + moveControl.MoveControlVersion;
+            this.moveControl = ((AuoMoveControl)this.moveControlPlate).GetMoveControlHandler();
+            //this.theMapInfo = theMapInfo;
+            this.Text = this.Text + " Version : " + this.moveControl.MoveControlVersion;
             checkBarcodePositionPage = tbC_Debug.TabPages[5];
             tbC_Debug.TabPages.RemoveAt(5);
             configs = tbC_Debug.TabPages[4];

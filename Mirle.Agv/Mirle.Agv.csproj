@@ -105,6 +105,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Main\Control\AuoMoveControl.cs" />
+    <Compile Include="Main\Control\IMoveControl.cs" />
     <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
     <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
@@ -117,6 +119,12 @@
     </Compile>
     <Compile Include="Main\View\ConfigForm.Designer.cs">
       <DependentUpon>ConfigForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\MoveCommandForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\MoveCommandForm.Designer.cs">
+      <DependentUpon>MoveCommandForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MoveControl\Control\AgvMoveRevise.cs" />
     <Compile Include="MoveControl\Control\ComputeFunction.cs" />
@@ -134,7 +142,6 @@
     <Compile Include="Main\Control\TransfereCmdSteps\Load.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Move.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Unload.cs" />
-    <Compile Include="Main\Control\IComplete.cs" />
     <Compile Include="MoveControl\Control\MoveControlHandler.cs" />
     <Compile Include="MoveControl\Model\Configs\SLAMConfig.cs" />
     <Compile Include="MoveControl\Model\MoveControl\BarcodeSafetyData.cs" />
@@ -348,6 +355,9 @@
     </Compile>
     <EmbeddedResource Include="Main\View\ConfigForm.resx">
       <DependentUpon>ConfigForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\MoveCommandForm.resx">
+      <DependentUpon>MoveCommandForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MoveControl\View\MoveControlSimulateStateForm.resx">
       <DependentUpon>MoveControlSimulateStateForm.cs</DependentUpon>

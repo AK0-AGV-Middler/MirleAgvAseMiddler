@@ -16,14 +16,16 @@ using Mirle.Agv;
 using Mirle.Agv.Controller.Tools;
 using System.Reflection;
 using System.Threading.Tasks;
+using Mirle.Agv.Model.Configs;
 
 namespace Mirle.Agv.View
 {
     public partial class MainForm : Form
     {
         public MainFlowHandler mainFlowHandler;
+        private MainFlowConfig mainFlowConfig;
         public MainForm mainForm;
-        private MoveControlHandler moveControlHandler;
+        private MoveControlPlate moveControlPlate;
         private MiddleAgent middleAgent;
         private MiddlerForm middlerForm;
         private AlarmForm alarmForm;
@@ -31,7 +33,7 @@ namespace Mirle.Agv.View
         private PlcForm plcForm;
         private PlcAgent plcAgent;
         private MCProtocol mcProtocol;
-        private MoveCommandDebugModeForm moveCommandDebugMode;
+        private MoveCommandForm moveCommandForm;
         private JogPitchForm jogPitchForm;
         private WarningForm warningForm;
         private ConfigForm configForm;
@@ -48,7 +50,6 @@ namespace Mirle.Agv.View
         private bool IsAskingReserve { get; set; }
         private string LastAgvcTransferCommandId { get; set; } = "";
         private EnumTransferStepType LastTransferStepType { get; set; } = EnumTransferStepType.Empty;
-        private int lastAlarmId = 0;
         public bool IsAgvcConnect { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
         public string TransferCommandMsg { get; set; } = "";
@@ -88,9 +89,10 @@ namespace Mirle.Agv.View
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
+            mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
             theMapInfo = mainFlowHandler.TheMapInfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
-            moveControlHandler = mainFlowHandler.GetMoveControlHandler();
+            moveControlPlate = mainFlowHandler.GetMoveControl();
             plcAgent = mainFlowHandler.GetPlcAgent();
             mcProtocol = mainFlowHandler.GetMcProtocol();
             middleAgent = mainFlowHandler.GetMiddleAgent();
@@ -125,10 +127,18 @@ namespace Mirle.Agv.View
 
         private void InitialForms()
         {
-            moveCommandDebugMode = new MoveCommandDebugModeForm(moveControlHandler, theMapInfo);
-            moveCommandDebugMode.WindowState = FormWindowState.Normal;
-            moveCommandDebugMode.Show();
-            moveCommandDebugMode.Hide();
+            if (mainFlowConfig.CustomerName == "AUO")
+            {
+                jogPitchForm = new JogPitchForm(((AuoMoveControl)moveControlPlate).GetMoveControlHandler());
+                jogPitchForm.WindowState = FormWindowState.Normal;
+                jogPitchForm.Show();
+                jogPitchForm.Hide();
+
+                moveCommandForm = new MoveCommandFormFactory().GetMoveCommandForm(mainFlowConfig.CustomerName, moveControlPlate, theMapInfo);
+                moveCommandForm.WindowState = FormWindowState.Normal;
+                moveCommandForm.Show();
+                moveCommandForm.Hide();
+            }
 
             middlerForm = new MiddlerForm(middleAgent);
             middlerForm.WindowState = FormWindowState.Normal;
@@ -155,11 +165,6 @@ namespace Mirle.Agv.View
             plcForm.WindowState = FormWindowState.Normal;
             plcForm.Show();
             plcForm.Hide();
-
-            jogPitchForm = new JogPitchForm(moveControlHandler);
-            jogPitchForm.WindowState = FormWindowState.Normal;
-            jogPitchForm.Show();
-            jogPitchForm.Hide();
 
             warningForm = new WarningForm();
             warningForm.WindowState = FormWindowState.Normal;
@@ -237,7 +242,7 @@ namespace Mirle.Agv.View
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
             theVehicle.OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
-            moveControlHandler.OnMoveFinished += MoveControlHandler_OnMoveFinished;
+            moveControlPlate.OnMoveFinish += MoveControl_OnMoveFinished;
         }
 
 
@@ -359,7 +364,7 @@ namespace Mirle.Agv.View
             }
         }
 
-        private void MoveControlHandler_OnMoveFinished(object sender, EnumMoveComplete e)
+        private void MoveControl_OnMoveFinished(object sender, EnumMoveComplete e)
         {
             try
             {
@@ -628,8 +633,8 @@ namespace Mirle.Agv.View
         {
             try
             {
-                moveControlHandler.CloseMoveControlHandler();
                 mainFlowHandler.StopAndClear();
+                moveControlPlate.Close();
 
                 Application.Exit();
                 Environment.Exit(Environment.ExitCode);
@@ -653,12 +658,15 @@ namespace Mirle.Agv.View
 
         private void ManualMoveCmdPage_Click(object sender, EventArgs e)
         {
-            if (moveCommandDebugMode.IsDisposed)
+            if (moveCommandForm.IsDisposed)
             {
-                moveCommandDebugMode = new MoveCommandDebugModeForm(moveControlHandler, theMapInfo);
+                moveCommandForm = new MoveCommandFormFactory().GetMoveCommandForm(mainFlowConfig.CustomerName, moveControlPlate, theMapInfo);
             }
-            moveCommandDebugMode.BringToFront();
-            moveCommandDebugMode.Show();
+            if (moveCommandForm != null)
+            {
+                moveCommandForm.BringToFront();
+                moveCommandForm.Show();
+            }
         }
 
         private void AlarmPage_Click(object sender, EventArgs e)
@@ -693,12 +701,16 @@ namespace Mirle.Agv.View
 
         private void JogPage_Click(object sender, EventArgs e)
         {
-            if (jogPitchForm.IsDisposed)
+            if (mainFlowConfig.CustomerName == "AUO")
             {
-                jogPitchForm = new JogPitchForm(moveControlHandler);
+                if (jogPitchForm.IsDisposed)
+                {
+                    AuoMoveControl auoMoveControl = (AuoMoveControl)moveControlPlate;
+                    jogPitchForm = new JogPitchForm(auoMoveControl.GetMoveControlHandler());
+                }
+                jogPitchForm.BringToFront();
+                jogPitchForm.Show();
             }
-            jogPitchForm.BringToFront();
-            jogPitchForm.Show();
         }
 
         public delegate void DelRenewUI(Control control, string msg);
@@ -1087,7 +1099,7 @@ namespace Mirle.Agv.View
             {
                 if (mainFlowHandler.IsMoveStep())
                 {
-                    MoveControllerAbnormalReasonMsg = moveControlHandler.AGVStopResult;
+                    MoveControllerAbnormalReasonMsg = moveControlPlate.StopResult;
                     if (string.IsNullOrEmpty(MoveControllerAbnormalReasonMsg))
                     {
                         txtMoveControlAbnormal.BackColor = Color.LightGreen;
@@ -1168,7 +1180,7 @@ namespace Mirle.Agv.View
         {
             try
             {
-                var result = moveControlHandler.AGVStopResult;
+                var result = moveControlPlate.StopResult;
                 txtMoveControlAbnormalReason.Text = string.IsNullOrWhiteSpace(result) ? "" : result;
             }
             catch (Exception ex)
@@ -1572,7 +1584,7 @@ namespace Mirle.Agv.View
                             Vehicle.Instance.AutoState = EnumAutoState.Manual;
                             var msg = $"Auto 切換 Manual 成功";
                             AppendDebugLogMsg(msg);
-                            
+
                             mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
                             switchResult = true;
                             LoggerAgent.Instance.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
@@ -1592,7 +1604,7 @@ namespace Mirle.Agv.View
         {
             mainFlowHandler.MainFlowAbnormalMsg = "";
             middleAgent.MiddlerAbnormalMsg = "";
-            moveControlHandler.AGVStopResult = "";
+            moveControlPlate.StopResult = "";
             RobotAbnormalReasonMsg = "";
             BatterysAbnormalReasonMsg = "";
 
@@ -1640,11 +1652,14 @@ namespace Mirle.Agv.View
                         changeColorAddressList.Add(ucAddressImage);
                     }
 
-                    if (moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed)
+                    if (moveCommandForm != null && !moveCommandForm.IsDisposed)
                     {
-                        moveCommandDebugMode.AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
-                        moveCommandDebugMode.Show();
-                        moveCommandDebugMode.BringToFront();
+                        if (mainFlowConfig.CustomerName == "AUO")
+                        {
+                            ((MoveCommandDebugModeForm)moveCommandForm).AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
+                        }
+                        moveCommandForm.Show();
+                        moveCommandForm.BringToFront();
                     }
                 }
             }
@@ -1677,7 +1692,7 @@ namespace Mirle.Agv.View
 
         private void btnMoveOk_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.MoveControlHandler_OnMoveFinished(this, EnumMoveComplete.Success);
+            mainFlowHandler.MoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
         }
 
         private void btnLoadOk_Click(object sender, EventArgs e)
@@ -2014,7 +2029,11 @@ namespace Mirle.Agv.View
 
         private void 模擬測試ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            moveCommandDebugMode.button_SimulationMode_Click(this, e);
+            if (mainFlowConfig.CustomerName == "AUO")
+            {
+
+                ((MoveCommandDebugModeForm)moveCommandForm).button_SimulationMode_Click(this, e);
+            }
             plcForm.chkFakeForking.Checked = !plcForm.chkFakeForking.Checked;
             mainFlowHandler.IsSimulation = !mainFlowHandler.IsSimulation;
             if (plcForm.chkFakeForking.Checked)

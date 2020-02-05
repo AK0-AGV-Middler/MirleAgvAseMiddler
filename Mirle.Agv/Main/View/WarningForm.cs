@@ -7,11 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Mirle.Agv.Model;
 
 namespace Mirle.Agv.View
 {
     public partial class WarningForm : Form
     {
+        protected Alarm alarm = new Alarm();
+
         private string warningMsg = "No Warning";
         public string WarningMsg
         {
