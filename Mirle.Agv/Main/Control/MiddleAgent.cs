@@ -1203,9 +1203,9 @@ namespace Mirle.Agv.Controller
             return v.Split(',');
         }
 
-        public void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort batteryPercentage)
+        public void IntegrateControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
         {
-            BatteryPercentageChangeReport(MethodBase.GetCurrentMethod().Name, batteryPercentage);
+            BatteryPercentageChangeReport(MethodBase.GetCurrentMethod().Name, (ushort)batteryPercentage);
         }
 
         private void BatteryPercentageChangeReport(string sender, ushort batteryPercentage)
@@ -1690,7 +1690,7 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.DirectionAngle = vehLocation.MoveDirectionAngle;
                 iD_144_STATUS_CHANGE_REP.VehicleAngle = vehLocation.VehicleAngle;
                 iD_144_STATUS_CHANGE_REP.Speed = vehLocation.Speed;
-    
+
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
                 wrappers.StatueChangeRep = iD_144_STATUS_CHANGE_REP;
@@ -1955,7 +1955,7 @@ namespace Mirle.Agv.Controller
                 switch (receive.ActType)
                 {
                     case CMDCancelType.CmdCancel:
-                    case CMDCancelType.CmdAbort:                   
+                    case CMDCancelType.CmdAbort:
                         mainFlowHandler.Middler_OnCmdCancelAbortEvent(e.iSeqNum, cmdId, receive.ActType);
                         break;
                     case CMDCancelType.CmdCancelIdMismatch:
@@ -2134,7 +2134,7 @@ namespace Mirle.Agv.Controller
                             LoadComplete();
                             OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨完成");
                         }
-                        return true;                        
+                        return true;
                     }
                 }
                 else
@@ -2326,10 +2326,10 @@ namespace Mirle.Agv.Controller
                 id_134_TRANS_EVENT_REP.YAxis = location.AgvcPosition.Y;
                 id_134_TRANS_EVENT_REP.Speed = location.Speed;
                 id_134_TRANS_EVENT_REP.DirectionAngle = location.MoveDirectionAngle;
-                id_134_TRANS_EVENT_REP.VehicleAngle = location.VehicleAngle;               
+                id_134_TRANS_EVENT_REP.VehicleAngle = location.VehicleAngle;
 
                 loggerAgent.Log("Info", new LogFormat("Info", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Angle=[{location.MoveDirectionAngle}]"));
-              
+
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                 wrappers.TransEventRep = id_134_TRANS_EVENT_REP;
@@ -2415,7 +2415,7 @@ namespace Mirle.Agv.Controller
                 iD_132_TRANS_COMPLETE_REPORT.YAxis = vehLocation.AgvcPosition.Y;
                 iD_132_TRANS_COMPLETE_REPORT.DirectionAngle = vehLocation.MoveDirectionAngle;
                 iD_132_TRANS_COMPLETE_REPORT.VehicleAngle = vehLocation.VehicleAngle;
-                
+
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;

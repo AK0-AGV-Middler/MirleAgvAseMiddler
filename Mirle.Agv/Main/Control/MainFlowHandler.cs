@@ -46,16 +46,11 @@ namespace Mirle.Agv.Controller
         public VehicleLocation CmdEndVehiclePosition { get; set; } = new VehicleLocation();
         #endregion
 
-        #region Agent
+        #region Controller
 
         private MiddleAgent middleAgent;
-        private PlcAgent plcAgent;
+        private IntegrateControlPlate integrateControlPlate;
         private LoggerAgent loggerAgent;
-
-        #endregion
-
-        #region Handler
-
         private AlarmHandler alarmHandler;
         private MapHandler mapHandler;
         private MoveControlPlate moveControlPlate;
@@ -128,9 +123,6 @@ namespace Mirle.Agv.Controller
         private bool isIniOk;
         public MapInfo TheMapInfo { get; private set; } = new MapInfo();
         private MCProtocol mcProtocol;
-        public ushort ForkCommandNumber { get; set; } = 0;
-        public PlcForkCommand PlcForkLoadCommand { get; set; }
-        public PlcForkCommand PlcForkUnloadCommand { get; set; }
         public double InitialSoc { get; set; } = 70;
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Noraml;
         public bool NeedRename { get; set; } = false;
@@ -149,21 +141,20 @@ namespace Mirle.Agv.Controller
 
         public void InitialMainFlowHandler()
         {
-            //ConfigsInitial();
             XmlInitial();
             LoggersInitial();
             ControllersInitial();
             VehicleInitial();
             EventInitial();
             SetTransCmdsStep(new Idle());
-         
+
             VehicleLocationInitial();
 
             if (isIniOk)
             {
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "全部"));
             }
-        }        
+        }
 
         private void XmlInitial()
         {
@@ -213,8 +204,8 @@ namespace Mirle.Agv.Controller
                 TheMapInfo = mapHandler.TheMapInfo;
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
-                plcAgent = new PlcAgent(mcProtocol, alarmHandler);
-                moveControlPlate = new MoveControlFactory().GetMoveControl(mainFlowConfig.CustomerName, TheMapInfo,alarmHandler,plcAgent);                
+                integrateControlPlate = new IntegrateControlFactory().GetIntegrateControl(mainFlowConfig.CustomerName, mcProtocol, alarmHandler);
+                moveControlPlate = new MoveControlFactory().GetMoveControl(mainFlowConfig.CustomerName, TheMapInfo, alarmHandler, integrateControlPlate);
                 middleAgent = new MiddleAgent(this);
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
@@ -259,18 +250,17 @@ namespace Mirle.Agv.Controller
                 moveControlPlate.OnMoveFinish += MoveControl_OnMoveFinished;
                 moveControlPlate.OnRetryMoveFinish += MoveControl_OnRetryMoveFinished;
 
-                //來自PlcAgent的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-                plcAgent.OnForkCommandInterlockErrorEvent += PlcAgent_OnForkCommandInterlockErrorEvent;
-                plcAgent.OnForkCommandFinishEvent += PlcAgent_OnForkCommandFinishEvent;
-                plcAgent.OnForkCommandErrorEvent += PlcAgent_OnForkCommandErrorEvent;
+                //來自IRobotControl的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                integrateControlPlate.OnRobotInterlockErrorEvent += IntegrateControl_OnForkCommandInterlockErrorEvent;
+                integrateControlPlate.OnRobotCommandFinishEvent += IntegrateContorl_OnForkCommandFinishEvent;
+                integrateControlPlate.OnRobotCommandErrorEvent += IntegrateControl_OnForkCommandErrorEvent;
 
-                //來自PlcBattery的電量改變訊息，通知middleAgent
-                plcAgent.OnBatteryPercentageChangeEvent += middleAgent.PlcAgent_OnBatteryPercentageChangeEvent;
-                plcAgent.OnBatteryPercentageChangeEvent += PlcAgent_OnBatteryPercentageChangeEvent;
+                //來自IRobot的CarrierId讀取訊息，通知middleAgent
+                integrateControlPlate.OnReadCarrierIdFinishEvent += IntegrateControl_OnReadCarrierIdFinishEvent;
 
-                //來自PlcBattery的CassetteId讀取訊息，通知middleAgent
-                //plcAgent.OnCassetteIDReadFinishEvent += middleAgent.PlcAgent_OnCassetteIDReadFinishEvent;
-                plcAgent.OnCassetteIDReadFinishEvent += PlcAgent_OnCassetteIDReadFinishEvent;
+                //來自IBatterysControl的電量改變訊息，通知middleAgent
+                integrateControlPlate.OnBatteryPercentageChangeEvent += middleAgent.IntegrateControl_OnBatteryPercentageChangeEvent;
+                integrateControlPlate.OnBatteryPercentageChangeEvent += IntegrateControl_OnBatteryPercentageChangeEvent;
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
@@ -280,8 +270,6 @@ namespace Mirle.Agv.Controller
 
                 alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
                 alarmHandler.OnResetAllAlarmsEvent += middleAgent.AlarmHandler_OnResetAllAlarmsEvent;
-
-
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
             }
@@ -743,7 +731,7 @@ namespace Mirle.Agv.Controller
             #region 搬送路徑生成
             try
             {
-                agvcTransCmd.ForkNgRetryTimes = mainFlowConfig.ForkNgRetryTimes;
+                agvcTransCmd.RobotNgRetryTimes = mainFlowConfig.RobotNgRetryTimes;
                 this.agvcTransCmd = agvcTransCmd;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupTransferSteps();
@@ -1927,9 +1915,9 @@ namespace Mirle.Agv.Controller
                 int timeoutCount = 10;
                 while (true)
                 {
-                    if (plcAgent.IsForkCommandExist())
+                    if (integrateControlPlate.IsRobotCommandExist())
                     {
-                        plcAgent.ClearExecutingForkCommand();
+                        integrateControlPlate.ClearRobotCommand();
                         SpinWait.SpinUntil(() => false, 200);
                     }
                     else
@@ -2053,19 +2041,20 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        public void PlcAgent_OnForkCommandFinishEvent(object sender, PlcForkCommand forkCommand)
+        public void IntegrateContorl_OnForkCommandFinishEvent(object sender, TransferStep transferStep)
         {
             try
             {
-                agvcTransCmd.ForkNgRetryTimes = mainFlowConfig.ForkNgRetryTimes;
-                if (forkCommand.ForkCommandType == EnumForkCommand.Load)
+                agvcTransCmd.RobotNgRetryTimes = mainFlowConfig.RobotNgRetryTimes;
+                EnumTransferStepType transferStepType = transferStep.GetTransferStepType();
+                if (transferStepType == EnumTransferStepType.Load)
                 {
                     if (middleAgent.IsCstIdReadReplyOk(ReadResult))
                     {
                         VisitNextTransferStep();
                     }
                 }
-                else /*if (forkCommand.ForkCommandType == EnumForkCommand.Unload)*/
+                else if (transferStepType == EnumTransferStepType.Unload)
                 {
                     if (theVehicle.ThePlcVehicle.Loading)
                     {
@@ -2085,41 +2074,14 @@ namespace Mirle.Agv.Controller
                 LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-        private void PlcAgent_OnForkCommandErrorEvent(object sender, PlcForkCommand e)
+        private void IntegrateControl_OnForkCommandErrorEvent(object sender, TransferStep transferStep)
         {
-            //middleAgent.CstIdRead(ReadResult);
+
         }
-        private void PlcAgent_OnCassetteIDReadFinishEvent(object sender, string cstId)
+        private void IntegrateControl_OnReadCarrierIdFinishEvent(object sender, string cstId)
         {
             try
             {
-                #region 2019.12.11
-                //if (string.IsNullOrEmpty(cstId) || cstId == "ERROR")
-                //{
-                //    PauseVisitTransferSteps();
-                //    var msg = $"貨物ID讀取失敗";
-                //    OnMessageShowEvent?.Invoke(this, msg);
-                //    ReadResult = EnumCstIdReadResult.Fail;
-                //    alarmHandler.SetAlarm(000004);
-                //}
-                //else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != cstId)
-                //{
-                //    PauseVisitTransferSteps();
-                //    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合"; ;
-                //    OnMessageShowEvent?.Invoke(this, msg);
-                //    ReadResult = EnumCstIdReadResult.Mismatch;
-                //    alarmHandler.SetAlarm(000028);
-                //}
-                //else
-                //{
-                //    var msg = $"貨物ID[{cstId}]讀取成功";
-                //    OnMessageShowEvent?.Invoke(this, msg);
-                //    ReadResult = EnumCstIdReadResult.Noraml;
-                //}
-                //middleAgent.CstIdRead(ReadResult);
-
-                #endregion
-
                 #region 2019.12.16 Report to Agvc when ForkFinished
 
                 if (string.IsNullOrEmpty(cstId) || cstId == "ERROR")
@@ -2151,33 +2113,28 @@ namespace Mirle.Agv.Controller
                 LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-        private void PlcAgent_OnForkCommandInterlockErrorEvent(object sender, PlcForkCommand e)
+        private void IntegrateControl_OnForkCommandInterlockErrorEvent(object sender, TransferStep transferStep)
         {
             try
             {
-                if (GetCurrentTransferStepType() == EnumTransferStepType.Load || GetCurrentTransferStepType() == EnumTransferStepType.Unload)
+                EnumTransferStepType transferType = transferStep.GetTransferStepType();
+                if (transferType == EnumTransferStepType.Load || transferType == EnumTransferStepType.Unload)
                 {
-                    var msg = $"MainFlow : 取放貨異常[InterlockError]，剩餘重試次數[{agvcTransCmd.ForkNgRetryTimes}]";
+                    var msg = $"MainFlow : 取放貨異常[InterlockError]，剩餘重試次數[{agvcTransCmd.RobotNgRetryTimes}]";
                     OnMessageShowEvent?.Invoke(this, msg);
-
-                    #region 2019.12.11 Abort
-                    //agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
-                    //StopAndClear();
-                    //alarmHandler.ResetAllAlarms();
-                    #endregion
 
                     #region 2019.12.16 Retry
 
                     if (theVehicle.ThePlcVehicle.Robot.ForkHome)
                     {
-                        if (agvcTransCmd.ForkNgRetryTimes > 0)
+                        if (agvcTransCmd.RobotNgRetryTimes > 0)
                         {
-                            agvcTransCmd.ForkNgRetryTimes--;
+                            agvcTransCmd.RobotNgRetryTimes--;
                             if (StopCharge())
                             {
                                 alarmHandler.ResetAllAlarms();
                                 OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
-                                LogRetry(agvcTransCmd.ForkNgRetryTimes);
+                                LogRetry(agvcTransCmd.RobotNgRetryTimes);
                                 IsRetryArrival = false;
                                 moveControlPlate.RetryMove();
                                 return;
@@ -2189,7 +2146,6 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，流程放棄。");
                     agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusInterlockError;
                     StopAndClear();
-
 
                     #endregion
                 }
@@ -2290,9 +2246,9 @@ namespace Mirle.Agv.Controller
                     int timeoutCount = 10;
                     while (true)
                     {
-                        if (plcAgent.IsForkCommandExist())
+                        if (integrateControlPlate.IsRobotCommandExist())
                         {
-                            plcAgent.ClearExecutingForkCommand();
+                            integrateControlPlate.ClearRobotCommand();
                             SpinWait.SpinUntil(() => false, 200);
                         }
                         else
@@ -2316,17 +2272,10 @@ namespace Mirle.Agv.Controller
                         }
                     }
 
-                    //if (plcAgent.IsForkCommandExist())
-                    //{
-                    //    plcAgent.ClearExecutingForkCommand();
-                    //    SpinWait.SpinUntil(() => false, 500);
-                    //}
-
                     middleAgent.Unloading();
                     PublishOnDoTransferStepEvent(unloadCmd);
-                    PlcForkUnloadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Unload, unloadCmd.StageNum.ToString(), unloadCmd.StageDirection, unloadCmd.IsEqPio, unloadCmd.ForkSpeed);
-                    Task.Run(() => plcAgent.AddForkComand(PlcForkUnloadCommand));
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
+                    Task.Run(() => integrateControlPlate.DoRobotCommand(unloadCmd));
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={unloadCmd.StageNum}][是否PIO={unloadCmd.IsEqPio}]");
                     batteryLog.LoadUnloadCount++;
                     SaveBatteryLog();
                 }
@@ -2352,9 +2301,9 @@ namespace Mirle.Agv.Controller
                     int timeoutCount = 10;
                     while (true)
                     {
-                        if (plcAgent.IsForkCommandExist())
+                        if (integrateControlPlate.IsRobotCommandExist())
                         {
-                            plcAgent.ClearExecutingForkCommand();
+                            integrateControlPlate.ClearRobotCommand();
                             SpinWait.SpinUntil(() => false, 200);
                         }
                         else
@@ -2382,9 +2331,8 @@ namespace Mirle.Agv.Controller
                     middleAgent.Loading();
                     PublishOnDoTransferStepEvent(loadCmd);
                     ReadResult = EnumCstIdReadResult.Noraml;
-                    PlcForkLoadCommand = new PlcForkCommand(ForkCommandNumber++, EnumForkCommand.Load, loadCmd.StageNum.ToString(), loadCmd.StageDirection, loadCmd.IsEqPio, loadCmd.ForkSpeed);
-                    Task.Run(() => plcAgent.AddForkComand(PlcForkLoadCommand));
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={PlcForkLoadCommand.StageNo}][是否PIO={PlcForkLoadCommand.IsEqPio}]");
+                    Task.Run(() => integrateControlPlate.DoRobotCommand(loadCmd));
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={loadCmd.StageNum}][是否PIO={loadCmd.IsEqPio}]");
                     batteryLog.LoadUnloadCount++;
                     SaveBatteryLog();
                 }
@@ -2402,8 +2350,8 @@ namespace Mirle.Agv.Controller
         public MainFlowConfig GetMainFlowConfig() => mainFlowConfig;
         public MapConfig GetMapConfig() => mapConfig;
         public MapHandler GetMapHandler() => mapHandler;
-        public MoveControlPlate GetMoveControl() => moveControlPlate;
-        public PlcAgent GetPlcAgent() => plcAgent;
+        public MoveControlPlate GetMoveControlPlate() => moveControlPlate;
+        public IntegrateControlPlate GetIntegrateControlPlate() => integrateControlPlate;
         public MCProtocol GetMcProtocol() => mcProtocol;
         public AlarmConfig GetAlarmConfig() => alarmConfig;
         #endregion
@@ -2819,7 +2767,7 @@ namespace Mirle.Agv.Controller
                             alarmHandler.SetAlarm(000012);
                             return;
                     }
-                    plcAgent.ChargeStartCommand(chargeDirection);
+                    integrateControlPlate.StartCharge(chargeDirection);
 
                     Stopwatch sw = new Stopwatch();
                     bool isTimeout = false;
@@ -2899,7 +2847,7 @@ namespace Mirle.Agv.Controller
                             alarmHandler.SetAlarm(000012);
                             return;
                     }
-                    plcAgent.ChargeStartCommand(chargeDirection);
+                    integrateControlPlate.StartCharge(chargeDirection);
 
                     Stopwatch sw = new Stopwatch();
                     bool isTimeout = false;
@@ -2961,7 +2909,7 @@ namespace Mirle.Agv.Controller
                 if (address.IsCharger)
                 {
                     middleAgent.ChargHandshaking();
-                    plcAgent.ChargeStopCommand();
+                    integrateControlPlate.StopCharge();
 
                     Stopwatch sw = new Stopwatch();
                     bool isTimeOut = false;
@@ -2984,7 +2932,7 @@ namespace Mirle.Agv.Controller
                         if (simpleRetryCount >= 120)
                         {
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Try stop charge[{simpleRetryCount}]");
-                            plcAgent.ChargeStopCommand();
+                            integrateControlPlate.StopCharge();
                             simpleRetryCount = 0;
                         }
                         SpinWait.SpinUntil(() => false, 50);
@@ -3038,8 +2986,7 @@ namespace Mirle.Agv.Controller
 
                 if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
                 {
-                    string cstId = "";
-                    plcAgent.triggerCassetteIDReader(ref cstId);
+                    string carrierId = integrateControlPlate.ReadCarrierId();
                 }
 
                 ReadResult = EnumCstIdReadResult.Noraml;
@@ -3108,8 +3055,8 @@ namespace Mirle.Agv.Controller
         public void StopVehicle()
         {
             moveControlPlate.StopAndClear();
-            plcAgent.ClearExecutingForkCommand();
-            plcAgent.ChargeStopCommand();
+            integrateControlPlate.ClearRobotCommand();
+            integrateControlPlate.StopCharge();
 
             var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlPlate.MoveState}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -3131,11 +3078,11 @@ namespace Mirle.Agv.Controller
                 OnMessageShowEvent?.Invoke(this, msg);
                 return true;
             }
-        }        
+        }
 
         public void SetupPlcAutoManualState(EnumIPCStatus status)
         {
-            plcAgent.WriteIPCStatus(status);
+            integrateControlPlate.SetAutoManualState(status);
         }
 
         public void ResetAllarms()
@@ -3169,33 +3116,20 @@ namespace Mirle.Agv.Controller
 
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
-            plcAgent.WritePLCAlarmReset();
-            plcAgent.SetAlarmWarningReportAllReset();
+            integrateControlPlate.ResetAllAlarm();
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            if (alarmHandler.HasAlarm && !IsCancelByAgvcCmd())
-            {
-                //middleAgent.PauseAskReserve();
-                //PauseVisitTransferSteps();
-                //if (!IsVehicleAbortByAlarm)
-                //{
-                //    IsVehicleAbortByAlarm = true;
-                //}
-            }
-            if (alarm.PlcWord != 0 || alarm.PlcBit != 0)
-            {
-                plcAgent.WriteAlarmWarningReport(alarm.Level, alarm.PlcWord, alarm.PlcBit, true);
-                plcAgent.WriteAlarmWarningStatus(alarmHandler.HasAlarm, alarmHandler.HasWarn);
-            }
+            integrateControlPlate.SetAlarm(alarm);
+            integrateControlPlate.SetAlarmStatus(alarmHandler.HasAlarm, alarmHandler.HasWarn);
         }
 
         private bool IsCancelByAgvcCmd() => agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusAbort || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusCancel || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdmisMatch || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdreadFailed;
 
         public void SetupVehicleSoc(double percentage)
         {
-            plcAgent.setSOC(percentage);
+            integrateControlPlate.SetPercentage(percentage);
         }
 
         private void GetInitialSoc(string v)
@@ -3443,11 +3377,11 @@ namespace Mirle.Agv.Controller
             xmlHandler.WriteXml(middlerConfig, @"D:\AgvConfigs\Middler.xml");
         }
 
-        private void PlcAgent_OnBatteryPercentageChangeEvent(object sender, ushort batteryPercentage)
+        private void IntegrateControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
         {
             try
             {
-                batteryLog.InitialSoc = batteryPercentage;
+                batteryLog.InitialSoc = (int)batteryPercentage;
                 SaveBatteryLog();
             }
             catch (Exception ex)

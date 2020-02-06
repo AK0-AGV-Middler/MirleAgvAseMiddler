@@ -49,16 +49,17 @@ namespace Mirle.Agv.Controller
 
     public class MoveControlFactory
     {
-        public MoveControlPlate GetMoveControl(string type, MapInfo mapInfo, AlarmHandler alarmHandler, PlcAgent plcAgent)
+        public MoveControlPlate GetMoveControl(string type, MapInfo mapInfo, AlarmHandler alarmHandler, IntegrateControlPlate integrateControlPlate)
         {
-            MoveControlPlate moveControl = null;
+            MoveControlPlate moveControlPlate = null;
 
             if (type == "AUO")
             {
-                moveControl = new AuoMoveControl(mapInfo,alarmHandler,plcAgent);
+                AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
+                moveControlPlate = new AuoMoveControl(mapInfo,alarmHandler, auoIntegrateControl.GetPlcAgent());
             }
 
-            return moveControl;
+            return moveControlPlate;
         }
     }
 }

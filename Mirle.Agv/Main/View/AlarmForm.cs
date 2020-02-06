@@ -69,7 +69,7 @@ namespace Mirle.Agv.View
 
         private void btnBuzzOff_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.GetPlcAgent().WritePLCBuzzserStop();
+            mainFlowHandler.GetIntegrateControlPlate().StopBuzzer();
         }
 
         private void btnTestSetAlarm_Click(object sender, EventArgs e)

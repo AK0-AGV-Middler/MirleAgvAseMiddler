@@ -105,8 +105,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main\Control\AuoMoveControl.cs" />
-    <Compile Include="Main\Control\IMoveControl.cs" />
+    <Compile Include="Customer\AUO\Control\AuoMoveControl.cs" />
+    <Compile Include="Customer\AUO\Control\AuoIntegrateControl.cs" />
+    <Compile Include="Main\Control\Interface\IntegrateControlPlate.cs" />
+    <Compile Include="Main\Control\Interface\IBatterysControl.cs" />
+    <Compile Include="Main\Control\Interface\IBuzzerControl.cs" />
+    <Compile Include="Main\Control\Interface\IMoveControl.cs" />
+    <Compile Include="Main\Control\Interface\IRobotControl.cs" />
     <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
     <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
@@ -488,7 +493,13 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Customer\ASE\Control\" />
+    <Folder Include="Customer\ASE\Model\" />
+    <Folder Include="Customer\ASE\View\" />
+    <Folder Include="Customer\AUO\Model\" />
+    <Folder Include="Customer\AUO\View\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

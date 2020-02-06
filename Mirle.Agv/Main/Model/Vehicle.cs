@@ -117,7 +117,7 @@ namespace Mirle.Agv.Model
         public VhChargeStatus ChargeStatus { get; set; }
         public DriveDirction DrivingDirection { get; set; }
         public VHModeStatus ModeStatus { get; set; } = VHModeStatus.Manual;
-        public VhStopSingle ObstacleStatus { get; set; }
+        public VhStopSingle ObstacleStatus { get; set; } = VhStopSingle.StopSingleOff;
         public int ObstDistance { get; set; }
         public string ObstVehicleID { get; set; } = "";
         public VhPowerStatus PowerStatus { get; set; }

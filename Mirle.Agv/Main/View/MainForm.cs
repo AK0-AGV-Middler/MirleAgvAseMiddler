@@ -31,7 +31,7 @@ namespace Mirle.Agv.View
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
         private PlcForm plcForm;
-        private PlcAgent plcAgent;
+        private IntegrateControlPlate integrateControlPlate;
         private MCProtocol mcProtocol;
         private MoveCommandForm moveCommandForm;
         private JogPitchForm jogPitchForm;
@@ -92,8 +92,8 @@ namespace Mirle.Agv.View
             mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
             theMapInfo = mainFlowHandler.TheMapInfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
-            moveControlPlate = mainFlowHandler.GetMoveControl();
-            plcAgent = mainFlowHandler.GetPlcAgent();
+            moveControlPlate = mainFlowHandler.GetMoveControlPlate();
+            integrateControlPlate = mainFlowHandler.GetIntegrateControlPlate();
             mcProtocol = mainFlowHandler.GetMcProtocol();
             middleAgent = mainFlowHandler.GetMiddleAgent();
             mainForm = this;
@@ -107,11 +107,15 @@ namespace Mirle.Agv.View
             InitialEvents();
             ResetImageAndPb();
             InitialSoc();
-            InitialConnectionAndCstStatus();
+            InitialConnectionAndCarrierStatus();
             InitialThdPads();
             InitialAbnormalMsgs();
             txtLastAlarm.Text = "";
-            plcAgent.SetOutSideObj(this);
+            if (mainFlowConfig.CustomerName=="AUO")
+            {
+                AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
+                auoIntegrateControl.SetOutsideObjects(this);
+            }          
             var msg = "MainForm : 讀取主畫面";
             LoggerAgent.Instance.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
@@ -161,10 +165,15 @@ namespace Mirle.Agv.View
             alarmForm.Show();
             alarmForm.Hide();
 
-            plcForm = new PlcForm(mcProtocol, plcAgent);
-            plcForm.WindowState = FormWindowState.Normal;
-            plcForm.Show();
-            plcForm.Hide();
+            if (mainFlowConfig.CustomerName=="AUO")
+            {
+                AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
+                plcForm = new PlcForm(mcProtocol, auoIntegrateControl.GetPlcAgent());
+                plcForm.WindowState = FormWindowState.Normal;
+                plcForm.Show();
+                plcForm.Hide();
+            }
+            
 
             warningForm = new WarningForm();
             warningForm.WindowState = FormWindowState.Normal;
@@ -254,14 +263,13 @@ namespace Mirle.Agv.View
             timer_SetupInitialSoc.Enabled = true;
         }
 
-        private void InitialConnectionAndCstStatus()
+        private void InitialConnectionAndCarrierStatus()
         {
             IsAgvcConnect = middleAgent.IsConnected();
             UpdateAgvcConnection();
             if (theVehicle.ThePlcVehicle.Loading)
             {
-                string cstid = "";
-                plcAgent.triggerCassetteIDReader(ref cstid);
+                string carrierId = integrateControlPlate.ReadCarrierId();
             }
         }
 
@@ -340,7 +348,7 @@ namespace Mirle.Agv.View
                 }
                 else
                 {
-                    plcAgent.WritePLCBuzzserStop();
+                    integrateControlPlate.StopBuzzer();
                 }
             }
             catch (Exception ex)
@@ -681,12 +689,17 @@ namespace Mirle.Agv.View
 
         private void PlcPage_Click(object sender, EventArgs e)
         {
-            if (plcForm.IsDisposed)
+            if (mainFlowConfig.CustomerName=="AUO")
             {
-                plcForm = new PlcForm(mcProtocol, plcAgent);
+                AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
+                if (plcForm.IsDisposed)
+                {
+                    plcForm = new PlcForm(mcProtocol, auoIntegrateControl.GetPlcAgent());
+                }
+                plcForm.BringToFront();
+                plcForm.Show();
             }
-            plcForm.BringToFront();
-            plcForm.Show();
+            
         }
 
         private void VehicleStatusPage_Click(object sender, EventArgs e)
@@ -1524,7 +1537,7 @@ namespace Mirle.Agv.View
 
         private void btnBuzzOff_Click(object sender, EventArgs e)
         {
-            plcAgent.WritePLCBuzzserStop();
+            integrateControlPlate.StopBuzzer();
         }
 
         private void btnAutoManual_Click(object sender, EventArgs e)
@@ -1564,8 +1577,7 @@ namespace Mirle.Agv.View
                                 switchResult = true;
                                 if (theVehicle.ThePlcVehicle.Loading)
                                 {
-                                    string errMsg = "";
-                                    plcAgent.triggerCassetteIDReader(ref errMsg);
+                                    string carrierId = integrateControlPlate.ReadCarrierId();
                                 }
                                 else
                                 {
@@ -1689,36 +1701,18 @@ namespace Mirle.Agv.View
         {
             this.Close();
         }
-
-        private void btnMoveOk_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.MoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
-        }
-
-        private void btnLoadOk_Click(object sender, EventArgs e)
-        {
-            theVehicle.ThePlcVehicle.Loading = true;
-            //theVehicle.ThePlcVehicle.CassetteId = "CA0070";
-            PlcForkCommand forkCommand = new PlcForkCommand(5, EnumForkCommand.Load, "1", EnumStageDirection.Left, false, 100);
-            mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
-        }
-
-        private void btnUnloadOk_Click(object sender, EventArgs e)
-        {
-            theVehicle.ThePlcVehicle.Loading = false;
-            theVehicle.ThePlcVehicle.CassetteId = "";
-            PlcForkCommand forkCommand = new PlcForkCommand(6, EnumForkCommand.Unload, "1", EnumStageDirection.Left, false, 100);
-            mainFlowHandler.PlcAgent_OnForkCommandFinishEvent(this, forkCommand);
-        }
-
+       
         private void timer_SetupInitialSoc_Tick(object sender, EventArgs e)
         {
-            if (plcAgent.IsFirstMeterAhGet)
+            if (mainFlowConfig.CustomerName == "AUO")
             {
-                var initialSoc = mainFlowHandler.InitialSoc;
-                mainFlowHandler.SetupVehicleSoc(initialSoc);
-                timer_SetupInitialSoc.Enabled = false;
-            }
+                if (((AuoIntegrateControl)integrateControlPlate).IsIsFirstMeterAhGet())
+                {
+                    var initialSoc = mainFlowHandler.InitialSoc;
+                    mainFlowHandler.SetupVehicleSoc(initialSoc);
+                    timer_SetupInitialSoc.Enabled = false;
+                }
+            }           
         }
 
         public JogPitchForm GetJogPitchForm() => jogPitchForm;
@@ -2040,10 +2034,6 @@ namespace Mirle.Agv.View
             {
                 mainFlowHandler.SetupVehicleSoc(100);
             }
-
-            btnLoadOk.Visible = plcForm.chkFakeForking.Checked;
-            btnMoveOk.Visible = plcForm.chkFakeForking.Checked;
-            btnUnloadOk.Visible = plcForm.chkFakeForking.Checked;
         }
 
         private void btnPrintScreen_Click(object sender, EventArgs e)
