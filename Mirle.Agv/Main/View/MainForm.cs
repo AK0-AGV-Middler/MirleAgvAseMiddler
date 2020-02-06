@@ -1354,16 +1354,19 @@ namespace Mirle.Agv.View
                         btnAutoManual.BackColor = Color.Pink;
                         txtCanAuto.Visible = true;
                         txtCannotAutoReason.Visible = true;
-                        if (jogPitchForm.CanAuto)
+                        if (mainFlowConfig.CustomerName=="AUO")
                         {
-                            txtCanAuto.BackColor = Color.LightGreen;
-                            txtCanAuto.Text = "可以 Auto";
-                        }
-                        else
-                        {
-                            txtCanAuto.BackColor = Color.Pink;
-                            txtCanAuto.Text = "不行 Auto";
-                        }
+                            if (jogPitchForm.CanAuto)
+                            {
+                                txtCanAuto.BackColor = Color.LightGreen;
+                                txtCanAuto.Text = "可以 Auto";
+                            }
+                            else
+                            {
+                                txtCanAuto.BackColor = Color.Pink;
+                                txtCanAuto.Text = "不行 Auto";
+                            }
+                        }                       
                         break;
                     case EnumAutoState.Auto:
                     default:
@@ -1375,7 +1378,10 @@ namespace Mirle.Agv.View
 
                 btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
 
-                txtCannotAutoReason.Text = jogPitchForm.CantAutoResult;
+                if (mainFlowConfig.CustomerName=="AUO")
+                {
+                    txtCannotAutoReason.Text = jogPitchForm.CantAutoResult;
+                }
             }
             catch (Exception ex)
             {
