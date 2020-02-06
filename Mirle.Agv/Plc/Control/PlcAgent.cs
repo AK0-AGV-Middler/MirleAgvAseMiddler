@@ -4681,12 +4681,7 @@ namespace Mirle.Agv.Controller
 
                     }
                 }
-            }
-
-
-
-
-            
+            } 
         }
 
 
@@ -4703,5 +4698,6 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("EquipementAction").AsUInt16 = value;
         }
 
+        public MCProtocol GetMCProtocol() => aMCProtocol;
     }
 }

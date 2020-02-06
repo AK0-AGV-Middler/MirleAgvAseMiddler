@@ -27,9 +27,6 @@ namespace Mirle.Agv.View
             this.moveControlPlate = moveControlPlate;
             theMapInfo = mapInfo;
         }
-
-        //public virtual void AddAddressPositionByMainFormDoubleClick(string id) { }
-
     }
 
     public class MoveCommandFormFactory

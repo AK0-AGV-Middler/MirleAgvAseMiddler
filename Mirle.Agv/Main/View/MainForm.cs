@@ -30,7 +30,7 @@ namespace Mirle.Agv.View
         private MiddlerForm middlerForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
-        private PlcForm plcForm;
+        private IntegrateCommandForm integrateCommandForm;
         private IntegrateControlPlate integrateControlPlate;
         private MCProtocol mcProtocol;
         private MoveCommandForm moveCommandForm;
@@ -111,11 +111,11 @@ namespace Mirle.Agv.View
             InitialThdPads();
             InitialAbnormalMsgs();
             txtLastAlarm.Text = "";
-            if (mainFlowConfig.CustomerName=="AUO")
+            if (mainFlowConfig.CustomerName == "AUO")
             {
                 AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
                 auoIntegrateControl.SetOutsideObjects(this);
-            }          
+            }
             var msg = "MainForm : 讀取主畫面";
             LoggerAgent.Instance.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
         }
@@ -142,6 +142,12 @@ namespace Mirle.Agv.View
                 moveCommandForm.WindowState = FormWindowState.Normal;
                 moveCommandForm.Show();
                 moveCommandForm.Hide();
+
+                integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
+                integrateCommandForm.WindowState = FormWindowState.Normal;
+                integrateCommandForm.Show();
+                integrateCommandForm.Hide();
+
             }
 
             middlerForm = new MiddlerForm(middleAgent);
@@ -164,16 +170,6 @@ namespace Mirle.Agv.View
             alarmForm.WindowState = FormWindowState.Normal;
             alarmForm.Show();
             alarmForm.Hide();
-
-            if (mainFlowConfig.CustomerName=="AUO")
-            {
-                AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
-                plcForm = new PlcForm(mcProtocol, auoIntegrateControl.GetPlcAgent());
-                plcForm.WindowState = FormWindowState.Normal;
-                plcForm.Show();
-                plcForm.Hide();
-            }
-            
 
             warningForm = new WarningForm();
             warningForm.WindowState = FormWindowState.Normal;
@@ -687,19 +683,18 @@ namespace Mirle.Agv.View
             alarmForm.Show();
         }
 
-        private void PlcPage_Click(object sender, EventArgs e)
+        private void IntegrateCommandPage_Click(object sender, EventArgs e)
         {
-            if (mainFlowConfig.CustomerName=="AUO")
+            if (integrateCommandForm.IsDisposed)
             {
-                AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
-                if (plcForm.IsDisposed)
+                if (mainFlowConfig.CustomerName == "AUO")
                 {
-                    plcForm = new PlcForm(mcProtocol, auoIntegrateControl.GetPlcAgent());
+                    integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
                 }
-                plcForm.BringToFront();
-                plcForm.Show();
             }
-            
+
+            integrateCommandForm.BringToFront();
+            integrateCommandForm.Show();
         }
 
         private void VehicleStatusPage_Click(object sender, EventArgs e)
@@ -1354,7 +1349,7 @@ namespace Mirle.Agv.View
                         btnAutoManual.BackColor = Color.Pink;
                         txtCanAuto.Visible = true;
                         txtCannotAutoReason.Visible = true;
-                        if (mainFlowConfig.CustomerName=="AUO")
+                        if (mainFlowConfig.CustomerName == "AUO")
                         {
                             if (jogPitchForm.CanAuto)
                             {
@@ -1366,7 +1361,7 @@ namespace Mirle.Agv.View
                                 txtCanAuto.BackColor = Color.Pink;
                                 txtCanAuto.Text = "不行 Auto";
                             }
-                        }                       
+                        }
                         break;
                     case EnumAutoState.Auto:
                     default:
@@ -1378,7 +1373,7 @@ namespace Mirle.Agv.View
 
                 btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
 
-                if (mainFlowConfig.CustomerName=="AUO")
+                if (mainFlowConfig.CustomerName == "AUO")
                 {
                     txtCannotAutoReason.Text = jogPitchForm.CantAutoResult;
                 }
@@ -1707,7 +1702,7 @@ namespace Mirle.Agv.View
         {
             this.Close();
         }
-       
+
         private void timer_SetupInitialSoc_Tick(object sender, EventArgs e)
         {
             if (mainFlowConfig.CustomerName == "AUO")
@@ -1718,7 +1713,7 @@ namespace Mirle.Agv.View
                     mainFlowHandler.SetupVehicleSoc(initialSoc);
                     timer_SetupInitialSoc.Enabled = false;
                 }
-            }           
+            }
         }
 
         public JogPitchForm GetJogPitchForm() => jogPitchForm;
@@ -2031,15 +2026,14 @@ namespace Mirle.Agv.View
         {
             if (mainFlowConfig.CustomerName == "AUO")
             {
-
                 ((MoveCommandDebugModeForm)moveCommandForm).button_SimulationMode_Click(this, e);
+                integrateCommandForm.IsSimulation = !integrateCommandForm.IsSimulation;
+                if (integrateCommandForm.IsSimulation)
+                {
+                    mainFlowHandler.SetupVehicleSoc(100);
+                }
             }
-            plcForm.chkFakeForking.Checked = !plcForm.chkFakeForking.Checked;
             mainFlowHandler.IsSimulation = !mainFlowHandler.IsSimulation;
-            if (plcForm.chkFakeForking.Checked)
-            {
-                mainFlowHandler.SetupVehicleSoc(100);
-            }
         }
 
         private void btnPrintScreen_Click(object sender, EventArgs e)

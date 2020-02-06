@@ -9,41 +9,67 @@ using System.Windows.Forms;
 
 namespace Mirle.Agv.View
 {
-    public partial class PlcForm : Form
+    public partial class PlcForm : IntegrateCommandForm
     {
         private MCProtocol mcProtocol;
         private PlcAgent plcAgent;
         private EnumAutoState IpcAutoState;
+        public override bool IsSimulation
+        {
+            get => base.IsSimulation; set
+            {
+                base.IsSimulation = value;
+                chkFakeForking.Checked = value;
+            }
+        }
 
-        public PlcForm(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
+        public PlcForm(AuoIntegrateControl auoIntegrateControl)
         {
             InitializeComponent();
-            //mcProtocol = new MCProtocol();
-            //mcProtocol.Name = "MCProtocol";
-            //mcProtocol.OnDataChangeEvent += MCProtocol_OnDataChangeEvent;
-            mcProtocol = aMcProtocol;
-            tabPage1.Controls.Add(mcProtocol);
+            plcAgent = auoIntegrateControl.GetPlcAgent();
+            mcProtocol = plcAgent.GetMCProtocol();
 
-            plcAgent = aPlcAgent;
-
-            //plcAgent = new PlcAgent(mcProtocol, null);
-            //一些Form Control要給進去Entity物件
+            tabPage1.Controls.Add(mcProtocol);         
             FormControlAddToEnityClass();
             EventInitial();
-
 
             mcProtocol.LoadXMLConfig();
 
             mcProtocol.OperationMode = MCProtocol.enOperationMode.NORMAL_MODE;
 
-            //aMCProtocol.Open("127.0.0.1", "3001");
-            //aMCProtocol.ConnectToPLC("127.0.0.1", "5000");
-
             mcProtocol.Height = tabPage1.Height;
             mcProtocol.Width = tabPage1.Width;
-
-
         }
+
+        //public PlcForm(MCProtocol aMcProtocol, PlcAgent aPlcAgent)
+        //{
+        //    InitializeComponent();
+        //    //mcProtocol = new MCProtocol();
+        //    //mcProtocol.Name = "MCProtocol";
+        //    //mcProtocol.OnDataChangeEvent += MCProtocol_OnDataChangeEvent;
+        //    mcProtocol = aMcProtocol;
+        //    tabPage1.Controls.Add(mcProtocol);
+
+        //    plcAgent = aPlcAgent;
+
+        //    //plcAgent = new PlcAgent(mcProtocol, null);
+        //    //一些Form Control要給進去Entity物件
+        //    FormControlAddToEnityClass();
+        //    EventInitial();
+
+
+        //    mcProtocol.LoadXMLConfig();
+
+        //    mcProtocol.OperationMode = MCProtocol.enOperationMode.NORMAL_MODE;
+
+        //    //aMCProtocol.Open("127.0.0.1", "3001");
+        //    //aMCProtocol.ConnectToPLC("127.0.0.1", "5000");
+
+        //    mcProtocol.Height = tabPage1.Height;
+        //    mcProtocol.Width = tabPage1.Width;
+
+
+        //}
 
         private void PlcForm_FormClosing(object sender, FormClosingEventArgs e)
         {

@@ -43,7 +43,7 @@
             this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AlarmPage = new System.Windows.Forms.ToolStripMenuItem();
             this.MiddlerPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.PlcPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.IntegrateCommandPage = new System.Windows.Forms.ToolStripMenuItem();
             this.ManualMoveCmdPage = new System.Windows.Forms.ToolStripMenuItem();
             this.JogPage = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -229,7 +229,7 @@
             this.VehicleStatusPage,
             this.AlarmPage,
             this.MiddlerPage,
-            this.PlcPage,
+            this.IntegrateCommandPage,
             this.ManualMoveCmdPage,
             this.JogPage});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
@@ -239,42 +239,42 @@
             // VehicleStatusPage
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(208, 22);
-            this.VehicleStatusPage.Text = "參數調整";
+            this.VehicleStatusPage.Size = new System.Drawing.Size(210, 22);
+            this.VehicleStatusPage.Text = "Parameter";
             this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(208, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(210, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // MiddlerPage
             // 
             this.MiddlerPage.Name = "MiddlerPage";
-            this.MiddlerPage.Size = new System.Drawing.Size(208, 22);
-            this.MiddlerPage.Text = "通訊";
+            this.MiddlerPage.Size = new System.Drawing.Size(210, 22);
+            this.MiddlerPage.Text = "CommunicationAgvc";
             this.MiddlerPage.Click += new System.EventHandler(this.MiddlerPage_Click);
             // 
-            // PlcPage
+            // IntegrateCommandPage
             // 
-            this.PlcPage.Name = "PlcPage";
-            this.PlcPage.Size = new System.Drawing.Size(208, 22);
-            this.PlcPage.Text = "Plc";
-            this.PlcPage.Click += new System.EventHandler(this.PlcPage_Click);
+            this.IntegrateCommandPage.Name = "IntegrateCommandPage";
+            this.IntegrateCommandPage.Size = new System.Drawing.Size(210, 22);
+            this.IntegrateCommandPage.Text = "IntegrateCommand";
+            this.IntegrateCommandPage.Click += new System.EventHandler(this.IntegrateCommandPage_Click);
             // 
             // ManualMoveCmdPage
             // 
             this.ManualMoveCmdPage.Name = "ManualMoveCmdPage";
-            this.ManualMoveCmdPage.Size = new System.Drawing.Size(208, 22);
-            this.ManualMoveCmdPage.Text = "半自動命令DebugMode";
+            this.ManualMoveCmdPage.Size = new System.Drawing.Size(210, 22);
+            this.ManualMoveCmdPage.Text = "ManualMoveCommand";
             this.ManualMoveCmdPage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
             // 
             // JogPage
             // 
             this.JogPage.Name = "JogPage";
-            this.JogPage.Size = new System.Drawing.Size(208, 22);
+            this.JogPage.Size = new System.Drawing.Size(210, 22);
             this.JogPage.Text = "JogPitch";
             this.JogPage.Click += new System.EventHandler(this.JogPage_Click);
             // 
@@ -1304,7 +1304,7 @@
         private System.Windows.Forms.GroupBox gbPerformanceCounter;
         private UcLabelTextBox ucPerformanceCounterRam;
         private UcLabelTextBox ucPerformanceCounterCpu;
-        private System.Windows.Forms.ToolStripMenuItem PlcPage;
+        private System.Windows.Forms.ToolStripMenuItem IntegrateCommandPage;
         private System.Windows.Forms.Label txtLastAlarm;
         private UcLabelTextBox ucSoc;
         private System.Windows.Forms.PictureBox pictureBox1;

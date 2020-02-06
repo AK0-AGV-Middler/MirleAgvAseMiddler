@@ -125,6 +125,12 @@
     <Compile Include="Main\View\ConfigForm.Designer.cs">
       <DependentUpon>ConfigForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Main\View\IntegrateCommandForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\IntegrateCommandForm.Designer.cs">
+      <DependentUpon>IntegrateCommandForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Main\View\MoveCommandForm.cs">
       <SubType>Form</SubType>
     </Compile>
