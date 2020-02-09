@@ -36,6 +36,10 @@ namespace Mirle.Agv.Model
             {
                 vehicleIntegrateStatus = new PlcVehicle();
             }
+            else if (type == "ASE")
+            {
+                vehicleIntegrateStatus = new AseVehicleIntegrateStatus();
+            }           
 
             return vehicleIntegrateStatus;
         }

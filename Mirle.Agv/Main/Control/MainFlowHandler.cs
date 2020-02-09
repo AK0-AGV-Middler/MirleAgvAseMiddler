@@ -505,8 +505,6 @@ namespace Mirle.Agv.Controller
             var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             var msg = $"MainFlow : 開始監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //     , msg));
         }
         public void PauseWatchLowPower()
         {

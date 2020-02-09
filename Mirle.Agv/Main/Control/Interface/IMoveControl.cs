@@ -44,7 +44,7 @@ namespace Mirle.Agv.Controller
         public abstract void Close();
 
         public EnumMoveState MoveState { get; protected set; }
-        public string StopResult { get; set; }
+        public string StopResult { get; set; } = "";
     }
 
     public class MoveControlFactory
@@ -56,7 +56,11 @@ namespace Mirle.Agv.Controller
             if (type == "AUO")
             {
                 AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
-                moveControlPlate = new AuoMoveControl(mapInfo,alarmHandler, auoIntegrateControl.GetPlcAgent());
+                moveControlPlate = new AuoMoveControl(mapInfo, alarmHandler, auoIntegrateControl.GetPlcAgent());
+            }
+            else if (type == "ASE")
+            {
+                moveControlPlate = new AseMoveControl();
             }
 
             return moveControlPlate;

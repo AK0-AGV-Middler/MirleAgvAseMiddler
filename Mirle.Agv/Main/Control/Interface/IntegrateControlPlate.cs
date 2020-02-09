@@ -11,9 +11,6 @@ namespace Mirle.Agv.Controller
 {
     public abstract class IntegrateControlPlate : IRobotControl, IBatterysControl, IBuzzerControl
     {
-        //protected IRobotControl robotControl;
-        //protected IBatterysControl batterysControl;
-        //protected IBuzzerControl buzzerControl;
         public abstract event EventHandler<string> OnReadCarrierIdFinishEvent;
         public abstract event EventHandler<TransferStep> OnRobotInterlockErrorEvent;
         public abstract event EventHandler<TransferStep> OnRobotCommandFinishEvent;
@@ -43,6 +40,10 @@ namespace Mirle.Agv.Controller
             if (type == "AUO")
             {
                 integrateControlPlate = new AuoIntegrateControl(mcProtocol, alarmHandler);
+            }
+            else if (type == "ASE")
+            {
+                integrateControlPlate = new AseIntegrateControl();
             }
 
             return integrateControlPlate;

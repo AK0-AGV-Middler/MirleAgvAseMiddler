@@ -105,6 +105,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Customer\ASE\Control\AseIntegrateControl.cs" />
+    <Compile Include="Customer\ASE\Control\AseMoveControl.cs" />
+    <Compile Include="Customer\ASE\Model\AseBatterys.cs" />
+    <Compile Include="Customer\ASE\Model\AseVehicleIntegrateStatus.cs" />
     <Compile Include="Customer\AUO\Control\AuoMoveControl.cs" />
     <Compile Include="Customer\AUO\Control\AuoIntegrateControl.cs" />
     <Compile Include="Main\Control\Interface\IntegrateControlPlate.cs" />
@@ -501,8 +505,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Customer\ASE\Control\" />
-    <Folder Include="Customer\ASE\Model\" />
     <Folder Include="Customer\ASE\View\" />
     <Folder Include="Customer\AUO\Model\" />
     <Folder Include="Customer\AUO\View\" />

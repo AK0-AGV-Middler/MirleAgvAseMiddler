@@ -147,7 +147,18 @@ namespace Mirle.Agv.View
                 integrateCommandForm.WindowState = FormWindowState.Normal;
                 integrateCommandForm.Show();
                 integrateCommandForm.Hide();
+            }
+            else if (mainFlowConfig.CustomerName == "ASE")
+            {
+                //moveCommandForm = new MoveCommandFormFactory().GetMoveCommandForm(mainFlowConfig.CustomerName, moveControlPlate, theMapInfo);
+                //moveCommandForm.WindowState = FormWindowState.Normal;
+                //moveCommandForm.Show();
+                //moveCommandForm.Hide();
 
+                //integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
+                //integrateCommandForm.WindowState = FormWindowState.Normal;
+                //integrateCommandForm.Show();
+                //integrateCommandForm.Hide();
             }
 
             middlerForm = new MiddlerForm(middleAgent);
