@@ -148,7 +148,7 @@ namespace Mirle.Agv.Controller
             EventInitial();
             SetTransCmdsStep(new Idle());
 
-            VehicleLocationInitial();
+            VehicleLocationInitialAndThreadsInitial();
 
             if (isIniOk)
             {
@@ -164,6 +164,8 @@ namespace Mirle.Agv.Controller
 
                 mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
                 LoggerAgent.LogConfigPath = mainFlowConfig.LogConfigPath;
+                Vehicle.Instance.TheMainFlowConfig = mainFlowConfig;
+                Vehicle.Instance.CreateVehicleIntegrateStatus();
                 mapConfig = xmlHandler.ReadXml<MapConfig>(@"D:\AgvConfigs\Map.xml");
                 middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"D:\AgvConfigs\Alarm.xml");
@@ -224,8 +226,6 @@ namespace Mirle.Agv.Controller
                 theVehicle = Vehicle.Instance;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 theVehicle.VehicleLocation.RealPositionRangeMm = mainFlowConfig.RealPositionRangeMm;
-                theVehicle.TheMapInfo = TheMapInfo;
-                theVehicle.ThdMiddleAgent = middleAgent;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "台車"));
             }
@@ -271,6 +271,8 @@ namespace Mirle.Agv.Controller
                 alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
                 alarmHandler.OnResetAllAlarmsEvent += middleAgent.AlarmHandler_OnResetAllAlarmsEvent;
 
+                theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
+
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
             }
             catch (Exception ex)
@@ -282,7 +284,12 @@ namespace Mirle.Agv.Controller
             }
         }
 
-        private void VehicleLocationInitial()
+        private void TheVehicle_OnAutoStateChangeEvent(object sender, string e)
+        {
+            middleAgent.StatusChangeReport(e);
+        }
+
+        private void VehicleLocationInitialAndThreadsInitial()
         {
             if (IsRealPositionEmpty())
             {
@@ -495,7 +502,7 @@ namespace Mirle.Agv.Controller
             thdWatchLowPower.IsBackground = true;
             thdWatchLowPower.Start();
             WatchLowPowerStatus = EnumThreadStatus.Start;
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             var msg = $"MainFlow : 開始監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -506,7 +513,7 @@ namespace Mirle.Agv.Controller
             watchLowPowerPauseEvent.Reset();
             PreWatchLowPowerStatus = WatchLowPowerStatus;
             WatchLowPowerStatus = EnumThreadStatus.Pause;
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             var msg = $"MainFlow : 暫停監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -519,7 +526,7 @@ namespace Mirle.Agv.Controller
             var tempStatus = WatchLowPowerStatus;
             WatchLowPowerStatus = PreWatchLowPowerStatus;
             PreWatchLowPowerStatus = tempStatus;
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             var msg = $"MainFlow : 恢復監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -531,7 +538,7 @@ namespace Mirle.Agv.Controller
             {
                 WatchLowPowerStatus = EnumThreadStatus.Stop;
             }
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             var msg = $"MainFlow : 停止監看自動充電, [Power={batterys.Percentage}][LowSocGap={batterys.PortAutoChargeLowSoc}]";
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -548,12 +555,12 @@ namespace Mirle.Agv.Controller
         }
         private bool IsLowPower()
         {
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             return batterys.Percentage <= batterys.PortAutoChargeLowSoc;
         }
         private bool IsHighPower()
         {
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             return batterys.Percentage >= batterys.PortAutoChargeHighSoc;
         }
         private bool IsWatchLowPowerStop()
@@ -691,7 +698,7 @@ namespace Mirle.Agv.Controller
                     return;
                 }
 
-                if (!theVehicle.ThePlcVehicle.Robot.ForkHome)
+                if (!theVehicle.TheVehicleIntegrateStatus.RobotHome)
                 {
                     var reason = $"Fork is not at home.";
                     RejectTransferCommandAndResume(000027, reason, agvcTransCmd);
@@ -700,14 +707,14 @@ namespace Mirle.Agv.Controller
 
                 if (IsVehicleAlreadyHaveCstCannotLoad(agvcTransCmd.CommandType))
                 {
-                    var reason = $"Agv already have a cst [{theVehicle.ThePlcVehicle.CassetteId}] cannot load.";
+                    var reason = $"Agv already have a cst [{theVehicle.TheVehicleIntegrateStatus.CarrierId}] cannot load.";
                     RejectTransferCommandAndResume(000016, reason, agvcTransCmd);
                     return;
                 }
 
                 if (IsVehicleHaveNoCstCannotUnload(agvcTransCmd.CommandType))
                 {
-                    var reason = $"Agv have no cst cannot unload.[loading={theVehicle.ThePlcVehicle.Loading}]";
+                    var reason = $"Agv have no cst cannot unload.[loading={theVehicle.TheVehicleIntegrateStatus.Loading}]";
                     RejectTransferCommandAndResume(000017, reason, agvcTransCmd);
                     return;
                 }
@@ -737,7 +744,7 @@ namespace Mirle.Agv.Controller
                 SetupTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
                 //開始尋訪 trasnferSteps as List<TrasnferStep> 裡的每一步MoveCmdInfo/LoadCmdInfo/UnloadCmdInfo
-                theVehicle.ThePlcVehicle.FakeCassetteId = agvcTransCmd.CassetteId;
+                theVehicle.TheVehicleIntegrateStatus.FakeCarrierId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 0, "");
                 StartVisitTransferSteps();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 確認。";
@@ -906,11 +913,11 @@ namespace Mirle.Agv.Controller
 
         private bool IsVehicleHaveNoCstCannotUnload(EnumAgvcTransCommandType commandTyp)
         {
-            return commandTyp == EnumAgvcTransCommandType.Unload && theVehicle.ThePlcVehicle.CassetteId == "";
+            return commandTyp == EnumAgvcTransCommandType.Unload && theVehicle.TheVehicleIntegrateStatus.CarrierId == "";
         }
         private bool IsVehicleAlreadyHaveCstCannotLoad(EnumAgvcTransCommandType commandTyp)
         {
-            return (commandTyp == EnumAgvcTransCommandType.Load || commandTyp == EnumAgvcTransCommandType.LoadUnload) && theVehicle.ThePlcVehicle.CassetteId != "";
+            return (commandTyp == EnumAgvcTransCommandType.Load || commandTyp == EnumAgvcTransCommandType.LoadUnload) && theVehicle.TheVehicleIntegrateStatus.CarrierId != "";
         }
 
         private void RejectTransferCommandAndResume2(int alarmCode, string reason, AgvcTransCmd agvcTransferCmd)
@@ -1107,7 +1114,7 @@ namespace Mirle.Agv.Controller
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupOverrideTransferSteps(agvcOverrideCmd);
                 transferSteps.Add(new EmptyTransferStep());
-                theVehicle.ThePlcVehicle.FakeCassetteId = agvcTransCmd.CassetteId;
+                theVehicle.TheVehicleIntegrateStatus.FakeCarrierId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
@@ -1251,7 +1258,7 @@ namespace Mirle.Agv.Controller
                 agvcTransCmd.IsAvoidComplete = false;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupAvoidTransferSteps();
-                theVehicle.ThePlcVehicle.FakeCassetteId = agvcTransCmd.CassetteId;
+                theVehicle.TheVehicleIntegrateStatus.FakeCarrierId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyAvoidCommand(agvcMoveCmd, 0, "");
                 var okmsg = $"MainFlow : 接受避車命令確認，終點[{agvcTransCmd.AvoidEndAddressId}]。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
@@ -1386,7 +1393,7 @@ namespace Mirle.Agv.Controller
         private void ConvertOverrideAgvcLoadUnloadCmdIntoList(AgvcTransCmd agvcTransCmd, List<TransferStep> transferSteps)
         {
             ConvertAgvcLoadCmdIntoList(agvcTransCmd, transferSteps);
-            if (theVehicle.ThePlcVehicle.Loading)
+            if (theVehicle.TheVehicleIntegrateStatus.Loading)
             {
                 ConvertOverrideAgvcNextUnloadCmdIntoList(agvcTransCmd, transferSteps);
             }
@@ -1762,12 +1769,12 @@ namespace Mirle.Agv.Controller
         {
             //battery/emo/beam/etc/reserve
             // 判斷當前是否可移動 若否 則發送報告
-            var plcVeh = theVehicle.ThePlcVehicle;
-            var result = plcVeh.Robot.ForkHome && !plcVeh.Batterys.Charging;
+            var plcVeh = theVehicle.TheVehicleIntegrateStatus;
+            var result = plcVeh.RobotHome && !plcVeh.Batterys.Charging;
 
             if (!result)
             {
-                var msg = $"MainFlow : CanVehMove, [RobotHome={plcVeh.Robot.ForkHome}][Charging={plcVeh.Batterys.Charging}]";
+                var msg = $"MainFlow : CanVehMove, [RobotHome={plcVeh.RobotHome}][Charging={plcVeh.Batterys.Charging}]";
                 LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
             }
 
@@ -1963,7 +1970,7 @@ namespace Mirle.Agv.Controller
                     {
                         Stopwatch sw = new Stopwatch();
                         sw.Start();
-                        while (!theVehicle.ThePlcVehicle.Loading)
+                        while (!theVehicle.TheVehicleIntegrateStatus.Loading)
                         {
                             if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
                             {
@@ -1998,7 +2005,7 @@ namespace Mirle.Agv.Controller
                     {
                         Stopwatch sw = new Stopwatch();
                         sw.Start();
-                        while (!theVehicle.ThePlcVehicle.Loading)
+                        while (!theVehicle.TheVehicleIntegrateStatus.Loading)
                         {
                             if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
                             {
@@ -2056,13 +2063,13 @@ namespace Mirle.Agv.Controller
                 }
                 else if (transferStepType == EnumTransferStepType.Unload)
                 {
-                    if (theVehicle.ThePlcVehicle.Loading)
+                    if (theVehicle.TheVehicleIntegrateStatus.Loading)
                     {
                         alarmHandler.SetAlarm(000007);
                         return;
                     }
 
-                    theVehicle.ThePlcVehicle.CassetteId = "";
+                    theVehicle.TheVehicleIntegrateStatus.CarrierId = "";
 
                     middleAgent.UnloadComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨完成");
@@ -2104,7 +2111,7 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Noraml;
                 }
-                theVehicle.ThePlcVehicle.CassetteId = cstId;
+                theVehicle.TheVehicleIntegrateStatus.CarrierId = cstId;
 
                 #endregion
             }
@@ -2125,7 +2132,7 @@ namespace Mirle.Agv.Controller
 
                     #region 2019.12.16 Retry
 
-                    if (theVehicle.ThePlcVehicle.Robot.ForkHome)
+                    if (theVehicle.TheVehicleIntegrateStatus.RobotHome)
                     {
                         if (agvcTransCmd.RobotNgRetryTimes > 0)
                         {
@@ -2233,7 +2240,7 @@ namespace Mirle.Agv.Controller
 
         public void Unload(UnloadCmdInfo unloadCmd)
         {
-            if (theVehicle.ThePlcVehicle.CassetteId == "")
+            if (theVehicle.TheVehicleIntegrateStatus.CarrierId == "")
             {
                 alarmHandler.SetAlarm(000017);
                 return;
@@ -2288,7 +2295,7 @@ namespace Mirle.Agv.Controller
 
         public void Load(LoadCmdInfo loadCmd)
         {
-            if (theVehicle.ThePlcVehicle.CassetteId != "")
+            if (theVehicle.TheVehicleIntegrateStatus.CarrierId != "")
             {
                 alarmHandler.SetAlarm(000016);
                 return;
@@ -2502,7 +2509,10 @@ namespace Mirle.Agv.Controller
 
                         UpdateMiddlerGotReserveOkSections(MovingSections[searchingSectionIndex].Id);
 
-                        UpdatePlcVehicleBeamSensor();
+                        if (mainFlowConfig.CustomerName == "AUO")
+                        {
+                            UpdatePlcVehicleBeamSensor();
+                        }
 
                         break;
                     }
@@ -2583,8 +2593,9 @@ namespace Mirle.Agv.Controller
                 MapSection lastSection = new MapSection();
                 if (moveCmd.MovingSections.Count > 0)
                 {
-                    lastSection = moveCmd.MovingSections.FindLast(x => x.Id != null);
-                    lastSection = TheMapInfo.allMapSections[lastSection.Id];
+                    var lastMoveSection = moveCmd.MovingSections.FindLast(x => x.Id != null);
+                    lastSection = TheMapInfo.allMapSections[lastMoveSection.Id];
+                    lastSection.CmdDirection = lastMoveSection.CmdDirection;
                 }
                 else
                 {
@@ -2626,8 +2637,10 @@ namespace Mirle.Agv.Controller
                     break;
                 }
             }
-
-            UpdatePlcVehicleBeamSensor();
+            if (mainFlowConfig.CustomerName == "AUO")
+            {
+                UpdatePlcVehicleBeamSensor();
+            }
         }
 
         private void FindSectionsWithinNeerlyAddress(string neerlyAddressId, ref List<MapSection> sectionsWithinNeerlyAddress)
@@ -2679,24 +2692,24 @@ namespace Mirle.Agv.Controller
 
         private void UpdatePlcVehicleBeamSensor()
         {
-            var plcVeh = theVehicle.ThePlcVehicle;
+            var plcVeh = (PlcVehicle)theVehicle.TheVehicleIntegrateStatus;
             var lastSection = theVehicle.VehicleLocation.LastSection;
             var curDistance = lastSection.VehicleDistanceSinceHead;
             var index = lastSection.BeamSensorDisables.FindIndex(x => x.Min <= curDistance && x.Max >= curDistance);
             if (index > -1)
             {
                 var beamDisable = lastSection.BeamSensorDisables[index];
-                theVehicle.FrontBeamDisable = beamDisable.FrontDisable;
-                theVehicle.BackBeamDisable = beamDisable.BackDisable;
-                theVehicle.LeftBeamDisable = beamDisable.LeftDisable;
-                theVehicle.RightBeamDisable = beamDisable.RightDisable;
+                plcVeh.FrontBeamSensorDisable = beamDisable.FrontDisable;
+                plcVeh.BackBeamSensorDisable = beamDisable.BackDisable;
+                plcVeh.LeftBeamSensorDisable = beamDisable.LeftDisable;
+                plcVeh.RightBeamSensorDisable = beamDisable.RightDisable;
             }
             else
             {
-                theVehicle.FrontBeamDisable = false;
-                theVehicle.BackBeamDisable = false;
-                theVehicle.LeftBeamDisable = false;
-                theVehicle.RightBeamDisable = false;
+                plcVeh.FrontBeamSensorDisable = false;
+                plcVeh.BackBeamSensorDisable = false;
+                plcVeh.LeftBeamSensorDisable = false;
+                plcVeh.RightBeamSensorDisable = false;
             }
         }
 
@@ -2727,14 +2740,14 @@ namespace Mirle.Agv.Controller
             try
             {
                 var address = endAddress;
-                var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
-                var highPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeHighSoc;
+                var percentage = theVehicle.TheVehicleIntegrateStatus.Batterys.Percentage;
+                var highPercentage = theVehicle.TheVehicleIntegrateStatus.Batterys.PortAutoChargeHighSoc;
 
                 if (address.IsCharger)
                 {
-                    if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                    if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
                     {
-                        var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
+                        var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}, 故暫不再送出充電信號";
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                         return;
                     }
@@ -2781,7 +2794,7 @@ namespace Mirle.Agv.Controller
                             break;
                         }
                         sw.Start();
-                        if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                        if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
                         {
                             break;
                         }
@@ -2812,14 +2825,14 @@ namespace Mirle.Agv.Controller
             try
             {
                 var address = lastAddress;
-                var percentage = theVehicle.ThePlcVehicle.Batterys.Percentage;
-                var lowPercentage = theVehicle.ThePlcVehicle.Batterys.PortAutoChargeLowSoc;
+                var percentage = theVehicle.TheVehicleIntegrateStatus.Batterys.Percentage;
+                var lowPercentage = theVehicle.TheVehicleIntegrateStatus.Batterys.PortAutoChargeLowSoc;
                 var pos = theVehicle.VehicleLocation.RealPosition;
                 if (address.IsCharger && mapHandler.IsPositionInThisAddress(pos, address.Position))
                 {
-                    if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                    if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
                     {
-                        var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.ThePlcVehicle.Batterys.Charging}, 故暫不再送出充電信號";
+                        var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}, 故暫不再送出充電信號";
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                         //OnMessageShowEvent?.Invoke(this, msg);
                         return;
@@ -2861,7 +2874,7 @@ namespace Mirle.Agv.Controller
                             break;
                         }
                         sw.Start();
-                        if (theVehicle.ThePlcVehicle.Batterys.Charging)
+                        if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
                         {
                             break;
                         }
@@ -2871,7 +2884,7 @@ namespace Mirle.Agv.Controller
                     if (!isTimeout)
                     {
                         middleAgent.Charging();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]");
                         batteryLog.ChargeCount++;
                         SaveBatteryLog();
                     }
@@ -2891,10 +2904,10 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                var beginMsg = $"MainFlow : 嘗試停止充電, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
+                var beginMsg = $"MainFlow : 嘗試停止充電, [IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]";
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, beginMsg);
 
-                if (!theVehicle.ThePlcVehicle.Batterys.Charging)
+                if (!theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
                 {
                     return true;
                 }
@@ -2925,7 +2938,7 @@ namespace Mirle.Agv.Controller
                             break;
                         }
                         sw.Start();
-                        if (!theVehicle.ThePlcVehicle.Batterys.Charging)
+                        if (!theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
                         {
                             break;
                         }
@@ -2942,7 +2955,7 @@ namespace Mirle.Agv.Controller
                     if (!isTimeOut)
                     {
                         middleAgent.ChargeOff();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]");
                         return true;
                     }
                     else
@@ -2984,7 +2997,7 @@ namespace Mirle.Agv.Controller
                     agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
                 }
 
-                if (theVehicle.ThePlcVehicle.Loading && ReadResult == EnumCstIdReadResult.Noraml)
+                if (theVehicle.TheVehicleIntegrateStatus.Loading && ReadResult == EnumCstIdReadResult.Noraml)
                 {
                     string carrierId = integrateControlPlate.ReadCarrierId();
                 }
@@ -3058,7 +3071,7 @@ namespace Mirle.Agv.Controller
             integrateControlPlate.ClearRobotCommand();
             integrateControlPlate.StopCharge();
 
-            var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlPlate.MoveState}][IsCharging={theVehicle.ThePlcVehicle.Batterys.Charging}]";
+            var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlPlate.MoveState}][IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]";
             OnMessageShowEvent?.Invoke(this, msg);
         }
 
@@ -3155,7 +3168,7 @@ namespace Mirle.Agv.Controller
 
         public void RenameCstId(string newCstId)
         {
-            theVehicle.ThePlcVehicle.CassetteId = newCstId;
+            theVehicle.TheVehicleIntegrateStatus.CarrierId = newCstId;
             theVehicle.CurAgvcTransCmd.CassetteId = newCstId;
             if (transferSteps.Count > 0)
             {

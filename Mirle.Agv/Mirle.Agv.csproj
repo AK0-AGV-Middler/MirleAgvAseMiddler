@@ -119,6 +119,7 @@
     <Compile Include="Main\Model\Map\ChargeInfo.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="Main\Model\Map\MapVector.cs" />
+    <Compile Include="Main\Model\VehicleIntegrateStatus.cs" />
     <Compile Include="Main\View\ConfigForm.cs">
       <SubType>Form</SubType>
     </Compile>

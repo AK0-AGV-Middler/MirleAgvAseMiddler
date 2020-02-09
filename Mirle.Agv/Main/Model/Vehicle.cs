@@ -14,12 +14,11 @@ namespace Mirle.Agv.Model
     [Serializable]
     public class Vehicle
     {
+        public MainFlowConfig TheMainFlowConfig { get; set; } = new MainFlowConfig();
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
 
-        public MiddleAgent ThdMiddleAgent { get; set; }
-        public MapInfo TheMapInfo { get; set; } = new MapInfo();
-        public PlcVehicle ThePlcVehicle { get; private set; } = new PlcVehicle();
+        public VehicleIntegrateStatus TheVehicleIntegrateStatus { get; protected set; } = null;
         public AgvcTransCmd CurAgvcTransCmd { get; set; } = new AgvcTransCmd();
         public VehicleLocation VehicleLocation { get; set; } = new VehicleLocation();
         private EnumAutoState autoState = EnumAutoState.Manual;
@@ -39,77 +38,19 @@ namespace Mirle.Agv.Model
                     {
                         ModeStatus = VHModeStatus.Manual;
                     }
-                    if (ThdMiddleAgent != null && value != EnumAutoState.PreManual)
+                    if (value != EnumAutoState.PreManual)
                     {
-                        ThdMiddleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                        OnAutoStateChangeEvent?.Invoke(this, MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
         }
+        public event EventHandler<string> OnAutoStateChangeEvent;
+
         public EnumThreadStatus VisitTransferStepsStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus TrackPositionStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus WatchLowPowerStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus AskReserveStatus { get; set; } = EnumThreadStatus.None;
-        public bool HasAlarm { get; set; } = false;
-        public bool HasWarn { get; set; } = false;
-
-        public event EventHandler<BeamDisableArgs> OnBeamDisableChangeEvent;
-        private bool frontBeamDisable = false;
-        public bool FrontBeamDisable
-        {
-            get { return frontBeamDisable; }
-            set
-            {
-                if (value != frontBeamDisable)
-                {
-                    frontBeamDisable = value;
-                    ThePlcVehicle.FrontBeamSensorDisable = value;
-                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Front, value));
-                }
-            }
-        }
-        private bool backBeamDisable = false;
-        public bool BackBeamDisable
-        {
-            get { return backBeamDisable; }
-            set
-            {
-                if (value != backBeamDisable)
-                {
-                    backBeamDisable = value;
-                    ThePlcVehicle.BackBeamSensorDisable = value;
-                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Back, value));
-                }
-            }
-        }
-        private bool leftBeamDisable = false;
-        public bool LeftBeamDisable
-        {
-            get { return leftBeamDisable; }
-            set
-            {
-                if (value != leftBeamDisable)
-                {
-                    leftBeamDisable = value;
-                    ThePlcVehicle.LeftBeamSensorDisable = value;
-                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Left, value));
-                }
-            }
-        }
-        private bool rightBeamDisable = false;
-        public bool RightBeamDisable
-        {
-            get { return rightBeamDisable; }
-            set
-            {
-                if (value != rightBeamDisable)
-                {
-                    rightBeamDisable = value;
-                    ThePlcVehicle.RightBeamSensorDisable = value;
-                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Right, value));
-                }
-            }
-        }
 
         #region Comm Property
         public VHActionStatus ActionStatus { get; set; } = VHActionStatus.NoCommand;
@@ -133,9 +74,12 @@ namespace Mirle.Agv.Model
         {
         }
 
-        #region Getter
+        #region Getter and Setter
 
-        public PlcVehicle GetPlcVehicle() { return ThePlcVehicle; }
+        public void CreateVehicleIntegrateStatus()
+        {
+            TheVehicleIntegrateStatus = new VehicleIntegrateStatusFactory().GetVehicleIntegrateStatus(TheMainFlowConfig.CustomerName);
+        }
 
         #endregion
 

@@ -246,7 +246,11 @@ namespace Mirle.Agv.View
             middleAgent.OnPassReserveSectionEvent += MiddleAgent_OnPassReserveSectionEvent;
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
-            theVehicle.OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
+
+            if (mainFlowConfig.CustomerName == "AUO")
+            {
+                ((PlcVehicle)theVehicle.TheVehicleIntegrateStatus).OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
+            }
             moveControlPlate.OnMoveFinish += MoveControl_OnMoveFinished;
         }
 
@@ -254,7 +258,7 @@ namespace Mirle.Agv.View
 
         private void InitialSoc()
         {
-            var batterys = theVehicle.ThePlcVehicle.Batterys;
+            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
             txtWatchLowPower.Text = $"High/Low : {(int)batterys.PortAutoChargeHighSoc}/{(int)batterys.PortAutoChargeLowSoc}";
             timer_SetupInitialSoc.Enabled = true;
         }
@@ -263,7 +267,7 @@ namespace Mirle.Agv.View
         {
             IsAgvcConnect = middleAgent.IsConnected();
             UpdateAgvcConnection();
-            if (theVehicle.ThePlcVehicle.Loading)
+            if (theVehicle.TheVehicleIntegrateStatus.Loading)
             {
                 string carrierId = integrateControlPlate.ReadCarrierId();
             }
@@ -1052,7 +1056,7 @@ namespace Mirle.Agv.View
                 //    SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
                 //    moveCommandDebugMode.MainShowRunSectionList = false;
                 //}
-                var battery = Vehicle.Instance.ThePlcVehicle.Batterys;
+                var battery = Vehicle.Instance.TheVehicleIntegrateStatus.Batterys;
                 ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
 
                 UpdateListBoxSections(lbxNeedReserveSections, middleAgent.GetNeedReserveSections());
@@ -1450,12 +1454,12 @@ namespace Mirle.Agv.View
         {
             try
             {
-                var loading = !string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId);
+                var loading = !string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId);
                 ucLoading.TagValue = loading ? "Yes" : "No";
                 ucVehicleImage.Loading = loading;
-                ucCstId.TagValue = loading ? theVehicle.ThePlcVehicle.CassetteId : "";
+                ucCstId.TagValue = loading ? theVehicle.TheVehicleIntegrateStatus.CarrierId : "";
 
-                var charging = theVehicle.ThePlcVehicle.Batterys.Charging;
+                var charging = theVehicle.TheVehicleIntegrateStatus.Batterys.Charging;
                 ucCharging.TagValue = charging ? "Yes" : "No";
             }
             catch (Exception ex)
@@ -1576,13 +1580,13 @@ namespace Mirle.Agv.View
                                 mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                                 Vehicle.Instance.AutoState = EnumAutoState.Auto;
                                 switchResult = true;
-                                if (theVehicle.ThePlcVehicle.Loading)
+                                if (theVehicle.TheVehicleIntegrateStatus.Loading)
                                 {
                                     string carrierId = integrateControlPlate.ReadCarrierId();
                                 }
                                 else
                                 {
-                                    theVehicle.ThePlcVehicle.CassetteId = "";
+                                    theVehicle.TheVehicleIntegrateStatus.CarrierId = "";
                                 }
                                 ResetAllAbnormalMsg();
                             }

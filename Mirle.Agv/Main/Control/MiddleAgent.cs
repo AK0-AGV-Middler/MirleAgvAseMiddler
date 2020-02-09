@@ -1662,7 +1662,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
+                var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
                 VehicleLocation vehLocation = theVehicle.VehicleLocation;
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
@@ -1673,18 +1673,18 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.ModeStatus = theVehicle.ModeStatus;
                 iD_144_STATUS_CHANGE_REP.ActionStatus = theVehicle.ActionStatus;
                 iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
-                iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(!string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId));
+                iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(!string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId));
                 iD_144_STATUS_CHANGE_REP.ObstacleStatus = theVehicle.ObstacleStatus;
                 iD_144_STATUS_CHANGE_REP.ReserveStatus = agvcTransCmd.ReserveStatus;// theVehicle.ReserveStatus;
                 iD_144_STATUS_CHANGE_REP.BlockingStatus = theVehicle.BlockingStatus;
                 iD_144_STATUS_CHANGE_REP.PauseStatus = agvcTransCmd.PauseStatus;
                 iD_144_STATUS_CHANGE_REP.ErrorStatus = theVehicle.ErrorStatus;
                 iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
-                iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+                iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId) ? "" : theVehicle.TheVehicleIntegrateStatus.CarrierId;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
                 iD_144_STATUS_CHANGE_REP.BatteryCapacity = (uint)batterys.Percentage;
-                iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
-                iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
+                iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.BatteryTemperature;
+                iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.TheVehicleIntegrateStatus.Batterys.Charging);
                 iD_144_STATUS_CHANGE_REP.XAxis = vehLocation.AgvcPosition.X;
                 iD_144_STATUS_CHANGE_REP.YAxis = vehLocation.AgvcPosition.Y;
                 iD_144_STATUS_CHANGE_REP.DirectionAngle = vehLocation.MoveDirectionAngle;
@@ -1710,7 +1710,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
+                var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
                 VehicleLocation vehLocation = theVehicle.VehicleLocation;
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
@@ -1721,18 +1721,18 @@ namespace Mirle.Agv.Controller
                 iD_144_STATUS_CHANGE_REP.ModeStatus = theVehicle.ModeStatus;
                 iD_144_STATUS_CHANGE_REP.ActionStatus = theVehicle.ActionStatus;
                 iD_144_STATUS_CHANGE_REP.PowerStatus = theVehicle.PowerStatus;
-                iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(!string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId));
+                iD_144_STATUS_CHANGE_REP.HasCST = VhLoadCSTStatusParse(!string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId));
                 iD_144_STATUS_CHANGE_REP.ObstacleStatus = theVehicle.ObstacleStatus;
                 iD_144_STATUS_CHANGE_REP.ReserveStatus = agvcTransCmd.ReserveStatus;// theVehicle.ReserveStatus;
                 iD_144_STATUS_CHANGE_REP.BlockingStatus = theVehicle.BlockingStatus;
                 iD_144_STATUS_CHANGE_REP.PauseStatus = agvcTransCmd.PauseStatus;
                 iD_144_STATUS_CHANGE_REP.ErrorStatus = theVehicle.ErrorStatus;
                 iD_144_STATUS_CHANGE_REP.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
-                iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+                iD_144_STATUS_CHANGE_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId) ? "" : theVehicle.TheVehicleIntegrateStatus.CarrierId;
                 iD_144_STATUS_CHANGE_REP.DrivingDirection = theVehicle.DrivingDirection;
                 iD_144_STATUS_CHANGE_REP.BatteryCapacity = batteryPercentage;
-                iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.FBatteryTemperature;
-                iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
+                iD_144_STATUS_CHANGE_REP.BatteryTemperature = (int)batterys.BatteryTemperature;
+                iD_144_STATUS_CHANGE_REP.ChargeStatus = VhChargeStatusParse(theVehicle.TheVehicleIntegrateStatus.Batterys.Charging);
                 iD_144_STATUS_CHANGE_REP.XAxis = vehLocation.AgvcPosition.X;
                 iD_144_STATUS_CHANGE_REP.YAxis = vehLocation.AgvcPosition.Y;
                 iD_144_STATUS_CHANGE_REP.DirectionAngle = vehLocation.MoveDirectionAngle;
@@ -1768,22 +1768,22 @@ namespace Mirle.Agv.Controller
             try
             {
                 VehicleLocation vehLocation = theVehicle.VehicleLocation;
-                PlcBatterys batterys = theVehicle.ThePlcVehicle.Batterys;
+                var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
                 AgvcTransCmd agvcTransCmd = mainFlowHandler.GetAgvcTransCmd();
 
                 ID_143_STATUS_RESPONSE iD_143_STATUS_RESPONSE = new ID_143_STATUS_RESPONSE();
                 iD_143_STATUS_RESPONSE.ActionStatus = theVehicle.ActionStatus;
                 iD_143_STATUS_RESPONSE.BatteryCapacity = (uint)batterys.Percentage;
-                iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.FBatteryTemperature;
+                iD_143_STATUS_RESPONSE.BatteryTemperature = (int)batterys.BatteryTemperature;
                 iD_143_STATUS_RESPONSE.BlockingStatus = theVehicle.BlockingStatus;
-                iD_143_STATUS_RESPONSE.ChargeStatus = VhChargeStatusParse(theVehicle.ThePlcVehicle.Batterys.Charging);
+                iD_143_STATUS_RESPONSE.ChargeStatus = VhChargeStatusParse(theVehicle.TheVehicleIntegrateStatus.Batterys.Charging);
                 iD_143_STATUS_RESPONSE.CmdID = theVehicle.CurAgvcTransCmd.CommandId;
-                iD_143_STATUS_RESPONSE.CSTID = theVehicle.ThePlcVehicle.Loading ? theVehicle.ThePlcVehicle.CassetteId : "";
+                iD_143_STATUS_RESPONSE.CSTID = theVehicle.TheVehicleIntegrateStatus.Loading ? theVehicle.TheVehicleIntegrateStatus.CarrierId : "";
                 iD_143_STATUS_RESPONSE.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_143_STATUS_RESPONSE.CurrentSecID = vehLocation.LastSection.Id;
                 iD_143_STATUS_RESPONSE.DrivingDirection = theVehicle.DrivingDirection;
                 iD_143_STATUS_RESPONSE.ErrorStatus = theVehicle.ErrorStatus;
-                iD_143_STATUS_RESPONSE.HasCST = VhLoadCSTStatusParse(theVehicle.ThePlcVehicle.Loading);
+                iD_143_STATUS_RESPONSE.HasCST = VhLoadCSTStatusParse(theVehicle.TheVehicleIntegrateStatus.Loading);
                 iD_143_STATUS_RESPONSE.ModeStatus = theVehicle.ModeStatus;
                 iD_143_STATUS_RESPONSE.ObstacleStatus = theVehicle.ObstacleStatus;
                 iD_143_STATUS_RESPONSE.ObstDistance = theVehicle.ObstDistance;
@@ -2066,7 +2066,7 @@ namespace Mirle.Agv.Controller
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = eventType;
-                iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+                iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId) ? "" : theVehicle.TheVehicleIntegrateStatus.CarrierId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
                 iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
@@ -2090,7 +2090,7 @@ namespace Mirle.Agv.Controller
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = EventType.Bcrread;
-                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.ThePlcVehicle.CassetteId;
+                iD_136_TRANS_EVENT_REP.CSTID = theVehicle.TheVehicleIntegrateStatus.CarrierId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
                 iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
@@ -2120,7 +2120,7 @@ namespace Mirle.Agv.Controller
                         alarmHandler.ResetAllAlarms();
                         if (!string.IsNullOrEmpty(response.RenameCarrierID))
                         {
-                            theVehicle.ThePlcVehicle.CassetteId = response.RenameCarrierID;
+                            theVehicle.TheVehicleIntegrateStatus.CarrierId = response.RenameCarrierID;
                         }
                         if (isLoadComplete) LoadComplete();
                         mainFlowHandler.agvcTransCmd.CompleteStatus = GetCancelCompleteStatus(response.ReplyActiveType, mainFlowHandler.agvcTransCmd.CompleteStatus);
@@ -2161,8 +2161,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         public void Send_Cmd136_AskReserve(MapSection mapSection)
         {
             var msg = $"詢問{mapSection.Id}通行權";
@@ -2174,7 +2172,7 @@ namespace Mirle.Agv.Controller
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 iD_136_TRANS_EVENT_REP.EventType = EventType.ReserveReq;
                 FitReserveInfos(iD_136_TRANS_EVENT_REP.ReserveInfos, mapSection);
-                iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+                iD_136_TRANS_EVENT_REP.CSTID = string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId) ? "" : theVehicle.TheVehicleIntegrateStatus.CarrierId;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = vehLocation.LastSection.Id;
                 iD_136_TRANS_EVENT_REP.SecDistance = (uint)vehLocation.LastSection.VehicleDistanceSinceHead;
@@ -2279,9 +2277,9 @@ namespace Mirle.Agv.Controller
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
             var result = false;
-            if (theVehicle.ThePlcVehicle.Loading)
+            if (theVehicle.TheVehicleIntegrateStatus.Loading)
             {
-                if (theVehicle.ThePlcVehicle.CassetteId == receive.OLDCSTID)
+                if (theVehicle.TheVehicleIntegrateStatus.CarrierId == receive.OLDCSTID)
                 {
                     mainFlowHandler.RenameCstId(receive.NEWCSTID);
                     result = true;
@@ -2404,7 +2402,7 @@ namespace Mirle.Agv.Controller
 
                 ID_132_TRANS_COMPLETE_REPORT iD_132_TRANS_COMPLETE_REPORT = new ID_132_TRANS_COMPLETE_REPORT();
                 iD_132_TRANS_COMPLETE_REPORT.CmdID = agvcTransCmd.CommandId;
-                iD_132_TRANS_COMPLETE_REPORT.CSTID = string.IsNullOrWhiteSpace(theVehicle.ThePlcVehicle.CassetteId) ? "" : theVehicle.ThePlcVehicle.CassetteId;
+                iD_132_TRANS_COMPLETE_REPORT.CSTID = string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId) ? "" : theVehicle.TheVehicleIntegrateStatus.CarrierId;
                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = agvcTransCmd.CompleteStatus;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = vehLocation.LastAddress.Id;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = vehLocation.LastSection.Id;

@@ -10,11 +10,10 @@ using Mirle.Agv;
 namespace Mirle.Agv.Model
 {
     [Serializable]
-    public class PlcBatterys
+    public class PlcBatterys : Batterys
     {
         public EnumBatteryType BatteryType { get; set; } = EnumBatteryType.Yinda;
         public double MeterCurrent { get; set; }
-        public double MeterVoltage { get; set; }
         public double MeterWatt { get; set; }
         public double MeterWattHour { get; set; }
         public double GotechMaxVol { get; set; }
@@ -39,22 +38,19 @@ namespace Mirle.Agv.Model
 
         public double Battery_Cell_Low_Voltage { get; set; } = 2.8;
 
-        public double FBatteryTemperature { get; set; }
         public double BBatteryTemperature { get; set; }
+        public double FBatteryTemperature { get; set; }
 
         public Stopwatch SwBatteryAhSetToZero { get; set; } = new Stopwatch();
         public uint ResetAhTimeout { get; set; } = 10;
         public ushort MaxResetAhCcounter { get; set; } = 50;
         public ushort FullChargeIndex { get; set; } = 50;
         //Port_AutoCharge_Low_SOC
-        public double PortAutoChargeLowSoc { get; set; } = 50.00;
-        public double PortAutoChargeHighSoc { get; set; } = 90.00;
 
         public uint Battery_Logger_Interval { get; set; } = 3;
         public uint Batterys_Charging_Time_Out { get; set; } = 10;
 
         public uint Charging_Off_Delay { get; set; } = 2;
-        public bool Charging { get; set; }
         public bool CcModeFlag { get; set; } = false;
         public ushort CcModeCounter { get; set; } = 0;
 
@@ -94,7 +90,6 @@ namespace Mirle.Agv.Model
 
         }
 
-        public double Percentage { get; private set; } = 0;  //剩餘電量s分比
 
         private double dblAhWorkingRange = 23.0;
         public double AhWorkingRange//我們使用的電池AH Range (User config)
@@ -113,6 +108,9 @@ namespace Mirle.Agv.Model
         }
 
         private bool boolSetMeterAhToZeroFlag = false;
+
+
+
         public bool SetMeterAhToZeroFlag//是否正在執行AH Reset flag
         {
             get { return boolSetMeterAhToZeroFlag; }
@@ -178,6 +176,11 @@ namespace Mirle.Agv.Model
 
         }
 
-
+        public PlcBatterys()
+        {
+            PortAutoChargeLowSoc = 50.0;
+            PortAutoChargeHighSoc = 90.0;
+            Percentage = 0;  //剩餘電量s分比
+        }
     }
 }

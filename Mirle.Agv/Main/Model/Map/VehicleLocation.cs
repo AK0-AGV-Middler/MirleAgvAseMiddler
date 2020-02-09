@@ -34,30 +34,7 @@ namespace Mirle.Agv.Model
         }
 
         public VehicleLocation()
-        { }
-
-        //public MapPosition RealPosition
-        //{
-        //    get
-        //    {
-        //        return realPosition;                
-        //    }
-        //    set
-        //    {
-        //        if (value == null)
-        //        {
-        //            return;
-        //        }
-        //        lock (realPosition)
-        //        {
-        //            if (SimpleDistance(value, realPosition) >= RealPositionRangeMm)
-        //            {
-        //                realPosition = value;
-        //            }
-        //        }               
-        //    }
-        //}
-        
+        { }        
 
         private int SimpleDistance(MapPosition aPos, MapPosition bPos)
         {

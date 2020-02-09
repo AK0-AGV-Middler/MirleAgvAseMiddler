@@ -32,7 +32,6 @@ namespace Mirle.Agv.Controller
                 if (value != hasAlarm)
                 {
                     hasAlarm = value;
-                    Vehicle.Instance.HasAlarm = value;
                 }
             }
         }
@@ -45,7 +44,6 @@ namespace Mirle.Agv.Controller
                 if (value != hasWarn)
                 {
                     hasWarn = value;
-                    Vehicle.Instance.HasWarn = value;
                 }
             }
         }

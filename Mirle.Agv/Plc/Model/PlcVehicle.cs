@@ -8,16 +8,11 @@ using Mirle.Agv.Controller;
 namespace Mirle.Agv.Model
 {
     [Serializable]
-    public class PlcVehicle
+    public class PlcVehicle : VehicleIntegrateStatus
     {
-        public PlcBatterys Batterys = new PlcBatterys();
+        public PlcBatterys plcBatterys = new PlcBatterys();
         public PlcRobot Robot = new PlcRobot();
         public PlcOperation JogOperation = new PlcOperation();
-
-        public bool Loading { get; set; }
-        public string CassetteId { get; set; } = "";
-        public string FakeCassetteId { get; set; } = "";
-        public string RenameCassetteId { get; set; } = "";
 
         //以下屬性會影響方向燈,語音和Beam sensor sleep
         public bool Forward { get; set; }
@@ -49,10 +44,51 @@ namespace Mirle.Agv.Model
         public bool MoveRight { get; set; }
 
         //由主流程依圖資給定
-        public bool FrontBeamSensorDisable { get; set; }
-        public bool BackBeamSensorDisable { get; set; }
-        public bool LeftBeamSensorDisable { get; set; }
-        public bool RightBeamSensorDisable { get; set; }
+        public event EventHandler<BeamDisableArgs> OnBeamDisableChangeEvent;
+        public bool FrontBeamSensorDisable
+        {
+            get => _frontBeamSensorDisable; set
+            {
+                if (_frontBeamSensorDisable != value)
+                {
+                    _frontBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Front, value));
+                }
+            }
+        }
+        public bool BackBeamSensorDisable
+        {
+            get => _backBeamSensorDisable; set
+            {
+                if (_backBeamSensorDisable != value)
+                {
+                    _backBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Back, value));
+                }
+            }
+        }
+        public bool LeftBeamSensorDisable
+        {
+            get => _leftBeamSensorDisable; set
+            {
+                if (_leftBeamSensorDisable != value)
+                {
+                    _leftBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Left, value));
+                }
+            }
+        }
+        public bool RightBeamSensorDisable
+        {
+            get => _rightBeamSensorDisable; set
+            {
+                if (_rightBeamSensorDisable != value)
+                {
+                    _rightBeamSensorDisable = value;
+                    OnBeamDisableChangeEvent?.Invoke(this, new BeamDisableArgs(EnumBeamDirection.Right, value));
+                }
+            }
+        }
 
         public Dictionary<string, PlcBumper> dicBumper = new Dictionary<string, PlcBumper>();
         public List<PlcBumper> listBumper = new List<PlcBumper>();
@@ -72,6 +108,10 @@ namespace Mirle.Agv.Model
 
         public int BatteryCellNum = 17;
         public int BatteryReplaceIndex = 17;
+        private bool _frontBeamSensorDisable;
+        private bool _backBeamSensorDisable;
+        private bool _leftBeamSensorDisable;
+        private bool _rightBeamSensorDisable;
 
         public PlcVehicle()
         {
@@ -79,16 +119,19 @@ namespace Mirle.Agv.Model
             InitialPlcBumpers();
             InitialPlcEmos();
             InitialBatteryCells();
+            RobotHome = Robot.ForkHome;
         }
 
         #region HardCode PlcBeamSensors/PlcBumpers/PlcEmos will fix in config.xml
 
         private void InitialBatteryCells()
         {
+            Batterys = plcBatterys;
+            Batterys.BatteryTemperature = plcBatterys.FBatteryTemperature;
             for (int i = 0; i <= BatteryCellNum; i++)
             {
                 BatteryCell batteryCell = new BatteryCell(i);
-                this.Batterys.BatteryCells.Add(batteryCell);
+                this.plcBatterys.BatteryCells.Add(batteryCell);
             }
         }
         private void InitialPlcBumpers()
@@ -299,5 +342,5 @@ namespace Mirle.Agv.Model
             dicBeamSensor.Add(aPlcBeamSensor.PlcWriteSleepTagId, aPlcBeamSensor);
         }
 
-    }
+    }   
 }

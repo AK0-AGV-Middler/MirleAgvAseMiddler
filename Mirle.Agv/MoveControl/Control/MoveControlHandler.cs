@@ -57,6 +57,7 @@ namespace Mirle.Agv.Controller
 
         public bool LeftRead { get; set; } = false;
         public bool RightRead { get; set; } = false;
+        private PlcVehicle plcVehicle = (PlcVehicle)Vehicle.Instance.TheVehicleIntegrateStatus;
 
         private List<Sr2000Config> sr2000ConfigList = new List<Sr2000Config>();
 
@@ -2843,7 +2844,7 @@ namespace Mirle.Agv.Controller
             if (SimulationMode)
                 return FakeState.IsCharging;
             else
-                return Vehicle.Instance.ThePlcVehicle.Batterys.Charging;
+                return plcVehicle.Batterys.Charging;
         }
 
         public bool ForkNotHome()
@@ -2854,7 +2855,7 @@ namespace Mirle.Agv.Controller
             if (SimulationMode)
                 return FakeState.ForkNotHome;
             else
-                return !Vehicle.Instance.ThePlcVehicle.Robot.ForkHome || Vehicle.Instance.ThePlcVehicle.Robot.ForkBusy;
+                return !plcVehicle.Robot.ForkHome || plcVehicle.Robot.ForkBusy;
         }
 
         private EnumVehicleSafetyAction GetBumperState()
@@ -2865,7 +2866,7 @@ namespace Mirle.Agv.Controller
             if (SimulationMode)
                 return FakeState.BumpSensorState;
             else
-                return Vehicle.Instance.ThePlcVehicle.BumperAlarmStatus ? EnumVehicleSafetyAction.Stop : EnumVehicleSafetyAction.Normal;
+                return plcVehicle.BumperAlarmStatus ? EnumVehicleSafetyAction.Stop : EnumVehicleSafetyAction.Normal;
         }
 
         private EnumVehicleSafetyAction GetBeamSensorState()
@@ -2876,7 +2877,7 @@ namespace Mirle.Agv.Controller
             if (SimulationMode)
                 return FakeState.BeamSensorState;
             else
-                return Vehicle.Instance.ThePlcVehicle.VehicleSafetyAction;
+                return plcVehicle.VehicleSafetyAction;
         }
 
         private double GetVChangeVelocity(double velocity)
@@ -3457,19 +3458,19 @@ namespace Mirle.Agv.Controller
             switch (locate)
             {
                 case EnumBeamSensorLocate.Front:
-                    //Vehicle.Instance.ThePlcVehicle.MoveFront = true;
+                    //plcVehicle.MoveFront = true;
                     break;
 
                 case EnumBeamSensorLocate.Back:
-                    //Vehicle.Instance.ThePlcVehicle.MoveBack = true;
+                    //plcVehicle.MoveBack = true;
                     break;
 
                 case EnumBeamSensorLocate.Left:
-                    //Vehicle.Instance.ThePlcVehicle.MoveLeft = true;
+                    //plcVehicle.MoveLeft = true;
                     break;
 
                 case EnumBeamSensorLocate.Right:
-                    //Vehicle.Instance.ThePlcVehicle.MoveRight = true;
+                    //plcVehicle.MoveRight = true;
                     break;
 
                 default:
@@ -3504,20 +3505,20 @@ namespace Mirle.Agv.Controller
                     break;
             }
 
-            //Vehicle.Instance.ThePlcVehicle.MoveFront = front;
-            //Vehicle.Instance.ThePlcVehicle.MoveBack = back;
-            //Vehicle.Instance.ThePlcVehicle.MoveLeft = left;
-            //Vehicle.Instance.ThePlcVehicle.MoveRight = right;
+            //plcVehicle.MoveFront = front;
+            //plcVehicle.MoveBack = back;
+            //plcVehicle.MoveLeft = left;
+            //plcVehicle.MoveRight = right;
 
             WriteLog("MoveControl", "7", device, "", "Beam sensor Sleep/Awake切換 : 只剩 " + locate.ToString() + " Awake !");
         }
 
         private void BeamSensorSleepAll()
         {
-            //Vehicle.Instance.ThePlcVehicle.MoveFront = false;
-            //Vehicle.Instance.ThePlcVehicle.MoveBack = false;
-            //Vehicle.Instance.ThePlcVehicle.MoveLeft = false;
-            //Vehicle.Instance.ThePlcVehicle.MoveRight = false;
+            //plcVehicle.MoveFront = false;
+            //plcVehicle.MoveBack = false;
+            //plcVehicle.MoveLeft = false;
+            //plcVehicle.MoveRight = false;
 
             WriteLog("MoveControl", "7", device, "", "Beam sensor 切換 : all sleep!");
         }
@@ -3529,19 +3530,19 @@ namespace Mirle.Agv.Controller
             switch (locate)
             {
                 case EnumBeamSensorLocate.Front:
-                    Vehicle.Instance.ThePlcVehicle.MoveFront = true;
+                    plcVehicle.MoveFront = true;
                     break;
 
                 case EnumBeamSensorLocate.Back:
-                    Vehicle.Instance.ThePlcVehicle.MoveBack = true;
+                    plcVehicle.MoveBack = true;
                     break;
 
                 case EnumBeamSensorLocate.Left:
-                    Vehicle.Instance.ThePlcVehicle.MoveLeft = true;
+                    plcVehicle.MoveLeft = true;
                     break;
 
                 case EnumBeamSensorLocate.Right:
-                    Vehicle.Instance.ThePlcVehicle.MoveRight = true;
+                    plcVehicle.MoveRight = true;
                     break;
 
                 default:
@@ -3576,20 +3577,20 @@ namespace Mirle.Agv.Controller
                     break;
             }
 
-            Vehicle.Instance.ThePlcVehicle.MoveFront = front;
-            Vehicle.Instance.ThePlcVehicle.MoveBack = back;
-            Vehicle.Instance.ThePlcVehicle.MoveLeft = left;
-            Vehicle.Instance.ThePlcVehicle.MoveRight = right;
+            plcVehicle.MoveFront = front;
+            plcVehicle.MoveBack = back;
+            plcVehicle.MoveLeft = left;
+            plcVehicle.MoveRight = right;
 
             WriteLog("MoveControl", "7", device, "", "Beam sensor 切換 : 只剩 " + locate.ToString() + " On !");
         }
 
         private void BeamSensorCloseAll()
         {
-            Vehicle.Instance.ThePlcVehicle.MoveFront = false;
-            Vehicle.Instance.ThePlcVehicle.MoveBack = false;
-            Vehicle.Instance.ThePlcVehicle.MoveLeft = false;
-            Vehicle.Instance.ThePlcVehicle.MoveRight = false;
+            plcVehicle.MoveFront = false;
+            plcVehicle.MoveBack = false;
+            plcVehicle.MoveLeft = false;
+            plcVehicle.MoveRight = false;
 
             WriteLog("MoveControl", "7", device, "", "Beam sensor 切換 : 全部關掉!");
         }
@@ -3601,16 +3602,16 @@ namespace Mirle.Agv.Controller
             switch (locate)
             {
                 case EnumBeamSensorLocate.Front:
-                    Vehicle.Instance.ThePlcVehicle.Forward = true;
+                    plcVehicle.Forward = true;
                     break;
                 case EnumBeamSensorLocate.Back:
-                    Vehicle.Instance.ThePlcVehicle.Backward = true;
+                    plcVehicle.Backward = true;
                     break;
                 case EnumBeamSensorLocate.Left:
-                    Vehicle.Instance.ThePlcVehicle.TraverseLeft = true;
+                    plcVehicle.TraverseLeft = true;
                     break;
                 case EnumBeamSensorLocate.Right:
-                    Vehicle.Instance.ThePlcVehicle.TraverseRight = true;
+                    plcVehicle.TraverseRight = true;
                     break;
                 default:
                     break;
@@ -3621,10 +3622,10 @@ namespace Mirle.Agv.Controller
 
         private void DirLightTurn(EnumBeamSensorLocate turnDir)
         {
-            Vehicle.Instance.ThePlcVehicle.Forward = false;
-            Vehicle.Instance.ThePlcVehicle.Backward = false;
-            Vehicle.Instance.ThePlcVehicle.TraverseLeft = false;
-            Vehicle.Instance.ThePlcVehicle.TraverseRight = false;
+            plcVehicle.Forward = false;
+            plcVehicle.Backward = false;
+            plcVehicle.TraverseLeft = false;
+            plcVehicle.TraverseRight = false;
 
             switch (turnDir)
             {
@@ -3634,15 +3635,15 @@ namespace Mirle.Agv.Controller
                     break;
                 case EnumBeamSensorLocate.Left:
                     if (ControlData.DirFlag)
-                        Vehicle.Instance.ThePlcVehicle.SteeringFL = true;
+                        plcVehicle.SteeringFL = true;
                     else
-                        Vehicle.Instance.ThePlcVehicle.SteeringBL = true;
+                        plcVehicle.SteeringBL = true;
                     break;
                 case EnumBeamSensorLocate.Right:
                     if (ControlData.DirFlag)
-                        Vehicle.Instance.ThePlcVehicle.SteeringFR = true;
+                        plcVehicle.SteeringFR = true;
                     else
-                        Vehicle.Instance.ThePlcVehicle.SteeringBR = true;
+                        plcVehicle.SteeringBR = true;
                     break;
                 default:
                     break;
@@ -3676,28 +3677,29 @@ namespace Mirle.Agv.Controller
                     break;
             }
 
-            Vehicle.Instance.ThePlcVehicle.Forward = front;
-            Vehicle.Instance.ThePlcVehicle.Backward = back;
-            Vehicle.Instance.ThePlcVehicle.TraverseLeft = left;
-            Vehicle.Instance.ThePlcVehicle.TraverseRight = right;
-            Vehicle.Instance.ThePlcVehicle.SteeringFL = false;
-            Vehicle.Instance.ThePlcVehicle.SteeringFR = false;
-            Vehicle.Instance.ThePlcVehicle.SteeringBL = false;
-            Vehicle.Instance.ThePlcVehicle.SteeringBR = false;
+            plcVehicle.Forward = front;
+            plcVehicle.Backward = back;
+            plcVehicle.TraverseLeft = left;
+            plcVehicle.TraverseRight = right;
+            plcVehicle.SteeringFL = false;
+            plcVehicle.SteeringFR = false;
+            plcVehicle.SteeringBL = false;
+            plcVehicle.SteeringBR = false;
 
             WriteLog("MoveControl", "7", device, "", "方向燈切換 : 只剩 " + locate.ToString() + " On !");
         }
 
         private void DirLightCloseAll()
         {
-            Vehicle.Instance.ThePlcVehicle.Forward = false;
-            Vehicle.Instance.ThePlcVehicle.Backward = false;
-            Vehicle.Instance.ThePlcVehicle.TraverseLeft = false;
-            Vehicle.Instance.ThePlcVehicle.TraverseRight = false;
-            Vehicle.Instance.ThePlcVehicle.SteeringFL = false;
-            Vehicle.Instance.ThePlcVehicle.SteeringFR = false;
-            Vehicle.Instance.ThePlcVehicle.SteeringBL = false;
-            Vehicle.Instance.ThePlcVehicle.SteeringBR = false;
+
+            plcVehicle.Forward = false;
+            plcVehicle.Backward = false;
+            plcVehicle.TraverseLeft = false;
+            plcVehicle.TraverseRight = false;
+            plcVehicle.SteeringFL = false;
+            plcVehicle.SteeringFR = false;
+            plcVehicle.SteeringBL = false;
+            plcVehicle.SteeringBR = false;
 
             WriteLog("MoveControl", "7", device, "", "方向燈切換 : 全部關掉!");
         }

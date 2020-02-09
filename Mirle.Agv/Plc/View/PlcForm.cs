@@ -378,27 +378,27 @@ namespace Mirle.Agv.View
                 }
             }
             //Battery Information
-            txtCellNumber.Text = plcAgent.APLCVehicle.Batterys.Cell_number.ToString();
-            txtTempNumber.Text = plcAgent.APLCVehicle.Batterys.Temperature_sensor_number.ToString();
+            txtCellNumber.Text = plcAgent.APLCVehicle.plcBatterys.Cell_number.ToString();
+            txtTempNumber.Text = plcAgent.APLCVehicle.plcBatterys.Temperature_sensor_number.ToString();
 
-            txtTempMOSFET.Text = plcAgent.APLCVehicle.Batterys.Temperature_1_MOSFET.ToString();
-            txtTempCell.Text = plcAgent.APLCVehicle.Batterys.Temperature_2_Cell.ToString();
-            txtTempMCU.Text = plcAgent.APLCVehicle.Batterys.Temperature_3_MCU.ToString();
-            txtBatteryCurrent.Text = plcAgent.APLCVehicle.Batterys.BatteryCurrent.ToString();
-            txtBatteryVoltage.Text = plcAgent.APLCVehicle.Batterys.Packet_Voltage.ToString();
+            txtTempMOSFET.Text = plcAgent.APLCVehicle.plcBatterys.Temperature_1_MOSFET.ToString();
+            txtTempCell.Text = plcAgent.APLCVehicle.plcBatterys.Temperature_2_Cell.ToString();
+            txtTempMCU.Text = plcAgent.APLCVehicle.plcBatterys.Temperature_3_MCU.ToString();
+            txtBatteryCurrent.Text = plcAgent.APLCVehicle.plcBatterys.BatteryCurrent.ToString();
+            txtBatteryVoltage.Text = plcAgent.APLCVehicle.plcBatterys.Packet_Voltage.ToString();
 
-            txtBatteryRC.Text = plcAgent.APLCVehicle.Batterys.Remain_Capacity.ToString();
-            txtBatteryDC.Text = plcAgent.APLCVehicle.Batterys.Design_Capacity.ToString();
-            txtBatterySOCFromPLC.Text = plcAgent.APLCVehicle.Batterys.BatterySOCFormPlc.ToString();
-            txtBatterySOHFromPLC.Text = plcAgent.APLCVehicle.Batterys.BatterySOHFormPlc.ToString();
+            txtBatteryRC.Text = plcAgent.APLCVehicle.plcBatterys.Remain_Capacity.ToString();
+            txtBatteryDC.Text = plcAgent.APLCVehicle.plcBatterys.Design_Capacity.ToString();
+            txtBatterySOCFromPLC.Text = plcAgent.APLCVehicle.plcBatterys.BatterySOCFormPlc.ToString();
+            txtBatterySOHFromPLC.Text = plcAgent.APLCVehicle.plcBatterys.BatterySOHFormPlc.ToString();
 
             foreach (Control c in tlpCellVoltage.Controls)
             {
                 if (c is TextBox)
                 {
-                    double d = plcAgent.APLCVehicle.Batterys.BatteryCells[Convert.ToUInt16(c.Tag)].Voltage;
+                    double d = plcAgent.APLCVehicle.plcBatterys.BatteryCells[Convert.ToUInt16(c.Tag)].Voltage;
                     c.Text = d.ToString();
-                    if (d <= plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)
+                    if (d <= plcAgent.APLCVehicle.plcBatterys.Battery_Cell_Low_Voltage)
                         c.BackColor = Color.Pink;
                     else c.BackColor = SystemColors.Control;
                 }
@@ -443,7 +443,7 @@ namespace Mirle.Agv.View
             tbxLogView.Text = plcAgent.logMsg;
 
             txtTriggerEvent.Text = triggerEvent;
-            if (this.plcAgent.APLCVehicle.Batterys.BatteryType == EnumBatteryType.Gotech)
+            if (this.plcAgent.APLCVehicle.plcBatterys.BatteryType == EnumBatteryType.Gotech)
             {
                 this.lblGotech.BackColor = Color.LightGreen;
             }
@@ -452,7 +452,7 @@ namespace Mirle.Agv.View
                 this.lblGotech.BackColor = Color.Silver;
             }
 
-            if (this.plcAgent.APLCVehicle.Batterys.BatteryType == EnumBatteryType.Yinda)
+            if (this.plcAgent.APLCVehicle.plcBatterys.BatteryType == EnumBatteryType.Yinda)
             {
                 this.lblYinda.BackColor = Color.LightGreen;
             }
@@ -470,25 +470,25 @@ namespace Mirle.Agv.View
                 lblCharging.BackColor = Color.Silver;
             }
 
-            txtCurrent.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterCurrent);
-            txtVoltage.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterVoltage);
-            txtWatt.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterWatt);
-            txtWattHour.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterWattHour);
-            txtAH.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MeterAh);
-            txtSOC.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.Percentage);
-            txtAHWorkingRange.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.AhWorkingRange);
-            txtCCModeAH.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.CcModeAh);
+            txtCurrent.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.MeterCurrent);
+            txtVoltage.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.MeterVoltage);
+            txtWatt.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.MeterWatt);
+            txtWattHour.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.MeterWattHour);
+            txtAH.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.MeterAh);
+            txtSOC.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.Percentage);
+            txtAHWorkingRange.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.AhWorkingRange);
+            txtCCModeAH.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.CcModeAh);
 
-            txtCCModeCounter.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.CcModeCounter);
-            txtMaxCCmodeCounter.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter);
-            txtFullChargeIndex.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.FullChargeIndex);
+            txtCCModeCounter.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.CcModeCounter);
+            txtMaxCCmodeCounter.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.MaxResetAhCcounter);
+            txtFullChargeIndex.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.FullChargeIndex);
 
-            txtFBatteryTemp.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.FBatteryTemperature);
-            txtBBatteryTemp.Text = Convert.ToString(this.plcAgent.APLCVehicle.Batterys.BBatteryTemperature);
+            txtFBatteryTemp.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.FBatteryTemperature);
+            txtBBatteryTemp.Text = Convert.ToString(this.plcAgent.APLCVehicle.plcBatterys.BBatteryTemperature);
 
             txtErrorReason.Text = this.plcAgent.getErrorReason();
 
-            txtCassetteID.Text = this.plcAgent.APLCVehicle.CassetteId;
+            txtCassetteID.Text = this.plcAgent.APLCVehicle.CarrierId;
 
             if (this.plcAgent.APLCVehicle.Robot.ForkBusy)
             {
@@ -1346,31 +1346,31 @@ namespace Mirle.Agv.View
                 switch (box.Name)
                 {
                     case "tbxBatteryCellLowVoltage_PV":
-                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.Battery_Cell_Low_Voltage)).ToString();
                         break;
                     case "tbxCCModeStopVoltage_PV":
-                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.CCModeStopVoltage)).ToString();
                         break;
                     case "tbxChargingOffDelay_PV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay).ToString();
+                        box.Text = (this.plcAgent.APLCVehicle.plcBatterys.Charging_Off_Delay).ToString();
                         break;
                     case "tbxBatterysChargingTimeOut_PV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
+                        box.Text = (this.plcAgent.APLCVehicle.plcBatterys.Batterys_Charging_Time_Out / 60000).ToString();
                         break;
                     case "tbxBatLoggerInterval_PV":
-                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval) / 1000).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.Battery_Logger_Interval) / 1000).ToString();
                         break;
                     case "tbxAHWorkingRange_PV":
-                        box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                        box.Text = this.plcAgent.APLCVehicle.plcBatterys.AhWorkingRange.ToString();
                         break;
                     case "tbxMaxCCModeCounter_PV":
-                        box.Text = this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                        box.Text = this.plcAgent.APLCVehicle.plcBatterys.MaxResetAhCcounter.ToString();
                         break;
                     case "txtAutoChargeLowSOC_PV":
-                        box.Text = this.plcAgent.APLCVehicle.Batterys.PortAutoChargeLowSoc.ToString();
+                        box.Text = this.plcAgent.APLCVehicle.plcBatterys.PortAutoChargeLowSoc.ToString();
                         break;
                     case "tbxResetAHTimeout_PV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.ResetAhTimeout / 1000).ToString();
+                        box.Text = (this.plcAgent.APLCVehicle.plcBatterys.ResetAhTimeout / 1000).ToString();
                         break;
                 }
             }
@@ -1386,31 +1386,31 @@ namespace Mirle.Agv.View
                 switch (box.Name)
                 {
                     case "tbxBatteryCellLowVoltage_SV":
-                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.Battery_Cell_Low_Voltage)).ToString();
                         break;
                     case "tbxCCModeStopVoltage_SV":
-                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.CCModeStopVoltage)).ToString();
                         break;
                     case "tbxChargingOffDelay_SV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay).ToString();
+                        box.Text = (this.plcAgent.APLCVehicle.plcBatterys.Charging_Off_Delay).ToString();
                         break;
                     case "tbxBatterysChargingTimeOut_SV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
+                        box.Text = (this.plcAgent.APLCVehicle.plcBatterys.Batterys_Charging_Time_Out / 60000).ToString();
                         break;
                     case "tbxBatLoggerInterval_SV":
-                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval) / 1000).ToString();
+                        box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.Battery_Logger_Interval) / 1000).ToString();
                         break;
                     case "tbxAHWorkingRange_SV":
-                        box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                        box.Text = this.plcAgent.APLCVehicle.plcBatterys.AhWorkingRange.ToString();
                         break;
                     case "tbxMaxCCModeCounter_SV":
-                        box.Text = this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                        box.Text = this.plcAgent.APLCVehicle.plcBatterys.MaxResetAhCcounter.ToString();
                         break;
                     case "txtAutoChargeLowSOC_SV":
                         box.Text = this.plcAgent.APLCVehicle.Batterys.PortAutoChargeLowSoc.ToString();
                         break;
                     case "tbxResetAHTimeout_SV":
-                        box.Text = (this.plcAgent.APLCVehicle.Batterys.ResetAhTimeout / 1000).ToString();
+                        box.Text = (this.plcAgent.APLCVehicle.plcBatterys.ResetAhTimeout / 1000).ToString();
                         break;
                 }
             }
@@ -1491,7 +1491,7 @@ namespace Mirle.Agv.View
                         {
                             if (!double.TryParse(box.Text, out double value))
                             {
-                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Cell_Low_Voltage)).ToString();
+                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.Battery_Cell_Low_Voltage)).ToString();
                                 result = false;
                             }
                         }
@@ -1500,7 +1500,7 @@ namespace Mirle.Agv.View
                         {
                             if (!double.TryParse(box.Text, out double value))
                             {
-                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.CCModeStopVoltage)).ToString();
+                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.CCModeStopVoltage)).ToString();
                                 result = false;
                             }
                         }
@@ -1509,7 +1509,7 @@ namespace Mirle.Agv.View
                         {
                             if (!uint.TryParse(box.Text, out uint value))
                             {
-                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Charging_Off_Delay).ToString();
+                                box.Text = (this.plcAgent.APLCVehicle.plcBatterys.Charging_Off_Delay).ToString();
                                 result = false;
                             }
                         }
@@ -1519,7 +1519,7 @@ namespace Mirle.Agv.View
                         {
                             if (!uint.TryParse(box.Text, out uint value))
                             {
-                                box.Text = (this.plcAgent.APLCVehicle.Batterys.Batterys_Charging_Time_Out / 60000).ToString();
+                                box.Text = (this.plcAgent.APLCVehicle.plcBatterys.Batterys_Charging_Time_Out / 60000).ToString();
                                 result = false;
                             }
                         }
@@ -1528,7 +1528,7 @@ namespace Mirle.Agv.View
                         {
                             if (!double.TryParse(box.Text, out double value))
                             {
-                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.Batterys.Battery_Logger_Interval) / 1000).ToString();
+                                box.Text = (Convert.ToDouble(this.plcAgent.APLCVehicle.plcBatterys.Battery_Logger_Interval) / 1000).ToString();
                                 result = false;
                             }
                         }
@@ -1537,7 +1537,7 @@ namespace Mirle.Agv.View
                         {
                             if (!double.TryParse(box.Text, out double value))
                             {
-                                box.Text = this.plcAgent.APLCVehicle.Batterys.AhWorkingRange.ToString();
+                                box.Text = this.plcAgent.APLCVehicle.plcBatterys.AhWorkingRange.ToString();
                                 result = false;
                             }
                         }
@@ -1546,7 +1546,7 @@ namespace Mirle.Agv.View
                         {
                             if (!ushort.TryParse(box.Text, out ushort value))
                             {
-                                box.Text = this.plcAgent.APLCVehicle.Batterys.MaxResetAhCcounter.ToString();
+                                box.Text = this.plcAgent.APLCVehicle.plcBatterys.MaxResetAhCcounter.ToString();
                                 result = false;
                             }
                         }
@@ -1564,7 +1564,7 @@ namespace Mirle.Agv.View
                         {
                             if (!uint.TryParse(box.Text, out uint value))
                             {
-                                box.Text = (this.plcAgent.APLCVehicle.Batterys.ResetAhTimeout / 1000).ToString();
+                                box.Text = (this.plcAgent.APLCVehicle.plcBatterys.ResetAhTimeout / 1000).ToString();
                                 result = false;
                             }
                         }
@@ -1736,7 +1736,7 @@ namespace Mirle.Agv.View
             string strCstID = txtCassetteIDSet.Text;
             if (strCstID=="")
             {
-                this.plcAgent.APLCVehicle.CassetteId = "";
+                this.plcAgent.APLCVehicle.CarrierId = "";
             }
             else
             {
