@@ -3362,11 +3362,6 @@ namespace Mirle.Agv.Controller
 
         private void UpdateAGVState()
         {
-            if (ControlData.BeamSensorState == EnumVehicleSafetyAction.Stop && elmoDriver.MoveCompelete(EnumAxis.GX))
-                Vehicle.Instance.ObstacleStatus = TcpIpClientSample.VhStopSingle.StopSingleOn;
-            else
-                Vehicle.Instance.ObstacleStatus = TcpIpClientSample.VhStopSingle.StopSingleOff;
-            
             if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
                 AGVState = MoveState.ToString();
             else
@@ -3818,7 +3813,6 @@ namespace Mirle.Agv.Controller
                 ControlData.OntimeReviseFlag = false;
                 ControlData.MoveControlCommandComplete = true;
                 ControlData.MoveControlCommandCompleteTimer.Restart();
-                Vehicle.Instance.ObstacleStatus = TcpIpClientSample.VhStopSingle.StopSingleOff; 
             }
 
             if (ControlData.CommandMoving)

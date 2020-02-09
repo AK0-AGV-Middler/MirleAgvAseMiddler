@@ -1841,8 +1841,6 @@ namespace Mirle.Agv.Controller
             }
         }
 
-
-
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
             try
