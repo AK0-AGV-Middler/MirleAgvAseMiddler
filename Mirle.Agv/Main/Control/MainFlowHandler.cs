@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TcpIpClientSample;
+using Mirle.Tools;
 
 namespace Mirle.Agv.Controller
 {
@@ -51,9 +52,11 @@ namespace Mirle.Agv.Controller
         private MiddleAgent middleAgent;
         private IntegrateControlPlate integrateControlPlate;
         private LoggerAgent loggerAgent;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
         private AlarmHandler alarmHandler;
         private MapHandler mapHandler;
         private MoveControlPlate moveControlPlate;
+        private XmlHandler xmlHandler = new XmlHandler();
 
         #endregion
 
@@ -160,7 +163,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                XmlHandler xmlHandler = new XmlHandler();
+
 
                 mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
                 LoggerAgent.LogConfigPath = mainFlowConfig.LogConfigPath;
@@ -705,14 +708,14 @@ namespace Mirle.Agv.Controller
 
                 if (IsVehicleAlreadyHaveCstCannotLoad(agvcTransCmd.CommandType))
                 {
-                    var reason = $"Agv already have a cst [{theVehicle.TheVehicleIntegrateStatus.CarrierId}] cannot load.";
+                    var reason = $"Agv already have a cst [{theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId}] cannot load.";
                     RejectTransferCommandAndResume(000016, reason, agvcTransCmd);
                     return;
                 }
 
                 if (IsVehicleHaveNoCstCannotUnload(agvcTransCmd.CommandType))
                 {
-                    var reason = $"Agv have no cst cannot unload.[loading={theVehicle.TheVehicleIntegrateStatus.Loading}]";
+                    var reason = $"Agv have no cst cannot unload.[loading={theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading}]";
                     RejectTransferCommandAndResume(000017, reason, agvcTransCmd);
                     return;
                 }
@@ -742,7 +745,7 @@ namespace Mirle.Agv.Controller
                 SetupTransferSteps();
                 transferSteps.Add(new EmptyTransferStep());
                 //開始尋訪 trasnferSteps as List<TrasnferStep> 裡的每一步MoveCmdInfo/LoadCmdInfo/UnloadCmdInfo
-                theVehicle.TheVehicleIntegrateStatus.FakeCarrierId = agvcTransCmd.CassetteId;
+                theVehicle.TheVehicleIntegrateStatus.CarrierSlot.FakeCarrierId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 0, "");
                 StartVisitTransferSteps();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 確認。";
@@ -911,11 +914,11 @@ namespace Mirle.Agv.Controller
 
         private bool IsVehicleHaveNoCstCannotUnload(EnumAgvcTransCommandType commandTyp)
         {
-            return commandTyp == EnumAgvcTransCommandType.Unload && theVehicle.TheVehicleIntegrateStatus.CarrierId == "";
+            return commandTyp == EnumAgvcTransCommandType.Unload && theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId == "";
         }
         private bool IsVehicleAlreadyHaveCstCannotLoad(EnumAgvcTransCommandType commandTyp)
         {
-            return (commandTyp == EnumAgvcTransCommandType.Load || commandTyp == EnumAgvcTransCommandType.LoadUnload) && theVehicle.TheVehicleIntegrateStatus.CarrierId != "";
+            return (commandTyp == EnumAgvcTransCommandType.Load || commandTyp == EnumAgvcTransCommandType.LoadUnload) && theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId != "";
         }
 
         private void RejectTransferCommandAndResume2(int alarmCode, string reason, AgvcTransCmd agvcTransferCmd)
@@ -1112,7 +1115,7 @@ namespace Mirle.Agv.Controller
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupOverrideTransferSteps(agvcOverrideCmd);
                 transferSteps.Add(new EmptyTransferStep());
-                theVehicle.TheVehicleIntegrateStatus.FakeCarrierId = agvcTransCmd.CassetteId;
+                theVehicle.TheVehicleIntegrateStatus.CarrierSlot.FakeCarrierId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
@@ -1256,7 +1259,7 @@ namespace Mirle.Agv.Controller
                 agvcTransCmd.IsAvoidComplete = false;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupAvoidTransferSteps();
-                theVehicle.TheVehicleIntegrateStatus.FakeCarrierId = agvcTransCmd.CassetteId;
+                theVehicle.TheVehicleIntegrateStatus.CarrierSlot.FakeCarrierId = agvcTransCmd.CassetteId;
                 middleAgent.ReplyAvoidCommand(agvcMoveCmd, 0, "");
                 var okmsg = $"MainFlow : 接受避車命令確認，終點[{agvcTransCmd.AvoidEndAddressId}]。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
@@ -1391,7 +1394,7 @@ namespace Mirle.Agv.Controller
         private void ConvertOverrideAgvcLoadUnloadCmdIntoList(AgvcTransCmd agvcTransCmd, List<TransferStep> transferSteps)
         {
             ConvertAgvcLoadCmdIntoList(agvcTransCmd, transferSteps);
-            if (theVehicle.TheVehicleIntegrateStatus.Loading)
+            if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
             {
                 ConvertOverrideAgvcNextUnloadCmdIntoList(agvcTransCmd, transferSteps);
             }
@@ -1968,7 +1971,7 @@ namespace Mirle.Agv.Controller
                     {
                         Stopwatch sw = new Stopwatch();
                         sw.Start();
-                        while (!theVehicle.TheVehicleIntegrateStatus.Loading)
+                        while (!theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
                         {
                             if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
                             {
@@ -2003,7 +2006,7 @@ namespace Mirle.Agv.Controller
                     {
                         Stopwatch sw = new Stopwatch();
                         sw.Start();
-                        while (!theVehicle.TheVehicleIntegrateStatus.Loading)
+                        while (!theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
                         {
                             if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
                             {
@@ -2061,13 +2064,13 @@ namespace Mirle.Agv.Controller
                 }
                 else if (transferStepType == EnumTransferStepType.Unload)
                 {
-                    if (theVehicle.TheVehicleIntegrateStatus.Loading)
+                    if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
                     {
                         alarmHandler.SetAlarm(000007);
                         return;
                     }
 
-                    theVehicle.TheVehicleIntegrateStatus.CarrierId = "";
+                    theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = "";
 
                     middleAgent.UnloadComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨完成");
@@ -2109,7 +2112,7 @@ namespace Mirle.Agv.Controller
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Noraml;
                 }
-                theVehicle.TheVehicleIntegrateStatus.CarrierId = cstId;
+                theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = cstId;
 
                 #endregion
             }
@@ -2238,7 +2241,7 @@ namespace Mirle.Agv.Controller
 
         public void Unload(UnloadCmdInfo unloadCmd)
         {
-            if (theVehicle.TheVehicleIntegrateStatus.CarrierId == "")
+            if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId == "")
             {
                 alarmHandler.SetAlarm(000017);
                 return;
@@ -2293,7 +2296,7 @@ namespace Mirle.Agv.Controller
 
         public void Load(LoadCmdInfo loadCmd)
         {
-            if (theVehicle.TheVehicleIntegrateStatus.CarrierId != "")
+            if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId != "")
             {
                 alarmHandler.SetAlarm(000016);
                 return;
@@ -2995,7 +2998,7 @@ namespace Mirle.Agv.Controller
                     agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
                 }
 
-                if (theVehicle.TheVehicleIntegrateStatus.Loading && ReadResult == EnumCstIdReadResult.Noraml)
+                if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading && ReadResult == EnumCstIdReadResult.Noraml)
                 {
                     string carrierId = integrateControlPlate.ReadCarrierId();
                 }
@@ -3166,7 +3169,7 @@ namespace Mirle.Agv.Controller
 
         public void RenameCstId(string newCstId)
         {
-            theVehicle.TheVehicleIntegrateStatus.CarrierId = newCstId;
+            theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = newCstId;
             theVehicle.CurAgvcTransCmd.CassetteId = newCstId;
             if (transferSteps.Count > 0)
             {
@@ -3363,7 +3366,6 @@ namespace Mirle.Agv.Controller
 
         public void LoadMainFlowConfig()
         {
-            XmlHandler xmlHandler = new XmlHandler();
 
             mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
         }
@@ -3371,20 +3373,17 @@ namespace Mirle.Agv.Controller
         public void SetMainFlowConfig(MainFlowConfig mainFlowConfig)
         {
             this.mainFlowConfig = mainFlowConfig;
-            XmlHandler xmlHandler = new XmlHandler();
             xmlHandler.WriteXml(mainFlowConfig, @"D:\AgvConfigs\MainFlow.xml");
         }
 
         public void LoadMiddlerConfig()
         {
-            XmlHandler xmlHandler = new XmlHandler();
             middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
         }
 
         public void SetMiddlerConfig(MiddlerConfig middlerConfig)
         {
             this.middlerConfig = middlerConfig;
-            XmlHandler xmlHandler = new XmlHandler();
             xmlHandler.WriteXml(middlerConfig, @"D:\AgvConfigs\Middler.xml");
         }
 
@@ -3403,7 +3402,6 @@ namespace Mirle.Agv.Controller
 
         public void SaveBatteryLog()
         {
-            XmlHandler xmlHandler = new XmlHandler();
             xmlHandler.WriteXml(batteryLog, @"D:\AgvConfigs\BatteryLog.xml");
         }
 
@@ -3421,7 +3419,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", classMethodName, middlerConfig.ClientName, "CarrierID", exMsg));
+                loggerAgent.Log("Error", new Mirle.Agv.Controller.Tools.LogFormat("Error", "5", classMethodName, middlerConfig.ClientName, "CarrierID", exMsg));
             }
             catch (Exception)
             {
@@ -3432,7 +3430,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                loggerAgent.Log("Debug", new LogFormat("Debug", "5", classMethodName, middlerConfig.ClientName, "CarrierID", msg));
+                loggerAgent.Log("Debug", new Mirle.Agv.Controller.Tools.LogFormat("Debug", "5", classMethodName, middlerConfig.ClientName, "CarrierID", msg));
             }
             catch (Exception)
             {

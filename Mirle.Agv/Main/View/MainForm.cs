@@ -278,7 +278,7 @@ namespace Mirle.Agv.View
         {
             IsAgvcConnect = middleAgent.IsConnected();
             UpdateAgvcConnection();
-            if (theVehicle.TheVehicleIntegrateStatus.Loading)
+            if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
             {
                 string carrierId = integrateControlPlate.ReadCarrierId();
             }
@@ -1465,10 +1465,10 @@ namespace Mirle.Agv.View
         {
             try
             {
-                var loading = !string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierId);
+                var loading = !string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId);
                 ucLoading.TagValue = loading ? "Yes" : "No";
                 ucVehicleImage.Loading = loading;
-                ucCstId.TagValue = loading ? theVehicle.TheVehicleIntegrateStatus.CarrierId : "";
+                ucCstId.TagValue = loading ? theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId : "";
 
                 var charging = theVehicle.TheVehicleIntegrateStatus.Batterys.Charging;
                 ucCharging.TagValue = charging ? "Yes" : "No";
@@ -1591,13 +1591,13 @@ namespace Mirle.Agv.View
                                 mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                                 Vehicle.Instance.AutoState = EnumAutoState.Auto;
                                 switchResult = true;
-                                if (theVehicle.TheVehicleIntegrateStatus.Loading)
+                                if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
                                 {
                                     string carrierId = integrateControlPlate.ReadCarrierId();
                                 }
                                 else
                                 {
-                                    theVehicle.TheVehicleIntegrateStatus.CarrierId = "";
+                                    theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = "";
                                 }
                                 ResetAllAbnormalMsg();
                             }

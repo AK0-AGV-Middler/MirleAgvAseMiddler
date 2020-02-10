@@ -420,16 +420,6 @@ namespace Mirle.Agv.View
             }
         }
 
-
-        private void SaveMiddlerConfigs()
-        {
-            string iniPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
-            var configHandler = new ConfigHandler(iniPath);
-
-            configHandler.SetString("Middler", "RemoteIp", middlerConfig.RemoteIp);
-            configHandler.SetString("Middler", "RemotePort", middlerConfig.RemotePort.ToString());
-        }
-
         private void btnIsClientAgentNull_Click(object sender, EventArgs e)
         {
             if (middleAgent.IsClientAgentNull())

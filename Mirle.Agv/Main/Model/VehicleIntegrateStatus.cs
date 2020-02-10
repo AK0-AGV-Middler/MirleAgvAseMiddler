@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mirle.Agv.Model.TransferSteps;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,12 +9,11 @@ namespace Mirle.Agv.Model
 {
     public abstract class VehicleIntegrateStatus
     {
-        public bool Loading { get; set; }
-        public string CarrierId { get; set; } = "";
-        public string FakeCarrierId { get; set; } = "";
         public bool RobotHome { get; set; } = true;
 
         public Batterys Batterys { get; set; } = null;
+
+        public CarrierSlot CarrierSlot { get; set; } = new CarrierSlot();
     }
 
     public abstract class Batterys
@@ -25,6 +25,13 @@ namespace Mirle.Agv.Model
         public double BatteryTemperature { get; set; }
         public double MeterVoltage { get; set; }
     }
+
+    public class CarrierSlot
+    {
+        public bool Loading { get; set; }
+        public string CarrierId { get; set; } = "";
+        public string FakeCarrierId { get; set; } = "";
+    }  
 
     public class VehicleIntegrateStatusFactory
     {
@@ -39,7 +46,7 @@ namespace Mirle.Agv.Model
             else if (type == "ASE")
             {
                 vehicleIntegrateStatus = new AseVehicleIntegrateStatus();
-            }           
+            }
 
             return vehicleIntegrateStatus;
         }

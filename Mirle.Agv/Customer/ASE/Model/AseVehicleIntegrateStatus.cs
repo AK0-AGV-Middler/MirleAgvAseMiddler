@@ -8,6 +8,8 @@ namespace Mirle.Agv.Model
 {
     public class AseVehicleIntegrateStatus : VehicleIntegrateStatus
     {
+        public CarrierSlot SecondCarrierSlot { get; set; } = new CarrierSlot();
+
         public AseVehicleIntegrateStatus()
         {
             Batterys = new AseBatterys();

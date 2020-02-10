@@ -3523,6 +3523,31 @@ namespace Mirle.Agv.Controller
             {
                 LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " fail"));
             }
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(120);
+                    if (this.aMCProtocol.get_ItemByTag("Force_ELMO_Servo_Off").AsBoolean == false)
+                    {
+                        this.aMCProtocol.get_ItemByTag("Force_ELMO_Servo_Off").AsBoolean = true;
+                        if (this.aMCProtocol.WritePLC())
+                        {
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " success"));
+                            result = true;
+                        }
+                        else
+                        {
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " fail"));
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            });
+            
             return result;
         }
 

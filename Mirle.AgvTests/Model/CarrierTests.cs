@@ -109,5 +109,31 @@ namespace Mirle.Agv.Model.Tests
             return 2;
         }
 
+
+
+        [Test()]
+        public void AsignTest()
+        {
+            string a = "xx";
+            string b = "yy";
+            a = b;
+
+            Assert.AreEqual("yy", a);
+            Assert.AreEqual("yy", b);
+
+
+            b = "yyy";
+
+            //Assert.AreEqual("yyy", a);
+            Assert.AreEqual("yyy", b);
+
+            //a = "xxx";
+
+            //Assert.AreEqual("xxx", a);
+            ////Assert.AreEqual("xxx", b);
+
+
+        }
+
     }
 }

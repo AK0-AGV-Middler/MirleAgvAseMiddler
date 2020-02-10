@@ -13,6 +13,7 @@ using System.IO.MemoryMappedFiles;
 using System.IO;
 using Mirle.Agv.Controller.Tools;
 using Mirle.Agv.Model.Configs;
+using Mirle.Tools;
 
 namespace Mirle.Agv.View
 {
