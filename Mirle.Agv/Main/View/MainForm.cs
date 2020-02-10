@@ -13,10 +13,10 @@ using System.Windows.Forms;
 using System.Linq;
 using Mirle.Agv.Model.TransferSteps;
 using Mirle.Agv;
-using Mirle.Agv.Controller.Tools;
 using System.Reflection;
 using System.Threading.Tasks;
 using Mirle.Agv.Model.Configs;
+using Mirle.Tools;
 
 namespace Mirle.Agv.View
 {
@@ -45,7 +45,7 @@ namespace Mirle.Agv.View
         //PerformanceCounter performanceCounterCpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "Available MBytes");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
-        private LoggerAgent theLoggerAgent = LoggerAgent.Instance;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
         private Vehicle theVehicle = Vehicle.Instance;
         private bool IsAskingReserve { get; set; }
         private string LastAgvcTransferCommandId { get; set; } = "";
@@ -117,7 +117,7 @@ namespace Mirle.Agv.View
                 auoIntegrateControl.SetOutsideObjects(this);
             }
             var msg = "MainForm : 讀取主畫面";
-            LoggerAgent.Instance.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
 
         private void InitialAbnormalMsgs()
@@ -297,7 +297,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void MainFlowHandler_OnMoveArrivalEvent(object sender, EventArgs e)
@@ -308,7 +308,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -324,7 +324,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void MiddleAgent_OnPassReserveSectionEvent(object sender, string passSectionId)
@@ -335,7 +335,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -364,7 +364,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
@@ -379,7 +379,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -391,7 +391,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -404,7 +404,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -433,7 +433,7 @@ namespace Mirle.Agv.View
         private void ShowMsgOnMainForm(object sender, string msg)
         {
             AppendDebugLogMsg(msg);
-            LoggerAgent.Instance.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
 
         private void AppendDebugLogMsg(string msg)
@@ -449,7 +449,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -553,7 +553,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -660,7 +660,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -944,7 +944,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
 
         }
@@ -976,7 +976,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private string GetTransferStepMsgFromMoveCmdInfo(TransferStep transferStep)
@@ -996,7 +996,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return "";
             }
         }
@@ -1017,7 +1017,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return "";
             }
         }
@@ -1037,7 +1037,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return "";
             }
         }
@@ -1087,7 +1087,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1112,7 +1112,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1195,7 +1195,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1208,7 +1208,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         public void UpdateAgvcConnection()
@@ -1230,7 +1230,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void UpdateLastAlarm()
@@ -1241,7 +1241,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void UpdateTbxTransferStep()
@@ -1261,7 +1261,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void UpdateTbxAgvcTransCmd()
@@ -1272,7 +1272,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private string GetListMovingAddressToString(List<MapAddress> movingAddress)
@@ -1334,7 +1334,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
@@ -1395,7 +1395,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void DrawReserveSections()
@@ -1458,7 +1458,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void UpdateCharginAndLoading()
@@ -1475,7 +1475,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
         private void UpdatePerformanceCounter(PerformanceCounter performanceCounter, UcLabelTextBox ucLabelTextBox)
@@ -1498,7 +1498,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1512,7 +1512,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
 
         }
@@ -1615,7 +1615,7 @@ namespace Mirle.Agv.View
 
                             mainFlowHandler.CmdEndVehiclePosition = theVehicle.VehicleLocation;
                             switchResult = true;
-                            LoggerAgent.Instance.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", msg));
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                         }
                         break;
                 }
@@ -1623,7 +1623,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return false;
             }
         }
@@ -1951,7 +1951,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2021,7 +2021,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -2068,6 +2068,17 @@ namespace Mirle.Agv.View
             string timeStamp = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".jpeg";
             string savename = Path.Combine(Environment.CurrentDirectory, "Log", timeStamp);
             image.Save(savename);
+        }
+
+
+        private void LogException(string classMethodName, string exMsg)
+        {
+            mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
+        }
+
+        private void LogDebug(string classMethodName, string msg)
+        {
+            mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
     }
 }

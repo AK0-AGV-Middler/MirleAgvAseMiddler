@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Reflection;
 using Mirle.Agv.Model.TransferSteps;
+using Mirle.Tools;
 
 namespace Mirle.Agv.Controller
 {
@@ -22,8 +23,8 @@ namespace Mirle.Agv.Controller
         public EnumMoveState MoveState { get; private set; } = EnumMoveState.Idle;
         public MoveControlConfig moveControlConfig;
         private MapInfo theMapInfo = new MapInfo();
-        private Logger logger = LoggerAgent.Instance.GetLooger("MoveControlCSV");
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private Logger logger = MirleLogger.Instance.GetLooger("MoveControlCSV");
+        private MirleLogger mirleLogger = MirleLogger.Instance;
         private string device = "MoveControl";
         private Dictionary<EnumAddressAction, TRTimeToAngleRange> trTimeToAngleRange = new Dictionary<EnumAddressAction, TRTimeToAngleRange>();
         public event EventHandler<EnumMoveComplete> OnMoveFinished;
@@ -424,7 +425,7 @@ namespace Mirle.Agv.Controller
             string classMethodName = String.Concat(GetType().Name, ":", memberName);
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(logFormat);
 
             if (category == "MoveControl")
                 SetDebugFlowLog(memberName, message);
@@ -4903,6 +4904,19 @@ namespace Mirle.Agv.Controller
                         }
 
                         logger.LogString(csvLog);
+                    }
+
+                    if (loopTimeTimer.ElapsedMilliseconds >= 1000)
+                    {
+                        try
+                        {
+                            WriteLog("MoveControl", "7", device, "", String.Concat("looptimer : ", loopTimeTimer.ElapsedMilliseconds.ToString("0"), " , CSV Thread 對 Plc 下斷驅動器電"));
+                            plcAgent.SetForcELMOServoOffOn();
+                        }
+                        catch
+                        {
+                            WriteLog("MoveControl", "7", device, "", "通知PLC斷Elmo驅動器的電源,但跳Excption!");
+                        }
                     }
 
                     while (timer.ElapsedMilliseconds < moveControlConfig.CSVLogInterval)

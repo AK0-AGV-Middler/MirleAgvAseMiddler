@@ -160,7 +160,6 @@
     <Compile Include="MoveControl\Control\SLAM_Sick.cs" />
     <Compile Include="MoveControl\Control\Sr2000Driver.cs" />
     <Compile Include="MoveControl\Control\ElmoDriver.cs" />
-    <Compile Include="Main\Control\LoggerAgent.cs" />
     <Compile Include="Main\Control\AlarmHandler.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Idle.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\ITransferCmdStep.cs" />
@@ -212,10 +211,6 @@
     <Compile Include="Main\Control\InitialEventArgs.cs" />
     <Compile Include="Main\Control\Tools\CassetteIDReader.cs" />
     <Compile Include="Main\Control\Tools\ConfigHandler.cs" />
-    <Compile Include="Main\Control\Tools\Logger\LogBasicConfigs.cs" />
-    <Compile Include="Main\Control\Tools\Logger\LogFormat.cs" />
-    <Compile Include="Main\Control\Tools\Logger\Logger.cs" />
-    <Compile Include="Main\Control\Tools\Logger\LogType.cs" />
     <Compile Include="Main\Model\Agvmessage.cs" />
     <Compile Include="Main\Model\Alarm.cs" />
     <Compile Include="Main\MainDefines.cs" />

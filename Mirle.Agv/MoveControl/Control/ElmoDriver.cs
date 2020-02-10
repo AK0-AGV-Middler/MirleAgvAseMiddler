@@ -13,6 +13,7 @@ using System.IO;
 using Mirle.Agv.Model.Configs;
 using Mirle.Agv.Controller.Tools;
 using System.Reflection;
+using Mirle.Tools;
 
 namespace Mirle.Agv.Controller
 {
@@ -20,7 +21,7 @@ namespace Mirle.Agv.Controller
     {
         Thread Read_BulkRead;
 
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
 
         private ushort MAX_AXIS;
         private string networkInterfaceCard = "";
@@ -120,7 +121,7 @@ namespace Mirle.Agv.Controller
             string classMethodName = GetType().Name + ":" + memberName;
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(logFormat);
             SetElmoLog(memberName, message);
         }
 

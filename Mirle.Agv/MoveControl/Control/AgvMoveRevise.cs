@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Mirle.Tools;
 
 namespace Mirle.Agv.Controller
 {
@@ -19,7 +20,7 @@ namespace Mirle.Agv.Controller
         private OneTimeReviseParameter oneTimeReviseParameter = new OneTimeReviseParameter();
         Dictionary<EnumMoveControlSafetyType, SafetyData> safety;
         private ComputeFunction computeFunction = new ComputeFunction();
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
         private string device = "AgvMoveRevise";
         private uint lastCount = 0;
         private int lastSR2000Index = -1;
@@ -43,7 +44,7 @@ namespace Mirle.Agv.Controller
             string classMethodName = GetType().Name + ":" + memberName;
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log( logFormat);
         }
         
         #region 即時修正

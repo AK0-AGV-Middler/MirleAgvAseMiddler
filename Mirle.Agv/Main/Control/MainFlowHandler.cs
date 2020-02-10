@@ -51,8 +51,7 @@ namespace Mirle.Agv.Controller
 
         private MiddleAgent middleAgent;
         private IntegrateControlPlate integrateControlPlate;
-        private LoggerAgent loggerAgent;
-        private MirleLogger mirleLogger = MirleLogger.Instance;
+        private MirleLogger mirleLogger=null;
         private AlarmHandler alarmHandler;
         private MapHandler mapHandler;
         private MoveControlPlate moveControlPlate;
@@ -166,13 +165,11 @@ namespace Mirle.Agv.Controller
 
 
                 mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
-                LoggerAgent.LogConfigPath = mainFlowConfig.LogConfigPath;
                 Vehicle.Instance.TheMainFlowConfig = mainFlowConfig;
                 Vehicle.Instance.CreateVehicleIntegrateStatus();
                 mapConfig = xmlHandler.ReadXml<MapConfig>(@"D:\AgvConfigs\Map.xml");
                 middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"D:\AgvConfigs\Alarm.xml");
-                //GetInitialSoc("BatteryPercentage.log");
                 batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");
                 InitialSoc = batteryLog.InitialSoc;
 
@@ -189,14 +186,22 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                loggerAgent = LoggerAgent.Instance;
+                string loggerConfigPath = "Log.ini";
+                if (File.Exists(loggerConfigPath))
+                {
+                    mirleLogger = MirleLogger.Instance;
+                }
+                else
+                {
+                    throw new Exception();
+                }
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "紀錄器"));
             }
             catch (Exception)
             {
                 isIniOk = false;
-                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "紀錄器"));
+                OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "紀錄器缺少Log.ini"));
             }
         }
 
@@ -2170,7 +2175,7 @@ namespace Mirle.Agv.Controller
             try
             {
                 var msg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), ",\t", alarmHandler.LastAlarm.AlarmText, ",\t", forkNgRetryTimes);
-                loggerAgent.LogString("RetryLog", msg);
+                mirleLogger.LogString("RetryLog", msg);
             }
             catch (Exception)
             {
@@ -3419,7 +3424,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                loggerAgent.Log("Error", new Mirle.Agv.Controller.Tools.LogFormat("Error", "5", classMethodName, middlerConfig.ClientName, "CarrierID", exMsg));
+                mirleLogger.Log(new Mirle.Tools.LogFormat("Error", "5", classMethodName, middlerConfig.ClientName, "CarrierID", exMsg));
             }
             catch (Exception)
             {
@@ -3430,7 +3435,7 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-                loggerAgent.Log("Debug", new Mirle.Agv.Controller.Tools.LogFormat("Debug", "5", classMethodName, middlerConfig.ClientName, "CarrierID", msg));
+                mirleLogger.Log(new Mirle.Tools.LogFormat("Debug", "5", classMethodName, middlerConfig.ClientName, "CarrierID", msg));
             }
             catch (Exception)
             {

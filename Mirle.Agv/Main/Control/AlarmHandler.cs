@@ -10,6 +10,7 @@ using Mirle.Agv.Controller.Tools;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Diagnostics;
+using Mirle.Tools;
 
 namespace Mirle.Agv.Controller
 {
@@ -55,7 +56,7 @@ namespace Mirle.Agv.Controller
 
         private MainFlowHandler mainFlowHandler;
         private AlarmConfig alarmConfig;
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
 
         public AlarmHandler(MainFlowHandler mainFlowHandler)
         {
@@ -70,7 +71,7 @@ namespace Mirle.Agv.Controller
             {
                 if (string.IsNullOrEmpty(alarmConfig.AlarmFileName))
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , $"string.IsNullOrEmpty(alarmConfig.AlarmFileName)={string.IsNullOrEmpty(alarmConfig.AlarmFileName)}"));
                     return;
                 }
@@ -82,7 +83,7 @@ namespace Mirle.Agv.Controller
                 string[] allRows = File.ReadAllLines(alarmFullPath);
                 if (allRows == null || allRows.Length < 2)
                 {
-                    loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                         , "There are no alarms in file"));
                     return;
                 }
@@ -117,12 +118,12 @@ namespace Mirle.Agv.Controller
                     allAlarms.Add(oneRow.Id, oneRow);
                 }
 
-                loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+               mirleLogger.Log( new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , "Load Alarm File Ok"));
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }        
 
@@ -141,7 +142,7 @@ namespace Mirle.Agv.Controller
                 else
                 {
                     dicHappeningAlarms.TryAdd(id, alarm);
-                    loggerAgent.LogAlarmHistory(alarm);
+                    LogAlarmHistory(alarm);
                     LastAlarm = alarm;
                     switch (alarm.Level)
                     {
@@ -159,7 +160,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
                 return false;
             }
         }
@@ -170,7 +171,7 @@ namespace Mirle.Agv.Controller
             {
                 var ngMsg = $"AlarmHandler : Reset alarm fail, [Id={id}][Not in HappeningAlarms]";
 
-                loggerAgent.Log("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+               mirleLogger.Log( new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , ngMsg));
                 return;
             }
@@ -192,7 +193,7 @@ namespace Mirle.Agv.Controller
                 }
             }
             alarm.ResetTime = timeStamp;
-            loggerAgent.LogAlarmHistory(alarm);
+            LogAlarmHistory(alarm);
             OnPlcResetOneAlarmEvent?.Invoke(this, alarm);
         }
 
@@ -213,12 +214,12 @@ namespace Mirle.Agv.Controller
                 sw.Stop();
                 var msg = $"清除所有警報，花費{sw.ElapsedMilliseconds}毫秒";
                 OnResetAllAlarmsEvent?.Invoke(this, msg);
-                loggerAgent.Log("AlarmHistory", new LogFormat("AlarmHistory", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                mirleLogger.Log( new LogFormat("AlarmHistory", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
 
@@ -232,9 +233,25 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                loggerAgent.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                   , ex.StackTrace));
                 return EnumAlarmLevel.Warn;
+            }
+        }       
+
+        private void LogAlarmHistory(Alarm alarm)
+        {
+            try
+            {
+                string timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff");
+                string msg = $"{timeStamp},{alarm.Id},{alarm.AlarmText},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
+
+                mirleLogger.LogString("AlarmHistory", msg);
+            }
+            catch (Exception ex)
+            {
+                mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                    , ex.StackTrace));
             }
         }
     }

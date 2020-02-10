@@ -17,16 +17,14 @@ namespace Mirle.Agv.Controller
         public List<EnumSLAMType> AllSLAMList = new List<EnumSLAMType>();
         private SLAM usingSLAM = null;
         private string device = "MoveControl";
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private Mirle.Tools.MirleLogger mirleLogger = Mirle.Tools.MirleLogger.Instance;
         private SLAMConfig slamConfig;
 
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
             string classMethodName = String.Concat(GetType().Name, ":", memberName);
-            LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
-
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(new Mirle.Tools.LogFormat(category, logLevel, classMethodName, device, carrierId, message));
         }
 
         private void ReadSLAMConfigXML(string path)
