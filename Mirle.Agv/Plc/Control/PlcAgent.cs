@@ -74,7 +74,8 @@ namespace Mirle.Agv.Controller
 
         private JogPitchForm jogPitchForm = null;
         private MainForm mainForm = null;
-
+        private List<string> alarmCodeRecordList = new List<string>();
+        
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
@@ -346,7 +347,6 @@ namespace Mirle.Agv.Controller
 
             BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");
             //BatteryPercentage = LoggerAgent.Instance.GetLooger("BatteryPercentage");
-
         }
 
         //讀取XML
@@ -423,7 +423,7 @@ namespace Mirle.Agv.Controller
                             this.APLCVehicle.plcBatterys.Battery_Logger_Interval = Convert.ToUInt32(Convert.ToDouble(childItem.InnerText) * 1000);
                             break;
 
-                        case "plcBatterys_Charging_Time_Out":// min
+                        case "Batterys_Charging_Time_Out":// min
                             this.APLCVehicle.plcBatterys.Batterys_Charging_Time_Out = Convert.ToUInt32(childItem.InnerText) * 60000;
                             break;
                         case "Charging_Off_Delay":
@@ -794,7 +794,7 @@ namespace Mirle.Agv.Controller
                                                 {
 
                                                 }
-
+                                                alarmCodeRecordList.Add(AlarmCode.ToString());
                                             }
                                         }
 
@@ -865,19 +865,24 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.Robot.ForkPrePioFail = aMCProtocol.get_ItemByTag("ForkPrePioFail").AsBoolean;
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPrePioFail = {this.APLCVehicle.Robot.ForkPrePioFail}"));
 
-                                    if (this.APLCVehicle.Robot.ForkPrePioFail == true)
+                                    if (Vehicle.Instance.AutoState == EnumAutoState.Auto)
                                     {
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Prepare to call Interlock Event."));
-
-                                        Task.Run(() =>
+                                        if (this.APLCVehicle.Robot.ForkPrePioFail == true)
                                         {
-                                            Thread.Sleep(10000);
-                                            this.WritePLCAlarmReset();
-                                            Thread.Sleep(5000);
-                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger."));
-                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
-                                        });
+                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Prepare to call Interlock Event."));
+
+                                            Task.Run(() =>
+                                            {
+                                                Thread.Sleep(10000);
+                                                this.WritePLCAlarmReset();
+                                                Thread.Sleep(5000);
+                                                this.WritePLCAlarmReset();
+                                                Thread.Sleep(1000);
+                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger. Alarm code :" + String.Join(",", alarmCodeRecordList)));
+                                                eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+                                            });
+                                        }
                                     }
                                     break;
 
@@ -921,11 +926,11 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.plcBatterys.Design_Capacity = aMCProtocol.get_ItemByTag("Design_Capacity").AsUInt16;
                                     break;
 
-                                case "plcBatterysOC_Form_Plc":
-                                    this.APLCVehicle.plcBatterys.BatterySOCFormPlc = aMCProtocol.get_ItemByTag("plcBatterysOC_Form_Plc").AsUInt16;
+                                case "BatterySOC_Form_Plc":
+                                    this.APLCVehicle.plcBatterys.BatterySOCFormPlc = aMCProtocol.get_ItemByTag("BatterySOC_Form_Plc").AsUInt16;
                                     break;
-                                case "plcBatterysOH_Form_Plc":
-                                    this.APLCVehicle.plcBatterys.BatterySOHFormPlc = aMCProtocol.get_ItemByTag("plcBatterysOH_Form_Plc").AsUInt16;
+                                case "BatterySOH_Form_Plc":
+                                    this.APLCVehicle.plcBatterys.BatterySOHFormPlc = aMCProtocol.get_ItemByTag("BatterySOH_Form_Plc").AsUInt16;
                                     break;
                                 case "DoubleStoreSensor(L)":
                                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(L) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(L)").AsBoolean}"));
@@ -1084,7 +1089,7 @@ namespace Mirle.Agv.Controller
 
             if (this.APLCVehicle.plcBatterys.CcModeFlag)
             {
-                //this.APLCVehicle.APlcplcBatterys.CcModeAh = this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2);
+                //this.APLCVehicle.APlcBatterys.CcModeAh = this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2);
                 this.APLCVehicle.plcBatterys.SetCcModeAh(this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2), true);
 
                 //判斷CCModeCounter
@@ -1095,9 +1100,9 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    //if (this.APLCVehicle.APlcplcBatterys.CcModeAh > 0.5)
+                    //if (this.APLCVehicle.APlcBatterys.CcModeAh > 0.5)
                     //{
-                    //    this.APLCVehicle.APlcplcBatterys.CcModeCounter = 0;
+                    //    this.APLCVehicle.APlcBatterys.CcModeCounter = 0;
                     //    this.SetMeterAHToZero();
                     //}
                     this.APLCVehicle.plcBatterys.CcModeCounter++;
@@ -1393,14 +1398,14 @@ namespace Mirle.Agv.Controller
 
             Stopwatch sw500msClock = new Stopwatch();
             bool Clock1secWrite = false, b500msHigh = false, b500msLow = true;
-            bool plcBatterysChargingTimeOut = false;
+            bool BatterysChargingTimeOut = false;
             bool CCModeStopVoltageChange = false;
 
             EnumAutoState IpcStatus;
             bool IpcStatusAutoIni = false;
             bool IpcStatusManualIni = true;
 
-            uint WriteplcBatterysOCCount = 0;
+            uint WriteBatterySOCCount = 0;
             uint ChgStasOffDelayCount = 0;
             uint ChgStopCommandCount = 0;
 
@@ -1423,17 +1428,17 @@ namespace Mirle.Agv.Controller
                     if (b500msHigh && Clock1secWrite == true)
                     {
                         Clock1secWrite = false;
-                        WriteplcBatterysOCCount++;
+                        WriteBatterySOCCount++;
                         ChgStasOffDelayCount++;
                         ChgStopCommandCount++;
                     }
                     //========Clock Working========
 
                     //Write Battery SOC 
-                    if (WriteplcBatterysOCCount >= 1)
+                    if (WriteBatterySOCCount >= 1)
                     {
-                        WriteplcBatterysOCCount = 0;
-                        WriteplcBatterysOC();
+                        WriteBatterySOCCount = 0;
+                        WriteBatterySOC();
                     }
 
                     //Charging Off Delay
@@ -1444,7 +1449,7 @@ namespace Mirle.Agv.Controller
                             ChgStasOffDelayCount = 0;
                             this.APLCVehicle.plcBatterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;//false
                             LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. Plc ChargeStatus: {aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean}"));
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. plcBatterys.Charging: {this.APLCVehicle.plcBatterys.Charging}"));
+                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. Batterys.Charging: {this.APLCVehicle.plcBatterys.Charging}"));
                         }
                     }
                     else
@@ -1452,13 +1457,13 @@ namespace Mirle.Agv.Controller
                         ChgStasOffDelayCount = 0;
                     }
 
-                    //plcBatterys Charging Time Out
+                    //Batterys Charging Time Out
                     if (this.APLCVehicle.plcBatterys.Charging)
                     {
                         swChargingTimeOut.Start();
                         if (swChargingTimeOut.ElapsedMilliseconds > this.APLCVehicle.plcBatterys.Batterys_Charging_Time_Out)
                         {
-                            plcBatterysChargingTimeOut = true;
+                            BatterysChargingTimeOut = true;
                             if (aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean)
                             {
                                 if (ChgStopCommandCount >= 10)
@@ -1473,7 +1478,7 @@ namespace Mirle.Agv.Controller
                     else
                     {
                         ChgStopCommandCount = 10;
-                        plcBatterysChargingTimeOut = false;
+                        BatterysChargingTimeOut = false;
                         swChargingTimeOut.Stop();
                         swChargingTimeOut.Reset();
                     }
@@ -1528,7 +1533,7 @@ namespace Mirle.Agv.Controller
                         //判斷歸０完成　=> 電表ＡＨ變成0, 所以原先值SetMeterAHToZeroAH　應該要反映到CCmode AH值
                         if (this.APLCVehicle.plcBatterys.MeterAh < 0.5 && this.APLCVehicle.plcBatterys.MeterAh > -0.5)
                         {
-                            //this.APLCVehicle.APlcplcBatterys.CcModeAh = (0 - this.APLCVehicle.APlcplcBatterys.SetMeterAHToZeroAH) + this.APLCVehicle.APlcplcBatterys.CcModeAh;
+                            //this.APLCVehicle.APlcBatterys.CcModeAh = (0 - this.APLCVehicle.APlcBatterys.SetMeterAHToZeroAH) + this.APLCVehicle.APlcBatterys.CcModeAh;
                             this.APLCVehicle.plcBatterys.SetCcModeAh((0 - this.APLCVehicle.plcBatterys.SetMeterAhToZeroAh) + this.APLCVehicle.plcBatterys.CcModeAh, false);
                             this.APLCVehicle.plcBatterys.SetMeterAhToZeroFlag = false;
                         }
@@ -2656,13 +2661,13 @@ namespace Mirle.Agv.Controller
             }
             return result;
         }
-        private void WriteplcBatterysOC()
+        private void WriteBatterySOC()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
 
-            // this.aMCProtocol.WritePLCByTagDirectly("plcBatterysOC", this.APLCVehicle.plcBatterys.Percentage.ToString());
+            // this.aMCProtocol.WritePLCByTagDirectly("BatterySOC", this.APLCVehicle.plcBatterys.Percentage.ToString());
 
-            this.aMCProtocol.get_ItemByTag("plcBatterysOC").AsUInt16 = Convert.ToUInt16(this.APLCVehicle.plcBatterys.Percentage);
+            this.aMCProtocol.get_ItemByTag("BatterySOC").AsUInt16 = Convert.ToUInt16(this.APLCVehicle.plcBatterys.Percentage);
 
             if (this.aMCProtocol.WritePLC())
             { }
@@ -2730,7 +2735,7 @@ namespace Mirle.Agv.Controller
                 {
                     LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
                 }
-
+                alarmCodeRecordList.Clear();
             });
         }
 
@@ -2775,7 +2780,7 @@ namespace Mirle.Agv.Controller
         public void SetMeterAHToZero()
         {
             this.APLCVehicle.plcBatterys.SetMeterAhToZeroFlag = true;
-            //this.this.APLCVehicle.PLCplcBatterys.SetMeterAHToZeroAH = this.this.APLCVehicle.PLCplcBatterys.MeterAH;
+            //this.this.APLCVehicle.PLCBatterys.SetMeterAHToZeroAH = this.this.APLCVehicle.PLCBatterys.MeterAH;
             Task.Run(() =>
             {
                 string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
@@ -3103,7 +3108,7 @@ namespace Mirle.Agv.Controller
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                                 iCommandNGCounter = 0;
-                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
+                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in queue state."));
 
                                                 break;
                                             }
@@ -3234,7 +3239,7 @@ namespace Mirle.Agv.Controller
                                                     eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                     OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                                     iCommandNGCounter = 0;
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
+                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in queue state"));
 
                                                     break;
                                                 }
@@ -3301,7 +3306,7 @@ namespace Mirle.Agv.Controller
                                         this.setAlarm(Fork_Command_Format_NG);
                                         eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                         OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
+                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in executing state."));
 
                                         break;
                                     }
@@ -3314,10 +3319,14 @@ namespace Mirle.Agv.Controller
                                     break;
                                 }
 
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                                this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
-                                System.Threading.Thread.Sleep(1000);
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean == true)
+                                {
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                                    this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
+                                    System.Threading.Thread.Sleep(1000);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                }
+                                
 
                                 break;
                             case EnumForkCommandState.Finish:
@@ -3356,6 +3365,21 @@ namespace Mirle.Agv.Controller
                                 {
 
                                     Thread.Sleep(50);
+                                    if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
+                                    {
+                                        this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                        this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
+                                        //Raise Alarm
+                                        //this.aAlarmHandler.SetAlarm(270001);
+                                        //this.setAlarm(270001);
+                                        this.setAlarm(Fork_Command_Format_NG);
+                                        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                        OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in Finish state"));
+
+                                        break;
+                                    }
+
                                     if (this.APLCVehicle.Robot.ForkHome)
                                     {
                                         eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
