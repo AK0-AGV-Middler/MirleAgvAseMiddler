@@ -81,6 +81,7 @@ namespace Mirle.Agv.Controller
                 LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
                 forkCommandType = EnumForkCommand.Load;
                 stageNo = loadCmdInfo.StageNum.ToString();
+                stageDirection = loadCmdInfo.StageDirection;
                 isPio = loadCmdInfo.IsEqPio;
                 forkSpeed = loadCmdInfo.ForkSpeed;
             }
@@ -89,6 +90,7 @@ namespace Mirle.Agv.Controller
                 UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
                 forkCommandType = EnumForkCommand.Unload;
                 stageNo = unloadCmdInfo.StageNum.ToString();
+                stageDirection = unloadCmdInfo.StageDirection;
                 isPio = unloadCmdInfo.IsEqPio;
                 forkSpeed = unloadCmdInfo.ForkSpeed;
             }

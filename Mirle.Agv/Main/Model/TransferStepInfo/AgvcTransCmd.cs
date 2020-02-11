@@ -178,6 +178,11 @@ namespace Mirle.Agv.Model.TransferSteps
             ToUnloadAddressIds = agvcMoveCmd.ToUnloadAddressIds;
             AvoidEndAddressId = agvcMoveCmd.UnloadAddressId;
         }
+
+        protected void LogException(string source,string exMsg)
+        {
+            MirleLogger.Instance.Log(new LogFormat("Error", "5", source, "Device", "CarrierID", exMsg));
+        }
     }
 
     public class AgvcMoveCmd : AgvcTransCmd
@@ -193,7 +198,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                MirleLogger.Instance.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,ex.StackTrace);
             }
         }
 
@@ -209,7 +214,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                MirleLogger.Instance.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -233,7 +238,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                MirleLogger.Instance.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -250,7 +255,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                MirleLogger.Instance.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -270,7 +275,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                MirleLogger.Instance.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -303,7 +308,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                MirleLogger.Instance.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }

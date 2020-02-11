@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using TcpIpClientSample;
 using System.Threading.Tasks;
+using Mirle.Tools;
 
 namespace Mirle.Agv.View
 {
@@ -481,7 +482,7 @@ namespace Mirle.Agv.View
 
         private void LogException(string classMethodName,string exMsg)
         {
-            Mirle.Tools.MirleLogger.Instance.Log(new Tools.LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
+            MirleLogger.Instance.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
         }
     }
 }

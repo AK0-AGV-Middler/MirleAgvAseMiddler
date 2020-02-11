@@ -209,6 +209,13 @@ namespace Mirle.Agv
         Section,
         Address
     }
+
+    public enum EnumPspConnectionState
+    {
+        Offline,
+        Online,
+        CheckCheckConnectMode
+    }
     #endregion
 
     /// <summary>
