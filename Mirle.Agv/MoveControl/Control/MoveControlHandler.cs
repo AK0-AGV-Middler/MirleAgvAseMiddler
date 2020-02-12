@@ -61,6 +61,7 @@ namespace Mirle.Agv.Controller
         private PlcVehicle plcVehicle = (PlcVehicle)Vehicle.Instance.TheVehicleIntegrateStatus;
 
         private List<Sr2000Config> sr2000ConfigList = new List<Sr2000Config>();
+        private bool csvSendPLCEMO = false;
 
         private void SetDebugFlowLog(string functionName, string message)
         {
@@ -2465,6 +2466,21 @@ namespace Mirle.Agv.Controller
             WriteLog("MoveControl", "7", device, "", "end");
         }
 
+        private bool MoveAxisAllDisable()
+        {
+            if (elmoDriver.ElmoGetDisable(EnumAxis.XFL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.XFR) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.XRL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.XRR) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXFL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXFR) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXRL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXRR))
+                return true;
+            else
+                return false;
+        }
+
         private void SecondCorrectionControl(double endEncoder)
         {
             WriteLog("MoveControl", "7", device, "", "start");
@@ -2475,19 +2491,21 @@ namespace Mirle.Agv.Controller
 
             double endEncoderDelta = location.RealEncoder - endEncoder;
 
+            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+
             if (Math.Abs(endEncoder - location.RealEncoder) > moveControlConfig.SecondCorrectionX)
             {
                 elmoDriver.ElmoMove(EnumAxis.GX, endEncoder - location.RealEncoder, moveControlConfig.EQ.Velocity, EnumMoveType.Relative,
                                     moveControlConfig.EQ.Acceleration, moveControlConfig.EQ.Deceleration, moveControlConfig.EQ.Jerk);
 
-                System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
                 timer.Reset();
                 timer.Start();
 
-                Thread.Sleep(moveControlConfig.SleepTime);
                 UpdatePosition();
                 Thread.Sleep(moveControlConfig.SleepTime);
                 UpdatePosition();
+                Thread.Sleep(moveControlConfig.SleepTime);
+
                 while (!location.GXMoveCompelete)
                 {
                     UpdatePosition();
@@ -2506,7 +2524,17 @@ namespace Mirle.Agv.Controller
                 Thread.Sleep(500);
             }
 
+            Task.Factory.StartNew(() =>
+            {
             elmoDriver.DisableMoveAxis();
+            });
+
+            timer.Restart();
+            while (!MoveAxisAllDisable() && timer.ElapsedMilliseconds < 5000)
+            {
+                UpdatePosition();
+                Thread.Sleep(moveControlConfig.SleepTime);
+            }
 
             bool newBarcode = UpdateSR2000(true);
 
