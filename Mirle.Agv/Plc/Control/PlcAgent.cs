@@ -290,7 +290,7 @@ namespace Mirle.Agv.Controller
 
                 try
                 {
-                    csvLog = csvLog + Separator + this.APLCVehicle.Robot.ForkHome;
+                    csvLog = csvLog + Separator + this.APLCVehicle.RobotHome;
                     csvLog = csvLog + Separator + mainForm.mainFlowHandler.GetCurTransferStep().GetType().ToString();
                     csvLog = csvLog + Separator + Vehicle.Instance.VehicleLocation.LastAddress.Id;
                     csvLog = csvLog + Separator + this.aMCProtocol.get_ItemByTag("PLCBigDataTT01").AsUInt16;
@@ -722,8 +722,8 @@ namespace Mirle.Agv.Controller
 
                                     break;
                                 case "HomeStatus":
-                                    this.APLCVehicle.Robot.ForkHome = aMCProtocol.get_ItemByTag("HomeStatus").AsBoolean;
-                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"HomeStatus = {this.APLCVehicle.Robot.ForkHome}"));
+                                    this.APLCVehicle.RobotHome = aMCProtocol.get_ItemByTag("HomeStatus").AsBoolean;
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"HomeStatus = {this.APLCVehicle.RobotHome}"));
                                     break;
                                 case "ChargeStatus":
                                     if (aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean)
@@ -899,8 +899,8 @@ namespace Mirle.Agv.Controller
                                     break;
 
                                 case "StageLoading":
-                                    this.APLCVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
-                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"StageLoading = {this.APLCVehicle.Loading}"));
+                                    this.APLCVehicle.CarrierSlot.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"StageLoading = {this.APLCVehicle.CarrierSlot.Loading}"));
                                     break;
 
                                 case "Temperature_sensor_number":
@@ -2902,17 +2902,17 @@ namespace Mirle.Agv.Controller
 
                     if (aForkCommand.ForkCommandType == EnumForkCommand.Load)
                     {
-                        this.APLCVehicle.Loading = true;
+                        this.APLCVehicle.CarrierSlot.Loading = true;
                         //this.APLCVehicle.CassetteId = "CA0070";
-                        APLCVehicle.CarrierId = APLCVehicle.FakeCarrierId;
-                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {APLCVehicle.CarrierId}"));
+                        APLCVehicle.CarrierSlot.CarrierId = APLCVehicle.CarrierSlot.FakeCarrierId;
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {APLCVehicle.CarrierSlot.CarrierId}"));
 
-                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CarrierId);
+                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CarrierSlot.CarrierId);
                     }
                     else if (aForkCommand.ForkCommandType == EnumForkCommand.Unload)
                     {
-                        this.APLCVehicle.CarrierId = "";
-                        this.APLCVehicle.Loading = false;
+                        this.APLCVehicle.CarrierSlot.CarrierId = "";
+                        this.APLCVehicle.CarrierSlot.Loading = false;
                     }
                     else
                     {
@@ -2982,9 +2982,9 @@ namespace Mirle.Agv.Controller
 
             string strCassetteID = "ERROR";
             this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-            this.APLCVehicle.CarrierId = strCassetteID;
+            this.APLCVehicle.CarrierSlot.CarrierId = strCassetteID;
             CassetteID = strCassetteID;
-            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierId) + " Success"));
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierSlot.CarrierId) + " Success"));
 
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
         }
@@ -2995,9 +2995,9 @@ namespace Mirle.Agv.Controller
 
             string strCassetteID = CassetteID;
             //this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-            this.APLCVehicle.CarrierId = strCassetteID;
+            this.APLCVehicle.CarrierSlot.CarrierId = strCassetteID;
             //CassetteID = strCassetteID;
-            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "testTriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierId) + " Success"));
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "testTriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierSlot.CarrierId) + " Success"));
 
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
 
@@ -3340,8 +3340,8 @@ namespace Mirle.Agv.Controller
                                     {
                                         String cassetteID = "ERROR";
                                         this.aCassetteIDReader.ReadBarcode(ref cassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-                                        this.APLCVehicle.CarrierId = cassetteID;
-                                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {this.APLCVehicle.CarrierId}"));
+                                        this.APLCVehicle.CarrierSlot.CarrierId = cassetteID;
+                                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {this.APLCVehicle.CarrierSlot.CarrierId}"));
 
                                         OnCassetteIDReadFinishEvent?.Invoke(this, cassetteID);
                                     }
@@ -3382,7 +3382,7 @@ namespace Mirle.Agv.Controller
                                         break;
                                     }
 
-                                    if (this.APLCVehicle.Robot.ForkHome)
+                                    if (this.APLCVehicle.RobotHome)
                                     {
                                         eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                         OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);

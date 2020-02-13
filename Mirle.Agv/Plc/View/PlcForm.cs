@@ -435,7 +435,7 @@ namespace Mirle.Agv.View
             tbxAlignmentB_AV.Text = plcAgent.APLCVehicle.Robot.ForkAlignmentB.ToString();
             
 
-            if (this.plcAgent.APLCVehicle.Robot.ForkHome)
+            if (this.plcAgent.APLCVehicle.RobotHome)
                 lblForkHome.BackColor = Color.LightGreen;
             else
                 lblForkHome.BackColor = Color.Silver;
@@ -488,7 +488,7 @@ namespace Mirle.Agv.View
 
             txtErrorReason.Text = this.plcAgent.getErrorReason();
 
-            txtCassetteID.Text = this.plcAgent.APLCVehicle.CarrierId;
+            txtCassetteID.Text = this.plcAgent.APLCVehicle.CarrierSlot.CarrierId;
 
             if (this.plcAgent.APLCVehicle.Robot.ForkBusy)
             {
@@ -516,7 +516,7 @@ namespace Mirle.Agv.View
                 lblForkFinish.BackColor = Color.Silver;
             }
 
-            if (this.plcAgent.APLCVehicle.Loading)
+            if (this.plcAgent.APLCVehicle.CarrierSlot.Loading)
             {
                 lblLoading.BackColor = Color.LightGreen;
             }
@@ -1045,7 +1045,7 @@ namespace Mirle.Agv.View
                 if (!plcAgent.IsForkCommandExist())
                 {
                     //判斷loading 決定load/unload
-                    if (plcAgent.APLCVehicle.Loading)
+                    if (plcAgent.APLCVehicle.CarrierSlot.Loading)
                     {
                         PlcForkCommand aForkCommand = new PlcForkCommand(Convert.ToUInt16(txtCommandNo.Text), EnumForkCommand.Unload, txtStageNo.Text, (EnumStageDirection)Enum.Parse(typeof(EnumStageDirection), cmbDirection.Text, false), Convert.ToBoolean(cmbEQPIO.Text), Convert.ToUInt16(txtForkSpeed.Text));
                         plcAgent.AddForkComand(aForkCommand);
@@ -1736,7 +1736,7 @@ namespace Mirle.Agv.View
             string strCstID = txtCassetteIDSet.Text;
             if (strCstID=="")
             {
-                this.plcAgent.APLCVehicle.CarrierId = "";
+                this.plcAgent.APLCVehicle.CarrierSlot.CarrierId = "";
             }
             else
             {

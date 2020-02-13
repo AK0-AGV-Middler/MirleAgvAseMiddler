@@ -2884,7 +2884,7 @@ namespace Mirle.Agv.Controller
             if (SimulationMode)
                 return FakeState.ForkNotHome;
             else
-                return !plcVehicle.Robot.ForkHome || plcVehicle.Robot.ForkBusy;
+                return !plcVehicle.RobotHome || plcVehicle.Robot.ForkBusy;
         }
 
         private EnumVehicleSafetyAction GetBumperState()

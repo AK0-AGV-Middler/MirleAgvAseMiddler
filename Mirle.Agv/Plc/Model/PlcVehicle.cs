@@ -113,20 +113,12 @@ namespace Mirle.Agv.Model
         private bool _leftBeamSensorDisable;
         private bool _rightBeamSensorDisable;
 
-        public bool Loading { get; set; }
-        public string CarrierId { get; set; } = "";
-        public string FakeCarrierId { get; set; } = "";
-
         public PlcVehicle()
         {
             InitialPLCBeamSensor();
             InitialPlcBumpers();
             InitialPlcEmos();
-            InitialBatteryCells();
-            RobotHome = Robot.ForkHome;
-            Loading = CarrierSlot.Loading;
-            CarrierId = CarrierSlot.CarrierId;
-            FakeCarrierId = CarrierSlot.FakeCarrierId;
+            InitialBatteryCells();            
         }
 
         #region HardCode PlcBeamSensors/PlcBumpers/PlcEmos will fix in config.xml
@@ -349,5 +341,5 @@ namespace Mirle.Agv.Model
             dicBeamSensor.Add(aPlcBeamSensor.PlcWriteSleepTagId, aPlcBeamSensor);
         }
 
-    }   
+    }
 }
