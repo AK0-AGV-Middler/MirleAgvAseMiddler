@@ -14,27 +14,27 @@ using Mirle.Tools;
 
 namespace Mirle.AgvAseMiddler.View
 {
-    public partial class MiddlerForm : Form
+    public partial class AgvcConnectorForm : Form
     {
-        private MiddleAgent middleAgent;
-        private MiddlerConfig middlerConfig;
+        private AgvcConnector agvcConnector;
+        private AgvcConnectorConfig agvcConnectorConfig;
         private string CommLogMsg { get; set; } = "";
         private string ConnectionMsg { get; set; } = "";
 
-        public MiddlerForm(MiddleAgent middleAgent)
+        public AgvcConnectorForm(AgvcConnector agvcConnector)
         {
             InitializeComponent();
-            this.middleAgent = middleAgent;
-            middlerConfig = middleAgent.GetMiddlerConfig();
+            this.agvcConnector = agvcConnector;
+            agvcConnectorConfig = agvcConnector.GetAgvcConnectorConfig();
             EventInital();
         }
 
         private void CommunicationForm_Load(object sender, EventArgs e)
         {
             ConfigToUI();
-            if (middleAgent.ClientAgent != null)
+            if (agvcConnector.ClientAgent != null)
             {
-                if (middleAgent.ClientAgent.IsConnection)
+                if (agvcConnector.ClientAgent.IsConnection)
                 {
                     toolStripStatusLabel1.Text = "Connect";
                 }
@@ -43,15 +43,15 @@ namespace Mirle.AgvAseMiddler.View
 
         private void ConfigToUI()
         {
-            txtRemoteIp.Text = middlerConfig.RemoteIp;
-            txtRemotePort.Text = middlerConfig.RemotePort.ToString();
+            txtRemoteIp.Text = agvcConnectorConfig.RemoteIp;
+            txtRemotePort.Text = agvcConnectorConfig.RemotePort.ToString();
         }
 
         private void EventInital()
         {
-            middleAgent.OnCmdReceiveEvent += SendOrReceiveCmdToTextBox;
-            middleAgent.OnCmdSendEvent += SendOrReceiveCmdToTextBox;
-            middleAgent.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
+            agvcConnector.OnCmdReceiveEvent += SendOrReceiveCmdToTextBox;
+            agvcConnector.OnCmdSendEvent += SendOrReceiveCmdToTextBox;
+            agvcConnector.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
         }
 
         private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
@@ -123,7 +123,7 @@ namespace Mirle.AgvAseMiddler.View
             }
             AppendCommLogMsg(msg);
 
-            middleAgent.SendMiddlerFormCommands(cmdNum, pairs);
+            agvcConnector.SendMiddlerFormCommands(cmdNum, pairs);
         }
 
         private void cbSend_SelectedValueChanged(object sender, EventArgs e)
@@ -423,7 +423,7 @@ namespace Mirle.AgvAseMiddler.View
 
         private void btnIsClientAgentNull_Click(object sender, EventArgs e)
         {
-            if (middleAgent.IsClientAgentNull())
+            if (agvcConnector.IsClientAgentNull())
             {
                 AppendCommLogMsg("ClientAgent is null.");
             }
@@ -435,7 +435,7 @@ namespace Mirle.AgvAseMiddler.View
 
         private void btnDisConnect_Click(object sender, EventArgs e)
         {
-            middleAgent.DisConnect();
+            agvcConnector.DisConnect();
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
@@ -447,7 +447,7 @@ namespace Mirle.AgvAseMiddler.View
                 //SaveMiddlerConfigs();
 
                 //middleAgent.ReConnect();
-                middleAgent.Connect();
+                agvcConnector.Connect();
 
             }
             catch (Exception ex)
@@ -458,7 +458,7 @@ namespace Mirle.AgvAseMiddler.View
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            middleAgent.StopClientAgent();
+            agvcConnector.StopClientAgent();
         }
 
         private void btnHide_Click(object sender, EventArgs e)

@@ -73,7 +73,7 @@ namespace Mirle.AgvAseMiddler
     }
 
     public enum EnumAutoState
-    {       
+    {
         Auto,
         Manual,
         PreManual
@@ -221,6 +221,17 @@ namespace Mirle.AgvAseMiddler
     {
         Idle,
         Busy,
+        Error
+    }
+
+    public enum EnumMoveState
+    {
+        Idle,
+        Working,
+        Pausing,
+        Pause,
+        Stoping,
+        Stop,
         Error
     }
     #endregion

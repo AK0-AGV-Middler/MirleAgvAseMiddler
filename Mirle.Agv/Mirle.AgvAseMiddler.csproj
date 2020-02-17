@@ -38,7 +38,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug2\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -120,6 +120,7 @@
     <Compile Include="Customer\ASE\Model\AseVehicleIntegrateStatus.cs" />
     <Compile Include="Customer\AUO\Control\AuoMoveControl.cs" />
     <Compile Include="Customer\AUO\Control\AuoIntegrateControl.cs" />
+    <Compile Include="Main\Control\AsePackage.cs" />
     <Compile Include="Main\Control\Interface\IntegrateControlPlate.cs" />
     <Compile Include="Main\Control\Interface\IBatterysControl.cs" />
     <Compile Include="Main\Control\Interface\IBuzzerControl.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="Main\Model\Map\ChargeInfo.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="Main\Model\Map\MapVector.cs" />
+    <Compile Include="Main\Model\MoveStatus.cs" />
     <Compile Include="Main\Model\VehicleIntegrateStatus.cs" />
     <Compile Include="Main\View\ConfigForm.cs">
       <SubType>Form</SubType>
@@ -218,7 +220,7 @@
     <Compile Include="Main\Model\Configs\AlarmConfig.cs" />
     <Compile Include="Main\Model\Configs\MainFlowConfig.cs" />
     <Compile Include="Main\Model\Configs\MapConfig.cs" />
-    <Compile Include="Main\Model\Configs\MiddlerConfig.cs" />
+    <Compile Include="Main\Model\Configs\AgvcConnectorConfig.cs" />
     <Compile Include="Main\Model\Map\MapBarcode.cs" />
     <Compile Include="Main\Model\Map\MapInfo.cs" />
     <Compile Include="Main\Model\Map\MapPosition.cs" />
@@ -332,16 +334,16 @@
     <Compile Include="Main\View\UserControls\UcLabelTextBox.Designer.cs">
       <DependentUpon>UcLabelTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="Main\View\MiddlerForm.cs">
+    <Compile Include="Main\View\AgvcConnectorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Main\View\MiddlerForm.Designer.cs">
-      <DependentUpon>MiddlerForm.cs</DependentUpon>
+    <Compile Include="Main\View\AgvcConnectorForm.Designer.cs">
+      <DependentUpon>AgvcConnectorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Main\Control\MainFlowHandler.cs" />
     <Compile Include="Main\Model\Map\VehicleLocation.cs" />
     <Compile Include="Main\Model\Vehicle.cs" />
-    <Compile Include="Main\Control\MiddleAgent.cs" />
+    <Compile Include="Main\Control\AgvcConnector.cs" />
     <Compile Include="Main\Model\TransferStepInfo\AgvcTransCmd.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -433,8 +435,8 @@
     <EmbeddedResource Include="Main\View\UserControls\UcLabelTextBox.resx">
       <DependentUpon>UcLabelTextBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Main\View\MiddlerForm.resx">
-      <DependentUpon>MiddlerForm.cs</DependentUpon>
+    <EmbeddedResource Include="Main\View\AgvcConnectorForm.resx">
+      <DependentUpon>AgvcConnectorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main\View\InitialForm.resx">
       <DependentUpon>InitialForm.cs</DependentUpon>

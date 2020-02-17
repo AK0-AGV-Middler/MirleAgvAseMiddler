@@ -14,7 +14,7 @@ namespace Mirle.AgvAseMiddler.Model.TransferSteps
         protected Vehicle theVehicle = Vehicle.Instance;
         protected MapInfo theMapInfo;
         protected MainFlowHandler mainFlowHandler;
-        protected MiddleAgent middleAgent;
+        protected AgvcConnector agvcConnector;
         protected MapConfig mapConfig;
         protected EnumTransferStepType type;
         public string CmdId { get; set; } = "";
@@ -25,7 +25,7 @@ namespace Mirle.AgvAseMiddler.Model.TransferSteps
         {
             this.mainFlowHandler = mainFlowHandler;
             theMapInfo = mainFlowHandler.TheMapInfo;
-            middleAgent = mainFlowHandler.GetMiddleAgent();
+            agvcConnector = mainFlowHandler.GetAgvcConnector();
             mapConfig = mainFlowHandler.GetMapConfig();
         }
 

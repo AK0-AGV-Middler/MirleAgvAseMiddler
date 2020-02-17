@@ -111,7 +111,7 @@ namespace Mirle.AgvAseMiddler.Controller
         public void SetOutSideObj(MainForm mainForm)
         {
             this.mainForm = mainForm;
-            this.jogPitchForm = mainForm.GetJogPitchForm();
+            //this.jogPitchForm = mainForm.GetJogPitchForm();
             //this.mainForm = mainForm;  , ref MainForm mainForm
             //this.APLCVehicle.Hmi.beforeFromPlcWord = this.APLCVehicle.Hmi.FromPlcWord.DeepClone();
         }

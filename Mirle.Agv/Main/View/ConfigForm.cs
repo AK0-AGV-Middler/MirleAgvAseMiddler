@@ -22,7 +22,7 @@ namespace Mirle.AgvAseMiddler.View
     {
         private MainFlowHandler mainFlowHandler;
         private MainFlowConfig mainFlowConfig;
-        private MiddlerConfig middlerConfig;
+        private AgvcConnectorConfig agvcConnectorConfig;
 
         public ConfigForm(MainFlowHandler mainFlowHandler)
         {
@@ -140,9 +140,9 @@ namespace Mirle.AgvAseMiddler.View
                 mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
                 ShowMainFlowConfigCvOnForm(mainFlowConfig);
                 ShowMainFlowConfigSvOnForm(mainFlowConfig);
-                middlerConfig = mainFlowHandler.GetMiddlerConfig();
-                ShowMiddlerConfigCvOnForm(middlerConfig);
-                ShowMiddlerConfigSvOnForm(middlerConfig);                    
+                agvcConnectorConfig = mainFlowHandler.GetAgvcConnectorConfig();
+                ShowMiddlerConfigCvOnForm(agvcConnectorConfig);
+                ShowMiddlerConfigSvOnForm(agvcConnectorConfig);                    
             }
             catch (Exception ex)
             {
@@ -160,8 +160,8 @@ namespace Mirle.AgvAseMiddler.View
         {
             try
             {
-                MiddleAgent middleAgent = mainFlowHandler.GetMiddleAgent();
-                middleAgent.ReConnect();
+                AgvcConnector agvcConnector = mainFlowHandler.GetAgvcConnector();
+                agvcConnector.ReConnect();
             }
             catch (Exception ex)
             {
@@ -173,8 +173,8 @@ namespace Mirle.AgvAseMiddler.View
         {
             try
             {
-                middlerConfig = mainFlowHandler.GetMiddlerConfig();
-                ShowMiddlerConfigCvOnForm(middlerConfig);
+                agvcConnectorConfig = mainFlowHandler.GetAgvcConnectorConfig();
+                ShowMiddlerConfigCvOnForm(agvcConnectorConfig);
             }
             catch (Exception ex)
             {
@@ -182,19 +182,19 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void ShowMiddlerConfigCvOnForm(MiddlerConfig middlerConfig)
+        private void ShowMiddlerConfigCvOnForm(AgvcConnectorConfig agvcConnectorConfig)
         {
             try
             {
-                tbxClientNameCv.Text = middlerConfig.ClientName;
-                tbxRemoteIpCv.Text = middlerConfig.RemoteIp;
-                tbxRemotePortCv.Text = middlerConfig.RemotePort.ToString("F0");
-                tbxLocalIpCv.Text = middlerConfig.LocalIp;
-                tbxLocalPortCv.Text = middlerConfig.LocalPort.ToString("F0");
-                tbxRetryCountCv.Text = middlerConfig.RetryCount.ToString("F0");
-                tbxResrveLengthMeterCv.Text = middlerConfig.ReserveLengthMeter.ToString("F0");
-                tbxAskReserveMsCv.Text = middlerConfig.AskReserveIntervalMs.ToString("F0");
-                tbxRecvTimeoutMsCv.Text = middlerConfig.RecvTimeoutMs.ToString("F0");
+                tbxClientNameCv.Text = agvcConnectorConfig.ClientName;
+                tbxRemoteIpCv.Text = agvcConnectorConfig.RemoteIp;
+                tbxRemotePortCv.Text = agvcConnectorConfig.RemotePort.ToString("F0");
+                tbxLocalIpCv.Text = agvcConnectorConfig.LocalIp;
+                tbxLocalPortCv.Text = agvcConnectorConfig.LocalPort.ToString("F0");
+                tbxRetryCountCv.Text = agvcConnectorConfig.RetryCount.ToString("F0");
+                tbxResrveLengthMeterCv.Text = agvcConnectorConfig.ReserveLengthMeter.ToString("F0");
+                tbxAskReserveMsCv.Text = agvcConnectorConfig.AskReserveIntervalMs.ToString("F0");
+                tbxRecvTimeoutMsCv.Text = agvcConnectorConfig.RecvTimeoutMs.ToString("F0");
             }
             catch (Exception ex)
             {
@@ -202,19 +202,19 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void ShowMiddlerConfigSvOnForm(MiddlerConfig middlerConfig)
+        private void ShowMiddlerConfigSvOnForm(AgvcConnectorConfig agvcConnectorConfig)
         {
             try
             {
-                tbxClientNameSv.Text = middlerConfig.ClientName;
-                tbxRemoteIpSv.Text = middlerConfig.RemoteIp;
-                tbxRemotePortSv.Text = middlerConfig.RemotePort.ToString("F0");
-                tbxLocalIpSv.Text = middlerConfig.LocalIp;
-                tbxLocalPortSv.Text = middlerConfig.LocalPort.ToString("F0");
-                tbxRetryCountSv.Text = middlerConfig.RetryCount.ToString("F0");
-                tbxResrveLengthMeterSv.Text = middlerConfig.ReserveLengthMeter.ToString("F0");
-                tbxAskReserveMsSv.Text = middlerConfig.AskReserveIntervalMs.ToString("F0");
-                tbxRecvTimeoutMsSv.Text = middlerConfig.RecvTimeoutMs.ToString("F0");
+                tbxClientNameSv.Text = agvcConnectorConfig.ClientName;
+                tbxRemoteIpSv.Text = agvcConnectorConfig.RemoteIp;
+                tbxRemotePortSv.Text = agvcConnectorConfig.RemotePort.ToString("F0");
+                tbxLocalIpSv.Text = agvcConnectorConfig.LocalIp;
+                tbxLocalPortSv.Text = agvcConnectorConfig.LocalPort.ToString("F0");
+                tbxRetryCountSv.Text = agvcConnectorConfig.RetryCount.ToString("F0");
+                tbxResrveLengthMeterSv.Text = agvcConnectorConfig.ReserveLengthMeter.ToString("F0");
+                tbxAskReserveMsSv.Text = agvcConnectorConfig.AskReserveIntervalMs.ToString("F0");
+                tbxRecvTimeoutMsSv.Text = agvcConnectorConfig.RecvTimeoutMs.ToString("F0");
             }
             catch (Exception ex)
             {
@@ -239,29 +239,29 @@ namespace Mirle.AgvAseMiddler.View
         {
             try
             {
-                MiddlerConfig tempMiddlerConfig = new MiddlerConfig();
-                tempMiddlerConfig.ClientNum = middlerConfig.ClientNum;
-                tempMiddlerConfig.BcrReadRetryIntervalMs = middlerConfig.BcrReadRetryIntervalMs;
-                tempMiddlerConfig.BcrReadRetryTimeoutSec = middlerConfig.BcrReadRetryTimeoutSec;
-                tempMiddlerConfig.MaxReadSize = middlerConfig.MaxReadSize;
-                tempMiddlerConfig.MaxReconnectionCount = middlerConfig.MaxReconnectionCount;
-                tempMiddlerConfig.NeerlyNoMoveRangeMm = middlerConfig.NeerlyNoMoveRangeMm;
-                tempMiddlerConfig.ReconnectionIntervalMs = middlerConfig.ReconnectionIntervalMs;
-                tempMiddlerConfig.RecvTimeoutMs = int.Parse(tbxRecvTimeoutMsSv.Text);
-                tempMiddlerConfig.RichTextBoxMaxLines = middlerConfig.RichTextBoxMaxLines;
-                tempMiddlerConfig.SendTimeoutMs = middlerConfig.SendTimeoutMs;
-                tempMiddlerConfig.SleepTime = middlerConfig.SleepTime;
-                tempMiddlerConfig.ClientName = tbxClientNameSv.Text;
-                tempMiddlerConfig.RemoteIp = tbxRemoteIpSv.Text;
-                tempMiddlerConfig.RemotePort = int.Parse(tbxRemotePortSv.Text);
-                tempMiddlerConfig.LocalIp = tbxLocalIpSv.Text;
-                tempMiddlerConfig.LocalPort = int.Parse(tbxLocalPortSv.Text);
-                tempMiddlerConfig.RetryCount = int.Parse(tbxRetryCountSv.Text);
-                tempMiddlerConfig.ReserveLengthMeter = int.Parse(tbxResrveLengthMeterSv.Text);
-                tempMiddlerConfig.AskReserveIntervalMs = int.Parse(tbxAskReserveMsSv.Text);                
+                AgvcConnectorConfig tempAgvcConnectorConfig = new AgvcConnectorConfig();
+                tempAgvcConnectorConfig.ClientNum = agvcConnectorConfig.ClientNum;
+                tempAgvcConnectorConfig.BcrReadRetryIntervalMs = agvcConnectorConfig.BcrReadRetryIntervalMs;
+                tempAgvcConnectorConfig.BcrReadRetryTimeoutSec = agvcConnectorConfig.BcrReadRetryTimeoutSec;
+                tempAgvcConnectorConfig.MaxReadSize = agvcConnectorConfig.MaxReadSize;
+                tempAgvcConnectorConfig.MaxReconnectionCount = agvcConnectorConfig.MaxReconnectionCount;
+                tempAgvcConnectorConfig.NeerlyNoMoveRangeMm = agvcConnectorConfig.NeerlyNoMoveRangeMm;
+                tempAgvcConnectorConfig.ReconnectionIntervalMs = agvcConnectorConfig.ReconnectionIntervalMs;
+                tempAgvcConnectorConfig.RecvTimeoutMs = int.Parse(tbxRecvTimeoutMsSv.Text);
+                tempAgvcConnectorConfig.RichTextBoxMaxLines = agvcConnectorConfig.RichTextBoxMaxLines;
+                tempAgvcConnectorConfig.SendTimeoutMs = agvcConnectorConfig.SendTimeoutMs;
+                tempAgvcConnectorConfig.SleepTime = agvcConnectorConfig.SleepTime;
+                tempAgvcConnectorConfig.ClientName = tbxClientNameSv.Text;
+                tempAgvcConnectorConfig.RemoteIp = tbxRemoteIpSv.Text;
+                tempAgvcConnectorConfig.RemotePort = int.Parse(tbxRemotePortSv.Text);
+                tempAgvcConnectorConfig.LocalIp = tbxLocalIpSv.Text;
+                tempAgvcConnectorConfig.LocalPort = int.Parse(tbxLocalPortSv.Text);
+                tempAgvcConnectorConfig.RetryCount = int.Parse(tbxRetryCountSv.Text);
+                tempAgvcConnectorConfig.ReserveLengthMeter = int.Parse(tbxResrveLengthMeterSv.Text);
+                tempAgvcConnectorConfig.AskReserveIntervalMs = int.Parse(tbxAskReserveMsSv.Text);                
 
-                middlerConfig = tempMiddlerConfig;
-                mainFlowHandler.SetMiddlerConfig(middlerConfig);
+                agvcConnectorConfig = tempAgvcConnectorConfig;
+                mainFlowHandler.SetMiddlerConfig(agvcConnectorConfig);
             }
             catch (Exception ex)
             {

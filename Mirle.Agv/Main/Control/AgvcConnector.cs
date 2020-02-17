@@ -20,7 +20,7 @@ using Mirle.Tools;
 namespace Mirle.AgvAseMiddler.Controller
 {
     [Serializable]
-    public class MiddleAgent
+    public class AgvcConnector
     {
         #region Events
         public event EventHandler<string> OnMessageShowOnMainFormEvent;
@@ -35,7 +35,7 @@ namespace Mirle.AgvAseMiddler.Controller
         #endregion
 
         private Vehicle theVehicle = Vehicle.Instance;
-        private MiddlerConfig middlerConfig;
+        private AgvcConnectorConfig agvcConnectorConfig;
         private AlarmHandler alarmHandler;
         private MirleLogger mirleLogger = MirleLogger.Instance;
         private MainFlowHandler mainFlowHandler;
@@ -65,10 +65,10 @@ namespace Mirle.AgvAseMiddler.Controller
         public TcpIpAgent ClientAgent { get; private set; }
         public string MiddlerAbnormalMsg { get; set; } = "";
 
-        public MiddleAgent(MainFlowHandler mainFlowHandler)
+        public AgvcConnector(MainFlowHandler mainFlowHandler)
         {
             this.mainFlowHandler = mainFlowHandler;
-            middlerConfig = mainFlowHandler.GetMiddlerConfig();
+            agvcConnectorConfig = mainFlowHandler.GetAgvcConnectorConfig();
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             mirleLogger = MirleLogger.Instance;
 
@@ -84,19 +84,19 @@ namespace Mirle.AgvAseMiddler.Controller
 
             IDecodReceiveRawData RawDataDecoder = new DecodeRawData_Google(unPackWrapperMsg);
 
-            int clientNum = middlerConfig.ClientNum;
-            string clientName = middlerConfig.ClientName;
-            string sRemoteIP = middlerConfig.RemoteIp;
-            int iRemotePort = middlerConfig.RemotePort;
-            string sLocalIP = middlerConfig.LocalIp;
-            int iLocalPort = middlerConfig.LocalPort;
+            int clientNum = agvcConnectorConfig.ClientNum;
+            string clientName = agvcConnectorConfig.ClientName;
+            string sRemoteIP = agvcConnectorConfig.RemoteIp;
+            int iRemotePort = agvcConnectorConfig.RemotePort;
+            string sLocalIP = agvcConnectorConfig.LocalIp;
+            int iLocalPort = agvcConnectorConfig.LocalPort;
 
-            int recv_timeout_ms = middlerConfig.RecvTimeoutMs;                         //等待sendRecv Reply的Time out時間(milliseconds)
-            int send_timeout_ms = middlerConfig.SendTimeoutMs;                         //暫時無用
-            int max_readSize = middlerConfig.MaxReadSize;                              //暫時無用
-            int reconnection_interval_ms = middlerConfig.ReconnectionIntervalMs;       //斷線多久之後再進行一次嘗試恢復連線的動作
-            int max_reconnection_count = middlerConfig.MaxReconnectionCount;           //斷線後最多嘗試幾次重新恢復連線 (若設定為0則不進行自動重新連線)
-            int retry_count = middlerConfig.RetryCount;                                //SendRecv Time out後要再重複發送的次數
+            int recv_timeout_ms = agvcConnectorConfig.RecvTimeoutMs;                         //等待sendRecv Reply的Time out時間(milliseconds)
+            int send_timeout_ms = agvcConnectorConfig.SendTimeoutMs;                         //暫時無用
+            int max_readSize = agvcConnectorConfig.MaxReadSize;                              //暫時無用
+            int reconnection_interval_ms = agvcConnectorConfig.ReconnectionIntervalMs;       //斷線多久之後再進行一次嘗試恢復連線的動作
+            int max_reconnection_count = agvcConnectorConfig.MaxReconnectionCount;           //斷線後最多嘗試幾次重新恢復連線 (若設定為0則不進行自動重新連線)
+            int retry_count = agvcConnectorConfig.RetryCount;                                //SendRecv Time out後要再重複發送的次數
 
             try
             {
@@ -124,9 +124,9 @@ namespace Mirle.AgvAseMiddler.Controller
             Google.Protobuf.MessageParser<T> parser = new Google.Protobuf.MessageParser<T>(() => new T());
             return parser.ParseFrom(buf);
         }
-        public MiddlerConfig GetMiddlerConfig()
+        public AgvcConnectorConfig GetAgvcConnectorConfig()
         {
-            return middlerConfig;
+            return agvcConnectorConfig;
         }
         public bool IsClientAgentNull() => ClientAgent == null;
         public void ReConnect()
@@ -512,7 +512,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     }
                     else
                     {
-                        SpinWait.SpinUntil(() => ReserveOkAskNext, middlerConfig.AskReserveIntervalMs);
+                        SpinWait.SpinUntil(() => ReserveOkAskNext, agvcConnectorConfig.AskReserveIntervalMs);
                         ReserveOkAskNext = false;
                         SpinWait.SpinUntil(() => false, 5);
                     }
@@ -589,7 +589,7 @@ namespace Mirle.AgvAseMiddler.Controller
         public bool IsGotReserveOkSectionsFull()
         {
             int reserveOkSectionsTotalLength = GetReserveOkSectionsTotalLength();
-            return reserveOkSectionsTotalLength >= middlerConfig.ReserveLengthMeter * 1000;
+            return reserveOkSectionsTotalLength >= agvcConnectorConfig.ReserveLengthMeter * 1000;
         }
         private string QueMapSectionsToString(ConcurrentQueue<MapSection> aQue)
         {
@@ -1262,7 +1262,7 @@ namespace Mirle.AgvAseMiddler.Controller
             var realPos = theVehicle.VehicleLocation.RealPosition;
             var lastAddr = theVehicle.VehicleLocation.LastAddress;
             if (string.IsNullOrEmpty(lastAddr.Id)) return true;
-            return Math.Abs(realPos.X - lastAddr.Position.X) <= middlerConfig.NeerlyNoMoveRangeMm && Math.Abs(realPos.Y - lastAddr.Position.Y) <= middlerConfig.NeerlyNoMoveRangeMm;
+            return Math.Abs(realPos.X - lastAddr.Position.X) <= agvcConnectorConfig.NeerlyNoMoveRangeMm && Math.Abs(realPos.Y - lastAddr.Position.Y) <= agvcConnectorConfig.NeerlyNoMoveRangeMm;
         }
         public void LoadArrivals()
         {
@@ -2105,7 +2105,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
                 string rtnMsg = "";
 
-                TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, middlerConfig.RecvTimeoutMs, 0));
+                TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0));
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {
@@ -2183,7 +2183,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
                 string rtnMsg = "";
 
-                var returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, middlerConfig.RecvTimeoutMs, 0);
+                var returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {

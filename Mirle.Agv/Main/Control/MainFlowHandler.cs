@@ -22,7 +22,7 @@ namespace Mirle.AgvAseMiddler.Controller
     public class MainFlowHandler
     {
         #region Configs
-        private MiddlerConfig middlerConfig;
+        private AgvcConnectorConfig agvcConnectorConfig;
         private MainFlowConfig mainFlowConfig;
         private MapConfig mapConfig;
         private AlarmConfig alarmConfig;
@@ -49,7 +49,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
         #region Controller
 
-        private MiddleAgent middleAgent;
+        private AgvcConnector agvcConnector;
         private IntegrateControlPlate integrateControlPlate;
         private MirleLogger mirleLogger = null;
         private AlarmHandler alarmHandler;
@@ -167,7 +167,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 Vehicle.Instance.TheMainFlowConfig = mainFlowConfig;
                 Vehicle.Instance.CreateVehicleIntegrateStatus();
                 mapConfig = xmlHandler.ReadXml<MapConfig>(@"D:\AgvConfigs\Map.xml");
-                middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
+                agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"D:\AgvConfigs\Middler.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"D:\AgvConfigs\Alarm.xml");
                 batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");
                 InitialSoc = batteryLog.InitialSoc;
@@ -216,7 +216,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 psWrapper = new PSDriver.PSDriver.PSWrapperXClass();
                 integrateControlPlate = new IntegrateControlFactory().GetIntegrateControl(mainFlowConfig.CustomerName, mcProtocol, alarmHandler, psWrapper);
                 moveControlPlate = new MoveControlFactory().GetMoveControl(mainFlowConfig.CustomerName, TheMapInfo, alarmHandler, integrateControlPlate);
-                middleAgent = new MiddleAgent(this);
+                agvcConnector = new AgvcConnector(this);
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
             catch (Exception ex)
@@ -250,9 +250,9 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 //來自middleAgent的NewTransCmds訊息，通知MainFlow(this)'mapHandler
-                middleAgent.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
-                middleAgent.OnOverrideCommandEvent += MiddleAgent_OnOverrideCommandEvent;
-                middleAgent.OnAvoideRequestEvent += MiddleAgent_OnAvoideRequestEvent;
+                agvcConnector.OnInstallTransferCommandEvent += MiddleAgent_OnInstallTransferCommandEvent;
+                agvcConnector.OnOverrideCommandEvent += MiddleAgent_OnOverrideCommandEvent;
+                agvcConnector.OnAvoideRequestEvent += MiddleAgent_OnAvoideRequestEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 moveControlPlate.OnMoveFinish += MoveControl_OnMoveFinished;
@@ -267,17 +267,17 @@ namespace Mirle.AgvAseMiddler.Controller
                 integrateControlPlate.OnReadCarrierIdFinishEvent += IntegrateControl_OnReadCarrierIdFinishEvent;
 
                 //來自IBatterysControl的電量改變訊息，通知middleAgent
-                integrateControlPlate.OnBatteryPercentageChangeEvent += middleAgent.IntegrateControl_OnBatteryPercentageChangeEvent;
+                integrateControlPlate.OnBatteryPercentageChangeEvent += agvcConnector.IntegrateControl_OnBatteryPercentageChangeEvent;
                 integrateControlPlate.OnBatteryPercentageChangeEvent += IntegrateControl_OnBatteryPercentageChangeEvent;
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
-                alarmHandler.OnSetAlarmEvent += middleAgent.AlarmHandler_OnSetAlarmEvent;
+                alarmHandler.OnSetAlarmEvent += agvcConnector.AlarmHandler_OnSetAlarmEvent;
 
-                alarmHandler.OnPlcResetOneAlarmEvent += middleAgent.AlarmHandler_OnPlcResetOneAlarmEvent;
+                alarmHandler.OnPlcResetOneAlarmEvent += agvcConnector.AlarmHandler_OnPlcResetOneAlarmEvent;
 
                 alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
-                alarmHandler.OnResetAllAlarmsEvent += middleAgent.AlarmHandler_OnResetAllAlarmsEvent;
+                alarmHandler.OnResetAllAlarmsEvent += agvcConnector.AlarmHandler_OnResetAllAlarmsEvent;
 
                 theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
 
@@ -294,7 +294,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
         private void TheVehicle_OnAutoStateChangeEvent(object sender, string e)
         {
-            middleAgent.StatusChangeReport(e);
+            agvcConnector.StatusChangeReport(e);
         }
 
         private void VehicleLocationInitialAndThreadsInitial()
@@ -396,7 +396,7 @@ namespace Mirle.AgvAseMiddler.Controller
             if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOff)
             {
                 agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOn;
-                middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             }
             VisitTransferStepsStatusBeforePause = VisitTransferStepsStatus;
             VisitTransferStepsStatus = EnumThreadStatus.Pause;
@@ -409,7 +409,7 @@ namespace Mirle.AgvAseMiddler.Controller
             if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
             {
                 agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
-                middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             }
             visitTransferStepsPauseEvent.Set();
             VisitTransferStepsStatus = VisitTransferStepsStatusBeforePause;
@@ -442,10 +442,10 @@ namespace Mirle.AgvAseMiddler.Controller
             if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
             {
                 agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
-                middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
             }
 
-            middleAgent.TransferComplete(agvcTransCmd);
+            agvcConnector.TransferComplete(agvcTransCmd);
 
             VisitTransferStepsStatus = EnumThreadStatus.None;
             lastAgvcTransCmd = agvcTransCmd;
@@ -455,7 +455,7 @@ namespace Mirle.AgvAseMiddler.Controller
             theVehicle.CurAgvcTransCmd = agvcTransCmd;
             GoNextTransferStep = false;
             SetTransCmdsStep(new Idle());
-            middleAgent.NoCommand();
+            agvcConnector.NoCommand();
             IsMoveEnd = true;
             var msg = $"MainFlow : 搬送流程 後處理, [ThreadStatus={VisitTransferStepsStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -634,7 +634,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 sw.Stop();
                 if (sw.ElapsedMilliseconds > mainFlowConfig.ReportPositionIntervalMs)
                 {
-                    middleAgent.ReportAddressPass();
+                    agvcConnector.ReportAddressPass();
                     total += sw.ElapsedMilliseconds;
                     sw.Reset();
                 }
@@ -736,7 +736,7 @@ namespace Mirle.AgvAseMiddler.Controller
             {
                 LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
 
-                middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
+                agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "Guide sections and address are not match the map.");
                 return;
             }
             #endregion
@@ -751,7 +751,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 transferSteps.Add(new EmptyTransferStep());
                 //開始尋訪 trasnferSteps as List<TrasnferStep> 裡的每一步MoveCmdInfo/LoadCmdInfo/UnloadCmdInfo
                 theVehicle.TheVehicleIntegrateStatus.CarrierSlot.FakeCarrierId = agvcTransCmd.CassetteId;
-                middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 0, "");
+                agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 0, "");
                 StartVisitTransferSteps();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 確認。";
                 OnMessageShowEvent?.Invoke(this, okMsg);
@@ -759,7 +759,7 @@ namespace Mirle.AgvAseMiddler.Controller
             }
             catch (Exception ex)
             {
-                middleAgent.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "");
+                agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetActiveType(), agvcTransCmd.SeqNum, 1, "");
                 var ngMsg = $"MainFlow : 收到 {agvcTransCmd.CommandType}命令{agvcTransCmd.CommandId} 處理失敗。";
                 OnMessageShowEvent?.Invoke(this, ngMsg);
                 LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
@@ -931,7 +931,7 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 alarmHandler.SetAlarm(alarmCode);
-                middleAgent.ReplyTransferCommand(agvcTransferCmd.CommandId, agvcTransferCmd.GetActiveType(), agvcTransferCmd.SeqNum, 1, reason);
+                agvcConnector.ReplyTransferCommand(agvcTransferCmd.CommandId, agvcTransferCmd.GetActiveType(), agvcTransferCmd.SeqNum, 1, reason);
                 reason = $"MainFlow : Reject [{agvcTransferCmd.CommandType}] Command, " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
                 //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -939,7 +939,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 if (VisitTransferStepsStatus == EnumThreadStatus.Pause)
                 {
                     ResumeVisitTransferSteps();
-                    middleAgent.ResumeAskReserve();
+                    agvcConnector.ResumeAskReserve();
                 }
             }
             catch (Exception ex)
@@ -956,7 +956,7 @@ namespace Mirle.AgvAseMiddler.Controller
             #region 替代路徑檢查
             try
             {
-                middleAgent.PauseAskReserve();
+                agvcConnector.PauseAskReserve();
 
                 if (IsAgvcTransferCommandEmpty())
                 {
@@ -1113,7 +1113,7 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 //middleAgent.StopAskReserve();
-                middleAgent.ClearAllReserve();
+                agvcConnector.ClearAllReserve();
                 agvcTransCmd.ExchangeSectionsAndAddress(agvcOverrideCmd);
                 agvcTransCmd.AvoidEndAddressId = "";
                 agvcTransCmd.IsAvoidComplete = false;
@@ -1121,7 +1121,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 SetupOverrideTransferSteps(agvcOverrideCmd);
                 transferSteps.Add(new EmptyTransferStep());
                 theVehicle.TheVehicleIntegrateStatus.CarrierSlot.FakeCarrierId = agvcTransCmd.CassetteId;
-                middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
+                agvcConnector.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 0, "");
                 var okmsg = $"MainFlow : 接受{agvcOverrideCmd.CommandType}命令{agvcOverrideCmd.CommandId}確認。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
                 OnOverrideCommandCheckedEvent?.Invoke(this, agvcOverrideCmd);
@@ -1143,7 +1143,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public bool IsMoveStopByNoReserve()
         {
-            return moveControlPlate.IsVehicleStop() && IsPauseByNoReserve();
+            return IsMoveControlStop() && IsPauseByNoReserve();
         }
 
         private void RejectTransferCommandAndResume(int alarmCode, string reason, AgvcTransCmd agvcTransferCmd)
@@ -1151,13 +1151,13 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 alarmHandler.SetAlarm(alarmCode);
-                middleAgent.ReplyTransferCommand(agvcTransferCmd.CommandId, agvcTransferCmd.GetActiveType(), agvcTransferCmd.SeqNum, 1, reason);
+                agvcConnector.ReplyTransferCommand(agvcTransferCmd.CommandId, agvcTransferCmd.GetActiveType(), agvcTransferCmd.SeqNum, 1, reason);
                 reason = $"MainFlow : 拒絕 {agvcTransferCmd.CommandType} 命令, " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
                 if (VisitTransferStepsStatus == EnumThreadStatus.Pause)
                 {
                     ResumeVisitTransferSteps();
-                    middleAgent.ResumeAskReserve();
+                    agvcConnector.ResumeAskReserve();
                 }
             }
             catch (Exception ex)
@@ -1171,10 +1171,10 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 alarmHandler.SetAlarm(alarmCode);
-                middleAgent.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 1, reason);
+                agvcConnector.ReplyTransferCommand(agvcOverrideCmd.CommandId, agvcOverrideCmd.GetActiveType(), agvcOverrideCmd.SeqNum, 1, reason);
                 reason = $"MainFlow : 拒絕 {agvcOverrideCmd.CommandType} 命令, " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
-                middleAgent.ResumeAskReserve();
+                agvcConnector.ResumeAskReserve();
             }
             catch (Exception ex)
             {
@@ -1204,7 +1204,7 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             #region 3.0
 
-            return middleAgent.IsAgvcRejectReserve && moveControlPlate.IsPause();
+            return agvcConnector.IsAgvcRejectReserve && IsMoveControllPause();
 
             #endregion
         }
@@ -1217,7 +1217,7 @@ namespace Mirle.AgvAseMiddler.Controller
             #region 避車檢查
             try
             {
-                middleAgent.PauseAskReserve();
+                agvcConnector.PauseAskReserve();
 
                 if (IsAgvcTransferCommandEmpty())
                 {
@@ -1259,13 +1259,13 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 //middleAgent.StopAskReserve();
-                middleAgent.ClearAllReserve();
+                agvcConnector.ClearAllReserve();
                 agvcTransCmd.CombineAvoid(agvcMoveCmd);
                 agvcTransCmd.IsAvoidComplete = false;
                 theVehicle.CurAgvcTransCmd = agvcTransCmd;
                 SetupAvoidTransferSteps();
                 theVehicle.TheVehicleIntegrateStatus.CarrierSlot.FakeCarrierId = agvcTransCmd.CassetteId;
-                middleAgent.ReplyAvoidCommand(agvcMoveCmd, 0, "");
+                agvcConnector.ReplyAvoidCommand(agvcMoveCmd, 0, "");
                 var okmsg = $"MainFlow : 接受避車命令確認，終點[{agvcTransCmd.AvoidEndAddressId}]。";
                 OnMessageShowEvent?.Invoke(this, okmsg);
                 OnAvoidCommandCheckedEvent?.Invoke(this, agvcMoveCmd);
@@ -1296,10 +1296,10 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 alarmHandler.SetAlarm(alarmCode);
-                middleAgent.ReplyAvoidCommand(agvcMoveCmd, 1, reason);
+                agvcConnector.ReplyAvoidCommand(agvcMoveCmd, 1, reason);
                 reason = $"MainFlow : 拒絕避車命令, " + reason;
                 OnMessageShowEvent?.Invoke(this, reason);
-                middleAgent.ResumeAskReserve();
+                agvcConnector.ResumeAskReserve();
             }
             catch (Exception ex)
             {
@@ -1730,7 +1730,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 }
                 else
                 {
-                    middleAgent.UnloadArrivals();
+                    agvcConnector.UnloadArrivals();
                 }
                 var msg = $"MainFlow : 到達放貨站,[Port={unloadAddressId}]";
                 OnMessageShowEvent?.Invoke(this, msg);
@@ -1757,7 +1757,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 }
                 else
                 {
-                    middleAgent.LoadArrivals();
+                    agvcConnector.LoadArrivals();
                 }
 
                 var msg = $"MainFlow : 到達取貨站, [Port={loadAddressId}]";
@@ -1821,10 +1821,10 @@ namespace Mirle.AgvAseMiddler.Controller
                 #region Not EnumMoveComplete.Success
                 if (status == EnumMoveComplete.Fail)
                 {
-                    middleAgent.ClearAllReserve();
+                    agvcConnector.ClearAllReserve();
                     if (IsAvoidMove)
                     {
-                        middleAgent.AvoidFail();
+                        agvcConnector.AvoidFail();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動異常終止");
                         IsAvoidMove = false;
                         return;
@@ -1846,7 +1846,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 {
                     VisitTransferStepsStatus = EnumThreadStatus.PauseComplete;
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 移動暫停確認");
-                    middleAgent.PauseAskReserve();
+                    agvcConnector.PauseAskReserve();
                     PauseVisitTransferSteps();
                     return;
                 }
@@ -1856,7 +1856,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     StopAndClear();
                     if (IsAvoidMove)
                     {
-                        middleAgent.AvoidFail();
+                        agvcConnector.AvoidFail();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動取消確認");
                         return;
                     }
@@ -1869,7 +1869,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 #endregion
 
                 #region EnumMoveComplete.Success
-                middleAgent.ClearAllReserve();
+                agvcConnector.ClearAllReserve();
 
                 MoveCmdInfo moveCmd = (MoveCmdInfo)GetCurTransferStep();
 
@@ -1882,7 +1882,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 if (IsAvoidMove)
                 {
                     agvcTransCmd.IsAvoidComplete = true;
-                    middleAgent.AvoidComplete();
+                    agvcConnector.AvoidComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : 避車移動完成");
                 }
                 else
@@ -1891,7 +1891,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     {
                         if (IsNextTransferStepIdle())
                         {
-                            middleAgent.MoveArrival();
+                            agvcConnector.MoveArrival();
                         }
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 走行移動完成");
 
@@ -1899,7 +1899,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     }
                     else
                     {
-                        middleAgent.MoveArrival();
+                        agvcConnector.MoveArrival();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 走行移動完成");
                     }
                 }
@@ -2062,7 +2062,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 EnumTransferStepType transferStepType = transferStep.GetTransferStepType();
                 if (transferStepType == EnumTransferStepType.Load)
                 {
-                    if (middleAgent.IsCstIdReadReplyOk(ReadResult))
+                    if (agvcConnector.IsCstIdReadReplyOk(ReadResult))
                     {
                         VisitNextTransferStep();
                     }
@@ -2077,7 +2077,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
                     theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = "";
 
-                    middleAgent.UnloadComplete();
+                    agvcConnector.UnloadComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨完成");
                     VisitNextTransferStep();
                 }
@@ -2285,7 +2285,7 @@ namespace Mirle.AgvAseMiddler.Controller
                         }
                     }
 
-                    middleAgent.Unloading();
+                    agvcConnector.Unloading();
                     PublishOnDoTransferStepEvent(unloadCmd);
                     Task.Run(() => integrateControlPlate.DoRobotCommand(unloadCmd));
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={unloadCmd.StageNum}][是否PIO={unloadCmd.IsEqPio}]");
@@ -2341,7 +2341,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     }
 
 
-                    middleAgent.Loading();
+                    agvcConnector.Loading();
                     PublishOnDoTransferStepEvent(loadCmd);
                     ReadResult = EnumCstIdReadResult.Noraml;
                     Task.Run(() => integrateControlPlate.DoRobotCommand(loadCmd));
@@ -2358,8 +2358,8 @@ namespace Mirle.AgvAseMiddler.Controller
 
         #region Simple Getters
         public AlarmHandler GetAlarmHandler() => alarmHandler;
-        public MiddleAgent GetMiddleAgent() => middleAgent;
-        public MiddlerConfig GetMiddlerConfig() => middlerConfig;
+        public AgvcConnector GetAgvcConnector() => agvcConnector;
+        public AgvcConnectorConfig GetAgvcConnectorConfig() => agvcConnectorConfig;
         public MainFlowConfig GetMainFlowConfig() => mainFlowConfig;
         public MapConfig GetMapConfig() => mapConfig;
         public MapHandler GetMapHandler() => mapHandler;
@@ -2473,9 +2473,9 @@ namespace Mirle.AgvAseMiddler.Controller
 
                 #region 2.0
                 //middleAgent.PauseAskReserve();
-                middleAgent.ReportSectionPass(EventType.AdrPass);
-                middleAgent.ClearAllReserve();
-                middleAgent.SetupNeedReserveSections(moveCmd.MovingSections);
+                agvcConnector.ReportSectionPass(EventType.AdrPass);
+                agvcConnector.ClearAllReserve();
+                agvcConnector.SetupNeedReserveSections(moveCmd.MovingSections);
                 //middleAgent.ResumeAskReserve();
                 #endregion
 
@@ -2507,7 +2507,7 @@ namespace Mirle.AgvAseMiddler.Controller
                             SaveBatteryLog();
                             moveCmdInfo.MovingSectionsIndex++;
                             FitVehicalLocationAndMoveCmd(moveCmdInfo, vehicleLocation);
-                            middleAgent.ReportSectionPass(EventType.AdrPass);
+                            agvcConnector.ReportSectionPass(EventType.AdrPass);
                             isUpdateSection = true;
                         }
 
@@ -2724,13 +2724,13 @@ namespace Mirle.AgvAseMiddler.Controller
             int getReserveOkSectionIndex = 0;
             try
             {
-                var getReserveOkSections = middleAgent.GetReserveOkSections();
+                var getReserveOkSections = agvcConnector.GetReserveOkSections();
                 getReserveOkSectionIndex = getReserveOkSections.FindIndex(x => x.Id == id);
                 if (getReserveOkSectionIndex < 0) return;
                 for (int i = 0; i < getReserveOkSectionIndex; i++)
                 {
                     //Remove passed section in ReserveOkSection
-                    middleAgent.DequeueGotReserveOkSections();
+                    agvcConnector.DequeueGotReserveOkSections();
                 }
             }
             catch (Exception ex)
@@ -2771,7 +2771,7 @@ namespace Mirle.AgvAseMiddler.Controller
                         OnMessageShowEvent?.Invoke(this, msg);
                     }
 
-                    middleAgent.ChargHandshaking();
+                    agvcConnector.ChargHandshaking();
                     EnumChargeDirection chargeDirection;
                     switch (address.ChargeDirection)
                     {
@@ -2809,7 +2809,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
                     if (!isTimeout)
                     {
-                        middleAgent.Charging();
+                        agvcConnector.Charging();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
                         batteryLog.ChargeCount++;
                         SaveBatteryLog();
@@ -2851,7 +2851,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     }
 
 
-                    middleAgent.ChargHandshaking();
+                    agvcConnector.ChargHandshaking();
                     EnumChargeDirection chargeDirection;
                     switch (address.ChargeDirection)
                     {
@@ -2889,7 +2889,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
                     if (!isTimeout)
                     {
-                        middleAgent.Charging();
+                        agvcConnector.Charging();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]");
                         batteryLog.ChargeCount++;
                         SaveBatteryLog();
@@ -2927,7 +2927,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 var address = theVehicle.VehicleLocation.LastAddress;
                 if (address.IsCharger)
                 {
-                    middleAgent.ChargHandshaking();
+                    agvcConnector.ChargHandshaking();
                     integrateControlPlate.StopCharge();
 
                     Stopwatch sw = new Stopwatch();
@@ -2960,7 +2960,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
                     if (!isTimeOut)
                     {
-                        middleAgent.ChargeOff();
+                        agvcConnector.ChargeOff();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]");
                         return true;
                     }
@@ -2988,14 +2988,14 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 PauseVisitTransferSteps();
-                middleAgent.ClearAllReserve();
+                agvcConnector.ClearAllReserve();
                 StopVehicle();
                 StopVisitTransferSteps();
 
                 if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
                 {
                     agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
-                    middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                    agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                 }
 
                 if (!IsInterlockErrorOrBcrReadFail())
@@ -3084,19 +3084,24 @@ namespace Mirle.AgvAseMiddler.Controller
         public bool SetManualToAuto()
         {
             StopAndClear();
-            string reason = "";
-            if (!moveControlPlate.CanAuto(ref reason))
-            {
-                reason = $"Manual 切換 Auto 失敗，原因： " + reason;
-                OnMessageShowEvent?.Invoke(this, reason);
-                return false;
-            }
-            else
-            {
-                string msg = $"Manual 切換 Auto 成功";
-                OnMessageShowEvent?.Invoke(this, msg);
-                return true;
-            }
+            //string reason = "";
+            //if (!moveControlPlate.CanAuto(ref reason))
+            //{
+            //    reason = $"Manual 切換 Auto 失敗，原因： " + reason;
+            //    OnMessageShowEvent?.Invoke(this, reason);
+            //    return false;
+            //}
+            //else
+            //{
+            //    string msg = $"Manual 切換 Auto 成功";
+            //    OnMessageShowEvent?.Invoke(this, msg);
+            //    return true;
+            //}
+
+            string msg = $"Manual 切換 Auto 成功";
+            OnMessageShowEvent?.Invoke(this, msg);
+            return true;
+
         }
 
         public void SetupPlcAutoManualState(EnumIPCStatus status)
@@ -3190,7 +3195,7 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             try
             {
-                middleAgent.PauseAskReserve();
+                agvcConnector.PauseAskReserve();
                 PauseVisitTransferSteps();
                 if (IsMoveStep())
                 {
@@ -3198,19 +3203,19 @@ namespace Mirle.AgvAseMiddler.Controller
                     {
                         var msg = $"MainFlow : 接受[{type}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Pause);
+                        agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
                         if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOff)
                         {
                             agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOn;
-                            middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                            agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                         }
                     }
                     else
                     {
                         var msg = $"MainFlow : 移動無法暫停，拒絕[{type}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Pause);
-                        middleAgent.ResumeAskReserve();
+                        agvcConnector.PauseReply(iSeqNum, 1, PauseEvent.Pause);
+                        agvcConnector.ResumeAskReserve();
                         ResumeVisitTransferSteps();
                     }
                 }
@@ -3218,11 +3223,11 @@ namespace Mirle.AgvAseMiddler.Controller
                 {
                     var msg = $"MainFlow : 接受[{type}]命令。";
                     OnMessageShowEvent(this, msg);
-                    middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Pause);
+                    agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
                     if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOff)
                     {
                         agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOn;
-                        middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                        agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -3242,35 +3247,35 @@ namespace Mirle.AgvAseMiddler.Controller
                     {
                         var msg = $"MainFlow : 接受[{type}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
+                        agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
                         moveControlPlate.VehcleContinue();
                         ResumeVisitTransferSteps();
-                        middleAgent.ResumeAskReserve();
+                        agvcConnector.ResumeAskReserve();
                         IsMoveEnd = false;
                         if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
                         {
                             agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
-                            middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                            agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                         }
                     }
                     else
                     {
                         var msg = $"MainFlow : 移動尚未暫停，拒絕[{type}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.PauseReply(iSeqNum, 1, PauseEvent.Continue);
+                        agvcConnector.PauseReply(iSeqNum, 1, PauseEvent.Continue);
                     }
                 }
                 else
                 {
                     var msg = $"MainFlow : 接受[{type}]命令。";
                     OnMessageShowEvent(this, msg);
-                    middleAgent.PauseReply(iSeqNum, 0, PauseEvent.Continue);
-                    middleAgent.ResumeAskReserve();
+                    agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
+                    agvcConnector.ResumeAskReserve();
                     ResumeVisitTransferSteps();
                     if (agvcTransCmd.PauseStatus == VhStopSingle.StopSingleOn)
                     {
                         agvcTransCmd.PauseStatus = VhStopSingle.StopSingleOff;
-                        middleAgent.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
+                        agvcConnector.StatusChangeReport(MethodBase.GetCurrentMethod().Name);
                     }
                 }
 
@@ -3283,17 +3288,22 @@ namespace Mirle.AgvAseMiddler.Controller
 
         private bool IsMoveControllPause()
         {
-            return moveControlPlate.IsPause();
+            return (theVehicle.MoveStatus.MoveState == EnumMoveState.Pause || theVehicle.MoveStatus.MoveState == EnumMoveState.Pausing);
+        }
+
+        private bool IsMoveControlStop()
+        {
+            return (theVehicle.MoveStatus.MoveState == EnumMoveState.Stop || theVehicle.MoveStatus.MoveState == EnumMoveState.Stoping);
         }
 
         private void UpdateMiddlerNeedReserveSections(string reserveSectionID)
         {
-            var needReserveSections = middleAgent.GetNeedReserveSections();
+            var needReserveSections = agvcConnector.GetNeedReserveSections();
             var index = needReserveSections.FindIndex(x => x.Id == reserveSectionID);
             if (index > -1)
             {
                 needReserveSections.RemoveAt(index);
-                middleAgent.SetupNeedReserveSections(needReserveSections);
+                agvcConnector.SetupNeedReserveSections(needReserveSections);
             }
         }
 
@@ -3307,10 +3317,10 @@ namespace Mirle.AgvAseMiddler.Controller
                     {
                         var msg = $"MainFlow : 接受[{actType}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
+                        agvcConnector.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
                         moveControlPlate.VehcleCancel();
-                        middleAgent.ClearAllReserve();
+                        agvcConnector.ClearAllReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
@@ -3320,7 +3330,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     {
                         var msg = $"MainFlow : 移動尚未暫停，拒絕[{actType}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
+                        agvcConnector.CancelAbortReply(iSeqNum, 1, cmdId, actType);
                     }
                 }
                 else
@@ -3329,10 +3339,10 @@ namespace Mirle.AgvAseMiddler.Controller
                     {
                         var msg = $"MainFlow : 接受[{actType}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.CancelAbortReply(iSeqNum, 0, cmdId, actType);
+                        agvcConnector.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
                         //middleAgent.StopAskReserve();
-                        middleAgent.ClearAllReserve();
+                        agvcConnector.ClearAllReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
                         var msg2 = $"MainFlow : 接受[{actType}]命令確認。";
@@ -3342,7 +3352,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     {
                         var msg = $"MainFlow : 流程尚未暫停，拒絕[{actType}]命令。";
                         OnMessageShowEvent(this, msg);
-                        middleAgent.CancelAbortReply(iSeqNum, 1, cmdId, actType);
+                        agvcConnector.CancelAbortReply(iSeqNum, 1, cmdId, actType);
                     }
                 }
             }
@@ -3383,13 +3393,13 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public void LoadMiddlerConfig()
         {
-            middlerConfig = xmlHandler.ReadXml<MiddlerConfig>(@"D:\AgvConfigs\Middler.xml");
+            agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"D:\AgvConfigs\Middler.xml");
         }
 
-        public void SetMiddlerConfig(MiddlerConfig middlerConfig)
+        public void SetMiddlerConfig(AgvcConnectorConfig agvcConnectorConfig)
         {
-            this.middlerConfig = middlerConfig;
-            xmlHandler.WriteXml(middlerConfig, @"D:\AgvConfigs\Middler.xml");
+            this.agvcConnectorConfig = agvcConnectorConfig;
+            xmlHandler.WriteXml(this.agvcConnectorConfig, @"D:\AgvConfigs\Middler.xml");
         }
 
         private void IntegrateControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
@@ -3424,7 +3434,7 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             try
             {
-                mirleLogger.Log(new Mirle.Tools.LogFormat("Error", "5", classMethodName, middlerConfig.ClientName, "CarrierID", exMsg));
+                mirleLogger.Log(new Mirle.Tools.LogFormat("Error", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", exMsg));
             }
             catch (Exception)
             {
@@ -3435,7 +3445,7 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             try
             {
-                mirleLogger.Log(new Mirle.Tools.LogFormat("Debug", "5", classMethodName, middlerConfig.ClientName, "CarrierID", msg));
+                mirleLogger.Log(new Mirle.Tools.LogFormat("Debug", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg));
             }
             catch (Exception)
             {

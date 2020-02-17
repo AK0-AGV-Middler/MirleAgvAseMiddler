@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Mirle.AgvAseMiddler.Model.Configs
 {
     [Serializable]
-    public class MiddlerConfig
+    public class AgvcConnectorConfig
     {
         public int ClientNum { get; set; }
         public string ClientName { get; set; }

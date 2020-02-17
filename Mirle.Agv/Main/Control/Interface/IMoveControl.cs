@@ -11,16 +11,12 @@ namespace Mirle.AgvAseMiddler.Controller
     public interface IMoveControl
     {
         void VehcleCancel();
-        bool IsPause();
-        bool IsVehicleStop();
         void VehcleContinue();
         bool VehclePause();
         void StopAndClear();
-        bool CanAuto(ref string errorMsg);
         bool Move(TransferStep transferStep, ref string errorMsg);
         void RetryMove();
         bool PartMove(MapPosition mapPosition);
-        void Close();
 
         event EventHandler<EnumMoveComplete> OnMoveFinish;
         event EventHandler<EnumMoveComplete> OnRetryMoveFinish;
@@ -31,9 +27,6 @@ namespace Mirle.AgvAseMiddler.Controller
         public abstract event EventHandler<EnumMoveComplete> OnMoveFinish;
         public abstract event EventHandler<EnumMoveComplete> OnRetryMoveFinish;
 
-        public abstract bool CanAuto(ref string errorMsg);
-        public abstract bool IsPause();
-        public abstract bool IsVehicleStop();
         public abstract bool Move(TransferStep transferStep, ref string errorMsg);
         public abstract bool PartMove(MapPosition mapPosition);
         public abstract void RetryMove();
@@ -41,7 +34,6 @@ namespace Mirle.AgvAseMiddler.Controller
         public abstract void VehcleCancel();
         public abstract void VehcleContinue();
         public abstract bool VehclePause();
-        public abstract void Close();
 
         public EnumMoveState MoveState { get; protected set; }
         public string StopResult { get; set; } = "";
@@ -57,11 +49,7 @@ namespace Mirle.AgvAseMiddler.Controller
             {
                 AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
                 moveControlPlate = new AuoMoveControl(mapInfo, alarmHandler, auoIntegrateControl.GetPlcAgent());
-            }
-            else if (type == "ASE")
-            {
-                moveControlPlate = new AseMoveControl();
-            }
+            }            
 
             return moveControlPlate;
         }

@@ -30,22 +30,12 @@ namespace Mirle.AgvAseMiddler.Controller
             OnMoveFinish?.Invoke(this, e);
         }
 
-        public override void Close()
-        {
-            moveControlHandler.CloseMoveControlHandler();
-        }
-
-        public override bool CanAuto(ref string errorMsg)
-        {
-            return moveControlHandler.MoveControlCanAuto(ref errorMsg);
-        }
-
-        public override bool IsPause()
+        public  bool IsPause()
         {
             return moveControlHandler.ControlData.PauseRequest || moveControlHandler.ControlData.PauseAlready;
         }
 
-        public override bool IsVehicleStop()
+        public  bool IsVehicleStop()
         {
             return moveControlHandler.elmoDriver.MoveCompelete(EnumAxis.GX);
         }

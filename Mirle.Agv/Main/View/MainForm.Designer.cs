@@ -42,10 +42,9 @@
             this.模式ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AlarmPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.MiddlerPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.IntegrateCommandPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.ManualMoveCmdPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.JogPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.AgvcConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.RobotPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.MovePage = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.模擬測試ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -53,20 +52,6 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnPrintScreen = new System.Windows.Forms.Button();
             this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
-            this.btnReDraw = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.ckAddress = new System.Windows.Forms.CheckBox();
-            this.ckSection = new System.Windows.Forms.CheckBox();
-            this.ckBarcode = new System.Windows.Forms.CheckBox();
-            this.btnYflip = new System.Windows.Forms.Button();
-            this.btnXflip = new System.Windows.Forms.Button();
-            this.txtResizePercent = new System.Windows.Forms.TextBox();
-            this.txtRotateAngle = new System.Windows.Forms.TextBox();
-            this.btnRotate = new System.Windows.Forms.Button();
-            this.btnResizePercent = new System.Windows.Forms.Button();
-            this.btnReset = new System.Windows.Forms.Button();
-            this.btnSaveImage = new System.Windows.Forms.Button();
-            this.btnSwitchBarcodeLine = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.tbxTransferStepMsg = new System.Windows.Forms.TextBox();
             this.tbxTransferCommandMsg = new System.Windows.Forms.TextBox();
@@ -136,7 +121,6 @@
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -228,10 +212,9 @@
             this.模式ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.VehicleStatusPage,
             this.AlarmPage,
-            this.MiddlerPage,
-            this.IntegrateCommandPage,
-            this.ManualMoveCmdPage,
-            this.JogPage});
+            this.AgvcConnectorPage,
+            this.RobotPage,
+            this.MovePage});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.模式ToolStripMenuItem.Text = "模式";
@@ -239,44 +222,37 @@
             // VehicleStatusPage
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(210, 22);
+            this.VehicleStatusPage.Size = new System.Drawing.Size(161, 22);
             this.VehicleStatusPage.Text = "Parameter";
             this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(210, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(161, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
-            // MiddlerPage
+            // AgvcConnectorPage
             // 
-            this.MiddlerPage.Name = "MiddlerPage";
-            this.MiddlerPage.Size = new System.Drawing.Size(210, 22);
-            this.MiddlerPage.Text = "CommunicationAgvc";
-            this.MiddlerPage.Click += new System.EventHandler(this.MiddlerPage_Click);
+            this.AgvcConnectorPage.Name = "AgvcConnectorPage";
+            this.AgvcConnectorPage.Size = new System.Drawing.Size(161, 22);
+            this.AgvcConnectorPage.Text = "AgvcConnector";
+            this.AgvcConnectorPage.Click += new System.EventHandler(this.MiddlerPage_Click);
             // 
-            // IntegrateCommandPage
+            // RobotPage
             // 
-            this.IntegrateCommandPage.Name = "IntegrateCommandPage";
-            this.IntegrateCommandPage.Size = new System.Drawing.Size(210, 22);
-            this.IntegrateCommandPage.Text = "IntegrateCommand";
-            this.IntegrateCommandPage.Click += new System.EventHandler(this.IntegrateCommandPage_Click);
+            this.RobotPage.Name = "RobotPage";
+            this.RobotPage.Size = new System.Drawing.Size(161, 22);
+            this.RobotPage.Text = "Robot";
+            this.RobotPage.Click += new System.EventHandler(this.IntegrateCommandPage_Click);
             // 
-            // ManualMoveCmdPage
+            // MovePage
             // 
-            this.ManualMoveCmdPage.Name = "ManualMoveCmdPage";
-            this.ManualMoveCmdPage.Size = new System.Drawing.Size(210, 22);
-            this.ManualMoveCmdPage.Text = "ManualMoveCommand";
-            this.ManualMoveCmdPage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
-            // 
-            // JogPage
-            // 
-            this.JogPage.Name = "JogPage";
-            this.JogPage.Size = new System.Drawing.Size(210, 22);
-            this.JogPage.Text = "JogPitch";
-            this.JogPage.Click += new System.EventHandler(this.JogPage_Click);
+            this.MovePage.Name = "MovePage";
+            this.MovePage.Size = new System.Drawing.Size(161, 22);
+            this.MovePage.Text = "Move";
+            this.MovePage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
             // 
             // 工程師ToolStripMenuItem
             // 
@@ -328,17 +304,6 @@
             // 
             this.splitContainer3.Panel2.Controls.Add(this.btnPrintScreen);
             this.splitContainer3.Panel2.Controls.Add(this.tbxDebugLogMsg);
-            this.splitContainer3.Panel2.Controls.Add(this.btnReDraw);
-            this.splitContainer3.Panel2.Controls.Add(this.groupBox1);
-            this.splitContainer3.Panel2.Controls.Add(this.btnYflip);
-            this.splitContainer3.Panel2.Controls.Add(this.btnXflip);
-            this.splitContainer3.Panel2.Controls.Add(this.txtResizePercent);
-            this.splitContainer3.Panel2.Controls.Add(this.txtRotateAngle);
-            this.splitContainer3.Panel2.Controls.Add(this.btnRotate);
-            this.splitContainer3.Panel2.Controls.Add(this.btnResizePercent);
-            this.splitContainer3.Panel2.Controls.Add(this.btnReset);
-            this.splitContainer3.Panel2.Controls.Add(this.btnSaveImage);
-            this.splitContainer3.Panel2.Controls.Add(this.btnSwitchBarcodeLine);
             this.splitContainer3.Size = new System.Drawing.Size(1178, 1017);
             this.splitContainer3.SplitterDistance = 677;
             this.splitContainer3.SplitterIncrement = 10;
@@ -375,173 +340,6 @@
             this.tbxDebugLogMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.tbxDebugLogMsg.Size = new System.Drawing.Size(1172, 217);
             this.tbxDebugLogMsg.TabIndex = 58;
-            // 
-            // btnReDraw
-            // 
-            this.btnReDraw.Location = new System.Drawing.Point(612, 13);
-            this.btnReDraw.Name = "btnReDraw";
-            this.btnReDraw.Size = new System.Drawing.Size(91, 71);
-            this.btnReDraw.TabIndex = 36;
-            this.btnReDraw.Text = "ReDraw";
-            this.btnReDraw.UseVisualStyleBackColor = true;
-            this.btnReDraw.Visible = false;
-            this.btnReDraw.Click += new System.EventHandler(this.btnReDraw_Click);
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.ckAddress);
-            this.groupBox1.Controls.Add(this.ckSection);
-            this.groupBox1.Controls.Add(this.ckBarcode);
-            this.groupBox1.Location = new System.Drawing.Point(382, 4);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(224, 80);
-            this.groupBox1.TabIndex = 35;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Map Items";
-            this.groupBox1.Visible = false;
-            // 
-            // ckAddress
-            // 
-            this.ckAddress.AutoSize = true;
-            this.ckAddress.Checked = true;
-            this.ckAddress.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ckAddress.Location = new System.Drawing.Point(139, 21);
-            this.ckAddress.Name = "ckAddress";
-            this.ckAddress.Size = new System.Drawing.Size(61, 16);
-            this.ckAddress.TabIndex = 2;
-            this.ckAddress.Text = "Address";
-            this.ckAddress.UseVisualStyleBackColor = true;
-            // 
-            // ckSection
-            // 
-            this.ckSection.AutoSize = true;
-            this.ckSection.Checked = true;
-            this.ckSection.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ckSection.Location = new System.Drawing.Point(75, 21);
-            this.ckSection.Name = "ckSection";
-            this.ckSection.Size = new System.Drawing.Size(58, 16);
-            this.ckSection.TabIndex = 1;
-            this.ckSection.Text = "Section";
-            this.ckSection.UseVisualStyleBackColor = true;
-            // 
-            // ckBarcode
-            // 
-            this.ckBarcode.AutoSize = true;
-            this.ckBarcode.Checked = true;
-            this.ckBarcode.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ckBarcode.Location = new System.Drawing.Point(6, 21);
-            this.ckBarcode.Name = "ckBarcode";
-            this.ckBarcode.Size = new System.Drawing.Size(63, 16);
-            this.ckBarcode.TabIndex = 0;
-            this.ckBarcode.Text = "Barcode";
-            this.ckBarcode.UseVisualStyleBackColor = true;
-            // 
-            // btnYflip
-            // 
-            this.btnYflip.Enabled = false;
-            this.btnYflip.Location = new System.Drawing.Point(262, 62);
-            this.btnYflip.Name = "btnYflip";
-            this.btnYflip.Size = new System.Drawing.Size(114, 23);
-            this.btnYflip.TabIndex = 33;
-            this.btnYflip.Text = "垂直翻轉";
-            this.btnYflip.UseVisualStyleBackColor = true;
-            this.btnYflip.Visible = false;
-            this.btnYflip.Click += new System.EventHandler(this.btnYflip_Click);
-            // 
-            // btnXflip
-            // 
-            this.btnXflip.Enabled = false;
-            this.btnXflip.Location = new System.Drawing.Point(142, 62);
-            this.btnXflip.Name = "btnXflip";
-            this.btnXflip.Size = new System.Drawing.Size(114, 23);
-            this.btnXflip.TabIndex = 32;
-            this.btnXflip.Text = "水平翻轉";
-            this.btnXflip.UseVisualStyleBackColor = true;
-            this.btnXflip.Visible = false;
-            this.btnXflip.Click += new System.EventHandler(this.btnXflip_Click);
-            // 
-            // txtResizePercent
-            // 
-            this.txtResizePercent.Enabled = false;
-            this.txtResizePercent.Location = new System.Drawing.Point(264, 4);
-            this.txtResizePercent.Name = "txtResizePercent";
-            this.txtResizePercent.ShortcutsEnabled = false;
-            this.txtResizePercent.Size = new System.Drawing.Size(112, 22);
-            this.txtResizePercent.TabIndex = 30;
-            this.txtResizePercent.Text = "150";
-            this.txtResizePercent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtResizePercent.Visible = false;
-            // 
-            // txtRotateAngle
-            // 
-            this.txtRotateAngle.Enabled = false;
-            this.txtRotateAngle.Location = new System.Drawing.Point(264, 34);
-            this.txtRotateAngle.Name = "txtRotateAngle";
-            this.txtRotateAngle.ShortcutsEnabled = false;
-            this.txtRotateAngle.Size = new System.Drawing.Size(112, 22);
-            this.txtRotateAngle.TabIndex = 31;
-            this.txtRotateAngle.Text = "1";
-            this.txtRotateAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtRotateAngle.Visible = false;
-            // 
-            // btnRotate
-            // 
-            this.btnRotate.Enabled = false;
-            this.btnRotate.Location = new System.Drawing.Point(142, 32);
-            this.btnRotate.Name = "btnRotate";
-            this.btnRotate.Size = new System.Drawing.Size(114, 23);
-            this.btnRotate.TabIndex = 29;
-            this.btnRotate.Text = "旋轉";
-            this.btnRotate.UseVisualStyleBackColor = true;
-            this.btnRotate.Visible = false;
-            this.btnRotate.Click += new System.EventHandler(this.btnRotate_Click);
-            // 
-            // btnResizePercent
-            // 
-            this.btnResizePercent.Enabled = false;
-            this.btnResizePercent.Location = new System.Drawing.Point(142, 3);
-            this.btnResizePercent.Name = "btnResizePercent";
-            this.btnResizePercent.Size = new System.Drawing.Size(114, 23);
-            this.btnResizePercent.TabIndex = 27;
-            this.btnResizePercent.Text = "比例縮放";
-            this.btnResizePercent.UseVisualStyleBackColor = true;
-            this.btnResizePercent.Visible = false;
-            this.btnResizePercent.Click += new System.EventHandler(this.btnResizePercent_Click);
-            // 
-            // btnReset
-            // 
-            this.btnReset.Enabled = false;
-            this.btnReset.Location = new System.Drawing.Point(3, 32);
-            this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(133, 23);
-            this.btnReset.TabIndex = 26;
-            this.btnReset.Text = "Reset";
-            this.btnReset.UseVisualStyleBackColor = true;
-            this.btnReset.Visible = false;
-            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
-            // 
-            // btnSaveImage
-            // 
-            this.btnSaveImage.Enabled = false;
-            this.btnSaveImage.Location = new System.Drawing.Point(3, 61);
-            this.btnSaveImage.Name = "btnSaveImage";
-            this.btnSaveImage.Size = new System.Drawing.Size(133, 23);
-            this.btnSaveImage.TabIndex = 25;
-            this.btnSaveImage.Text = "Save Image";
-            this.btnSaveImage.UseVisualStyleBackColor = true;
-            this.btnSaveImage.Visible = false;
-            // 
-            // btnSwitchBarcodeLine
-            // 
-            this.btnSwitchBarcodeLine.Enabled = false;
-            this.btnSwitchBarcodeLine.Location = new System.Drawing.Point(3, 3);
-            this.btnSwitchBarcodeLine.Name = "btnSwitchBarcodeLine";
-            this.btnSwitchBarcodeLine.Size = new System.Drawing.Size(133, 23);
-            this.btnSwitchBarcodeLine.TabIndex = 24;
-            this.btnSwitchBarcodeLine.Text = "切換BarcodeLine";
-            this.btnSwitchBarcodeLine.UseVisualStyleBackColor = true;
-            this.btnSwitchBarcodeLine.Visible = false;
-            this.btnSwitchBarcodeLine.Click += new System.EventHandler(this.btnSwitchBarcodeLine_Click);
             // 
             // splitContainer2
             // 
@@ -1231,8 +1029,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -1268,23 +1064,13 @@
         private System.Windows.Forms.ToolStripMenuItem 關閉ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 中文ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem englishToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem JogPage;
         private System.Windows.Forms.ToolStripMenuItem AlarmPage;
-        private System.Windows.Forms.ToolStripMenuItem MiddlerPage;
+        private System.Windows.Forms.ToolStripMenuItem AgvcConnectorPage;
         private System.Windows.Forms.ToolStripMenuItem VehicleStatusPage;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.ToolStripMenuItem ManualMoveCmdPage;
+        private System.Windows.Forms.ToolStripMenuItem MovePage;
         private System.Windows.Forms.SplitContainer splitContainer3;
-        private System.Windows.Forms.Button btnSwitchBarcodeLine;
-        private System.Windows.Forms.Button btnReset;
-        private System.Windows.Forms.Button btnSaveImage;
-        private System.Windows.Forms.TextBox txtResizePercent;
-        private System.Windows.Forms.TextBox txtRotateAngle;
-        private System.Windows.Forms.Button btnRotate;
-        private System.Windows.Forms.Button btnResizePercent;
-        private System.Windows.Forms.Button btnYflip;
-        private System.Windows.Forms.Button btnXflip;
         private System.Windows.Forms.GroupBox gbVehicleLocation;
         private System.Windows.Forms.GroupBox gbConnection;
         private System.Windows.Forms.RadioButton radOnline;
@@ -1304,7 +1090,7 @@
         private System.Windows.Forms.GroupBox gbPerformanceCounter;
         private UcLabelTextBox ucPerformanceCounterRam;
         private UcLabelTextBox ucPerformanceCounterCpu;
-        private System.Windows.Forms.ToolStripMenuItem IntegrateCommandPage;
+        private System.Windows.Forms.ToolStripMenuItem RobotPage;
         private System.Windows.Forms.Label txtLastAlarm;
         private UcLabelTextBox ucSoc;
         private System.Windows.Forms.PictureBox pictureBox1;
@@ -1317,11 +1103,6 @@
         private System.Windows.Forms.Label txtWatchLowPower;
         private System.Windows.Forms.NumericUpDown numSoc;
         private System.Windows.Forms.Button btnKeyInSoc;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.CheckBox ckAddress;
-        private System.Windows.Forms.CheckBox ckSection;
-        private System.Windows.Forms.CheckBox ckBarcode;
-        private System.Windows.Forms.Button btnReDraw;
         private UcLabelTextBox ucCharging;
         private UcLabelTextBox ucDistance;
         private System.Windows.Forms.Label txtAgvcConnection;

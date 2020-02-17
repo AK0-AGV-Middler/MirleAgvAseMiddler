@@ -47,6 +47,8 @@ namespace Mirle.AgvAseMiddler.Model
         }
         public event EventHandler<string> OnAutoStateChangeEvent;
 
+        public MoveStatus MoveStatus { get; set; } = new MoveStatus();
+
         public EnumThreadStatus VisitTransferStepsStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus TrackPositionStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus WatchLowPowerStatus { get; set; } = EnumThreadStatus.None;
