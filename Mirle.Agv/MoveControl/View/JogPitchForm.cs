@@ -1,5 +1,5 @@
-﻿using Mirle.Agv.Controller;
-using Mirle.Agv.Model;
+﻿using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.View;
+using Mirle.AgvAseMiddler.View;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class JogPitchForm : Form
     {
@@ -49,11 +49,11 @@ namespace Mirle.Agv.View
             agvRevise = new AgvMoveRevise(moveControl.ontimeReviseConfig, moveControl.elmoDriver,
                                           moveControl.DriverSr2000List);
 
-            this.allAxis = new Mirle.Agv.JogPitchAxis[AxisList.Count()];
+            this.allAxis = new Mirle.AgvAseMiddler.JogPitchAxis[AxisList.Count()];
 
             for (int i = 0; i < AxisList.Count(); i++)
             {
-                this.allAxis[i] = new Mirle.Agv.JogPitchAxis(AxisList[i].ToString());
+                this.allAxis[i] = new Mirle.AgvAseMiddler.JogPitchAxis(AxisList[i].ToString());
 
                 this.allAxis[i].BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
 

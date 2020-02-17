@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.TransferSteps;
-using Mirle.Agv.View;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
+using Mirle.AgvAseMiddler.View;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class AuoIntegrateControl : IntegrateControlPlate
     {

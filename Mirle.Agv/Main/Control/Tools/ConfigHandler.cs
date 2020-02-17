@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Mirle.Agv.Controller.Tools
+namespace Mirle.AgvAseMiddler.Controller.Tools
 {
     [Serializable]
     public class ConfigHandler

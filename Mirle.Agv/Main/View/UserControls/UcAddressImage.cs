@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Model;
+using Mirle.AgvAseMiddler.Model;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class UcAddressImage : UserControl
     {

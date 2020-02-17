@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Windows.Forms;
 using System.IO;
-using Mirle.Agv.Model;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Controller.Tools;
 using System.Reflection;
 using System.Threading;
 using Mirle.Tools;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class AlarmForm : Form
     {

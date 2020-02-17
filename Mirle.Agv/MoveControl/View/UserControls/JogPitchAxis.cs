@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class JogPitchAxis : UserControl
     {

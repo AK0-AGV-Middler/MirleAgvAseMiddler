@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     [Serializable]
     public class PlcBumper

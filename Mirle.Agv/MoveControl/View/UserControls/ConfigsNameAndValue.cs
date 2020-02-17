@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Model.Configs;
+using Mirle.AgvAseMiddler.Model.Configs;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class ConfigsNameAndValue : UserControl
     {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     public class MoveControlParameter
     {

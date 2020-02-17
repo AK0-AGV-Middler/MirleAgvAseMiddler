@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Model.Configs
+namespace Mirle.AgvAseMiddler.Model.Configs
 {
     public class OntimeReviseConfig
     {

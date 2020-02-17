@@ -4,12 +4,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model.Configs;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model.Configs;
 using Mirle.Tools;
 
-namespace Mirle.Agv.Model.TransferSteps
+namespace Mirle.AgvAseMiddler.Model.TransferSteps
 {
     [Serializable]
     public class MoveCmdInfo : TransferStep

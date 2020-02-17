@@ -2,7 +2,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Mirle.Agv.Controller.Tools
+namespace Mirle.AgvAseMiddler.Controller.Tools
 {
     class CassetteIDReader
     {

@@ -1,11 +1,11 @@
-﻿using Mirle.Agv.Model.TransferSteps;
+﻿using Mirle.AgvAseMiddler.Model.TransferSteps;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     public abstract class VehicleIntegrateStatus
     {

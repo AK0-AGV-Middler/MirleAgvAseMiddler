@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Keyence.AutoID.SDK;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     public class Sr2000Info
     {

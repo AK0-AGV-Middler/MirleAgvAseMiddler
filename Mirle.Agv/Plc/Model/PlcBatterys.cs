@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using Mirle.Agv.Controller;
-using Mirle.Agv;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     [Serializable]
     public class PlcBatterys : Batterys

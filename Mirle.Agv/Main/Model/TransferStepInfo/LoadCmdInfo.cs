@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Controller;
+using Mirle.AgvAseMiddler.Controller;
 
-namespace Mirle.Agv.Model.TransferSteps
+namespace Mirle.AgvAseMiddler.Model.TransferSteps
 {
     [Serializable]
     public class LoadCmdInfo : TransferStep

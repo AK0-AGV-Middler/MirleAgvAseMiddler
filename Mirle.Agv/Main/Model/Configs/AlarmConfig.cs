@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace Mirle.Agv.Model.Configs
+namespace Mirle.AgvAseMiddler.Model.Configs
 {
     [Serializable]
     public class AlarmConfig

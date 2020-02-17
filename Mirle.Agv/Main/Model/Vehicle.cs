@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Model.TransferSteps;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
 using TcpIpClientSample;
-using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Controller;
+using Mirle.AgvAseMiddler.Model.Configs;
+using Mirle.AgvAseMiddler.Controller;
 using System.Reflection;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     [Serializable]
     public class Vehicle

@@ -7,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Controller.Tools;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class SensorByPassInformation : UserControl
     {

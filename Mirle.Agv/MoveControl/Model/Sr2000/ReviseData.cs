@@ -1,11 +1,11 @@
-﻿using Mirle.Agv.Model.Configs;
+﻿using Mirle.AgvAseMiddler.Model.Configs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     public class ReviseParameter
     {

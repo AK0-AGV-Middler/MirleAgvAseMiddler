@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv.View
+﻿namespace Mirle.AgvAseMiddler.View
 {
     partial class MainForm
     {
@@ -73,14 +73,14 @@
             this.txtCannotAutoReason = new System.Windows.Forms.Label();
             this.txtCanAuto = new System.Windows.Forms.Label();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
-            this.ucCstId = new Mirle.Agv.UcLabelTextBox();
+            this.ucCstId = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
-            this.ucCharging = new Mirle.Agv.UcLabelTextBox();
+            this.ucCharging = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.ucSoc = new Mirle.Agv.UcLabelTextBox();
-            this.ucLoading = new Mirle.Agv.UcLabelTextBox();
-            this.ucPerformanceCounterRam = new Mirle.Agv.UcLabelTextBox();
-            this.ucPerformanceCounterCpu = new Mirle.Agv.UcLabelTextBox();
+            this.ucSoc = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLoading = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucPerformanceCounterRam = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucPerformanceCounterCpu = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.gbReserve = new System.Windows.Forms.GroupBox();
             this.lbxReserveOkSections = new System.Windows.Forms.ListBox();
             this.lbxNeedReserveSections = new System.Windows.Forms.ListBox();
@@ -90,13 +90,13 @@
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
             this.numPositionY = new System.Windows.Forms.NumericUpDown();
-            this.ucDistance = new Mirle.Agv.UcLabelTextBox();
+            this.ucDistance = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.numPositionX = new System.Windows.Forms.NumericUpDown();
             this.btnKeyInPosition = new System.Windows.Forms.Button();
-            this.ucRealPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucBarcodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucMapAddress = new Mirle.Agv.UcLabelTextBox();
-            this.ucMapSection = new Mirle.Agv.UcLabelTextBox();
+            this.ucRealPosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucBarcodePosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucMapAddress = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucMapSection = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radOnline = new System.Windows.Forms.RadioButton();

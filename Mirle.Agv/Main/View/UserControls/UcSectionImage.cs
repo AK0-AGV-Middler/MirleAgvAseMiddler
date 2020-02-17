@@ -7,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Model;
+using Mirle.AgvAseMiddler.Model;
 using System.Drawing.Imaging;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class UcSectionImage : UserControl
     {

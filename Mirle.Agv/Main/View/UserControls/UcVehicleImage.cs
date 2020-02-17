@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Properties;
+using Mirle.AgvAseMiddler.Properties;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class UcVehicleImage : UserControl
     {

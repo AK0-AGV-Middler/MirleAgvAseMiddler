@@ -1,4 +1,4 @@
-﻿using Mirle.Agv.Controller;
+﻿using Mirle.AgvAseMiddler.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class SimulateSettingAGVAngleForm : Form
     {

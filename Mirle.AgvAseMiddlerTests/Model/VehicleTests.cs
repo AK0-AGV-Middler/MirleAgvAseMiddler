@@ -1,4 +1,4 @@
-﻿using Mirle.Agv.Model.TransferSteps;
+﻿using Mirle.AgvAseMiddler.Model.TransferSteps;
 using NUnit.Framework;
 using System;
 using System.Collections.Concurrent;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace Mirle.Agv.Model.Tests
+namespace Mirle.AgvAseMiddler.Model.Tests
 {
     [TestFixture()]
     public class VehicleTests

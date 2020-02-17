@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv.View
+﻿namespace Mirle.AgvAseMiddler.View
 {
     partial class MiddlerForm
     {

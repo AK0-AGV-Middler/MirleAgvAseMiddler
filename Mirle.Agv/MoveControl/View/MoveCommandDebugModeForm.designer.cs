@@ -1,8 +1,8 @@
-﻿using Mirle.Agv.Controller;
-using Mirle.Agv.Model;
+﻿using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Model;
 using System.Windows.Forms;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     partial class MoveCommandDebugModeForm : MoveCommandForm
     {
@@ -66,18 +66,18 @@ namespace Mirle.Agv.View
             this.button_ClearCommand = new System.Windows.Forms.Button();
             this.label_ReserveList = new System.Windows.Forms.Label();
             this.label_CommandList = new System.Windows.Forms.Label();
-            this.ucLabelTB_EncoderPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_Velocity = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_EncoderOffset = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_ElmoEncoder = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTtB_CommandListState = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_RealPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_Delta = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_RealEncoder = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_EncoderPosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_Velocity = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_EncoderOffset = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_ElmoEncoder = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTtB_CommandListState = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_BarcodePosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_RealPosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_Delta = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_RealEncoder = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.ReserveList = new System.Windows.Forms.ListBox();
             this.button_SendList = new System.Windows.Forms.Button();
-            this.ucLabelTextBox1 = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTextBox1 = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.CommandList = new System.Windows.Forms.ListBox();
             this.button_StopMove = new System.Windows.Forms.Button();
             this.tbP_CreateCommand = new System.Windows.Forms.TabPage();
@@ -104,8 +104,8 @@ namespace Mirle.Agv.View
             this.Button_AutoCreate = new System.Windows.Forms.Button();
             this.button_AddReadPosition = new System.Windows.Forms.Button();
             this.label_LockResult = new System.Windows.Forms.Label();
-            this.ucLabelTB_CreateCommandState = new Mirle.Agv.UcLabelTextBox();
-            this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucLabelTB_CreateCommandState = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLabelTB_CreateCommand_BarcodePosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.button_DebugModeSend = new System.Windows.Forms.Button();
             this.listCmdSpeedLimits = new System.Windows.Forms.ListBox();
             this.listCmdAddressActions = new System.Windows.Forms.ListBox();
@@ -135,10 +135,10 @@ namespace Mirle.Agv.View
             this.button_GTRight = new System.Windows.Forms.Button();
             this.button_GTLeft = new System.Windows.Forms.Button();
             this.button_GT0 = new System.Windows.Forms.Button();
-            this.ucBox_WheelAngle = new Mirle.Agv.UcLabelTextBox();
-            this.ucBox_BarcodePosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucBox_NowPosition = new Mirle.Agv.UcLabelTextBox();
-            this.ucBox_NodePosition = new Mirle.Agv.UcLabelTextBox();
+            this.ucBox_WheelAngle = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucBox_BarcodePosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucBox_NowPosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucBox_NodePosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.tP_Admin.SuspendLayout();
             this.tbP_LogMessage.SuspendLayout();
             this.tbP_List.SuspendLayout();

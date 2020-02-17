@@ -8,14 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
-using Mirle.Agv.Controller;
+using Mirle.AgvAseMiddler.Controller;
 using System.IO.MemoryMappedFiles;
 using System.IO;
-using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model.Configs;
+using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model.Configs;
 using Mirle.Tools;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class InitialForm : Form
     {

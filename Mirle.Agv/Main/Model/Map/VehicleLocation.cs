@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     [Serializable]
     public class VehicleLocation

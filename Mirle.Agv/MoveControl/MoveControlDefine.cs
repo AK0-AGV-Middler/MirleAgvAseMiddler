@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     #region MoveControlEnums
 

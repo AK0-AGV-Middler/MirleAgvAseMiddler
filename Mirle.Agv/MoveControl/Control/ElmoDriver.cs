@@ -8,14 +8,14 @@ using ElmoMotionControlComponents.Drive.EASComponents;
 using System.Threading;
 using System.Net;
 using System.Xml;
-using Mirle.Agv.Model;
+using Mirle.AgvAseMiddler.Model;
 using System.IO;
-using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Controller.Tools;
+using Mirle.AgvAseMiddler.Model.Configs;
+using Mirle.AgvAseMiddler.Controller.Tools;
 using System.Reflection;
 using Mirle.Tools;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class ElmoDriver
     {

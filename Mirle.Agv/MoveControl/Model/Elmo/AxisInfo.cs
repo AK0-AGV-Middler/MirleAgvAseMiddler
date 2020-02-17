@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using ElmoMotionControl.GMAS.EASComponents.MMCLibDotNET;
 using ElmoMotionControlComponents.Drive.EASComponents;
-using Mirle.Agv.Model.Configs;
+using Mirle.AgvAseMiddler.Model.Configs;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     public class AxisInfo
     {

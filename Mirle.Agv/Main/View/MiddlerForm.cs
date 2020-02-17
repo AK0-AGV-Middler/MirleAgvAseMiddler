@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf.Collections;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model.Configs;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model.Configs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ using TcpIpClientSample;
 using System.Threading.Tasks;
 using Mirle.Tools;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class MiddlerForm : Form
     {
