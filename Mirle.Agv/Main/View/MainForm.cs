@@ -280,7 +280,7 @@ namespace Mirle.Agv.View
             UpdateAgvcConnection();
             if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
             {
-                string carrierId = integrateControlPlate.ReadCarrierId();
+                integrateControlPlate.ReadCarrierId();
             }
         }
 
@@ -1593,7 +1593,7 @@ namespace Mirle.Agv.View
                                 switchResult = true;
                                 if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
                                 {
-                                    string carrierId = integrateControlPlate.ReadCarrierId();
+                                    integrateControlPlate.ReadCarrierId();
                                 }
                                 else
                                 {

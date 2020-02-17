@@ -216,6 +216,13 @@ namespace Mirle.Agv
         Online,
         CheckCheckConnectMode
     }
+
+    public enum EnumAseRobotState
+    {
+        Idle,
+        Busy,
+        Error
+    }
     #endregion
 
     /// <summary>

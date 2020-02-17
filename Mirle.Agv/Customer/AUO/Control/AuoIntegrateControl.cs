@@ -110,7 +110,8 @@ namespace Mirle.Agv.Controller
         {
             string carrierId = "";
             plcAgent.triggerCassetteIDReader(ref carrierId);
-            return carrierId;
+            Vehicle.Instance.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = carrierId;
+            return "";
         }
 
         public override bool ResetAllAlarm()

@@ -51,11 +51,12 @@ namespace Mirle.Agv.Controller
 
         private MiddleAgent middleAgent;
         private IntegrateControlPlate integrateControlPlate;
-        private MirleLogger mirleLogger=null;
+        private MirleLogger mirleLogger = null;
         private AlarmHandler alarmHandler;
         private MapHandler mapHandler;
         private MoveControlPlate moveControlPlate;
         private XmlHandler xmlHandler = new XmlHandler();
+        private PSDriver.PSDriver.PSWrapperXClass psWrapper;
 
         #endregion
 
@@ -162,8 +163,6 @@ namespace Mirle.Agv.Controller
         {
             try
             {
-
-
                 mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
                 Vehicle.Instance.TheMainFlowConfig = mainFlowConfig;
                 Vehicle.Instance.CreateVehicleIntegrateStatus();
@@ -214,7 +213,8 @@ namespace Mirle.Agv.Controller
                 TheMapInfo = mapHandler.TheMapInfo;
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
-                integrateControlPlate = new IntegrateControlFactory().GetIntegrateControl(mainFlowConfig.CustomerName, mcProtocol, alarmHandler);
+                psWrapper = new PSDriver.PSDriver.PSWrapperXClass();
+                integrateControlPlate = new IntegrateControlFactory().GetIntegrateControl(mainFlowConfig.CustomerName, mcProtocol, alarmHandler, psWrapper);
                 moveControlPlate = new MoveControlFactory().GetMoveControl(mainFlowConfig.CustomerName, TheMapInfo, alarmHandler, integrateControlPlate);
                 middleAgent = new MiddleAgent(this);
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
@@ -3005,7 +3005,7 @@ namespace Mirle.Agv.Controller
 
                 if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading && ReadResult == EnumCstIdReadResult.Noraml)
                 {
-                    string carrierId = integrateControlPlate.ReadCarrierId();
+                    integrateControlPlate.ReadCarrierId();
                 }
 
                 ReadResult = EnumCstIdReadResult.Noraml;

@@ -10,6 +10,8 @@ namespace Mirle.Agv.Model
     {
         public CarrierSlot SecondCarrierSlot { get; set; } = new CarrierSlot();
 
+        public EnumAseRobotState AseRobotState { get; set; } = EnumAseRobotState.Idle;
+
         public AseVehicleIntegrateStatus()
         {
             Batterys = new AseBatterys();

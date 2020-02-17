@@ -125,7 +125,6 @@
     <Compile Include="Main\Control\Interface\IBuzzerControl.cs" />
     <Compile Include="Main\Control\Interface\IMoveControl.cs" />
     <Compile Include="Main\Control\Interface\IRobotControl.cs" />
-    <Compile Include="Main\Control\Tools\PspWrapper.cs" />
     <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
     <Compile Include="Main\Model\Configs\PspConnectionConfig.cs" />

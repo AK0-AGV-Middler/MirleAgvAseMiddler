@@ -41,7 +41,6 @@ namespace Mirle.Agv.Controller
         private MainFlowHandler mainFlowHandler;
 
         private Thread thdAskReserve;
-        private ManualResetEvent askReserveShutdownEvent = new ManualResetEvent(false);
         private EnumThreadStatus askReserveStatus = EnumThreadStatus.None;
         public EnumThreadStatus AskReserveStatus
         {
