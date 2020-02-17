@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.Configs;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.Configs;
 using System.Threading;
 using System.Text.RegularExpressions;
-using Mirle.Agv.Controller.Tools;
+using Mirle.AgvAseMiddler.Controller.Tools;
 using System.Collections.Concurrent;
+using Mirle.Tools;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class Sr2000Driver
     {
         private MapInfo theMapInfo;
         private Sr2000Config sr2000Config;
         public Sr2000Info sr2000Info { get; set; }
-        private LoggerAgent loggerAgent;
+        private MirleLogger mirleLogger;
         private AlarmHandler alarmHandler;
         private Sr2000ReadData returnData = null;
         private string LON = "LON", LOFF = "LOFF", ChangeMode = "BLOAD,3";
@@ -22,13 +23,13 @@ namespace Mirle.Agv.Controller
         private const int AllowableTheta = 10;
         private int indexNumber;
         private string device;
-        private Logger logger;
+        private Mirle.Tools. Logger logger;
 
         public Sr2000Driver(Sr2000Config sr2000Config, MapInfo theMapInfo, int indexNumber, AlarmHandler alarmHandler)
         {
             try
             {
-                loggerAgent = LoggerAgent.Instance;
+                mirleLogger = MirleLogger.Instance;
                 this.alarmHandler = alarmHandler;
                 this.theMapInfo = theMapInfo;
                 this.sr2000Config = sr2000Config;
@@ -40,7 +41,7 @@ namespace Mirle.Agv.Controller
                     device = "SR2000R";
                 //device = sr2000Config.ID;
 
-                logger = LoggerAgent.Instance.GetLooger(device);
+                logger = MirleLogger.Instance.GetLooger(device);
 
                 sr2000Info = new Sr2000Info(sr2000Config.IP);
                 if (!Connect())
@@ -68,8 +69,7 @@ namespace Mirle.Agv.Controller
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
             string classMethodName = GetType().Name + ":" + memberName;
-            LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(new Mirle.Tools.LogFormat(category, logLevel, classMethodName, device, carrierId, message));
         }
 
         private void WriteLog(Sr2000ReadData sr2000ReadData)

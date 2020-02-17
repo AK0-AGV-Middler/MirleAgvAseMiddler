@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.TransferSteps;
-using Mirle.Agv.View;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
+using Mirle.AgvAseMiddler.View;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class AuoIntegrateControl : IntegrateControlPlate
     {
@@ -81,6 +81,7 @@ namespace Mirle.Agv.Controller
                 LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
                 forkCommandType = EnumForkCommand.Load;
                 stageNo = loadCmdInfo.StageNum.ToString();
+                stageDirection = loadCmdInfo.StageDirection;
                 isPio = loadCmdInfo.IsEqPio;
                 forkSpeed = loadCmdInfo.ForkSpeed;
             }
@@ -89,6 +90,7 @@ namespace Mirle.Agv.Controller
                 UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
                 forkCommandType = EnumForkCommand.Unload;
                 stageNo = unloadCmdInfo.StageNum.ToString();
+                stageDirection = unloadCmdInfo.StageDirection;
                 isPio = unloadCmdInfo.IsEqPio;
                 forkSpeed = unloadCmdInfo.ForkSpeed;
             }
@@ -108,7 +110,8 @@ namespace Mirle.Agv.Controller
         {
             string carrierId = "";
             plcAgent.triggerCassetteIDReader(ref carrierId);
-            return carrierId;
+            Vehicle.Instance.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = carrierId;
+            return "";
         }
 
         public override bool ResetAllAlarm()

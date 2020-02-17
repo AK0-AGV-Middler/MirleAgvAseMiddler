@@ -7,16 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Controller.Tools;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class SafetyInformation : UserControl
     {
         public EnumMoveControlSafetyType SafetyType { get; set; }
         private MoveControlHandler moveControl;
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private Mirle.Tools.MirleLogger mirleLogger = Mirle.Tools.MirleLogger.Instance;
+
         private string device = "MoveControl";
 
         public SafetyInformation(MoveControlHandler moveControl, EnumMoveControlSafetyType type)
@@ -30,9 +31,7 @@ namespace Mirle.Agv
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
             string classMethodName = GetType().Name + ":" + memberName;
-            LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
-
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(new Tools.LogFormat(category, logLevel, classMethodName, device, carrierId, message));
         }
 
         public void SetLabelString(string safetyName, string rangeName)

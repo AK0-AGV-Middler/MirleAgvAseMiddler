@@ -8,8 +8,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{F88F96FD-CDDF-467E-9B1F-ABD97BD7F7C5}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Mirle.Agv</RootNamespace>
-    <AssemblyName>Mirle.Agv</AssemblyName>
+    <RootNamespace>Mirle.AgvAseMiddler</RootNamespace>
+    <AssemblyName>Mirle.AgvAseMiddler</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -17,6 +17,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -29,7 +30,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -79,8 +79,17 @@
     <Reference Include="Keyence.AutoID.SDK">
       <HintPath>OutsideDll\Keyence.AutoID.SDK.dll</HintPath>
     </Reference>
+    <Reference Include="Mirle.Logger">
+      <HintPath>OutsideDll\Mirle.Logger.dll</HintPath>
+    </Reference>
+    <Reference Include="Mirle.Tools">
+      <HintPath>OutsideDll\Mirle.Tools.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="PSDriver">
+      <HintPath>OutsideDll\PSDriver.dll</HintPath>
     </Reference>
     <Reference Include="Stateless">
       <HintPath>DLL\Stateless.dll</HintPath>
@@ -118,6 +127,7 @@
     <Compile Include="Main\Control\Interface\IRobotControl.cs" />
     <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
+    <Compile Include="Main\Model\Configs\PspConnectionConfig.cs" />
     <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
     <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
     <Compile Include="Main\Model\Map\ChargeInfo.cs" />
@@ -151,7 +161,6 @@
     <Compile Include="MoveControl\Control\SLAM_Sick.cs" />
     <Compile Include="MoveControl\Control\Sr2000Driver.cs" />
     <Compile Include="MoveControl\Control\ElmoDriver.cs" />
-    <Compile Include="Main\Control\LoggerAgent.cs" />
     <Compile Include="Main\Control\AlarmHandler.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Idle.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\ITransferCmdStep.cs" />
@@ -203,12 +212,6 @@
     <Compile Include="Main\Control\InitialEventArgs.cs" />
     <Compile Include="Main\Control\Tools\CassetteIDReader.cs" />
     <Compile Include="Main\Control\Tools\ConfigHandler.cs" />
-    <Compile Include="Main\Control\Tools\CsvHandler.cs" />
-    <Compile Include="Main\Control\Tools\Logger\LogBasicConfigs.cs" />
-    <Compile Include="Main\Control\Tools\Logger\LogFormat.cs" />
-    <Compile Include="Main\Control\Tools\Logger\Logger.cs" />
-    <Compile Include="Main\Control\Tools\Logger\LogType.cs" />
-    <Compile Include="Main\Control\Tools\XmlHandler.cs" />
     <Compile Include="Main\Model\Agvmessage.cs" />
     <Compile Include="Main\Model\Alarm.cs" />
     <Compile Include="Main\MainDefines.cs" />

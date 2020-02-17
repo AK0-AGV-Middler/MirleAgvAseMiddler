@@ -1,12 +1,12 @@
-﻿using Mirle.Agv.Model;
-using Mirle.Agv.Model.TransferSteps;
+﻿using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public interface IMoveControl
     {

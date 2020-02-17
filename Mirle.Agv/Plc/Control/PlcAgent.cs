@@ -2,9 +2,9 @@
 //#define  DebugTest 
 
 using ClsMCProtocol;
-using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model;
-using Mirle.Agv.View;
+using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.View;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,8 +15,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Mirle.Tools;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class PlcAgent
     {
@@ -44,7 +45,8 @@ namespace Mirle.Agv.Controller
         public Int64 ForkCommandBusyTimeout { get; set; } = 850000;
         public Int64 ForkCommandMovingTimeout { get; set; } = 850000;
 
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
+
         private Logger plcAgentLogger;
         private Logger errLogger;
         private Logger portPIOLogger;
@@ -74,7 +76,8 @@ namespace Mirle.Agv.Controller
 
         private JogPitchForm jogPitchForm = null;
         private MainForm mainForm = null;
-
+        private List<string> alarmCodeRecordList = new List<string>();
+        
         public event EventHandler<PlcForkCommand> OnForkCommandExecutingEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandFinishEvent;
         public event EventHandler<PlcForkCommand> OnForkCommandErrorEvent;
@@ -287,7 +290,7 @@ namespace Mirle.Agv.Controller
 
                 try
                 {
-                    csvLog = csvLog + Separator + this.APLCVehicle.Robot.ForkHome;
+                    csvLog = csvLog + Separator + this.APLCVehicle.RobotHome;
                     csvLog = csvLog + Separator + mainForm.mainFlowHandler.GetCurTransferStep().GetType().ToString();
                     csvLog = csvLog + Separator + Vehicle.Instance.VehicleLocation.LastAddress.Id;
                     csvLog = csvLog + Separator + this.aMCProtocol.get_ItemByTag("PLCBigDataTT01").AsUInt16;
@@ -333,20 +336,19 @@ namespace Mirle.Agv.Controller
 
             //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "PLC Connect Start");
             LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "PLC Connect Start");
-            LogPlcMsg(loggerAgent, logFormat);
+            LogPlcMsg(mirleLogger, logFormat);
         }
 
         private void SetupLoggers()
         {
-            plcAgentLogger = loggerAgent.GetLooger("PlcAgent");
-            errLogger = loggerAgent.GetLooger("Error");
-            portPIOLogger = loggerAgent.GetLooger("PortPIO");
-            chargerPIOLogger = loggerAgent.GetLooger("ChargerPIO");
-            plcJogPitchLogger = loggerAgent.GetLooger("PlcJogPitch");
+            plcAgentLogger = mirleLogger.GetLooger("PlcAgent");
+            errLogger = mirleLogger.GetLooger("Error");
+            portPIOLogger = mirleLogger.GetLooger("PortPIO");
+            chargerPIOLogger = mirleLogger.GetLooger("ChargerPIO");
+            plcJogPitchLogger = mirleLogger.GetLooger("PlcJogPitch");
 
-            BatteryLogger = LoggerAgent.Instance.GetLooger("BatteryCSV");
+            BatteryLogger = MirleLogger.Instance.GetLooger("BatteryCSV");
             //BatteryPercentage = LoggerAgent.Instance.GetLooger("BatteryPercentage");
-
         }
 
         //讀取XML
@@ -423,7 +425,7 @@ namespace Mirle.Agv.Controller
                             this.APLCVehicle.plcBatterys.Battery_Logger_Interval = Convert.ToUInt32(Convert.ToDouble(childItem.InnerText) * 1000);
                             break;
 
-                        case "plcBatterys_Charging_Time_Out":// min
+                        case "Batterys_Charging_Time_Out":// min
                             this.APLCVehicle.plcBatterys.Batterys_Charging_Time_Out = Convert.ToUInt32(childItem.InnerText) * 60000;
                             break;
                         case "Charging_Off_Delay":
@@ -466,12 +468,12 @@ namespace Mirle.Agv.Controller
                         if (oColParam.Item(i).DataName.ToString().EndsWith("_PIO"))
                         {
                             //this.portPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
-                            LogPlcMsg(loggerAgent, new LogFormat("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean));
+                            LogPlcMsg(mirleLogger, new LogFormat("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean));
                         }
                         else if (oColParam.Item(i).DataName.ToString().EndsWith("_CPIO"))
                         {
                             //this.chargerPIOLogger.SaveLogFile("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean);
-                            LogPlcMsg(loggerAgent, new LogFormat("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean));
+                            LogPlcMsg(mirleLogger, new LogFormat("PortPIO", "9", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " = " + oColParam.Item(i).AsBoolean));
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("BeamSensor"))
                         {
@@ -489,13 +491,13 @@ namespace Mirle.Agv.Controller
                                 else
                                 {
                                     //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far");
-                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith Near or Far"));
                                 }
                             }
                             else
                             {
                                 //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("RBeamSensor"))
@@ -512,13 +514,13 @@ namespace Mirle.Agv.Controller
                                 {
                                     //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
                                     LogFormat logFormat = new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-                                    LogPlcMsg(loggerAgent, logFormat);
+                                    LogPlcMsg(mirleLogger, logFormat);
                                 }
                             }
                             else
                             {
                                 //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("WBeamSensor"))
@@ -534,13 +536,13 @@ namespace Mirle.Agv.Controller
                                 else
                                 {
                                     //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep");
-                                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " PLC Tag ID is not endwith _Sleep"));
                                 }
                             }
                             else
                             {
                                 //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
+                                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBeamSensor object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("Bumper"))
@@ -554,7 +556,7 @@ namespace Mirle.Agv.Controller
                             else
                             {
                                 //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object"));
+                                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCBumper object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("EMO_"))
@@ -568,7 +570,7 @@ namespace Mirle.Agv.Controller
                             else
                             {
                                 //errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object");
-                                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
+                                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName.ToString() + " can not find PLCEMO object"));
                             }
                         }
                         else if (oColParam.Item(i).DataName.ToString().StartsWith("Cell_"))
@@ -592,14 +594,14 @@ namespace Mirle.Agv.Controller
                             {
                                 case "BumpAlarmStatus":
                                     this.APLCVehicle.BumperAlarmStatus = aMCProtocol.get_ItemByTag("BumpAlarmStatus").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"BumpAlarmStatus = { this.APLCVehicle.BumperAlarmStatus }"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"BumpAlarmStatus = { this.APLCVehicle.BumperAlarmStatus }"));
                                     break;
 
                                 case "BatteryGotech":
                                     if (oColParam.Item(i).AsBoolean)
                                     {
                                         this.APLCVehicle.plcBatterys.BatteryType = EnumBatteryType.Gotech;
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Battery = Gotech"));
+                                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Battery = Gotech"));
                                     }
                                     else
                                     {
@@ -610,7 +612,7 @@ namespace Mirle.Agv.Controller
                                     if (oColParam.Item(i).AsBoolean)
                                     {
                                         this.APLCVehicle.plcBatterys.BatteryType = EnumBatteryType.Yinda;
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Battery = Yinda"));
+                                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Battery = Yinda"));
                                     }
                                     else
                                     {
@@ -627,7 +629,7 @@ namespace Mirle.Agv.Controller
                                             {
                                                 if (this.APLCVehicle.plcBatterys.bVoltageAbnormal == false)
                                                 {
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
+                                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
                                                     setSOC(10);
                                                     this.APLCVehicle.plcBatterys.bVoltageAbnormal = true;
                                                 }
@@ -642,7 +644,7 @@ namespace Mirle.Agv.Controller
                                             {
                                                 if (this.APLCVehicle.plcBatterys.bVoltageAbnormal == false)
                                                 {
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
+                                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Trigger low Voltage event."));
                                                     setSOC(10);
                                                     this.APLCVehicle.plcBatterys.bVoltageAbnormal = true;
                                                 }
@@ -674,7 +676,7 @@ namespace Mirle.Agv.Controller
                                     {
                                         if (IsFirstMeterAhGet == false)
                                         {
-                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Set IsFirstMeterAhGet = true"));
+                                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Set IsFirstMeterAhGet = true"));
                                             IsFirstMeterAhGet = true;
                                         }
                                         else
@@ -686,7 +688,7 @@ namespace Mirle.Agv.Controller
                                     {
                                         if (IsFirstMeterAhGet == false)
                                         {
-                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "MeterAH data change but new value is 0.0"));
+                                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "MeterAH data change but new value is 0.0"));
                                         }
                                     }
                                     break;
@@ -716,12 +718,12 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.plcBatterys.FullChargeIndex = oColParam.Item(i).AsUInt16;
 
                                     //}
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"FullChargeIndex = {this.APLCVehicle.plcBatterys.FullChargeIndex}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"FullChargeIndex = {this.APLCVehicle.plcBatterys.FullChargeIndex}"));
 
                                     break;
                                 case "HomeStatus":
-                                    this.APLCVehicle.Robot.ForkHome = aMCProtocol.get_ItemByTag("HomeStatus").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"HomeStatus = {this.APLCVehicle.Robot.ForkHome}"));
+                                    this.APLCVehicle.RobotHome = aMCProtocol.get_ItemByTag("HomeStatus").AsBoolean;
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"HomeStatus = {this.APLCVehicle.RobotHome}"));
                                     break;
                                 case "ChargeStatus":
                                     if (aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean)
@@ -734,7 +736,7 @@ namespace Mirle.Agv.Controller
                                         ChgStasOffDelayFlag = true;
                                         ccModeAHSet();
                                     }
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ChargeStatus = {this.APLCVehicle.plcBatterys.Charging}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ChargeStatus = {this.APLCVehicle.plcBatterys.Charging}"));
 
                                     //this.APLCVehicle.plcBatterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;
                                     //if (!this.APLCVehicle.plcBatterys.Charging)
@@ -773,7 +775,7 @@ namespace Mirle.Agv.Controller
                                             if (this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16 != 0)
                                             {
                                                 UInt16 AlarmCode = this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16;
-                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"AlarmCode = {AlarmCode + iAlarmOffset}"));
+                                                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"AlarmCode = {AlarmCode + iAlarmOffset}"));
 
                                                 //不區分alarm/warning => alarm CSV裡區分
                                                 if (this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmEvent").AsUInt16 == 1)
@@ -781,20 +783,20 @@ namespace Mirle.Agv.Controller
                                                     //set
                                                     //this.setAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16));
                                                     this.setAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16) + iAlarmOffset);
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"AlarmEvent = {1}"));
+                                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"AlarmEvent = {1}"));
                                                 }
                                                 else if (this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmEvent").AsUInt16 == 2)
                                                 {
                                                     //clear
                                                     //this.resetAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16));
                                                     this.resetAlarm(Convert.ToInt32(this.aMCProtocol.get_ItemByTag("0" + j.ToString().Trim() + "AlarmCode").AsUInt16) + iAlarmOffset);
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"AlarmEvent = {2}"));
+                                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"AlarmEvent = {2}"));
                                                 }
                                                 else
                                                 {
 
                                                 }
-
+                                                alarmCodeRecordList.Add(AlarmCode.ToString());
                                             }
                                         }
 
@@ -805,41 +807,41 @@ namespace Mirle.Agv.Controller
                                         if (this.aMCProtocol.WritePLC())
                                         {
                                             //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC success");
-                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC success"));
+                                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC success"));
                                         }
                                         else
                                         {
                                             //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC fail");
-                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC fail"));
+                                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "AlarmReadIndex = " + alarmReadIndex.ToString() + " write to PLC fail"));
                                         }
 
                                     }
                                     catch (Exception ex)
                                     {
                                         //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
-                                        LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                                        LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                                     }
 
                                     //Console.Out.Write("alarm");
                                     break;
                                 case "EquipementActionIndex":
                                     this.eqActionIndex = oColParam.Item(i).AsUInt16;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"EquipementActionIndex = {this.eqActionIndex}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"EquipementActionIndex = {this.eqActionIndex}"));
 
                                     break;
                                 case "ForkReady":
                                     this.APLCVehicle.Robot.ForkReady = aMCProtocol.get_ItemByTag("ForkReady").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkReady = {this.APLCVehicle.Robot.ForkReady}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkReady = {this.APLCVehicle.Robot.ForkReady}"));
 
                                     break;
                                 case "ForkBusy":
                                     this.APLCVehicle.Robot.ForkBusy = aMCProtocol.get_ItemByTag("ForkBusy").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkBusy = {this.APLCVehicle.Robot.ForkBusy}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkBusy = {this.APLCVehicle.Robot.ForkBusy}"));
 
                                     break;
                                 case "ForkCommandNG":
                                     this.APLCVehicle.Robot.ForkNG = aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandNG = {this.APLCVehicle.Robot.ForkNG}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandNG = {this.APLCVehicle.Robot.ForkNG}"));
 
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkNG == true)
@@ -851,7 +853,7 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "ForkCommandFinish":
                                     this.APLCVehicle.Robot.ForkFinish = aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandFinish = {this.APLCVehicle.Robot.ForkFinish}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkCommandFinish = {this.APLCVehicle.Robot.ForkFinish}"));
 
                                     //紀錄 Fork alignment value 
                                     if (this.APLCVehicle.Robot.ForkFinish == true)
@@ -863,37 +865,42 @@ namespace Mirle.Agv.Controller
                                     break;
                                 case "ForkPrePioFail":
                                     this.APLCVehicle.Robot.ForkPrePioFail = aMCProtocol.get_ItemByTag("ForkPrePioFail").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPrePioFail = {this.APLCVehicle.Robot.ForkPrePioFail}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPrePioFail = {this.APLCVehicle.Robot.ForkPrePioFail}"));
 
-                                    if (this.APLCVehicle.Robot.ForkPrePioFail == true)
+                                    if (Vehicle.Instance.AutoState == EnumAutoState.Auto)
                                     {
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Prepare to call Interlock Event."));
-
-                                        Task.Run(() =>
+                                        if (this.APLCVehicle.Robot.ForkPrePioFail == true)
                                         {
-                                            Thread.Sleep(10000);
-                                            this.WritePLCAlarmReset();
-                                            Thread.Sleep(5000);
-                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger."));
-                                            eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
-                                            OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
-                                        });
+                                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Prepare to call Interlock Event."));
+
+                                            Task.Run(() =>
+                                            {
+                                                Thread.Sleep(10000);
+                                                this.WritePLCAlarmReset();
+                                                Thread.Sleep(5000);
+                                                this.WritePLCAlarmReset();
+                                                Thread.Sleep(1000);
+                                                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Invoke ForkCommandInterlockErrorEvent trigger. Alarm code :" + String.Join(",", alarmCodeRecordList)));
+                                                eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                                OnForkCommandInterlockErrorEvent?.Invoke(this, eventForkCommand);
+                                            });
+                                        }
                                     }
                                     break;
 
                                 case "ForkBusyFail":
                                     this.APLCVehicle.Robot.ForkBusyFail = aMCProtocol.get_ItemByTag("ForkBusyFail").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkBusyFail = {this.APLCVehicle.Robot.ForkBusyFail}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkBusyFail = {this.APLCVehicle.Robot.ForkBusyFail}"));
                                     break;
 
                                 case "ForkPostPioFail":
                                     this.APLCVehicle.Robot.ForkPostPioFail = aMCProtocol.get_ItemByTag("ForkPostPioFail").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPostPioFail = {this.APLCVehicle.Robot.ForkPostPioFail}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"ForkPostPioFail = {this.APLCVehicle.Robot.ForkPostPioFail}"));
                                     break;
 
                                 case "StageLoading":
-                                    this.APLCVehicle.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"StageLoading = {this.APLCVehicle.Loading}"));
+                                    this.APLCVehicle.CarrierSlot.Loading = aMCProtocol.get_ItemByTag("StageLoading").AsBoolean;
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"StageLoading = {this.APLCVehicle.CarrierSlot.Loading}"));
                                     break;
 
                                 case "Temperature_sensor_number":
@@ -921,17 +928,17 @@ namespace Mirle.Agv.Controller
                                     this.APLCVehicle.plcBatterys.Design_Capacity = aMCProtocol.get_ItemByTag("Design_Capacity").AsUInt16;
                                     break;
 
-                                case "plcBatterysOC_Form_Plc":
-                                    this.APLCVehicle.plcBatterys.BatterySOCFormPlc = aMCProtocol.get_ItemByTag("plcBatterysOC_Form_Plc").AsUInt16;
+                                case "BatterySOC_Form_Plc":
+                                    this.APLCVehicle.plcBatterys.BatterySOCFormPlc = aMCProtocol.get_ItemByTag("BatterySOC_Form_Plc").AsUInt16;
                                     break;
-                                case "plcBatterysOH_Form_Plc":
-                                    this.APLCVehicle.plcBatterys.BatterySOHFormPlc = aMCProtocol.get_ItemByTag("plcBatterysOH_Form_Plc").AsUInt16;
+                                case "BatterySOH_Form_Plc":
+                                    this.APLCVehicle.plcBatterys.BatterySOHFormPlc = aMCProtocol.get_ItemByTag("BatterySOH_Form_Plc").AsUInt16;
                                     break;
                                 case "DoubleStoreSensor(L)":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(L) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(L)").AsBoolean}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(L) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(L)").AsBoolean}"));
                                     break;
                                 case "DoubleStoreSensor(R)":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(R) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(R)").AsBoolean}"));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"DoubleStoreSensor(R) = {aMCProtocol.get_ItemByTag("DoubleStoreSensor(R)").AsBoolean}"));
                                     break;
                                 case "ForkAlignmentResultP":
                                     this.APLCVehicle.Robot.ForkAlignmentP = this.DECToDouble(aMCProtocol.get_ItemByTag("ForkAlignmentResultP").AsUInt32, 2, 2);
@@ -990,27 +997,27 @@ namespace Mirle.Agv.Controller
                                     //this.mainForm.mainFlowHandler
                                     break;
                                 case "ForkInterfaceT1Timeout":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T1 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT1Timeout").AsUInt16}."));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T1 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT1Timeout").AsUInt16}."));
                                     SetForkCommandTimeout();
 
                                     break;
                                 case "ForkInterfaceT3Timeout":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T3 timeout to {aMCProtocol.get_ItemByTag("ForkInterfaceT3Timeout").AsUInt16}."));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T3 timeout to {aMCProtocol.get_ItemByTag("ForkInterfaceT3Timeout").AsUInt16}."));
                                     SetForkCommandTimeout();
 
                                     break;
                                 case "ForkInterfaceT4Timeout":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T4 timeout changeto {aMCProtocol.get_ItemByTag("ForkInterfaceT4Timeout").AsUInt16}."));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T4 timeout changeto {aMCProtocol.get_ItemByTag("ForkInterfaceT4Timeout").AsUInt16}."));
                                     SetForkCommandTimeout();
 
                                     break;
                                 case "ForkInterfaceT5Timeout":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T5 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16}."));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T5 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16}."));
                                     SetForkCommandTimeout();
 
                                     break;
                                 case "ForkInterfaceT6Timeout":
-                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T6 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16}."));
+                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Fork Interface T6 timeout change to {aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16}."));
                                     SetForkCommandTimeout();
 
                                     break;
@@ -1021,7 +1028,7 @@ namespace Mirle.Agv.Controller
                     catch (Exception ex)
                     {
                         //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString());
-                        LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString()));
+                        LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", oColParam.Item(i).DataName + ":" + ex.ToString()));
                     }
 
 
@@ -1030,7 +1037,7 @@ namespace Mirle.Agv.Controller
             catch (Exception ex)
             {
                 //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
             }
         }
 
@@ -1051,7 +1058,7 @@ namespace Mirle.Agv.Controller
                     ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT5Timeout").AsUInt16,
                     ", ", aMCProtocol.get_ItemByTag("ForkInterfaceT6Timeout").AsUInt16);
 
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", sTempRecord));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", sTempRecord));
 
                 if (iTimeoutSum > 850000)
                 {
@@ -1059,7 +1066,7 @@ namespace Mirle.Agv.Controller
                     ForkCommandBusyTimeout = iTimeoutSum + 100000;
                     ForkCommandMovingTimeout = iTimeoutSum + 100000;
 
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", $"Change program timeout time: {iTimeoutSum / 1000}"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", $"Change program timeout time: {iTimeoutSum / 1000}"));
                 }
                 else
                 {
@@ -1068,7 +1075,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", ex.StackTrace));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "", ex.StackTrace));
             }
 
         }
@@ -1084,7 +1091,7 @@ namespace Mirle.Agv.Controller
 
             if (this.APLCVehicle.plcBatterys.CcModeFlag)
             {
-                //this.APLCVehicle.APlcplcBatterys.CcModeAh = this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2);
+                //this.APLCVehicle.APlcBatterys.CcModeAh = this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2);
                 this.APLCVehicle.plcBatterys.SetCcModeAh(this.DECToDouble(aMCProtocol.get_ItemByTag("MeterAH").AsUInt32, 2), true);
 
                 //判斷CCModeCounter
@@ -1095,9 +1102,9 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    //if (this.APLCVehicle.APlcplcBatterys.CcModeAh > 0.5)
+                    //if (this.APLCVehicle.APlcBatterys.CcModeAh > 0.5)
                     //{
-                    //    this.APLCVehicle.APlcplcBatterys.CcModeCounter = 0;
+                    //    this.APLCVehicle.APlcBatterys.CcModeCounter = 0;
                     //    this.SetMeterAHToZero();
                     //}
                     this.APLCVehicle.plcBatterys.CcModeCounter++;
@@ -1214,24 +1221,24 @@ namespace Mirle.Agv.Controller
                 case 1:
                     if (inputNum < -32768)
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
                         return "-32768";
                     }
                     if (inputNum > 32767)
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
                         return "32767";
                     }
                     break;
                 case 2:
                     if (inputNum < -2147483648)
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
                         return "-2147483648";
                     }
                     if (inputNum > 2147483647)
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"InputNumber  {inputNum} out of range."));
                         return "2147483647";
                     }
                     break;
@@ -1314,20 +1321,20 @@ namespace Mirle.Agv.Controller
                         .Append(", Loading2: ").Append(aMCProtocol.get_ItemByTag("Loading2").AsBoolean)
                         .ToString();
 
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog3));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog1));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog2));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog3));
 
                 if (status.Equals("ForkCommandNG"))
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog1));
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog2));
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog3));
+                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog1));
+                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog2));
+                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "Empty", strLog3));
                 }
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", ex.StackTrace));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", ex.StackTrace));
             }
 
 
@@ -1340,7 +1347,7 @@ namespace Mirle.Agv.Controller
             String strLog = new StringBuilder()
                     .Append("Safety Status Change: ").Append(APLCVehicle.VehicleSafetyAction)
                     .ToString();
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog));
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", strLog));
 
         }
 
@@ -1393,14 +1400,14 @@ namespace Mirle.Agv.Controller
 
             Stopwatch sw500msClock = new Stopwatch();
             bool Clock1secWrite = false, b500msHigh = false, b500msLow = true;
-            bool plcBatterysChargingTimeOut = false;
+            bool BatterysChargingTimeOut = false;
             bool CCModeStopVoltageChange = false;
 
             EnumAutoState IpcStatus;
             bool IpcStatusAutoIni = false;
             bool IpcStatusManualIni = true;
 
-            uint WriteplcBatterysOCCount = 0;
+            uint WriteBatterySOCCount = 0;
             uint ChgStasOffDelayCount = 0;
             uint ChgStopCommandCount = 0;
 
@@ -1423,17 +1430,17 @@ namespace Mirle.Agv.Controller
                     if (b500msHigh && Clock1secWrite == true)
                     {
                         Clock1secWrite = false;
-                        WriteplcBatterysOCCount++;
+                        WriteBatterySOCCount++;
                         ChgStasOffDelayCount++;
                         ChgStopCommandCount++;
                     }
                     //========Clock Working========
 
                     //Write Battery SOC 
-                    if (WriteplcBatterysOCCount >= 1)
+                    if (WriteBatterySOCCount >= 1)
                     {
-                        WriteplcBatterysOCCount = 0;
-                        WriteplcBatterysOC();
+                        WriteBatterySOCCount = 0;
+                        WriteBatterySOC();
                     }
 
                     //Charging Off Delay
@@ -1443,8 +1450,8 @@ namespace Mirle.Agv.Controller
                         {
                             ChgStasOffDelayCount = 0;
                             this.APLCVehicle.plcBatterys.Charging = aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean;//false
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. Plc ChargeStatus: {aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean}"));
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. plcBatterys.Charging: {this.APLCVehicle.plcBatterys.Charging}"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. Plc ChargeStatus: {aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean}"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "Empty", $"ChargeStatus Set Off. Batterys.Charging: {this.APLCVehicle.plcBatterys.Charging}"));
                         }
                     }
                     else
@@ -1452,13 +1459,13 @@ namespace Mirle.Agv.Controller
                         ChgStasOffDelayCount = 0;
                     }
 
-                    //plcBatterys Charging Time Out
+                    //Batterys Charging Time Out
                     if (this.APLCVehicle.plcBatterys.Charging)
                     {
                         swChargingTimeOut.Start();
                         if (swChargingTimeOut.ElapsedMilliseconds > this.APLCVehicle.plcBatterys.Batterys_Charging_Time_Out)
                         {
-                            plcBatterysChargingTimeOut = true;
+                            BatterysChargingTimeOut = true;
                             if (aMCProtocol.get_ItemByTag("ChargeStatus").AsBoolean)
                             {
                                 if (ChgStopCommandCount >= 10)
@@ -1473,7 +1480,7 @@ namespace Mirle.Agv.Controller
                     else
                     {
                         ChgStopCommandCount = 10;
-                        plcBatterysChargingTimeOut = false;
+                        BatterysChargingTimeOut = false;
                         swChargingTimeOut.Stop();
                         swChargingTimeOut.Reset();
                     }
@@ -1528,7 +1535,7 @@ namespace Mirle.Agv.Controller
                         //判斷歸０完成　=> 電表ＡＨ變成0, 所以原先值SetMeterAHToZeroAH　應該要反映到CCmode AH值
                         if (this.APLCVehicle.plcBatterys.MeterAh < 0.5 && this.APLCVehicle.plcBatterys.MeterAh > -0.5)
                         {
-                            //this.APLCVehicle.APlcplcBatterys.CcModeAh = (0 - this.APLCVehicle.APlcplcBatterys.SetMeterAHToZeroAH) + this.APLCVehicle.APlcplcBatterys.CcModeAh;
+                            //this.APLCVehicle.APlcBatterys.CcModeAh = (0 - this.APLCVehicle.APlcBatterys.SetMeterAHToZeroAH) + this.APLCVehicle.APlcBatterys.CcModeAh;
                             this.APLCVehicle.plcBatterys.SetCcModeAh((0 - this.APLCVehicle.plcBatterys.SetMeterAhToZeroAh) + this.APLCVehicle.plcBatterys.CcModeAh, false);
                             this.APLCVehicle.plcBatterys.SetMeterAhToZeroFlag = false;
                         }
@@ -1551,7 +1558,7 @@ namespace Mirle.Agv.Controller
                     if (currPercentage != this.beforeBatteryPercentageInteger)
                     {
                         this.beforeBatteryPercentageInteger = currPercentage;
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Percentage = {currPercentage}"));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Percentage = {currPercentage}"));
                         BatteryPercentageWriteLog(currPercentage);
                         OnBatteryPercentageChangeEvent?.Invoke(this, currPercentage);
                     }
@@ -1754,7 +1761,7 @@ namespace Mirle.Agv.Controller
                 catch (Exception ex)
                 {
                     //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                 }
                 System.Threading.Thread.Sleep(1);
             }
@@ -2149,13 +2156,13 @@ namespace Mirle.Agv.Controller
                     {
                         //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Success");
                         LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Success");
-                        LogPlcMsg(loggerAgent, logFormat);
+                        LogPlcMsg(mirleLogger, logFormat);
                     }
                     else
                     {
                         //plcAgentLogger.SaveLogFile("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Fail");
                         LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", "Set All Beam Sensor Sleep Off(Awake) Fail");
-                        LogPlcMsg(loggerAgent, logFormat);
+                        LogPlcMsg(mirleLogger, logFormat);
 
                     }
                 }
@@ -2177,13 +2184,13 @@ namespace Mirle.Agv.Controller
                     {
                         //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on success.");
                         //loggerAgent.LogMsg("PlcAgent", logFormat);
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on success."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on success."));
                     }
                     else
                     {
                         //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on fail.");
                         //loggerAgent.LogMsg("PlcAgent", logFormat);
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on fail."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to on fail."));
                     }
                 }
             }
@@ -2259,13 +2266,13 @@ namespace Mirle.Agv.Controller
                     {
                         //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Success");
                         //loggerAgent.LogMsg("PlcAgent", logFormat);
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Success"));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Success"));
                     }
                     else
                     {
                         //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Fail");
                         //loggerAgent.LogMsg("PlcAgent", logFormat);
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Fail"));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set All Beam Sensor Sleep Off(Awake) Fail"));
 
                     }
                 }
@@ -2285,13 +2292,13 @@ namespace Mirle.Agv.Controller
                     {
                         //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off success.");
                         //loggerAgent.LogMsg("PlcAgent", logFormat);
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off success."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off success."));
                     }
                     else
                     {
                         //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off fail.");
                         //loggerAgent.LogMsg("PlcAgent", logFormat);
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off fail."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", " Side Beam Sensor Sleep to off fail."));
                     }
                 }
 
@@ -2314,13 +2321,13 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime success, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime success, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime success, "));
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime fail, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime fail, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Current DateTime fail, "));
             }
 
 
@@ -2340,7 +2347,7 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("EQPIO").AsBoolean = eQIF;
             this.aMCProtocol.get_ItemByTag("ForkSpeed").AsUInt16 = forkSpeed;
 
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteForkCommandInfo: " +
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteForkCommandInfo: " +
                             "CommandNo - " + commandNo +
                             ", ForkCommandType - " + enumForkCommand +
                             ", StageNo - " + stageNo +
@@ -2351,14 +2358,14 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command success, "));
                 return true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command fail, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command fail, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Send out a Fork Command fail, "));
                 return true;
             }
 
@@ -2389,14 +2396,14 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") success, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") success, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") success, "));
                 result = true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") fail, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") fail, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Execute Fork Command(" + aEnumForkCommandExecutionType.ToString() + " = " + Convert.ToString(Onflag) + ") fail, "));
 
             }
             return result;
@@ -2423,14 +2430,14 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command success, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command success, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command success, "));
                 result = true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command fail, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command fail, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Start Command fail, "));
 
             }
             return result;
@@ -2449,14 +2456,14 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command success, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command success, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command success, "));
                 result = true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command fail, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command fail, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Charge Stop Command fail, "));
 
             }
 
@@ -2475,14 +2482,14 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " success");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " success"));
                 result = true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " fail");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write AGVCOnline = " + Convert.ToString(OnlineFlag) + " fail"));
             }
             return result;
         }
@@ -2504,7 +2511,7 @@ namespace Mirle.Agv.Controller
                         this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = false;
                     }
                 }
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", liArrayWord.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", liArrayWord.ToString()));
                 foreach (string word in liWarningWord)
                 {
                     for (int i = 0; i < 16; i++)
@@ -2516,10 +2523,10 @@ namespace Mirle.Agv.Controller
 
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset Success"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset Success"));
                 }
                 else
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset fail"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"SetAlarmWarningReportAllReset fail"));
 
                 if (WriteAlarmWarningStatus(false, false))
                     result = true;
@@ -2527,7 +2534,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
             }
             liArrayWord.Clear();
             liWarningWord.Clear();
@@ -2557,11 +2564,11 @@ namespace Mirle.Agv.Controller
                     this.aMCProtocol.get_ItemByTag(strItem).AsBoolean = status;
                     if (this.aMCProtocol.WritePLC())
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} Success"));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} Success"));
                         result = true;
                     }
                     else
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} fail"));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"Write IPC Alarm Warning Report ({stLevelr} => {word.ToString()}.{bit.ToString()}) = {status.ToString()} fail"));
 
                 }
                 else
@@ -2571,7 +2578,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
             }
             return result;
         }
@@ -2586,14 +2593,14 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " success");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " success"));
                 result = true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " fail");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlarmStatus = " + Convert.ToString(alarmStatus) + ", IPCWarningStatus = " + Convert.ToString(warningStatus) + " fail"));
             }
             return result;
         }
@@ -2608,14 +2615,14 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " success");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " success"));
                 result = true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " fail");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCReady = " + Convert.ToString(readyStatus) + " fail"));
             }
             return result;
         }
@@ -2624,11 +2631,11 @@ namespace Mirle.Agv.Controller
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name; ;
 
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", OldCCModeAH = " + APLCVehicle.plcBatterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.plcBatterys.MeterAh.ToString()));
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", OldCCModeAH = " + APLCVehicle.plcBatterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.plcBatterys.MeterAh.ToString()));
             this.APLCVehicle.plcBatterys.SetCcModeAh(this.APLCVehicle.plcBatterys.MeterAh + this.APLCVehicle.plcBatterys.AhWorkingRange * (100.0 - SOC) / 100.00, false);
             //CcModeAh
             BatteryPercentageWriteLog(Convert.ToUInt16(SOC));
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", NewCCModeAH = " + APLCVehicle.plcBatterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.plcBatterys.MeterAh.ToString()));
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "SetSOC SOC = " + Convert.ToString(SOC) + ", NewCCModeAH = " + APLCVehicle.plcBatterys.CcModeAh.ToString() + ", currentAH = " + APLCVehicle.plcBatterys.MeterAh.ToString()));
 
         }
 
@@ -2645,30 +2652,30 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " success");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " success"));
                 result = true;
             }
             else
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " fail");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCStatus = " + Convert.ToString(aEnumIPCStatus) + " fail"));
             }
             return result;
         }
-        private void WriteplcBatterysOC()
+        private void WriteBatterySOC()
         {
             string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
 
-            // this.aMCProtocol.WritePLCByTagDirectly("plcBatterysOC", this.APLCVehicle.plcBatterys.Percentage.ToString());
+            // this.aMCProtocol.WritePLCByTagDirectly("BatterySOC", this.APLCVehicle.plcBatterys.Percentage.ToString());
 
-            this.aMCProtocol.get_ItemByTag("plcBatterysOC").AsUInt16 = Convert.ToUInt16(this.APLCVehicle.plcBatterys.Percentage);
+            this.aMCProtocol.get_ItemByTag("BatterySOC").AsUInt16 = Convert.ToUInt16(this.APLCVehicle.plcBatterys.Percentage);
 
             if (this.aMCProtocol.WritePLC())
             { }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write Battery SOC = " + Convert.ToString(this.APLCVehicle.plcBatterys.Percentage) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write Battery SOC = " + Convert.ToString(this.APLCVehicle.plcBatterys.Percentage) + " fail"));
             }
         }
 
@@ -2688,7 +2695,7 @@ namespace Mirle.Agv.Controller
             }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlive = " + Convert.ToString(IPCAliveCounter) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Write IPCAlive = " + Convert.ToString(IPCAliveCounter) + " fail"));
             }
 
             IPCAliveCounter++;
@@ -2708,11 +2715,11 @@ namespace Mirle.Agv.Controller
 
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(10) + " Success"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(10) + " Success"));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(10) + " Fail"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Alarm Reset) = " + Convert.ToString(10) + " Fail"));
                 }
 
 
@@ -2724,13 +2731,13 @@ namespace Mirle.Agv.Controller
 
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
                 }
-
+                alarmCodeRecordList.Clear();
             });
         }
 
@@ -2748,11 +2755,11 @@ namespace Mirle.Agv.Controller
 
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Buzzser Stop) = " + Convert.ToString(11) + " Success"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Buzzser Stop) = " + Convert.ToString(11) + " Success"));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Buzzser Stop) = " + Convert.ToString(11) + " Fail"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementAction(PLC Buzzser Stop) = " + Convert.ToString(11) + " Fail"));
                 }
 
 
@@ -2763,11 +2770,11 @@ namespace Mirle.Agv.Controller
 
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Success"));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "EquipementActionIndex = " + Convert.ToString(eqActionIndex) + " Fail"));
                 }
             });
         }
@@ -2775,7 +2782,7 @@ namespace Mirle.Agv.Controller
         public void SetMeterAHToZero()
         {
             this.APLCVehicle.plcBatterys.SetMeterAhToZeroFlag = true;
-            //this.this.APLCVehicle.PLCplcBatterys.SetMeterAHToZeroAH = this.this.APLCVehicle.PLCplcBatterys.MeterAH;
+            //this.this.APLCVehicle.PLCBatterys.SetMeterAHToZeroAH = this.this.APLCVehicle.PLCBatterys.MeterAH;
             Task.Run(() =>
             {
                 string functionName = GetType().Name + ":" + System.Reflection.MethodBase.GetCurrentMethod().Name;
@@ -2783,11 +2790,11 @@ namespace Mirle.Agv.Controller
                 //this.aMCProtocol.WritePLC();
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Meter AH To Zero Success, "));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Meter AH To Zero Success, "));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Meter AH To Zero fail, "));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Meter AH To Zero fail, "));
                 }
 
 
@@ -2796,11 +2803,11 @@ namespace Mirle.Agv.Controller
                 //this.aMCProtocol.WritePLC();
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Meter AH To Zero Success, "));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Meter AH To Zero Success, "));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Meter AH To Zero fail, "));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Meter AH To Zero fail, "));
                 }
             });
         }
@@ -2832,7 +2839,7 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteVehicleDirection fail, ");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteVehicleDirection fail, "));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "WriteVehicleDirection fail, "));
             }
             return result;
 
@@ -2895,17 +2902,17 @@ namespace Mirle.Agv.Controller
 
                     if (aForkCommand.ForkCommandType == EnumForkCommand.Load)
                     {
-                        this.APLCVehicle.Loading = true;
+                        this.APLCVehicle.CarrierSlot.Loading = true;
                         //this.APLCVehicle.CassetteId = "CA0070";
-                        APLCVehicle.CarrierId = APLCVehicle.FakeCarrierId;
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {APLCVehicle.CarrierId}"));
+                        APLCVehicle.CarrierSlot.CarrierId = APLCVehicle.CarrierSlot.FakeCarrierId;
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {APLCVehicle.CarrierSlot.CarrierId}"));
 
-                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CarrierId);
+                        OnCassetteIDReadFinishEvent?.Invoke(this, this.APLCVehicle.CarrierSlot.CarrierId);
                     }
                     else if (aForkCommand.ForkCommandType == EnumForkCommand.Unload)
                     {
-                        this.APLCVehicle.CarrierId = "";
-                        this.APLCVehicle.Loading = false;
+                        this.APLCVehicle.CarrierSlot.CarrierId = "";
+                        this.APLCVehicle.CarrierSlot.Loading = false;
                     }
                     else
                     {
@@ -2929,7 +2936,7 @@ namespace Mirle.Agv.Controller
                 {
                     //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, aForkCommand.ForkCommandState = " + Convert.ToString(this.APLCVehicle.APlcRobot.ExecutingCommand.ForkCommandState) + ", is not Queue.");
                     //loggerAgent.LogMsg("PlcAgent", logFormat);
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, aForkCommand.ForkCommandState = " + Convert.ToString(this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState) + ", is not Queue."));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, aForkCommand.ForkCommandState = " + Convert.ToString(this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState) + ", is not Queue."));
                     return false;
                 }
             }
@@ -2937,7 +2944,7 @@ namespace Mirle.Agv.Controller
             {
                 //LogFormat logFormat = new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, executingForkCommand is not null.");
                 //loggerAgent.LogMsg("PlcAgent", logFormat);
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, executingForkCommand is not null."));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "AddForkComand fail, executingForkCommand is not null."));
                 return false;
             }
         }
@@ -2975,9 +2982,9 @@ namespace Mirle.Agv.Controller
 
             string strCassetteID = "ERROR";
             this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-            this.APLCVehicle.CarrierId = strCassetteID;
+            this.APLCVehicle.CarrierSlot.CarrierId = strCassetteID;
             CassetteID = strCassetteID;
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierId) + " Success"));
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "TriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierSlot.CarrierId) + " Success"));
 
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
         }
@@ -2988,9 +2995,9 @@ namespace Mirle.Agv.Controller
 
             string strCassetteID = CassetteID;
             //this.aCassetteIDReader.ReadBarcode(ref strCassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-            this.APLCVehicle.CarrierId = strCassetteID;
+            this.APLCVehicle.CarrierSlot.CarrierId = strCassetteID;
             //CassetteID = strCassetteID;
-            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "testTriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierId) + " Success"));
+            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "testTriggerCassetteIDReader CassetteID = " + Convert.ToString(APLCVehicle.CarrierSlot.CarrierId) + " Success"));
 
             OnCassetteIDReadFinishEvent?.Invoke(this, strCassetteID);
 
@@ -3103,7 +3110,7 @@ namespace Mirle.Agv.Controller
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                                 iCommandNGCounter = 0;
-                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
+                                                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in queue state."));
 
                                                 break;
                                             }
@@ -3116,7 +3123,7 @@ namespace Mirle.Agv.Controller
 
                                                 if (clearExecutingForkCommandFlag)
                                                 {
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandReadTimeout clearExecutingForkCommandFlag = true"));
+                                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandReadTimeout clearExecutingForkCommandFlag = true"));
                                                     break;
                                                 }
 
@@ -3156,7 +3163,7 @@ namespace Mirle.Agv.Controller
                                                 this.setAlarm(Fork_Command_Read_timeout);
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of Fork_Command_Read_timeout"));
+                                                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of Fork_Command_Read_timeout"));
 
                                                 break;
                                             }
@@ -3186,7 +3193,7 @@ namespace Mirle.Agv.Controller
 
                                                 if (clearExecutingForkCommandFlag)
                                                 {
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandBusyTimeout clearExecutingForkCommandFlag = true"));
+                                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandBusyTimeout clearExecutingForkCommandFlag = true"));
                                                     break;
                                                 }
 
@@ -3215,7 +3222,7 @@ namespace Mirle.Agv.Controller
                                                 this.setAlarm(Fork_Not_Busy_timeout);
                                                 eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                 OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of Fork_Not_Busy_timeout"));
+                                                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of Fork_Not_Busy_timeout"));
                                                 break;
                                             }
 
@@ -3234,7 +3241,7 @@ namespace Mirle.Agv.Controller
                                                     eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                                     OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
                                                     iCommandNGCounter = 0;
-                                                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
+                                                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in queue state"));
 
                                                     break;
                                                 }
@@ -3272,7 +3279,7 @@ namespace Mirle.Agv.Controller
                                     {
                                         if (clearExecutingForkCommandFlag)
                                         {
-                                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandMovingTimeout clearExecutingForkCommandFlag = true"));
+                                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "ForkCommandMovingTimeout clearExecutingForkCommandFlag = true"));
                                             break;
                                         }
                                         System.Threading.Thread.Sleep(500);
@@ -3301,7 +3308,7 @@ namespace Mirle.Agv.Controller
                                         this.setAlarm(Fork_Command_Format_NG);
                                         eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                         OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG"));
+                                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in executing state."));
 
                                         break;
                                     }
@@ -3314,10 +3321,14 @@ namespace Mirle.Agv.Controller
                                     break;
                                 }
 
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                                this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
-                                System.Threading.Thread.Sleep(1000);
-                                this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean == true)
+                                {
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
+                                    this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Finish;
+                                    System.Threading.Thread.Sleep(1000);
+                                    this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
+                                }
+                                
 
                                 break;
                             case EnumForkCommandState.Finish:
@@ -3329,8 +3340,8 @@ namespace Mirle.Agv.Controller
                                     {
                                         String cassetteID = "ERROR";
                                         this.aCassetteIDReader.ReadBarcode(ref cassetteID); //成功或失敗都要發ReadFinishEvent,外部用CassetteID來區別成功或失敗
-                                        this.APLCVehicle.CarrierId = cassetteID;
-                                        LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {this.APLCVehicle.CarrierId}"));
+                                        this.APLCVehicle.CarrierSlot.CarrierId = cassetteID;
+                                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, this.PlcId, "", $"CassetteIDRead = {this.APLCVehicle.CarrierSlot.CarrierId}"));
 
                                         OnCassetteIDReadFinishEvent?.Invoke(this, cassetteID);
                                     }
@@ -3356,7 +3367,22 @@ namespace Mirle.Agv.Controller
                                 {
 
                                     Thread.Sleep(50);
-                                    if (this.APLCVehicle.Robot.ForkHome)
+                                    if (this.aMCProtocol.get_ItemByTag("ForkCommandNG").AsBoolean)
+                                    {
+                                        this.APLCVehicle.Robot.ExecutingCommand.ForkCommandState = EnumForkCommandState.Error;
+                                        this.APLCVehicle.Robot.ExecutingCommand.Reason = "ForkCommandNG";
+                                        //Raise Alarm
+                                        //this.aAlarmHandler.SetAlarm(270001);
+                                        //this.setAlarm(270001);
+                                        this.setAlarm(Fork_Command_Format_NG);
+                                        eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
+                                        OnForkCommandErrorEvent?.Invoke(this, eventForkCommand);
+                                        LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", $"Trigger OnForkCommandErrorEvent because of ForkCommandNG in Finish state"));
+
+                                        break;
+                                    }
+
+                                    if (this.APLCVehicle.RobotHome)
                                     {
                                         eventForkCommand = this.APLCVehicle.Robot.ExecutingCommand;
                                         OnForkCommandFinishEvent?.Invoke(this, eventForkCommand);
@@ -3389,16 +3415,16 @@ namespace Mirle.Agv.Controller
                         {
                             bComdIsNullReqForkComdOK = false;
                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Read_Request, false);
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandOK ExecutingCommand Is NULL,Command_Read_Request False"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandOK ExecutingCommand Is NULL,Command_Read_Request False"));
                         }
                         if (this.aMCProtocol.get_ItemByTag("ForkCommandFinish").AsBoolean && bComdIsNullReqComdFinishAck)
                         {
                             bComdIsNullReqComdFinishAck = false;
                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, true);
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandFinish ExecutingCommand Is NULL,Command_Finish_Ack True"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandFinish ExecutingCommand Is NULL,Command_Finish_Ack True"));
                             System.Threading.Thread.Sleep(1000);
                             this.WriteForkCommandActionBit(EnumForkCommandExecutionType.Command_Finish_Ack, false);
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandFinish ExecutingCommand Is NULL,Command_Finish_Ack False"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", $"ForkCommandFinish ExecutingCommand Is NULL,Command_Finish_Ack False"));
                         }
                     }
                 }
@@ -3407,7 +3433,7 @@ namespace Mirle.Agv.Controller
                     //this.errLogger.SaveLogFile("Error", "5", functionName, this.PlcId, "", ex.ToString());
 
                     //LogFormat logFormat = new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString());
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
                 }
                 System.Threading.Thread.Sleep(5);
             }
@@ -3423,12 +3449,12 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("VehicleCharge").AsBoolean = true;
             if (this.aMCProtocol.WritePLC())
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge On = " + Convert.ToString(true) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge On = " + Convert.ToString(true) + " success"));
                 result = true;
             }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge On = " + Convert.ToString(true) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge On = " + Convert.ToString(true) + " fail"));
             }
             return result;
         }
@@ -3440,12 +3466,12 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("VehicleCharge").AsBoolean = false;
             if (this.aMCProtocol.WritePLC())
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge Off = " + Convert.ToString(false) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge Off = " + Convert.ToString(false) + " success"));
                 result = true;
             }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge Off = " + Convert.ToString(false) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleCharge Off = " + Convert.ToString(false) + " fail"));
             }
             return result;
         }
@@ -3458,12 +3484,12 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("VehicleInPosition").AsBoolean = true;
             if (this.aMCProtocol.WritePLC())
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition On = " + Convert.ToString(true) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition On = " + Convert.ToString(true) + " success"));
                 result = true;
             }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition On = " + Convert.ToString(true) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition On = " + Convert.ToString(true) + " fail"));
             }
             return result;
         }
@@ -3475,12 +3501,12 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("VehicleInPosition").AsBoolean = false;
             if (this.aMCProtocol.WritePLC())
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition Off = " + Convert.ToString(false) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition Off = " + Convert.ToString(false) + " success"));
                 result = true;
             }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition Off = " + Convert.ToString(false) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set VehicleInPosition Off = " + Convert.ToString(false) + " fail"));
             }
             return result;
         }
@@ -3492,13 +3518,38 @@ namespace Mirle.Agv.Controller
             this.aMCProtocol.get_ItemByTag("Force_ELMO_Servo_Off").AsBoolean = true;
             if (this.aMCProtocol.WritePLC())
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " success"));
                 result = true;
             }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " fail"));
             }
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(120);
+                    if (this.aMCProtocol.get_ItemByTag("Force_ELMO_Servo_Off").AsBoolean == false)
+                    {
+                        this.aMCProtocol.get_ItemByTag("Force_ELMO_Servo_Off").AsBoolean = true;
+                        if (this.aMCProtocol.WritePLC())
+                        {
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " success"));
+                            result = true;
+                        }
+                        else
+                        {
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "Empty", "Set Forc ELMO Servo Off On = " + Convert.ToString(true) + " fail"));
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            });
+            
             return result;
         }
 
@@ -3519,11 +3570,11 @@ namespace Mirle.Agv.Controller
                 sw.Write(value.ToString());
             }
         }
-        private void LogPlcMsg(LoggerAgent clsLoggerAgent, LogFormat clsLogFormat)
+        private void LogPlcMsg(MirleLogger mirleLogger, LogFormat clsLogFormat)
         {
             strlogMsg = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff") + "\t" + clsLogFormat.Message + "\r\n" + strlogMsg;
             if (strlogMsg.Length > LogMsgMaxLength) strlogMsg = strlogMsg.Substring(0, LogMsgMaxLength);
-            clsLoggerAgent.Log(clsLogFormat.Category, clsLogFormat);
+            mirleLogger.Log(clsLogFormat);
         }
 
         public bool WritePlcConfigToXML(Dictionary<string, string> dicSetValue, string file_address = "PLC_Config.xml")
@@ -3553,17 +3604,17 @@ namespace Mirle.Agv.Controller
                     doc.Save(file_address);
                     ReadXml("PLC_Config.xml");
                     //ReadXml();
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Write Plc Config To XML Success"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Write Plc Config To XML Success"));
                     result = true;
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Write Plc Config To XML Fail"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", "Write Plc Config To XML Fail"));
                 }
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
             }
             return result;
         }
@@ -3757,11 +3808,11 @@ namespace Mirle.Agv.Controller
 
                 if (this.aMCProtocol.WritePLC())
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + atype.ToString() + ") = " + Convert.ToString(status) + " Success"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + atype.ToString() + ") = " + Convert.ToString(status) + " Success"));
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + atype.ToString() + ") = " + Convert.ToString(status) + " fail"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write Directional Light (" + atype.ToString() + ") = " + Convert.ToString(status) + " fail"));
                 }
             }
         }
@@ -3898,7 +3949,7 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "9", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "9", functionName, this.PlcId, "", ex.ToString()));
             }
         }
 
@@ -3952,8 +4003,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", ex.ToString()));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", ex.StackTrace));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", ex.StackTrace));
             }
 
             this.aMCProtocol.get_ItemByTag("IPCBigDataVehBatteryResetYearMonth").AsHex = date.Substring(2, 2) + date.Substring(4, 2);
@@ -3965,11 +4016,11 @@ namespace Mirle.Agv.Controller
 
             if (this.aMCProtocol.WritePLC())
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC Success"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC Success"));
             }
             else
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC fail"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", GetFunName(), PlcId, "Empty", "Write to PLC fail"));
             }
         }
 
@@ -4002,9 +4053,9 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", ex.ToString()));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Error: action {open} is failed."));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcAgent", "1", functionName, PlcId, "", $"Error: action {open} is failed."));
             }
 
         }
@@ -4056,7 +4107,7 @@ namespace Mirle.Agv.Controller
 
                     if (plcOperationRun_enumNowStep != inner_enumLastStep)
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Get Now Step: {plcOperationRun_enumNowStep.ToString()}"));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Get Now Step: {plcOperationRun_enumNowStep.ToString()}"));
                     }
 
 
@@ -4069,7 +4120,7 @@ namespace Mirle.Agv.Controller
                     {
                         if (inner_enumLastStep != EnumPlcOperationStep.No_Use)
                         {
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare Stop Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare Stop Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
                             plcOperationRun_ClearAndStopSteps(ref plcOperationRun_IpcJogPitchData, ref inner_enumLastStep, ref plcOperationRun_IpcOper);
                             plcOperationRun_enumLastStep = inner_enumLastStep;
                             Thread.Sleep(1);
@@ -4084,7 +4135,7 @@ namespace Mirle.Agv.Controller
                     {
                         if (plcOperationRun_enumNowStep != inner_enumLastStep)
                         {
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare xecute Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "", $"Prepare xecute Step: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
                             plcOperationRun_ExecuteSteps();
                             Thread.Sleep(1);
                         }
@@ -4098,9 +4149,9 @@ namespace Mirle.Agv.Controller
                 catch (Exception ex)
                 {
                     //  發生錯誤時停止所有狀態
-                    LogPlcMsg(loggerAgent, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", $"Error: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", ex.ToString()));
+                    LogPlcMsg(mirleLogger, new LogFormat("Error", "5", functionName, this.PlcId, "", ex.ToString()));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", $"Error: Operation NowStep = {plcOperationRun_enumNowStep.ToString()}, LastStep = {plcOperationRun_enumLastStep.ToString()} "));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", ex.ToString()));
 
                     // 取得目前資訊值
                     plcOperationRun_GetJogPitchDataFromJogPitchForm(ref plcOperationRun_IpcJogPitchData, ref plcOperationRun_IpcJogPitchData_CanAuto);
@@ -4110,7 +4161,7 @@ namespace Mirle.Agv.Controller
                 double endTime = DateTime.Now.Ticks;
                 //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Empty", "Thread cycle time: " + (endTime - startTime) / 10000 + " ms"));
 
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", "Thread cycle end: now - " + plcOperationRun_enumNowStep + ", last - " + plcOperationRun_enumLastStep));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", functionName, PlcId, "Error", "Thread cycle end: now - " + plcOperationRun_enumNowStep + ", last - " + plcOperationRun_enumLastStep));
 
                 Thread.Sleep(1000);
                 // endWhile
@@ -4195,12 +4246,12 @@ namespace Mirle.Agv.Controller
                 //LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"plcOperationRun_IpcOper.JogMaxDistance: {plcOperationRun_IpcOper.JogMaxDistance}"));
                 this.aMCProtocol.get_ItemByTag("IpcJogActionStatus").AsBoolean = plcOperationRun_bActionRunningStatus;
 
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogElmoFunction: {plcOperationRun_IpcOper.JogElmoFunction}"));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogRunMode: {plcOperationRun_IpcOper.JogRunMode}"));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogTurnSpeed: {plcOperationRun_IpcOper.JogTurnSpeed}"));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogMoveVelocity: {plcOperationRun_IpcOper.JogMoveVelocity}"));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogOperation: {plcOperationRun_IpcOper.JogOperation}"));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogMaxDistance: {plcOperationRun_IpcOper.JogMaxDistance}"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogElmoFunction: {plcOperationRun_IpcOper.JogElmoFunction}"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogRunMode: {plcOperationRun_IpcOper.JogRunMode}"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogTurnSpeed: {plcOperationRun_IpcOper.JogTurnSpeed}"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogMoveVelocity: {plcOperationRun_IpcOper.JogMoveVelocity}"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogOperation: {plcOperationRun_IpcOper.JogOperation}"));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", $"IpcJogMaxDistance: {plcOperationRun_IpcOper.JogMaxDistance}"));
 
 
                 if (this.aMCProtocol.WritePLC())
@@ -4209,13 +4260,13 @@ namespace Mirle.Agv.Controller
                 }
                 else
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", "Write data fail."));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", "Write data fail."));
                 }
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("Error", "5", GetFunName(), this.PlcId, "", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", ex.ToString()));
             }
         }
 
@@ -4229,8 +4280,8 @@ namespace Mirle.Agv.Controller
             }
             catch (Exception ex)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", numberName + " : " + inputNum + " is out of range."));
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", ex.ToString()));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", numberName + " : " + inputNum + " is out of range."));
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error", ex.ToString()));
             }
 
             return value;
@@ -4290,11 +4341,11 @@ namespace Mirle.Agv.Controller
                 enumNowStep = enumLastStep;
                 return;
             }
-            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error",
+            LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error",
                     $"Initial   enumNowStep: {enumNowStep.ToString()}, enumLastStep: {enumLastStep.ToString()}"));
             if (plcOper.ModeVehicle != plcOperLast.ModeVehicle)
             {
-                LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error",
+                LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "Error",
                     $"hahaha   plcOper.ModeVehicle: {plcOper.ModeVehicle}, plcOperLast.ModeVehicle: {plcOperLast.ModeVehicle}"));
                 if (plcOper.ModeVehicle == EnumJogVehicleMode.Auto)
                 {
@@ -4412,7 +4463,7 @@ namespace Mirle.Agv.Controller
                 case EnumPlcOperationStep.ElmoEnable:
                 case EnumPlcOperationStep.ElmoDisable:
                 case EnumPlcOperationStep.ElmoAllReset:
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"plcJogPitchData.ElmoFunctionCompelete: {plcJogPitchData.ElmoFunctionCompelete}"));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"plcJogPitchData.ElmoFunctionCompelete: {plcJogPitchData.ElmoFunctionCompelete}"));
 
                     break;
 
@@ -4462,15 +4513,15 @@ namespace Mirle.Agv.Controller
                 plcOperationRun_bActionRunningStatus = true;
                 Task.Run(() =>
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Manual to Auto."));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Manual to Auto."));
                     bool flag = this.mainForm.SwitchAutoStatus();
                     if (flag)
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto."));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto."));
                     }
                     else
                     {
-                        LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto Error, change back to Manual"));
+                        LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Manual to Auto Error, change back to Manual"));
                     }
                     plcOperationRun_bActionRunningStatus = false;
                     plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
@@ -4482,9 +4533,9 @@ namespace Mirle.Agv.Controller
                 plcOperationRun_bActionRunningStatus = true;
                 Task.Run(() =>
                 {
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Auto to Manual."));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode start: from Auto to Manual."));
                     this.mainForm.SwitchAutoStatus();
-                    LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Auto to Manual."));
+                    LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Change mode end: from Auto to Manual."));
                     plcOperationRun_bActionRunningStatus = false;
                     plcOperationRun_enumLastStep = EnumPlcOperationStep.No_Use;
                 });
@@ -4502,7 +4553,7 @@ namespace Mirle.Agv.Controller
                             break;
 
                         case EnumPlcOperationStep.ElmoEnable:
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoEnable"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoEnable"));
                             plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoEnable;
                             plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Enable;
                             plcOperationRun_bActionRunningStatus = true;
@@ -4531,7 +4582,7 @@ namespace Mirle.Agv.Controller
                             break;
 
                         case EnumPlcOperationStep.ElmoDisable:
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoDisable"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoDisable"));
                             plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoDisable;
                             plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.Disable;
                             plcOperationRun_bActionRunningStatus = true;
@@ -4560,7 +4611,7 @@ namespace Mirle.Agv.Controller
                             break;
 
                         case EnumPlcOperationStep.ElmoAllReset:
-                            LogPlcMsg(loggerAgent, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoAllReset"));
+                            LogPlcMsg(mirleLogger, new LogFormat("PlcJogPitch", "1", GetFunName(), PlcId, "", $"Execute ElmoAllReset"));
                             plcOperationRun_enumLastStep = EnumPlcOperationStep.ElmoAllReset;
                             plcOperationRun_IpcOper.JogElmoFunction = EnumJogElmoFunction.All_Reset;
                             plcOperationRun_bActionRunningStatus = true;

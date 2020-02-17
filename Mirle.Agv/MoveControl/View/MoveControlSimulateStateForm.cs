@@ -1,5 +1,5 @@
-﻿using Mirle.Agv.Controller;
-using Mirle.Agv.Model;
+﻿using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class MoveControlSimulateStateForm : Form
     {

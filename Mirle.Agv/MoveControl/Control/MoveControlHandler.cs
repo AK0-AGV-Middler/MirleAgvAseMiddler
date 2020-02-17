@@ -1,19 +1,20 @@
-﻿using Mirle.Agv.Model;
+﻿using Mirle.AgvAseMiddler.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Controller;
+using Mirle.AgvAseMiddler.Model.Configs;
+using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Controller;
 using System.IO;
 using System.Xml;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Reflection;
-using Mirle.Agv.Model.TransferSteps;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
+using Mirle.Tools;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class MoveControlHandler
     {
@@ -22,8 +23,8 @@ namespace Mirle.Agv.Controller
         public EnumMoveState MoveState { get; private set; } = EnumMoveState.Idle;
         public MoveControlConfig moveControlConfig;
         private MapInfo theMapInfo = new MapInfo();
-        private Logger logger = LoggerAgent.Instance.GetLooger("MoveControlCSV");
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private Logger logger = MirleLogger.Instance.GetLooger("MoveControlCSV");
+        private MirleLogger mirleLogger = MirleLogger.Instance;
         private string device = "MoveControl";
         private Dictionary<EnumAddressAction, TRTimeToAngleRange> trTimeToAngleRange = new Dictionary<EnumAddressAction, TRTimeToAngleRange>();
         public event EventHandler<EnumMoveComplete> OnMoveFinished;
@@ -60,6 +61,7 @@ namespace Mirle.Agv.Controller
         private PlcVehicle plcVehicle = (PlcVehicle)Vehicle.Instance.TheVehicleIntegrateStatus;
 
         private List<Sr2000Config> sr2000ConfigList = new List<Sr2000Config>();
+        private bool csvSendPLCEMO = false;
 
         private void SetDebugFlowLog(string functionName, string message)
         {
@@ -424,7 +426,7 @@ namespace Mirle.Agv.Controller
             string classMethodName = String.Concat(GetType().Name, ":", memberName);
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(logFormat);
 
             if (category == "MoveControl")
                 SetDebugFlowLog(memberName, message);
@@ -2464,6 +2466,21 @@ namespace Mirle.Agv.Controller
             WriteLog("MoveControl", "7", device, "", "end");
         }
 
+        private bool MoveAxisAllDisable()
+        {
+            if (elmoDriver.ElmoGetDisable(EnumAxis.XFL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.XFR) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.XRL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.XRR) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXFL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXFR) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXRL) &&
+                elmoDriver.ElmoGetDisable(EnumAxis.VXRR))
+                return true;
+            else
+                return false;
+        }
+
         private void SecondCorrectionControl(double endEncoder)
         {
             WriteLog("MoveControl", "7", device, "", "start");
@@ -2474,19 +2491,21 @@ namespace Mirle.Agv.Controller
 
             double endEncoderDelta = location.RealEncoder - endEncoder;
 
+            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+
             if (Math.Abs(endEncoder - location.RealEncoder) > moveControlConfig.SecondCorrectionX)
             {
                 elmoDriver.ElmoMove(EnumAxis.GX, endEncoder - location.RealEncoder, moveControlConfig.EQ.Velocity, EnumMoveType.Relative,
                                     moveControlConfig.EQ.Acceleration, moveControlConfig.EQ.Deceleration, moveControlConfig.EQ.Jerk);
 
-                System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
                 timer.Reset();
                 timer.Start();
 
-                Thread.Sleep(moveControlConfig.SleepTime);
                 UpdatePosition();
                 Thread.Sleep(moveControlConfig.SleepTime);
                 UpdatePosition();
+                Thread.Sleep(moveControlConfig.SleepTime);
+
                 while (!location.GXMoveCompelete)
                 {
                     UpdatePosition();
@@ -2505,7 +2524,17 @@ namespace Mirle.Agv.Controller
                 Thread.Sleep(500);
             }
 
+            Task.Factory.StartNew(() =>
+            {
             elmoDriver.DisableMoveAxis();
+            });
+
+            timer.Restart();
+            while (!MoveAxisAllDisable() && timer.ElapsedMilliseconds < 5000)
+            {
+                UpdatePosition();
+                Thread.Sleep(moveControlConfig.SleepTime);
+            }
 
             bool newBarcode = UpdateSR2000(true);
 
@@ -2855,7 +2884,7 @@ namespace Mirle.Agv.Controller
             if (SimulationMode)
                 return FakeState.ForkNotHome;
             else
-                return !plcVehicle.Robot.ForkHome || plcVehicle.Robot.ForkBusy;
+                return !plcVehicle.RobotHome || plcVehicle.Robot.ForkBusy;
         }
 
         private EnumVehicleSafetyAction GetBumperState()
@@ -3362,6 +3391,11 @@ namespace Mirle.Agv.Controller
 
         private void UpdateAGVState()
         {
+            if (ControlData.BeamSensorState == EnumVehicleSafetyAction.Stop && elmoDriver.MoveCompelete(EnumAxis.GX))
+                Vehicle.Instance.ObstacleStatus = TcpIpClientSample.VhStopSingle.StopSingleOn;
+            else
+                Vehicle.Instance.ObstacleStatus = TcpIpClientSample.VhStopSingle.StopSingleOff;
+            
             if (MoveState == EnumMoveState.Idle || MoveState == EnumMoveState.Error)
                 AGVState = MoveState.ToString();
             else
@@ -3813,6 +3847,7 @@ namespace Mirle.Agv.Controller
                 ControlData.OntimeReviseFlag = false;
                 ControlData.MoveControlCommandComplete = true;
                 ControlData.MoveControlCommandCompleteTimer.Restart();
+                Vehicle.Instance.ObstacleStatus = TcpIpClientSample.VhStopSingle.StopSingleOff; 
             }
 
             if (ControlData.CommandMoving)
@@ -4897,6 +4932,19 @@ namespace Mirle.Agv.Controller
                         }
 
                         logger.LogString(csvLog);
+                    }
+
+                    if (loopTimeTimer.ElapsedMilliseconds >= 1000)
+                    {
+                        try
+                        {
+                            WriteLog("MoveControl", "7", device, "", String.Concat("looptimer : ", loopTimeTimer.ElapsedMilliseconds.ToString("0"), " , CSV Thread 對 Plc 下斷驅動器電"));
+                            plcAgent.SetForcELMOServoOffOn();
+                        }
+                        catch
+                        {
+                            WriteLog("MoveControl", "7", device, "", "通知PLC斷Elmo驅動器的電源,但跳Excption!");
+                        }
                     }
 
                     while (timer.ElapsedMilliseconds < moveControlConfig.CSVLogInterval)

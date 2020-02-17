@@ -1,15 +1,15 @@
 ﻿using NUnit.Framework;
-using Mirle.Agv.Model;
+using Mirle.AgvAseMiddler.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
-using Mirle.Agv.Model.TransferSteps;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
 using System.Reflection;
 
-namespace Mirle.Agv.Model.Tests
+namespace Mirle.AgvAseMiddler.Model.Tests
 {
     [TestFixture()]
     public class CarrierTests
@@ -107,6 +107,32 @@ namespace Mirle.Agv.Model.Tests
         {
             int xxx = await Task.Run(() => foo1());
             return 2;
+        }
+
+
+
+        [Test()]
+        public void AsignTest()
+        {
+            string a = "xx";
+            string b = "yy";
+            a = b;
+
+            Assert.AreEqual("yy", a);
+            Assert.AreEqual("yy", b);
+
+
+            b = "yyy";
+
+            //Assert.AreEqual("yyy", a);
+            Assert.AreEqual("yyy", b);
+
+            //a = "xxx";
+
+            //Assert.AreEqual("xxx", a);
+            ////Assert.AreEqual("xxx", b);
+
+
         }
 
     }

@@ -1,18 +1,19 @@
-﻿using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.Configs;
-using Mirle.Agv.Model.TransferSteps;
+﻿using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.Configs;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
 using System;
 using System.Collections.Generic;
+using Mirle.Tools;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class CreateMoveControlList
     {
         private MoveControlConfig moveControlConfig;
         private ComputeFunction computeFunction = new ComputeFunction();
         private AlarmHandler alarmHandler;
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
         private string device = "MoveControl";
         private List<VChangeData> vChangeList;
         private List<Sr2000Config> sr2000Config;
@@ -47,7 +48,7 @@ namespace Mirle.Agv.Controller
             string classMethodName = String.Concat(GetType().Name, ":", memberName);
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(logFormat);
             SetCreateCommandListLog(memberName, message);
         }
 

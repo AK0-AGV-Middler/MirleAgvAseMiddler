@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv.View
+﻿namespace Mirle.AgvAseMiddler.View
 {
     partial class InitialForm
     {
@@ -97,7 +97,7 @@
             // 
             // PictureBox3
             // 
-            this.PictureBox3.Image = global::Mirle.Agv.Properties.Resources.Mirle_口號;
+            this.PictureBox3.Image = global::Mirle.AgvAseMiddler.Properties.Resources.Mirle_口號;
             this.PictureBox3.Location = new System.Drawing.Point(165, 12);
             this.PictureBox3.Name = "PictureBox3";
             this.PictureBox3.Size = new System.Drawing.Size(219, 31);
@@ -106,7 +106,7 @@
             // 
             // PictureBox2
             // 
-            this.PictureBox2.Image = global::Mirle.Agv.Properties.Resources.Mirle_LOGO;
+            this.PictureBox2.Image = global::Mirle.AgvAseMiddler.Properties.Resources.Mirle_LOGO;
             this.PictureBox2.Location = new System.Drawing.Point(-4, 1);
             this.PictureBox2.Name = "PictureBox2";
             this.PictureBox2.Size = new System.Drawing.Size(141, 48);
@@ -129,7 +129,7 @@
             // 
             // PictureBox1
             // 
-            this.PictureBox1.Image = global::Mirle.Agv.Properties.Resources.Mirle_Home;
+            this.PictureBox1.Image = global::Mirle.AgvAseMiddler.Properties.Resources.Mirle_Home;
             this.PictureBox1.Location = new System.Drawing.Point(-4, 1);
             this.PictureBox1.Name = "PictureBox1";
             this.PictureBox1.Size = new System.Drawing.Size(421, 268);

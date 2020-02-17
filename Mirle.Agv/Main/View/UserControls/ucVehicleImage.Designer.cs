@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv
+﻿namespace Mirle.AgvAseMiddler
 {
     partial class UcVehicleImage
     {
@@ -35,7 +35,7 @@
             // picVeh
             // 
             this.picVeh.BackColor = System.Drawing.Color.Transparent;
-            this.picVeh.Image = global::Mirle.Agv.Properties.Resources.VehHasNoCarrier;
+            this.picVeh.Image = global::Mirle.AgvAseMiddler.Properties.Resources.VehHasNoCarrier;
             this.picVeh.Location = new System.Drawing.Point(0, 3);
             this.picVeh.Name = "picVeh";
             this.picVeh.Size = new System.Drawing.Size(40, 28);

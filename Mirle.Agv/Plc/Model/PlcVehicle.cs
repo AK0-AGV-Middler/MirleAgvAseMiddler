@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Controller;
+using Mirle.AgvAseMiddler.Controller;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     [Serializable]
     public class PlcVehicle : VehicleIntegrateStatus
@@ -118,8 +118,7 @@ namespace Mirle.Agv.Model
             InitialPLCBeamSensor();
             InitialPlcBumpers();
             InitialPlcEmos();
-            InitialBatteryCells();
-            RobotHome = Robot.ForkHome;
+            InitialBatteryCells();            
         }
 
         #region HardCode PlcBeamSensors/PlcBumpers/PlcEmos will fix in config.xml
@@ -342,5 +341,5 @@ namespace Mirle.Agv.Model
             dicBeamSensor.Add(aPlcBeamSensor.PlcWriteSleepTagId, aPlcBeamSensor);
         }
 
-    }   
+    }
 }

@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv
+﻿namespace Mirle.AgvAseMiddler
 {
     partial class JogPitchAxis
     {

@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf.Collections;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model.Configs;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model.Configs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,8 +10,9 @@ using System.Reflection;
 using System.Windows.Forms;
 using TcpIpClientSample;
 using System.Threading.Tasks;
+using Mirle.Tools;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class MiddlerForm : Form
     {
@@ -68,7 +69,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -80,7 +81,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -97,7 +98,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -420,16 +421,6 @@ namespace Mirle.Agv.View
             }
         }
 
-
-        private void SaveMiddlerConfigs()
-        {
-            string iniPath = Path.Combine(Environment.CurrentDirectory, "Configs.ini");
-            var configHandler = new ConfigHandler(iniPath);
-
-            configHandler.SetString("Middler", "RemoteIp", middlerConfig.RemoteIp);
-            configHandler.SetString("Middler", "RemotePort", middlerConfig.RemotePort.ToString());
-        }
-
         private void btnIsClientAgentNull_Click(object sender, EventArgs e)
         {
             if (middleAgent.IsClientAgentNull())
@@ -461,7 +452,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -485,13 +476,13 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
+        }        
 
-        private void button1_Click(object sender, EventArgs e)
+        private void LogException(string classMethodName,string exMsg)
         {
-            middleAgent.TEST();
+            MirleLogger.Instance.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
         }
     }
 }

@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Windows.Forms;
 using System.IO;
-using Mirle.Agv.Model;
-using Mirle.Agv.Controller;
-using Mirle.Agv.Controller.Tools;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Controller.Tools;
 using System.Reflection;
 using System.Threading;
+using Mirle.Tools;
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class AlarmForm : Form
     {
@@ -81,7 +82,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -111,7 +112,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -128,7 +129,7 @@ namespace Mirle.Agv.View
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -136,6 +137,12 @@ namespace Mirle.Agv.View
         {
             tbxHappendingAlarms.Text = HappenedingAlarmsMsg;
             tbxHistoryAlarms.Text = HistoryAlarmsMsg;
+        }
+
+        private void LogException(string source, string exMsg)
+        {
+            MirleLogger.Instance.Log(new LogFormat("Error", "5", source, "Device", "CarrierID", exMsg));
+
         }
     }
 }

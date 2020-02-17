@@ -1,14 +1,15 @@
-﻿using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.Configs;
+﻿using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.Configs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Mirle.Tools;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class AgvMoveRevise
     {
@@ -19,7 +20,6 @@ namespace Mirle.Agv.Controller
         private OneTimeReviseParameter oneTimeReviseParameter = new OneTimeReviseParameter();
         Dictionary<EnumMoveControlSafetyType, SafetyData> safety;
         private ComputeFunction computeFunction = new ComputeFunction();
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
         private string device = "AgvMoveRevise";
         private uint lastCount = 0;
         private int lastSR2000Index = -1;
@@ -43,9 +43,9 @@ namespace Mirle.Agv.Controller
             string classMethodName = GetType().Name + ":" + memberName;
             LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
 
-            loggerAgent.Log(logFormat.Category, logFormat);
+            MirleLogger.Instance.Log(logFormat);
         }
-        
+
         #region 即時修正
         private bool LineRevise(ref double[] wheelTheta, double theta, double sectionDeviation, bool isOldCompute = true)
         {
@@ -220,7 +220,7 @@ namespace Mirle.Agv.Controller
             reviseParameter.ThetaCommandSpeed = 10;
         }
         #endregion
-        
+
         #region 角度偏差檢查
         private bool CheckTehtaSectionDeviationSafe(double wheelAngle, double theta, double sectionDeviation, ref string safetyMessage)
         {
@@ -284,7 +284,7 @@ namespace Mirle.Agv.Controller
             return true;
         }
         #endregion
-        
+
         public bool OntimeRevise(ref double[] wheelTheta, int wheelAngle, double velocity, ref string safetyMessage)
         {
             ThetaSectionDeviation reviseData = null;
@@ -305,7 +305,7 @@ namespace Mirle.Agv.Controller
                         reviseData = null;
                 }
             }
-            
+
             if (!elmoDriver.MoveCompelete(EnumAxis.GT))
                 return false;
 

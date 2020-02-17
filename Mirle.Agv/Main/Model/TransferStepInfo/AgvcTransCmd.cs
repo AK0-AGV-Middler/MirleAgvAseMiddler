@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Controller;
+using Mirle.AgvAseMiddler.Controller;
 using TcpIpClientSample;
 using Google.Protobuf.Collections;
 using System.Reflection;
-using Mirle.Agv.Controller.Tools;
+using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.Tools;
 
-namespace Mirle.Agv.Model.TransferSteps
+namespace Mirle.AgvAseMiddler.Model.TransferSteps
 {
     [Serializable]
     public class AgvcTransCmd
@@ -177,6 +178,11 @@ namespace Mirle.Agv.Model.TransferSteps
             ToUnloadAddressIds = agvcMoveCmd.ToUnloadAddressIds;
             AvoidEndAddressId = agvcMoveCmd.UnloadAddressId;
         }
+
+        protected void LogException(string source,string exMsg)
+        {
+            MirleLogger.Instance.Log(new LogFormat("Error", "5", source, "Device", "CarrierID", exMsg));
+        }
     }
 
     public class AgvcMoveCmd : AgvcTransCmd
@@ -192,7 +198,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,ex.StackTrace);
             }
         }
 
@@ -208,7 +214,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -232,7 +238,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -249,7 +255,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -269,7 +275,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }
@@ -302,7 +308,7 @@ namespace Mirle.Agv.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LoggerAgent.Instance.Log("Error", new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
     }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv.Model
+namespace Mirle.AgvAseMiddler.Model
 {
     public class Sr2000ReadData
     {

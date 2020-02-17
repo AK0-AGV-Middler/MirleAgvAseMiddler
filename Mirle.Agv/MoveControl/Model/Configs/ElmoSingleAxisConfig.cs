@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ElmoMotionControl.GMAS.EASComponents.MMCLibDotNET;
 using ElmoMotionControlComponents.Drive.EASComponents;
 
-namespace Mirle.Agv.Model.Configs
+namespace Mirle.AgvAseMiddler.Model.Configs
 {
     public class ElmoSingleAxisConfig
     {

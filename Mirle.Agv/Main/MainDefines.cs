@@ -6,7 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     #region MainEnums
     public enum EnumSectionType
@@ -208,6 +208,20 @@ namespace Mirle.Agv
         None,
         Section,
         Address
+    }
+
+    public enum EnumPspConnectionState
+    {
+        Offline,
+        Online,
+        CheckCheckConnectMode
+    }
+
+    public enum EnumAseRobotState
+    {
+        Idle,
+        Busy,
+        Error
     }
     #endregion
 

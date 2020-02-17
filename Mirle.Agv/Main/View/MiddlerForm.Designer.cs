@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv.View
+﻿namespace Mirle.AgvAseMiddler.View
 {
     partial class MiddlerForm
     {
@@ -50,7 +50,6 @@
             this.btnHide = new System.Windows.Forms.Button();
             this.tbxCommLogMsg = new System.Windows.Forms.TextBox();
             this.timerUI = new System.Windows.Forms.Timer(this.components);
-            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -275,16 +274,6 @@
             this.timerUI.Interval = 500;
             this.timerUI.Tick += new System.EventHandler(this.timerUI_Tick);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(639, 6);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(171, 27);
-            this.button1.TabIndex = 61;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // MiddlerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -293,7 +282,6 @@
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.ClientSize = new System.Drawing.Size(1295, 871);
             this.ControlBox = false;
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.tbxCommLogMsg);
             this.Controls.Add(this.btnHide);
             this.Controls.Add(this.statusStrip1);
@@ -345,6 +333,5 @@
         private System.Windows.Forms.Button btnHide;
         private System.Windows.Forms.TextBox tbxCommLogMsg;
         private System.Windows.Forms.Timer timerUI;
-        private System.Windows.Forms.Button button1;
     }
 }

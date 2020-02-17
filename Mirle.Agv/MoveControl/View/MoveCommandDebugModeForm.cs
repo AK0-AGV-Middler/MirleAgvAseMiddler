@@ -1,6 +1,6 @@
-﻿using Mirle.Agv.Controller;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.TransferSteps;
+﻿using Mirle.AgvAseMiddler.Controller;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,7 +10,7 @@ using System.Threading;
 using System.Windows.Forms;
 
 
-namespace Mirle.Agv.View
+namespace Mirle.AgvAseMiddler.View
 {
     public partial class MoveCommandDebugModeForm : MoveCommandForm
     {

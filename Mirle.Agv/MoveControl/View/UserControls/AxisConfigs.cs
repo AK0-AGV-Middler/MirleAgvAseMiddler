@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reflection;
 
-namespace Mirle.Agv
+namespace Mirle.AgvAseMiddler
 {
     public partial class AxisConfigs : UserControl
     {

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.TransferSteps;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
 
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public abstract class IntegrateControlPlate : IRobotControl, IBatterysControl, IBuzzerControl
     {
@@ -33,7 +33,7 @@ namespace Mirle.Agv.Controller
 
     public class IntegrateControlFactory
     {
-        public IntegrateControlPlate GetIntegrateControl(string type,ClsMCProtocol.MCProtocol mcProtocol,AlarmHandler alarmHandler)
+        public IntegrateControlPlate GetIntegrateControl(string type,ClsMCProtocol.MCProtocol mcProtocol,AlarmHandler alarmHandler,PSDriver.PSDriver.PSWrapperXClass psWrapper)
         {
             IntegrateControlPlate integrateControlPlate = null;
 
@@ -43,7 +43,7 @@ namespace Mirle.Agv.Controller
             }
             else if (type == "ASE")
             {
-                integrateControlPlate = new AseIntegrateControl();
+                integrateControlPlate = new AseIntegrateControl(psWrapper);
             }
 
             return integrateControlPlate;

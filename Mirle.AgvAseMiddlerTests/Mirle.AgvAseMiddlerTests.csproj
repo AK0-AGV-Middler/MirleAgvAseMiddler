@@ -77,9 +77,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Mirle.Agv\Mirle.Agv.csproj">
+    <ProjectReference Include="..\Mirle.Agv\Mirle.AgvAseMiddler.csproj">
       <Project>{F88F96FD-CDDF-467E-9B1F-ABD97BD7F7C5}</Project>
-      <Name>Mirle.Agv</Name>
+      <Name>Mirle.AgvAseMiddler</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

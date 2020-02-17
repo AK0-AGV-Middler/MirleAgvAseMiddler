@@ -1,6 +1,6 @@
-﻿using Mirle.Agv.Controller.Tools;
-using Mirle.Agv.Model;
-using Mirle.Agv.Model.Configs;
+﻿using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.Configs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Mirle.Agv.Controller
+namespace Mirle.AgvAseMiddler.Controller
 {
     public class SLAMControl
     {
@@ -17,16 +17,14 @@ namespace Mirle.Agv.Controller
         public List<EnumSLAMType> AllSLAMList = new List<EnumSLAMType>();
         private SLAM usingSLAM = null;
         private string device = "MoveControl";
-        private LoggerAgent loggerAgent = LoggerAgent.Instance;
+        private Mirle.Tools.MirleLogger mirleLogger = Mirle.Tools.MirleLogger.Instance;
         private SLAMConfig slamConfig;
 
         private void WriteLog(string category, string logLevel, string device, string carrierId, string message,
                              [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
             string classMethodName = String.Concat(GetType().Name, ":", memberName);
-            LogFormat logFormat = new LogFormat(category, logLevel, classMethodName, device, carrierId, message);
-
-            loggerAgent.Log(logFormat.Category, logFormat);
+            mirleLogger.Log(new Mirle.Tools.LogFormat(category, logLevel, classMethodName, device, carrierId, message));
         }
 
         private void ReadSLAMConfigXML(string path)
