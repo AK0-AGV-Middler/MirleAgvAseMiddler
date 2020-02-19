@@ -224,7 +224,7 @@ namespace Mirle.AgvAseMiddler
         Error
     }
 
-    public enum EnumMoveState
+    public enum EnumAseMoveState
     {
         Idle,
         Working,
@@ -234,6 +234,29 @@ namespace Mirle.AgvAseMiddler
         Stop,
         Error
     }
+
+    public enum EnumAseCarrierSlotStatus
+    {
+        Empty,
+        Loading,
+        ReadFail
+    }
+
+    public enum EnumMoveComplete
+    {
+        Success,
+        Fail,
+        Pause,
+        Cancel
+    }
+
+    public enum EnumStageDirection
+    {
+        None,
+        Left,
+        Right
+    }
+
     #endregion
 
     /// <summary>

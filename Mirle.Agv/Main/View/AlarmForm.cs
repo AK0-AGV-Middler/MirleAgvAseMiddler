@@ -70,7 +70,7 @@ namespace Mirle.AgvAseMiddler.View
 
         private void btnBuzzOff_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.GetIntegrateControlPlate().StopBuzzer();
+            mainFlowHandler.BuzzOff();
         }
 
         private void btnTestSetAlarm_Click(object sender, EventArgs e)

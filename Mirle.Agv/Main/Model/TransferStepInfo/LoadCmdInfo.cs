@@ -8,18 +8,16 @@ using Mirle.AgvAseMiddler.Controller;
 namespace Mirle.AgvAseMiddler.Model.TransferSteps
 {
     [Serializable]
-    public class LoadCmdInfo : TransferStep
-    {
-        public string LoadAddress { get; set; } = "";
-        public int StageNum { get; set; }
-        public EnumStageDirection StageDirection { get; set; } = EnumStageDirection.None;
-        public bool IsEqPio { get; set; }
-        public ushort ForkSpeed { get; set; } = 100;
-
-        public LoadCmdInfo():this(new MainFlowHandler()) { }
-        public LoadCmdInfo(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
+    public class LoadCmdInfo : RobotCommand
+    {          
+        public LoadCmdInfo(MainFlowHandler mainFlowHandler, AgvcTransCmd agvcTransCmd) : base(mainFlowHandler, agvcTransCmd)
         {
-            type = EnumTransferStepType.Load;
+            this.type = EnumTransferStepType.Load;
+            this.PortAddress = agvcTransCmd.LoadAddressId;
+            this.SlotNumber = agvcTransCmd.SlotNumber;
+            MapAddress mapAddress = theMapInfo.allMapAddresses[PortAddress];
+            this.IsEqPio = mapAddress.PioDirection != EnumPioDirection.None;
+            this.PioDirection = mapAddress.PioDirection;            
         }
     }
 }

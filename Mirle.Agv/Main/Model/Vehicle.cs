@@ -47,7 +47,18 @@ namespace Mirle.AgvAseMiddler.Model
         }
         public event EventHandler<string> OnAutoStateChangeEvent;
 
-        public MoveStatus MoveStatus { get; set; } = new MoveStatus();
+        #region AsePackage
+
+        public AseMoveStatus AseMoveStatus { get; set; } = new AseMoveStatus();
+        public AseRobotStatus AseRobotStatus { get; set; } = new AseRobotStatus();
+        public AseCarrierSlotStatus AseCarrierSlotA { get; set; } = new AseCarrierSlotStatus();
+        public AseCarrierSlotStatus AseCarrierSlotB { get; set; } = new AseCarrierSlotStatus();
+        public bool IsCharging { get; set; } = false;
+        public AseBatteryStatus AseBatteryStatus { get; set; } = new AseBatteryStatus();
+        public double AutoChargeLowThreshold { get; set; } = 50;
+        public double AutoChargeHighThreshold { get; set; } = 90;
+
+        #endregion
 
         public EnumThreadStatus VisitTransferStepsStatus { get; set; } = EnumThreadStatus.None;
         public EnumThreadStatus TrackPositionStatus { get; set; } = EnumThreadStatus.None;
@@ -72,18 +83,7 @@ namespace Mirle.AgvAseMiddler.Model
         public string TeachingToAddress { get; internal set; } = "";
         #endregion
 
-        private Vehicle()
-        {
-        }
-
-        #region Getter and Setter
-
-        public void CreateVehicleIntegrateStatus()
-        {
-            TheVehicleIntegrateStatus = new VehicleIntegrateStatusFactory().GetVehicleIntegrateStatus(TheMainFlowConfig.CustomerName);
-        }
-
-        #endregion
+        private Vehicle() { }             
 
     }
 }

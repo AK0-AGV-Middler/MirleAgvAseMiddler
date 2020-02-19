@@ -32,6 +32,7 @@ namespace Mirle.AgvAseMiddler.Model.TransferSteps
         public VhStopSingle ReserveStatus { get; set; } = VhStopSingle.StopSingleOff;
         public bool IsAvoidComplete { get; set; }
         public int RobotNgRetryTimes { get; set; } = 1;
+        public string SlotNumber { get; set; } = "A";
 
         public AgvcTransCmd()
         {

@@ -50,13 +50,11 @@ namespace Mirle.AgvAseMiddler.Controller
         #region Controller
 
         private AgvcConnector agvcConnector;
-        private IntegrateControlPlate integrateControlPlate;
         private MirleLogger mirleLogger = null;
         private AlarmHandler alarmHandler;
         private MapHandler mapHandler;
-        private MoveControlPlate moveControlPlate;
         private XmlHandler xmlHandler = new XmlHandler();
-        private PSDriver.PSDriver.PSWrapperXClass psWrapper;
+        private AsePackage asePackage;
 
         #endregion
 
@@ -163,11 +161,10 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             try
             {
-                mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
+                mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
                 Vehicle.Instance.TheMainFlowConfig = mainFlowConfig;
-                Vehicle.Instance.CreateVehicleIntegrateStatus();
                 mapConfig = xmlHandler.ReadXml<MapConfig>(@"D:\AgvConfigs\Map.xml");
-                agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"D:\AgvConfigs\Middler.xml");
+                agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"D:\AgvConfigs\Alarm.xml");
                 batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");
                 InitialSoc = batteryLog.InitialSoc;
@@ -213,10 +210,8 @@ namespace Mirle.AgvAseMiddler.Controller
                 TheMapInfo = mapHandler.TheMapInfo;
                 mcProtocol = new MCProtocol();
                 mcProtocol.Name = "MCProtocol";
-                psWrapper = new PSDriver.PSDriver.PSWrapperXClass();
-                integrateControlPlate = new IntegrateControlFactory().GetIntegrateControl(mainFlowConfig.CustomerName, mcProtocol, alarmHandler, psWrapper);
-                moveControlPlate = new MoveControlFactory().GetMoveControl(mainFlowConfig.CustomerName, TheMapInfo, alarmHandler, integrateControlPlate);
                 agvcConnector = new AgvcConnector(this);
+                asePackage = new AsePackage();
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
             catch (Exception ex)
@@ -255,20 +250,20 @@ namespace Mirle.AgvAseMiddler.Controller
                 agvcConnector.OnAvoideRequestEvent += MiddleAgent_OnAvoideRequestEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-                moveControlPlate.OnMoveFinish += MoveControl_OnMoveFinished;
-                moveControlPlate.OnRetryMoveFinish += MoveControl_OnRetryMoveFinished;
+                asePackage.aseMoveControl.OnMoveFinishEvent += MoveControl_OnMoveFinished;
+                asePackage.aseMoveControl.OnRetryMoveFinishEvent += MoveControl_OnRetryMoveFinished;
 
                 //來自IRobotControl的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-                integrateControlPlate.OnRobotInterlockErrorEvent += IntegrateControl_OnForkCommandInterlockErrorEvent;
-                integrateControlPlate.OnRobotCommandFinishEvent += IntegrateContorl_OnForkCommandFinishEvent;
-                integrateControlPlate.OnRobotCommandErrorEvent += IntegrateControl_OnForkCommandErrorEvent;
+                asePackage.aseRobotControl.OnRobotInterlockErrorEvent += AseRobotControl_OnRobotInterlockErrorEvent;
+                asePackage.aseRobotControl.OnRobotCommandFinishEvent += AseRobotContorl_OnRobotCommandFinishEvent;
+                asePackage.aseRobotControl.OnRobotCommandErrorEvent += AseRobotControl_OnRobotCommandErrorEvent;
 
                 //來自IRobot的CarrierId讀取訊息，通知middleAgent
-                integrateControlPlate.OnReadCarrierIdFinishEvent += IntegrateControl_OnReadCarrierIdFinishEvent;
+                asePackage.aseRobotControl.OnReadCarrierIdFinishEvent += AseRobotControl_OnReadCarrierIdFinishEvent;
 
                 //來自IBatterysControl的電量改變訊息，通知middleAgent
-                integrateControlPlate.OnBatteryPercentageChangeEvent += agvcConnector.IntegrateControl_OnBatteryPercentageChangeEvent;
-                integrateControlPlate.OnBatteryPercentageChangeEvent += IntegrateControl_OnBatteryPercentageChangeEvent;
+                asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
+                asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += AseBatteryControl_OnBatteryPercentageChangeEvent;
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
@@ -291,6 +286,8 @@ namespace Mirle.AgvAseMiddler.Controller
                 LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
+
+
 
         private void TheVehicle_OnAutoStateChangeEvent(object sender, string e)
         {
@@ -1415,7 +1412,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
+            UnloadCmdInfo unloadCmd = new UnloadCmdInfo(this, agvcTransCmd);
             transferSteps.Add(unloadCmd);
         }
         private void ConvertAgvcUnloadCmdIntoList(AgvcTransCmd agvcTransCmd, List<TransferStep> transferSteps)
@@ -1424,7 +1421,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
+            UnloadCmdInfo unloadCmd = new UnloadCmdInfo(this, agvcTransCmd);
             transferSteps.Add(unloadCmd);
         }
 
@@ -1434,7 +1431,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
+            UnloadCmdInfo unloadCmd = new UnloadCmdInfo(this, agvcTransCmd);
             transferSteps.Add(unloadCmd);
         }
         private void ConvertAgvcNextUnloadCmdIntoList(AgvcTransCmd agvcTransCmd, List<TransferStep> transferSteps)
@@ -1443,7 +1440,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
+            UnloadCmdInfo unloadCmd = new UnloadCmdInfo(this, agvcTransCmd);
             transferSteps.Add(unloadCmd);
         }
 
@@ -1453,7 +1450,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
+            UnloadCmdInfo unloadCmd = new UnloadCmdInfo(this, agvcTransCmd);
             transferSteps.Add(unloadCmd);
         }
         private void ConvertOverrideAgvcNextUnloadCmdIntoList(AgvcTransCmd agvcTransCmd, List<TransferStep> transferSteps)
@@ -1462,7 +1459,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            UnloadCmdInfo unloadCmd = GetUnloadCmdInfo(agvcTransCmd);
+            UnloadCmdInfo unloadCmd = new UnloadCmdInfo(this, agvcTransCmd);
             transferSteps.Add(unloadCmd);
         }
 
@@ -1472,7 +1469,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            LoadCmdInfo loadCmd = GetLoadCmdInfo(agvcTransCmd);
+            LoadCmdInfo loadCmd = new LoadCmdInfo(this, agvcTransCmd);
             transferSteps.Add(loadCmd);
         }
         private void ConvertAgvcLoadCmdIntoList(AgvcTransCmd agvcTransCmd, List<TransferStep> transferSteps)
@@ -1481,7 +1478,7 @@ namespace Mirle.AgvAseMiddler.Controller
             moveCmd.IsMoveEndDoLoadUnload = true;
             transferSteps.Add(moveCmd);
 
-            LoadCmdInfo loadCmd = GetLoadCmdInfo(agvcTransCmd);
+            LoadCmdInfo loadCmd = new LoadCmdInfo(this,agvcTransCmd);
             transferSteps.Add(loadCmd);
         }
 
@@ -1631,58 +1628,6 @@ namespace Mirle.AgvAseMiddler.Controller
             }
             return moveCmd;
         }
-        private LoadCmdInfo GetLoadCmdInfo(AgvcTransCmd agvcTransCmd)
-        {
-            LoadCmdInfo loadCmd = new LoadCmdInfo();
-            loadCmd.CstId = agvcTransCmd.CassetteId;
-            loadCmd.CmdId = agvcTransCmd.CommandId;
-            loadCmd.LoadAddress = agvcTransCmd.LoadAddressId;
-            MapAddress mapAddress = TheMapInfo.allMapAddresses[loadCmd.LoadAddress];
-            loadCmd.IsEqPio = mapAddress.PioDirection == EnumPioDirection.None ? false : true;
-            if (mapAddress.CanLeftLoad && !mapAddress.CanRightLoad)
-            {
-                loadCmd.StageDirection = EnumStageDirection.Left;
-                loadCmd.StageNum = 1;
-            }
-            else if (!mapAddress.CanLeftLoad && mapAddress.CanRightLoad)
-            {
-                loadCmd.StageDirection = EnumStageDirection.Right;
-                loadCmd.StageNum = 2;
-            }
-            else
-            {
-                loadCmd.StageDirection = EnumStageDirection.None;
-                loadCmd.StageNum = 3;
-            }
-
-            return loadCmd;
-        }
-        private UnloadCmdInfo GetUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
-        {
-            UnloadCmdInfo unloadCmd = new UnloadCmdInfo();
-            unloadCmd.CstId = agvcTransCmd.CassetteId;
-            unloadCmd.CmdId = agvcTransCmd.CommandId;
-            unloadCmd.UnloadAddress = agvcTransCmd.UnloadAddressId;
-            MapAddress mapAddress = TheMapInfo.allMapAddresses[unloadCmd.UnloadAddress];
-            unloadCmd.IsEqPio = mapAddress.PioDirection == EnumPioDirection.None ? false : true;
-            if (mapAddress.CanLeftUnload && !mapAddress.CanRightUnload)
-            {
-                unloadCmd.StageDirection = EnumStageDirection.Left;
-                unloadCmd.StageNum = 1;
-            }
-            else if (!mapAddress.CanLeftUnload && mapAddress.CanRightUnload)
-            {
-                unloadCmd.StageDirection = EnumStageDirection.Right;
-                unloadCmd.StageNum = 2;
-            }
-            else
-            {
-                unloadCmd.StageDirection = EnumStageDirection.None;
-                unloadCmd.StageNum = 3;
-            }
-
-            return unloadCmd;
-        }
         public AgvcTransCmd GetAgvcTransCmd() => agvcTransCmd;
         private void ConvertAgvcMoveCmdIntoList(AgvcTransCmd agvcTransCmd)
         {
@@ -1800,7 +1745,12 @@ namespace Mirle.AgvAseMiddler.Controller
                     ? mapSection.TailAddress
                     : mapSection.HeadAddress;
 
-                bool updateResult = moveControlPlate.PartMove(address.Position);
+                //TODO: calculate isEnd/theta/speed
+                bool isEnd = false;
+                int theta = 0;
+                int speed = 400;
+
+                asePackage.aseMoveControl.PartMove(isEnd, address.Position, theta, speed);
                 OnMessageShowEvent?.Invoke(this, $"通知MoveControl延攬通行權{mapSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
             }
             catch (Exception ex)
@@ -1928,9 +1878,9 @@ namespace Mirle.AgvAseMiddler.Controller
                 int timeoutCount = 10;
                 while (true)
                 {
-                    if (integrateControlPlate.IsRobotCommandExist())
+                    if (asePackage.aseRobotControl.IsRobotCommandExist())
                     {
-                        integrateControlPlate.ClearRobotCommand();
+                        asePackage.aseRobotControl.ClearRobotCommand();
                         SpinWait.SpinUntil(() => false, 200);
                     }
                     else
@@ -2054,7 +2004,11 @@ namespace Mirle.AgvAseMiddler.Controller
             }
         }
 
-        public void IntegrateContorl_OnForkCommandFinishEvent(object sender, TransferStep transferStep)
+        private void AseRobotControl_OnRobotCommandErrorEvent(object sender, TransferStep transferStep)
+        {
+        }
+
+        public void AseRobotContorl_OnRobotCommandFinishEvent(object sender, TransferStep transferStep)
         {
             try
             {
@@ -2069,13 +2023,14 @@ namespace Mirle.AgvAseMiddler.Controller
                 }
                 else if (transferStepType == EnumTransferStepType.Unload)
                 {
-                    if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
+                    //TODO: Slot A and Slot B
+                    if (theVehicle.AseCarrierSlotA.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
                     {
                         alarmHandler.SetAlarm(000007);
                         return;
                     }
 
-                    theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = "";
+                    theVehicle.AseCarrierSlotA.CarrierId = "";
 
                     agvcConnector.UnloadComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨完成");
@@ -2087,46 +2042,45 @@ namespace Mirle.AgvAseMiddler.Controller
                 LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-        private void IntegrateControl_OnForkCommandErrorEvent(object sender, TransferStep transferStep)
-        {
 
-        }
-        private void IntegrateControl_OnReadCarrierIdFinishEvent(object sender, string cstId)
+        private void AseRobotControl_OnReadCarrierIdFinishEvent(object sender, string slotNumber)
         {
             try
             {
                 #region 2019.12.16 Report to Agvc when ForkFinished
 
-                if (string.IsNullOrEmpty(cstId) || cstId == "ERROR")
+                AseCarrierSlotStatus aseCarrierSlotStatus = GetCarrierSlotStatusFromSlotNumber(slotNumber);
+
+                if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.ReadFail)
                 {
                     var msg = $"貨物ID讀取失敗";
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Fail;
                     alarmHandler.SetAlarm(000004);
                 }
-                else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != cstId)
+                else if (!IsAgvcTransferCommandEmpty() && agvcTransCmd.CassetteId != aseCarrierSlotStatus.CarrierId)
                 {
-                    var msg = $"貨物ID[{cstId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合";
+                    var msg = $"貨物ID[{aseCarrierSlotStatus.CarrierId}]，與命令要求貨物ID[{agvcTransCmd.CassetteId}]不合";
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Mismatch;
                     alarmHandler.SetAlarm(000028);
                 }
                 else
                 {
-                    var msg = $"貨物ID[{cstId}]讀取成功";
+                    var msg = $"貨物ID[{aseCarrierSlotStatus.CarrierId}]讀取成功";
                     OnMessageShowEvent?.Invoke(this, msg);
                     ReadResult = EnumCstIdReadResult.Noraml;
                 }
-                theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = cstId;
 
                 #endregion
             }
             catch (Exception ex)
             {
-                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-        private void IntegrateControl_OnForkCommandInterlockErrorEvent(object sender, TransferStep transferStep)
+
+        private void AseRobotControl_OnRobotInterlockErrorEvent(object sender, TransferStep transferStep)
         {
             try
             {
@@ -2149,7 +2103,7 @@ namespace Mirle.AgvAseMiddler.Controller
                                 OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常，充電已停止，觸發重試機制。");
                                 LogRetry(agvcTransCmd.RobotNgRetryTimes);
                                 IsRetryArrival = false;
-                                moveControlPlate.RetryMove();
+                                asePackage.aseMoveControl.RetryMove();
                                 return;
                             }
                         }
@@ -2246,7 +2200,9 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public void Unload(UnloadCmdInfo unloadCmd)
         {
-            if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId == "")
+            AseCarrierSlotStatus aseCarrierSlotStatus = GetCarrierSlotStatusFromSlotNumber(unloadCmd.SlotNumber);
+
+            if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
             {
                 alarmHandler.SetAlarm(000017);
                 return;
@@ -2259,9 +2215,9 @@ namespace Mirle.AgvAseMiddler.Controller
                     int timeoutCount = 10;
                     while (true)
                     {
-                        if (integrateControlPlate.IsRobotCommandExist())
+                        if (asePackage.aseRobotControl.IsRobotCommandExist())
                         {
-                            integrateControlPlate.ClearRobotCommand();
+                            asePackage.aseRobotControl.ClearRobotCommand();
                             SpinWait.SpinUntil(() => false, 200);
                         }
                         else
@@ -2287,10 +2243,10 @@ namespace Mirle.AgvAseMiddler.Controller
 
                     agvcConnector.Unloading();
                     PublishOnDoTransferStepEvent(unloadCmd);
-                    Task.Run(() => integrateControlPlate.DoRobotCommand(unloadCmd));
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.StageDirection}][編號={unloadCmd.StageNum}][是否PIO={unloadCmd.IsEqPio}]");
-                    batteryLog.LoadUnloadCount++;
-                    SaveBatteryLog();
+                    Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(unloadCmd));
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.PioDirection}][編號={unloadCmd.SlotNumber}][是否PIO={unloadCmd.IsEqPio}]");
+                    //batteryLog.LoadUnloadCount++;
+                    //SaveBatteryLog();
                 }
                 catch (Exception ex)
                 {
@@ -2301,7 +2257,9 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public void Load(LoadCmdInfo loadCmd)
         {
-            if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId != "")
+            AseCarrierSlotStatus aseCarrierSlotStatus = GetCarrierSlotStatusFromSlotNumber(loadCmd.SlotNumber);
+
+            if (aseCarrierSlotStatus.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
             {
                 alarmHandler.SetAlarm(000016);
                 return;
@@ -2314,9 +2272,9 @@ namespace Mirle.AgvAseMiddler.Controller
                     int timeoutCount = 10;
                     while (true)
                     {
-                        if (integrateControlPlate.IsRobotCommandExist())
+                        if (asePackage.aseRobotControl.IsRobotCommandExist())
                         {
-                            integrateControlPlate.ClearRobotCommand();
+                            asePackage.aseRobotControl.ClearRobotCommand();
                             SpinWait.SpinUntil(() => false, 200);
                         }
                         else
@@ -2344,15 +2302,28 @@ namespace Mirle.AgvAseMiddler.Controller
                     agvcConnector.Loading();
                     PublishOnDoTransferStepEvent(loadCmd);
                     ReadResult = EnumCstIdReadResult.Noraml;
-                    Task.Run(() => integrateControlPlate.DoRobotCommand(loadCmd));
-                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.StageDirection}][編號={loadCmd.StageNum}][是否PIO={loadCmd.IsEqPio}]");
-                    batteryLog.LoadUnloadCount++;
-                    SaveBatteryLog();
+                    Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(loadCmd));
+                    OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.PioDirection}][編號={loadCmd.SlotNumber}][是否PIO={loadCmd.IsEqPio}]");
+                    //batteryLog.LoadUnloadCount++;
+                    //SaveBatteryLog();
                 }
                 catch (Exception ex)
                 {
-                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                    LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
+            }
+        }
+
+        private AseCarrierSlotStatus GetCarrierSlotStatusFromSlotNumber(string slotNumber)
+        {
+            switch (slotNumber)
+            {
+                case "A":
+                    return theVehicle.AseCarrierSlotA;
+                case "B":
+                    return theVehicle.AseCarrierSlotB;
+                default:
+                    throw new Exception($"Slot number error.[{slotNumber}]");
             }
         }
 
@@ -2363,10 +2334,11 @@ namespace Mirle.AgvAseMiddler.Controller
         public MainFlowConfig GetMainFlowConfig() => mainFlowConfig;
         public MapConfig GetMapConfig() => mapConfig;
         public MapHandler GetMapHandler() => mapHandler;
-        public MoveControlPlate GetMoveControlPlate() => moveControlPlate;
-        public IntegrateControlPlate GetIntegrateControlPlate() => integrateControlPlate;
         public MCProtocol GetMcProtocol() => mcProtocol;
         public AlarmConfig GetAlarmConfig() => alarmConfig;
+        public AsePackage GetAsePackage() => asePackage;
+        public AseMoveControl GetAseMoveControl() => asePackage.aseMoveControl;
+        public string GetMoveControlStopResult() => asePackage.aseMoveControl.StopResult;
         #endregion
 
         public bool CallMoveControlWork(MoveCmdInfo moveCmd)
@@ -2378,7 +2350,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 OnMessageShowEvent?.Invoke(this, msg1);
 
                 string errorMsg = "";
-                if (moveControlPlate.Move(moveCmd, ref errorMsg))
+                if (asePackage.aseMoveControl.Move(moveCmd, ref errorMsg))
                 {
                     var msg2 = $"MainFlow : 通知MoveControl傳送，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg2);
@@ -2406,7 +2378,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 var msg1 = $"MainFlow : 通知MoveControl[替代路徑]";
                 OnMessageShowEvent?.Invoke(this, msg1);
                 string errorMsg = "";
-                if (moveControlPlate.Move(moveCmd, ref errorMsg))
+                if (asePackage.aseMoveControl.Move(moveCmd, ref errorMsg))
                 {
                     var msg2 = $"MainFlow : 通知MoveControl[替代路徑]，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg2);
@@ -2437,7 +2409,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 OnMessageShowEvent?.Invoke(this, msg1);
 
                 string errorMsg = "";
-                if (moveControlPlate.Move(moveCmd, ref errorMsg))
+                if (asePackage.aseMoveControl.Move(moveCmd, ref errorMsg))
                 {
                     var msg2 = $"MainFlow : 通知MoveControl[避車路徑]，回報可行.";
                     OnMessageShowEvent?.Invoke(this, msg1);
@@ -2515,10 +2487,10 @@ namespace Mirle.AgvAseMiddler.Controller
 
                         UpdateMiddlerGotReserveOkSections(MovingSections[searchingSectionIndex].Id);
 
-                        if (mainFlowConfig.CustomerName == "AUO")
-                        {
-                            UpdatePlcVehicleBeamSensor();
-                        }
+                        //if (mainFlowConfig.CustomerName == "AUO")
+                        //{
+                        //    UpdatePlcVehicleBeamSensor();
+                        //}
 
                         break;
                     }
@@ -2643,10 +2615,10 @@ namespace Mirle.AgvAseMiddler.Controller
                     break;
                 }
             }
-            if (mainFlowConfig.CustomerName == "AUO")
-            {
-                UpdatePlcVehicleBeamSensor();
-            }
+            //if (mainFlowConfig.CustomerName == "AUO")
+            //{
+            //    UpdatePlcVehicleBeamSensor();
+            //}
         }
 
         private void FindSectionsWithinNeerlyAddress(string neerlyAddressId, ref List<MapSection> sectionsWithinNeerlyAddress)
@@ -2698,25 +2670,25 @@ namespace Mirle.AgvAseMiddler.Controller
 
         private void UpdatePlcVehicleBeamSensor()
         {
-            var plcVeh = (PlcVehicle)theVehicle.TheVehicleIntegrateStatus;
-            var lastSection = theVehicle.VehicleLocation.LastSection;
-            var curDistance = lastSection.VehicleDistanceSinceHead;
-            var index = lastSection.BeamSensorDisables.FindIndex(x => x.Min <= curDistance && x.Max >= curDistance);
-            if (index > -1)
-            {
-                var beamDisable = lastSection.BeamSensorDisables[index];
-                plcVeh.FrontBeamSensorDisable = beamDisable.FrontDisable;
-                plcVeh.BackBeamSensorDisable = beamDisable.BackDisable;
-                plcVeh.LeftBeamSensorDisable = beamDisable.LeftDisable;
-                plcVeh.RightBeamSensorDisable = beamDisable.RightDisable;
-            }
-            else
-            {
-                plcVeh.FrontBeamSensorDisable = false;
-                plcVeh.BackBeamSensorDisable = false;
-                plcVeh.LeftBeamSensorDisable = false;
-                plcVeh.RightBeamSensorDisable = false;
-            }
+            //var plcVeh = (PlcVehicle)theVehicle.TheVehicleIntegrateStatus;
+            //var lastSection = theVehicle.VehicleLocation.LastSection;
+            //var curDistance = lastSection.VehicleDistanceSinceHead;
+            //var index = lastSection.BeamSensorDisables.FindIndex(x => x.Min <= curDistance && x.Max >= curDistance);
+            //if (index > -1)
+            //{
+            //    var beamDisable = lastSection.BeamSensorDisables[index];
+            //    plcVeh.FrontBeamSensorDisable = beamDisable.FrontDisable;
+            //    plcVeh.BackBeamSensorDisable = beamDisable.BackDisable;
+            //    plcVeh.LeftBeamSensorDisable = beamDisable.LeftDisable;
+            //    plcVeh.RightBeamSensorDisable = beamDisable.RightDisable;
+            //}
+            //else
+            //{
+            //    plcVeh.FrontBeamSensorDisable = false;
+            //    plcVeh.BackBeamSensorDisable = false;
+            //    plcVeh.LeftBeamSensorDisable = false;
+            //    plcVeh.RightBeamSensorDisable = false;
+            //}
         }
 
         private void UpdateMiddlerGotReserveOkSections(string id)
@@ -2746,14 +2718,14 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 var address = endAddress;
-                var percentage = theVehicle.TheVehicleIntegrateStatus.Batterys.Percentage;
-                var highPercentage = theVehicle.TheVehicleIntegrateStatus.Batterys.PortAutoChargeHighSoc;
+                var percentage = theVehicle.AseBatteryStatus.Percentage;
+                var highPercentage = theVehicle.AutoChargeHighThreshold;
 
                 if (address.IsCharger)
                 {
-                    if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
+                    if (theVehicle.IsCharging)
                     {
-                        var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}, 故暫不再送出充電信號";
+                        var msg = $"車子抵達{address.Id},充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.IsCharging}, 故暫不再送出充電信號";
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                         return;
                     }
@@ -2772,54 +2744,28 @@ namespace Mirle.AgvAseMiddler.Controller
                     }
 
                     agvcConnector.ChargHandshaking();
-                    EnumChargeDirection chargeDirection;
-                    switch (address.ChargeDirection)
-                    {
-                        case EnumChargeDirection.Left:
-                            chargeDirection = EnumChargeDirection.Left;
-                            break;
-                        case EnumChargeDirection.Right:
-                            chargeDirection = EnumChargeDirection.Right;
-                            break;
-                        case EnumChargeDirection.None:
-                        default:
-                            alarmHandler.SetAlarm(000012);
-                            return;
-                    }
-                    integrateControlPlate.StartCharge(chargeDirection);
 
-                    Stopwatch sw = new Stopwatch();
-                    bool isTimeout = false;
-                    sw.Start();
-                    while (true)
+                    int timeoutCount = 10;
+                    do
                     {
-                        sw.Stop();
-                        if (sw.ElapsedMilliseconds > mainFlowConfig.StartChargeWaitingTimeoutMs)
-                        {
-                            isTimeout = true;
-                            break;
-                        }
-                        sw.Start();
-                        if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
-                        {
-                            break;
-                        }
-                        SpinWait.SpinUntil(() => false, 5);
-                    }
+                        if (theVehicle.IsCharging) break;
+                        timeoutCount--;
+                        asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
+                        SpinWait.SpinUntil(() => theVehicle.IsCharging, 100);
+                    } while (timeoutCount >= 0);
 
-                    if (!isTimeout)
-                    {
-                        agvcConnector.Charging();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
-                        batteryLog.ChargeCount++;
-                        SaveBatteryLog();
-                    }
-                    else
+                    if (!theVehicle.IsCharging)
                     {
                         alarmHandler.SetAlarm(000013);
                     }
+                    else
+                    {
+                        agvcConnector.Charging();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
+                        //batteryLog.ChargeCount++;
+                        //SaveBatteryLog();
+                    }
                 }
-
             }
             catch (Exception ex)
             {
@@ -2831,72 +2777,41 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 var address = lastAddress;
-                var percentage = theVehicle.TheVehicleIntegrateStatus.Batterys.Percentage;
-                var lowPercentage = theVehicle.TheVehicleIntegrateStatus.Batterys.PortAutoChargeLowSoc;
+                var percentage = theVehicle.AseBatteryStatus.Percentage;
                 var pos = theVehicle.VehicleLocation.RealPosition;
                 if (address.IsCharger && mapHandler.IsPositionInThisAddress(pos, address.Position))
                 {
-                    if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
+                    if (theVehicle.IsCharging)
                     {
-                        var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.ChargeDirection},因充電狀態為{theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}, 故暫不再送出充電信號";
-                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                        //OnMessageShowEvent?.Invoke(this, msg);
                         return;
                     }
                     else
                     {
-                        var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage:F2} < {lowPercentage:F2}(自動充電門檻值), 故送出充電信號";
-                        //LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                        var msg = $"車子停在{address.Id}且目前沒有傳送命令,充電方向為{address.PioDirection},因SOC為{percentage:F2} < {theVehicle.AutoChargeLowThreshold:F2}(自動充電門檻值), 故送出充電信號";
                         OnMessageShowEvent?.Invoke(this, msg);
                     }
 
-
                     agvcConnector.ChargHandshaking();
-                    EnumChargeDirection chargeDirection;
-                    switch (address.ChargeDirection)
-                    {
-                        case EnumChargeDirection.Left:
-                            chargeDirection = EnumChargeDirection.Left;
-                            break;
-                        case EnumChargeDirection.Right:
-                            chargeDirection = EnumChargeDirection.Right;
-                            break;
-                        case EnumChargeDirection.None:
-                        default:
-                            alarmHandler.SetAlarm(000012);
-                            return;
-                    }
-                    integrateControlPlate.StartCharge(chargeDirection);
 
-                    Stopwatch sw = new Stopwatch();
-                    bool isTimeout = false;
-                    sw.Start();
-                    while (true)
+                    int timeoutCount = 10;
+                    do
                     {
-                        sw.Stop();
-                        if (sw.ElapsedMilliseconds > mainFlowConfig.StartChargeWaitingTimeoutMs)
-                        {
-                            isTimeout = true;
-                            break;
-                        }
-                        sw.Start();
-                        if (theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
-                        {
-                            break;
-                        }
-                        SpinWait.SpinUntil(() => false, 5);
-                    }
+                        if (theVehicle.IsCharging) break;
+                        timeoutCount--;
+                        asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
+                        SpinWait.SpinUntil(() => theVehicle.IsCharging, 100);
+                    } while (timeoutCount >= 0);
 
-                    if (!isTimeout)
+                    if (!theVehicle.IsCharging)
                     {
-                        agvcConnector.Charging();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]");
-                        batteryLog.ChargeCount++;
-                        SaveBatteryLog();
+                        alarmHandler.SetAlarm(000013);
                     }
                     else
                     {
-                        alarmHandler.SetAlarm(000013);
+                        agvcConnector.Charging();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.IsCharging}]");
+                        //batteryLog.ChargeCount++;
+                        //SaveBatteryLog();
                     }
                 }
             }
@@ -2910,13 +2825,10 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             try
             {
-                var beginMsg = $"MainFlow : 嘗試停止充電, [IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]";
+                var beginMsg = $"MainFlow : 嘗試停止充電, [IsCharging={theVehicle.IsCharging}]";
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, beginMsg);
 
-                if (!theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
-                {
-                    return true;
-                }
+                if (!theVehicle.IsCharging) return true;
 
                 if (!mapHandler.IsPositionInThisAddress(theVehicle.VehicleLocation.RealPosition, theVehicle.VehicleLocation.LastAddress.Position))
                 {
@@ -2928,47 +2840,26 @@ namespace Mirle.AgvAseMiddler.Controller
                 if (address.IsCharger)
                 {
                     agvcConnector.ChargHandshaking();
-                    integrateControlPlate.StopCharge();
-
-                    Stopwatch sw = new Stopwatch();
-                    bool isTimeOut = false;
-                    sw.Start();
-                    int simpleRetryCount = 0;
-                    while (true)
+                    int timeoutCount = 10;
+                    do
                     {
-                        simpleRetryCount++;
-                        sw.Stop();
-                        if (sw.ElapsedMilliseconds >= mainFlowConfig.StopChargeWaitingTimeoutMs)
-                        {
-                            isTimeOut = true;
-                            break;
-                        }
-                        sw.Start();
-                        if (!theVehicle.TheVehicleIntegrateStatus.Batterys.Charging)
-                        {
-                            break;
-                        }
-                        if (simpleRetryCount >= 120)
-                        {
-                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Try stop charge[{simpleRetryCount}]");
-                            integrateControlPlate.StopCharge();
-                            simpleRetryCount = 0;
-                        }
-                        SpinWait.SpinUntil(() => false, 50);
-                    }
-                    sw.Stop();
+                        if (!theVehicle.IsCharging) break;
+                        timeoutCount--;
+                        asePackage.aseBatteryControl.StopCharge();
+                        SpinWait.SpinUntil(() => !theVehicle.IsCharging, 100);
+                    } while (timeoutCount >= 0);
 
-                    if (!isTimeOut)
-                    {
-                        agvcConnector.ChargeOff();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]");
-                        return true;
-                    }
-                    else
+                    if (theVehicle.IsCharging)
                     {
                         alarmHandler.SetAlarm(000014);
                         StopVehicle();
                         return false;
+                    }
+                    else
+                    {
+                        agvcConnector.ChargeOff();
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.IsCharging}]");
+                        return true;
                     }
                 }
                 else
@@ -3003,9 +2894,9 @@ namespace Mirle.AgvAseMiddler.Controller
                     agvcTransCmd.CompleteStatus = CompleteStatus.CmpStatusVehicleAbort;
                 }
 
-                if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading && ReadResult == EnumCstIdReadResult.Noraml)
+                if (theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
                 {
-                    integrateControlPlate.ReadCarrierId();
+                    asePackage.aseRobotControl.ReadCarrierId();
                 }
 
                 ReadResult = EnumCstIdReadResult.Noraml;
@@ -3073,11 +2964,11 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public void StopVehicle()
         {
-            moveControlPlate.StopAndClear();
-            integrateControlPlate.ClearRobotCommand();
-            integrateControlPlate.StopCharge();
+            asePackage.aseMoveControl.StopAndClear();
+            asePackage.aseRobotControl.ClearRobotCommand();
+            asePackage.aseBatteryControl.StopCharge();
 
-            var msg = $"MainFlow : Stop Vehicle, [MoveState={moveControlPlate.MoveState}][IsCharging={theVehicle.TheVehicleIntegrateStatus.Batterys.Charging}]";
+            var msg = $"MainFlow : Stop Vehicle, [MoveState={theVehicle.AseMoveStatus.AseMoveState}][IsCharging={theVehicle.IsCharging}]";
             OnMessageShowEvent?.Invoke(this, msg);
         }
 
@@ -3102,11 +2993,6 @@ namespace Mirle.AgvAseMiddler.Controller
             OnMessageShowEvent?.Invoke(this, msg);
             return true;
 
-        }
-
-        public void SetupPlcAutoManualState(EnumIPCStatus status)
-        {
-            integrateControlPlate.SetAutoManualState(status);
         }
 
         public void ResetAllarms()
@@ -3140,20 +3026,19 @@ namespace Mirle.AgvAseMiddler.Controller
 
         private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
-            integrateControlPlate.ResetAllAlarm();
+            asePackage.aseBuzzerControl.ResetAllAlarmCode();
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
-            integrateControlPlate.SetAlarm(alarm);
-            integrateControlPlate.SetAlarmStatus(alarmHandler.HasAlarm, alarmHandler.HasWarn);
+            asePackage.aseBuzzerControl.SetAlarmCode(alarm.Id, true);
         }
 
         private bool IsCancelByAgvcCmd() => agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusAbort || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusCancel || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdmisMatch || agvcTransCmd.CompleteStatus == CompleteStatus.CmpStatusIdreadFailed;
 
         public void SetupVehicleSoc(double percentage)
         {
-            integrateControlPlate.SetPercentage(percentage);
+            asePackage.aseBatteryControl.SetPercentage(percentage);
         }
 
         private void GetInitialSoc(string v)
@@ -3179,15 +3064,30 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public void RenameCstId(string newCstId)
         {
-            theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = newCstId;
-            theVehicle.CurAgvcTransCmd.CassetteId = newCstId;
-            if (transferSteps.Count > 0)
+            RenameCstId("A", newCstId);
+        }
+
+        public void RenameCstId(string slotNumber, string newCstId)
+        {
+            try
             {
-                agvcTransCmd.CassetteId = newCstId;
-                foreach (var transferStep in transferSteps)
+                AseCarrierSlotStatus aseCarrierSlotStatus = GetCarrierSlotStatusFromSlotNumber(slotNumber);
+                aseCarrierSlotStatus.CarrierId = newCstId;
+                aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
+
+                theVehicle.CurAgvcTransCmd.CassetteId = newCstId;
+                if (transferSteps.Count > 0)
                 {
-                    transferStep.CstId = newCstId;
+                    agvcTransCmd.CassetteId = newCstId;
+                    foreach (var transferStep in transferSteps)
+                    {
+                        transferStep.CstId = newCstId;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3199,7 +3099,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 PauseVisitTransferSteps();
                 if (IsMoveStep())
                 {
-                    if (moveControlPlate.VehclePause())
+                    if (asePackage.aseMoveControl.VehclePause())
                     {
                         var msg = $"MainFlow : 接受[{type}]命令。";
                         OnMessageShowEvent(this, msg);
@@ -3248,7 +3148,7 @@ namespace Mirle.AgvAseMiddler.Controller
                         var msg = $"MainFlow : 接受[{type}]命令。";
                         OnMessageShowEvent(this, msg);
                         agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
-                        moveControlPlate.VehcleContinue();
+                        asePackage.aseMoveControl.VehcleContinue();
                         ResumeVisitTransferSteps();
                         agvcConnector.ResumeAskReserve();
                         IsMoveEnd = false;
@@ -3288,12 +3188,12 @@ namespace Mirle.AgvAseMiddler.Controller
 
         private bool IsMoveControllPause()
         {
-            return (theVehicle.MoveStatus.MoveState == EnumMoveState.Pause || theVehicle.MoveStatus.MoveState == EnumMoveState.Pausing);
+            return (theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Pause || theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Pausing);
         }
 
         private bool IsMoveControlStop()
         {
-            return (theVehicle.MoveStatus.MoveState == EnumMoveState.Stop || theVehicle.MoveStatus.MoveState == EnumMoveState.Stoping);
+            return (theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Stop || theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Stoping);
         }
 
         private void UpdateMiddlerNeedReserveSections(string reserveSectionID)
@@ -3319,7 +3219,7 @@ namespace Mirle.AgvAseMiddler.Controller
                         OnMessageShowEvent(this, msg);
                         agvcConnector.CancelAbortReply(iSeqNum, 0, cmdId, actType);
 
-                        moveControlPlate.VehcleCancel();
+                        asePackage.aseMoveControl.VehcleCancel();
                         agvcConnector.ClearAllReserve();
                         agvcTransCmd.CompleteStatus = actType == CMDCancelType.CmdAbort ? CompleteStatus.CmpStatusAbort : CompleteStatus.CmpStatusCancel;
                         StopVisitTransferSteps();
@@ -3402,12 +3302,48 @@ namespace Mirle.AgvAseMiddler.Controller
             xmlHandler.WriteXml(this.agvcConnectorConfig, @"D:\AgvConfigs\Middler.xml");
         }
 
-        private void IntegrateControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
+        private void AseBatteryControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
         {
             try
             {
                 batteryLog.InitialSoc = (int)batteryPercentage;
                 SaveBatteryLog();
+            }
+            catch (Exception ex)
+            {
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void ReadCarrierId()
+        {
+            try
+            {
+                asePackage.aseRobotControl.ReadCarrierId();
+            }
+            catch (Exception ex)
+            {
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void BuzzOff()
+        {
+            try
+            {
+                asePackage.aseBuzzerControl.BuzzerOff();
+            }
+            catch (Exception ex)
+            {
+                LogError(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void ResetMoveControlStopResult()
+        {
+            try
+            {
+                asePackage.aseMoveControl.StopResult = "";
             }
             catch (Exception ex)
             {

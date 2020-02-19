@@ -20,6 +20,6 @@ namespace Mirle.AgvAseMiddler.Model.Configs
         public int LoadingChargeIntervalMs { get; set; }
         public int RobotNgRetryTimes { get; set; }
         public bool IsSimulation { get; set; }
-        public string CustomerName { get; set; } = "AUO";
+        public string CustomerName { get; set; } = "ASE";
     }
 }

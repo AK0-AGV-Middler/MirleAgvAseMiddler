@@ -14,7 +14,7 @@ namespace Mirle.AgvAseMiddler.View
 {
     public partial class MoveCommandForm : Form
     {
-        protected MoveControlPlate moveControlPlate;
+        protected AseMoveControl aseMoveControl;
         protected MapInfo theMapInfo;
 
         public MoveCommandForm()
@@ -22,25 +22,10 @@ namespace Mirle.AgvAseMiddler.View
             InitializeComponent();
         }
 
-        public MoveCommandForm(MoveControlPlate moveControlPlate, MapInfo mapInfo) : this()
+        public MoveCommandForm(AseMoveControl aseMoveControl, MapInfo mapInfo) : this()
         {
-            this.moveControlPlate = moveControlPlate;
+            this.aseMoveControl = aseMoveControl;
             theMapInfo = mapInfo;
-        }
-    }
-
-    public class MoveCommandFormFactory
-    {
-        public MoveCommandForm GetMoveCommandForm(string type, MoveControlPlate moveControlPlate, MapInfo mapInfo)
-        {
-            MoveCommandForm moveCommandForm = null;
-
-            if (type == "AUO")
-            {
-                moveCommandForm = new MoveCommandDebugModeForm(moveControlPlate, mapInfo);
-            }
-
-            return moveCommandForm;
-        }
-    }
+        }        
+    }    
 }

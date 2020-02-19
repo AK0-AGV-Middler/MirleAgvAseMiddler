@@ -39,14 +39,14 @@ namespace Mirle.AgvAseMiddler.Model
         {
             VehicleIntegrateStatus vehicleIntegrateStatus = null;
 
-            if (type == "AUO")
-            {
-                vehicleIntegrateStatus = new PlcVehicle();
-            }
-            else if (type == "ASE")
-            {
-                vehicleIntegrateStatus = new AseVehicleIntegrateStatus();
-            }
+            //if (type == "AUO")
+            //{
+            //    vehicleIntegrateStatus = new PlcVehicle();
+            //}
+            //else if (type == "ASE")
+            //{
+            //    vehicleIntegrateStatus = new AseVehicleIntegrateStatus();
+            //}
 
             return vehicleIntegrateStatus;
         }

@@ -23,13 +23,11 @@ namespace Mirle.AgvAseMiddler.View
         public MainFlowHandler mainFlowHandler;
         private MainFlowConfig mainFlowConfig;
         public MainForm mainForm;
-        private MoveControlPlate moveControlPlate;
+        private AsePackage asePackage;
         private AgvcConnector agvcConnector;
         private AgvcConnectorForm middlerForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
-        private IntegrateCommandForm integrateCommandForm;
-        private IntegrateControlPlate integrateControlPlate;
         private MoveCommandForm moveCommandForm;
         private WarningForm warningForm;
         private ConfigForm configForm;
@@ -85,8 +83,8 @@ namespace Mirle.AgvAseMiddler.View
             mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
             theMapInfo = mainFlowHandler.TheMapInfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
-            moveControlPlate = mainFlowHandler.GetMoveControlPlate();
-            integrateControlPlate = mainFlowHandler.GetIntegrateControlPlate();
+            asePackage = mainFlowHandler.GetAsePackage();
+
             agvcConnector = mainFlowHandler.GetAgvcConnector();
             mainForm = this;
         }
@@ -103,11 +101,11 @@ namespace Mirle.AgvAseMiddler.View
             InitialThdPads();
             InitialAbnormalMsgs();
             txtLastAlarm.Text = "";
-            if (mainFlowConfig.CustomerName == "AUO")
-            {
-                AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
-                auoIntegrateControl.SetOutsideObjects(this);
-            }
+            //if (mainFlowConfig.CustomerName == "AUO")
+            //{
+            //    AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
+            //    auoIntegrateControl.SetOutsideObjects(this);
+            //}
             var msg = "MainForm : 讀取主畫面";
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
@@ -245,17 +243,16 @@ namespace Mirle.AgvAseMiddler.View
             alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
 
-            if (mainFlowConfig.CustomerName == "AUO")
-            {
-                ((PlcVehicle)theVehicle.TheVehicleIntegrateStatus).OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
-            }
-            moveControlPlate.OnMoveFinish += MoveControl_OnMoveFinished;
+            //if (mainFlowConfig.CustomerName == "AUO")
+            //{
+            //    ((PlcVehicle)theVehicle.TheVehicleIntegrateStatus).OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
+            //}
+            mainFlowHandler.GetAseMoveControl().OnMoveFinishEvent += AseMoveControl_OnMoveFinishEvent;
         }
 
         private void InitialSoc()
         {
-            var batterys = theVehicle.TheVehicleIntegrateStatus.Batterys;
-            txtWatchLowPower.Text = $"High/Low : {(int)batterys.PortAutoChargeHighSoc}/{(int)batterys.PortAutoChargeLowSoc}";
+            txtWatchLowPower.Text = $"High/Low : {(int)theVehicle.AutoChargeHighThreshold}/{(int)theVehicle.AutoChargeLowThreshold}";
             timer_SetupInitialSoc.Enabled = true;
         }
 
@@ -263,9 +260,9 @@ namespace Mirle.AgvAseMiddler.View
         {
             IsAgvcConnect = agvcConnector.IsConnected();
             UpdateAgvcConnection();
-            if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
+            if (theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
             {
-                integrateControlPlate.ReadCarrierId();
+                mainFlowHandler.ReadCarrierId();
             }
         }
 
@@ -344,7 +341,7 @@ namespace Mirle.AgvAseMiddler.View
                 }
                 else
                 {
-                    integrateControlPlate.StopBuzzer();
+                    mainFlowHandler.BuzzOff();
                 }
             }
             catch (Exception ex)
@@ -368,7 +365,7 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void MoveControl_OnMoveFinished(object sender, EnumMoveComplete e)
+        private void AseMoveControl_OnMoveFinishEvent(object sender, EnumMoveComplete e)
         {
             try
             {
@@ -379,6 +376,7 @@ namespace Mirle.AgvAseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
+
 
         private void TheVehicle_OnBeamDisableChangeEvent(object sender, BeamDisableArgs e)
         {
@@ -654,7 +652,7 @@ namespace Mirle.AgvAseMiddler.View
         {
             if (moveCommandForm.IsDisposed)
             {
-                moveCommandForm = new MoveCommandFormFactory().GetMoveCommandForm(mainFlowConfig.CustomerName, moveControlPlate, theMapInfo);
+                moveCommandForm = new MoveCommandForm(mainFlowHandler.GetAseMoveControl(), theMapInfo);
             }
             if (moveCommandForm != null)
             {
@@ -675,16 +673,16 @@ namespace Mirle.AgvAseMiddler.View
 
         private void IntegrateCommandPage_Click(object sender, EventArgs e)
         {
-            if (integrateCommandForm.IsDisposed)
-            {
-                if (mainFlowConfig.CustomerName == "AUO")
-                {
-                    integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
-                }
-            }
+            //if (integrateCommandForm.IsDisposed)
+            //{
+            //    //if (mainFlowConfig.CustomerName == "AUO")
+            //    //{
+            //    //    integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
+            //    //}
+            //}
 
-            integrateCommandForm.BringToFront();
-            integrateCommandForm.Show();
+            //integrateCommandForm.BringToFront();
+            //integrateCommandForm.Show();
         }
 
         private void VehicleStatusPage_Click(object sender, EventArgs e)
@@ -695,7 +693,7 @@ namespace Mirle.AgvAseMiddler.View
             }
             configForm.BringToFront();
             configForm.Show();
-        }        
+        }
 
         public delegate void DelRenewUI(Control control, string msg);
         public void RenewUI(Control control, string msg)
@@ -903,10 +901,8 @@ namespace Mirle.AgvAseMiddler.View
                 switch (transferStep.GetTransferStepType())
                 {
                     case EnumTransferStepType.Load:
-                        msg = GetTransferStepMsgFromLoadCmdInfo(transferStep);
-                        break;
                     case EnumTransferStepType.Unload:
-                        msg = GetTransferStepMsgFromUnLoadCmdInfo(transferStep);
+                        msg = GetTransferStepMsgFromRobotCommand(transferStep);
                         break;
                     case EnumTransferStepType.Move:
                     case EnumTransferStepType.MoveToCharger:
@@ -946,47 +942,27 @@ namespace Mirle.AgvAseMiddler.View
                 return "";
             }
         }
-        private string GetTransferStepMsgFromUnLoadCmdInfo(TransferStep transferStep)
+        private string GetTransferStepMsgFromRobotCommand(TransferStep transferStep)
         {
             try
             {
-                UnloadCmdInfo unloadCmdInfo = (UnloadCmdInfo)transferStep;
-                return string.Concat($"放貨\t{unloadCmdInfo.GetTransferStepType()}\r\n",
-                                      $"[命令號={unloadCmdInfo.CmdId}]\r\n",
-                                      $"[貨號={unloadCmdInfo.CstId}]\r\n",
-                                      $"[放貨站={unloadCmdInfo.UnloadAddress}]\r\n",
-                                      $"[放貨方向={unloadCmdInfo.StageDirection}]\r\n",
-                                      $"[StageNum={unloadCmdInfo.StageNum}]\r\n",
-                                      $"[是否PIO通訊={unloadCmdInfo.IsEqPio}]\r\n",
-                                      $"[手臂速度={unloadCmdInfo.ForkSpeed}]");
+                RobotCommand robotCommand = (RobotCommand)transferStep;
+                return string.Concat($"類型\t{robotCommand.GetTransferStepType()}\r\n",
+                                      $"[命令號={robotCommand.CmdId}]\r\n",
+                                      $"[貨號={robotCommand.CstId}]\r\n",
+                                      $"[站點={robotCommand.PortAddress}]\r\n",
+                                      $"[PIO方向={robotCommand.PioDirection}]\r\n",
+                                      $"[SlotNumber={robotCommand.SlotNumber}]\r\n",
+                                      $"[是否PIO通訊={robotCommand.IsEqPio}]\r\n",
+                                      $"[手臂速度={robotCommand.ForkSpeed}]");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                return "";
+            }
+        }
 
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return "";
-            }
-        }
-        private string GetTransferStepMsgFromLoadCmdInfo(TransferStep transferStep)
-        {
-            try
-            {
-                LoadCmdInfo loadCmdInfo = (LoadCmdInfo)transferStep;
-                return string.Concat($"取貨\t{loadCmdInfo.GetTransferStepType()}\r\n",
-                                      $"[命令號={loadCmdInfo.CmdId}]\r\n",
-                                      $"[貨號={loadCmdInfo.CstId}]\r\n",
-                                      $"[取貨站={loadCmdInfo.LoadAddress}]\r\n",
-                                      $"[取貨方向={loadCmdInfo.StageDirection}]\r\n",
-                                      $"[StageNum={loadCmdInfo.StageNum}]\r\n",
-                                      $"[是否PIO通訊={loadCmdInfo.IsEqPio}]\r\n",
-                                      $"[手臂速度={loadCmdInfo.ForkSpeed}]");
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return "";
-            }
-        }
         private void SetTransferStepMsg(string msg)
         {
             TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg);
@@ -1013,8 +989,7 @@ namespace Mirle.AgvAseMiddler.View
                 //    SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
                 //    moveCommandDebugMode.MainShowRunSectionList = false;
                 //}
-                var battery = Vehicle.Instance.TheVehicleIntegrateStatus.Batterys;
-                ucSoc.TagValue = battery.Percentage.ToString("F1") + $"/" + battery.MeterVoltage.ToString("F2");
+                ucSoc.TagValue = theVehicle.AseBatteryStatus.Percentage.ToString("F1") + $"/" + theVehicle.AseBatteryStatus.Voltage.ToString("F2");
 
                 UpdateListBoxSections(lbxNeedReserveSections, agvcConnector.GetNeedReserveSections());
                 UpdateListBoxSections(lbxReserveOkSections, agvcConnector.GetReserveOkSections());
@@ -1068,7 +1043,7 @@ namespace Mirle.AgvAseMiddler.View
             {
                 if (mainFlowHandler.IsMoveStep())
                 {
-                    MoveControllerAbnormalReasonMsg = moveControlPlate.StopResult;
+                    MoveControllerAbnormalReasonMsg = mainFlowHandler.GetMoveControlStopResult();
                     if (string.IsNullOrEmpty(MoveControllerAbnormalReasonMsg))
                     {
                         txtMoveControlAbnormal.BackColor = Color.LightGreen;
@@ -1149,7 +1124,7 @@ namespace Mirle.AgvAseMiddler.View
         {
             try
             {
-                var result = moveControlPlate.StopResult;
+                var result = mainFlowHandler.GetMoveControlStopResult();
                 txtMoveControlAbnormalReason.Text = string.IsNullOrWhiteSpace(result) ? "" : result;
             }
             catch (Exception ex)
@@ -1310,19 +1285,19 @@ namespace Mirle.AgvAseMiddler.View
                         btnAutoManual.BackColor = Color.Pink;
                         txtCanAuto.Visible = true;
                         txtCannotAutoReason.Visible = true;
-                        if (mainFlowConfig.CustomerName == "AUO")
-                        {
-                            if (true/*jogPitchForm.CanAuto*/)
-                            {
-                                txtCanAuto.BackColor = Color.LightGreen;
-                                txtCanAuto.Text = "可以 Auto";
-                            }
-                            else
-                            {
-                                txtCanAuto.BackColor = Color.Pink;
-                                txtCanAuto.Text = "不行 Auto";
-                            }
-                        }
+                        //if (mainFlowConfig.CustomerName == "AUO")
+                        //{
+                        //    if (true/*jogPitchForm.CanAuto*/)
+                        //    {
+                        //        txtCanAuto.BackColor = Color.LightGreen;
+                        //        txtCanAuto.Text = "可以 Auto";
+                        //    }
+                        //    else
+                        //    {
+                        //        txtCanAuto.BackColor = Color.Pink;
+                        //        txtCanAuto.Text = "不行 Auto";
+                        //    }
+                        //}
                         break;
                     case EnumAutoState.Auto:
                     default:
@@ -1407,13 +1382,12 @@ namespace Mirle.AgvAseMiddler.View
         {
             try
             {
-                var loading = !string.IsNullOrWhiteSpace(theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId);
-                ucLoading.TagValue = loading ? "Yes" : "No";
-                ucVehicleImage.Loading = loading;
-                ucCstId.TagValue = loading ? theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId : "";
+                //TODO: SlotA and SlotB
+                ucLoading.TagValue = theVehicle.AseCarrierSlotA.CarrierSlotStatus.ToString();
+                ucVehicleImage.Loading = theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading;
+                ucCstId.TagValue = theVehicle.AseCarrierSlotA.CarrierId;
 
-                var charging = theVehicle.TheVehicleIntegrateStatus.Batterys.Charging;
-                ucCharging.TagValue = charging ? "Yes" : "No";
+                ucCharging.TagValue = theVehicle.IsCharging ? "Yes" : "No";
             }
             catch (Exception ex)
             {
@@ -1495,7 +1469,7 @@ namespace Mirle.AgvAseMiddler.View
 
         private void btnBuzzOff_Click(object sender, EventArgs e)
         {
-            integrateControlPlate.StopBuzzer();
+            mainFlowHandler.BuzzOff();
         }
 
         private void btnAutoManual_Click(object sender, EventArgs e)
@@ -1518,7 +1492,6 @@ namespace Mirle.AgvAseMiddler.View
                     case EnumAutoState.Manual:
                         if (mainFlowHandler.IsSimulation)
                         {
-                            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                             Vehicle.Instance.AutoState = EnumAutoState.Auto;
                             switchResult = true;
                             AppendDebugLogMsg($"Manual 切換 Auto 成功");
@@ -1530,16 +1503,24 @@ namespace Mirle.AgvAseMiddler.View
                             {
                                 TakeAPicture();
                                 alarmHandler.ResetAllAlarms();
-                                mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Run);
                                 Vehicle.Instance.AutoState = EnumAutoState.Auto;
                                 switchResult = true;
-                                if (theVehicle.TheVehicleIntegrateStatus.CarrierSlot.Loading)
+                                if (theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
                                 {
-                                    integrateControlPlate.ReadCarrierId();
+                                    mainFlowHandler.ReadCarrierId();
                                 }
-                                else
+                                else if (theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
                                 {
-                                    theVehicle.TheVehicleIntegrateStatus.CarrierSlot.CarrierId = "";
+                                    theVehicle.AseCarrierSlotA.CarrierId = "";
+                                }
+
+                                if (theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+                                {
+                                    mainFlowHandler.ReadCarrierId();
+                                }
+                                else if (theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
+                                {
+                                    theVehicle.AseCarrierSlotB.CarrierId = "";
                                 }
                                 ResetAllAbnormalMsg();
                             }
@@ -1550,7 +1531,6 @@ namespace Mirle.AgvAseMiddler.View
                         {
                             Vehicle.Instance.AutoState = EnumAutoState.PreManual;
                             mainFlowHandler.StopAndClear();
-                            mainFlowHandler.SetupPlcAutoManualState(EnumIPCStatus.Manual);
                             Vehicle.Instance.AutoState = EnumAutoState.Manual;
                             var msg = $"Auto 切換 Manual 成功";
                             AppendDebugLogMsg(msg);
@@ -1574,7 +1554,7 @@ namespace Mirle.AgvAseMiddler.View
         {
             mainFlowHandler.MainFlowAbnormalMsg = "";
             agvcConnector.MiddlerAbnormalMsg = "";
-            moveControlPlate.StopResult = "";
+            mainFlowHandler.ResetMoveControlStopResult();
             RobotAbnormalReasonMsg = "";
             BatterysAbnormalReasonMsg = "";
 
@@ -1624,10 +1604,10 @@ namespace Mirle.AgvAseMiddler.View
 
                     if (moveCommandForm != null && !moveCommandForm.IsDisposed)
                     {
-                        if (mainFlowConfig.CustomerName == "AUO")
-                        {
-                            ((MoveCommandDebugModeForm)moveCommandForm).AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
-                        }
+                        //if (mainFlowConfig.CustomerName == "AUO")
+                        //{
+                        //    ((MoveCommandDebugModeForm)moveCommandForm).AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
+                        //}
                         moveCommandForm.Show();
                         moveCommandForm.BringToFront();
                     }
@@ -1656,15 +1636,15 @@ namespace Mirle.AgvAseMiddler.View
 
         private void timer_SetupInitialSoc_Tick(object sender, EventArgs e)
         {
-            if (mainFlowConfig.CustomerName == "AUO")
-            {
-                if (((AuoIntegrateControl)integrateControlPlate).IsIsFirstMeterAhGet())
-                {
-                    var initialSoc = mainFlowHandler.InitialSoc;
-                    mainFlowHandler.SetupVehicleSoc(initialSoc);
-                    timer_SetupInitialSoc.Enabled = false;
-                }
-            }
+            //if (mainFlowConfig.CustomerName == "AUO")
+            //{
+            //    if (((AuoIntegrateControl)integrateControlPlate).IsIsFirstMeterAhGet())
+            //    {
+            //        var initialSoc = mainFlowHandler.InitialSoc;
+            //        mainFlowHandler.SetupVehicleSoc(initialSoc);
+            //        timer_SetupInitialSoc.Enabled = false;
+            //    }
+            //}
         }
 
         private void ClearColor()
@@ -1677,149 +1657,149 @@ namespace Mirle.AgvAseMiddler.View
             changeColorAddressList = new List<UcAddressImage>();
         }
 
-        private bool SimulateAGVCMoveCommand()
-        {
-            if (mainFormAddNodes == null || mainFormAddNodes.Count < 2)
-                return false;
+        //private bool SimulateAGVCMoveCommand()
+        //{
+        //    if (mainFormAddNodes == null || mainFormAddNodes.Count < 2)
+        //        return false;
 
-            List<MapAddress> nodeMapAddressList = new List<MapAddress>();
+        //    List<MapAddress> nodeMapAddressList = new List<MapAddress>();
 
-            List<string> agvcAddressList = new List<string>();
-            List<string> agvcSectionList = new List<string>();
-            string endAddressId = mainFormAddNodes[mainFormAddNodes.Count - 1].Id;
+        //    List<string> agvcAddressList = new List<string>();
+        //    List<string> agvcSectionList = new List<string>();
+        //    string endAddressId = mainFormAddNodes[mainFormAddNodes.Count - 1].Id;
 
-            MapAddress startAddresee = null;
-            MapAddress endAddresee = null;
+        //    MapAddress startAddresee = null;
+        //    MapAddress endAddresee = null;
 
-            int lastLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[0].Position, mainFormAddNodes[1].Position);
-            int nowLineAngle;
+        //    int lastLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[0].Position, mainFormAddNodes[1].Position);
+        //    int nowLineAngle;
 
-            nodeMapAddressList.Add(mainFormAddNodes[0]);
+        //    nodeMapAddressList.Add(mainFormAddNodes[0]);
 
-            for (int i = 1; i < mainFormAddNodes.Count - 1; i++)
-            {
-                nowLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[i].Position, mainFormAddNodes[i + 1].Position);
-                if (nowLineAngle != lastLineAngle)
-                    nodeMapAddressList.Add(mainFormAddNodes[i]);
+        //    for (int i = 1; i < mainFormAddNodes.Count - 1; i++)
+        //    {
+        //        nowLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[i].Position, mainFormAddNodes[i + 1].Position);
+        //        if (nowLineAngle != lastLineAngle)
+        //            nodeMapAddressList.Add(mainFormAddNodes[i]);
 
-                lastLineAngle = nowLineAngle;
-            }
+        //        lastLineAngle = nowLineAngle;
+        //    }
 
-            nodeMapAddressList.Add(mainFormAddNodes[mainFormAddNodes.Count - 1]);
-            MapSection section = null;
-            MapSection lastAddressSection = null;
+        //    nodeMapAddressList.Add(mainFormAddNodes[mainFormAddNodes.Count - 1]);
+        //    MapSection section = null;
+        //    MapSection lastAddressSection = null;
 
-            for (int i = 0; i < nodeMapAddressList.Count - 1; i++)
-            {
-                startAddresee = nodeMapAddressList[i];
-                endAddresee = nodeMapAddressList[i + 1];
+        //    for (int i = 0; i < nodeMapAddressList.Count - 1; i++)
+        //    {
+        //        startAddresee = nodeMapAddressList[i];
+        //        endAddresee = nodeMapAddressList[i + 1];
 
-                if (theMapInfo.allMapSections.ContainsKey(endAddresee.InsideSectionId))
-                {
-                    if (i != nodeMapAddressList.Count - 2)
-                        return false;
+        //        if (theMapInfo.allMapSections.ContainsKey(endAddresee.InsideSectionId))
+        //        {
+        //            if (i != nodeMapAddressList.Count - 2)
+        //                return false;
 
-                    lastAddressSection = theMapInfo.allMapSections[endAddresee.InsideSectionId];
-                }
+        //            lastAddressSection = theMapInfo.allMapSections[endAddresee.InsideSectionId];
+        //        }
 
-                while (startAddresee != endAddresee)
-                {
-                    if (theMapInfo.allMapSections.ContainsKey(startAddresee.InsideSectionId))
-                    {
-                        if (i != 0)
-                            return false;
+        //        while (startAddresee != endAddresee)
+        //        {
+        //            if (theMapInfo.allMapSections.ContainsKey(startAddresee.InsideSectionId))
+        //            {
+        //                if (i != 0)
+        //                    return false;
 
-                        section = theMapInfo.allMapSections[startAddresee.InsideSectionId];
-                        double distanceToSectionHead = Math.Sqrt(Math.Pow(section.HeadAddress.Position.X - endAddresee.Position.X, 2) +
-                                                                 Math.Pow(section.HeadAddress.Position.Y - endAddresee.Position.Y, 2));
-                        double distanceToSectionTail = Math.Sqrt(Math.Pow(section.TailAddress.Position.X - endAddresee.Position.X, 2) +
-                                                                 Math.Pow(section.TailAddress.Position.Y - endAddresee.Position.Y, 2));
+        //                section = theMapInfo.allMapSections[startAddresee.InsideSectionId];
+        //                double distanceToSectionHead = Math.Sqrt(Math.Pow(section.HeadAddress.Position.X - endAddresee.Position.X, 2) +
+        //                                                         Math.Pow(section.HeadAddress.Position.Y - endAddresee.Position.Y, 2));
+        //                double distanceToSectionTail = Math.Sqrt(Math.Pow(section.TailAddress.Position.X - endAddresee.Position.X, 2) +
+        //                                                         Math.Pow(section.TailAddress.Position.Y - endAddresee.Position.Y, 2));
 
-                        agvcSectionList.Add(section.Id);
+        //                agvcSectionList.Add(section.Id);
 
-                        if (distanceToSectionHead > distanceToSectionTail)
-                        {
-                            agvcAddressList.Add(section.HeadAddress.Id);
-                            startAddresee = section.TailAddress;
-                        }
-                        else
-                        {
-                            agvcAddressList.Add(section.TailAddress.Id);
-                            startAddresee = section.HeadAddress;
-                        }
-                    }
-                    else
-                    {
-                        agvcAddressList.Add(startAddresee.Id);
-                        lastLineAngle = computeFunction.ComputeAngleInt(startAddresee.Position, endAddresee.Position);
+        //                if (distanceToSectionHead > distanceToSectionTail)
+        //                {
+        //                    agvcAddressList.Add(section.HeadAddress.Id);
+        //                    startAddresee = section.TailAddress;
+        //                }
+        //                else
+        //                {
+        //                    agvcAddressList.Add(section.TailAddress.Id);
+        //                    startAddresee = section.HeadAddress;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                agvcAddressList.Add(startAddresee.Id);
+        //                lastLineAngle = computeFunction.ComputeAngleInt(startAddresee.Position, endAddresee.Position);
 
-                        bool findNextSection = false;
+        //                bool findNextSection = false;
 
-                        foreach (var valuePair in theMapInfo.allMapSections)
-                        {
-                            section = valuePair.Value;
+        //                foreach (var valuePair in theMapInfo.allMapSections)
+        //                {
+        //                    section = valuePair.Value;
 
-                            if (section.HeadAddress == startAddresee)
-                            {
-                                nowLineAngle = computeFunction.ComputeAngleInt(section.HeadAddress.Position, section.TailAddress.Position);
+        //                    if (section.HeadAddress == startAddresee)
+        //                    {
+        //                        nowLineAngle = computeFunction.ComputeAngleInt(section.HeadAddress.Position, section.TailAddress.Position);
 
-                                if (nowLineAngle == lastLineAngle)
-                                {
-                                    agvcSectionList.Add(section.Id);
-                                    startAddresee = section.TailAddress;
-                                    findNextSection = true;
-                                    break;
-                                }
-                            }
-                            else if (section.TailAddress == startAddresee)
-                            {
-                                nowLineAngle = computeFunction.ComputeAngleInt(section.TailAddress.Position, section.HeadAddress.Position);
+        //                        if (nowLineAngle == lastLineAngle)
+        //                        {
+        //                            agvcSectionList.Add(section.Id);
+        //                            startAddresee = section.TailAddress;
+        //                            findNextSection = true;
+        //                            break;
+        //                        }
+        //                    }
+        //                    else if (section.TailAddress == startAddresee)
+        //                    {
+        //                        nowLineAngle = computeFunction.ComputeAngleInt(section.TailAddress.Position, section.HeadAddress.Position);
 
-                                if (nowLineAngle == lastLineAngle)
-                                {
-                                    agvcSectionList.Add(section.Id);
-                                    startAddresee = section.HeadAddress;
-                                    findNextSection = true;
-                                    break;
-                                }
-                            }
-                        }
+        //                        if (nowLineAngle == lastLineAngle)
+        //                        {
+        //                            agvcSectionList.Add(section.Id);
+        //                            startAddresee = section.HeadAddress;
+        //                            findNextSection = true;
+        //                            break;
+        //                        }
+        //                    }
+        //                }
 
-                        if (!findNextSection)
-                            return false;
-                    }
+        //                if (!findNextSection)
+        //                    return false;
+        //            }
 
-                    if (section != null && lastAddressSection != null && section == lastAddressSection)
-                    {
-                        if (startAddresee == lastAddressSection.HeadAddress || startAddresee == lastAddressSection.TailAddress)
-                            endAddresee = startAddresee;
-                        else
-                            startAddresee = endAddresee;
-                    }
-                }
-            }
+        //            if (section != null && lastAddressSection != null && section == lastAddressSection)
+        //            {
+        //                if (startAddresee == lastAddressSection.HeadAddress || startAddresee == lastAddressSection.TailAddress)
+        //                    endAddresee = startAddresee;
+        //                else
+        //                    startAddresee = endAddresee;
+        //            }
+        //        }
+        //    }
 
-            if (endAddresee != null)
-                agvcAddressList.Add(endAddresee.Id);
+        //    if (endAddresee != null)
+        //        agvcAddressList.Add(endAddresee.Id);
 
-            string debugMessage = "address : ";
-            for (int i = 0; i < agvcAddressList.Count; i++)
-                debugMessage = debugMessage + agvcAddressList[i] + " ";
+        //    string debugMessage = "address : ";
+        //    for (int i = 0; i < agvcAddressList.Count; i++)
+        //        debugMessage = debugMessage + agvcAddressList[i] + " ";
 
-            debugMessage += "\r\nsection : ";
+        //    debugMessage += "\r\nsection : ";
 
-            for (int i = 0; i < agvcSectionList.Count; i++)
-                debugMessage = debugMessage + agvcSectionList[i] + " ";
+        //    for (int i = 0; i < agvcSectionList.Count; i++)
+        //        debugMessage = debugMessage + agvcSectionList[i] + " ";
 
-            debugMessage += "\r\nendAddress : " + endAddressId;
+        //    debugMessage += "\r\nendAddress : " + endAddressId;
 
-            //MessageBox.Show(debugMessage);
-            return true;
-        }
+        //    //MessageBox.Show(debugMessage);
+        //    return true;
+        //}
 
         private List<MapAddress> mainFormAddNodes = new List<MapAddress>();
         private List<UcAddressImage> changeColorAddressList = new List<UcAddressImage>();
-        private ComputeFunction computeFunction = new ComputeFunction();
+        //private ComputeFunction computeFunction = new ComputeFunction();
 
         private MapAddress endAddress = null;
         private List<UcSectionImage> changeColorSectionList = new List<UcSectionImage>();
@@ -1962,7 +1942,7 @@ namespace Mirle.AgvAseMiddler.View
         private void btnReloadConfig_Click(object sender, EventArgs e)
         {
             ClearColor();
-            SimulateAGVCMoveCommand();
+            //SimulateAGVCMoveCommand();
             mainFormAddNodes = new List<MapAddress>();
 
             //if (theVehicle.AutoState == EnumAutoState.Manual)
@@ -1973,15 +1953,15 @@ namespace Mirle.AgvAseMiddler.View
 
         private void 模擬測試ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (mainFlowConfig.CustomerName == "AUO")
-            {
-                ((MoveCommandDebugModeForm)moveCommandForm).button_SimulationMode_Click(this, e);
-                integrateCommandForm.IsSimulation = !integrateCommandForm.IsSimulation;
-                if (integrateCommandForm.IsSimulation)
-                {
-                    mainFlowHandler.SetupVehicleSoc(100);
-                }
-            }
+            //if (mainFlowConfig.CustomerName == "AUO")
+            //{
+            //    ((MoveCommandDebugModeForm)moveCommandForm).button_SimulationMode_Click(this, e);
+            //    integrateCommandForm.IsSimulation = !integrateCommandForm.IsSimulation;
+            //    if (integrateCommandForm.IsSimulation)
+            //    {
+            //        mainFlowHandler.SetupVehicleSoc(100);
+            //    }
+            //}
             mainFlowHandler.IsSimulation = !mainFlowHandler.IsSimulation;
         }
 

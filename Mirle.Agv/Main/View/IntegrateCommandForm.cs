@@ -27,20 +27,5 @@ namespace Mirle.AgvAseMiddler.View
         {
             this.integrateControlPlate = integrateControlPlate;
         }
-    }
-
-    public class IntegrateCommandFormFactory
-    {
-        public IntegrateCommandForm GetIntegrateCommandForm(string type, IntegrateControlPlate integrateControlPlate)
-        {
-            IntegrateCommandForm integrateCommandForm = null;
-
-            if (type == "AUO")
-            {
-                integrateCommandForm = new PlcForm((AuoIntegrateControl)integrateControlPlate);
-            }
-
-            return integrateCommandForm;
-        }
-    }
+    }    
 }

@@ -16,12 +16,38 @@ namespace Mirle.AgvAseMiddler.Controller
         private PSWrapperXClass psWrapper;
         private MirleLogger mirleLogger = MirleLogger.Instance;
 
-        public event EventHandler<EnumMoveComplete> OnMoveFinish;
-        public event EventHandler<EnumMoveComplete> OnRetryMoveFinish;
+        public event EventHandler<EnumMoveComplete> OnMoveFinishEvent;
+        public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;
+
+        public string StopResult { get; set; } = "";
 
         public AseMoveControl(PSWrapperXClass psWrapper)
         {
             this.psWrapper = psWrapper;
+        }
+
+        public void OnMoveFinish(EnumMoveComplete enumMoveComplete)
+        {
+            try
+            {
+                OnMoveFinishEvent?.Invoke(this, enumMoveComplete);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void OnRetryMoveFinish(EnumMoveComplete enumMoveComplete)
+        {
+            try
+            {
+                OnRetryMoveFinishEvent?.Invoke(this, enumMoveComplete);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         public bool Move(TransferStep transferStep, ref string errorMsg)
@@ -81,7 +107,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public void RetryMove()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void StopAndClear()
@@ -134,7 +160,7 @@ namespace Mirle.AgvAseMiddler.Controller
             }
         }
 
-        private void PrimarySend(string index, string message)
+        private PSTransactionXClass PrimarySend(string index, string message)
         {
             try
             {
@@ -146,10 +172,12 @@ namespace Mirle.AgvAseMiddler.Controller
                 psTransaction.PSPrimaryMessage = psMessage;
 
                 psWrapper.PrimarySent(ref psTransaction);
+                return psTransaction;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                return null;
             }
         }
 

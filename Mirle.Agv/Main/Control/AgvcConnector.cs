@@ -1201,7 +1201,7 @@ namespace Mirle.AgvAseMiddler.Controller
             return v.Split(',');
         }
 
-        public void IntegrateControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
+        public void AseBatteryControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
         {
             BatteryPercentageChangeReport(MethodBase.GetCurrentMethod().Name, (ushort)batteryPercentage);
         }

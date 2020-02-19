@@ -38,10 +38,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug2\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -114,18 +116,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Customer\ASE\Control\AseIntegrateControl.cs" />
+    <Compile Include="Customer\ASE\Control\AseBatteryControl.cs" />
+    <Compile Include="Customer\ASE\Control\AseBuzzerControl.cs" />
+    <Compile Include="Customer\ASE\Control\AseRobotControl.cs" />
     <Compile Include="Customer\ASE\Control\AseMoveControl.cs" />
-    <Compile Include="Customer\ASE\Model\AseBatterys.cs" />
-    <Compile Include="Customer\ASE\Model\AseVehicleIntegrateStatus.cs" />
-    <Compile Include="Customer\AUO\Control\AuoMoveControl.cs" />
-    <Compile Include="Customer\AUO\Control\AuoIntegrateControl.cs" />
-    <Compile Include="Main\Control\AsePackage.cs" />
-    <Compile Include="Main\Control\Interface\IntegrateControlPlate.cs" />
-    <Compile Include="Main\Control\Interface\IBatterysControl.cs" />
-    <Compile Include="Main\Control\Interface\IBuzzerControl.cs" />
-    <Compile Include="Main\Control\Interface\IMoveControl.cs" />
-    <Compile Include="Main\Control\Interface\IRobotControl.cs" />
+    <Compile Include="Customer\ASE\Control\AsePackage.cs" />
+    <Compile Include="Customer\ASE\Model\AseBatteryStatus.cs" />
+    <Compile Include="Customer\ASE\Model\AseCarrierSlotStatus.cs" />
+    <Compile Include="Customer\ASE\Model\AseRobotStatus.cs" />
     <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
     <Compile Include="Main\Model\Configs\PspConnectionConfig.cs" />
@@ -134,7 +132,8 @@
     <Compile Include="Main\Model\Map\ChargeInfo.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="Main\Model\Map\MapVector.cs" />
-    <Compile Include="Main\Model\MoveStatus.cs" />
+    <Compile Include="Customer\ASE\Model\AseMoveStatus.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\RobotCommand.cs" />
     <Compile Include="Main\Model\VehicleIntegrateStatus.cs" />
     <Compile Include="Main\View\ConfigForm.cs">
       <SubType>Form</SubType>
@@ -142,75 +141,18 @@
     <Compile Include="Main\View\ConfigForm.Designer.cs">
       <DependentUpon>ConfigForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Main\View\IntegrateCommandForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Main\View\IntegrateCommandForm.Designer.cs">
-      <DependentUpon>IntegrateCommandForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Main\View\MoveCommandForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Main\View\MoveCommandForm.Designer.cs">
       <DependentUpon>MoveCommandForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MoveControl\Control\AgvMoveRevise.cs" />
-    <Compile Include="MoveControl\Control\ComputeFunction.cs" />
-    <Compile Include="MoveControl\Control\CreateMoveControlList.cs" />
-    <Compile Include="MoveControl\Control\SLAM.cs" />
-    <Compile Include="MoveControl\Control\SLAMControl.cs" />
-    <Compile Include="MoveControl\Control\SLAM_Nav350.cs" />
-    <Compile Include="MoveControl\Control\SLAM_Sick.cs" />
-    <Compile Include="MoveControl\Control\Sr2000Driver.cs" />
-    <Compile Include="MoveControl\Control\ElmoDriver.cs" />
     <Compile Include="Main\Control\AlarmHandler.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Idle.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\ITransferCmdStep.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Load.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Move.cs" />
     <Compile Include="Main\Control\TransfereCmdSteps\Unload.cs" />
-    <Compile Include="MoveControl\Control\MoveControlHandler.cs" />
-    <Compile Include="MoveControl\Model\Configs\SLAMConfig.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\BarcodeSafetyData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\JogPitchData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\MoveCommandData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\OneTimeReviseParameter.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\SimulateState.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\TRTimeToAngleRange.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\VChangeData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\WallData.cs" />
-    <Compile Include="MoveControl\MoveControlDefine.cs" />
-    <Compile Include="MoveControl\View\MoveControlSimulateStateForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\MoveControlSimulateStateForm.Designer.cs">
-      <DependentUpon>MoveControlSimulateStateForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\SimulateSettingAGVAngle.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\SimulateSettingAGVAngle.Designer.cs">
-      <DependentUpon>SimulateSettingAGVAngle.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\SimulateSettingAGVAngleForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\SimulateSettingAGVAngleForm.Designer.cs">
-      <DependentUpon>SimulateSettingAGVAngleForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\AxisConfigs.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\AxisConfigs.Designer.cs">
-      <DependentUpon>AxisConfigs.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\ConfigsNameAndValue.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\ConfigsNameAndValue.Designer.cs">
-      <DependentUpon>ConfigsNameAndValue.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Plc\Control\PlcAgent.cs" />
     <Compile Include="Main\Control\InitialEventArgs.cs" />
     <Compile Include="Main\Control\Tools\CassetteIDReader.cs" />
     <Compile Include="Main\Control\Tools\ConfigHandler.cs" />
@@ -225,78 +167,16 @@
     <Compile Include="Main\Model\Map\MapInfo.cs" />
     <Compile Include="Main\Model\Map\MapPosition.cs" />
     <Compile Include="Main\Model\Map\MapBarcodeLine.cs" />
-    <Compile Include="MoveControl\Model\Configs\ElmoSingleAxisConfig.cs" />
-    <Compile Include="MoveControl\Model\Configs\MoveControlConfig.cs" />
-    <Compile Include="MoveControl\Model\Configs\OntimeReviseConfig.cs" />
-    <Compile Include="MoveControl\Model\Configs\Sr2000Config.cs" />
-    <Compile Include="MoveControl\Model\Elmo\AxisInfo.cs" />
-    <Compile Include="MoveControl\Model\Elmo\ElmoAxisFeedbackData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\AddToCommandListData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\AGVTurnParameter.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\AxisData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\BreakDownMoveCommandData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\Command.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\EncoderPositionData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\MoveControlParameter.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\MoveControlSafetyData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\OneMoveCommand.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\Location.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\ReserveData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\SafetyData.cs" />
-    <Compile Include="MoveControl\Model\MoveControl\SectionLine.cs" />
-    <Compile Include="MoveControl\Model\SR2000\AGVPosition.cs" />
-    <Compile Include="MoveControl\Model\SR2000\BarcodeData.cs" />
-    <Compile Include="MoveControl\Model\SR2000\ReviseData.cs" />
-    <Compile Include="MoveControl\Model\SR2000\SectionDeviationTheta.cs" />
-    <Compile Include="MoveControl\Model\SR2000\SpeedAndMaxTheta.cs" />
-    <Compile Include="MoveControl\Model\SR2000\Sr2000Info.cs" />
-    <Compile Include="MoveControl\Model\SR2000\Sr2000ReadData.cs" />
-    <Compile Include="Plc\Model\BatteryCell.cs" />
-    <Compile Include="Plc\Model\PlcBatterys.cs" />
-    <Compile Include="Plc\Model\PlcBeamSensor.cs" />
-    <Compile Include="Plc\Model\PlcBumper.cs" />
-    <Compile Include="Plc\Model\PlcConfig.cs" />
-    <Compile Include="Plc\Model\PlcEmo.cs" />
-    <Compile Include="Plc\Model\PlcForkCommand.cs" />
-    <Compile Include="Plc\Model\PlcOperation.cs" />
-    <Compile Include="Plc\Model\PlcRobot.cs" />
-    <Compile Include="Plc\Model\PlcVehicle.cs" />
     <Compile Include="Main\Model\TransferStepInfo\EmptyTransCmd.cs" />
     <Compile Include="Main\Model\TransferStepInfo\LoadCmdInfo.cs" />
     <Compile Include="Main\Model\TransferStepInfo\MoveCmdInfo.cs" />
-    <Compile Include="Main\Model\TransferStepInfo\TransCmd.cs" />
+    <Compile Include="Main\Model\TransferStepInfo\TransferStep.cs" />
     <Compile Include="Main\Model\TransferStepInfo\UnloadCmdInfo.cs" />
-    <Compile Include="Plc\Model\VehicleCorrectValue.cs" />
-    <Compile Include="Plc\PlcDefine.cs" />
-    <Compile Include="MoveControl\View\UserControls\SensorByPassInformation.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\SensorByPassInformation.Designer.cs">
-      <DependentUpon>SensorByPassInformation.cs</DependentUpon>
-    </Compile>
     <Compile Include="Main\View\UserControls\UcVehicleImage.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Main\View\UserControls\UcVehicleImage.Designer.cs">
       <DependentUpon>UcVehicleImage.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\JogPitchForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\JogPitchForm.designer.cs">
-      <DependentUpon>JogPitchForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\MoveCommandDebugModeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\MoveCommandDebugModeForm.designer.cs">
-      <DependentUpon>MoveCommandDebugModeForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\SafetyInformation.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\SafetyInformation.Designer.cs">
-      <DependentUpon>SafetyInformation.cs</DependentUpon>
     </Compile>
     <Compile Include="Main\View\UserControls\UcAddressImage.cs">
       <SubType>UserControl</SubType>
@@ -309,18 +189,6 @@
     </Compile>
     <Compile Include="Main\View\AlarmForm.Designer.cs">
       <DependentUpon>AlarmForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Plc\View\PlcForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Plc\View\PlcForm.designer.cs">
-      <DependentUpon>PlcForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\JogPitchAxis.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MoveControl\View\UserControls\JogPitchAxis.designer.cs">
-      <DependentUpon>JogPitchAxis.cs</DependentUpon>
     </Compile>
     <Compile Include="Main\View\UserControls\UcSectionImage.cs">
       <SubType>UserControl</SubType>
@@ -380,21 +248,6 @@
     <EmbeddedResource Include="Main\View\MoveCommandForm.resx">
       <DependentUpon>MoveCommandForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\MoveControlSimulateStateForm.resx">
-      <DependentUpon>MoveControlSimulateStateForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\SimulateSettingAGVAngle.resx">
-      <DependentUpon>SimulateSettingAGVAngle.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\SimulateSettingAGVAngleForm.resx">
-      <DependentUpon>SimulateSettingAGVAngleForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\UserControls\AxisConfigs.resx">
-      <DependentUpon>AxisConfigs.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\UserControls\ConfigsNameAndValue.resx">
-      <DependentUpon>ConfigsNameAndValue.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -405,29 +258,11 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="MoveControl\View\UserControls\SensorByPassInformation.resx">
-      <DependentUpon>SensorByPassInformation.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Main\View\UserControls\UcVehicleImage.resx">
       <DependentUpon>UcVehicleImage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main\View\AlarmForm.resx">
       <DependentUpon>AlarmForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\JogPitchForm.resx">
-      <DependentUpon>JogPitchForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\MoveCommandDebugModeForm.resx">
-      <DependentUpon>MoveCommandDebugModeForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Plc\View\PlcForm.resx">
-      <DependentUpon>PlcForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\UserControls\JogPitchAxis.resx">
-      <DependentUpon>JogPitchAxis.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MoveControl\View\UserControls\SafetyInformation.resx">
-      <DependentUpon>SafetyInformation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main\View\UserControls\ucAddressImage.resx">
       <DependentUpon>UcAddressImage.cs</DependentUpon>
@@ -511,8 +346,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Customer\ASE\View\" />
-    <Folder Include="Customer\AUO\Model\" />
-    <Folder Include="Customer\AUO\View\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
