@@ -14,6 +14,7 @@ namespace Mirle.AgvAseMiddler.Model
         public Dictionary<int, MapBarcode> allMapBarcodes = new Dictionary<int, MapBarcode>();
         public Dictionary<string, MapBarcodeLine> allMapBarcodeLines = new Dictionary<string, MapBarcodeLine>();
         public List<MapAddress> allCouples = new List<MapAddress>();
+        public Dictionary<string, string> portNumberMap = new Dictionary<string, string>();
 
         public MapInfo()
         {

@@ -9,6 +9,7 @@ using System.Reflection;
 using Mirle.AgvAseMiddler.Model.Configs;
 using System.IO;
 using Mirle.AgvAseMiddler.Model;
+using Mirle.AgvAseMiddler.Model.TransferSteps;
 
 namespace Mirle.AgvAseMiddler.Controller
 {
@@ -25,16 +26,17 @@ namespace Mirle.AgvAseMiddler.Controller
         public string AutoReplyFilePath { get; set; } = "AutoReply.csv";
         private Vehicle theVehicle = Vehicle.Instance;
         private Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
+        
 
         public event EventHandler<string> OnMessageShowEvent;
 
-        public AsePackage()
+        public AsePackage(Dictionary<string, string> portNumberMap)
         {
             InitialWrapper();
             aseMoveControl = new AseMoveControl(psWrapper);
-            aseRobotControl = new AseRobotControl(psWrapper);
+            aseRobotControl = new AseRobotControl(psWrapper, portNumberMap);
             aseBatteryControl = new AseBatteryControl(psWrapper);
-            aseBuzzerControl = new AseBuzzerControl(psWrapper);
+            aseBuzzerControl = new AseBuzzerControl(psWrapper);           
         }
 
         private void InitialWrapper()
@@ -121,10 +123,10 @@ namespace Mirle.AgvAseMiddler.Controller
                 switch (transaction.PSSecondaryMessage.Number)
                 {
                     case "34":
-                        UpdateVehiclePosition(transaction.PSSecondaryMessage.PSMessage);
+                        ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
                         break;
                     case "36":
-                        UpdateBatteryStatus(transaction.PSSecondaryMessage.PSMessage);
+                        ReceiveBatteryStatusRequestAck(transaction.PSSecondaryMessage.PSMessage);
                         break;
                     default:
                         break;
@@ -136,13 +138,14 @@ namespace Mirle.AgvAseMiddler.Controller
             }
         }
 
-        private void UpdateBatteryStatus(string psMessage)
+        private void ReceiveBatteryStatusRequestAck(string psMessage)
         {
             try
             {
                 AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
                 aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(0, 9));
-                aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(9, 4)) * 0.01;                
+                aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(9, 4)) * 0.01;
+                aseBatteryStatus.Temperature = double.Parse(psMessage.Substring(13, 3));
                 theVehicle.AseBatteryStatus = aseBatteryStatus;
             }
             catch (Exception ex)
@@ -158,16 +161,17 @@ namespace Mirle.AgvAseMiddler.Controller
             return IsValuePositive(isPositive) ? value : -value;
         }
 
-        private void UpdateVehiclePosition(string psMessage)
+        private void ReceivePositionReportRequestAck(string psMessage)
         {
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                aseMoveStatus.IsMoving = bool.Parse(psMessage.Substring(0, 1));
-                aseMoveStatus.CurMapPosition.X = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-                aseMoveStatus.CurMapPosition.Y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+                aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
+                aseMoveStatus.LastMapPosition.X = GetPositionFromPsMessage(psMessage.Substring(1, 9));
+                aseMoveStatus.LastMapPosition.Y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
-                aseMoveStatus.Speed = int.Parse(psMessage.Substring(22, 4));
+                aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
+                aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
                 theVehicle.AseMoveStatus = aseMoveStatus;
             }
             catch (Exception ex)
@@ -212,6 +216,11 @@ namespace Mirle.AgvAseMiddler.Controller
             }
         }
 
+        internal void Mainflow_OnTransferCommandCheckedEvent(object sender, AgvcTransCmd e)
+        {
+            throw new NotImplementedException();
+        }
+
         private void OnPrimaryReceived(PSTransactionXClass transaction)
         {
             try
@@ -246,6 +255,9 @@ namespace Mirle.AgvAseMiddler.Controller
                     case "P29":
                         UpdateChargeStatus(transaction.PSPrimaryMessage.PSMessage);
                         break;
+                    case "P43":
+                        ReceiveMoveAppendArrivalReport(transaction.PSPrimaryMessage.PSMessage);
+                        break;
                     case "P61":
                         AlarmReport(transaction.PSPrimaryMessage.PSMessage);
                         break;
@@ -255,6 +267,51 @@ namespace Mirle.AgvAseMiddler.Controller
                     default:
                         break;
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ReceiveMoveAppendArrivalReport(string psMessage)
+        {
+            try
+            {
+                EnumAseArrival aseArrival = (EnumAseArrival)Enum.Parse(typeof(EnumAseArrival), psMessage.Substring(0, 1));
+                switch (aseArrival)
+                {
+                    case EnumAseArrival.Fail:
+                        aseMoveControl.OnMoveFinish(EnumMoveComplete.Fail);
+                        break;
+                    case EnumAseArrival.Arrival:
+                        ArrivalPosition(psMessage);
+                        break;
+                    case EnumAseArrival.EndArrival:
+                        aseMoveControl.OnMoveFinish(EnumMoveComplete.Success);
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ArrivalPosition(string psMessage)
+        {
+            try
+            {
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                aseMoveStatus.LastMapPosition.X = GetPositionFromPsMessage(psMessage.Substring(1, 9));
+                aseMoveStatus.LastMapPosition.Y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+                aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
+                aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
+                aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
+                theVehicle.AseMoveStatus = aseMoveStatus;
             }
             catch (Exception ex)
             {
@@ -325,21 +382,20 @@ namespace Mirle.AgvAseMiddler.Controller
                 AseCarrierSlotStatus aseCarrierSlotStatus = new AseCarrierSlotStatus();
                 aseCarrierSlotStatus.CarrierSlotStatus = (EnumAseCarrierSlotStatus)Enum.Parse(typeof(EnumAseCarrierSlotStatus), psMessage.Substring(1, 1));
                 aseCarrierSlotStatus.CarrierId = psMessage.Substring(2);
-                string slotNumber = psMessage.Substring(0, 1).ToUpper().Trim();
-                if (slotNumber == "A")
+                EnumSlotNumber slotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), psMessage.Substring(0, 1));
+                switch (slotNumber)
                 {
-                    theVehicle.AseCarrierSlotA = aseCarrierSlotStatus;
-                    aseRobotControl.OnReadCarrierIdFinish("A");
+                    case EnumSlotNumber.A:
+                        theVehicle.AseCarrierSlotA = aseCarrierSlotStatus;
+                        break;
+                    case EnumSlotNumber.B:
+                        theVehicle.AseCarrierSlotB = aseCarrierSlotStatus;
+                        break;
+                    default:
+                        throw new Exception($"PsMessage slot number error.[{psMessage.Substring(0, 1)}]");
                 }
-                else if (slotNumber == "B")
-                {
-                    theVehicle.AseCarrierSlotB = aseCarrierSlotStatus;
-                    aseRobotControl.OnReadCarrierIdFinish("B");
-                }
-                else
-                {
-                    throw new Exception($"PsMessage slot number error.[{slotNumber}]");
-                }
+
+                aseRobotControl.OnReadCarrierIdFinish(slotNumber);
             }
             catch (Exception ex)
             {
@@ -354,7 +410,6 @@ namespace Mirle.AgvAseMiddler.Controller
                 AseRobotStatus aseRobotStatus = new AseRobotStatus();
                 aseRobotStatus.RobotState = (EnumAseRobotState)Enum.Parse(typeof(EnumAseRobotState), psMessage.Substring(0, 1));
                 aseRobotStatus.IsHome = IsValueTrue(psMessage.Substring(1, 1));
-
 
                 if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Idle && aseRobotStatus.RobotState == EnumAseRobotState.Error)
                 {
@@ -386,9 +441,6 @@ namespace Mirle.AgvAseMiddler.Controller
                 aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(1, 3));
                 theVehicle.AseMoveStatus = aseMoveStatus;
-
-                string msg = "UpdateMoveStatus";
-                OnMessageShowEvent?.Invoke(this, msg);
             }
             catch (Exception ex)
             {
@@ -567,6 +619,46 @@ namespace Mirle.AgvAseMiddler.Controller
             }
         }
 
+        public void InstallTransferCommand(AgvcTransCmd agvcTransCmd)
+        {
+            try
+            {
+                string cmdId = agvcTransCmd.CommandId.Substring(0, 20);
+                string fromPortNumber = agvcTransCmd.LoadAddressId.Substring(0,4);
+                string toPortNumber = agvcTransCmd.UnloadAddressId.Substring(0,4);
+                string lotId = agvcTransCmd.LotId.PadLeft(39, '0');
+                string cstId = agvcTransCmd.CassetteId;
+
+                string message = string.Concat(cmdId, fromPortNumber, toPortNumber, lotId, cstId);
+                PrimarySend("P37", message);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }        
+
+        private PSTransactionXClass PrimarySend(string index, string message)
+        {
+            try
+            {
+                PSMessageXClass psMessage = new PSMessageXClass();
+                psMessage.Type = index.Substring(0, 1);
+                psMessage.Number = index.Substring(1, 2);
+                psMessage.PSMessage = message;
+                PSTransactionXClass psTransaction = new PSTransactionXClass();
+                psTransaction.PSPrimaryMessage = psMessage;
+
+                psWrapper.PrimarySent(ref psTransaction);
+                return psTransaction;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                return null;
+            }
+        }
+
         private void LogException(string classMethodName, string exMsg)
         {
             mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
@@ -581,6 +673,7 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
         }
+
 
     }
 }

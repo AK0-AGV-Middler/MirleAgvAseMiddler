@@ -86,7 +86,7 @@
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radOnline = new System.Windows.Forms.RadioButton();
             this.radOffline = new System.Windows.Forms.RadioButton();
-            this.txtMiddlerAbnormalReason = new System.Windows.Forms.Label();
+            this.txtAgvcConnectorAbnormalReason = new System.Windows.Forms.Label();
             this.txtBatterysAbnormalReason = new System.Windows.Forms.Label();
             this.txtRobotAbnormalReason = new System.Windows.Forms.Label();
             this.txtMainFlowAbnormalReason = new System.Windows.Forms.Label();
@@ -94,7 +94,7 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtBatterysAbnormal = new System.Windows.Forms.Label();
             this.txtMainFlowAbnormal = new System.Windows.Forms.Label();
-            this.txtMiddlerAbnormal = new System.Windows.Forms.Label();
+            this.txtAgvcConnectorAbnormal = new System.Windows.Forms.Label();
             this.txtRobotAbnormal = new System.Windows.Forms.Label();
             this.txtMoveControlAbnormal = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -238,7 +238,7 @@
             this.AgvcConnectorPage.Name = "AgvcConnectorPage";
             this.AgvcConnectorPage.Size = new System.Drawing.Size(161, 22);
             this.AgvcConnectorPage.Text = "AgvcConnector";
-            this.AgvcConnectorPage.Click += new System.EventHandler(this.MiddlerPage_Click);
+            this.AgvcConnectorPage.Click += new System.EventHandler(this.AgvcConnectorPage_Click);
             // 
             // RobotPage
             // 
@@ -367,7 +367,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
-            this.splitContainer2.Panel2.Controls.Add(this.txtMiddlerAbnormalReason);
+            this.splitContainer2.Panel2.Controls.Add(this.txtAgvcConnectorAbnormalReason);
             this.splitContainer2.Panel2.Controls.Add(this.txtBatterysAbnormalReason);
             this.splitContainer2.Panel2.Controls.Add(this.txtRobotAbnormalReason);
             this.splitContainer2.Panel2.Controls.Add(this.txtMainFlowAbnormalReason);
@@ -757,16 +757,16 @@
             this.radOffline.UseVisualStyleBackColor = true;
             this.radOffline.CheckedChanged += new System.EventHandler(this.radOffline_CheckedChanged);
             // 
-            // txtMiddlerAbnormalReason
+            // txtAgvcConnectorAbnormalReason
             // 
-            this.txtMiddlerAbnormalReason.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.txtMiddlerAbnormalReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtMiddlerAbnormalReason.ForeColor = System.Drawing.Color.OrangeRed;
-            this.txtMiddlerAbnormalReason.Location = new System.Drawing.Point(422, 28);
-            this.txtMiddlerAbnormalReason.Name = "txtMiddlerAbnormalReason";
-            this.txtMiddlerAbnormalReason.Size = new System.Drawing.Size(290, 74);
-            this.txtMiddlerAbnormalReason.TabIndex = 66;
-            this.txtMiddlerAbnormalReason.Text = "通訊的理由";
+            this.txtAgvcConnectorAbnormalReason.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.txtAgvcConnectorAbnormalReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtAgvcConnectorAbnormalReason.ForeColor = System.Drawing.Color.OrangeRed;
+            this.txtAgvcConnectorAbnormalReason.Location = new System.Drawing.Point(422, 28);
+            this.txtAgvcConnectorAbnormalReason.Name = "txtAgvcConnectorAbnormalReason";
+            this.txtAgvcConnectorAbnormalReason.Size = new System.Drawing.Size(290, 74);
+            this.txtAgvcConnectorAbnormalReason.TabIndex = 66;
+            this.txtAgvcConnectorAbnormalReason.Text = "通訊的理由";
             // 
             // txtBatterysAbnormalReason
             // 
@@ -816,7 +816,7 @@
             // 
             this.groupBox3.Controls.Add(this.txtBatterysAbnormal);
             this.groupBox3.Controls.Add(this.txtMainFlowAbnormal);
-            this.groupBox3.Controls.Add(this.txtMiddlerAbnormal);
+            this.groupBox3.Controls.Add(this.txtAgvcConnectorAbnormal);
             this.groupBox3.Controls.Add(this.txtRobotAbnormal);
             this.groupBox3.Controls.Add(this.txtMoveControlAbnormal);
             this.groupBox3.Location = new System.Drawing.Point(18, 21);
@@ -848,16 +848,16 @@
             this.txtMainFlowAbnormal.Text = "流程";
             this.txtMainFlowAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // txtMiddlerAbnormal
+            // txtAgvcConnectorAbnormal
             // 
-            this.txtMiddlerAbnormal.BackColor = System.Drawing.Color.LightGreen;
-            this.txtMiddlerAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtMiddlerAbnormal.Location = new System.Drawing.Point(6, 49);
-            this.txtMiddlerAbnormal.Name = "txtMiddlerAbnormal";
-            this.txtMiddlerAbnormal.Size = new System.Drawing.Size(126, 31);
-            this.txtMiddlerAbnormal.TabIndex = 3;
-            this.txtMiddlerAbnormal.Text = "通訊";
-            this.txtMiddlerAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.txtAgvcConnectorAbnormal.BackColor = System.Drawing.Color.LightGreen;
+            this.txtAgvcConnectorAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtAgvcConnectorAbnormal.Location = new System.Drawing.Point(6, 49);
+            this.txtAgvcConnectorAbnormal.Name = "txtAgvcConnectorAbnormal";
+            this.txtAgvcConnectorAbnormal.Size = new System.Drawing.Size(126, 31);
+            this.txtAgvcConnectorAbnormal.TabIndex = 3;
+            this.txtAgvcConnectorAbnormal.Text = "通訊";
+            this.txtAgvcConnectorAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // txtRobotAbnormal
             // 
@@ -1126,13 +1126,13 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label txtBatterysAbnormal;
         private System.Windows.Forms.Label txtMainFlowAbnormal;
-        private System.Windows.Forms.Label txtMiddlerAbnormal;
+        private System.Windows.Forms.Label txtAgvcConnectorAbnormal;
         private System.Windows.Forms.Label txtRobotAbnormal;
         private System.Windows.Forms.Label txtMoveControlAbnormal;
         private System.Windows.Forms.Label txtMainFlowAbnormalReason;
         private System.Windows.Forms.Label txtRobotAbnormalReason;
         private System.Windows.Forms.Button btnPrintScreen;
         private System.Windows.Forms.Label txtBatterysAbnormalReason;
-        private System.Windows.Forms.Label txtMiddlerAbnormalReason;
+        private System.Windows.Forms.Label txtAgvcConnectorAbnormalReason;
     }
 }

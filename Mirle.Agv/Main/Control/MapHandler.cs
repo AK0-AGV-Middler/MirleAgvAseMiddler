@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using Mirle.AgvAseMiddler.Model.Configs;
 using System.Linq;
-using Mirle.AgvAseMiddler.Controller.Tools;
+ 
 using System.Reflection;
 using Mirle.Tools;
 
@@ -19,7 +19,7 @@ namespace Mirle.AgvAseMiddler.Controller
         public string AddressPath { get; set; }
         public string BarcodePath { get; set; }
         public string SectionBeamDisablePath { get; set; }
-        public MapInfo TheMapInfo { get; private set; } = new MapInfo();
+        public MapInfo theMapInfo { get; private set; } = new MapInfo();
         private double AddressAreaMm { get; set; } = 30;
         private Vehicle theVehicle = Vehicle.Instance;
 
@@ -61,8 +61,8 @@ namespace Mirle.AgvAseMiddler.Controller
                         , $"IsBarcodePathNull={string.IsNullOrWhiteSpace(BarcodePath)}"));
                     return;
                 }
-                TheMapInfo.allMapBarcodeLines.Clear();
-                TheMapInfo.allMapBarcodes.Clear();
+                theMapInfo.allMapBarcodeLines.Clear();
+                theMapInfo.allMapBarcodes.Clear();
 
                 string[] allRows = File.ReadAllLines(BarcodePath);
                 if (allRows == null || allRows.Length < 2)
@@ -147,7 +147,7 @@ namespace Mirle.AgvAseMiddler.Controller
                                 mapBarcode.Material = oneRow.Material;
 
                                 lastReadBcrId = mapBarcode.Number.ToString();
-                                TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
+                                theMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
                             }
                         }
                         catch (Exception ex)
@@ -171,7 +171,7 @@ namespace Mirle.AgvAseMiddler.Controller
                                 mapBarcode.LineId = oneRow.Id;
                                 mapBarcode.Material = oneRow.Material;
                                 lastReadBcrId = mapBarcode.Number.ToString();
-                                TheMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
+                                theMapInfo.allMapBarcodes.Add(mapBarcode.Number, mapBarcode);
                             }
                         }
                         catch (Exception ex)
@@ -185,7 +185,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     // , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}]"));
 
                     lastReadBcrLineId = oneRow.Id;
-                    TheMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
+                    theMapInfo.allMapBarcodeLines.Add(oneRow.Id, oneRow);
                 }
 
                 mirleLogger.Log( new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
@@ -208,8 +208,8 @@ namespace Mirle.AgvAseMiddler.Controller
                        , $"IsAddressPathNull={string.IsNullOrWhiteSpace(AddressPath)}"));
                     return;
                 }
-                TheMapInfo.allMapAddresses.Clear();
-                TheMapInfo.allCouples.Clear();
+                theMapInfo.allMapAddresses.Clear();
+                theMapInfo.allCouples.Clear();
 
                 string[] allRows = File.ReadAllLines(AddressPath);
                 if (allRows == null || allRows.Length < 2)
@@ -285,11 +285,12 @@ namespace Mirle.AgvAseMiddler.Controller
                     }
 
                     lastReadAdrId = oneRow.Id;
-                    TheMapInfo.allMapAddresses.Add(oneRow.Id, oneRow);
+                    theMapInfo.allMapAddresses.Add(oneRow.Id, oneRow);
                     if (oneRow.IsCharger)
                     {
-                        TheMapInfo.allCouples.Add(oneRow);
+                        theMapInfo.allCouples.Add(oneRow);
                     }
+                    theMapInfo.portNumberMap.Add(oneRow.Id, oneRow.PortNumber);
 
                 }
 
@@ -321,7 +322,7 @@ namespace Mirle.AgvAseMiddler.Controller
                          , $"IsSectionPathNull={string.IsNullOrWhiteSpace(SectionPath)}"));
                     return;
                 }
-                TheMapInfo.allMapSections.Clear();
+                theMapInfo.allMapSections.Clear();
 
                 string[] allRows = File.ReadAllLines(SectionPath);
                 if (allRows == null || allRows.Length < 2)
@@ -355,17 +356,17 @@ namespace Mirle.AgvAseMiddler.Controller
                     try
                     {
                         oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
-                        if (!TheMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["FromAddress"]]))
+                        if (!theMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["FromAddress"]]))
                         {
                             mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, headAddress is not in the map : [secId={oneRow.Id}][headAddress={getThisRow[dicHeaderIndexes["FromAddress"]]}]"));
                         }
-                        oneRow.HeadAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
+                        oneRow.HeadAddress = theMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["FromAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.HeadAddress);
-                        if (!TheMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["ToAddress"]]))
+                        if (!theMapInfo.allMapAddresses.ContainsKey(getThisRow[dicHeaderIndexes["ToAddress"]]))
                         {
                             mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadSectionCsv read oneRow fail, tailAddress is not in the map : [secId={oneRow.Id}][tailAddress={getThisRow[dicHeaderIndexes["ToAddress"]]}]"));
                         }
-                        oneRow.TailAddress = TheMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
+                        oneRow.TailAddress = theMapInfo.allMapAddresses[getThisRow[dicHeaderIndexes["ToAddress"]]];
                         oneRow.InsideAddresses.Add(oneRow.TailAddress);
                         oneRow.HeadToTailDistance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
                         oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
@@ -380,7 +381,7 @@ namespace Mirle.AgvAseMiddler.Controller
                     }
 
                     lastReadSecId = oneRow.Id;
-                    TheMapInfo.allMapSections.Add(oneRow.Id, oneRow);
+                    theMapInfo.allMapSections.Add(oneRow.Id, oneRow);
                 }
 
                 LoadBeamSensorDisable();
@@ -412,7 +413,7 @@ namespace Mirle.AgvAseMiddler.Controller
             File.WriteAllText(barcodeBackupPath, titleRow);
 
             List<string> barcodeLineInfos = new List<string>();
-            foreach (var item in TheMapInfo.allMapBarcodeLines.Values)
+            foreach (var item in theMapInfo.allMapBarcodeLines.Values)
             {
                 var head = item.HeadBarcode;
                 var tail = item.TailBarcode;
@@ -435,7 +436,7 @@ namespace Mirle.AgvAseMiddler.Controller
             string titleRow = "Id,PositionX,PositionY,IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin,PioDirection,IsTR50,InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle" + Environment.NewLine;
             File.WriteAllText(backupPath, titleRow);
             List<string> lineInfos = new List<string>();
-            foreach (var item in TheMapInfo.allMapAddresses.Values)
+            foreach (var item in theMapInfo.allMapAddresses.Values)
             {
                 var lineInfo = string.Format("{0},{1:F0},{2:F0},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15:0000},{16:F2},{17:F2},{18:F2},{19:N0}",
                     item.Id, item.Position.X, item.Position.Y, item.IsWorkStation, item.CanLeftLoad, item.CanLeftUnload, item.CanRightLoad, item.CanRightUnload,
@@ -462,7 +463,7 @@ namespace Mirle.AgvAseMiddler.Controller
             string titleRow = "Id,FromAddress,ToAddress,Speed, Type,PermitDirection" + Environment.NewLine;
             File.WriteAllText(backupPath, titleRow);
             List<string> lineInfos = new List<string>();
-            foreach (var item in TheMapInfo.allMapSections.Values)
+            foreach (var item in theMapInfo.allMapSections.Values)
             {
                 var lineInfo = string.Format("{0},{1},{2},{3},{4},{5}",
                     item.Id, item.HeadAddress.Id, item.TailAddress.Id, item.Speed, item.Type, item.PermitDirection
@@ -476,11 +477,11 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             try
             {
-                foreach (var adr in TheMapInfo.allMapAddresses.Values)
+                foreach (var adr in theMapInfo.allMapAddresses.Values)
                 {
-                    if (TheMapInfo.allMapSections.ContainsKey(adr.InsideSectionId))
+                    if (theMapInfo.allMapSections.ContainsKey(adr.InsideSectionId))
                     {
-                        TheMapInfo.allMapSections[adr.InsideSectionId].InsideAddresses.Add(adr);
+                        theMapInfo.allMapSections[adr.InsideSectionId].InsideAddresses.Add(adr);
                     }
                 }
 
@@ -566,14 +567,14 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             try
             {
-                if (!TheMapInfo.allMapSections.ContainsKey(oneRow.SectionId))
+                if (!theMapInfo.allMapSections.ContainsKey(oneRow.SectionId))
                 {
                     mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"Section[{oneRow.SectionId}]加入Beam Sensor Disable清單失敗，圖資不包含Section[{oneRow.SectionId}]"));
 
                     return;
                 }
-                MapSection mapSection = TheMapInfo.allMapSections[oneRow.SectionId];
+                MapSection mapSection = theMapInfo.allMapSections[oneRow.SectionId];
                 if (oneRow.Min < -30)
                 {
                     mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"

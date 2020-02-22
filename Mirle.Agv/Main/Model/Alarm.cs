@@ -22,6 +22,6 @@ namespace Mirle.AgvAseMiddler.Model
         //MainFLow = 0XXXXX
         //Move = 1XXXXX
         //Plc = 2XXXXX
-        //Middler = 3XXXXX       
+        //AgvcConnector = 3XXXXX       
     }
 }

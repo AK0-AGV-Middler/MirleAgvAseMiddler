@@ -60,7 +60,7 @@
             this.label10 = new System.Windows.Forms.Label();
             this.tbxLoadingChargeCv = new System.Windows.Forms.TextBox();
             this.tbxLoadingChargeSv = new System.Windows.Forms.TextBox();
-            this.tbP_Middler = new System.Windows.Forms.TabPage();
+            this.tbP_AgvcConnector = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.btnReconnect = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
@@ -72,8 +72,8 @@
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
-            this.btnLoadMiddlerConfig = new System.Windows.Forms.Button();
-            this.btnSaveMiddlerConfig = new System.Windows.Forms.Button();
+            this.btnLoadAgvcConnectorConfig = new System.Windows.Forms.Button();
+            this.btnSaveAgvcConnectorConfig = new System.Windows.Forms.Button();
             this.tbxClientNameCv = new System.Windows.Forms.TextBox();
             this.tbxRemoteIpCv = new System.Windows.Forms.TextBox();
             this.tbxRemotePortCv = new System.Windows.Forms.TextBox();
@@ -102,14 +102,14 @@
             this.tabConfigs.SuspendLayout();
             this.tbP_Mainflow.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
-            this.tbP_Middler.SuspendLayout();
+            this.tbP_AgvcConnector.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabConfigs
             // 
             this.tabConfigs.Controls.Add(this.tbP_Mainflow);
-            this.tabConfigs.Controls.Add(this.tbP_Middler);
+            this.tabConfigs.Controls.Add(this.tbP_AgvcConnector);
             this.tabConfigs.Location = new System.Drawing.Point(22, 42);
             this.tabConfigs.Name = "tabConfigs";
             this.tabConfigs.SelectedIndex = 0;
@@ -458,16 +458,16 @@
             this.tbxLoadingChargeSv.Size = new System.Drawing.Size(215, 27);
             this.tbxLoadingChargeSv.TabIndex = 81;
             // 
-            // tbP_Middler
+            // tbP_AgvcConnector
             // 
-            this.tbP_Middler.Controls.Add(this.tableLayoutPanel2);
-            this.tbP_Middler.Location = new System.Drawing.Point(4, 28);
-            this.tbP_Middler.Name = "tbP_Middler";
-            this.tbP_Middler.Padding = new System.Windows.Forms.Padding(3);
-            this.tbP_Middler.Size = new System.Drawing.Size(653, 485);
-            this.tbP_Middler.TabIndex = 1;
-            this.tbP_Middler.Text = "通訊";
-            this.tbP_Middler.UseVisualStyleBackColor = true;
+            this.tbP_AgvcConnector.Controls.Add(this.tableLayoutPanel2);
+            this.tbP_AgvcConnector.Location = new System.Drawing.Point(4, 28);
+            this.tbP_AgvcConnector.Name = "tbP_AgvcConnector";
+            this.tbP_AgvcConnector.Padding = new System.Windows.Forms.Padding(3);
+            this.tbP_AgvcConnector.Size = new System.Drawing.Size(653, 485);
+            this.tbP_AgvcConnector.TabIndex = 1;
+            this.tbP_AgvcConnector.Text = "通訊";
+            this.tbP_AgvcConnector.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel2
             // 
@@ -485,8 +485,8 @@
             this.tableLayoutPanel2.Controls.Add(this.label17, 0, 5);
             this.tableLayoutPanel2.Controls.Add(this.label18, 0, 6);
             this.tableLayoutPanel2.Controls.Add(this.label19, 0, 7);
-            this.tableLayoutPanel2.Controls.Add(this.btnLoadMiddlerConfig, 1, 11);
-            this.tableLayoutPanel2.Controls.Add(this.btnSaveMiddlerConfig, 2, 11);
+            this.tableLayoutPanel2.Controls.Add(this.btnLoadAgvcConnectorConfig, 1, 11);
+            this.tableLayoutPanel2.Controls.Add(this.btnSaveAgvcConnectorConfig, 2, 11);
             this.tableLayoutPanel2.Controls.Add(this.tbxClientNameCv, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.tbxRemoteIpCv, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.tbxRemotePortCv, 1, 3);
@@ -636,27 +636,27 @@
             this.label19.Text = "Reserve Length Meter";
             this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // btnLoadMiddlerConfig
+            // btnLoadAgvcConnectorConfig
             // 
-            this.btnLoadMiddlerConfig.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnLoadMiddlerConfig.Location = new System.Drawing.Point(203, 443);
-            this.btnLoadMiddlerConfig.Name = "btnLoadMiddlerConfig";
-            this.btnLoadMiddlerConfig.Size = new System.Drawing.Size(214, 34);
-            this.btnLoadMiddlerConfig.TabIndex = 9;
-            this.btnLoadMiddlerConfig.Text = "Load";
-            this.btnLoadMiddlerConfig.UseVisualStyleBackColor = true;
-            this.btnLoadMiddlerConfig.Click += new System.EventHandler(this.btnLoadMiddlerConfig_Click);
+            this.btnLoadAgvcConnectorConfig.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnLoadAgvcConnectorConfig.Location = new System.Drawing.Point(203, 443);
+            this.btnLoadAgvcConnectorConfig.Name = "btnLoadAgvcConnectorConfig";
+            this.btnLoadAgvcConnectorConfig.Size = new System.Drawing.Size(214, 34);
+            this.btnLoadAgvcConnectorConfig.TabIndex = 9;
+            this.btnLoadAgvcConnectorConfig.Text = "Load";
+            this.btnLoadAgvcConnectorConfig.UseVisualStyleBackColor = true;
+            this.btnLoadAgvcConnectorConfig.Click += new System.EventHandler(this.btnLoadAgvcConnectorConfig_Click);
             // 
-            // btnSaveMiddlerConfig
+            // btnSaveAgvcConnectorConfig
             // 
-            this.btnSaveMiddlerConfig.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnSaveMiddlerConfig.Location = new System.Drawing.Point(423, 443);
-            this.btnSaveMiddlerConfig.Name = "btnSaveMiddlerConfig";
-            this.btnSaveMiddlerConfig.Size = new System.Drawing.Size(215, 34);
-            this.btnSaveMiddlerConfig.TabIndex = 10;
-            this.btnSaveMiddlerConfig.Text = "Save";
-            this.btnSaveMiddlerConfig.UseVisualStyleBackColor = true;
-            this.btnSaveMiddlerConfig.Click += new System.EventHandler(this.btnSaveMiddlerConfig_Click);
+            this.btnSaveAgvcConnectorConfig.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnSaveAgvcConnectorConfig.Location = new System.Drawing.Point(423, 443);
+            this.btnSaveAgvcConnectorConfig.Name = "btnSaveAgvcConnectorConfig";
+            this.btnSaveAgvcConnectorConfig.Size = new System.Drawing.Size(215, 34);
+            this.btnSaveAgvcConnectorConfig.TabIndex = 10;
+            this.btnSaveAgvcConnectorConfig.Text = "Save";
+            this.btnSaveAgvcConnectorConfig.UseVisualStyleBackColor = true;
+            this.btnSaveAgvcConnectorConfig.Click += new System.EventHandler(this.btnSaveAgvcConnectorConfig_Click);
             // 
             // tbxClientNameCv
             // 
@@ -905,7 +905,7 @@
             this.tbP_Mainflow.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
-            this.tbP_Middler.ResumeLayout(false);
+            this.tbP_AgvcConnector.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.ResumeLayout(false);
@@ -928,7 +928,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button btnLoadMainFlowConfig;
         private System.Windows.Forms.Button btnSaveMainFlowConfig;
-        private System.Windows.Forms.TabPage tbP_Middler;
+        private System.Windows.Forms.TabPage tbP_AgvcConnector;
         private System.Windows.Forms.TextBox tbxVisitTransferStepsCv;
         private System.Windows.Forms.TextBox tbxTrackPositionCv;
         private System.Windows.Forms.TextBox tbxWatchLowPowerCv;
@@ -959,8 +959,8 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.Button btnLoadMiddlerConfig;
-        private System.Windows.Forms.Button btnSaveMiddlerConfig;
+        private System.Windows.Forms.Button btnLoadAgvcConnectorConfig;
+        private System.Windows.Forms.Button btnSaveAgvcConnectorConfig;
         private System.Windows.Forms.TextBox tbxClientNameCv;
         private System.Windows.Forms.TextBox tbxRemoteIpCv;
         private System.Windows.Forms.TextBox tbxRemotePortCv;

@@ -17,7 +17,7 @@ namespace Mirle.AgvAseMiddler.Controller
         private MirleLogger mirleLogger = MirleLogger.Instance;
 
         public event EventHandler<EnumMoveComplete> OnMoveFinishEvent;
-        public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;
+        public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;      
 
         public string StopResult { get; set; } = "";
 
@@ -48,7 +48,7 @@ namespace Mirle.AgvAseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
+        }        
 
         public bool Move(TransferStep transferStep, ref string errorMsg)
         {
@@ -146,17 +146,15 @@ namespace Mirle.AgvAseMiddler.Controller
             }
         }
 
-        public bool VehclePause()
+        public void VehclePause()
         {
             try
             {
                 PrimarySend("P51", "0");
-                return true;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return false;
             }
         }
 

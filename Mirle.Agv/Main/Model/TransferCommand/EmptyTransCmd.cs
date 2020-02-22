@@ -10,10 +10,7 @@ namespace Mirle.AgvAseMiddler.Model.TransferSteps
     [Serializable]
     public class EmptyTransferStep : TransferStep
     {
-        public EmptyTransferStep() : this(new MainFlowHandler()) { }
-        public EmptyTransferStep(MainFlowHandler mainFlowHandler) : base(mainFlowHandler)
-        {
-            type = EnumTransferStepType.Empty;
-        }
+        public EmptyTransferStep() : this("") { }
+        public EmptyTransferStep(string cmdId) : base(cmdId) => type = EnumTransferStepType.Empty;
     }
 }

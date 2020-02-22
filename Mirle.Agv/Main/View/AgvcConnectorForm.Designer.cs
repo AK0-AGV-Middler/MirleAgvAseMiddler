@@ -274,7 +274,7 @@
             this.timerUI.Interval = 500;
             this.timerUI.Tick += new System.EventHandler(this.timerUI_Tick);
             // 
-            // MiddlerForm
+            // AgvcConnectorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -300,9 +300,9 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "MiddlerForm";
+            this.Name = "AgvcConnectorForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "MiddlerForm";
+            this.Text = "AgvcConnectorForm";
             this.Load += new System.EventHandler(this.CommunicationForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.statusStrip1.ResumeLayout(false);

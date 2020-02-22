@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.IO;
 using Mirle.AgvAseMiddler.Model;
 using Mirle.AgvAseMiddler.Controller;
-using Mirle.AgvAseMiddler.Controller.Tools;
+ 
 using System.Reflection;
 using System.Threading;
 using Mirle.Tools;

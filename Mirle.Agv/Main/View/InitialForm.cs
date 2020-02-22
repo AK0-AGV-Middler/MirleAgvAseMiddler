@@ -11,7 +11,7 @@ using System.Threading;
 using Mirle.AgvAseMiddler.Controller;
 using System.IO.MemoryMappedFiles;
 using System.IO;
-using Mirle.AgvAseMiddler.Controller.Tools;
+using Mirle.AgvAseMiddler.Model;
 using Mirle.AgvAseMiddler.Model.Configs;
 using Mirle.Tools;
 

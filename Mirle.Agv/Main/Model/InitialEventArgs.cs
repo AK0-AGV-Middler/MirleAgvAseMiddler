@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mirle.AgvAseMiddler.Controller
+namespace Mirle.AgvAseMiddler.Model
 {
     public class InitialEventArgs : EventArgs
     {

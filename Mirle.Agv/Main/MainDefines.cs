@@ -113,10 +113,10 @@ namespace Mirle.AgvAseMiddler
         Cmd000_EmptyCommand = 0,
         Cmd31_TransferRequest = 31,
         Cmd32_TransferCompleteResponse = 32,
-        Cmd33_ControlZoneCancelRequest = 33,
         Cmd35_CarrierIdRenameRequest = 35,
         Cmd36_TransferEventResponse = 36,
         Cmd37_TransferCancelRequest = 37,
+        Cmd38_GuideInfoResponse = 38,
         Cmd39_PauseRequest = 39,
         Cmd41_ModeChange = 41,
         Cmd43_StatusRequest = 43,
@@ -231,7 +231,7 @@ namespace Mirle.AgvAseMiddler
         Pausing,
         Pause,
         Stoping,
-        Stop,
+        Block,
         Error
     }
 
@@ -255,6 +255,19 @@ namespace Mirle.AgvAseMiddler
         None,
         Left,
         Right
+    }
+
+    public enum EnumSlotNumber
+    {
+        A,
+        B
+    }
+
+    public enum EnumAseArrival
+    {
+        Fail,
+        Arrival,
+        EndArrival
     }
 
     #endregion

@@ -11,7 +11,7 @@ using Mirle.AgvAseMiddler.Controller;
 using Mirle.AgvAseMiddler.Model;
 using Mirle.AgvAseMiddler.Model.TransferSteps;
 using Mirle.AgvAseMiddler;
-using Mirle.AgvAseMiddler.Controller.Tools;
+ 
 using System.Reflection;
 using Mirle.AgvAseMiddler.Model.Configs;
 using Mirle.Tools;
@@ -38,7 +38,7 @@ namespace Mirle.AgvAseMiddler.View
                     UpdateMainFlowConfigCv();
                     break;
                 case 1:
-                    UpdateMiddlerConfigCv();
+                    UpdateAgvcConnectorConfigCv();
                     break;
                 default:
                     break;
@@ -141,8 +141,8 @@ namespace Mirle.AgvAseMiddler.View
                 ShowMainFlowConfigCvOnForm(mainFlowConfig);
                 ShowMainFlowConfigSvOnForm(mainFlowConfig);
                 agvcConnectorConfig = mainFlowHandler.GetAgvcConnectorConfig();
-                ShowMiddlerConfigCvOnForm(agvcConnectorConfig);
-                ShowMiddlerConfigSvOnForm(agvcConnectorConfig);                    
+                ShowAgvcConnectorConfigCvOnForm(agvcConnectorConfig);
+                ShowAgvcConnectorConfigSvOnForm(agvcConnectorConfig);                    
             }
             catch (Exception ex)
             {
@@ -169,12 +169,12 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void UpdateMiddlerConfigCv()
+        private void UpdateAgvcConnectorConfigCv()
         {
             try
             {
                 agvcConnectorConfig = mainFlowHandler.GetAgvcConnectorConfig();
-                ShowMiddlerConfigCvOnForm(agvcConnectorConfig);
+                ShowAgvcConnectorConfigCvOnForm(agvcConnectorConfig);
             }
             catch (Exception ex)
             {
@@ -182,7 +182,7 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void ShowMiddlerConfigCvOnForm(AgvcConnectorConfig agvcConnectorConfig)
+        private void ShowAgvcConnectorConfigCvOnForm(AgvcConnectorConfig agvcConnectorConfig)
         {
             try
             {
@@ -202,7 +202,7 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void ShowMiddlerConfigSvOnForm(AgvcConnectorConfig agvcConnectorConfig)
+        private void ShowAgvcConnectorConfigSvOnForm(AgvcConnectorConfig agvcConnectorConfig)
         {
             try
             {
@@ -222,12 +222,12 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void btnLoadMiddlerConfig_Click(object sender, EventArgs e)
+        private void btnLoadAgvcConnectorConfig_Click(object sender, EventArgs e)
         {
             try
             {
-                mainFlowHandler.LoadMiddlerConfig();
-                UpdateMiddlerConfigCv();
+                mainFlowHandler.LoadAgvcConnectorConfig();
+                UpdateAgvcConnectorConfigCv();
             }
             catch (Exception ex)
             {
@@ -235,7 +235,7 @@ namespace Mirle.AgvAseMiddler.View
             }
         }
 
-        private void btnSaveMiddlerConfig_Click(object sender, EventArgs e)
+        private void btnSaveAgvcConnectorConfig_Click(object sender, EventArgs e)
         {
             try
             {
@@ -261,7 +261,7 @@ namespace Mirle.AgvAseMiddler.View
                 tempAgvcConnectorConfig.AskReserveIntervalMs = int.Parse(tbxAskReserveMsSv.Text);                
 
                 agvcConnectorConfig = tempAgvcConnectorConfig;
-                mainFlowHandler.SetMiddlerConfig(agvcConnectorConfig);
+                mainFlowHandler.SetAgvcConnectorConfig(agvcConnectorConfig);
             }
             catch (Exception ex)
             {

@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf.Collections;
 using Mirle.AgvAseMiddler.Controller;
-using Mirle.AgvAseMiddler.Controller.Tools;
+ 
 using Mirle.AgvAseMiddler.Model.Configs;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using TcpIpClientSample;
+using com.mirle.aka.sc.ProtocolFormat.ase.agvMessage;
 using System.Threading.Tasks;
 using Mirle.Tools;
 
@@ -51,10 +51,10 @@ namespace Mirle.AgvAseMiddler.View
         {
             agvcConnector.OnCmdReceiveEvent += SendOrReceiveCmdToTextBox;
             agvcConnector.OnCmdSendEvent += SendOrReceiveCmdToTextBox;
-            agvcConnector.OnConnectionChangeEvent += MiddleAgent_OnConnectionChangeEvent;
+            agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
         }
 
-        private void MiddleAgent_OnConnectionChangeEvent(object sender, bool isConnect)
+        private void AgvcConnector_OnConnectionChangeEvent(object sender, bool isConnect)
         {
             try
             {
@@ -123,7 +123,7 @@ namespace Mirle.AgvAseMiddler.View
             }
             AppendCommLogMsg(msg);
 
-            agvcConnector.SendMiddlerFormCommands(cmdNum, pairs);
+            agvcConnector.SendAgvcConnectorFormCommands(cmdNum, pairs);
         }
 
         private void cbSend_SelectedValueChanged(object sender, EventArgs e)
@@ -149,8 +149,7 @@ namespace Mirle.AgvAseMiddler.View
                 case EnumCmdNum.Cmd31_TransferRequest:
                     ID_31_TRANS_REQUEST cmd31 = new ID_31_TRANS_REQUEST();
                     cmd31.CmdID = "Cmd001";
-                    cmd31.CSTID = "Cst001";
-                    cmd31.ActType = ActiveType.Move;
+                    cmd31.CSTID = "Cst001";                    
                     cmd31.DestinationAdr = "Adr001";
                     cmd31.LoadAdr = "Adr002";
                     infos = cmd31.GetType().GetProperties();
@@ -161,14 +160,7 @@ namespace Mirle.AgvAseMiddler.View
                     cmd32.ReplyCode = 0;
                     infos = cmd32.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd32);
-                    break;
-                case EnumCmdNum.Cmd33_ControlZoneCancelRequest:
-                    ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST cmd33 = new ID_33_CONTROL_ZONE_REPUEST_CANCEL_REQUEST();
-                    cmd33.CancelSecID = "Sec001";
-                    cmd33.ControlType = ControlType.Nothing;
-                    infos = cmd33.GetType().GetProperties();
-                    SetDataGridViewFromInfos(infos, cmd33);
-                    break;
+                    break;               
                 case EnumCmdNum.Cmd35_CarrierIdRenameRequest:
                     ID_35_CST_ID_RENAME_REQUEST cmd35 = new ID_35_CST_ID_RENAME_REQUEST();
                     cmd35.OLDCSTID = "Cst001";
@@ -186,8 +178,7 @@ namespace Mirle.AgvAseMiddler.View
                     break;
                 case EnumCmdNum.Cmd37_TransferCancelRequest:
                     ID_37_TRANS_CANCEL_REQUEST cmd37 = new ID_37_TRANS_CANCEL_REQUEST();
-                    cmd37.CmdID = "Cmd001";
-                    cmd37.ActType = CMDCancelType.CmdAbort;
+                    cmd37.CmdID = "Cmd001";                    
                     infos = cmd37.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd37);
                     break;
@@ -264,8 +255,7 @@ namespace Mirle.AgvAseMiddler.View
                     break;
                 case EnumCmdNum.Cmd131_TransferResponse:
                     ID_131_TRANS_RESPONSE cmd131 = new ID_131_TRANS_RESPONSE();
-                    cmd131.CmdID = "Cmd001";
-                    cmd131.ActType = ActiveType.Move;
+                    cmd131.CmdID = "Cmd001";                   
                     cmd131.NgReason = "";
                     cmd131.ReplyCode = 0;
                     infos = cmd131.GetType().GetProperties();
@@ -276,15 +266,7 @@ namespace Mirle.AgvAseMiddler.View
                     cmd132.CmdID = "Cmd001";
                     infos = cmd132.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd132);
-                    break;
-                case EnumCmdNum.Cmd133_ControlZoneCancelResponse:
-                    ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE cmd133 = new ID_133_CONTROL_ZONE_REPUEST_CANCEL_RESPONSE();
-                    cmd133.CancelSecID = "Sec001";
-                    cmd133.ControlType = ControlType.Block;
-                    cmd133.ReplyCode = 0;
-                    infos = cmd133.GetType().GetProperties();
-                    SetDataGridViewFromInfos(infos, cmd133);
-                    break;
+                    break;               
                 case EnumCmdNum.Cmd134_TransferEventReport:
                     ID_134_TRANS_EVENT_REP cmd134 = new ID_134_TRANS_EVENT_REP();
                     cmd134.CurrentAdrID = "Adr001";
@@ -327,19 +309,7 @@ namespace Mirle.AgvAseMiddler.View
                     cmd141.ReplyCode = 0;
                     infos = cmd141.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd141);
-                    break;
-                case EnumCmdNum.Cmd143_StatusResponse:
-                    ID_143_STATUS_RESPONSE cmd143 = new ID_143_STATUS_RESPONSE();
-                    cmd143.CmdID = "Cmd001";
-                    infos = cmd143.GetType().GetProperties();
-                    SetDataGridViewFromInfos(infos, cmd143);
-                    break;
-                case EnumCmdNum.Cmd144_StatusReport:
-                    ID_144_STATUS_CHANGE_REP cmd144 = new ID_144_STATUS_CHANGE_REP();
-                    cmd144.CmdID = "Cmd001";
-                    infos = cmd144.GetType().GetProperties();
-                    SetDataGridViewFromInfos(infos, cmd144);
-                    break;
+                    break;                
                 case EnumCmdNum.Cmd145_PowerOnoffResponse:
                     ID_145_POWER_OPE_RESPONSE cmd145 = new ID_145_POWER_OPE_RESPONSE();
                     cmd145.ReplyCode = 0;
@@ -444,7 +414,7 @@ namespace Mirle.AgvAseMiddler.View
             {
                 //middlerConfig.RemoteIp = txtRemoteIp.Text;
                 //middlerConfig.RemotePort = int.Parse(txtRemotePort.Text);
-                //SaveMiddlerConfigs();
+                //SaveAgvcConnectorConfigs();
 
                 //middleAgent.ReConnect();
                 agvcConnector.Connect();
