@@ -65,7 +65,10 @@ namespace Mirle.AgvAseMiddler.Controller
             mirleLogger = MirleLogger.Instance;
 
             CreatTcpIpClientAgent();
-            Connect();
+            if (!theVehicle.IsSimulation)
+            {
+                Connect();
+            }           
             StartAskReserve();
         }
 

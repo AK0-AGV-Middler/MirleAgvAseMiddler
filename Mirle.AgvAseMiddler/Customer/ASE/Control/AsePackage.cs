@@ -26,9 +26,9 @@ namespace Mirle.AgvAseMiddler.Controller
         public string AutoReplyFilePath { get; set; } = "AutoReply.csv";
         private Vehicle theVehicle = Vehicle.Instance;
         private Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
-        
 
         public event EventHandler<string> OnMessageShowEvent;
+        public event EventHandler<bool> OnConnectionChangeEvent;
 
         public AsePackage(Dictionary<string, string> portNumberMap)
         {
@@ -36,7 +36,7 @@ namespace Mirle.AgvAseMiddler.Controller
             aseMoveControl = new AseMoveControl(psWrapper);
             aseRobotControl = new AseRobotControl(psWrapper, portNumberMap);
             aseBatteryControl = new AseBatteryControl(psWrapper);
-            aseBuzzerControl = new AseBuzzerControl(psWrapper);           
+            aseBuzzerControl = new AseBuzzerControl(psWrapper);
         }
 
         private void InitialWrapper()
@@ -47,7 +47,10 @@ namespace Mirle.AgvAseMiddler.Controller
                 LoadPspConnectionConfig();
                 BindPsWrapperEvent();
 
-                psWrapper.Open();
+                if (!theVehicle.IsSimulation)
+                {
+                    psWrapper.Open();
+                }
             }
             catch (Exception ex)
             {
@@ -243,26 +246,29 @@ namespace Mirle.AgvAseMiddler.Controller
                     case "13":
                         SetVehicleManual();
                         break;
-                    case "P21":
+                    case "21":
                         UpdateMoveStatus(transaction.PSPrimaryMessage.PSMessage);
                         break;
-                    case "P23":
+                    case "23":
                         UpdateRobotStatus(transaction.PSPrimaryMessage.PSMessage);
                         break;
-                    case "P25":
+                    case "25":
                         UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage);
                         break;
-                    case "P29":
+                    case "29":
                         UpdateChargeStatus(transaction.PSPrimaryMessage.PSMessage);
                         break;
-                    case "P43":
+                    case "43":
                         ReceiveMoveAppendArrivalReport(transaction.PSPrimaryMessage.PSMessage);
                         break;
-                    case "P61":
+                    case "61":
                         AlarmReport(transaction.PSPrimaryMessage.PSMessage);
                         break;
-                    case "P63":
+                    case "63":
                         AllAlarmReset();
+                        break;
+                    case "97":
+                        ShowTestMsg();
                         break;
                     default:
                         break;
@@ -272,6 +278,11 @@ namespace Mirle.AgvAseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
+        }
+
+        private void ShowTestMsg()
+        {
+            OnMessageShowEvent?.Invoke(this, "A test msg from AGVL.");
         }
 
         private void ReceiveMoveAppendArrivalReport(string psMessage)
@@ -353,7 +364,7 @@ namespace Mirle.AgvAseMiddler.Controller
                 string isCharging = psMessage.Substring(0, 1).ToUpper().Trim();
                 theVehicle.IsCharging = IsValueTrue(isCharging);
 
-                string msg = "UpdateChargeStatus";
+                string msg = $"充電狀態改變[{isCharging}]";
                 OnMessageShowEvent?.Invoke(this, msg);
             }
             catch (Exception ex)
@@ -549,17 +560,19 @@ namespace Mirle.AgvAseMiddler.Controller
                 string msg = $"PsWrapper connection state changed.[{state}]";
                 LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 OnMessageShowEvent?.Invoke(this, msg);
+                OnConnectionChangeEvent?.Invoke(this, psWrapper.IsConnected());
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
+        }        
 
         private void LoadPspConnectionConfig()
         {
             try
             {
+                psWrapper = new PSWrapperXClass();
                 if (File.Exists(PspConnectionConfigFilePath))
                 {
                     pspConnectionConfig = new XmlHandler().ReadXml<PspConnectionConfig>(PspConnectionConfigFilePath);
@@ -624,8 +637,8 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 string cmdId = agvcTransCmd.CommandId.Substring(0, 20);
-                string fromPortNumber = agvcTransCmd.LoadAddressId.Substring(0,4);
-                string toPortNumber = agvcTransCmd.UnloadAddressId.Substring(0,4);
+                string fromPortNumber = agvcTransCmd.LoadAddressId.Substring(0, 4);
+                string toPortNumber = agvcTransCmd.UnloadAddressId.Substring(0, 4);
                 string lotId = agvcTransCmd.LotId.PadLeft(39, '0');
                 string cstId = agvcTransCmd.CassetteId;
 
@@ -636,7 +649,7 @@ namespace Mirle.AgvAseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }        
+        }
 
         private PSTransactionXClass PrimarySend(string index, string message)
         {
@@ -674,6 +687,19 @@ namespace Mirle.AgvAseMiddler.Controller
             mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
+        public bool IsConnected()
+        {
+            return psWrapper.IsConnected();
+        }
 
+        public void Connect()
+        {
+            psWrapper.Open();
+        }
+
+        public void DisConnect()
+        {
+            psWrapper.Close();
+        }
     }
 }

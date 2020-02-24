@@ -41,6 +41,7 @@ namespace Mirle.AgvAseMiddler.View
         private MirleLogger mirleLogger = MirleLogger.Instance;
         private Vehicle theVehicle = Vehicle.Instance;
         public bool IsAgvcConnect { get; set; } = false;
+        public bool IsAgvlConnect { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
         public string TransferCommandMsg { get; set; } = "";
         public string TransferStepMsg { get; set; } = "";
@@ -243,6 +244,7 @@ namespace Mirle.AgvAseMiddler.View
             alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
 
             theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
+            mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
             //if (mainFlowConfig.CustomerName == "AUO")
             //{
             //    ((PlcVehicle)theVehicle.TheVehicleIntegrateStatus).OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
@@ -262,6 +264,11 @@ namespace Mirle.AgvAseMiddler.View
         {
             IsAgvcConnect = agvcConnector.IsConnected();
             UpdateAgvcConnection();
+
+            IsAgvlConnect = mainFlowHandler.GetAsePackage().IsConnected();
+            UpdateAgvlConnection();
+
+
             if (theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
             {
                 mainFlowHandler.ReadCarrierId();
@@ -413,6 +420,11 @@ namespace Mirle.AgvAseMiddler.View
                 default:
                     return "未知";
             }
+        }
+
+        private void MainFlowHandler_OnAgvlConnectionChangedEvent(object sender, bool e)
+        {
+            IsAgvlConnect = e;
         }
 
         private void ShowMsgOnMainForm(object sender, string msg)
@@ -876,7 +888,7 @@ namespace Mirle.AgvAseMiddler.View
                                       $"[命令號={agvcTransCmd.CommandId}]\r\n",
                                       $"[貨號={agvcTransCmd.CassetteId}]\r\n",
                                       $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
-                                      $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n"                                      
+                                      $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n"
                                       );
 
                 if (TransferCommandMsg.Length > 32767)
@@ -897,7 +909,7 @@ namespace Mirle.AgvAseMiddler.View
             {
                 TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
                                       type, "\t", $"{aseMovingGuide.SeqNum}", "\r\n",
-                                      $"[避車終點={aseMovingGuide.ToAddressId}]\r\n"                                    
+                                      $"[避車終點={aseMovingGuide.ToAddressId}]\r\n"
                                       );
 
                 if (TransferCommandMsg.Length > 32767)
@@ -1023,6 +1035,7 @@ namespace Mirle.AgvAseMiddler.View
                 UpdateTbxTransferStep();
                 UpdateLastAlarm();
                 UpdateAgvcConnection();
+                UpdateAgvlConnection();
                 //UpdateAgvFailResult();
             }
             catch (Exception ex)
@@ -1159,13 +1172,35 @@ namespace Mirle.AgvAseMiddler.View
                 {
                     txtAgvcConnection.Text = "AGVC 連線中";
                     txtAgvcConnection.BackColor = Color.LightGreen;
-                    radOnline.Checked = true;
+                    radAgvcOnline.Checked = true;
                 }
                 else
                 {
                     txtAgvcConnection.Text = "AGVC 斷線";
                     txtAgvcConnection.BackColor = Color.Pink;
-                    radOffline.Checked = true;
+                    radAgvcOffline.Checked = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+        public void UpdateAgvlConnection()
+        {
+            try
+            {
+                if (IsAgvlConnect)
+                {
+                    txtAgvlConnection.Text = "AGVL 連線中";
+                    txtAgvlConnection.BackColor = Color.LightGreen;
+                    radAgvlOnline.Checked = true;
+                }
+                else
+                {
+                    txtAgvlConnection.Text = "AGVL 斷線";
+                    txtAgvlConnection.BackColor = Color.Pink;
+                    radAgvlOffline.Checked = true;
                 }
             }
             catch (Exception ex)
@@ -1241,7 +1276,7 @@ namespace Mirle.AgvAseMiddler.View
                     var stepIndex = mainFlowHandler.TransferStepsIndex;
                     var moveIndex = 0;
                     if (mainFlowHandler.IsMoveStep())
-                    {                        
+                    {
                         AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
                         if (aseMovingGuide.MovingSections.Count > 0)
                         {
@@ -1350,13 +1385,10 @@ namespace Mirle.AgvAseMiddler.View
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
 
-                var realPos = aseMoveStatus.LastMapPosition;
-                ucRealPosition.TagValue = $"({(int)realPos.X},{(int)realPos.Y})";
-                tstextRealPosX.Text = realPos.X.ToString("F2");
-                tstextRealPosY.Text = realPos.Y.ToString("F2");
-
-                //var barPos = location.BarcodePosition;
-                //ucBarcodePosition.TagValue = $"({(int)barPos.X},{(int)barPos.Y})";
+                var lastPos = aseMoveStatus.LastMapPosition;
+                ucLastPosition.TagValue = $"({(int)lastPos.X},{(int)lastPos.Y})";
+                tstextLastPosX.Text = lastPos.X.ToString("F2");
+                tstextLastPosY.Text = lastPos.Y.ToString("F2");
 
                 var lastAddress = aseMoveStatus.LastAddress;
                 ucMapAddress.TagValue = lastAddress.Id;
@@ -1364,11 +1396,8 @@ namespace Mirle.AgvAseMiddler.View
                 var lastSection = aseMoveStatus.LastSection;
                 ucMapSection.TagValue = lastSection.Id;
 
-                var dis = aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-                ucDistance.TagValue = dis.ToString("F");
-
                 ucVehicleImage.Hide();
-                ucVehicleImage.Location = MapPixelExchange(realPos);
+                ucVehicleImage.Location = MapPixelExchange(lastPos);
                 ucVehicleImage.FixToCenter();
                 ucVehicleImage.Show();
                 ucVehicleImage.BringToFront();
@@ -1494,7 +1523,7 @@ namespace Mirle.AgvAseMiddler.View
                     case EnumAutoState.Manual:
                         theVehicle.AutoState = EnumAutoState.Auto;
                         break;
-                    case EnumAutoState.PreManual:                        
+                    case EnumAutoState.PreManual:
                         break;
                     default:
                         break;
@@ -1517,11 +1546,11 @@ namespace Mirle.AgvAseMiddler.View
                         if (!mainFlowConfig.IsSimulation)
                         {
                             TakeAPicture();
-                        }                   
+                        }
                         AppendDebugLogMsg($"Manual 切換 Auto 成功");
                         ResetAllAbnormalMsg();
                         break;
-                    case EnumAutoState.Manual:                       
+                    case EnumAutoState.Manual:
                         AppendDebugLogMsg($"Auto 切換 Manual 成功");
 
                         break;
@@ -1552,24 +1581,79 @@ namespace Mirle.AgvAseMiddler.View
             mainFlowHandler.SetupVehicleSoc(decimal.ToDouble(numSoc.Value));
         }
 
-        private void radOnline_CheckedChanged(object sender, EventArgs e)
+        private void radAgvcOnline_CheckedChanged(object sender, EventArgs e)
         {
-            if (radOnline.Checked)
+            try
             {
-                if (!agvcConnector.IsConnected())
+                if (radAgvcOnline.Checked)
                 {
-                    agvcConnector.ReConnect();
+                    if (!agvcConnector.IsConnected())
+                    {
+                        agvcConnector.ReConnect();
+                    }
                 }
             }
-        }
-        private void radOffline_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radOffline.Checked)
+            catch (Exception ex)
             {
-                if (agvcConnector.IsConnected())
+
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+        private void radAgvcOffline_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (radAgvcOffline.Checked)
                 {
-                    agvcConnector.DisConnect();
+                    if (agvcConnector.IsConnected())
+                    {
+                        agvcConnector.DisConnect();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void radAgvlOnline_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (radAgvlOnline.Checked)
+                {
+                    AsePackage asePackage = mainFlowHandler.GetAsePackage();
+                    if (!asePackage.IsConnected())
+                    {
+                        asePackage.Connect();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void radAgvlOffline_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (radAgvlOffline.Checked)
+                {
+                    AsePackage asePackage = mainFlowHandler.GetAsePackage();
+                    if (asePackage.IsConnected())
+                    {
+                        asePackage.DisConnect();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -1644,149 +1728,8 @@ namespace Mirle.AgvAseMiddler.View
             changeColorAddressList = new List<UcAddressImage>();
         }
 
-        //private bool SimulateAGVCMoveCommand()
-        //{
-        //    if (mainFormAddNodes == null || mainFormAddNodes.Count < 2)
-        //        return false;
-
-        //    List<MapAddress> nodeMapAddressList = new List<MapAddress>();
-
-        //    List<string> agvcAddressList = new List<string>();
-        //    List<string> agvcSectionList = new List<string>();
-        //    string endAddressId = mainFormAddNodes[mainFormAddNodes.Count - 1].Id;
-
-        //    MapAddress startAddresee = null;
-        //    MapAddress endAddresee = null;
-
-        //    int lastLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[0].Position, mainFormAddNodes[1].Position);
-        //    int nowLineAngle;
-
-        //    nodeMapAddressList.Add(mainFormAddNodes[0]);
-
-        //    for (int i = 1; i < mainFormAddNodes.Count - 1; i++)
-        //    {
-        //        nowLineAngle = computeFunction.ComputeAngleInt(mainFormAddNodes[i].Position, mainFormAddNodes[i + 1].Position);
-        //        if (nowLineAngle != lastLineAngle)
-        //            nodeMapAddressList.Add(mainFormAddNodes[i]);
-
-        //        lastLineAngle = nowLineAngle;
-        //    }
-
-        //    nodeMapAddressList.Add(mainFormAddNodes[mainFormAddNodes.Count - 1]);
-        //    MapSection section = null;
-        //    MapSection lastAddressSection = null;
-
-        //    for (int i = 0; i < nodeMapAddressList.Count - 1; i++)
-        //    {
-        //        startAddresee = nodeMapAddressList[i];
-        //        endAddresee = nodeMapAddressList[i + 1];
-
-        //        if (theMapInfo.allMapSections.ContainsKey(endAddresee.InsideSectionId))
-        //        {
-        //            if (i != nodeMapAddressList.Count - 2)
-        //                return false;
-
-        //            lastAddressSection = theMapInfo.allMapSections[endAddresee.InsideSectionId];
-        //        }
-
-        //        while (startAddresee != endAddresee)
-        //        {
-        //            if (theMapInfo.allMapSections.ContainsKey(startAddresee.InsideSectionId))
-        //            {
-        //                if (i != 0)
-        //                    return false;
-
-        //                section = theMapInfo.allMapSections[startAddresee.InsideSectionId];
-        //                double distanceToSectionHead = Math.Sqrt(Math.Pow(section.HeadAddress.Position.X - endAddresee.Position.X, 2) +
-        //                                                         Math.Pow(section.HeadAddress.Position.Y - endAddresee.Position.Y, 2));
-        //                double distanceToSectionTail = Math.Sqrt(Math.Pow(section.TailAddress.Position.X - endAddresee.Position.X, 2) +
-        //                                                         Math.Pow(section.TailAddress.Position.Y - endAddresee.Position.Y, 2));
-
-        //                agvcSectionList.Add(section.Id);
-
-        //                if (distanceToSectionHead > distanceToSectionTail)
-        //                {
-        //                    agvcAddressList.Add(section.HeadAddress.Id);
-        //                    startAddresee = section.TailAddress;
-        //                }
-        //                else
-        //                {
-        //                    agvcAddressList.Add(section.TailAddress.Id);
-        //                    startAddresee = section.HeadAddress;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                agvcAddressList.Add(startAddresee.Id);
-        //                lastLineAngle = computeFunction.ComputeAngleInt(startAddresee.Position, endAddresee.Position);
-
-        //                bool findNextSection = false;
-
-        //                foreach (var valuePair in theMapInfo.allMapSections)
-        //                {
-        //                    section = valuePair.Value;
-
-        //                    if (section.HeadAddress == startAddresee)
-        //                    {
-        //                        nowLineAngle = computeFunction.ComputeAngleInt(section.HeadAddress.Position, section.TailAddress.Position);
-
-        //                        if (nowLineAngle == lastLineAngle)
-        //                        {
-        //                            agvcSectionList.Add(section.Id);
-        //                            startAddresee = section.TailAddress;
-        //                            findNextSection = true;
-        //                            break;
-        //                        }
-        //                    }
-        //                    else if (section.TailAddress == startAddresee)
-        //                    {
-        //                        nowLineAngle = computeFunction.ComputeAngleInt(section.TailAddress.Position, section.HeadAddress.Position);
-
-        //                        if (nowLineAngle == lastLineAngle)
-        //                        {
-        //                            agvcSectionList.Add(section.Id);
-        //                            startAddresee = section.HeadAddress;
-        //                            findNextSection = true;
-        //                            break;
-        //                        }
-        //                    }
-        //                }
-
-        //                if (!findNextSection)
-        //                    return false;
-        //            }
-
-        //            if (section != null && lastAddressSection != null && section == lastAddressSection)
-        //            {
-        //                if (startAddresee == lastAddressSection.HeadAddress || startAddresee == lastAddressSection.TailAddress)
-        //                    endAddresee = startAddresee;
-        //                else
-        //                    startAddresee = endAddresee;
-        //            }
-        //        }
-        //    }
-
-        //    if (endAddresee != null)
-        //        agvcAddressList.Add(endAddresee.Id);
-
-        //    string debugMessage = "address : ";
-        //    for (int i = 0; i < agvcAddressList.Count; i++)
-        //        debugMessage = debugMessage + agvcAddressList[i] + " ";
-
-        //    debugMessage += "\r\nsection : ";
-
-        //    for (int i = 0; i < agvcSectionList.Count; i++)
-        //        debugMessage = debugMessage + agvcSectionList[i] + " ";
-
-        //    debugMessage += "\r\nendAddress : " + endAddressId;
-
-        //    //MessageBox.Show(debugMessage);
-        //    return true;
-        //}
-
         private List<MapAddress> mainFormAddNodes = new List<MapAddress>();
         private List<UcAddressImage> changeColorAddressList = new List<UcAddressImage>();
-        //private ComputeFunction computeFunction = new ComputeFunction();
 
         private MapAddress endAddress = null;
         private List<UcSectionImage> changeColorSectionList = new List<UcSectionImage>();
@@ -1981,5 +1924,7 @@ namespace Mirle.AgvAseMiddler.View
         {
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
+
+
     }
 }

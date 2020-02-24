@@ -34,6 +34,7 @@ namespace Mirle.AgvAseMiddler.Model
             }
         }
         public event EventHandler<EnumAutoState> OnAutoStateChangeEvent;
+        public bool IsSimulation { get; set; } = false;
 
         #region AsePackage
 

@@ -75,17 +75,19 @@
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
             this.numPositionY = new System.Windows.Forms.NumericUpDown();
-            this.ucDistance = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.numPositionX = new System.Windows.Forms.NumericUpDown();
             this.btnKeyInPosition = new System.Windows.Forms.Button();
-            this.ucRealPosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
-            this.ucBarcodePosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.ucLastPosition = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.ucMapAddress = new Mirle.AgvAseMiddler.UcLabelTextBox();
             this.ucMapSection = new Mirle.AgvAseMiddler.UcLabelTextBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.txtAgvlConnection = new System.Windows.Forms.Label();
+            this.radAgvlOnline = new System.Windows.Forms.RadioButton();
+            this.radAgvlOffline = new System.Windows.Forms.RadioButton();
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.txtAgvcConnection = new System.Windows.Forms.Label();
-            this.radOnline = new System.Windows.Forms.RadioButton();
-            this.radOffline = new System.Windows.Forms.RadioButton();
+            this.radAgvcOnline = new System.Windows.Forms.RadioButton();
+            this.radAgvcOffline = new System.Windows.Forms.RadioButton();
             this.txtAgvcConnectorAbnormalReason = new System.Windows.Forms.Label();
             this.txtBatterysAbnormalReason = new System.Windows.Forms.Label();
             this.txtRobotAbnormalReason = new System.Windows.Forms.Label();
@@ -108,8 +110,8 @@
             this.tstextClientName = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRemoteIp = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextRemotePort = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tstextRealPosX = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tstextRealPosY = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -131,6 +133,7 @@
             this.gbVehicleLocation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.gbConnection.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -362,6 +365,7 @@
             this.splitContainer2.Panel1.Controls.Add(this.btnBuzzOff);
             this.splitContainer2.Panel1.Controls.Add(this.btnAlarmReset);
             this.splitContainer2.Panel1.Controls.Add(this.gbVehicleLocation);
+            this.splitContainer2.Panel1.Controls.Add(this.groupBox1);
             this.splitContainer2.Panel1.Controls.Add(this.gbConnection);
             // 
             // splitContainer2.Panel2
@@ -600,23 +604,21 @@
             // gbVehicleLocation
             // 
             this.gbVehicleLocation.Controls.Add(this.numPositionY);
-            this.gbVehicleLocation.Controls.Add(this.ucDistance);
             this.gbVehicleLocation.Controls.Add(this.numPositionX);
             this.gbVehicleLocation.Controls.Add(this.btnKeyInPosition);
-            this.gbVehicleLocation.Controls.Add(this.ucRealPosition);
-            this.gbVehicleLocation.Controls.Add(this.ucBarcodePosition);
+            this.gbVehicleLocation.Controls.Add(this.ucLastPosition);
             this.gbVehicleLocation.Controls.Add(this.ucMapAddress);
             this.gbVehicleLocation.Controls.Add(this.ucMapSection);
-            this.gbVehicleLocation.Location = new System.Drawing.Point(3, 106);
+            this.gbVehicleLocation.Location = new System.Drawing.Point(3, 200);
             this.gbVehicleLocation.Name = "gbVehicleLocation";
-            this.gbVehicleLocation.Size = new System.Drawing.Size(209, 278);
+            this.gbVehicleLocation.Size = new System.Drawing.Size(209, 184);
             this.gbVehicleLocation.TabIndex = 1;
             this.gbVehicleLocation.TabStop = false;
             this.gbVehicleLocation.Text = "Vehicle Location";
             // 
             // numPositionY
             // 
-            this.numPositionY.Location = new System.Drawing.Point(107, 213);
+            this.numPositionY.Location = new System.Drawing.Point(108, 121);
             this.numPositionY.Maximum = new decimal(new int[] {
             99999,
             0,
@@ -631,19 +633,9 @@
             this.numPositionY.Size = new System.Drawing.Size(94, 22);
             this.numPositionY.TabIndex = 41;
             // 
-            // ucDistance
-            // 
-            this.ucDistance.Location = new System.Drawing.Point(0, 85);
-            this.ucDistance.Name = "ucDistance";
-            this.ucDistance.Size = new System.Drawing.Size(194, 26);
-            this.ucDistance.TabIndex = 6;
-            this.ucDistance.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucDistance.TagName = "Dis";
-            this.ucDistance.TagValue = "";
-            // 
             // numPositionX
             // 
-            this.numPositionX.Location = new System.Drawing.Point(9, 213);
+            this.numPositionX.Location = new System.Drawing.Point(10, 121);
             this.numPositionX.Maximum = new decimal(new int[] {
             99999,
             0,
@@ -661,7 +653,7 @@
             // btnKeyInPosition
             // 
             this.btnKeyInPosition.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnKeyInPosition.Location = new System.Drawing.Point(9, 241);
+            this.btnKeyInPosition.Location = new System.Drawing.Point(10, 149);
             this.btnKeyInPosition.Name = "btnKeyInPosition";
             this.btnKeyInPosition.Size = new System.Drawing.Size(192, 27);
             this.btnKeyInPosition.TabIndex = 40;
@@ -669,25 +661,15 @@
             this.btnKeyInPosition.UseVisualStyleBackColor = true;
             this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click);
             // 
-            // ucRealPosition
+            // ucLastPosition
             // 
-            this.ucRealPosition.Location = new System.Drawing.Point(0, 149);
-            this.ucRealPosition.Name = "ucRealPosition";
-            this.ucRealPosition.Size = new System.Drawing.Size(194, 26);
-            this.ucRealPosition.TabIndex = 5;
-            this.ucRealPosition.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucRealPosition.TagName = "Real.";
-            this.ucRealPosition.TagValue = "";
-            // 
-            // ucBarcodePosition
-            // 
-            this.ucBarcodePosition.Location = new System.Drawing.Point(0, 117);
-            this.ucBarcodePosition.Name = "ucBarcodePosition";
-            this.ucBarcodePosition.Size = new System.Drawing.Size(194, 26);
-            this.ucBarcodePosition.TabIndex = 3;
-            this.ucBarcodePosition.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucBarcodePosition.TagName = "Bar.";
-            this.ucBarcodePosition.TagValue = "";
+            this.ucLastPosition.Location = new System.Drawing.Point(0, 85);
+            this.ucLastPosition.Name = "ucLastPosition";
+            this.ucLastPosition.Size = new System.Drawing.Size(194, 26);
+            this.ucLastPosition.TabIndex = 5;
+            this.ucLastPosition.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucLastPosition.TagName = "L.Pos";
+            this.ucLastPosition.TagValue = "";
             // 
             // ucMapAddress
             // 
@@ -709,14 +691,62 @@
             this.ucMapSection.TagName = "L.Sec";
             this.ucMapSection.TagValue = "";
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.txtAgvlConnection);
+            this.groupBox1.Controls.Add(this.radAgvlOnline);
+            this.groupBox1.Controls.Add(this.radAgvlOffline);
+            this.groupBox1.Location = new System.Drawing.Point(3, 95);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(209, 86);
+            this.groupBox1.TabIndex = 0;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "AGVL Connection";
+            // 
+            // txtAgvlConnection
+            // 
+            this.txtAgvlConnection.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtAgvlConnection.Location = new System.Drawing.Point(6, 49);
+            this.txtAgvlConnection.Name = "txtAgvlConnection";
+            this.txtAgvlConnection.Size = new System.Drawing.Size(195, 24);
+            this.txtAgvlConnection.TabIndex = 2;
+            this.txtAgvlConnection.Text = "Connection";
+            this.txtAgvlConnection.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // radAgvlOnline
+            // 
+            this.radAgvlOnline.AutoSize = true;
+            this.radAgvlOnline.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.radAgvlOnline.Location = new System.Drawing.Point(107, 24);
+            this.radAgvlOnline.Name = "radAgvlOnline";
+            this.radAgvlOnline.Size = new System.Drawing.Size(78, 21);
+            this.radAgvlOnline.TabIndex = 1;
+            this.radAgvlOnline.Text = "Connect";
+            this.radAgvlOnline.UseVisualStyleBackColor = true;
+            this.radAgvlOnline.CheckedChanged += new System.EventHandler(this.radAgvlOnline_CheckedChanged);
+            // 
+            // radAgvlOffline
+            // 
+            this.radAgvlOffline.AutoSize = true;
+            this.radAgvlOffline.Checked = true;
+            this.radAgvlOffline.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.radAgvlOffline.Location = new System.Drawing.Point(3, 24);
+            this.radAgvlOffline.Name = "radAgvlOffline";
+            this.radAgvlOffline.Size = new System.Drawing.Size(98, 21);
+            this.radAgvlOffline.TabIndex = 0;
+            this.radAgvlOffline.TabStop = true;
+            this.radAgvlOffline.Text = "DisConnect";
+            this.radAgvlOffline.UseVisualStyleBackColor = true;
+            this.radAgvlOffline.CheckedChanged += new System.EventHandler(this.radAgvlOffline_CheckedChanged);
+            // 
             // gbConnection
             // 
             this.gbConnection.Controls.Add(this.txtAgvcConnection);
-            this.gbConnection.Controls.Add(this.radOnline);
-            this.gbConnection.Controls.Add(this.radOffline);
+            this.gbConnection.Controls.Add(this.radAgvcOnline);
+            this.gbConnection.Controls.Add(this.radAgvcOffline);
             this.gbConnection.Location = new System.Drawing.Point(3, 3);
             this.gbConnection.Name = "gbConnection";
-            this.gbConnection.Size = new System.Drawing.Size(209, 97);
+            this.gbConnection.Size = new System.Drawing.Size(209, 86);
             this.gbConnection.TabIndex = 0;
             this.gbConnection.TabStop = false;
             this.gbConnection.Text = "AGVC Connection";
@@ -724,38 +754,38 @@
             // txtAgvcConnection
             // 
             this.txtAgvcConnection.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtAgvcConnection.Location = new System.Drawing.Point(8, 57);
+            this.txtAgvcConnection.Location = new System.Drawing.Point(6, 49);
             this.txtAgvcConnection.Name = "txtAgvcConnection";
             this.txtAgvcConnection.Size = new System.Drawing.Size(195, 24);
             this.txtAgvcConnection.TabIndex = 2;
             this.txtAgvcConnection.Text = "Connection";
             this.txtAgvcConnection.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // radOnline
+            // radAgvcOnline
             // 
-            this.radOnline.AutoSize = true;
-            this.radOnline.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.radOnline.Location = new System.Drawing.Point(107, 24);
-            this.radOnline.Name = "radOnline";
-            this.radOnline.Size = new System.Drawing.Size(78, 21);
-            this.radOnline.TabIndex = 1;
-            this.radOnline.Text = "Connect";
-            this.radOnline.UseVisualStyleBackColor = true;
-            this.radOnline.CheckedChanged += new System.EventHandler(this.radOnline_CheckedChanged);
+            this.radAgvcOnline.AutoSize = true;
+            this.radAgvcOnline.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.radAgvcOnline.Location = new System.Drawing.Point(107, 24);
+            this.radAgvcOnline.Name = "radAgvcOnline";
+            this.radAgvcOnline.Size = new System.Drawing.Size(78, 21);
+            this.radAgvcOnline.TabIndex = 1;
+            this.radAgvcOnline.Text = "Connect";
+            this.radAgvcOnline.UseVisualStyleBackColor = true;
+            this.radAgvcOnline.CheckedChanged += new System.EventHandler(this.radAgvcOnline_CheckedChanged);
             // 
-            // radOffline
+            // radAgvcOffline
             // 
-            this.radOffline.AutoSize = true;
-            this.radOffline.Checked = true;
-            this.radOffline.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.radOffline.Location = new System.Drawing.Point(3, 24);
-            this.radOffline.Name = "radOffline";
-            this.radOffline.Size = new System.Drawing.Size(98, 21);
-            this.radOffline.TabIndex = 0;
-            this.radOffline.TabStop = true;
-            this.radOffline.Text = "DisConnect";
-            this.radOffline.UseVisualStyleBackColor = true;
-            this.radOffline.CheckedChanged += new System.EventHandler(this.radOffline_CheckedChanged);
+            this.radAgvcOffline.AutoSize = true;
+            this.radAgvcOffline.Checked = true;
+            this.radAgvcOffline.Font = new System.Drawing.Font("微軟正黑體", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.radAgvcOffline.Location = new System.Drawing.Point(3, 24);
+            this.radAgvcOffline.Name = "radAgvcOffline";
+            this.radAgvcOffline.Size = new System.Drawing.Size(98, 21);
+            this.radAgvcOffline.TabIndex = 0;
+            this.radAgvcOffline.TabStop = true;
+            this.radAgvcOffline.Text = "DisConnect";
+            this.radAgvcOffline.UseVisualStyleBackColor = true;
+            this.radAgvcOffline.CheckedChanged += new System.EventHandler(this.radAgvcOffline_CheckedChanged);
             // 
             // txtAgvcConnectorAbnormalReason
             // 
@@ -951,8 +981,8 @@
             this.tstextClientName,
             this.tstextRemoteIp,
             this.tstextRemotePort,
-            this.tstextRealPosX,
-            this.tstextRealPosY});
+            this.tstextLastPosX,
+            this.tstextLastPosY});
             this.statusStrip1.Location = new System.Drawing.Point(0, 1019);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1904, 22);
@@ -982,17 +1012,17 @@
             this.tstextRemotePort.Size = new System.Drawing.Size(105, 17);
             this.tstextRemotePort.Text = "tstextRemotePort";
             // 
-            // tstextRealPosX
+            // tstextLastPosX
             // 
-            this.tstextRealPosX.Name = "tstextRealPosX";
-            this.tstextRealPosX.Size = new System.Drawing.Size(90, 17);
-            this.tstextRealPosX.Text = "tstextRealPosX";
+            this.tstextLastPosX.Name = "tstextLastPosX";
+            this.tstextLastPosX.Size = new System.Drawing.Size(90, 17);
+            this.tstextLastPosX.Text = "tstextRealPosX";
             // 
-            // tstextRealPosY
+            // tstextLastPosY
             // 
-            this.tstextRealPosY.Name = "tstextRealPosY";
-            this.tstextRealPosY.Size = new System.Drawing.Size(89, 17);
-            this.tstextRealPosY.Text = "tstextRealPosY";
+            this.tstextLastPosY.Name = "tstextLastPosY";
+            this.tstextLastPosY.Size = new System.Drawing.Size(89, 17);
+            this.tstextLastPosY.Text = "tstextRealPosY";
             // 
             // timer_SetupInitialSoc
             // 
@@ -1040,6 +1070,8 @@
             this.gbVehicleLocation.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -1073,10 +1105,9 @@
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.GroupBox gbVehicleLocation;
         private System.Windows.Forms.GroupBox gbConnection;
-        private System.Windows.Forms.RadioButton radOnline;
-        private System.Windows.Forms.RadioButton radOffline;
-        private UcLabelTextBox ucRealPosition;
-        private UcLabelTextBox ucBarcodePosition;
+        private System.Windows.Forms.RadioButton radAgvcOnline;
+        private System.Windows.Forms.RadioButton radAgvcOffline;
+        private UcLabelTextBox ucLastPosition;
         private UcLabelTextBox ucMapAddress;
         private UcLabelTextBox ucMapSection;
         private System.Windows.Forms.Button btnBuzzOff;
@@ -1104,15 +1135,14 @@
         private System.Windows.Forms.NumericUpDown numSoc;
         private System.Windows.Forms.Button btnKeyInSoc;
         private UcLabelTextBox ucCharging;
-        private UcLabelTextBox ucDistance;
         private System.Windows.Forms.Label txtAgvcConnection;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripProgressBar tspbCommding;
         private System.Windows.Forms.ToolStripStatusLabel tstextClientName;
         private System.Windows.Forms.ToolStripStatusLabel tstextRemoteIp;
         private System.Windows.Forms.ToolStripStatusLabel tstextRemotePort;
-        private System.Windows.Forms.ToolStripStatusLabel tstextRealPosX;
-        private System.Windows.Forms.ToolStripStatusLabel tstextRealPosY;
+        private System.Windows.Forms.ToolStripStatusLabel tstextLastPosX;
+        private System.Windows.Forms.ToolStripStatusLabel tstextLastPosY;
         private UcLabelTextBox ucCstId;
         private System.Windows.Forms.Timer timer_SetupInitialSoc;
         private System.Windows.Forms.Label txtMoveControlAbnormalReason;
@@ -1134,5 +1164,9 @@
         private System.Windows.Forms.Button btnPrintScreen;
         private System.Windows.Forms.Label txtBatterysAbnormalReason;
         private System.Windows.Forms.Label txtAgvcConnectorAbnormalReason;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label txtAgvlConnection;
+        private System.Windows.Forms.RadioButton radAgvlOnline;
+        private System.Windows.Forms.RadioButton radAgvlOffline;
     }
 }

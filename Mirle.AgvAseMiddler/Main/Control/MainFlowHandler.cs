@@ -77,6 +77,7 @@ namespace Mirle.AgvAseMiddler.Controller
         public event EventHandler<AgvcOverrideCmd> OnOverrideCommandCheckedEvent;
         public event EventHandler<AseMovingGuide> OnAvoidCommandCheckedEvent;
         public event EventHandler<TransferStep> OnDoTransferStepEvent;
+        public event EventHandler<bool> OnAgvlConnectionChangedEvent;
         #endregion
 
         #region Models
@@ -103,8 +104,8 @@ namespace Mirle.AgvAseMiddler.Controller
         {
             XmlInitial();
             LoggersInitial();
-            ControllersInitial();
             VehicleInitial();
+            ControllersInitial();            
             EventInitial();
 
             VehicleLocationInitialAndThreadsInitial();
@@ -120,10 +121,10 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
-                mapConfig = xmlHandler.ReadXml<MapConfig>(@"D:\AgvConfigs\Map.xml");
+                mapConfig = xmlHandler.ReadXml<MapConfig>(@"Map.xml");
                 agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
-                alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"D:\AgvConfigs\Alarm.xml");
-                batteryLog = xmlHandler.ReadXml<BatteryLog>(@"D:\AgvConfigs\BatteryLog.xml");
+                alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
+                batteryLog = xmlHandler.ReadXml<BatteryLog>(@"BatteryLog.xml");
                 InitialSoc = batteryLog.InitialSoc;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
@@ -182,6 +183,7 @@ namespace Mirle.AgvAseMiddler.Controller
             try
             {
                 theVehicle = Vehicle.Instance;
+                theVehicle.IsSimulation = mainFlowConfig.IsSimulation;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "台車"));
             }
@@ -229,6 +231,9 @@ namespace Mirle.AgvAseMiddler.Controller
 
                 theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
 
+                asePackage.OnMessageShowEvent += AsePackage_OnMessageShowEvent;
+                asePackage.OnConnectionChangeEvent += AsePackage_OnConnectionChangeEvent;
+
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
             }
             catch (Exception ex)
@@ -238,6 +243,11 @@ namespace Mirle.AgvAseMiddler.Controller
 
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
+        {
+            OnAgvlConnectionChangedEvent?.Invoke(this, e);
         }
 
         private void TheVehicle_OnAutoStateChangeEvent(object sender, EnumAutoState autoState)
@@ -2747,7 +2757,7 @@ namespace Mirle.AgvAseMiddler.Controller
 
         public void SaveBatteryLog()
         {
-            xmlHandler.WriteXml(batteryLog, @"D:\AgvConfigs\BatteryLog.xml");
+            xmlHandler.WriteXml(batteryLog, @"BatteryLog.xml");
         }
 
         public void ResetBatteryLog()
@@ -2758,6 +2768,11 @@ namespace Mirle.AgvAseMiddler.Controller
             batteryLog = tempBatteryLog;
             //TODO: AgvcConnector
 
+        }
+
+        private void AsePackage_OnMessageShowEvent(object sender, string e)
+        {
+            OnMessageShowEvent?.Invoke(this, e);
         }
 
         private void LogException(string classMethodName, string exMsg)

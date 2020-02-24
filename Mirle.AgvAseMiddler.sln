@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mirle.AgvAseMiddler", "Mirle.Agv\Mirle.AgvAseMiddler.csproj", "{F88F96FD-CDDF-467E-9B1F-ABD97BD7F7C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mirle.AgvAseMiddler", "Mirle.AgvAseMiddler\Mirle.AgvAseMiddler.csproj", "{F88F96FD-CDDF-467E-9B1F-ABD97BD7F7C5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mirle.AgvAseMiddlerTests2", "Mirle.AgvAseMiddlerTests2\Mirle.AgvAseMiddlerTests2.csproj", "{86E36FC4-CB15-48D7-8B09-F2D3F9CECE52}"
 EndProject
