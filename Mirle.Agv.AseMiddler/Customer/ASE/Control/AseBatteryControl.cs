@@ -9,21 +9,83 @@ using PSDriver.PSDriver;
 using Mirle.Tools;
 using System.Reflection;
 using System.Threading;
+using Mirle.Agv.AseMiddler.Model.Configs;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
     public class AseBatteryControl
     {
-        private PSWrapperXClass psWrapper;
-        private MirleLogger mirleLogger = MirleLogger.Instance;
-
         private Vehicle theVehicle = Vehicle.Instance;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
+        private PSWrapperXClass psWrapper;
+        private AseBatteryConfig aseBatteryConfig;
+        private Thread thdWatchBatteryState;
+        public bool IsWatchBatteryStatusPause { get; private set; } = false;
+        public bool IsWatchBatteryStatusStop { get; private set; } = false;
+
         public event EventHandler<double> OnBatteryPercentageChangeEvent;
 
-        public AseBatteryControl(PSWrapperXClass psWrapper)
+        public AseBatteryControl(PSWrapperXClass psWrapper, AseBatteryConfig aseBatteryConfig)
         {
             this.psWrapper = psWrapper;
+            this.aseBatteryConfig = aseBatteryConfig;
+            InitialThread();
         }
+
+        #region Thread
+
+        private void InitialThread()
+        {
+            thdWatchBatteryState = new Thread(WatchBatteryState);
+            thdWatchBatteryState.IsBackground = true;
+            thdWatchBatteryState.Start();
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AsePackage : 開始監看詢問電量");
+        }
+
+        private void WatchBatteryState()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (IsWatchBatteryStatusPause) continue;
+                    if (IsWatchBatteryStatusStop) break;
+
+                    if (psWrapper.IsConnected())
+                    {
+                        SendBatteryStatusRequest();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                }
+                finally
+                {
+                    if (theVehicle.IsCharging)
+                    {
+                        SpinWait.SpinUntil(() => false, aseBatteryConfig.WatchBatteryStateIntervalInCharging);
+                    }
+                    else
+                    {
+                        SpinWait.SpinUntil(() => false, aseBatteryConfig.WatchBatteryStateInterval);
+                    }                   
+                }
+            }
+        }
+
+        private void SendBatteryStatusRequest()
+        {
+            try
+            {
+                PrimarySend("P35", "");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+        #endregion
 
         public void SetPercentage(double percentage)
         {
@@ -66,9 +128,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 string chargeDirectionString;
                 switch (chargeDirection)
-                {                   
+                {
                     case EnumChargeDirection.Left:
-                        chargeDirectionString = "1";                       
+                        chargeDirectionString = "1";
                         break;
                     case EnumChargeDirection.Right:
                         chargeDirectionString = "2";
@@ -77,7 +139,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     default:
                         throw new Exception($"Start charge command direction error.[{chargeDirection}]");
                 }
-                PrimarySend("P47", chargeDirectionString);                
+                PrimarySend("P47", chargeDirectionString);
 
                 return theVehicle.IsCharging;
             }
@@ -86,6 +148,73 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 return false;
             }
+        }
+
+        public void UpdateBatteryStatus()
+        {
+            try
+            {
+                AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
+
+                if (aseBatteryStatus.Voltage >= aseBatteryConfig.CcmodeStopVoltage)
+                {
+                    FullCharge();
+                    return;
+                }
+
+                double tempPercentage = (aseBatteryConfig.WorkingAh - (aseBatteryConfig.CcmodeAh - aseBatteryStatus.Ah)) / aseBatteryConfig.WorkingAh * 100;
+                tempPercentage = Math.Max(aseBatteryStatus.Percentage, 0);
+
+                if (tempPercentage >= 100)
+                {
+                    FullCharge();
+                    return;
+                }
+
+                if (aseBatteryStatus.Percentage == 100)
+                {
+                    if (tempPercentage <= 99.98)
+                    {
+                        aseBatteryStatus.Percentage = tempPercentage;
+                        theVehicle.AseBatteryStatus = aseBatteryStatus;
+                    }
+                }
+                else
+                {
+                    aseBatteryStatus.Percentage = tempPercentage;
+                    theVehicle.AseBatteryStatus = aseBatteryStatus;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void FullCharge()
+        {
+            try
+            {
+                StopCharge();
+                AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
+                aseBatteryStatus.Percentage = 100;
+                theVehicle.AseBatteryStatus = aseBatteryStatus;
+                aseBatteryConfig.CcmodeAh = aseBatteryStatus.Ah;
+                aseBatteryConfig.CcmodeCounter++;
+                if (aseBatteryConfig.CcmodeCounter >= aseBatteryConfig.AhResetCcmodeCounter)
+                {
+                    SendResetCcmodeAh();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void SendResetCcmodeAh()
+        {
+            throw new NotImplementedException();
         }
 
         private PSTransactionXClass PrimarySend(string index, string message)

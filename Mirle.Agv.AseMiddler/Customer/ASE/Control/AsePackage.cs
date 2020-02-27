@@ -10,6 +10,7 @@ using Mirle.Agv.AseMiddler.Model.Configs;
 using System.IO;
 using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
+using System.Threading;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -21,23 +22,34 @@ namespace Mirle.Agv.AseMiddler.Controller
         public AseBatteryControl aseBatteryControl;
         public AseBuzzerControl aseBuzzerControl;
         private MirleLogger mirleLogger = MirleLogger.Instance;
+        private AsePackageConfig asePackageConfig = new AsePackageConfig();
         private PspConnectionConfig pspConnectionConfig = new PspConnectionConfig();
-        public string PspConnectionConfigFilePath { get; set; } = "PspConnectionConfig.xml";
-        public string AutoReplyFilePath { get; set; } = "AutoReply.csv";
+        private AseBatteryConfig aseBatteryConfig = new AseBatteryConfig();
+        private AseMoveConfig aseMoveConfig = new AseMoveConfig();
         private Vehicle theVehicle = Vehicle.Instance;
         private Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
-
+      
         public event EventHandler<string> OnMessageShowEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
 
         public AsePackage(Dictionary<string, string> portNumberMap)
         {
+            LoadConfigs();   
             InitialWrapper();
-            aseMoveControl = new AseMoveControl(psWrapper);
+            aseMoveControl = new AseMoveControl(psWrapper, aseMoveConfig);
             aseRobotControl = new AseRobotControl(psWrapper, portNumberMap);
-            aseBatteryControl = new AseBatteryControl(psWrapper);
+            aseBatteryControl = new AseBatteryControl(psWrapper,aseBatteryConfig);
             aseBuzzerControl = new AseBuzzerControl(psWrapper);
-        }
+        }        
+
+        private void LoadConfigs()
+        {
+            XmlHandler xmlHandler = new XmlHandler();
+            asePackageConfig = xmlHandler.ReadXml<AsePackageConfig>(@"AsePackageConfig.xml");
+            pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>(asePackageConfig.PspConnectionConfigFilePath);
+            aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>(asePackageConfig.AseBatteryConfigFilePath);
+            aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>(asePackageConfig.AseMoveConfigFilePath);
+        }       
 
         private void InitialWrapper()
         {
@@ -75,65 +87,20 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
-        {
-            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, psMessage.ToString());
-        }
+        #region PrimarySend
 
-        private void PsWrapper_OnSecondarySent(ref PSTransactionXClass transaction)
+        public void InstallTransferCommand(AgvcTransCmd agvcTransCmd)
         {
             try
             {
-                string msg = $"SecodarySent : [{transaction.ToString()}]";
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
+                string cmdId = agvcTransCmd.CommandId.Substring(0, 20);
+                string fromPortNumber = agvcTransCmd.LoadAddressId.Substring(0, 4);
+                string toPortNumber = agvcTransCmd.UnloadAddressId.Substring(0, 4);
+                string lotId = agvcTransCmd.LotId.PadLeft(39, '0');
+                string cstId = agvcTransCmd.CassetteId;
 
-        private void PsWrapper_OnSecondaryReceived(ref PSTransactionXClass transaction)
-        {
-            try
-            {
-                string msg = $"SecodaryReceived : [{transaction.ToString()}]";
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-
-                OnSecondaryReceived(transaction);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        private void OnSecondaryReceived(PSTransactionXClass transaction)
-        {
-            try
-            {
-                if (transaction.PSSecondaryMessage == null)
-                {
-                    throw new Exception("Secondary message is empty.");
-                }
-
-                if (transaction.PSSecondaryMessage.Type.ToUpper() != "S")
-                {
-                    throw new Exception("Secondary message type is not S.");
-                }
-
-
-                switch (transaction.PSSecondaryMessage.Number)
-                {
-                    case "34":
-                        ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
-                        break;
-                    case "36":
-                        ReceiveBatteryStatusRequestAck(transaction.PSSecondaryMessage.PSMessage);
-                        break;
-                    default:
-                        break;
-                }
+                string message = string.Concat(cmdId, fromPortNumber, toPortNumber, lotId, cstId);
+                PrimarySend("P37", message);
             }
             catch (Exception ex)
             {
@@ -141,67 +108,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void ReceiveBatteryStatusRequestAck(string psMessage)
-        {
-            try
-            {
-                AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
-                aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(0, 9));
-                aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(9, 4)) * 0.01;
-                aseBatteryStatus.Temperature = double.Parse(psMessage.Substring(13, 3));
-                theVehicle.AseBatteryStatus = aseBatteryStatus;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
+        #endregion
 
-        private double GetAhFromPsMessage(string v)
-        {
-            string isPositive = v.Substring(0, 1);
-            double value = double.Parse(v.Substring(1, 8)) * 0.01;
-            return IsValuePositive(isPositive) ? value : -value;
-        }
-
-        private void ReceivePositionReportRequestAck(string psMessage)
-        {
-            try
-            {
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
-                aseMoveStatus.LastMapPosition.X = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-                aseMoveStatus.LastMapPosition.Y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
-                aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
-                aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
-                aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
-                theVehicle.AseMoveStatus = aseMoveStatus;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        private double GetPositionFromPsMessage(string v)
-        {
-            string isPositive = v.Substring(0, 1);
-            double value = double.Parse(v.Substring(1, 8));
-            return IsValuePositive(isPositive) ? value : -value;
-        }
-
-        private bool IsValuePositive(string v)
-        {
-            switch (v)
-            {
-                case "P":
-                    return true;
-                case "N":
-                    return false;
-                default:
-                    throw new Exception($"字串無法辨別正負.{v}");
-            }
-        }
+        #region PrimaryReceived
 
         private void PsWrapper_OnPrimaryReceived(ref PSTransactionXClass transaction)
         {
@@ -217,11 +126,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
-
-        internal void Mainflow_OnTransferCommandCheckedEvent(object sender, AgvcTransCmd e)
-        {
-            throw new NotImplementedException();
         }
 
         private void OnPrimaryReceived(PSTransactionXClass transaction)
@@ -474,6 +378,142 @@ namespace Mirle.Agv.AseMiddler.Controller
             OnMessageShowEvent?.Invoke(this, msg);
         }
 
+        #endregion
+
+        #region SecondarySend
+
+        private void PsWrapper_OnSecondarySent(ref PSTransactionXClass transaction)
+        {
+            try
+            {
+                string msg = $"SecodarySent : [{transaction.ToString()}]";
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        #endregion
+
+        #region SecondaryReceived
+
+        private void OnSecondaryReceived(PSTransactionXClass transaction)
+        {
+            try
+            {
+                if (transaction.PSSecondaryMessage == null)
+                {
+                    throw new Exception("Secondary message is empty.");
+                }
+
+                if (transaction.PSSecondaryMessage.Type.ToUpper() != "S")
+                {
+                    throw new Exception("Secondary message type is not S.");
+                }
+
+
+                switch (transaction.PSSecondaryMessage.Number)
+                {
+                    case "34":
+                        ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
+                        break;
+                    case "36":
+                        ReceiveBatteryStatusRequestAck(transaction.PSSecondaryMessage.PSMessage);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ReceiveBatteryStatusRequestAck(string psMessage)
+        {
+            try
+            {
+                AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
+                aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(0, 9));
+                aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(9, 4)) * 0.01;
+                aseBatteryStatus.Temperature = double.Parse(psMessage.Substring(13, 3));
+                theVehicle.AseBatteryStatus = aseBatteryStatus;
+                aseBatteryControl.UpdateBatteryStatus();
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private double GetAhFromPsMessage(string v)
+        {
+            string isPositive = v.Substring(0, 1);
+            double value = double.Parse(v.Substring(1, 8)) * 0.01;
+            return IsValuePositive(isPositive) ? value : -value;
+        }
+
+        private void ReceivePositionReportRequestAck(string psMessage)
+        {
+            try
+            {
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
+                aseMoveStatus.LastMapPosition.X = GetPositionFromPsMessage(psMessage.Substring(1, 9));
+                aseMoveStatus.LastMapPosition.Y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+                aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
+                aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
+                aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
+                theVehicle.AseMoveStatus = aseMoveStatus;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private double GetPositionFromPsMessage(string v)
+        {
+            string isPositive = v.Substring(0, 1);
+            double value = double.Parse(v.Substring(1, 8));
+            return IsValuePositive(isPositive) ? value : -value;
+        }
+
+        private bool IsValuePositive(string v)
+        {
+            switch (v)
+            {
+                case "P":
+                    return true;
+                case "N":
+                    return false;
+                default:
+                    throw new Exception($"字串無法辨別正負.{v}");
+            }
+        }
+
+        private void PsWrapper_OnSecondaryReceived(ref PSTransactionXClass transaction)
+        {
+            try
+            {
+                string msg = $"SecodaryReceived : [{transaction.ToString()}]";
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+
+                OnSecondaryReceived(transaction);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        #endregion
+
+        #region PsWrapper
+
         private void AutoReplyFromPsMessageMap(PSTransactionXClass psTransaction)
         {
             try
@@ -567,89 +607,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }        
-
-        private void LoadPspConnectionConfig()
-        {
-            try
-            {
-                psWrapper = new PSWrapperXClass();
-                if (File.Exists(PspConnectionConfigFilePath))
-                {
-                    pspConnectionConfig = new XmlHandler().ReadXml<PspConnectionConfig>(PspConnectionConfigFilePath);
-                }
-                psWrapper.Address = pspConnectionConfig.Ip;
-                psWrapper.Port = pspConnectionConfig.Port;
-                psWrapper.ConnectMode = pspConnectionConfig.IsServer ? enumConnectMode.Passive : enumConnectMode.Active;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        private void LoadAutoReply()
-        {
-            try
-            {
-                if (File.Exists(AutoReplyFilePath))
-                {
-                    LoadAutoReplyFileToMyMessageMap();
-                    //FitPspMessageList();
-                    //InitialSingleMsgType();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        private void LoadAutoReplyFileToMyMessageMap()
-        {
-            try
-            {
-                string[] allRows = File.ReadAllLines(AutoReplyFilePath);
-
-                foreach (string oneRow in allRows)
-                {
-                    var parts = oneRow.Split(',');
-                    string key = parts[0];
-                    string description = parts[1];
-                    string autoMessage = parts[2];
-
-                    PSMessageXClass psMessage = new PSMessageXClass();
-                    psMessage.Type = key.Substring(0, 1);
-                    psMessage.Number = key.Substring(1, 2);
-                    psMessage.Description = description;
-                    psMessage.PSMessage = autoMessage;
-
-                    psMessageMap.Add(key, psMessage);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        public void InstallTransferCommand(AgvcTransCmd agvcTransCmd)
-        {
-            try
-            {
-                string cmdId = agvcTransCmd.CommandId.Substring(0, 20);
-                string fromPortNumber = agvcTransCmd.LoadAddressId.Substring(0, 4);
-                string toPortNumber = agvcTransCmd.UnloadAddressId.Substring(0, 4);
-                string lotId = agvcTransCmd.LotId.PadLeft(39, '0');
-                string cstId = agvcTransCmd.CassetteId;
-
-                string message = string.Concat(cmdId, fromPortNumber, toPortNumber, lotId, cstId);
-                PrimarySend("P37", message);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
         }
 
         private PSTransactionXClass PrimarySend(string index, string message)
@@ -673,19 +630,69 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void LogException(string classMethodName, string exMsg)
+        private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
         {
-            mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
+            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, psMessage.ToString());
         }
 
-        private void LogDebug(string classMethodName, string msg)
+        private void LoadPspConnectionConfig()
         {
-            mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
+            try
+            {
+                psWrapper = new PSWrapperXClass();
+                psWrapper.Address = pspConnectionConfig.Ip;
+                psWrapper.Port = pspConnectionConfig.Port;
+                psWrapper.ConnectMode = pspConnectionConfig.IsServer ? enumConnectMode.Passive : enumConnectMode.Active;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
-        private void LogPsWrapper(string classMethodName, string msg)
+        private void LoadAutoReply()
         {
-            mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
+            try
+            {
+                if (File.Exists(asePackageConfig.AutoReplyFilePath))
+                {
+                    LoadAutoReplyFileToMyMessageMap();
+                    //FitPspMessageList();
+                    //InitialSingleMsgType();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void LoadAutoReplyFileToMyMessageMap()
+        {
+            try
+            {
+                string[] allRows = File.ReadAllLines(asePackageConfig.AutoReplyFilePath);
+
+                foreach (string oneRow in allRows)
+                {
+                    var parts = oneRow.Split(',');
+                    string key = parts[0];
+                    string description = parts[1];
+                    string autoMessage = parts[2];
+
+                    PSMessageXClass psMessage = new PSMessageXClass();
+                    psMessage.Type = key.Substring(0, 1);
+                    psMessage.Number = key.Substring(1, 2);
+                    psMessage.Description = description;
+                    psMessage.PSMessage = autoMessage;
+
+                    psMessageMap.Add(key, psMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         public bool IsConnected()
@@ -702,5 +709,27 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             psWrapper.Close();
         }
+
+        #endregion
+
+        #region Logger
+
+        private void LogException(string classMethodName, string exMsg)
+        {
+            mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
+        }
+
+        private void LogDebug(string classMethodName, string msg)
+        {
+            mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
+        }
+
+        private void LogPsWrapper(string classMethodName, string msg)
+        {
+            mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
+        }
+
+        #endregion
+
     }
 }

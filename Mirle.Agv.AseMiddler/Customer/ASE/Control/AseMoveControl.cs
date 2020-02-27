@@ -8,28 +8,87 @@ using Mirle.Agv.AseMiddler.Model.TransferSteps;
 using PSDriver.PSDriver;
 using Mirle.Tools;
 using System.Reflection;
+using Mirle.Agv.AseMiddler.Model.Configs;
+using System.Threading;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
     public class AseMoveControl
     {
-        private PSWrapperXClass psWrapper;
         private MirleLogger mirleLogger = MirleLogger.Instance;
+        private PSWrapperXClass psWrapper;
+
+        private AseMoveConfig aseMoveConfig;
+        private Thread thdWatchPosition;
+        public bool IsWatchPositionPause { get; private set; } = true;
+        public bool IsWatchPositionStop { get; private set; } = false;
 
         public event EventHandler<EnumMoveComplete> OnMoveFinishEvent;
-        public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;      
+        public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;
 
         public string StopResult { get; set; } = "";
 
-        public AseMoveControl(PSWrapperXClass psWrapper)
+        public AseMoveControl(PSWrapperXClass psWrapper, AseMoveConfig aseMoveConfig)
         {
             this.psWrapper = psWrapper;
+            this.aseMoveConfig = aseMoveConfig;
+            InitialThread();
         }
+
+        #region Thread
+
+        private void InitialThread()
+        {
+            thdWatchPosition = new Thread(WatchPosition);
+            thdWatchPosition.IsBackground = true;
+            thdWatchPosition.Start();
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AsePackage : 開始監看詢問電量");
+        }
+
+        private void WatchPosition()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (IsWatchPositionPause) continue;
+                    if (IsWatchPositionStop) break;
+
+                    if (psWrapper.IsConnected())
+                    {
+                        SendPositionReportRequest();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, aseMoveConfig.WatchPositionInterval);
+                }
+            }
+        }
+
+        private void SendPositionReportRequest()
+        {
+            try
+            {
+                PrimarySend("P33", "");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        #endregion
 
         public void OnMoveFinish(EnumMoveComplete enumMoveComplete)
         {
             try
             {
+                IsWatchPositionPause = true;
                 OnMoveFinishEvent?.Invoke(this, enumMoveComplete);
             }
             catch (Exception ex)
@@ -48,7 +107,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }        
+        }
 
         public bool Move(TransferStep transferStep, ref string errorMsg)
         {
@@ -57,6 +116,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void PartMove(bool isEnd, MapPosition mapPosition, int theta, int speed)
         {
+            IsWatchPositionPause = false;
             try
             {
                 string message = isEnd ? "1" : "0";
@@ -79,7 +139,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string result = x >= 0 ? "P" : "N";
-                string number = GetNumberToString((int)(Math.Abs(x)),8);
+                string number = GetNumberToString((int)(Math.Abs(x)), 8);
                 result = string.Concat(result, number);
                 return result;
             }
@@ -90,12 +150,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private string GetNumberToString(int value,ushort digit)
+        private string GetNumberToString(int value, ushort digit)
         {
             try
             {
-                string valueFormat = new string('0',digit);
-                
+                string valueFormat = new string('0', digit);
+
                 return value.ToString(valueFormat);
             }
             catch (Exception ex)
@@ -107,7 +167,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void RetryMove()
         {
-            
+
         }
 
         public void StopAndClear()
