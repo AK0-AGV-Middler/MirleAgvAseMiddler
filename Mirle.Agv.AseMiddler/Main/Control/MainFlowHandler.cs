@@ -126,6 +126,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
                 batteryLog = xmlHandler.ReadXml<BatteryLog>(@"BatteryLog.xml");
+                mirleLogger.CreateXmlLogger(batteryLog, @"BatteryLog.xml");
                 InitialSoc = batteryLog.InitialSoc;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
@@ -1292,10 +1293,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 int sectionIndex = theVehicle.AseMovingGuide.GuideSectionIds.FindIndex(x => x == mapSection.Id);
                 MapAddress address = theMapInfo.allMapAddresses[theVehicle.AseMovingGuide.GuideAddressIds[sectionIndex + 1]];
 
-                //MapAddress address = mapSection.CmdDirection == EnumPermitDirection.Forward
-                //    ? mapSection.TailAddress
-                //    : mapSection.HeadAddress;
-
                 bool isEnd = address.Id == theVehicle.AseMovingGuide.ToAddressId;
                 int theta = (int)address.VehicleHeadAngle;
                 int speed = (int)mapSection.Speed;
@@ -1752,8 +1749,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.PioDirection}][編號={unloadCmd.SlotNumber}][是否PIO={unloadCmd.IsEqPio}]");
 
                     }
-                    //batteryLog.LoadUnloadCount++;
-                    //SaveBatteryLog();
+                    batteryLog.LoadUnloadCount++;
                 }
                 catch (Exception ex)
                 {
@@ -2037,7 +2033,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         while (aseMovingGuide.MovingSectionsIndex < searchingSectionIndex)
                         {
                             batteryLog.MoveDistanceTotalM += (int)(aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex].HeadToTailDistance / 1000);
-                            SaveBatteryLog();
                             aseMovingGuide.MovingSectionsIndex++;
                             FitVehicalLocationAndMoveCmd();
                             agvcConnector.ReportSectionPass();
@@ -2326,8 +2321,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         agvcConnector.Charging();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 到達站點[{address.Id}]充電中。");
-                        //batteryLog.ChargeCount++;
-                        //SaveBatteryLog();
+                        batteryLog.ChargeCount++;
                     }
                 }
             }
@@ -2378,8 +2372,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         agvcConnector.Charging();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : 充電中, [Address={address.Id}][IsCharging={theVehicle.IsCharging}]");
-                        //batteryLog.ChargeCount++;
-                        //SaveBatteryLog();
+                        batteryLog.ChargeCount++;
                     }
                 }
             }
@@ -2744,7 +2737,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 batteryLog.InitialSoc = (int)batteryPercentage;
-                SaveBatteryLog();
             }
             catch (Exception ex)
             {
@@ -2786,11 +2778,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
-
-        public void SaveBatteryLog()
-        {
-            xmlHandler.WriteXml(batteryLog, @"BatteryLog.xml");
         }
 
         public void ResetBatteryLog()
