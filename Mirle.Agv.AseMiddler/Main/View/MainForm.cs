@@ -457,7 +457,7 @@ namespace Mirle.Agv.AseMiddler.View
                 SetupImageRegion();
 
                 //Draw Barcode in blackDash
-                var allMapBarcodeLines = theMapInfo.allMapBarcodeLines.Values.ToList();
+                var allMapBarcodeLines = theMapInfo.barcodeLineMap.Values.ToList();
                 foreach (var rowBarcode in allMapBarcodeLines)
                 {
                     var headPosInPixel = MapPixelExchange(rowBarcode.HeadBarcode.Position);
@@ -472,7 +472,7 @@ namespace Mirle.Agv.AseMiddler.View
 
                 // Draw Sections in blueLine
                 allUcSectionImages.Clear();
-                var allMapSections = theMapInfo.allMapSections.Values.ToList();
+                var allMapSections = theMapInfo.sectionMap.Values.ToList();
                 foreach (var section in allMapSections)
                 {
                     var headPos = section.HeadAddress.Position;
@@ -509,7 +509,7 @@ namespace Mirle.Agv.AseMiddler.View
 
                 //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
                 allUcAddressImages.Clear();
-                var allMapAddresses = theMapInfo.allMapAddresses.Values.ToList();
+                var allMapAddresses = theMapInfo.addressMap.Values.ToList();
                 foreach (var address in allMapAddresses)
                 {
                     UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
@@ -547,7 +547,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void SetupImageRegion()
         {
-            foreach (var address in theMapInfo.allMapAddresses.Values)
+            foreach (var address in theMapInfo.addressMap.Values)
             {
                 if (address.Position.X > maxPos.X)
                 {

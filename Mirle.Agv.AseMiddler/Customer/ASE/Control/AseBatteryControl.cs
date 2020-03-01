@@ -120,7 +120,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public bool StartCharge(EnumChargeDirection chargeDirection)
+        public bool StartCharge(EnumAddressDirection chargeDirection)
         {
             try
             {
@@ -129,13 +129,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string chargeDirectionString;
                 switch (chargeDirection)
                 {
-                    case EnumChargeDirection.Left:
+                    case EnumAddressDirection.Left:
                         chargeDirectionString = "1";
                         break;
-                    case EnumChargeDirection.Right:
+                    case EnumAddressDirection.Right:
                         chargeDirectionString = "2";
                         break;
-                    case EnumChargeDirection.None:
+                    case EnumAddressDirection.None:
                     default:
                         throw new Exception($"Start charge command direction error.[{chargeDirection}]");
                 }

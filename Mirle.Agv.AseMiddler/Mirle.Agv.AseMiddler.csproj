@@ -123,7 +123,6 @@
     <Compile Include="Customer\ASE\Model\PspConnectionConfig.cs" />
     <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
     <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
-    <Compile Include="Main\Model\Map\ChargeInfo.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="Main\Model\Map\MapVector.cs" />
     <Compile Include="Customer\ASE\Model\AseMoveStatus.cs" />

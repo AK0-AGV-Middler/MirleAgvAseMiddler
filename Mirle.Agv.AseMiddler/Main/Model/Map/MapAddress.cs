@@ -9,36 +9,42 @@ namespace Mirle.Agv.AseMiddler.Model
     [Serializable]
     public class MapAddress
     {
-        //Id, Barcode, PositionX, PositionY, IsWorkStation,CanLeftLoad,CanLeftUnload,CanRightLoad,CanRightUnload,IsCharger,CouplerId,ChargeDirection,IsSegmentPoint,CanSpin
         public string Id { get; set; } = "";
         public MapPosition Position { get; set; } = new MapPosition();
-        public bool IsWorkStation { get; set; }
-        public bool CanLeftLoad { get; set; }
-        public bool CanLeftUnload { get; set; }
-        public bool CanRightLoad { get; set; }
-        public bool CanRightUnload { get; set; }
-        public bool IsCharger { get; set; }
+        public EnumAddressDirection TransferPortDirection { get; set; } = EnumAddressDirection.None;
+        public string PortNumber { get; set; } = "12";
+        public EnumAddressDirection ChargeDirection { get; set; } = EnumAddressDirection.None;
+        public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
         public string CouplerId { get; set; } = "";
-        public EnumChargeDirection ChargeDirection { get; set; } = EnumChargeDirection.None;
-        public bool IsSegmentPoint { get; set; }
         public bool CanSpin { get; set; }
-        public EnumPioDirection PioDirection { get; set; } = EnumPioDirection.None;
         public bool IsTR50 { get; set; }
         public string InsideSectionId { get; set; }
         public MapAddressOffset AddressOffset { get; set; } = new MapAddressOffset();
-        public double VehicleHeadAngle { get; set; }
-        public string PortNumber { get; set; } = "12";
+        public double VehicleHeadAngle { get; set; }       
 
-        public EnumChargeDirection ChargeDirectionParse(string v)
-        {
-            v = v.Trim();
-            return (EnumChargeDirection)Enum.Parse(typeof(EnumChargeDirection), v);
+        public EnumAddressDirection AddressDirectionParse(string v)
+        {           
+            return (EnumAddressDirection)Enum.Parse(typeof(EnumAddressDirection), v);
         }
 
-        public EnumPioDirection PioDirectionParse(string v)
+        public bool IsTransferPort()
         {
-            v = v.Trim();
-            return (EnumPioDirection)Enum.Parse(typeof(EnumPioDirection), v);
+            return TransferPortDirection != EnumAddressDirection.None;
+        }
+
+        public bool IsPio()
+        {
+            return PioDirection != EnumAddressDirection.None;
+        }
+
+        public bool IsCharger()
+        {
+            return ChargeDirection != EnumAddressDirection.None;
+        }
+
+        public bool IsSegmentPoint()
+        {
+            return !IsTransferPort() && !IsCharger();
         }
     }
 

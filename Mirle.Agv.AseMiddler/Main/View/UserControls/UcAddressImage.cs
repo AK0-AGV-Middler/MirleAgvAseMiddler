@@ -54,7 +54,7 @@ namespace Mirle.Agv.AseMiddler
             image = new Bitmap(Size.Width, Size.Height);
             gra = Graphics.FromImage(image);
 
-            if (Address.IsWorkStation)
+            if (Address.IsTransferPort())
             {
                 //Port站 : 畫圓
                 //RectangleF rectangleF = new RectangleF(Delta + 1, label1.Height + 3, recSize, recSize);
@@ -62,7 +62,7 @@ namespace Mirle.Agv.AseMiddler
                 gra.DrawEllipse(redPen, rectangleF);
             }
 
-            if (Address.IsCharger)
+            if (Address.IsCharger())
             {
                 //充電樁 : 畫圓內接三角形
                 var triangleHeight = (float)((Radius * triangleCoefficient));
@@ -74,19 +74,19 @@ namespace Mirle.Agv.AseMiddler
                 gra.FillPolygon(redBrush, pointFs);
             }
 
-            if (Address.IsSegmentPoint)
+            if (Address.IsSegmentPoint())
             {
                 //Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
                 Rectangle rectangle = new Rectangle(1, 1, recSize, recSize);
                 gra.DrawRectangle(blackPen, rectangle);
             }
 
-            if (!Address.IsWorkStation && !Address.IsSegmentPoint && !Address.IsCharger)
-            {
-                //Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
-                Rectangle rectangle = new Rectangle(1, 1, recSize, recSize);
-                gra.FillEllipse(blackBrush, rectangle);
-            }
+            //if (!Address.IsTransferPort() && !Address.IsSegmentPoint && !Address.IsCharger())
+            //{
+            //    //Rectangle rectangle = new Rectangle(Delta + 1, label1.Height + 3, recSize, recSize);
+            //    Rectangle rectangle = new Rectangle(1, 1, recSize, recSize);
+            //    gra.FillEllipse(blackBrush, rectangle);
+            //}
 
             pictureBox1.Image = image;
         }

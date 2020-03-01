@@ -13,7 +13,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public string CassetteId { get; set; } = "";
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.A;
         public int RobotNgRetryTimes { get; set; } = 1;
-        public EnumPioDirection PioDirection { get; set; } = EnumPioDirection.None;
+        public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
         public bool IsEqPio { get; set; }
         public ushort ForkSpeed { get; set; } = 100;       
 

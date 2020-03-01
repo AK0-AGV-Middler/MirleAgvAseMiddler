@@ -15,9 +15,9 @@ namespace Mirle.Agv.AseMiddler
         Horizontal,
         Vertical,
         R2000
-    }
+    }    
 
-    public enum EnumChargeDirection
+    public enum EnumAddressDirection
     {
         None = 0,
         Left = 1,
@@ -36,14 +36,7 @@ namespace Mirle.Agv.AseMiddler
         None,
         Forward,
         Backward
-    }
-
-    public enum EnumRowBarcodeType
-    {
-        None,
-        Horizontal,
-        Vertical
-    }
+    }    
 
     public enum EnumTransferStepType
     {
