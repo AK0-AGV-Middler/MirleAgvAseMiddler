@@ -27,7 +27,8 @@ namespace Mirle.Agv.AseMiddler.View
         private AgvcConnectorForm middlerForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
-        private MoveCommandForm moveCommandForm;
+        private AseMoveControlForm aseMoveControlForm;
+        private AseRobotControlForm aseRobotControlForm;
         private WarningForm warningForm;
         private ConfigForm configForm;
         private Panel panelLeftUp;
@@ -143,7 +144,12 @@ namespace Mirle.Agv.AseMiddler.View
 
             numPositionX.Maximum = decimal.MaxValue;
             numPositionY.Maximum = decimal.MaxValue;
+
+            InitialAseMoveControlForm();
+            InitialAseRobotControlForm();
         }
+
+        
 
         private void InitialPaintingItems()
         {
@@ -493,7 +499,6 @@ namespace Mirle.Agv.AseMiddler.View
                     ucAddressImage.MouseDown += UcAddressImage_MouseDown;
                     //ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
                     ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
-                    ucAddressImage.pictureBox1.MouseDoubleClick += ucAddressImageItem_DoubleClick;
                 }
 
 
@@ -624,15 +629,96 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void ManualMoveCmdPage_Click(object sender, EventArgs e)
         {
-            if (moveCommandForm.IsDisposed)
+            if (aseMoveControlForm.IsDisposed)
             {
-                moveCommandForm = new MoveCommandForm(mainFlowHandler.GetAseMoveControl(), theMapInfo);
+                InitialAseMoveControlForm();
             }
-            if (moveCommandForm != null)
+            if (aseMoveControlForm != null)
             {
-                moveCommandForm.BringToFront();
-                moveCommandForm.Show();
+                aseMoveControlForm.BringToFront();
+                aseMoveControlForm.Show();
             }
+        }
+
+        private void InitialAseMoveControlForm()
+        {
+            aseMoveControlForm = new AseMoveControlForm();
+            aseMoveControlForm.SendMove += AseMoveControlForm_SendMove;
+            aseMoveControlForm.OnException += AseControlForm_OnException;
+        }
+
+        private void AseMoveControlForm_SendMove(object sender, AseMoveEventArgs e)
+        {
+            try
+            {
+                asePackage.aseMoveControl.PartMove(e.IsEnd, e.MapPosition, e.HeadAngle, e.Speed);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void AseControlForm_OnException(object sender, string exMsg)
+        {
+            LogException(sender.ToString(), exMsg);
+        }
+
+        private void RobotControlPage_Click(object sender, EventArgs e)
+        {
+            if (aseRobotControlForm.IsDisposed)
+            {
+                InitialAseRobotControlForm();
+            }
+            if (aseRobotControlForm != null)
+            {
+                aseRobotControlForm.BringToFront();
+                aseRobotControlForm.Show();
+            }
+        }
+
+        private void InitialAseRobotControlForm()
+        {
+            aseRobotControlForm = new AseRobotControlForm();
+            aseRobotControlForm.SendRobotCommand += AseRobotControlForm_SendRobotCommand;          
+            aseRobotControlForm.OnException += AseControlForm_OnException;
+        }
+
+        private void AseRobotControlForm_SendRobotCommand(object sender, AseRobotEventArgs e)
+        {
+            try
+            {
+                RobotCommand robotCommand = GetRobotCommandFromAseRobotControlForm(e);
+                asePackage.aseRobotControl.DoRobotCommand(robotCommand);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private RobotCommand GetRobotCommandFromAseRobotControlForm(AseRobotEventArgs e)
+        {
+            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
+            agvcTransCmd.CommandId = "Cmd001";
+            RobotCommand robotCommand;
+            if (e.IsLoad)
+            {
+                robotCommand = new LoadCmdInfo(agvcTransCmd);
+                robotCommand.PortAddressId = e.FromPort.PadLeft(5,'0');
+                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.ToPort.Trim('0'));
+            }
+            else
+            {
+                robotCommand = new UnloadCmdInfo(agvcTransCmd);
+                robotCommand.PortAddressId = e.ToPort.PadLeft(5, '0');
+                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.FromPort.Trim('0'));
+            }
+            robotCommand.ForkSpeed = e.Speed;
+            robotCommand.PioDirection = e.PioDirection;
+            robotCommand.IsEqPio = e.IsPio;
+
+            return robotCommand;
         }
 
         private void AlarmPage_Click(object sender, EventArgs e)
@@ -643,21 +729,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             alarmForm.BringToFront();
             alarmForm.Show();
-        }
-
-        private void IntegrateCommandPage_Click(object sender, EventArgs e)
-        {
-            //if (integrateCommandForm.IsDisposed)
-            //{
-            //    //if (mainFlowConfig.CustomerName == "AUO")
-            //    //{
-            //    //    integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
-            //    //}
-            //}
-
-            //integrateCommandForm.BringToFront();
-            //integrateCommandForm.Show();
-        }
+        }        
 
         private void VehicleStatusPage_Click(object sender, EventArgs e)
         {
@@ -1373,9 +1445,27 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 //TODO: SlotA and SlotB
-                ucLoading.TagValue = theVehicle.AseCarrierSlotA.CarrierSlotStatus.ToString();
-                ucVehicleImage.Loading = theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading;
-                ucCstId.TagValue = theVehicle.AseCarrierSlotA.CarrierId;
+                if (theVehicle.AseCarrierSlotA.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
+                {
+                    ucLoading.TagValue = theVehicle.AseCarrierSlotA.CarrierSlotStatus.ToString();
+                    ucVehicleImage.Loading = true;
+                    ucCstId.TagValue = theVehicle.AseCarrierSlotA.CarrierId;
+                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotA.CarrierId;
+                }
+                else if (theVehicle.AseCarrierSlotB.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
+                {
+                    ucLoading.TagValue = theVehicle.AseCarrierSlotB.CarrierSlotStatus.ToString();
+                    ucVehicleImage.Loading = true;
+                    ucCstId.TagValue = theVehicle.AseCarrierSlotB.CarrierId;
+                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotB.CarrierId;
+                }
+                else
+                {
+                    ucLoading.TagValue = EnumAseCarrierSlotStatus.Empty.ToString();
+                    ucVehicleImage.Loading = false;
+                    ucCstId.TagValue = "";
+                    aseRobotControlForm.CassetteId = "";
+                }
 
                 ucCharging.TagValue = theVehicle.IsCharging ? "Yes" : "No";
             }
@@ -1618,43 +1708,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void ucAddressImageItem_DoubleClick(object sender, MouseEventArgs e)
-        {
-            Control control = ((Control)sender).Parent;
-            UcAddressImage ucAddressImage = (UcAddressImage)control;
-
-            try
-            {
-                if (theVehicle.AutoState == EnumAutoState.Manual)
-                {
-                    if (ucAddressImage.BackColor != Color.Black)
-                    {
-                        ucAddressImage.BackColor = Color.Black;
-                        mainFormAddNodes.Add(ucAddressImage.Address);
-                        changeColorAddressList.Add(ucAddressImage);
-                    }
-
-                    if (moveCommandForm != null && !moveCommandForm.IsDisposed)
-                    {
-                        //if (mainFlowConfig.CustomerName == "AUO")
-                        //{
-                        //    ((MoveCommandDebugModeForm)moveCommandForm).AddAddressPositionByMainFormDoubleClick(ucAddressImage.Address.Id);
-                        //}
-                        moveCommandForm.Show();
-                        moveCommandForm.BringToFront();
-                    }
-                }
-            }
-            catch
-            {
-
-            }
-        }
-
-        private void btnReDraw_Click(object sender, EventArgs e)
-        {
-            ResetImageAndPb();
-        }
 
         private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
         {

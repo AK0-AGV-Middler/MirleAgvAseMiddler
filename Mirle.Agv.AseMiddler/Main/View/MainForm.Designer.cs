@@ -249,7 +249,7 @@
             this.RobotPage.Name = "RobotPage";
             this.RobotPage.Size = new System.Drawing.Size(161, 22);
             this.RobotPage.Text = "Robot";
-            this.RobotPage.Click += new System.EventHandler(this.IntegrateCommandPage_Click);
+            this.RobotPage.Click += new System.EventHandler(this.RobotControlPage_Click);
             // 
             // MovePage
             // 

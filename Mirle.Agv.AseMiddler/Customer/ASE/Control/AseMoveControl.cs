@@ -119,7 +119,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }       
 
-        public void PartMove(bool isEnd, MapPosition mapPosition, int theta, int speed)
+        public void PartMove(bool isEnd, MapPosition mapPosition, int headAngle, int speed)
         {
             ResumePositionWatcher();
             try
@@ -127,7 +127,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string message = isEnd ? "1" : "0";
                 string positionX = GetPositionString(mapPosition.X);
                 string positionY = GetPositionString(mapPosition.Y);
-                string thetaString = GetNumberToString(theta, 3);
+                string thetaString = GetNumberToString(headAngle, 3);
                 string speedString = GetNumberToString(speed, 4);
                 message = string.Concat(message, positionX, positionY, thetaString, speedString);
 

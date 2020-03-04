@@ -118,6 +118,18 @@
     <Compile Include="Customer\ASE\Model\AseMovingGuide.cs" />
     <Compile Include="Customer\ASE\Model\AsePackageConfig.cs" />
     <Compile Include="Customer\ASE\Model\AseRobotStatus.cs" />
+    <Compile Include="Customer\ASE\View\AseMoveControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Customer\ASE\View\AseMoveControlForm.Designer.cs">
+      <DependentUpon>AseMoveControlForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Customer\ASE\View\AseRobotControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Customer\ASE\View\AseRobotControlForm.Designer.cs">
+      <DependentUpon>AseRobotControlForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
     <Compile Include="Customer\ASE\Model\PspConnectionConfig.cs" />
@@ -227,6 +239,12 @@
     <Compile Include="Main\View\WarningForm.Designer.cs">
       <DependentUpon>WarningForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Customer\ASE\View\AseMoveControlForm.resx">
+      <DependentUpon>AseMoveControlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Customer\ASE\View\AseRobotControlForm.resx">
+      <DependentUpon>AseRobotControlForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Main\View\ConfigForm.resx">
       <DependentUpon>ConfigForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -329,9 +347,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Customer\ASE\View\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

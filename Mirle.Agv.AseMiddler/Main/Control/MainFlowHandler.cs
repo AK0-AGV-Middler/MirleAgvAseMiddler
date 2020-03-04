@@ -1281,7 +1281,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 MapAddress address = theMapInfo.addressMap[theVehicle.AseMovingGuide.GuideAddressIds[sectionIndex + 1]];
 
                 bool isEnd = address.Id == theVehicle.AseMovingGuide.ToAddressId;
-                int theta = (int)address.VehicleHeadAngle;
+                int headAngle = (int)address.VehicleHeadAngle;
                 int speed = (int)mapSection.Speed;
 
                 if (theVehicle.IsSimulation)
@@ -1290,13 +1290,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                     MapPosition addressPosition = address.Position;
                     MapPosition midPosition = new MapPosition((lastPosition.X + addressPosition.X) / 2, (lastPosition.Y + addressPosition.Y) / 2);
                     SpinWait.SpinUntil(() => false, 5000);
-                    SimulationArrival(false, midPosition, theta, speed);
+                    SimulationArrival(false, midPosition, headAngle, speed);
                     SpinWait.SpinUntil(() => false, 5000);
-                    SimulationArrival(isEnd, address.Position, theta, speed);
+                    SimulationArrival(isEnd, address.Position, headAngle, speed);
                 }
                 else
                 {
-                    asePackage.aseMoveControl.PartMove(isEnd, address.Position, theta, speed);
+                    asePackage.aseMoveControl.PartMove(isEnd, address.Position, headAngle, speed);
                 }
 
                 OnMessageShowEvent?.Invoke(this, $"通知MoveControl延攬通行權{mapSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
