@@ -20,6 +20,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
         public ushort SeqNum { get; set; }
+        public string commandId { get; set; } = "";
 
         public AseMovingGuide() { }
 
@@ -31,6 +32,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.FromAddressId = info.FromTo.From;
             this.ToAddressId = info.FromTo.To;
             this.GuideDistance = info.Distance;
+            this.commandId = Vehicle.Instance.AseMovingGuide.commandId;
         }
 
         public AseMovingGuide(AseMovingGuide aseMovingGuide)
@@ -45,6 +47,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.IsAvoidComplete = aseMovingGuide.IsAvoidComplete;
             this.MovingSections = aseMovingGuide.MovingSections;
             this.MovingSectionsIndex = aseMovingGuide.MovingSectionsIndex;
+            this.commandId = aseMovingGuide.commandId;
         }
 
         public AseMovingGuide(ID_51_AVOID_REQUEST request,ushort seqNum)
@@ -53,6 +56,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.GuideSectionIds = request.GuideSections.ToList();
             this.GuideAddressIds = request.GuideAddresses.ToList();
             this.SeqNum = SeqNum;
+            this.commandId = Vehicle.Instance.AseMovingGuide.commandId;
         }
     }
 }

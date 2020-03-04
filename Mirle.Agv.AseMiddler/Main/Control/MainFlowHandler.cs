@@ -371,6 +371,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
+                        theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
                         agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
                     }
                     break;
@@ -392,10 +393,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (TransferStepsIndex + 1 < transferSteps.Count)
             {
-                //if (transferSteps[TransferStepsIndex + 1].GetTransferStepType() == EnumTransferStepType.Empty)
-                //{
-
-                //}
                 transferSteps.RemoveAt(TransferStepsIndex);
             }
 
@@ -439,19 +436,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             IsVisitTransferStepPause = true;
             GoNextTransferStep = false;
-            foreach (var cmdId in theVehicle.AgvcTransCmdBuffer.Keys)
-            {
-                foreach (var transferStep in transferSteps)
-                {
-                    if (transferStep.CmdId == cmdId)
-                    {
-                        transferSteps.Remove(transferStep);
-                        TransferStepsIndex--;
-                    }
-                }
-            }
+            TransferStepsIndex = 0;
             transferSteps = new List<TransferStep>();
-            transferSteps.Add(new EmptyTransferStep());
             GoNextTransferStep = true;
             IsVisitTransferStepPause = false;
 
@@ -464,7 +450,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             IsVisitTransferStepPause = true;
             GoNextTransferStep = false;
             int transferStepCountBeforeRemove = transferSteps.Count;
-            transferSteps.RemoveAll(x => x.CmdId == cmdId);            
+            transferSteps.RemoveAll(x => x.CmdId == cmdId);
             TransferStepsIndex = TransferStepsIndex + transferSteps.Count - transferStepCountBeforeRemove;
             if (transferSteps.Count == 0)
             {
@@ -474,7 +460,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             GoNextTransferStep = true;
             IsVisitTransferStepPause = false;
 
-            var msg = $"MainFlow : 清除已完成命令";
+            var msg = $"MainFlow : 清除已完成命令[{cmdId}]";
             OnMessageShowEvent?.Invoke(this, msg);
         }
 
@@ -773,12 +759,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcTransCmd.RobotNgRetryTimes = mainFlowConfig.RobotNgRetryTimes;
                 SetupTransferSteps(agvcTransCmd);
                 agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
-                GoNextTransferStep = true;
+                if (theVehicle.AgvcTransCmdBuffer.Count != 2) GoNextTransferStep = true;
                 ResumeVisitTransferSteps();
                 asePackage.SetTransferCommandInfoRequest();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.AgvcTransCommandType}命令{agvcTransCmd.CommandId} 確認。";
                 OnMessageShowEvent?.Invoke(this, okMsg);
-                OnTransferCommandCheckedEvent?.Invoke(this, agvcTransCmd);                
+                OnTransferCommandCheckedEvent?.Invoke(this, agvcTransCmd);
             }
             catch (Exception ex)
             {
@@ -1300,7 +1286,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (theVehicle.IsSimulation)
                 {
-                    SpinWait.SpinUntil(() => false, 2000);
+                    MapPosition lastPosition = theVehicle.AseMoveStatus.LastMapPosition;
+                    MapPosition addressPosition = address.Position;
+                    MapPosition midPosition = new MapPosition((lastPosition.X + addressPosition.X) / 2, (lastPosition.Y + addressPosition.Y) / 2);
+                    SpinWait.SpinUntil(() => false, 5000);
+                    SimulationArrival(false, midPosition, theta, speed);
+                    SpinWait.SpinUntil(() => false, 5000);
                     SimulationArrival(isEnd, address.Position, theta, speed);
                 }
                 else
@@ -1862,7 +1853,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void AbortAllAgvcTransCmdInBuffer()
         {
             ClearTransferSteps();
-            foreach (var agvcTransCmd in theVehicle.AgvcTransCmdBuffer.Values)
+            foreach (var agvcTransCmd in theVehicle.AgvcTransCmdBuffer.Values.ToList())
             {
                 if (!IsInterlockErrorOrBcrReadFail(agvcTransCmd))
                 {
@@ -1891,96 +1882,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public AseMoveControl GetAseMoveControl() => asePackage.aseMoveControl;
         public string GetMoveControlStopResult() => asePackage.aseMoveControl.StopResult;
         #endregion
-
-        public bool CallMoveControlWork(MoveCmdInfo moveCmd)
-        {
-            try
-            {
-
-                var msg1 = $"MainFlow : 通知MoveControl傳送";
-                OnMessageShowEvent?.Invoke(this, msg1);
-
-                string errorMsg = "";
-                if (asePackage.aseMoveControl.Move(moveCmd, ref errorMsg))
-                {
-                    var msg2 = $"MainFlow : 通知MoveControl傳送，回報可行.";
-                    OnMessageShowEvent?.Invoke(this, msg2);
-                    PublishOnDoTransferStepEvent(moveCmd);
-                    return true;
-                }
-                else
-                {
-                    var msg2 = $"MainFlow : 通知MoveControl傳送，回報失敗。{errorMsg}";
-                    OnMessageShowEvent?.Invoke(this, msg2);
-                    AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return false;
-            }
-        }
-        public bool CallMoveControlOverride(MoveCmdInfo moveCmd)
-        {
-            try
-            {
-                var msg1 = $"MainFlow : 通知MoveControl[替代路徑]";
-                OnMessageShowEvent?.Invoke(this, msg1);
-                string errorMsg = "";
-                if (asePackage.aseMoveControl.Move(moveCmd, ref errorMsg))
-                {
-                    var msg2 = $"MainFlow : 通知MoveControl[替代路徑]，回報可行.";
-                    OnMessageShowEvent?.Invoke(this, msg2);
-                    PublishOnDoTransferStepEvent(moveCmd);
-                    return true;
-                }
-                else
-                {
-                    var msg2 = $"MainFlow : 通知MoveControl[替代路徑]，回報失敗。{errorMsg}";
-                    OnMessageShowEvent?.Invoke(this, msg2);
-                    AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
-                    return false;
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return false;
-            }
-        }
-        public bool CallMoveControlAvoid(MoveCmdInfo moveCmd)
-        {
-            try
-            {
-                var msg1 = $"MainFlow : 通知MoveControl[避車路徑]";
-                OnMessageShowEvent?.Invoke(this, msg1);
-
-                string errorMsg = "";
-                if (asePackage.aseMoveControl.Move(moveCmd, ref errorMsg))
-                {
-                    var msg2 = $"MainFlow : 通知MoveControl[避車路徑]，回報可行.";
-                    OnMessageShowEvent?.Invoke(this, msg1);
-                    PublishOnDoTransferStepEvent(moveCmd);
-                    return true;
-                }
-                else
-                {
-                    var msg2 = $"MainFlow : 通知MoveControl[避車路徑]，回報失敗。{errorMsg}";
-                    OnMessageShowEvent?.Invoke(this, msg2);
-                    AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return false;
-            }
-        }
 
         public void SetupAseMovingGuideMovingSections()
         {
@@ -2136,7 +2037,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     lastSection = theVehicle.AseMoveStatus.LastSection;
                 }
 
-               
+
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                 aseMoveStatus.LastAddress = lastAddress;
                 aseMoveStatus.LastMapPosition = lastAddress.Position;
@@ -2450,6 +2351,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 PauseVisitTransferSteps();
                 agvcConnector.ClearAllReserve();
+                theVehicle.AseMovingGuide = new AseMovingGuide();
                 StopVehicle();
                 AbortAllAgvcTransCmdInBuffer();
 
@@ -2577,7 +2479,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void SetupVehicleSoc(double percentage)
         {
             asePackage.aseBatteryControl.SetPercentage(percentage);
-        }        
+        }
 
         public void RenameCstId(EnumSlotNumber slotNumber, string newCstId)
         {
@@ -2682,11 +2584,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var msg = $"MainFlow : 接受[{receive.CancelAction}]命令。";
                 OnMessageShowEvent(this, msg);
                 agvcConnector.CancelAbortReply(iSeqNum, 0, receive);
+                string abortCmdId = receive.CmdID;
+                //TODO: Abort command with commandId = abortCmdId
+                //PauseVisitTransferSteps();               
                 //theVehicle.AseMovingGuide = new AseMovingGuide();
                 //asePackage.aseMoveControl.VehcleCancel();
                 //agvcConnector.ClearAllReserve();
                 //agvcTransCmd.CompleteStatus = receive.CancelAction == CancelActionType.CmdAbort ? CompleteStatus.Abort : CompleteStatus.Cancel;
-                //StopVisitTransferSteps();
+                //GoNextTransferStep();
             }
             catch (Exception ex)
             {

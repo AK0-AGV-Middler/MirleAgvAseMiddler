@@ -1761,6 +1761,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                     return;
                 }
 
+                if (receive.CancelAction == CancelActionType.CmdEms)
+                {
+                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
+                    alarmHandler.SetAlarm(000037);
+                    mainFlowHandler.StopClearAndReset();
+                    return;
+                }
+
                 if (!theVehicle.AgvcTransCmdBuffer.ContainsKey(cmdId))
                 {
                     replyCode = 1;
@@ -1779,10 +1787,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                     case CancelActionType.CmdCancelIdMismatch:
                     case CancelActionType.CmdCancelIdReadFailed:
                         alarmHandler.ResetAllAlarms();
-                        mainFlowHandler.StopClearAndReset();
-                        break;
-                    case CancelActionType.CmdEms:
-                        alarmHandler.SetAlarm(000037);
                         mainFlowHandler.StopClearAndReset();
                         break;
                     case CancelActionType.CmdNone:

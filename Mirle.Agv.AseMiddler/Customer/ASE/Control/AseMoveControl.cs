@@ -117,12 +117,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
-
-        public bool Move(TransferStep transferStep, ref string errorMsg)
-        {
-            throw new NotImplementedException();
-        }
+        }       
 
         public void PartMove(bool isEnd, MapPosition mapPosition, int theta, int speed)
         {
