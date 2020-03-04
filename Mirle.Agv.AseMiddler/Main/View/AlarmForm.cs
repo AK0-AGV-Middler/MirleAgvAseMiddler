@@ -92,7 +92,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.Hide();
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void btnAlarmTest_Click(object sender, EventArgs e)
         {
             var id = Convert.ToInt32(num1.Value);
             alarmHandler.SetAlarm(id);

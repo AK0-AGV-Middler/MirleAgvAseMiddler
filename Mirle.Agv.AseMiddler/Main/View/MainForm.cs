@@ -65,7 +65,7 @@ namespace Mirle.Agv.AseMiddler.View
         private Dictionary<string, UcSectionImage> allUcSectionImages = new Dictionary<string, UcSectionImage>();
         private Dictionary<string, UcAddressImage> allUcAddressImages = new Dictionary<string, UcAddressImage>();
         private double coefficient = 0.05f;
-        private double deltaOrigion = 25;
+        private double deltaOrigion = 50;
         private double triangleCoefficient = (double)(1 / Math.Sqrt(3.0));
         private UcVehicleImage ucVehicleImage = new UcVehicleImage();
         private MapPosition minPos = new MapPosition();
@@ -98,14 +98,8 @@ namespace Mirle.Agv.AseMiddler.View
             ResetImageAndPb();
             InitialSoc();
             InitialConnectionAndCarrierStatus();
-            InitialThdPads();
             InitialAbnormalMsgs();
             txtLastAlarm.Text = "";
-            //if (mainFlowConfig.CustomerName == "AUO")
-            //{
-            //    AuoIntegrateControl auoIntegrateControl = (AuoIntegrateControl)integrateControlPlate;
-            //    auoIntegrateControl.SetOutsideObjects(this);
-            //}
             var msg = "MainForm : 讀取主畫面";
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
@@ -121,31 +115,6 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialForms()
         {
-            //if (mainFlowConfig.CustomerName == "AUO")
-            //{
-            //    moveCommandForm = new MoveCommandFormFactory().GetMoveCommandForm(mainFlowConfig.CustomerName, moveControlPlate, theMapInfo);
-            //    moveCommandForm.WindowState = FormWindowState.Normal;
-            //    moveCommandForm.Show();
-            //    moveCommandForm.Hide();
-
-            //    integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
-            //    integrateCommandForm.WindowState = FormWindowState.Normal;
-            //    integrateCommandForm.Show();
-            //    integrateCommandForm.Hide();
-            //}
-            //else if (mainFlowConfig.CustomerName == "ASE")
-            //{
-            //    //moveCommandForm = new MoveCommandFormFactory().GetMoveCommandForm(mainFlowConfig.CustomerName, moveControlPlate, theMapInfo);
-            //    //moveCommandForm.WindowState = FormWindowState.Normal;
-            //    //moveCommandForm.Show();
-            //    //moveCommandForm.Hide();
-
-            //    //integrateCommandForm = new IntegrateCommandFormFactory().GetIntegrateCommandForm(mainFlowConfig.CustomerName, integrateControlPlate);
-            //    //integrateCommandForm.WindowState = FormWindowState.Normal;
-            //    //integrateCommandForm.Show();
-            //    //integrateCommandForm.Hide();
-            //}
-
             middlerForm = new AgvcConnectorForm(agvcConnector);
             middlerForm.WindowState = FormWindowState.Normal;
             middlerForm.Show();
@@ -245,11 +214,7 @@ namespace Mirle.Agv.AseMiddler.View
 
             theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
             mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
-            //if (mainFlowConfig.CustomerName == "AUO")
-            //{
-            //    ((PlcVehicle)theVehicle.TheVehicleIntegrateStatus).OnBeamDisableChangeEvent += TheVehicle_OnBeamDisableChangeEvent;
-            //}
-            mainFlowHandler.GetAseMoveControl().OnMoveFinishEvent += AseMoveControl_OnMoveFinishEvent;
+            mainFlowHandler.GetAseMoveControl().OnMoveFinishedEvent += AseMoveControl_OnMoveFinishEvent;
         }
 
 
@@ -273,11 +238,6 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 mainFlowHandler.ReadCarrierId();
             }
-        }
-
-        private void InitialThdPads()
-        {
-            //ucThdVisitTransferSteps.SetupTitleText("Visit Transfer Steps");
         }
 
         private void MainFlowHandler_OnPrepareForAskingReserveEvent(object sender, MoveCmdInfo moveCmd)
@@ -1923,6 +1883,9 @@ namespace Mirle.Agv.AseMiddler.View
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
-
+        private void btnRefreshPosition_Click(object sender, EventArgs e)
+        {
+            asePackage.aseMoveControl.SendPositionReportRequest();
+        }
     }
 }

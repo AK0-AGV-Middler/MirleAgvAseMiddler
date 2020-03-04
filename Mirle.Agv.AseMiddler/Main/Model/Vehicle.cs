@@ -50,7 +50,6 @@ namespace Mirle.Agv.AseMiddler.Model
 
         #endregion
 
-
         #region Comm Property
         public VHActionStatus ActionStatus { get; set; } = VHActionStatus.NoCommand;
         public VhStopSingle BlockingStatus { get; set; }

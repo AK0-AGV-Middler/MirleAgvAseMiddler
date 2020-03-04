@@ -34,7 +34,7 @@
             this.tbxHistoryAlarms = new System.Windows.Forms.TextBox();
             this.tbxHappendingAlarms = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btnAlarmTest = new System.Windows.Forms.Button();
             this.num1 = new System.Windows.Forms.NumericUpDown();
             this.btnBuzzOff = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
@@ -86,7 +86,7 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.button2);
+            this.panel1.Controls.Add(this.btnAlarmTest);
             this.panel1.Controls.Add(this.num1);
             this.panel1.Controls.Add(this.btnBuzzOff);
             this.panel1.Controls.Add(this.btnAlarmReset);
@@ -97,15 +97,15 @@
             this.panel1.Size = new System.Drawing.Size(649, 135);
             this.panel1.TabIndex = 3;
             // 
-            // button2
+            // btnAlarmTest
             // 
-            this.button2.Location = new System.Drawing.Point(332, 31);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(112, 27);
-            this.button2.TabIndex = 10;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btnAlarmTest.Location = new System.Drawing.Point(332, 31);
+            this.btnAlarmTest.Name = "btnAlarmTest";
+            this.btnAlarmTest.Size = new System.Drawing.Size(112, 27);
+            this.btnAlarmTest.TabIndex = 10;
+            this.btnAlarmTest.Text = "Alarm Test";
+            this.btnAlarmTest.UseVisualStyleBackColor = true;
+            this.btnAlarmTest.Click += new System.EventHandler(this.btnAlarmTest_Click);
             // 
             // num1
             // 
@@ -188,7 +188,7 @@
         private System.Windows.Forms.Button btnBuzzOff;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.NumericUpDown num1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnAlarmTest;
         private System.Windows.Forms.TextBox tbxHappendingAlarms;
         private System.Windows.Forms.TextBox tbxHistoryAlarms;
         private System.Windows.Forms.Timer timeUpdateUI;

@@ -260,7 +260,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             oneRow.PioDirection = oneRow.AddressDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
                         }
-                        oneRow.CouplerId = getThisRow[dicHeaderIndexes["CouplerId"]];
                         oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
                         oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
                         if (dicHeaderIndexes.ContainsKey("InsideSectionId"))
@@ -372,8 +371,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         oneRow.HeadToTailDistance = GetDistance(oneRow.HeadAddress.Position, oneRow.TailAddress.Position);
                         oneRow.Speed = double.Parse(getThisRow[dicHeaderIndexes["Speed"]]);
                         oneRow.Type = oneRow.SectionTypeParse(getThisRow[dicHeaderIndexes["Type"]]);
-                        oneRow.PermitDirection = oneRow.PermitDirectionParse(getThisRow[dicHeaderIndexes["PermitDirection"]]);
-
                     }
                     catch (Exception ex)
                     {
@@ -434,13 +431,13 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             var backupPath = Path.ChangeExtension(AddressPath, ".backup.csv");
 
-            string titleRow = "Id,PositionX,PositionY,TransferPortDirection,PortNumber,PioDirection,ChargeDirection,CouplerId,CanSpin,IsTR50,InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle" + Environment.NewLine;
+            string titleRow = "Id,PositionX,PositionY,TransferPortDirection,PortNumber,PioDirection,ChargeDirection,CanSpin,IsTR50,InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle" + Environment.NewLine;
             File.WriteAllText(backupPath, titleRow);
             List<string> lineInfos = new List<string>();
             foreach (var item in theMapInfo.addressMap.Values)
             {
-                var lineInfo = string.Format("{0},{1:F0},{2:F0},{3},{4},{5},{6},{7},{8},{9},{10:0000},{11:F2},{12:F2},{13:F2},{14:N0}",
-                    item.Id, item.Position.X, item.Position.Y, item.TransferPortDirection, item.PortNumber, item.PioDirection, item.ChargeDirection, item.CouplerId,
+                var lineInfo = string.Format("{0},{1:F0},{2:F0},{3},{4},{5},{6},{7},{8},{9:0000},{10:F2},{11:F2},{12:F2},{13:N0}",
+                    item.Id, item.Position.X, item.Position.Y, item.TransferPortDirection, item.PortNumber, item.PioDirection, item.ChargeDirection, 
                     item.CanSpin, item.IsTR50,
                    int.Parse(item.InsideSectionId), item.AddressOffset.OffsetX, item.AddressOffset.OffsetY, item.AddressOffset.OffsetTheta,
                    item.VehicleHeadAngle
@@ -460,13 +457,13 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             var backupPath = Path.ChangeExtension(SectionPath, ".backup.csv");
 
-            string titleRow = "Id,FromAddress,ToAddress,Speed, Type,PermitDirection" + Environment.NewLine;
+            string titleRow = "Id,FromAddress,ToAddress,Speed,Type" + Environment.NewLine;
             File.WriteAllText(backupPath, titleRow);
             List<string> lineInfos = new List<string>();
             foreach (var item in theMapInfo.sectionMap.Values)
             {
-                var lineInfo = string.Format("{0},{1},{2},{3},{4},{5}",
-                    item.Id, item.HeadAddress.Id, item.TailAddress.Id, item.Speed, item.Type, item.PermitDirection
+                var lineInfo = string.Format("{0},{1},{2},{3},{4}",
+                    item.Id, item.HeadAddress.Id, item.TailAddress.Id, item.Speed, item.Type
                     );
                 lineInfos.Add(lineInfo);
             }

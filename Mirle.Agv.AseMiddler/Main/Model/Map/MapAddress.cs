@@ -15,7 +15,6 @@ namespace Mirle.Agv.AseMiddler.Model
         public string PortNumber { get; set; } = "12";
         public EnumAddressDirection ChargeDirection { get; set; } = EnumAddressDirection.None;
         public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
-        public string CouplerId { get; set; } = "";
         public bool CanSpin { get; set; }
         public bool IsTR50 { get; set; }
         public string InsideSectionId { get; set; }

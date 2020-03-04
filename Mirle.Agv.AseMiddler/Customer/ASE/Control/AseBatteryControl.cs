@@ -28,7 +28,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public AseBatteryControl(PSWrapperXClass psWrapper, AseBatteryConfig aseBatteryConfig)
         {
             this.psWrapper = psWrapper;
-            this.aseBatteryConfig = aseBatteryConfig;
+            this.aseBatteryConfig = aseBatteryConfig;          
             InitialThread();
         }
 
@@ -74,7 +74,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void SendBatteryStatusRequest()
+        public void SendBatteryStatusRequest()
         {
             try
             {

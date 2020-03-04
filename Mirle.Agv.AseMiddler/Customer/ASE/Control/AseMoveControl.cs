@@ -23,7 +23,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsWatchPositionPause { get; private set; } = true;
         public bool IsWatchPositionStop { get; private set; } = false;
 
-        public event EventHandler<EnumMoveComplete> OnMoveFinishEvent;
+        public event EventHandler<EnumMoveComplete> OnMoveFinishedEvent;
         public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;
 
         public string StopResult { get; set; } = "";
@@ -70,7 +70,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void SendPositionReportRequest()
+        public void SendPositionReportRequest()
         {
             try
             {
@@ -82,14 +82,24 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void PausePositionWatcher()
+        {
+            IsWatchPositionPause = true;
+        }
+
+        public void ResumePositionWatcher()
+        {
+            IsWatchPositionPause = false;
+        }
+
         #endregion
 
-        public void OnMoveFinish(EnumMoveComplete enumMoveComplete)
+        public void MoveFinished(EnumMoveComplete enumMoveComplete)
         {
             try
             {
-                IsWatchPositionPause = true;
-                OnMoveFinishEvent?.Invoke(this, enumMoveComplete);
+                PausePositionWatcher();
+                OnMoveFinishedEvent?.Invoke(this, enumMoveComplete);
             }
             catch (Exception ex)
             {
@@ -116,7 +126,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void PartMove(bool isEnd, MapPosition mapPosition, int theta, int speed)
         {
-            IsWatchPositionPause = false;
+            ResumePositionWatcher();
             try
             {
                 string message = isEnd ? "1" : "0";

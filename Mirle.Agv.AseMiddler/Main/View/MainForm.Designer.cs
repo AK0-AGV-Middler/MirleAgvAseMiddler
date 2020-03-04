@@ -50,6 +50,7 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnRefreshPosition = new System.Windows.Forms.Button();
             this.btnPrintScreen = new System.Windows.Forms.Button();
             this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
@@ -305,6 +306,7 @@
             // 
             // splitContainer3.Panel2
             // 
+            this.splitContainer3.Panel2.Controls.Add(this.btnRefreshPosition);
             this.splitContainer3.Panel2.Controls.Add(this.btnPrintScreen);
             this.splitContainer3.Panel2.Controls.Add(this.tbxDebugLogMsg);
             this.splitContainer3.Size = new System.Drawing.Size(1178, 1017);
@@ -321,6 +323,16 @@
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // btnRefreshPosition
+            // 
+            this.btnRefreshPosition.Location = new System.Drawing.Point(838, 11);
+            this.btnRefreshPosition.Name = "btnRefreshPosition";
+            this.btnRefreshPosition.Size = new System.Drawing.Size(126, 70);
+            this.btnRefreshPosition.TabIndex = 60;
+            this.btnRefreshPosition.Text = "Refresh Position";
+            this.btnRefreshPosition.UseVisualStyleBackColor = true;
+            this.btnRefreshPosition.Click += new System.EventHandler(this.btnRefreshPosition_Click);
             // 
             // btnPrintScreen
             // 
@@ -1168,5 +1180,6 @@
         private System.Windows.Forms.Label txtAgvlConnection;
         private System.Windows.Forms.RadioButton radAgvlOnline;
         private System.Windows.Forms.RadioButton radAgvlOffline;
+        private System.Windows.Forms.Button btnRefreshPosition;
     }
 }

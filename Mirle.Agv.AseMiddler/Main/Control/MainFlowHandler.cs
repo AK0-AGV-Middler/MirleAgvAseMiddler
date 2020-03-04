@@ -126,7 +126,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
                 batteryLog = xmlHandler.ReadXml<BatteryLog>(@"BatteryLog.xml");
-                mirleLogger.CreateXmlLogger(batteryLog, @"BatteryLog.xml");
+                //mirleLogger.CreateXmlLogger(batteryLog, @"BatteryLog.xml");
                 InitialSoc = batteryLog.InitialSoc;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
@@ -208,7 +208,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnAvoideRequestEvent += AgvcConnector_OnAvoideRequestEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
-                asePackage.aseMoveControl.OnMoveFinishEvent += AseMoveControl_OnMoveFinished;
+                asePackage.aseMoveControl.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
                 asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
 
                 //來自IRobotControl的取放貨結束訊息，通知MainFlow(this)'middleAgent'mapHandler
@@ -261,6 +261,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     MainFlowAbnormalMsg = "";
                     alarmHandler.ResetAllAlarms();
                     ReadCarrierId();
+                    asePackage.SetVehicleAutoScenario();
                     break;
                 case EnumAutoState.Manual:
                     StopClearAndReset();

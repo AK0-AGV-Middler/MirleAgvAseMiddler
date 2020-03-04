@@ -42,7 +42,7 @@ namespace Mirle.Agv.AseMiddler
 
         private void SetupShowAddressInfo()
         {
-            string msg = $"Id = {Address.Id}\n" + $"Position = ({Address.Position.X},{Address.Position.Y})\n" + $"Coupler = {Address.CouplerId}";
+            string msg = $"Id = {Address.Id}\n" + $"Position = ({Address.Position.X},{Address.Position.Y})\n";
 
             toolTip.SetToolTip(pictureBox1, msg);
         }

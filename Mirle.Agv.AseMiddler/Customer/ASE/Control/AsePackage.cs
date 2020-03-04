@@ -49,6 +49,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>(asePackageConfig.PspConnectionConfigFilePath);
             aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>(asePackageConfig.AseBatteryConfigFilePath);
             aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>(asePackageConfig.AseMoveConfigFilePath);
+
+            if (theVehicle.IsSimulation)
+            {
+                aseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
+                aseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
+                aseMoveConfig.WatchPositionInterval = 200;
+            }
         }       
 
         private void InitialWrapper()
@@ -108,6 +115,31 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void SetLocalDateTime()
+        {
+            try
+            {
+                string timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                PrimarySend("P15", timeStamp);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void AllStatusReport()
+        {
+            try
+            {
+                PrimarySend("P31", "0");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
         #endregion
 
         #region PrimaryReceived
@@ -126,6 +158,73 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void AutoReplyFromPsMessageMap(PSTransactionXClass psTransaction)
+        {
+            try
+            {
+                if (!IsPrimaryEmpty(psTransaction))
+                {
+                    if (IsPrimaryInMessageMap(psTransaction))
+                    {
+                        ReplyFromMsgMap(psTransaction);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ReplyFromMsgMap(PSTransactionXClass psTransaction)
+        {
+            try
+            {
+                PSMessageXClass primaryMessage = psTransaction.PSPrimaryMessage;
+                int primaryNumber = int.Parse(primaryMessage.Number);
+                string secondaryTypeNumber = "S" + (primaryNumber + 1).ToString("00");
+
+                if (psMessageMap.ContainsKey(secondaryTypeNumber))
+                {
+                    psTransaction.PSSecondaryMessage = psMessageMap[secondaryTypeNumber];
+                    psWrapper.SecondarySent(ref psTransaction);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private bool IsPrimaryInMessageMap(PSTransactionXClass psTransaction)
+        {
+            try
+            {
+                if (psMessageMap.Count <= 0)
+                {
+                    throw new Exception("PsMessageMap is empty");
+                }
+
+                PSMessageXClass primaryMessage = psTransaction.PSPrimaryMessage;
+                if (primaryMessage.Type.ToUpper() != "P")
+                {
+                    throw new Exception($"PrimaryReceive transaction.primaryMessage.type is not P.[{primaryMessage.Type}]");
+                }
+
+                return psMessageMap.ContainsKey(primaryMessage.Type + primaryMessage.Number);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                return false;
+            }
+        }
+
+        private bool IsPrimaryEmpty(PSTransactionXClass psTransaction)
+        {
+            return psTransaction.PSPrimaryMessage == null;
         }
 
         private void OnPrimaryReceived(PSTransactionXClass transaction)
@@ -197,14 +296,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 switch (aseArrival)
                 {
                     case EnumAseArrival.Fail:
-                        aseMoveControl.OnMoveFinish(EnumMoveComplete.Fail);
+                        aseMoveControl.MoveFinished(EnumMoveComplete.Fail);
                         break;
                     case EnumAseArrival.Arrival:
                         ArrivalPosition(psMessage);
                         break;
                     case EnumAseArrival.EndArrival:
                         ArrivalPosition(psMessage);
-                        aseMoveControl.OnMoveFinish(EnumMoveComplete.Success);
+                        aseMoveControl.MoveFinished(EnumMoveComplete.Success);
                         break;
                     default:
                         break;
@@ -215,7 +314,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
+        }        
 
         private void ArrivalPosition(string psMessage)
         {
@@ -378,6 +477,15 @@ namespace Mirle.Agv.AseMiddler.Controller
             OnMessageShowEvent?.Invoke(this, msg);
         }
 
+        public void SetVehicleAutoScenario()
+        {
+            SetLocalDateTime();
+            AllStatusReport();
+            aseMoveControl.SendPositionReportRequest();
+            aseBatteryControl.SendBatteryStatusRequest();
+
+        }
+
         #endregion
 
         #region SecondarySend
@@ -513,73 +621,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         #endregion
 
         #region PsWrapper
-
-        private void AutoReplyFromPsMessageMap(PSTransactionXClass psTransaction)
-        {
-            try
-            {
-                if (!IsPrimaryEmpty(psTransaction))
-                {
-                    if (IsPrimaryInMessageMap(psTransaction))
-                    {
-                        ReplyFromMsgMap(psTransaction);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void ReplyFromMsgMap(PSTransactionXClass psTransaction)
-        {
-            try
-            {
-                PSMessageXClass primaryMessage = psTransaction.PSPrimaryMessage;
-                int primaryNumber = int.Parse(primaryMessage.Number);
-                string secondaryTypeNumber = "S" + (primaryNumber + 1).ToString("00");
-
-                if (psMessageMap.ContainsKey(secondaryTypeNumber))
-                {
-                    psTransaction.PSSecondaryMessage = psMessageMap[secondaryTypeNumber];
-                    psWrapper.SecondarySent(ref psTransaction);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private bool IsPrimaryInMessageMap(PSTransactionXClass psTransaction)
-        {
-            try
-            {
-                if (psMessageMap.Count <= 0)
-                {
-                    throw new Exception("PsMessageMap is empty");
-                }
-
-                PSMessageXClass primaryMessage = psTransaction.PSPrimaryMessage;
-                if (primaryMessage.Type.ToUpper() != "P")
-                {
-                    throw new Exception($"PrimaryReceive transaction.primaryMessage.type is not P.[{primaryMessage.Type}]");
-                }
-
-                return psMessageMap.ContainsKey(primaryMessage.Type + primaryMessage.Number);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return false;
-            }
-        }
-
-        private bool IsPrimaryEmpty(PSTransactionXClass psTransaction)
-        {
-            return psTransaction.PSPrimaryMessage == null;
-        }
 
         private void PsWrapper_OnPrimarySent(ref PSTransactionXClass transaction)
         {
