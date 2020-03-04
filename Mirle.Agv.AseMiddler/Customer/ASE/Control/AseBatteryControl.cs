@@ -158,6 +158,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (aseBatteryStatus.Voltage >= aseBatteryConfig.CcmodeStopVoltage)
                 {
+                    StopCharge();
                     FullCharge();
                     return;
                 }
@@ -167,6 +168,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (tempPercentage >= 100)
                 {
+                    StopCharge();
                     FullCharge();
                     return;
                 }
@@ -191,14 +193,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void FullCharge()
+        public void FullCharge()
         {
             try
             {
-                StopCharge();
                 AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
-                aseBatteryStatus.Percentage = 100;
-                theVehicle.AseBatteryStatus = aseBatteryStatus;
+                theVehicle.AseBatteryStatus.Percentage = 100;
+
                 aseBatteryConfig.CcmodeAh = aseBatteryStatus.Ah;
                 aseBatteryConfig.CcmodeCounter++;
                 if (aseBatteryConfig.CcmodeCounter >= aseBatteryConfig.AhResetCcmodeCounter)
@@ -214,7 +215,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void SendResetCcmodeAh()
         {
-            throw new NotImplementedException();
+             //TODO : Set AGVL battery ah to 0
+             //TODO : After AGVL set ah to 0, fix middler ccmode ah to 0 in case ah<->percentage error
         }
 
         private PSTransactionXClass PrimarySend(string index, string message)

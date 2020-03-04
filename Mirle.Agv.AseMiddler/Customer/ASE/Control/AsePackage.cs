@@ -279,6 +279,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                     case "43":
                         ReceiveMoveAppendArrivalReport(transaction.PSPrimaryMessage.PSMessage);
                         break;
+                    case "53":
+                        ReceiveChargeStopReport(transaction.PSPrimaryMessage.PSMessage);
+                        break;
                     case "61":
                         AlarmReport(transaction.PSPrimaryMessage.PSMessage);
                         break;
@@ -290,6 +293,27 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     default:
                         break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ReceiveChargeStopReport(string psMessage)
+        {
+            try
+            {
+                string isFullCharge = psMessage.Substring(0, 1);
+                if (isFullCharge=="0")
+                {
+                    AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
+                    aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(1, 9));
+                    aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(10, 4)) * 0.01;
+                    aseBatteryStatus.Temperature = double.Parse(psMessage.Substring(14, 3));
+                    theVehicle.AseBatteryStatus = aseBatteryStatus;
+                    aseBatteryControl.FullCharge();
                 }
             }
             catch (Exception ex)
