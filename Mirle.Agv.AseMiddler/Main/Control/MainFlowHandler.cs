@@ -775,10 +775,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
                 GoNextTransferStep = true;
                 ResumeVisitTransferSteps();
-                asePackage.InstallTransferCommand(agvcTransCmd);
+                asePackage.SetTransferCommandInfoRequest();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.AgvcTransCommandType}命令{agvcTransCmd.CommandId} 確認。";
                 OnMessageShowEvent?.Invoke(this, okMsg);
-                OnTransferCommandCheckedEvent?.Invoke(this, agvcTransCmd);
+                OnTransferCommandCheckedEvent?.Invoke(this, agvcTransCmd);                
             }
             catch (Exception ex)
             {
@@ -1439,6 +1439,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     agvcConnector.NoCommand();
                 }
+                asePackage.SetTransferCommandInfoRequest();
             }
             catch (Exception ex)
             {

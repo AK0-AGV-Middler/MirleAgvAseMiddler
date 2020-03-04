@@ -28,19 +28,19 @@ namespace Mirle.Agv.AseMiddler.Controller
         private AseMoveConfig aseMoveConfig = new AseMoveConfig();
         private Vehicle theVehicle = Vehicle.Instance;
         private Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
-      
+
         public event EventHandler<string> OnMessageShowEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
 
         public AsePackage(Dictionary<string, string> portNumberMap)
         {
-            LoadConfigs();   
+            LoadConfigs();
             InitialWrapper();
             aseMoveControl = new AseMoveControl(psWrapper, aseMoveConfig);
             aseRobotControl = new AseRobotControl(psWrapper, portNumberMap);
-            aseBatteryControl = new AseBatteryControl(psWrapper,aseBatteryConfig);
+            aseBatteryControl = new AseBatteryControl(psWrapper, aseBatteryConfig);
             aseBuzzerControl = new AseBuzzerControl(psWrapper);
-        }        
+        }
 
         private void LoadConfigs()
         {
@@ -56,7 +56,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
                 aseMoveConfig.WatchPositionInterval = 200;
             }
-        }       
+        }
 
         private void InitialWrapper()
         {
@@ -96,25 +96,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region PrimarySend
 
-        public void InstallTransferCommand(AgvcTransCmd agvcTransCmd)
-        {
-            try
-            {
-                string cmdId = agvcTransCmd.CommandId.Substring(0, 20);
-                string fromPortNumber = agvcTransCmd.LoadAddressId.Substring(0, 4);
-                string toPortNumber = agvcTransCmd.UnloadAddressId.Substring(0, 4);
-                string lotId = agvcTransCmd.LotId.PadLeft(39, '0');
-                string cstId = agvcTransCmd.CassetteId;
-
-                string message = string.Concat(cmdId, fromPortNumber, toPortNumber, lotId, cstId);
-                PrimarySend("P37", message);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
         public void SetLocalDateTime()
         {
             try
@@ -137,6 +118,40 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void SetTransferCommandInfoRequest()
+        {
+            try
+            {
+                string transferCommandInfo = GetTransferCommandInfo();
+
+                PrimarySend("P37", transferCommandInfo);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private string GetTransferCommandInfo()
+        {
+            try
+            {
+                List<AgvcTransCmd> agvcTransCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+                bool isCommanding = agvcTransCmds.Count > 0;
+                string commandId = isCommanding ? agvcTransCmds[0].CommandId.PadLeft(20, '0') : "";
+                string fromPortNum = isCommanding ? agvcTransCmds[0].LoadAddressId.PadLeft(4, '0').Substring(0, 4) : "";
+                string toPortNum = isCommanding ? agvcTransCmds[0].UnloadAddressId.PadLeft(4, '0').Substring(0, 4) : "";
+                string lotId = isCommanding ? agvcTransCmds[0].LotId.PadLeft(40, '0').Substring(0, 40) : "";
+                string cassetteId = isCommanding ? agvcTransCmds[0].CassetteId : "";
+                return string.Concat(commandId, fromPortNum, toPortNum, lotId, cassetteId);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                return "";
             }
         }
 
@@ -314,7 +329,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }        
+        }
 
         private void ArrivalPosition(string psMessage)
         {
@@ -483,7 +498,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             AllStatusReport();
             aseMoveControl.SendPositionReportRequest();
             aseBatteryControl.SendBatteryStatusRequest();
-
+            SetTransferCommandInfoRequest();
         }
 
         #endregion
