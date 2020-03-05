@@ -29,6 +29,7 @@ namespace Mirle.Agv.AseMiddler.View
         private AlarmHandler alarmHandler;
         private AseMoveControlForm aseMoveControlForm;
         private AseRobotControlForm aseRobotControlForm;
+        private AseAgvlConnectorForm aseAgvlConnectorForm;
         private WarningForm warningForm;
         private ConfigForm configForm;
         private Panel panelLeftUp;
@@ -147,6 +148,7 @@ namespace Mirle.Agv.AseMiddler.View
 
             InitialAseMoveControlForm();
             InitialAseRobotControlForm();
+            InitialAseAgvlConnectorForm();
         }
 
         
@@ -221,9 +223,9 @@ namespace Mirle.Agv.AseMiddler.View
             theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
             mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
             mainFlowHandler.GetAseMoveControl().OnMoveFinishedEvent += AseMoveControl_OnMoveFinishEvent;
-        }
 
-
+            asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
+        }        
 
         private void InitialSoc()
         {
@@ -392,6 +394,11 @@ namespace Mirle.Agv.AseMiddler.View
         {
             IsAgvlConnect = e;
         }
+
+        private void AsePackage_ImportantPspLog(object sender, string e)
+        {
+            ShowMsgOnMainForm(this, e);
+        }        
 
         private void ShowMsgOnMainForm(object sender, string msg)
         {
@@ -614,6 +621,31 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void AgvlConnectorPage_Click(object sender, EventArgs e)
+        {
+            if (aseAgvlConnectorForm.IsDisposed)
+            {
+                InitialAseAgvlConnectorForm();
+            }
+            if (aseAgvlConnectorForm != null)
+            {
+                aseAgvlConnectorForm.BringToFront();
+                aseAgvlConnectorForm.Show();
+            }
+        }
+
+        private void InitialAseAgvlConnectorForm()
+        {
+            aseAgvlConnectorForm = new AseAgvlConnectorForm(asePackage);
+            aseAgvlConnectorForm.SendCommand += AseAgvlConnectorForm_SendCommand;
+            aseAgvlConnectorForm.OnException += AseControlForm_OnException;
+        }
+
+        private void AseAgvlConnectorForm_SendCommand(object sender, string e)
+        {
+            throw new NotImplementedException();
         }
 
         private void AgvcConnectorPage_Click(object sender, EventArgs e)
@@ -1940,5 +1972,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             asePackage.aseMoveControl.SendPositionReportRequest();
         }
+
+       
     }
 }

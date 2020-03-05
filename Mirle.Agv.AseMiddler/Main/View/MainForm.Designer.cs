@@ -114,6 +114,7 @@
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
+            this.AgvlConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -218,7 +219,8 @@
             this.AlarmPage,
             this.AgvcConnectorPage,
             this.RobotPage,
-            this.MovePage});
+            this.MovePage,
+            this.AgvlConnectorPage});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.模式ToolStripMenuItem.Text = "模式";
@@ -226,35 +228,35 @@
             // VehicleStatusPage
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(161, 22);
+            this.VehicleStatusPage.Size = new System.Drawing.Size(180, 22);
             this.VehicleStatusPage.Text = "Parameter";
             this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(161, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(180, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // AgvcConnectorPage
             // 
             this.AgvcConnectorPage.Name = "AgvcConnectorPage";
-            this.AgvcConnectorPage.Size = new System.Drawing.Size(161, 22);
+            this.AgvcConnectorPage.Size = new System.Drawing.Size(180, 22);
             this.AgvcConnectorPage.Text = "AgvcConnector";
             this.AgvcConnectorPage.Click += new System.EventHandler(this.AgvcConnectorPage_Click);
             // 
             // RobotPage
             // 
             this.RobotPage.Name = "RobotPage";
-            this.RobotPage.Size = new System.Drawing.Size(161, 22);
+            this.RobotPage.Size = new System.Drawing.Size(180, 22);
             this.RobotPage.Text = "Robot";
             this.RobotPage.Click += new System.EventHandler(this.RobotControlPage_Click);
             // 
             // MovePage
             // 
             this.MovePage.Name = "MovePage";
-            this.MovePage.Size = new System.Drawing.Size(161, 22);
+            this.MovePage.Size = new System.Drawing.Size(180, 22);
             this.MovePage.Text = "Move";
             this.MovePage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
             // 
@@ -269,7 +271,7 @@
             // 模擬測試ToolStripMenuItem
             // 
             this.模擬測試ToolStripMenuItem.Name = "模擬測試ToolStripMenuItem";
-            this.模擬測試ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.模擬測試ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.模擬測試ToolStripMenuItem.Text = "模擬測試";
             this.模擬測試ToolStripMenuItem.Click += new System.EventHandler(this.模擬測試ToolStripMenuItem_Click);
             // 
@@ -1041,6 +1043,13 @@
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
+            // AgvlConnectorPage
+            // 
+            this.AgvlConnectorPage.Name = "AgvlConnectorPage";
+            this.AgvlConnectorPage.Size = new System.Drawing.Size(180, 22);
+            this.AgvlConnectorPage.Text = "AgvlConnector";
+            this.AgvlConnectorPage.Click += new System.EventHandler(this.AgvlConnectorPage_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1181,5 +1190,6 @@
         private System.Windows.Forms.RadioButton radAgvlOnline;
         private System.Windows.Forms.RadioButton radAgvlOffline;
         private System.Windows.Forms.Button btnRefreshPosition;
+        private System.Windows.Forms.ToolStripMenuItem AgvlConnectorPage;
     }
 }

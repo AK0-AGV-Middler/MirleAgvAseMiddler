@@ -31,12 +31,18 @@ namespace Mirle.Agv.AseMiddler
         Right
     }
 
-    public enum EnumPermitDirection
+    public enum EnumCommandDirection
     {
         None,
         Forward,
         Backward
-    }    
+    }
+
+    public enum PsMessageType
+    {
+        P,
+        S
+    }
 
     public enum EnumTransferStepType
     {

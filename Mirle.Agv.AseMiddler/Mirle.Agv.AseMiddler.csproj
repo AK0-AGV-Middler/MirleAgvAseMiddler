@@ -124,6 +124,12 @@
     <Compile Include="Customer\ASE\View\AseMoveControlForm.Designer.cs">
       <DependentUpon>AseMoveControlForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Customer\ASE\View\AseAgvlConnectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Customer\ASE\View\AseAgvlConnectorForm.Designer.cs">
+      <DependentUpon>AseAgvlConnectorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Customer\ASE\View\AseRobotControlForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -241,6 +247,9 @@
     </Compile>
     <EmbeddedResource Include="Customer\ASE\View\AseMoveControlForm.resx">
       <DependentUpon>AseMoveControlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Customer\ASE\View\AseAgvlConnectorForm.resx">
+      <DependentUpon>AseAgvlConnectorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Customer\ASE\View\AseRobotControlForm.resx">
       <DependentUpon>AseRobotControlForm.cs</DependentUpon>

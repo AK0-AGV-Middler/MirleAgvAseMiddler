@@ -17,14 +17,14 @@ namespace Mirle.Agv.AseMiddler.Model
         public double VehicleDistanceSinceHead { get; set; }
         public double Speed { get; set; }
         public EnumSectionType Type { get; set; } = EnumSectionType.None;
-        public EnumPermitDirection CmdDirection { get; set; } = EnumPermitDirection.None;
+        public EnumCommandDirection CmdDirection { get; set; } = EnumCommandDirection.None;
         public List<MapSectionBeamDisable> BeamSensorDisables { get; set; } = new List<MapSectionBeamDisable>();
         public List<MapAddress> InsideAddresses { get; set; } = new List<MapAddress>();
 
-        public EnumPermitDirection PermitDirectionParse(string v)
+        public EnumCommandDirection PermitDirectionParse(string v)
         {
             v = v.Trim();
-            return (EnumPermitDirection)Enum.Parse(typeof(EnumPermitDirection), v);
+            return (EnumCommandDirection)Enum.Parse(typeof(EnumCommandDirection), v);
         }
 
         public EnumSectionType SectionTypeParse(string v)

@@ -2040,11 +2040,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             reserveInfos.Clear();
             ReserveInfo reserveInfo = new ReserveInfo();
             reserveInfo.ReserveSectionID = mapSection.Id;
-            if (mapSection.CmdDirection == EnumPermitDirection.Backward)
+            if (mapSection.CmdDirection == EnumCommandDirection.Backward)
             {
                 reserveInfo.DriveDirction = DriveDirction.DriveDirReverse;
             }
-            else if (mapSection.CmdDirection == EnumPermitDirection.None)
+            else if (mapSection.CmdDirection == EnumCommandDirection.None)
             {
                 reserveInfo.DriveDirction = DriveDirction.DriveDirNone;
             }
@@ -2552,17 +2552,17 @@ namespace Mirle.Agv.AseMiddler.Controller
                     return VHModeStatus.None;
             }
         }
-        private DriveDirction DriveDirctionParse(EnumPermitDirection cmdDirection)
+        private DriveDirction DriveDirctionParse(EnumCommandDirection cmdDirection)
         {
             try
             {
                 switch (cmdDirection)
                 {
-                    case EnumPermitDirection.None:
+                    case EnumCommandDirection.None:
                         return DriveDirction.DriveDirNone;
-                    case EnumPermitDirection.Forward:
+                    case EnumCommandDirection.Forward:
                         return DriveDirction.DriveDirForward;
-                    case EnumPermitDirection.Backward:
+                    case EnumCommandDirection.Backward:
                         return DriveDirction.DriveDirReverse;
                     default:
                         return DriveDirction.DriveDirNone;

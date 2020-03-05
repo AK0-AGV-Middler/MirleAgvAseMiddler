@@ -27,10 +27,13 @@ namespace Mirle.Agv.AseMiddler.Controller
         private AseBatteryConfig aseBatteryConfig = new AseBatteryConfig();
         private AseMoveConfig aseMoveConfig = new AseMoveConfig();
         private Vehicle theVehicle = Vehicle.Instance;
-        private Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
+        public Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
 
         public event EventHandler<string> OnMessageShowEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
+        public event EventHandler<string> AllPspLog;
+        public event EventHandler<string> ImportantPspLog;
+
 
         public AsePackage(Dictionary<string, string> portNumberMap)
         {
@@ -95,6 +98,20 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
 
         #region PrimarySend
+
+        private void PsWrapper_OnPrimarySent(ref PSTransactionXClass transaction)
+        {
+            try
+            {
+                string msg = $"PrimarySent : [{transaction.PSPrimaryMessage.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
 
         public void SetLocalDateTime()
         {
@@ -164,6 +181,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string msg = $"PrimaryReceived : [{transaction.PSPrimaryMessage.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
                 LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
 
                 OnPrimaryReceived(transaction);
@@ -324,7 +342,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void ShowTestMsg()
         {
-            OnMessageShowEvent?.Invoke(this, "A test msg from AGVL.");
+            ImportantPspLog?.Invoke(this, "A test msg from AGVL.");
         }
 
         private void ReceiveMoveAppendArrivalReport(string psMessage)
@@ -408,7 +426,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 theVehicle.IsCharging = IsValueTrue(isCharging);
 
                 string msg = $"充電狀態改變[{isCharging}]";
-                OnMessageShowEvent?.Invoke(this, msg);
+                ImportantPspLog?.Invoke(this, msg);
             }
             catch (Exception ex)
             {
@@ -506,14 +524,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             theVehicle.AutoState = EnumAutoState.Manual;
             string msg = "車輛狀態切換 : Manual";
-            OnMessageShowEvent?.Invoke(this, msg);
+            ImportantPspLog?.Invoke(this, msg);
         }
 
         private void SetVehicleAuto()
         {
             theVehicle.AutoState = EnumAutoState.Auto;
             string msg = "車輛狀態切換 : Auto";
-            OnMessageShowEvent?.Invoke(this, msg);
+            ImportantPspLog?.Invoke(this, msg);
         }
 
         public void SetVehicleAutoScenario()
@@ -534,6 +552,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string msg = $"SecodarySent : [{transaction.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
                 LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
             }
             catch (Exception ex)
@@ -647,6 +666,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string msg = $"SecodaryReceived : [{transaction.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
+
                 LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
 
                 OnSecondaryReceived(transaction);
@@ -661,26 +682,13 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region PsWrapper
 
-        private void PsWrapper_OnPrimarySent(ref PSTransactionXClass transaction)
-        {
-            try
-            {
-                string msg = $"PrimarySent : [{transaction.PSPrimaryMessage.ToString()}]";
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
         private void PsWrapper_OnConnectionStateChange(enumConnectState state)
         {
             try
             {
                 string msg = $"PsWrapper connection state changed.[{state}]";
                 LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                OnMessageShowEvent?.Invoke(this, msg);
+                ImportantPspLog?.Invoke(this, msg);               
                 OnConnectionChangeEvent?.Invoke(this, psWrapper.IsConnected());
             }
             catch (Exception ex)
@@ -689,7 +697,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private PSTransactionXClass PrimarySend(string index, string message)
+        public PSTransactionXClass PrimarySend(string index, string message)
         {
             try
             {

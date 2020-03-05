@@ -234,7 +234,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
 
-                asePackage.OnMessageShowEvent += AsePackage_OnMessageShowEvent;
                 asePackage.OnConnectionChangeEvent += AsePackage_OnConnectionChangeEvent;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
@@ -247,6 +246,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
+
+        
 
         private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
         {
@@ -1904,7 +1905,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
 
                     mapSection = theMapInfo.sectionMap[sectionId];
-                    mapSection.CmdDirection = addressId == mapSection.TailAddress.Id ? EnumPermitDirection.Forward : EnumPermitDirection.Backward;
+                    mapSection.CmdDirection = addressId == mapSection.TailAddress.Id ? EnumCommandDirection.Forward : EnumCommandDirection.Backward;
                     theVehicle.AseMovingGuide.MovingSections.Add(mapSection);
                 }
             }
@@ -1984,7 +1985,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             MapSection section = aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex];
             AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
             aseMoveStatus.LastSection = section;
-            if (section.CmdDirection == EnumPermitDirection.Forward)
+            if (section.CmdDirection == EnumCommandDirection.Forward)
             {
                 aseMoveStatus.LastAddress = section.HeadAddress;
                 aseMoveStatus.LastSection.VehicleDistanceSinceHead = 0;
