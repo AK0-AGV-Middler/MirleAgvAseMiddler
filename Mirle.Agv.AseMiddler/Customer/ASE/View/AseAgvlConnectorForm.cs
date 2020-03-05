@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Controller;
 using PSDriver.PSDriver;
+using Mirle.Tools;
+using System.Reflection;
 
 namespace Mirle.Agv.AseMiddler.View
 {
@@ -19,7 +21,7 @@ namespace Mirle.Agv.AseMiddler.View
         private AsePackage asePackage;
 
         public event EventHandler<string> OnException;
-        public event EventHandler<string> SendCommand;
+        private MirleLogger mirleLogger = MirleLogger.Instance;
 
         public AseAgvlConnectorForm(AsePackage asePackage)
         {
@@ -82,6 +84,7 @@ namespace Mirle.Agv.AseMiddler.View
         private void AsePackage_AllPspLog(object sender, string e)
         {
             AppendPspLogMsg(e);
+            LogPspLog(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, e);
         }
 
         private void AppendPspLogMsg(string msg)
@@ -116,5 +119,11 @@ namespace Mirle.Agv.AseMiddler.View
                 OnException?.Invoke(this, ex.StackTrace);
             }
         }
+
+        private void LogPspLog(string classMethodName, string msg)
+        {
+            mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
+        }
+
     }
 }

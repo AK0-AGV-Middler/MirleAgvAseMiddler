@@ -639,7 +639,6 @@ namespace Mirle.Agv.AseMiddler.View
         private void InitialAseAgvlConnectorForm()
         {
             aseAgvlConnectorForm = new AseAgvlConnectorForm(asePackage);
-            aseAgvlConnectorForm.SendCommand += AseAgvlConnectorForm_SendCommand;
             aseAgvlConnectorForm.OnException += AseControlForm_OnException;
         }
 
@@ -1740,7 +1739,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-
         private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -1956,7 +1954,6 @@ namespace Mirle.Agv.AseMiddler.View
             string savename = Path.Combine(Environment.CurrentDirectory, "Log", timeStamp);
             image.Save(savename);
         }
-
 
         private void LogException(string classMethodName, string exMsg)
         {
