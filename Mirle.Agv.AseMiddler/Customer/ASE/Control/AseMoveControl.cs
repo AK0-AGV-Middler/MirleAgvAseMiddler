@@ -117,14 +117,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }       
+        }
 
-        public void PartMove(bool isEnd, MapPosition mapPosition, int headAngle, int speed)
+        public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed)
         {
             ResumePositionWatcher();
             try
             {
-                string message = isEnd ? "1" : "0";
+                string message = ((int)addressDirection).ToString();
                 string positionX = GetPositionString(mapPosition.X);
                 string positionY = GetPositionString(mapPosition.Y);
                 string thetaString = GetNumberToString(headAngle, 3);

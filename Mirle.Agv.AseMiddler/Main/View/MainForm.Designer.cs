@@ -45,6 +45,7 @@
             this.AgvcConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
             this.RobotPage = new System.Windows.Forms.ToolStripMenuItem();
             this.MovePage = new System.Windows.Forms.ToolStripMenuItem();
+            this.AgvlConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.模擬測試ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -89,11 +90,6 @@
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radAgvcOnline = new System.Windows.Forms.RadioButton();
             this.radAgvcOffline = new System.Windows.Forms.RadioButton();
-            this.txtAgvcConnectorAbnormalReason = new System.Windows.Forms.Label();
-            this.txtBatterysAbnormalReason = new System.Windows.Forms.Label();
-            this.txtRobotAbnormalReason = new System.Windows.Forms.Label();
-            this.txtMainFlowAbnormalReason = new System.Windows.Forms.Label();
-            this.txtMoveControlAbnormalReason = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtBatterysAbnormal = new System.Windows.Forms.Label();
             this.txtMainFlowAbnormal = new System.Windows.Forms.Label();
@@ -114,7 +110,6 @@
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
-            this.AgvlConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -228,37 +223,44 @@
             // VehicleStatusPage
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(180, 22);
+            this.VehicleStatusPage.Size = new System.Drawing.Size(161, 22);
             this.VehicleStatusPage.Text = "Parameter";
             this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(180, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(161, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // AgvcConnectorPage
             // 
             this.AgvcConnectorPage.Name = "AgvcConnectorPage";
-            this.AgvcConnectorPage.Size = new System.Drawing.Size(180, 22);
+            this.AgvcConnectorPage.Size = new System.Drawing.Size(161, 22);
             this.AgvcConnectorPage.Text = "AgvcConnector";
             this.AgvcConnectorPage.Click += new System.EventHandler(this.AgvcConnectorPage_Click);
             // 
             // RobotPage
             // 
             this.RobotPage.Name = "RobotPage";
-            this.RobotPage.Size = new System.Drawing.Size(180, 22);
+            this.RobotPage.Size = new System.Drawing.Size(161, 22);
             this.RobotPage.Text = "Robot";
             this.RobotPage.Click += new System.EventHandler(this.RobotControlPage_Click);
             // 
             // MovePage
             // 
             this.MovePage.Name = "MovePage";
-            this.MovePage.Size = new System.Drawing.Size(180, 22);
+            this.MovePage.Size = new System.Drawing.Size(161, 22);
             this.MovePage.Text = "Move";
             this.MovePage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
+            // 
+            // AgvlConnectorPage
+            // 
+            this.AgvlConnectorPage.Name = "AgvlConnectorPage";
+            this.AgvlConnectorPage.Size = new System.Drawing.Size(161, 22);
+            this.AgvlConnectorPage.Text = "AgvlConnector";
+            this.AgvlConnectorPage.Click += new System.EventHandler(this.AgvlConnectorPage_Click);
             // 
             // 工程師ToolStripMenuItem
             // 
@@ -271,7 +273,7 @@
             // 模擬測試ToolStripMenuItem
             // 
             this.模擬測試ToolStripMenuItem.Name = "模擬測試ToolStripMenuItem";
-            this.模擬測試ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.模擬測試ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
             this.模擬測試ToolStripMenuItem.Text = "模擬測試";
             this.模擬測試ToolStripMenuItem.Click += new System.EventHandler(this.模擬測試ToolStripMenuItem_Click);
             // 
@@ -308,8 +310,6 @@
             // 
             // splitContainer3.Panel2
             // 
-            this.splitContainer3.Panel2.Controls.Add(this.btnRefreshPosition);
-            this.splitContainer3.Panel2.Controls.Add(this.btnPrintScreen);
             this.splitContainer3.Panel2.Controls.Add(this.tbxDebugLogMsg);
             this.splitContainer3.Size = new System.Drawing.Size(1178, 1017);
             this.splitContainer3.SplitterDistance = 677;
@@ -328,7 +328,7 @@
             // 
             // btnRefreshPosition
             // 
-            this.btnRefreshPosition.Location = new System.Drawing.Point(838, 11);
+            this.btnRefreshPosition.Location = new System.Drawing.Point(162, 101);
             this.btnRefreshPosition.Name = "btnRefreshPosition";
             this.btnRefreshPosition.Size = new System.Drawing.Size(126, 70);
             this.btnRefreshPosition.TabIndex = 60;
@@ -340,7 +340,7 @@
             // 
             this.btnPrintScreen.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnPrintScreen.ForeColor = System.Drawing.Color.OrangeRed;
-            this.btnPrintScreen.Location = new System.Drawing.Point(970, 10);
+            this.btnPrintScreen.Location = new System.Drawing.Point(162, 28);
             this.btnPrintScreen.Name = "btnPrintScreen";
             this.btnPrintScreen.Size = new System.Drawing.Size(205, 71);
             this.btnPrintScreen.TabIndex = 59;
@@ -385,12 +385,9 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
-            this.splitContainer2.Panel2.Controls.Add(this.txtAgvcConnectorAbnormalReason);
-            this.splitContainer2.Panel2.Controls.Add(this.txtBatterysAbnormalReason);
-            this.splitContainer2.Panel2.Controls.Add(this.txtRobotAbnormalReason);
-            this.splitContainer2.Panel2.Controls.Add(this.txtMainFlowAbnormalReason);
-            this.splitContainer2.Panel2.Controls.Add(this.txtMoveControlAbnormalReason);
+            this.splitContainer2.Panel2.Controls.Add(this.btnRefreshPosition);
             this.splitContainer2.Panel2.Controls.Add(this.groupBox3);
+            this.splitContainer2.Panel2.Controls.Add(this.btnPrintScreen);
             this.splitContainer2.Panel2.Controls.Add(this.groupBox2);
             this.splitContainer2.Size = new System.Drawing.Size(722, 1017);
             this.splitContainer2.SplitterDistance = 660;
@@ -801,61 +798,6 @@
             this.radAgvcOffline.UseVisualStyleBackColor = true;
             this.radAgvcOffline.CheckedChanged += new System.EventHandler(this.radAgvcOffline_CheckedChanged);
             // 
-            // txtAgvcConnectorAbnormalReason
-            // 
-            this.txtAgvcConnectorAbnormalReason.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.txtAgvcConnectorAbnormalReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtAgvcConnectorAbnormalReason.ForeColor = System.Drawing.Color.OrangeRed;
-            this.txtAgvcConnectorAbnormalReason.Location = new System.Drawing.Point(422, 28);
-            this.txtAgvcConnectorAbnormalReason.Name = "txtAgvcConnectorAbnormalReason";
-            this.txtAgvcConnectorAbnormalReason.Size = new System.Drawing.Size(290, 74);
-            this.txtAgvcConnectorAbnormalReason.TabIndex = 66;
-            this.txtAgvcConnectorAbnormalReason.Text = "通訊的理由";
-            // 
-            // txtBatterysAbnormalReason
-            // 
-            this.txtBatterysAbnormalReason.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.txtBatterysAbnormalReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtBatterysAbnormalReason.ForeColor = System.Drawing.Color.OrangeRed;
-            this.txtBatterysAbnormalReason.Location = new System.Drawing.Point(192, 203);
-            this.txtBatterysAbnormalReason.Name = "txtBatterysAbnormalReason";
-            this.txtBatterysAbnormalReason.Size = new System.Drawing.Size(331, 87);
-            this.txtBatterysAbnormalReason.TabIndex = 65;
-            this.txtBatterysAbnormalReason.Text = "電池卡住的理由";
-            // 
-            // txtRobotAbnormalReason
-            // 
-            this.txtRobotAbnormalReason.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.txtRobotAbnormalReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtRobotAbnormalReason.ForeColor = System.Drawing.Color.OrangeRed;
-            this.txtRobotAbnormalReason.Location = new System.Drawing.Point(422, 107);
-            this.txtRobotAbnormalReason.Name = "txtRobotAbnormalReason";
-            this.txtRobotAbnormalReason.Size = new System.Drawing.Size(292, 85);
-            this.txtRobotAbnormalReason.TabIndex = 64;
-            this.txtRobotAbnormalReason.Text = "上下貨卡住的理由";
-            // 
-            // txtMainFlowAbnormalReason
-            // 
-            this.txtMainFlowAbnormalReason.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.txtMainFlowAbnormalReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtMainFlowAbnormalReason.ForeColor = System.Drawing.Color.OrangeRed;
-            this.txtMainFlowAbnormalReason.Location = new System.Drawing.Point(162, 28);
-            this.txtMainFlowAbnormalReason.Name = "txtMainFlowAbnormalReason";
-            this.txtMainFlowAbnormalReason.Size = new System.Drawing.Size(250, 74);
-            this.txtMainFlowAbnormalReason.TabIndex = 63;
-            this.txtMainFlowAbnormalReason.Text = "流程卡住的理由";
-            // 
-            // txtMoveControlAbnormalReason
-            // 
-            this.txtMoveControlAbnormalReason.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.txtMoveControlAbnormalReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtMoveControlAbnormalReason.ForeColor = System.Drawing.Color.OrangeRed;
-            this.txtMoveControlAbnormalReason.Location = new System.Drawing.Point(162, 107);
-            this.txtMoveControlAbnormalReason.Name = "txtMoveControlAbnormalReason";
-            this.txtMoveControlAbnormalReason.Size = new System.Drawing.Size(250, 85);
-            this.txtMoveControlAbnormalReason.TabIndex = 37;
-            this.txtMoveControlAbnormalReason.Text = "走行卡住的理由";
-            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.txtBatterysAbnormal);
@@ -1043,13 +985,6 @@
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
-            // AgvlConnectorPage
-            // 
-            this.AgvlConnectorPage.Name = "AgvlConnectorPage";
-            this.AgvlConnectorPage.Size = new System.Drawing.Size(180, 22);
-            this.AgvlConnectorPage.Text = "AgvlConnector";
-            this.AgvlConnectorPage.Click += new System.EventHandler(this.AgvlConnectorPage_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1166,7 +1101,6 @@
         private System.Windows.Forms.ToolStripStatusLabel tstextLastPosY;
         private UcLabelTextBox ucCstId;
         private System.Windows.Forms.Timer timer_SetupInitialSoc;
-        private System.Windows.Forms.Label txtMoveControlAbnormalReason;
         private System.Windows.Forms.ToolStripMenuItem 模擬測試ToolStripMenuItem;
         private System.Windows.Forms.Label txtCannotAutoReason;
         private System.Windows.Forms.Label txtCanAuto;
@@ -1180,11 +1114,7 @@
         private System.Windows.Forms.Label txtAgvcConnectorAbnormal;
         private System.Windows.Forms.Label txtRobotAbnormal;
         private System.Windows.Forms.Label txtMoveControlAbnormal;
-        private System.Windows.Forms.Label txtMainFlowAbnormalReason;
-        private System.Windows.Forms.Label txtRobotAbnormalReason;
         private System.Windows.Forms.Button btnPrintScreen;
-        private System.Windows.Forms.Label txtBatterysAbnormalReason;
-        private System.Windows.Forms.Label txtAgvcConnectorAbnormalReason;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label txtAgvlConnection;
         private System.Windows.Forms.RadioButton radAgvlOnline;

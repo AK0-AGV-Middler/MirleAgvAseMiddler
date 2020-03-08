@@ -48,7 +48,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void LoadConfigs()
         {
             XmlHandler xmlHandler = new XmlHandler();
-            asePackageConfig = xmlHandler.ReadXml<AsePackageConfig>(@"AsePackageConfig.xml");
+            asePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
             pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>(asePackageConfig.PspConnectionConfigFilePath);
             aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>(asePackageConfig.AseBatteryConfigFilePath);
             aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>(asePackageConfig.AseMoveConfigFilePath);
@@ -324,7 +324,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string isFullCharge = psMessage.Substring(0, 1);
-                if (isFullCharge=="0")
+                if (isFullCharge == "0")
                 {
                     AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
                     aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(1, 9));
@@ -378,8 +378,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                aseMoveStatus.LastMapPosition.X = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-                aseMoveStatus.LastMapPosition.Y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+
+                double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
+                double y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+                aseMoveStatus.LastMapPosition = new MapPosition(x,y);
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
                 aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
                 aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
@@ -498,6 +500,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                     theVehicle.AseRobotStatus = aseRobotStatus;
                     aseRobotControl.OnRobotCommandFinish();
                 }
+                else
+                {
+                    theVehicle.AseRobotStatus = aseRobotStatus;
+                }               
             }
             catch (Exception ex)
             {
@@ -628,8 +634,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                 aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
-                aseMoveStatus.LastMapPosition.X = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-                aseMoveStatus.LastMapPosition.Y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+                double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
+                double y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+                aseMoveStatus.LastMapPosition = new MapPosition(x, y);
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
                 aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
                 aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
@@ -688,7 +695,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 string msg = $"PsWrapper connection state changed.[{state}]";
                 LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                ImportantPspLog?.Invoke(this, msg);               
+                ImportantPspLog?.Invoke(this, msg);
                 OnConnectionChangeEvent?.Invoke(this, psWrapper.IsConnected());
             }
             catch (Exception ex)
@@ -720,7 +727,16 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
         {
-            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, psMessage.ToString());
+            if (psMessage == null)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n PsMessage is null");
+
+            }
+            else
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
+
+            }
         }
 
         private void LoadPspConnectionConfig()

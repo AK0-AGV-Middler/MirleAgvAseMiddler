@@ -36,7 +36,8 @@
             this.numHeadAngle = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionY = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionX = new System.Windows.Forms.NumericUpDown();
-            this.cbIsEnd = new System.Windows.Forms.CheckBox();
+            this.boxAddressDirection = new System.Windows.Forms.ComboBox();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.tabControl1.SuspendLayout();
             this.pageMoveAppend.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -68,12 +69,12 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.boxAddressDirection);
             this.groupBox3.Controls.Add(this.btnSendMove);
             this.groupBox3.Controls.Add(this.numMoveSpeed);
             this.groupBox3.Controls.Add(this.numHeadAngle);
             this.groupBox3.Controls.Add(this.numMovePositionY);
             this.groupBox3.Controls.Add(this.numMovePositionX);
-            this.groupBox3.Controls.Add(this.cbIsEnd);
             this.groupBox3.Location = new System.Drawing.Point(6, 6);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(257, 170);
@@ -109,7 +110,7 @@
             0,
             0});
             // 
-            // numVehicleHeadAngle
+            // numHeadAngle
             // 
             this.numHeadAngle.Location = new System.Drawing.Point(6, 99);
             this.numHeadAngle.Maximum = new decimal(new int[] {
@@ -117,7 +118,7 @@
             0,
             0,
             0});
-            this.numHeadAngle.Name = "numVehicleHeadAngle";
+            this.numHeadAngle.Name = "numHeadAngle";
             this.numHeadAngle.Size = new System.Drawing.Size(117, 22);
             this.numHeadAngle.TabIndex = 3;
             this.numHeadAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -173,15 +174,13 @@
             0,
             0});
             // 
-            // cbIsEnd
+            // boxAddressDirection
             // 
-            this.cbIsEnd.AutoSize = true;
-            this.cbIsEnd.Location = new System.Drawing.Point(6, 21);
-            this.cbIsEnd.Name = "cbIsEnd";
-            this.cbIsEnd.Size = new System.Drawing.Size(89, 16);
-            this.cbIsEnd.TabIndex = 0;
-            this.cbIsEnd.Text = "Is End Point ?";
-            this.cbIsEnd.UseVisualStyleBackColor = true;
+            this.boxAddressDirection.FormattingEnabled = true;
+            this.boxAddressDirection.Location = new System.Drawing.Point(6, 17);
+            this.boxAddressDirection.Name = "boxAddressDirection";
+            this.boxAddressDirection.Size = new System.Drawing.Size(245, 20);
+            this.boxAddressDirection.TabIndex = 6;
             // 
             // AseMoveControlForm
             // 
@@ -194,7 +193,6 @@
             this.tabControl1.ResumeLayout(false);
             this.pageMoveAppend.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMoveSpeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeadAngle)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionY)).EndInit();
@@ -213,6 +211,7 @@
         private System.Windows.Forms.NumericUpDown numHeadAngle;
         private System.Windows.Forms.NumericUpDown numMovePositionY;
         private System.Windows.Forms.NumericUpDown numMovePositionX;
-        private System.Windows.Forms.CheckBox cbIsEnd;
+        private System.Windows.Forms.ComboBox boxAddressDirection;
+        private System.Windows.Forms.ColorDialog colorDialog1;
     }
 }

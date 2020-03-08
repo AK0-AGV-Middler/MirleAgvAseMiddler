@@ -1121,7 +1121,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-
         }
 
         public void TriggerConnect(bool v)

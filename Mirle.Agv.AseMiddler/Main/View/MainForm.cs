@@ -100,19 +100,9 @@ namespace Mirle.Agv.AseMiddler.View
             ResetImageAndPb();
             InitialSoc();
             InitialConnectionAndCarrierStatus();
-            InitialAbnormalMsgs();
             txtLastAlarm.Text = "";
             var msg = "MainForm : 讀取主畫面";
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-        }
-
-        private void InitialAbnormalMsgs()
-        {
-            txtMainFlowAbnormalReason.Text = "";
-            txtAgvcConnectorAbnormalReason.Text = "";
-            txtMoveControlAbnormalReason.Text = "";
-            txtRobotAbnormalReason.Text = "";
-            txtBatterysAbnormalReason.Text = "";
         }
 
         private void InitialForms()
@@ -149,9 +139,7 @@ namespace Mirle.Agv.AseMiddler.View
             InitialAseMoveControlForm();
             InitialAseRobotControlForm();
             InitialAseAgvlConnectorForm();
-        }
-
-        
+        }        
 
         private void InitialPaintingItems()
         {
@@ -682,7 +670,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                asePackage.aseMoveControl.PartMove(e.IsEnd, e.MapPosition, e.HeadAngle, e.Speed);
+                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed);
             }
             catch (Exception ex)
             {
@@ -1092,7 +1080,6 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateVehLocation();
                 UpdateCharginAndLoading();
                 //DrawReserveSections();
-                UpdateAbnormalText();
                 UpdateThreadPicture();
                 UpdateTbxAgvcTransCmd();
                 UpdateTbxTransferStep();
@@ -1107,126 +1094,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void SetAbnormalAllGreen()
-        {
-            try
-            {
-                txtMoveControlAbnormal.BackColor = Color.LightGreen;
-                txtMoveControlAbnormalReason.Text = "";
-
-                txtRobotAbnormal.BackColor = Color.LightGreen;
-                txtRobotAbnormalReason.Text = "";
-
-                txtBatterysAbnormal.BackColor = Color.LightGreen;
-                txtMoveControlAbnormalReason.Text = "";
-
-                txtMoveControlAbnormal.BackColor = Color.LightGreen;
-                txtMoveControlAbnormalReason.Text = "";
-
-                txtMoveControlAbnormal.BackColor = Color.LightGreen;
-                txtMoveControlAbnormalReason.Text = "";
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        private void UpdateAbnormalText()
-        {
-            try
-            {
-                if (mainFlowHandler.IsMoveStep())
-                {
-                    MoveControllerAbnormalReasonMsg = mainFlowHandler.GetMoveControlStopResult();
-                    if (string.IsNullOrEmpty(MoveControllerAbnormalReasonMsg))
-                    {
-                        txtMoveControlAbnormal.BackColor = Color.LightGreen;
-                        txtMoveControlAbnormalReason.Text = "";
-                    }
-                    else
-                    {
-                        txtMoveControlAbnormal.BackColor = Color.Pink;
-                        txtMoveControlAbnormalReason.Text = MoveControllerAbnormalReasonMsg;
-                        txtMoveControlAbnormalReason.BringToFront();
-                    }
-
-                }
-                else if (mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Load || mainFlowHandler.GetCurrentTransferStepType() == EnumTransferStepType.Unload)
-                {
-                    if (string.IsNullOrEmpty(RobotAbnormalReasonMsg))
-                    {
-                        txtRobotAbnormal.BackColor = Color.LightGreen;
-                        txtRobotAbnormalReason.Text = "";
-                    }
-                    else
-                    {
-                        txtRobotAbnormal.BackColor = Color.Pink;
-                        txtRobotAbnormalReason.Text = RobotAbnormalReasonMsg;
-                        txtRobotAbnormalReason.BringToFront();
-                    }
-
-                }
-                else
-                {
-                    MainFlowAbnormalReasonMsg = mainFlowHandler.MainFlowAbnormalMsg;
-                    if (string.IsNullOrEmpty(MainFlowAbnormalReasonMsg))
-                    {
-                        txtMainFlowAbnormal.BackColor = Color.LightGreen;
-                        txtMainFlowAbnormalReason.Text = "";
-                    }
-                    else
-                    {
-                        txtMainFlowAbnormal.BackColor = Color.Pink;
-                        txtMainFlowAbnormalReason.Text = MainFlowAbnormalReasonMsg;
-                        txtMainFlowAbnormalReason.BringToFront();
-                    }
-
-                    AgvcConnectorAbnormalReasonMsg = agvcConnector.AgvcConnectorAbnormalMsg;
-                    if (string.IsNullOrEmpty(AgvcConnectorAbnormalReasonMsg))
-                    {
-                        txtAgvcConnectorAbnormal.BackColor = Color.LightGreen;
-                        txtAgvcConnectorAbnormalReason.Text = "";
-                    }
-                    else
-                    {
-                        txtAgvcConnectorAbnormal.BackColor = Color.Pink;
-                        txtAgvcConnectorAbnormalReason.Text = AgvcConnectorAbnormalReasonMsg;
-                        txtAgvcConnectorAbnormalReason.BringToFront();
-                    }
-                }
-
-                if (string.IsNullOrEmpty(BatterysAbnormalReasonMsg))
-                {
-                    txtBatterysAbnormal.BackColor = Color.LightGreen;
-                    txtBatterysAbnormalReason.Text = "";
-                }
-                else
-                {
-                    txtBatterysAbnormal.BackColor = Color.Pink;
-                    txtBatterysAbnormalReason.Text = BatterysAbnormalReasonMsg;
-                    txtBatterysAbnormalReason.BringToFront();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        private void UpdateAgvFailResult()
-        {
-            try
-            {
-                var result = mainFlowHandler.GetMoveControlStopResult();
-                txtMoveControlAbnormalReason.Text = string.IsNullOrWhiteSpace(result) ? "" : result;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
+      
         public void UpdateAgvcConnection()
         {
             try

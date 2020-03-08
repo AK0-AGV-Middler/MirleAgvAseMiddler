@@ -34,7 +34,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             InitializeComponent();
             MakeSureMmfTextFileExist();
-            initialConfig = new XmlHandler().ReadXml<InitialConfig>(@"D:\AgvConfigs\Initial.xml");
+            initialConfig = new InitialConfig();
             mainFlowHandler = new MainFlowHandler();
             mainFlowHandler.OnComponentIntialDoneEvent += MainFlowHandler_OnComponentIntialDoneEvent;
         }

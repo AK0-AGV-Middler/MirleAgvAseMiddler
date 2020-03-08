@@ -19,6 +19,13 @@ namespace Mirle.Agv.AseMiddler.View
         public AseMoveControlForm()
         {
             InitializeComponent();
+            InitialBoxAddressDirection();
+        }
+
+        private void InitialBoxAddressDirection()
+        {
+            boxAddressDirection.DataSource = Enum.GetValues(typeof(EnumAddressDirection));
+            boxAddressDirection.SelectedItem = EnumAddressDirection.None;
         }
 
         private void btnSendMove_Click(object sender, EventArgs e)
@@ -37,7 +44,7 @@ namespace Mirle.Agv.AseMiddler.View
         private AseMoveEventArgs GetAseMoveEventArgsFromForm()
         {
             AseMoveEventArgs aseMoveEventArgs = new AseMoveEventArgs();
-            aseMoveEventArgs.IsEnd = cbIsEnd.Checked;
+            aseMoveEventArgs.AddressDirection = (EnumAddressDirection)boxAddressDirection.SelectedItem;
             aseMoveEventArgs.MapPosition = new MapPosition(Convert.ToDouble(numMovePositionX.Value), Convert.ToDouble(numMovePositionY.Value));
             aseMoveEventArgs.HeadAngle = Convert.ToInt32(numHeadAngle.Value);
             aseMoveEventArgs.Speed = Convert.ToInt32(numMoveSpeed.Value);
@@ -48,7 +55,7 @@ namespace Mirle.Agv.AseMiddler.View
 
     public class AseMoveEventArgs : EventArgs
     {
-        public bool IsEnd { get; set; }
+        public EnumAddressDirection AddressDirection { get; set; }
         public MapPosition MapPosition { get; set; } = new MapPosition();
         public int HeadAngle { get; set; }
         public int Speed { get; set; }

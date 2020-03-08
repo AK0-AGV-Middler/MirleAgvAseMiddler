@@ -247,8 +247,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        
-
         private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
         {
             OnAgvlConnectionChangedEvent?.Invoke(this, e);
@@ -587,8 +585,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     TrackPositionStatus = EnumThreadStatus.Working;
 
-                    AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                    var position = theVehicle.AseMoveStatus.LastMapPosition;
+                    AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);                   
                     if (theVehicle.AseMoveStatus.LastMapPosition == null) continue;
                     //if (IsVehlocStayInSameAddress(vehicleLocation)) continue;
 
@@ -755,13 +752,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             #region 搬送流程更新
             try
             {
-                PauseVisitTransferSteps();
+                PauseTransfer();
                 theVehicle.AgvcTransCmdBuffer.Add(agvcTransCmd.CommandId, agvcTransCmd);
                 agvcTransCmd.RobotNgRetryTimes = mainFlowConfig.RobotNgRetryTimes;
                 SetupTransferSteps(agvcTransCmd);
                 agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
                 if (theVehicle.AgvcTransCmdBuffer.Count != 2) GoNextTransferStep = true;
-                ResumeVisitTransferSteps();
+                ResumeTransfer();
                 asePackage.SetTransferCommandInfoRequest();
                 var okMsg = $"MainFlow : 接受 {agvcTransCmd.AgvcTransCommandType}命令{agvcTransCmd.CommandId} 確認。";
                 OnMessageShowEvent?.Invoke(this, okMsg);
@@ -1281,7 +1278,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 int sectionIndex = theVehicle.AseMovingGuide.GuideSectionIds.FindIndex(x => x == mapSection.Id);
                 MapAddress address = theMapInfo.addressMap[theVehicle.AseMovingGuide.GuideAddressIds[sectionIndex + 1]];
 
-                bool isEnd = address.Id == theVehicle.AseMovingGuide.ToAddressId;
+                bool isEnd = false;
+                EnumAddressDirection addressDirection = EnumAddressDirection.None;
+                if (address.Id == theVehicle.AseMovingGuide.ToAddressId)
+                {
+                    addressDirection = address.TransferPortDirection;
+                    isEnd = true;
+                }
                 int headAngle = (int)address.VehicleHeadAngle;
                 int speed = (int)mapSection.Speed;
 
@@ -1297,7 +1300,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    asePackage.aseMoveControl.PartMove(isEnd, address.Position, headAngle, speed);
+                    asePackage.aseMoveControl.PartMove(addressDirection, address.Position, headAngle, speed);
                 }
 
                 OnMessageShowEvent?.Invoke(this, $"通知MoveControl延攬通行權{mapSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
@@ -2350,7 +2353,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PauseVisitTransferSteps();
+                PauseTransfer();
                 agvcConnector.ClearAllReserve();
                 theVehicle.AseMovingGuide = new AseMovingGuide();
                 StopVehicle();
@@ -2517,8 +2520,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                agvcConnector.PauseAskReserve();
-                PauseVisitTransferSteps();
+                PauseTransfer();
                 asePackage.aseMoveControl.VehclePause();
                 var msg = $"MainFlow : 接受[{type}]命令。";
                 OnMessageShowEvent(this, msg);
@@ -2582,22 +2584,63 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+
                 var msg = $"MainFlow : 接受[{receive.CancelAction}]命令。";
                 OnMessageShowEvent(this, msg);
+                PauseTransfer();
                 agvcConnector.CancelAbortReply(iSeqNum, 0, receive);
+
                 string abortCmdId = receive.CmdID;
-                //TODO: Abort command with commandId = abortCmdId
-                //PauseVisitTransferSteps();               
-                //theVehicle.AseMovingGuide = new AseMovingGuide();
-                //asePackage.aseMoveControl.VehcleCancel();
-                //agvcConnector.ClearAllReserve();
-                //agvcTransCmd.CompleteStatus = receive.CancelAction == CancelActionType.CmdAbort ? CompleteStatus.Abort : CompleteStatus.Cancel;
-                //GoNextTransferStep();
+                var step = GetCurTransferStep();
+                if (step.CmdId == abortCmdId)
+                {
+                    if (IsMoveStep())
+                    {
+                        theVehicle.AseMovingGuide = new AseMovingGuide();
+                    }
+                    else
+                    {
+                        asePackage.aseRobotControl.ClearRobotCommand();
+                    }                                 
+                }              
+
+                AbortCommand(abortCmdId, GetCompleteStatusFromCancelRequest(receive.CancelAction));
+                ResumeTransfer();
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private CompleteStatus GetCompleteStatusFromCancelRequest(CancelActionType cancelAction)
+        {
+            switch (cancelAction)
+            {
+                case CancelActionType.CmdCancel:
+                    return CompleteStatus.Cancel;
+                case CancelActionType.CmdCancelIdMismatch:
+                    return CompleteStatus.IdmisMatch;
+                case CancelActionType.CmdCancelIdReadFailed:
+                    return CompleteStatus.IdreadFailed;
+                case CancelActionType.CmdNone:
+                case CancelActionType.CmdEms:
+                case CancelActionType.CmdAbort:
+                default:
+                    return CompleteStatus.Abort;
+            }
+        }
+
+        private void PauseTransfer()
+        {
+            agvcConnector.PauseAskReserve();
+            PauseVisitTransferSteps();
+        }
+
+        private void ResumeTransfer()
+        {
+            ResumeVisitTransferSteps();
+            agvcConnector.ResumeAskReserve();
         }
 
         public bool IsPositionInThisAddress(MapPosition realPosition, MapPosition addressPosition)
@@ -2620,24 +2663,24 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void LoadMainFlowConfig()
         {
 
-            mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"D:\AgvConfigs\MainFlow.xml");
+            mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
         }
 
         public void SetMainFlowConfig(MainFlowConfig mainFlowConfig)
         {
             this.mainFlowConfig = mainFlowConfig;
-            xmlHandler.WriteXml(mainFlowConfig, @"D:\AgvConfigs\MainFlow.xml");
+            xmlHandler.WriteXml(mainFlowConfig, @"MainFlow.xml");
         }
 
         public void LoadAgvcConnectorConfig()
         {
-            agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"D:\AgvConfigs\AgvcConnector.xml");
+            agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnector.xml");
         }
 
         public void SetAgvcConnectorConfig(AgvcConnectorConfig agvcConnectorConfig)
         {
             this.agvcConnectorConfig = agvcConnectorConfig;
-            xmlHandler.WriteXml(this.agvcConnectorConfig, @"D:\AgvConfigs\AgvcConnector.xml");
+            xmlHandler.WriteXml(this.agvcConnectorConfig, @"AgvcConnector.xml");
         }
 
         private void AseBatteryControl_OnBatteryPercentageChangeEvent(object sender, double batteryPercentage)
