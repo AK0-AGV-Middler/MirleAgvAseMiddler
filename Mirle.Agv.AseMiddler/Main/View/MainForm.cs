@@ -139,7 +139,7 @@ namespace Mirle.Agv.AseMiddler.View
             InitialAseMoveControlForm();
             InitialAseRobotControlForm();
             InitialAseAgvlConnectorForm();
-        }        
+        }
 
         private void InitialPaintingItems()
         {
@@ -213,7 +213,7 @@ namespace Mirle.Agv.AseMiddler.View
             mainFlowHandler.GetAseMoveControl().OnMoveFinishedEvent += AseMoveControl_OnMoveFinishEvent;
 
             asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
-        }        
+        }
 
         private void InitialSoc()
         {
@@ -235,6 +235,91 @@ namespace Mirle.Agv.AseMiddler.View
                 mainFlowHandler.ReadCarrierId();
             }
         }
+
+        public void DrawBasicMap()
+        {
+            try
+            {
+                SetupImageRegion();
+
+                // Draw Sections in blueLine
+                allUcSectionImages.Clear();
+
+                var sectionMap = theMapInfo.sectionMap.Values.ToList();
+                foreach (var section in sectionMap)
+                {
+                    var headPos = section.HeadAddress.Position;
+                    var tailPos = section.TailAddress.Position;
+                    MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Min(headPos.Y, tailPos.Y));
+
+                    UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
+                    if (!allUcSectionImages.ContainsKey(section.Id))
+                    {
+                        allUcSectionImages.Add(section.Id, ucSectionImage);
+                    }
+                    pictureBox1.Controls.Add(ucSectionImage);
+                    ucSectionImage.Location = MapPixelExchange(sectionLocation);
+                    switch (section.Type)
+                    {
+                        case EnumSectionType.Horizontal:
+                            break;
+                        case EnumSectionType.Vertical:
+                            ucSectionImage.Location = new Point(ucSectionImage.Location.X - (ucSectionImage.labelSize.Width / 2 + 5), ucSectionImage.Location.Y);
+                            break;
+                        case EnumSectionType.R2000:
+                        case EnumSectionType.None:
+                        default:
+                            break;
+                    }
+
+                    ucSectionImage.BringToFront();
+
+                    ucSectionImage.MouseDown += UcSectionImage_MouseDown;
+                    ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
+                    ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
+                }
+
+
+                //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
+                allUcAddressImages.Clear();
+
+                var addressMap = theMapInfo.addressMap.Values.ToList();
+                foreach (var address in addressMap)
+                {
+                    UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
+                    if (!allUcAddressImages.ContainsKey(address.Id))
+                    {
+                        allUcAddressImages.Add(address.Id, ucAddressImage);
+                    }
+                    pictureBox1.Controls.Add(ucAddressImage);
+                    ucAddressImage.Location = MapPixelExchange(address.Position);
+                    ucAddressImage.FixToCenter();
+                    ucAddressImage.BringToFront();
+                    Label label = new Label();
+                    label.AutoSize = false;
+                    label.Size = new Size(35, 12);
+                    label.Parent = pictureBox1;
+                    label.Text = address.Id;
+                    label.Location = new Point(ucAddressImage.Location.X, ucAddressImage.Location.Y + 2 * (ucAddressImage.Radius + 1));
+                    label.BringToFront();
+
+
+                    ucAddressImage.MouseDown += UcAddressImage_MouseDown;
+                    //ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
+                    ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
+                    //ucAddressImage.pictureBox1.MouseDoubleClick += ucAddressImageItem_DoubleClick;
+                }
+
+
+
+                pictureBox1.SendToBack();
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
 
         private void MainFlowHandler_OnPrepareForAskingReserveEvent(object sender, MoveCmdInfo moveCmd)
         {
@@ -386,7 +471,7 @@ namespace Mirle.Agv.AseMiddler.View
         private void AsePackage_ImportantPspLog(object sender, string e)
         {
             ShowMsgOnMainForm(this, e);
-        }        
+        }
 
         private void ShowMsgOnMainForm(object sender, string msg)
         {
@@ -605,7 +690,7 @@ namespace Mirle.Agv.AseMiddler.View
         private void InitialAseRobotControlForm()
         {
             aseRobotControlForm = new AseRobotControlForm();
-            aseRobotControlForm.SendRobotCommand += AseRobotControlForm_SendRobotCommand;          
+            aseRobotControlForm.SendRobotCommand += AseRobotControlForm_SendRobotCommand;
             aseRobotControlForm.OnException += AseControlForm_OnException;
         }
 
@@ -630,7 +715,7 @@ namespace Mirle.Agv.AseMiddler.View
             if (e.IsLoad)
             {
                 robotCommand = new LoadCmdInfo(agvcTransCmd);
-                robotCommand.PortAddressId = e.FromPort.PadLeft(5,'0');
+                robotCommand.PortAddressId = e.FromPort.PadLeft(5, '0');
                 robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.ToPort.Trim('0'));
             }
             else
@@ -639,9 +724,7 @@ namespace Mirle.Agv.AseMiddler.View
                 robotCommand.PortAddressId = e.ToPort.PadLeft(5, '0');
                 robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.FromPort.Trim('0'));
             }
-            robotCommand.ForkSpeed = e.Speed;
             robotCommand.PioDirection = e.PioDirection;
-            robotCommand.IsEqPio = e.IsPio;
 
             return robotCommand;
         }
@@ -654,7 +737,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             alarmForm.BringToFront();
             alarmForm.Show();
-        }        
+        }
 
         private void VehicleStatusPage_Click(object sender, EventArgs e)
         {
@@ -736,6 +819,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         public void ResetImageAndPb()
         {
+            DrawBasicMap();
             ImageSaveToTmpPng();
             TmpPngToImage();
             PbLoadImage();
@@ -940,8 +1024,7 @@ namespace Mirle.Agv.AseMiddler.View
                                       $"[站點={robotCommand.PortAddressId}]\r\n",
                                       $"[PIO方向={robotCommand.PioDirection}]\r\n",
                                       $"[SlotNumber={robotCommand.SlotNumber}]\r\n",
-                                      $"[是否PIO通訊={robotCommand.IsEqPio}]\r\n",
-                                      $"[手臂速度={robotCommand.ForkSpeed}]");
+                                      $"[GateType={theMapInfo.gateTypeMap[robotCommand.PortAddressId]}]");
             }
             catch (Exception ex)
             {
@@ -999,7 +1082,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-      
+
         public void UpdateAgvcConnection()
         {
             try
@@ -1743,6 +1826,6 @@ namespace Mirle.Agv.AseMiddler.View
             asePackage.aseMoveControl.SendPositionReportRequest();
         }
 
-       
+
     }
 }

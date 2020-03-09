@@ -49,11 +49,9 @@ namespace Mirle.Agv.AseMiddler.View
         {
             AseRobotEventArgs aseRobotEventArgs = new AseRobotEventArgs();
             aseRobotEventArgs.IsLoad = cbIsLoad.Checked;
-            aseRobotEventArgs.IsPio = cbIsPio.Checked;
             aseRobotEventArgs.PioDirection = (EnumAddressDirection)Enum.Parse(typeof(EnumAddressDirection), boxPioDirection.Text);
             aseRobotEventArgs.FromPort = txtFromPort.Text;
             aseRobotEventArgs.ToPort = txtToPort.Text;
-            aseRobotEventArgs.Speed = Convert.ToUInt16(numForkSpeed.Value);
             return aseRobotEventArgs;
         }
 
@@ -65,11 +63,9 @@ namespace Mirle.Agv.AseMiddler.View
 
     public class AseRobotEventArgs : EventArgs
     {
-        public bool IsPio { get; set; }
         public bool IsLoad { get; set; }
         public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
         public string FromPort { get; set; } = "";
         public string ToPort { get; set; } = "";
-        public ushort Speed { get; set; }
     }
 }

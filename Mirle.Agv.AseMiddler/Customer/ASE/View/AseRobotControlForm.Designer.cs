@@ -37,14 +37,11 @@
             this.txtToPort = new System.Windows.Forms.TextBox();
             this.txtFromPort = new System.Windows.Forms.TextBox();
             this.btnSendRobot = new System.Windows.Forms.Button();
-            this.numForkSpeed = new System.Windows.Forms.NumericUpDown();
             this.cbIsLoad = new System.Windows.Forms.CheckBox();
-            this.cbIsPio = new System.Windows.Forms.CheckBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.tabControl1.SuspendLayout();
             this.pageRobotCommnad.SuspendLayout();
             this.groupBox4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numForkSpeed)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -74,19 +71,17 @@
             this.groupBox4.Controls.Add(this.txtToPort);
             this.groupBox4.Controls.Add(this.txtFromPort);
             this.groupBox4.Controls.Add(this.btnSendRobot);
-            this.groupBox4.Controls.Add(this.numForkSpeed);
             this.groupBox4.Controls.Add(this.cbIsLoad);
-            this.groupBox4.Controls.Add(this.cbIsPio);
             this.groupBox4.Location = new System.Drawing.Point(17, 17);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(253, 197);
+            this.groupBox4.Size = new System.Drawing.Size(253, 154);
             this.groupBox4.TabIndex = 1;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Robot(P45)";
             // 
             // txtCassetteId
             // 
-            this.txtCassetteId.Location = new System.Drawing.Point(6, 121);
+            this.txtCassetteId.Location = new System.Drawing.Point(7, 75);
             this.txtCassetteId.Name = "txtCassetteId";
             this.txtCassetteId.Size = new System.Drawing.Size(240, 22);
             this.txtCassetteId.TabIndex = 11;
@@ -94,14 +89,14 @@
             // boxPioDirection
             // 
             this.boxPioDirection.FormattingEnabled = true;
-            this.boxPioDirection.Location = new System.Drawing.Point(6, 39);
+            this.boxPioDirection.Location = new System.Drawing.Point(6, 21);
             this.boxPioDirection.Name = "boxPioDirection";
             this.boxPioDirection.Size = new System.Drawing.Size(117, 20);
             this.boxPioDirection.TabIndex = 10;
             // 
             // txtToPort
             // 
-            this.txtToPort.Location = new System.Drawing.Point(129, 93);
+            this.txtToPort.Location = new System.Drawing.Point(130, 47);
             this.txtToPort.Name = "txtToPort";
             this.txtToPort.Size = new System.Drawing.Size(117, 22);
             this.txtToPort.TabIndex = 9;
@@ -109,7 +104,7 @@
             // 
             // txtFromPort
             // 
-            this.txtFromPort.Location = new System.Drawing.Point(6, 93);
+            this.txtFromPort.Location = new System.Drawing.Point(6, 47);
             this.txtFromPort.Name = "txtFromPort";
             this.txtFromPort.Size = new System.Drawing.Size(117, 22);
             this.txtFromPort.TabIndex = 8;
@@ -117,26 +112,13 @@
             // 
             // btnSendRobot
             // 
-            this.btnSendRobot.Location = new System.Drawing.Point(6, 149);
+            this.btnSendRobot.Location = new System.Drawing.Point(6, 103);
             this.btnSendRobot.Name = "btnSendRobot";
             this.btnSendRobot.Size = new System.Drawing.Size(241, 33);
             this.btnSendRobot.TabIndex = 5;
             this.btnSendRobot.Text = "Send";
             this.btnSendRobot.UseVisualStyleBackColor = true;
             this.btnSendRobot.Click += new System.EventHandler(this.btnSendRobot_Click);
-            // 
-            // numForkSpeed
-            // 
-            this.numForkSpeed.Location = new System.Drawing.Point(6, 65);
-            this.numForkSpeed.Name = "numForkSpeed";
-            this.numForkSpeed.Size = new System.Drawing.Size(117, 22);
-            this.numForkSpeed.TabIndex = 3;
-            this.numForkSpeed.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.numForkSpeed.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
             // 
             // cbIsLoad
             // 
@@ -147,16 +129,6 @@
             this.cbIsLoad.TabIndex = 0;
             this.cbIsLoad.Text = "Is Load ?";
             this.cbIsLoad.UseVisualStyleBackColor = true;
-            // 
-            // cbIsPio
-            // 
-            this.cbIsPio.AutoSize = true;
-            this.cbIsPio.Location = new System.Drawing.Point(6, 21);
-            this.cbIsPio.Name = "cbIsPio";
-            this.cbIsPio.Size = new System.Drawing.Size(61, 16);
-            this.cbIsPio.TabIndex = 0;
-            this.cbIsPio.Text = "Is PIO ?";
-            this.cbIsPio.UseVisualStyleBackColor = true;
             // 
             // timer1
             // 
@@ -176,7 +148,6 @@
             this.pageRobotCommnad.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numForkSpeed)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -189,8 +160,6 @@
         private System.Windows.Forms.TextBox txtToPort;
         private System.Windows.Forms.TextBox txtFromPort;
         private System.Windows.Forms.Button btnSendRobot;
-        private System.Windows.Forms.NumericUpDown numForkSpeed;
-        private System.Windows.Forms.CheckBox cbIsPio;
         private System.Windows.Forms.ComboBox boxPioDirection;
         private System.Windows.Forms.TextBox txtCassetteId;
         private System.Windows.Forms.CheckBox cbIsLoad;
