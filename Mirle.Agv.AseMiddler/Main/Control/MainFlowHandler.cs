@@ -229,7 +229,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 alarmHandler.OnPlcResetOneAlarmEvent += agvcConnector.AlarmHandler_OnPlcResetOneAlarmEvent;
 
-                alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
+                alarmHandler.OnResetAllAlarmsEvent += asePackage.aseBuzzerControl.ResetAllAlarmCode;
                 alarmHandler.OnResetAllAlarmsEvent += agvcConnector.AlarmHandler_OnResetAllAlarmsEvent;
 
                 theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
@@ -259,7 +259,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case EnumAutoState.Auto:
                     MainFlowAbnormalMsg = "";
                     alarmHandler.ResetAllAlarms();
-                    ReadCarrierId();
                     asePackage.SetVehicleAutoScenario();
                     break;
                 case EnumAutoState.Manual:
@@ -2468,12 +2467,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void ResetAllarms()
         {
             alarmHandler.ResetAllAlarms();
-        }
-
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
-        {
-            asePackage.aseBuzzerControl.ResetAllAlarmCode();
-        }
+        }        
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {

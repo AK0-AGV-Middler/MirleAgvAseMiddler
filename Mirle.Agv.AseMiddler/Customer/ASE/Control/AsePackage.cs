@@ -21,7 +21,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public AseRobotControl aseRobotControl;
         public AseBatteryControl aseBatteryControl;
         public AseBuzzerControl aseBuzzerControl;
-        private MirleLogger mirleLogger = MirleLogger.Instance;
+        public MirleLogger mirleLogger = MirleLogger.Instance;
         private AsePackageConfig asePackageConfig = new AsePackageConfig();
         private PspConnectionConfig pspConnectionConfig = new PspConnectionConfig();
         private AseBatteryConfig aseBatteryConfig = new AseBatteryConfig();
@@ -180,7 +180,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string msg = $"PrimaryReceived : [{transaction.PSPrimaryMessage.ToString()}]";
+                string msg = $"PrimaryReceived : [{transaction.ToString()}]";
                 AllPspLog?.Invoke(this, msg);
                 LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
 
@@ -425,10 +425,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string isCharging = psMessage.Substring(0, 1).ToUpper().Trim();
-                theVehicle.IsCharging = IsValueTrue(isCharging);
-
-                string msg = $"充電狀態改變[{isCharging}]";
-                ImportantPspLog?.Invoke(this, msg);
+                if (theVehicle.IsCharging!= IsValueTrue(isCharging))
+                {
+                    theVehicle.IsCharging = IsValueTrue(isCharging);
+                    string msg = $"充電狀態改變[{isCharging}]";
+                    ImportantPspLog?.Invoke(this, msg);
+                }
             }
             catch (Exception ex)
             {
@@ -693,9 +695,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string msg = $"PsWrapper connection state changed.[{state}]";
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                ImportantPspLog?.Invoke(this, msg);
+                string msg = $"PsWrapper connection state changed.[{state}]";               
+                if (state== enumConnectState.Connected || state== enumConnectState.Quit)
+                {
+                    LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                    ImportantPspLog?.Invoke(this, msg);
+                }               
                 OnConnectionChangeEvent?.Invoke(this, psWrapper.IsConnected());
             }
             catch (Exception ex)
@@ -823,12 +828,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
         }
 
-        private void LogDebug(string classMethodName, string msg)
+        public void LogDebug(string classMethodName, string msg)
         {
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
-        private void LogPsWrapper(string classMethodName, string msg)
+        public void LogPsWrapper(string classMethodName, string msg)
         {
             mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
         }

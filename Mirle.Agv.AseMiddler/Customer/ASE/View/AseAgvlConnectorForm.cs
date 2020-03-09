@@ -84,7 +84,6 @@ namespace Mirle.Agv.AseMiddler.View
         private void AsePackage_AllPspLog(object sender, string e)
         {
             AppendPspLogMsg(e);
-            LogPspLog(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, e);
         }
 
         private void AppendPspLogMsg(string msg)
