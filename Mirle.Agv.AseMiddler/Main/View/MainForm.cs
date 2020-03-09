@@ -230,7 +230,7 @@ namespace Mirle.Agv.AseMiddler.View
             UpdateAgvlConnection();
 
 
-            if (theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+            if (theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
             {
                 mainFlowHandler.ReadCarrierId();
             }
@@ -404,100 +404,6 @@ namespace Mirle.Agv.AseMiddler.View
                 {
                     DebugLogMsg = DebugLogMsg.Substring(65535);
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        public void DrawBasicMap()
-        {
-            try
-            {
-                SetupImageRegion();
-
-                //Draw Barcode in blackDash
-                var allMapBarcodeLines = theMapInfo.barcodeLineMap.Values.ToList();
-                foreach (var rowBarcode in allMapBarcodeLines)
-                {
-                    var headPosInPixel = MapPixelExchange(rowBarcode.HeadBarcode.Position);
-                    var tailPosInPixel = MapPixelExchange(rowBarcode.TailBarcode.Position);
-
-                    if (rowBarcode.Material == EnumBarcodeMaterial.Iron)
-                    {
-                        gra.DrawLine(allPens["BlackDashDot1"], headPosInPixel.X, headPosInPixel.Y, tailPosInPixel.X, tailPosInPixel.Y);
-                    }
-                }
-
-
-                // Draw Sections in blueLine
-                allUcSectionImages.Clear();
-                var allMapSections = theMapInfo.sectionMap.Values.ToList();
-                foreach (var section in allMapSections)
-                {
-                    var headPos = section.HeadAddress.Position;
-                    var tailPos = section.TailAddress.Position;
-                    MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Min(headPos.Y, tailPos.Y));
-
-                    UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
-                    if (!allUcSectionImages.ContainsKey(section.Id))
-                    {
-                        allUcSectionImages.Add(section.Id, ucSectionImage);
-                    }
-                    pictureBox1.Controls.Add(ucSectionImage);
-                    ucSectionImage.Location = MapPixelExchange(sectionLocation);
-                    switch (section.Type)
-                    {
-                        case EnumSectionType.Horizontal:
-                            break;
-                        case EnumSectionType.Vertical:
-                            ucSectionImage.Location = new Point(ucSectionImage.Location.X - (ucSectionImage.labelSize.Width / 2 + 5), ucSectionImage.Location.Y);
-                            break;
-                        case EnumSectionType.R2000:
-                            break;
-                        case EnumSectionType.None:
-                        default:
-                            break;
-                    }
-
-                    ucSectionImage.BringToFront();
-
-                    ucSectionImage.MouseDown += UcSectionImage_MouseDown;
-                    ucSectionImage.label1.MouseDown += UcSectionImageItem_MouseDown;
-                    ucSectionImage.pictureBox1.MouseDown += UcSectionImageItem_MouseDown;
-                }
-
-                //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
-                allUcAddressImages.Clear();
-                var allMapAddresses = theMapInfo.addressMap.Values.ToList();
-                foreach (var address in allMapAddresses)
-                {
-                    UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
-                    if (!allUcAddressImages.ContainsKey(address.Id))
-                    {
-                        allUcAddressImages.Add(address.Id, ucAddressImage);
-                    }
-                    pictureBox1.Controls.Add(ucAddressImage);
-                    ucAddressImage.Location = MapPixelExchange(address.Position);
-                    ucAddressImage.FixToCenter();
-                    ucAddressImage.BringToFront();
-                    Label label = new Label();
-                    label.AutoSize = false;
-                    label.Size = new Size(35, 12);
-                    label.Parent = pictureBox1;
-                    label.Text = address.Id;
-                    label.Location = new Point(ucAddressImage.Location.X, ucAddressImage.Location.Y + 2 * (ucAddressImage.Radius + 1));
-                    label.BringToFront();
-
-
-                    ucAddressImage.MouseDown += UcAddressImage_MouseDown;
-                    //ucAddressImage.label1.MouseDown += UcAddressImageItem_MouseDown;
-                    ucAddressImage.pictureBox1.MouseDown += UcAddressImageItem_MouseDown;
-                }
-
-
-                pictureBox1.SendToBack();
             }
             catch (Exception ex)
             {
@@ -830,7 +736,6 @@ namespace Mirle.Agv.AseMiddler.View
 
         public void ResetImageAndPb()
         {
-            DrawBasicMap();
             ImageSaveToTmpPng();
             TmpPngToImage();
             PbLoadImage();
@@ -1344,19 +1249,19 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 //TODO: SlotA and SlotB
-                if (theVehicle.AseCarrierSlotA.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
+                if (theVehicle.AseCarrierSlotL.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
                 {
-                    ucLoading.TagValue = theVehicle.AseCarrierSlotA.CarrierSlotStatus.ToString();
+                    ucLoading.TagValue = theVehicle.AseCarrierSlotL.CarrierSlotStatus.ToString();
                     ucVehicleImage.Loading = true;
-                    ucCstId.TagValue = theVehicle.AseCarrierSlotA.CarrierId;
-                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotA.CarrierId;
+                    ucCstId.TagValue = theVehicle.AseCarrierSlotL.CarrierId;
+                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotL.CarrierId;
                 }
-                else if (theVehicle.AseCarrierSlotB.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
+                else if (theVehicle.AseCarrierSlotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
                 {
-                    ucLoading.TagValue = theVehicle.AseCarrierSlotB.CarrierSlotStatus.ToString();
+                    ucLoading.TagValue = theVehicle.AseCarrierSlotR.CarrierSlotStatus.ToString();
                     ucVehicleImage.Loading = true;
-                    ucCstId.TagValue = theVehicle.AseCarrierSlotB.CarrierId;
-                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotB.CarrierId;
+                    ucCstId.TagValue = theVehicle.AseCarrierSlotR.CarrierId;
+                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotR.CarrierId;
                 }
                 else
                 {

@@ -258,8 +258,8 @@ namespace Mirle.Agv.AseMiddler
 
     public enum EnumSlotNumber
     {
-        A,
-        B
+        L,
+        R
     }
 
     public enum EnumAseArrival

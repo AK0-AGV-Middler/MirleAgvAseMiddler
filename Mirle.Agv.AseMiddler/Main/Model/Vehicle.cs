@@ -40,8 +40,8 @@ namespace Mirle.Agv.AseMiddler.Model
 
         public AseMoveStatus AseMoveStatus { get; set; } = new AseMoveStatus();
         public AseRobotStatus AseRobotStatus { get; set; } = new AseRobotStatus();
-        public AseCarrierSlotStatus AseCarrierSlotA { get; set; } = new AseCarrierSlotStatus();
-        public AseCarrierSlotStatus AseCarrierSlotB { get; set; } = new AseCarrierSlotStatus(EnumSlotNumber.B);
+        public AseCarrierSlotStatus AseCarrierSlotL { get; set; } = new AseCarrierSlotStatus();
+        public AseCarrierSlotStatus AseCarrierSlotR { get; set; } = new AseCarrierSlotStatus(EnumSlotNumber.R);
         public bool IsCharging { get; set; } = false;
         public AseBatteryStatus AseBatteryStatus { get; set; } = new AseBatteryStatus();
         public double AutoChargeLowThreshold { get; set; } = 50;
@@ -73,11 +73,11 @@ namespace Mirle.Agv.AseMiddler.Model
         {
             switch (slotNumber)
             {
-                case EnumSlotNumber.B:
-                    return theVehicle.AseCarrierSlotB;
-                case EnumSlotNumber.A:                   
+                case EnumSlotNumber.R:
+                    return theVehicle.AseCarrierSlotR;
+                case EnumSlotNumber.L:                   
                 default:
-                    return theVehicle.AseCarrierSlotA;
+                    return theVehicle.AseCarrierSlotL;
             }
         }
     }

@@ -10,7 +10,7 @@ namespace Mirle.Agv.AseMiddler.Model
     {
         public EnumAseCarrierSlotStatus CarrierSlotStatus { get; set; } = EnumAseCarrierSlotStatus.Empty;
         public string CarrierId { get; set; } = "";
-        public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.A;
+        public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
 
         public AseCarrierSlotStatus() { }
 

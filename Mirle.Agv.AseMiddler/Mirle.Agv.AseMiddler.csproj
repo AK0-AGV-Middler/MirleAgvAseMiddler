@@ -167,10 +167,8 @@
     <Compile Include="Main\Model\Configs\MainFlowConfig.cs" />
     <Compile Include="Main\Model\Configs\MapConfig.cs" />
     <Compile Include="Main\Model\Configs\AgvcConnectorConfig.cs" />
-    <Compile Include="Main\Model\Map\MapBarcode.cs" />
     <Compile Include="Main\Model\Map\MapInfo.cs" />
     <Compile Include="Main\Model\Map\MapPosition.cs" />
-    <Compile Include="Main\Model\Map\MapBarcodeLine.cs" />
     <Compile Include="Main\Model\TransferCommand\EmptyTransCmd.cs" />
     <Compile Include="Main\Model\TransferCommand\LoadCmdInfo.cs" />
     <Compile Include="Main\Model\TransferCommand\MoveCmdInfo.cs" />

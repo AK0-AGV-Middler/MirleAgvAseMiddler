@@ -25,7 +25,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public CompleteStatus CompleteStatus { get; set; }
         public bool IsAvoidComplete { get; set; }
         public int RobotNgRetryTimes { get; set; } = 1;
-        public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.A;
+        public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
         public CommandState CommandState { get; set; } = CommandState.None;
         public string LotId { get; set; } = "";       
 

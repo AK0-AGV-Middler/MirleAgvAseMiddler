@@ -1581,10 +1581,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.ErrorStatus = theVehicle.ErrorStatus;
                 response.ObstDistance = theVehicle.ObstDistance;
                 response.ObstVehicleID = theVehicle.ObstVehicleID;
-                response.HasCstL = theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
-                response.CstIdL = theVehicle.AseCarrierSlotA.CarrierId;
-                response.HasCstR = theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
-                response.CstIdR = theVehicle.AseCarrierSlotB.CarrierId;
+                response.HasCstL = theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
+                response.CstIdL = theVehicle.AseCarrierSlotL.CarrierId;
+                response.HasCstR = theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
+                response.CstIdR = theVehicle.AseCarrierSlotR.CarrierId;
                 response.ChargeStatus = VhChargeStatusParse(theVehicle.IsCharging);
                 response.BatteryCapacity = (uint)theVehicle.AseBatteryStatus.Percentage;
                 response.BatteryTemperature = (int)theVehicle.AseBatteryStatus.Temperature;
@@ -2102,14 +2102,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
             var result = false;
-            if (theVehicle.AseCarrierSlotA.CarrierId == receive.OLDCSTID.Trim())
+            if (theVehicle.AseCarrierSlotL.CarrierId == receive.OLDCSTID.Trim())
             {
-                mainFlowHandler.RenameCstId(EnumSlotNumber.A, receive.NEWCSTID);
+                mainFlowHandler.RenameCstId(EnumSlotNumber.L, receive.NEWCSTID);
                 result = true;
             }
-            else if (theVehicle.AseCarrierSlotA.CarrierId == receive.OLDCSTID.Trim())
+            else if (theVehicle.AseCarrierSlotL.CarrierId == receive.OLDCSTID.Trim())
             {
-                mainFlowHandler.RenameCstId(EnumSlotNumber.B, receive.NEWCSTID);
+                mainFlowHandler.RenameCstId(EnumSlotNumber.R, receive.NEWCSTID);
                 result = true;
             }
 

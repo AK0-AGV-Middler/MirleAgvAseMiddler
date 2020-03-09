@@ -12,7 +12,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public string Id { get; set; } = "";
         public MapPosition Position { get; set; } = new MapPosition();
         public EnumAddressDirection TransferPortDirection { get; set; } = EnumAddressDirection.None;
-        public string PortNumber { get; set; } = "12";
+        public string GateType { get; set; } = "12";
         public EnumAddressDirection ChargeDirection { get; set; } = EnumAddressDirection.None;
         public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
         public bool CanSpin { get; set; }

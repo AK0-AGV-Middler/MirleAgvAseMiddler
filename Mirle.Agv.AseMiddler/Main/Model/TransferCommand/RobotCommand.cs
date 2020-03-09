@@ -11,7 +11,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
     {
         public string PortAddressId { get; set; } = "";
         public string CassetteId { get; set; } = "";
-        public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.A;
+        public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
         public int RobotNgRetryTimes { get; set; } = 1;
         public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
         public bool IsEqPio { get; set; }

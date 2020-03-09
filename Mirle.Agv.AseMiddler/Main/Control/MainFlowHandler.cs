@@ -169,7 +169,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mapHandler = new MapHandler(mapConfig);
                 theMapInfo = mapHandler.theMapInfo;
                 agvcConnector = new AgvcConnector(this);
-                asePackage = new AsePackage(theMapInfo.portNumberMap);
+                asePackage = new AsePackage(theMapInfo.gateTypeMap);
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
             catch (Exception ex)
@@ -699,18 +699,18 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
                 {
-                    if (theVehicle.AgvcTransCmdBuffer.Values.First().SlotNumber == EnumSlotNumber.A)
+                    if (theVehicle.AgvcTransCmdBuffer.Values.First().SlotNumber == EnumSlotNumber.L)
                     {
-                        agvcTransCmd.SlotNumber = EnumSlotNumber.B;
+                        agvcTransCmd.SlotNumber = EnumSlotNumber.R;
                     }
                     else
                     {
-                        agvcTransCmd.SlotNumber = EnumSlotNumber.A;
+                        agvcTransCmd.SlotNumber = EnumSlotNumber.L;
                     }
                 }
                 else
                 {
-                    agvcTransCmd.SlotNumber = EnumSlotNumber.A;
+                    agvcTransCmd.SlotNumber = EnumSlotNumber.L;
                 }
 
                 switch (agvcTransCmd.AgvcTransCommandType)
@@ -2364,7 +2364,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     agvcConnector.StatusChangeReport();
                 }
 
-                if (theVehicle.AseCarrierSlotA.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotB.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+                if (theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
                 {
                     asePackage.aseRobotControl.ReadCarrierId();
                 }

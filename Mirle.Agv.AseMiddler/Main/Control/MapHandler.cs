@@ -17,7 +17,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private MapConfig mapConfig;
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
-        public string BarcodePath { get; set; }
         public string SectionBeamDisablePath { get; set; }
         public MapInfo theMapInfo { get; private set; } = new MapInfo();
         private double AddressAreaMm { get; set; } = 30;
@@ -33,7 +32,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             mirleLogger = MirleLogger.Instance;
             SectionPath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionFileName);
             AddressPath = Path.Combine(Environment.CurrentDirectory, mapConfig.AddressFileName);
-            BarcodePath = Path.Combine(Environment.CurrentDirectory, mapConfig.BarcodeFileName);
             SectionBeamDisablePath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionBeamDisablePathFileName);
             AddressAreaMm = mapConfig.AddressAreaMm;
 
@@ -42,159 +40,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void LoadMapInfo()
         {
-            ReadBarcodeLineCsv();
             ReadAddressCsv();
             ReadSectionCsv();
-            //WriteBarcodeBackup();
-            //WriteAddressBackup();
-            //WriteSectionBackup();
-        }
-
-        public void ReadBarcodeLineCsv()
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(BarcodePath))
-                {
-                    mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        , $"IsBarcodePathNull={string.IsNullOrWhiteSpace(BarcodePath)}"));
-                    return;
-                }
-                theMapInfo.barcodeLineMap.Clear();
-                theMapInfo.barcodeMap.Clear();
-
-                string[] allRows = File.ReadAllLines(BarcodePath);
-                if (allRows == null || allRows.Length < 2)
-                {
-                    mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        , "There are no barcodes in file"));
-                    return;
-                }
-
-                string[] titleRow = allRows[0].Split(',');
-                allRows = allRows.Skip(1).ToArray();
-
-                int nRows = allRows.Length;
-                int nColumns = titleRow.Length;
-
-                Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
-                //Id, BarcodeHeadNum, HeadX, HeadY, BarcodeTailNum, TailX, TailY, OffsetX, OffsetY
-                for (int i = 0; i < nColumns; i++)
-                {
-                    var keyword = titleRow[i].Trim();
-                    if (!string.IsNullOrWhiteSpace(keyword))
-                    {
-                        dicHeaderIndexes.Add(keyword, i);
-                    }
-                }
-
-                for (int i = 0; i < nRows; i++)
-                {
-                    string[] getThisRow = allRows[i].Split(',');
-
-                    MapBarcodeLine oneRow = new MapBarcodeLine();
-                    try
-                    {
-                        oneRow.Id = getThisRow[dicHeaderIndexes["Id"]];
-                        oneRow.HeadBarcode.LineId = oneRow.Id;
-                        oneRow.HeadBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeHeadNum"]]);
-                        oneRow.HeadBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["HeadX"]]);
-                        oneRow.HeadBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["HeadY"]]);
-                        oneRow.TailBarcode.LineId = oneRow.Id;
-                        oneRow.TailBarcode.Number = int.Parse(getThisRow[dicHeaderIndexes["BarcodeTailNum"]]);
-                        oneRow.TailBarcode.Position.X = double.Parse(getThisRow[dicHeaderIndexes["TailX"]]);
-                        oneRow.TailBarcode.Position.Y = double.Parse(getThisRow[dicHeaderIndexes["TailY"]]);
-                        oneRow.Offset.X = double.Parse(getThisRow[dicHeaderIndexes["OffsetX"]]);
-                        oneRow.Offset.Y = double.Parse(getThisRow[dicHeaderIndexes["OffsetY"]]);
-                        oneRow.Material = oneRow.BarcodeMaterialParse(getThisRow[dicHeaderIndexes["Material"]]);
-
-                        lastReadBcrLineId = oneRow.Id;
-
-                        //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        //  , $"LoadBarcodeLineCsv oneRow ok. [lastReadBcrLineId={lastReadBcrLineId}]"));
-
-                    }
-                    catch (Exception ex)
-                    {
-                        mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load lineBarcode read oneRow. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                        mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                    }
-
-
-                    int count = oneRow.TailBarcode.Number - oneRow.HeadBarcode.Number;
-                    int absCount = Math.Abs(count);
-                    if (absCount % 3 != 0)
-                    {
-                        mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                            , $"BarcodeLineNum mod 3 is not zero, [Id = {oneRow.Id}][HeadNum={oneRow.HeadBarcode.Number}][TailNum={oneRow.TailBarcode.Number}]"));
-                        break;
-                    }
-                    if (count < 0)
-                    {
-                        try
-                        {
-                            count = -count;
-                            for (int j = 0; j <= count; j += 3)
-                            {
-                                MapBarcode mapBarcode = new MapBarcode();
-                                mapBarcode.Number = oneRow.TailBarcode.Number + j;
-                                mapBarcode.Position.X = (j * oneRow.HeadBarcode.Position.X + (count - j) * oneRow.TailBarcode.Position.X) / count;
-                                mapBarcode.Position.Y = (j * oneRow.HeadBarcode.Position.Y + (count - j) * oneRow.TailBarcode.Position.Y) / count;
-                                mapBarcode.Offset.X = oneRow.Offset.X;
-                                mapBarcode.Offset.Y = oneRow.Offset.Y;
-                                mapBarcode.LineId = oneRow.Id;
-                                mapBarcode.Material = oneRow.Material;
-
-                                lastReadBcrId = mapBarcode.Number.ToString();
-                                theMapInfo.barcodeMap.Add(mapBarcode.Number, mapBarcode);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                            mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            for (int j = 0; j <= count; j += 3)
-                            {
-                                MapBarcode mapBarcode = new MapBarcode();
-                                mapBarcode.Number = oneRow.HeadBarcode.Number + j;
-                                mapBarcode.Position.X = (j * oneRow.TailBarcode.Position.X + (count - j) * oneRow.HeadBarcode.Position.X) / count;
-                                mapBarcode.Position.Y = (j * oneRow.TailBarcode.Position.Y + (count - j) * oneRow.HeadBarcode.Position.Y) / count;
-                                mapBarcode.Offset.X = oneRow.Offset.X;
-                                mapBarcode.Offset.Y = oneRow.Offset.Y;
-                                mapBarcode.LineId = oneRow.Id;
-                                mapBarcode.Material = oneRow.Material;
-                                lastReadBcrId = mapBarcode.Number.ToString();
-                                theMapInfo.barcodeMap.Add(mapBarcode.Number, mapBarcode);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Load barcode count < 0, [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                            mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                        }
-                    }
-
-                    //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    // , $"LoadBarcodeCsv oneRow ok. [lastReadBcrId={lastReadBcrId}]"));
-
-                    lastReadBcrLineId = oneRow.Id;
-                    theMapInfo.barcodeLineMap.Add(oneRow.Id, oneRow);
-                }
-
-                mirleLogger.Log(new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , $"Load Barcode File Ok. [lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-            }
-            catch (Exception ex)
-            {
-                mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"[lastReadBcrLineId={lastReadBcrLineId}][lastReadBcrId={lastReadBcrId}]"));
-                mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-            }
         }
 
         public void ReadAddressCsv()
@@ -248,9 +95,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             oneRow.TransferPortDirection = oneRow.AddressDirectionParse(getThisRow[dicHeaderIndexes["TransferPortDirection"]]);
                         }
-                        if (dicHeaderIndexes.ContainsKey("PortNumber"))
+                        if (dicHeaderIndexes.ContainsKey("GateType"))
                         {
-                            oneRow.PortNumber = getThisRow[dicHeaderIndexes["PortNumber"]];
+                            oneRow.GateType = getThisRow[dicHeaderIndexes["GateType"]];
                         }
                         if (dicHeaderIndexes.ContainsKey("ChargeDirection"))
                         {
@@ -290,7 +137,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         theMapInfo.chargerAddressMap.Add(oneRow);
                     }
-                    theMapInfo.portNumberMap.Add(oneRow.Id, oneRow.PortNumber);
+                    theMapInfo.gateTypeMap.Add(oneRow.Id, oneRow.GateType);
 
                 }
 
@@ -397,30 +244,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void WriteBarcodeBackup()
-        {
-            var directionName = Path.GetDirectoryName(BarcodePath);
-            if (!Directory.Exists(directionName))
-            {
-                Directory.CreateDirectory(directionName);
-            }
-
-            var barcodeBackupPath = Path.ChangeExtension(BarcodePath, ".backup.csv");
-
-            string titleRow = "Id,BarcodeHeadNum,HeadX,HeadY,BarcodeTailNum,TailX,TailY,OffsetX,OffsetY,Material" + Environment.NewLine;
-            File.WriteAllText(barcodeBackupPath, titleRow);
-
-            List<string> barcodeLineInfos = new List<string>();
-            foreach (var item in theMapInfo.barcodeLineMap.Values)
-            {
-                var head = item.HeadBarcode;
-                var tail = item.TailBarcode;
-                var barcodeLineInfo = string.Format("{0},{1},{2:F2},{3:F2},{4},{5:F2},{6:F2},{7:F2},{8:F2},{9}", item.Id, head.Number, head.Position.X, head.Position.Y, tail.Number, tail.Position.X, tail.Position.Y, item.Offset.X, item.Offset.Y, item.Material);
-                barcodeLineInfos.Add(barcodeLineInfo);
-            }
-            File.AppendAllLines(barcodeBackupPath, barcodeLineInfos);
-        }
-
         private void WriteAddressBackup()
         {
             var directionName = Path.GetDirectoryName(AddressPath);
@@ -431,13 +254,13 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             var backupPath = Path.ChangeExtension(AddressPath, ".backup.csv");
 
-            string titleRow = "Id,PositionX,PositionY,TransferPortDirection,PortNumber,PioDirection,ChargeDirection,CanSpin,IsTR50,InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle" + Environment.NewLine;
+            string titleRow = "Id,PositionX,PositionY,TransferPortDirection,GateType,PioDirection,ChargeDirection,CanSpin,IsTR50,InsideSectionId,OffsetX,OffsetY,OffsetTheta,VehicleHeadAngle" + Environment.NewLine;
             File.WriteAllText(backupPath, titleRow);
             List<string> lineInfos = new List<string>();
             foreach (var item in theMapInfo.addressMap.Values)
             {
                 var lineInfo = string.Format("{0},{1:F0},{2:F0},{3},{4},{5},{6},{7},{8},{9:0000},{10:F2},{11:F2},{12:F2},{13:N0}",
-                    item.Id, item.Position.X, item.Position.Y, item.TransferPortDirection, item.PortNumber, item.PioDirection, item.ChargeDirection, 
+                    item.Id, item.Position.X, item.Position.Y, item.TransferPortDirection, item.GateType, item.PioDirection, item.ChargeDirection, 
                     item.CanSpin, item.IsTR50,
                    int.Parse(item.InsideSectionId), item.AddressOffset.OffsetX, item.AddressOffset.OffsetY, item.AddressOffset.OffsetTheta,
                    item.VehicleHeadAngle

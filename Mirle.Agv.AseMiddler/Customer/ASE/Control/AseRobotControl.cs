@@ -24,12 +24,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private Vehicle theVehicle = Vehicle.Instance;
         public RobotCommand RobotCommand { get; set; }
-        private Dictionary<string, string> portNumberMap = new Dictionary<string, string>();
+        private Dictionary<string, string> gateTypeMap = new Dictionary<string, string>();
 
-        public AseRobotControl(PSWrapperXClass psWrapper, Dictionary<string, string> portNumberMap)
+        public AseRobotControl(PSWrapperXClass psWrapper, Dictionary<string, string> gateTypeMap)
         {
             this.psWrapper = psWrapper;
-            this.portNumberMap = portNumberMap;
+            this.gateTypeMap = gateTypeMap;
         }
 
         public void OnReadCarrierIdFinish(EnumSlotNumber slotNumber)
@@ -121,20 +121,18 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string isPio = RobotCommand.IsEqPio ? "1" : "0";
                 string pioDirection = ((int)RobotCommand.PioDirection).ToString();
-                string robotSpeed = RobotCommand.ForkSpeed.ToString(new string('0', 3));
                 string fromPort = "";
                 string toPort = "";
                 switch (RobotCommand.GetTransferStepType())
                 {
                     case EnumTransferStepType.Load:
-                        fromPort = portNumberMap[RobotCommand.PortAddressId].Substring(0, 2);
-                        toPort = RobotCommand.SlotNumber.ToString().PadLeft(2, '0');
+                        fromPort = RobotCommand.PortAddressId.PadLeft(5, '0');
+                        toPort = RobotCommand.SlotNumber.ToString().PadLeft(5, '0');
                         break;
                     case EnumTransferStepType.Unload:
-                        fromPort = RobotCommand.SlotNumber.ToString().PadLeft(2, '0');
-                        toPort = portNumberMap[RobotCommand.PortAddressId].Substring(0, 2);
+                        fromPort = RobotCommand.SlotNumber.ToString().PadLeft(5, '0');
+                        toPort = RobotCommand.PortAddressId.PadLeft(5, '0');
                         break;
                     case EnumTransferStepType.Move:
                     case EnumTransferStepType.MoveToCharger:
@@ -143,7 +141,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                         throw new Exception($"Robot command type error.[{RobotCommand.GetTransferStepType()}]");
                 }
 
-                return string.Concat(isPio, pioDirection, robotSpeed, fromPort, toPort);
+                string gateType = gateTypeMap[RobotCommand.PortAddressId].Substring(0,1);
+
+                return string.Concat(pioDirection, fromPort, toPort,gateType);
             }
             catch (Exception ex)
             {

@@ -35,12 +35,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<string> ImportantPspLog;
 
 
-        public AsePackage(Dictionary<string, string> portNumberMap)
+        public AsePackage(Dictionary<string, string> gateTypeMap)
         {
             LoadConfigs();
             InitialWrapper();
             aseMoveControl = new AseMoveControl(psWrapper, aseMoveConfig);
-            aseRobotControl = new AseRobotControl(psWrapper, portNumberMap);
+            aseRobotControl = new AseRobotControl(psWrapper, gateTypeMap);
             aseBatteryControl = new AseBatteryControl(psWrapper, aseBatteryConfig);
             aseBuzzerControl = new AseBuzzerControl(psWrapper);
         }
@@ -461,11 +461,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 EnumSlotNumber slotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), psMessage.Substring(0, 1));
                 switch (slotNumber)
                 {
-                    case EnumSlotNumber.A:
-                        theVehicle.AseCarrierSlotA = aseCarrierSlotStatus;
+                    case EnumSlotNumber.L:
+                        theVehicle.AseCarrierSlotL = aseCarrierSlotStatus;
                         break;
-                    case EnumSlotNumber.B:
-                        theVehicle.AseCarrierSlotB = aseCarrierSlotStatus;
+                    case EnumSlotNumber.R:
+                        theVehicle.AseCarrierSlotR = aseCarrierSlotStatus;
                         break;
                     default:
                         throw new Exception($"PsMessage slot number error.[{psMessage.Substring(0, 1)}]");
