@@ -1557,6 +1557,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 #region 2019.12.16 Report to Agvc when ForkFinished
 
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(slotNumber);
+                var loadCmdInfo =(LoadCmdInfo) GetCurTransferStep();
+                if (loadCmdInfo.SlotNumber != slotNumber) return;               
 
                 if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.ReadFail)
                 {
@@ -1742,7 +1744,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         agvcConnector.Unloading(unloadCmd.CmdId);
                         PublishOnDoTransferStepEvent(unloadCmd);
                         Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(unloadCmd));
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.PioDirection}][編號={unloadCmd.SlotNumber}]");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨中, [方向{unloadCmd.PioDirection}][儲位={unloadCmd.SlotNumber}][放貨站={unloadCmd.PortAddressId}]");
 
                     }
                     batteryLog.LoadUnloadCount++;
@@ -1808,7 +1810,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         PublishOnDoTransferStepEvent(loadCmd);
                         ReadResult = EnumCstIdReadResult.Noraml;
                         Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(loadCmd));
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.PioDirection}][編號={loadCmd.SlotNumber}]");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.PioDirection}][儲位={loadCmd.SlotNumber}][取貨站={loadCmd.PortAddressId}]");
                     }
 
                 }

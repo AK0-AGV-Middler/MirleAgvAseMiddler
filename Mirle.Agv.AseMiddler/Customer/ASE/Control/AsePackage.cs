@@ -677,9 +677,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string msg = $"SecodaryReceived : [{transaction.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                if (transaction.PSPrimaryMessage.Number!="33" && transaction.PSPrimaryMessage.Number != "35")
+                {
+                    AllPspLog?.Invoke(this, msg);
+                    LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                }      
 
                 OnSecondaryReceived(transaction);
             }
