@@ -142,9 +142,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string transferCommandInfo = GetTransferCommandInfo();
-
-                PrimarySend("P37", transferCommandInfo);
+                List<AgvcTransCmd> agvcTransCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+                foreach (var agvcTransCmd in agvcTransCmds)
+                {
+                    string transferCommandInfo = GetTransferCommandInfo(agvcTransCmd);
+                    PrimarySend("P37", transferCommandInfo);
+                }
             }
             catch (Exception ex)
             {
@@ -152,18 +155,17 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private string GetTransferCommandInfo()
+        private string GetTransferCommandInfo(AgvcTransCmd agvcTransCmd)
         {
             try
             {
-                List<AgvcTransCmd> agvcTransCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
-                bool isCommanding = agvcTransCmds.Count > 0;
-                string commandId = isCommanding ? agvcTransCmds[0].CommandId.PadLeft(20, '0') : "";
-                string fromPortNum = isCommanding ? agvcTransCmds[0].LoadAddressId.PadLeft(4, '0').Substring(0, 4) : "";
-                string toPortNum = isCommanding ? agvcTransCmds[0].UnloadAddressId.PadLeft(4, '0').Substring(0, 4) : "";
-                string lotId = isCommanding ? agvcTransCmds[0].LotId.PadLeft(40, '0').Substring(0, 40) : "";
-                string cassetteId = isCommanding ? agvcTransCmds[0].CassetteId : "";
-                return string.Concat(commandId, fromPortNum, toPortNum, lotId, cassetteId);
+                string commandId = agvcTransCmd.CommandId.PadLeft(20, '0');
+                string fromPortNum = agvcTransCmd.LoadAddressId.PadLeft(5, '0').Substring(0, 5);
+                string toPortNum = agvcTransCmd.UnloadAddressId.PadLeft(5, '0').Substring(0, 5);
+                string vehicleSlot = agvcTransCmd.SlotNumber.ToString();
+                string lotId = agvcTransCmd.LotId.PadLeft(40, '0').Substring(0, 40);
+                string cassetteId = agvcTransCmd.CassetteId;
+                return string.Concat(commandId, fromPortNum, toPortNum, vehicleSlot, lotId, cassetteId);
             }
             catch (Exception ex)
             {
@@ -381,7 +383,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
                 double y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
-                aseMoveStatus.LastMapPosition = new MapPosition(x,y);
+                aseMoveStatus.LastMapPosition = new MapPosition(x, y);
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
                 aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
                 aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
@@ -425,7 +427,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string isCharging = psMessage.Substring(0, 1).ToUpper().Trim();
-                if (theVehicle.IsCharging!= IsValueTrue(isCharging))
+                if (theVehicle.IsCharging != IsValueTrue(isCharging))
                 {
                     theVehicle.IsCharging = IsValueTrue(isCharging);
                     string msg = $"充電狀態改變[{isCharging}]";
@@ -505,7 +507,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 else
                 {
                     theVehicle.AseRobotStatus = aseRobotStatus;
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -695,12 +697,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string msg = $"PsWrapper connection state changed.[{state}]";               
-                if (state== enumConnectState.Connected || state== enumConnectState.Quit)
+                string msg = $"PsWrapper connection state changed.[{state}]";
+                if (state == enumConnectState.Connected || state == enumConnectState.Quit)
                 {
                     LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     ImportantPspLog?.Invoke(this, msg);
-                }               
+                }
                 OnConnectionChangeEvent?.Invoke(this, psWrapper.IsConnected());
             }
             catch (Exception ex)
