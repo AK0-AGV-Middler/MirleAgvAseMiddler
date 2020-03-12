@@ -1557,8 +1557,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 #region 2019.12.16 Report to Agvc when ForkFinished
 
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(slotNumber);
-                var loadCmdInfo =(LoadCmdInfo) GetCurTransferStep();
-                if (loadCmdInfo.SlotNumber != slotNumber) return;               
+                var robotCmdInfo =(RobotCommand) GetCurTransferStep();
+                if (robotCmdInfo.SlotNumber != slotNumber) return;
+                if (robotCmdInfo.GetTransferStepType() == EnumTransferStepType.Unload) return;             
 
                 if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.ReadFail)
                 {
