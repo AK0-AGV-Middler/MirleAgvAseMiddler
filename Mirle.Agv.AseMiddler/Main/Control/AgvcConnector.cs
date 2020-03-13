@@ -1539,6 +1539,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.XAxis = theVehicle.AseMoveStatus.LastMapPosition.X;
             report.YAxis = theVehicle.AseMoveStatus.LastMapPosition.Y;
             report.Speed = theVehicle.AseMoveStatus.Speed;
+            AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
+            report.WillPassGuideSection.Clear();
+            report.WillPassGuideSection.AddRange(aseMovingGuide.GuideSectionIds);
 
             AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
             report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
@@ -1552,9 +1555,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].CommandState : CommandState.None;
             report.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
             report.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandState : CommandState.None;
-           
+
+            report.HasCstL = theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
+            report.CstIdL = theVehicle.AseCarrierSlotL.CarrierId;
+            report.HasCstR = theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
+            report.CstIdR = theVehicle.AseCarrierSlotR.CarrierId;
+
             return report;
-        }
+        }       
 
         private void Receive_Cmd43_StatusRequest(object sender, TcpIpEventArgs e)
         {
@@ -1566,10 +1574,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
             try
-            {
-                
-               
-
+            {               
                 ID_143_STATUS_RESPONSE response = new ID_143_STATUS_RESPONSE();
                 response.ModeStatus = VHModeStatusParse(theVehicle.AutoState);
                 response.ActionStatus = theVehicle.ActionStatus;
