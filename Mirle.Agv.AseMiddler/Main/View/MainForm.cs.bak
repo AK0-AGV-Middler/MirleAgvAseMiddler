@@ -72,8 +72,6 @@ namespace Mirle.Agv.AseMiddler.View
         private UcVehicleImage ucVehicleImage = new UcVehicleImage();
         private MapPosition minPos = new MapPosition();
         private MapPosition maxPos = new MapPosition();
-        private MapPosition tmpO = new MapPosition();
-        private int mapYOffset = 0;
 
         private Point mouseDownPbPoint;
         private Point mouseDownScreenPoint;
@@ -252,8 +250,7 @@ namespace Mirle.Agv.AseMiddler.View
                 {
                     var headPos = section.HeadAddress.Position;
                     var tailPos = section.TailAddress.Position;
-
-                    MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Max(headPos.Y, tailPos.Y));//200310 dabid#
+                    MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Min(headPos.Y, tailPos.Y));
 
                     UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
                     if (!allUcSectionImages.ContainsKey(section.Id))
@@ -501,41 +498,32 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void SetupImageRegion()
         {
-            #region 200310 dabid+ 
-            var tmp = theMapInfo.addressMap.Values.FirstOrDefault();
-            tmpO = tmp.Position;
-            MapPosition tmpMaxY = new MapPosition();//200310 dabid+ 
-            MapPosition tmpMinY = new MapPosition();//200310 dabid+ 
-            foreach (var addr in theMapInfo.addressMap.Values)
-            {
-                if (addr.Position.X * addr.Position.X + addr.Position.Y * addr.Position.Y < tmpO.X * tmpO.X + tmpO.Y * tmpO.Y)
-                {
-                    tmpO = addr.Position;
-                }
-            }
-            tmpMaxY.Y = tmpMinY.Y = Math.Abs(tmp.Position.Y - tmpO.Y);
             foreach (var address in theMapInfo.addressMap.Values)
             {
-                if (Math.Abs(address.Position.Y - tmpO.Y) > tmpMaxY.Y)
+                if (address.Position.X > maxPos.X)
                 {
-                    tmpMaxY = address.Position;
+                    maxPos.X = address.Position.X;
                 }
-                if (Math.Abs(address.Position.Y - tmpO.Y) < tmpMaxY.Y)
+
+                if (address.Position.X < minPos.X)
                 {
-                    tmpMinY = address.Position;
+                    minPos.X = address.Position.X;
+                }
+
+                if (address.Position.Y > maxPos.Y)
+                {
+                    maxPos.Y = address.Position.Y;
+                }
+
+                if (address.Position.Y < minPos.Y)
+                {
+                    minPos.Y = address.Position.Y;
                 }
             }
-            mapYOffset = (Int32)Math.Abs(tmpMaxY.Y - tmpMinY.Y);
-            #endregion
 
-            double xMax = theMapInfo.addressMap.Values.ToList().Max(addr => addr.Position.X);
-            double xMin = theMapInfo.addressMap.Values.ToList().Min(addr => addr.Position.X);
-            double yMax = theMapInfo.addressMap.Values.ToList().Max(addr => addr.Position.Y);
-            double yMin = theMapInfo.addressMap.Values.ToList().Min(addr => addr.Position.Y);
-
-            var maxPosInPixel = MapPixelExchange(new MapPosition(xMax,yMax));
-            var minPosInPixel = MapPixelExchange(new MapPosition(xMin,yMin));
-            Point point = new Point(100 + Math.Abs(maxPosInPixel.X - minPosInPixel.X), 100 + Math.Abs(maxPosInPixel.Y - minPosInPixel.Y));
+            var maxPosInPixel = MapPixelExchange(maxPos);
+            var minPosInPixel = MapPixelExchange(minPos);
+            Point point = new Point(100 + (maxPosInPixel.X - minPosInPixel.X), 100 + (maxPosInPixel.Y - minPosInPixel.Y));
             pictureBox1.Size = new Size(point);
             image = new Bitmap(point.X, point.Y, PixelFormat.Format32bppArgb);
             gra = Graphics.FromImage(image);
@@ -543,16 +531,15 @@ namespace Mirle.Agv.AseMiddler.View
 
         public Point MapPixelExchange(MapPosition position)
         {
-            var pixelX = Convert.ToInt32(((position.X - minPos.X - tmpO.X)) * coefficient + deltaOrigion);
-            var pixelY = Convert.ToInt32(((position.Y - minPos.Y - tmpO.Y) * (-1) + mapYOffset) * coefficient + deltaOrigion);
-
+            var pixelX = Convert.ToInt32((position.X - minPos.X) * coefficient + deltaOrigion);
+            var pixelY = Convert.ToInt32((position.Y - minPos.Y) * coefficient + deltaOrigion);
             return new Point(pixelX, pixelY);
         }
 
         public MapPosition MapPositionExchange(MapPosition pixel)
         {
-            var posX = (pixel.X - deltaOrigion) / coefficient + minPos.X + tmpO.X;
-            var posY = ((pixel.Y - deltaOrigion) / coefficient - mapYOffset) / (-1) + tmpO.Y + minPos.Y;
+            var posX = (pixel.X - deltaOrigion) / coefficient + minPos.X;
+            var posY = (pixel.Y - deltaOrigion) / coefficient + minPos.Y;
 
             return new MapPosition(posX, posY);
         }
