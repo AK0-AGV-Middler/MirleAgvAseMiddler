@@ -362,7 +362,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 case EnumTransferStepType.Move:
                 case EnumTransferStepType.MoveToCharger:
-                    MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
+                    MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;                    
                     if (moveCmdInfo.EndAddress.Id == theVehicle.AseMoveStatus.LastAddress.Id)
                     {
                         AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
@@ -752,6 +752,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PauseTransfer();
+                agvcTransCmd.CommandState = CommandState.LoadEnroute;
                 theVehicle.AgvcTransCmdBuffer.Add(agvcTransCmd.CommandId, agvcTransCmd);
                 agvcTransCmd.RobotNgRetryTimes = mainFlowConfig.RobotNgRetryTimes;
                 SetupTransferSteps(agvcTransCmd);

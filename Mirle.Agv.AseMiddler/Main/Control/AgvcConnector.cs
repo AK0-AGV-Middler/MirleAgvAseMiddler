@@ -1222,7 +1222,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void LoadComplete(string cmdId)
         {
             AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
-            agvcTransCmd.CommandState = CommandState.LoadEnroute;
+            agvcTransCmd.CommandState = CommandState.UnloadEnroute;
             StatusChangeReport();
             Send_Cmd136_TransferEventReport(EventType.LoadComplete, cmdId);
         }
@@ -1237,7 +1237,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void UnloadComplete(string cmdId)
         {
             AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
-            agvcTransCmd.CommandState = CommandState.UnloadEnroute;
+            agvcTransCmd.CommandState = CommandState.None;
             StatusChangeReport();
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete, cmdId);
         }
