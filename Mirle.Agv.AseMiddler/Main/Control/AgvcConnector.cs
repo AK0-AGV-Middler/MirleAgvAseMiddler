@@ -54,6 +54,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         private bool IsWaitReserveReply { get; set; }
         public bool IsAgvcRejectReserve { get; set; }
 
+        public event EventHandler<LogFormat> OnLogMsgEvent;
+
         public TcpIpAgent ClientAgent { get; private set; }
         public string AgvcConnectorAbnormalMsg { get; set; } = "";
 
@@ -143,14 +145,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 if (ClientAgent != null)
                 {
-                    mirleLogger.Log(new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"AgvcConnector : Disconnect Stop, [IsNull={IsClientAgentNull()}][IsConnect={IsConnected()}]"));
+                    string msg = $"AgvcConnector : Disconnect Stop, [IsNull={IsClientAgentNull()}][IsConnect={IsConnected()}]";
+                    LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
 
                     ClientAgent.stop();
                     //ClientAgent = null;
                 }
                 else
                 {
-                    mirleLogger.Log(new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"ClientAgent is null cannot disconnect"));
+                    string msg = $"ClientAgent is null cannot disconnect";
+                    LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 }
             }
             catch (Exception ex)
@@ -169,14 +173,16 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    mirleLogger.Log(new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Already connect cannot connect again."));
+                    string msg = $"Already connect cannot connect again.";
+                    LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 }
             }
             else
             {
                 CreatTcpIpClientAgent();
                 Connect();
-                mirleLogger.Log(new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"ClientAgent is null cannot connect."));
+                string msg = $"ClientAgent is null cannot connect.";
+                LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
             }
 
         }
@@ -222,8 +228,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var msg = $"AgvcConnector : 斷線中，無法發送[{wrapper.SeqNum}][id {wrapper.ID}{(EnumCmdNum)wrapper.ID}]資訊";
                 OnCmdSendEvent?.Invoke(this, msg);
                 msg += wrapper.ToString();
-                mirleLogger.Log(new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 return;
             }
             else
@@ -248,8 +253,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             string msg = $"[RECV] [SeqNum = {e.iSeqNum}][{e.iPacketID}][{(EnumCmdNum)int.Parse(e.iPacketID)}][ObjPacket = {e.objPacket}]";
             OnCmdReceiveEvent?.Invoke(this, msg);
-            mirleLogger.Log(new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                , msg));
+            LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
         private void RecieveCommandMediator(object sender, TcpIpEventArgs e)
         {
@@ -442,8 +446,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 string msg = $"[SEND] [SeqNum = {wrapper.SeqNum}][{wrapper.ID}][{(EnumCmdNum)wrapper.ID}] {wrapper}";
                 OnCmdSendEvent?.Invoke(this, msg);
-                mirleLogger.Log(new LogFormat("Comm", "1", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , msg));
+                LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
             }
             catch (Exception ex)
             {
@@ -1522,7 +1525,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         }
         private ID_144_STATUS_CHANGE_REP GetCmd144ReportBody()
-        {          
+        {
             ID_144_STATUS_CHANGE_REP report = new ID_144_STATUS_CHANGE_REP();
             report.ModeStatus = VHModeStatusParse(theVehicle.AutoState);
             report.ActionStatus = theVehicle.ActionStatus;
@@ -1562,7 +1565,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.CstIdR = theVehicle.AseCarrierSlotR.CarrierId;
 
             return report;
-        }       
+        }
 
         private void Receive_Cmd43_StatusRequest(object sender, TcpIpEventArgs e)
         {
@@ -1574,7 +1577,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
             try
-            {               
+            {
                 ID_143_STATUS_RESPONSE response = new ID_143_STATUS_RESPONSE();
                 response.ModeStatus = VHModeStatusParse(theVehicle.AutoState);
                 response.ActionStatus = theVehicle.ActionStatus;
@@ -2582,12 +2585,19 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void LogException(string classMethodName, string exMsg)
         {
-            mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
+            LogFormat logFormat = new LogFormat("Error", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", exMsg);
+            OnLogMsgEvent?.Invoke(this, logFormat);
         }
 
         private void LogDebug(string classMethodName, string msg)
         {
-            mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
+            LogFormat logFormat = new LogFormat("Debug", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg);
+            OnLogMsgEvent?.Invoke(this, logFormat);
+        }
+
+        private void LogComm(string classMethodName, string msg)
+        {
+            mirleLogger.Log(new LogFormat("Comm", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg));
         }
     }
 

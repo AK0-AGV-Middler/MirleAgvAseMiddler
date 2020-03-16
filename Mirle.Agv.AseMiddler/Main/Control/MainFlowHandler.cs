@@ -206,6 +206,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnInstallTransferCommandEvent += AgvcConnector_OnInstallTransferCommandEvent;
                 agvcConnector.OnOverrideCommandEvent += AgvcConnector_OnOverrideCommandEvent;
                 agvcConnector.OnAvoideRequestEvent += AgvcConnector_OnAvoideRequestEvent;
+                agvcConnector.OnLogMsgEvent += LogMsgHandler;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 asePackage.aseMoveControl.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
@@ -246,6 +247,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
+
+
 
         private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
         {
@@ -362,7 +365,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 case EnumTransferStepType.Move:
                 case EnumTransferStepType.MoveToCharger:
-                    MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;                    
+                    MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
                     if (moveCmdInfo.EndAddress.Id == theVehicle.AseMoveStatus.LastAddress.Id)
                     {
                         AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
@@ -584,7 +587,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     TrackPositionStatus = EnumThreadStatus.Working;
 
-                    AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);                   
+                    AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                     if (theVehicle.AseMoveStatus.LastMapPosition == null) continue;
                     //if (IsVehlocStayInSameAddress(vehicleLocation)) continue;
 
@@ -1558,9 +1561,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 #region 2019.12.16 Report to Agvc when ForkFinished
 
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(slotNumber);
-                var robotCmdInfo =(RobotCommand) GetCurTransferStep();
+                var robotCmdInfo = (RobotCommand)GetCurTransferStep();
                 if (robotCmdInfo.SlotNumber != slotNumber) return;
-                if (robotCmdInfo.GetTransferStepType() == EnumTransferStepType.Unload) return;             
+                if (robotCmdInfo.GetTransferStepType() == EnumTransferStepType.Unload) return;
 
                 if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.ReadFail)
                 {
@@ -2470,7 +2473,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void ResetAllarms()
         {
             alarmHandler.ResetAllAlarms();
-        }        
+        }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
@@ -2598,8 +2601,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         asePackage.aseRobotControl.ClearRobotCommand();
-                    }                                 
-                }              
+                    }
+                }
 
                 AbortCommand(abortCmdId, GetCompleteStatusFromCancelRequest(receive.CancelAction));
                 ResumeTransfer();
@@ -2735,7 +2738,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             tempBatteryLog.InitialSoc = batteryLog.InitialSoc;
             batteryLog = tempBatteryLog;
             //TODO: AgvcConnector
-
         }
 
         private void AsePackage_OnMessageShowEvent(object sender, string e)
@@ -2743,11 +2745,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             OnMessageShowEvent?.Invoke(this, e);
         }
 
+        #region Log
+
         private void LogException(string classMethodName, string exMsg)
         {
             try
             {
-                mirleLogger.Log(new Mirle.Tools.LogFormat("Error", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", exMsg));
+                mirleLogger.Log(new LogFormat("Error", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", exMsg));
             }
             catch (Exception)
             {
@@ -2758,12 +2762,21 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                mirleLogger.Log(new Mirle.Tools.LogFormat("Debug", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg));
+                mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg));
             }
             catch (Exception)
             {
             }
         }
+
+        private void LogMsgHandler(object sender, LogFormat e)
+        {
+            mirleLogger.Log(e);
+        }
+
+
+        #endregion
+
 
 
     }
