@@ -16,7 +16,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public MapPosition LastMapPosition { get; set; } = new MapPosition();
         public MapAddress NeerlyAddress { get; set; } = new MapAddress();
         public int Speed { get; set; } = 0;
-       
+        public bool IsMoveEnd { get; set; } = false;
         
         public AseMoveStatus() { }
 
@@ -30,6 +30,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.LastAddress = aseMoveStatus.LastAddress;
             this.LastMapPosition = aseMoveStatus.LastMapPosition;
             this.NeerlyAddress = aseMoveStatus.NeerlyAddress;
+            this.IsMoveEnd = aseMoveStatus.IsMoveEnd;
         }
     }
 }

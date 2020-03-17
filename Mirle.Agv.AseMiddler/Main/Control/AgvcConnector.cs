@@ -33,6 +33,10 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> OnReserveOkEvent;
         public event EventHandler<string> OnPassReserveSectionEvent;
+        public event EventHandler<LogFormat> OnLogMsgEvent;
+        public event EventHandler<AseCarrierSlotStatus> OnRenameCassetteIdEvent;
+        public event EventHandler<string> OnCassetteIdReadReplyAbortCommandEvent;
+        public event EventHandler OnStopClearAndResetEvent;
         #endregion
 
         private Vehicle theVehicle = Vehicle.Instance;
@@ -54,7 +58,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private bool IsWaitReserveReply { get; set; }
         public bool IsAgvcRejectReserve { get; set; }
 
-        public event EventHandler<LogFormat> OnLogMsgEvent;
 
         public TcpIpAgent ClientAgent { get; private set; }
         public string AgvcConnectorAbnormalMsg { get; set; } = "";
@@ -491,7 +494,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 finally
                 {
-                    if (IsAskReserveStop || IsAskReservePause || mainFlowHandler.IsMoveEnd)
+                    if (IsAskReserveStop || IsAskReservePause || theVehicle.AseMoveStatus.IsMoveEnd)
                     {
                         SpinWait.SpinUntil(() => false, 50);
                     }
@@ -564,12 +567,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool CanDoReserveWork()
         {
-            return !IsAskReservePause && !IsAskReserveStop && !mainFlowHandler.IsMoveEnd;
+            return !IsAskReservePause && !IsAskReserveStop && !theVehicle.AseMoveStatus.IsMoveEnd;
         }
 
         private bool CanAskReserve()
         {
-            return mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !IsGotReserveOkSectionsFull() && !mainFlowHandler.IsMoveEnd;
+            return mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !IsGotReserveOkSectionsFull() && !theVehicle.AseMoveStatus.IsMoveEnd;
         }
         public bool IsGotReserveOkSectionsFull()
         {
@@ -653,7 +656,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return;
             }
 
-            if (!IsAskReserveStop && !mainFlowHandler.IsMoveEnd)
+            if (!IsAskReserveStop && !theVehicle.AseMoveStatus.IsMoveEnd)
             {
                 queNeedReserveSections.TryPeek(out MapSection needReserveSection);
 
@@ -1712,7 +1715,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 ClearAllReserve();
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
                 SetupNeedReserveSections();
-                mainFlowHandler.IsMoveEnd = false;
+                theVehicle.AseMoveStatus.IsMoveEnd = false;
                 IsAskReservePause = false;
             }
             catch (Exception ex)
@@ -1772,7 +1775,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
                     alarmHandler.SetAlarm(000037);
-                    mainFlowHandler.StopClearAndReset();
+                    OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
                     return;
                 }
 
@@ -1794,7 +1797,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     case CancelActionType.CmdCancelIdMismatch:
                     case CancelActionType.CmdCancelIdReadFailed:
                         alarmHandler.ResetAllAlarms();
-                        mainFlowHandler.StopClearAndReset();
+                        OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
                         break;
                     case CancelActionType.CmdNone:
                     default:
@@ -1974,7 +1977,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 default:
                     break;
             }
-            mainFlowHandler.AbortCommand(cmdId, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
+            OnCassetteIdReadReplyAbortCommandEvent?.Invoke(this, cmdId);
         }
         private void AbortCommand(EnumCstIdReadResult readResult, string cmdId)
         {
@@ -1992,8 +1995,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.VehicleAbort;
                     break;
             }
-
-            mainFlowHandler.AbortCommand(cmdId, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
+            OnCassetteIdReadReplyAbortCommandEvent?.Invoke(this, cmdId);
         }
 
         public void Send_Cmd136_AskReserve(MapSection mapSection)
@@ -2077,7 +2079,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
                         StatusChangeReport();
                     }
-                    if (!IsAskReserveStop && !mainFlowHandler.IsMoveEnd)
+                    if (!IsAskReserveStop && !theVehicle.AseMoveStatus.IsMoveEnd)
                     {
                         OnGetReserveOk(sectionId);
                     }
@@ -2110,14 +2112,24 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
             var result = false;
+            
             if (theVehicle.AseCarrierSlotL.CarrierId == receive.OLDCSTID.Trim())
             {
-                mainFlowHandler.RenameCstId(EnumSlotNumber.L, receive.NEWCSTID);
+                AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.AseCarrierSlotL;
+                aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
+                aseCarrierSlotStatus.CarrierId = receive.NEWCSTID;
+                OnRenameCassetteIdEvent?.Invoke(this, aseCarrierSlotStatus);
+                //mainFlowHandler.RenameCstId(EnumSlotNumber.L, receive.NEWCSTID);
                 result = true;
             }
-            else if (theVehicle.AseCarrierSlotL.CarrierId == receive.OLDCSTID.Trim())
+            else if (theVehicle.AseCarrierSlotR.CarrierId == receive.OLDCSTID.Trim())
             {
-                mainFlowHandler.RenameCstId(EnumSlotNumber.R, receive.NEWCSTID);
+                AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.AseCarrierSlotR;
+                aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
+                aseCarrierSlotStatus.CarrierId = receive.NEWCSTID;
+                OnRenameCassetteIdEvent?.Invoke(this, aseCarrierSlotStatus);
+
+                //mainFlowHandler.RenameCstId(EnumSlotNumber.R, receive.NEWCSTID);
                 result = true;
             }
 
@@ -2168,7 +2180,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                 wrappers.TransEventRep = id_134_TRANS_EVENT_REP;
 
-                // SendCommandWrapper(wrappers);
+                SendCommandWrapper(wrappers);
             }
             catch (Exception ex)
             {

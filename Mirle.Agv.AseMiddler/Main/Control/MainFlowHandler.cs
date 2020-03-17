@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using com.mirle.aka.sc.ProtocolFormat.ase.agvMessage;
 using Mirle.Tools;
+using com.mirle.iibg3k0.ttc.Common;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -88,7 +89,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsFirstAhGet { get; set; }
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Noraml;
         public bool NeedRename { get; set; } = false;
-        public bool IsMoveEnd { get; set; } = false;
         public bool IsSimulation { get; set; }
         public string MainFlowAbnormalMsg { get; set; }
         public bool IsRetryArrival { get; set; } = false;
@@ -207,6 +207,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnOverrideCommandEvent += AgvcConnector_OnOverrideCommandEvent;
                 agvcConnector.OnAvoideRequestEvent += AgvcConnector_OnAvoideRequestEvent;
                 agvcConnector.OnLogMsgEvent += LogMsgHandler;
+                agvcConnector.OnRenameCassetteIdEvent += AgvcConnector_OnRenameCassetteIdEvent;
+                agvcConnector.OnCassetteIdReadReplyAbortCommandEvent += AgvcConnector_OnCassetteIdReadReplyAbortCommandEvent;
+                agvcConnector.OnStopClearAndResetEvent += AgvcConnector_OnStopClearAndResetEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
                 asePackage.aseMoveControl.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
@@ -248,7 +251,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
+       
 
         private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
         {
@@ -598,7 +601,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             //有搬送命令時，比對當前Position與搬送路徑Sections計算LastSection/LastAddress/Distance                           
                             if (IsMoveStep())
                             {
-                                if (!IsMoveEnd)
+                                if (!theVehicle.AseMoveStatus.IsMoveEnd)
                                 {
                                     if (UpdateVehiclePositionInMovingStep())
                                     {
@@ -1334,7 +1337,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                IsMoveEnd = true;
+                theVehicle.AseMoveStatus.IsMoveEnd = true;
                 OnMoveArrivalEvent?.Invoke(this, new EventArgs());
 
                 #region Not EnumMoveComplete.Success
@@ -1851,7 +1854,19 @@ namespace Mirle.Agv.AseMiddler.Controller
             AseRobotContorl_OnRobotCommandFinishEvent(this, GetCurTransferStep());
         }
 
-        public void AbortCommand(string cmdId, CompleteStatus completeStatus)
+        private void AgvcConnector_OnCassetteIdReadReplyAbortCommandEvent(object sender, string e)
+        {
+            try
+            {
+                AbortCommand(e, theVehicle.AgvcTransCmdBuffer[e].CompleteStatus);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void AbortCommand(string cmdId, CompleteStatus completeStatus)
         {
             ClearTransferSteps(cmdId);
             var agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
@@ -2354,6 +2369,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        private void AgvcConnector_OnStopClearAndResetEvent(object sender, EventArgs e)
+        {
+            StopClearAndReset();
+        }
+
         public void StopClearAndReset()
         {
             try
@@ -2485,16 +2505,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             asePackage.aseBatteryControl.SetPercentage(percentage);
         }
 
-        public void RenameCstId(EnumSlotNumber slotNumber, string newCstId)
+        private void AgvcConnector_OnRenameCassetteIdEvent(object sender, AseCarrierSlotStatus e)
         {
             try
             {
-                AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(slotNumber);
-                aseCarrierSlotStatus.CarrierId = newCstId;
-                aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
-
-                AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer.Values.First(x => x.SlotNumber == slotNumber);
-                agvcTransCmd.CassetteId = newCstId;
+                AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer.Values.First(x => x.SlotNumber == e.SlotNumber);
+                agvcTransCmd.CassetteId = e.CarrierId;
                 theVehicle.AgvcTransCmdBuffer[agvcTransCmd.CommandId] = agvcTransCmd;
 
                 if (transferSteps.Count > 0)
@@ -2503,7 +2519,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         if (transferStep.CmdId == agvcTransCmd.CommandId && IsRobCommand(transferStep))
                         {
-                            ((RobotCommand)transferStep).CassetteId = newCstId;
+                            ((RobotCommand)transferStep).CassetteId = e.CarrierId;
                         }
                     }
                 }
@@ -2584,7 +2600,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-
                 var msg = $"MainFlow : 接受[{receive.CancelAction}]命令。";
                 OnMessageShowEvent(this, msg);
                 PauseTransfer();
