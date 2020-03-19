@@ -16,8 +16,6 @@ using System.Reflection;
 using System.Collections.Concurrent;
 using Mirle.Tools;
 
-
-
 namespace Mirle.Agv.AseMiddler.Controller
 {
     [Serializable]
@@ -57,7 +55,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAskReserveStop { get; private set; }
         private bool IsWaitReserveReply { get; set; }
         public bool IsAgvcRejectReserve { get; set; }
-
+        private MapPosition lastReportPosition { get; set; } = new MapPosition();
 
         public TcpIpAgent ClientAgent { get; private set; }
         public string AgvcConnectorAbnormalMsg { get; set; } = "";
@@ -564,12 +562,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             var msg = $"MainFlow : 詢問通行權 後處理, [ThreadStatus={AskReserveStatus}][TotalSpendMs={total}]";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
-
         public bool CanDoReserveWork()
         {
             return !IsAskReservePause && !IsAskReserveStop && !theVehicle.AseMoveStatus.IsMoveEnd;
         }
-
         private bool CanAskReserve()
         {
             return mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !IsGotReserveOkSectionsFull() && !theVehicle.AseMoveStatus.IsMoveEnd;
@@ -586,7 +582,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             sectionIds += "]";
             return sectionIds;
         }
-
         private int GetReserveOkSectionsTotalLength()
         {
             double result = 0;

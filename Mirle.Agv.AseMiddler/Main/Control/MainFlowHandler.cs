@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using com.mirle.aka.sc.ProtocolFormat.ase.agvMessage;
 using Mirle.Tools;
 using com.mirle.iibg3k0.ttc.Common;
+using System.Collections.Concurrent;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -92,6 +93,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsSimulation { get; set; }
         public string MainFlowAbnormalMsg { get; set; }
         public bool IsRetryArrival { get; set; } = false;
+
+        private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         #endregion
 
         public MainFlowHandler()
@@ -251,7 +254,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-       
+
 
         private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
         {
@@ -603,7 +606,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                             {
                                 if (!theVehicle.AseMoveStatus.IsMoveEnd)
                                 {
-                                    if (UpdateVehiclePositionInMovingStep())
+                                    if (theVehicle.IsSimulation)
+                                    {
+                                        if (FakeReserveOkAseMoveStatus.Any())
+                                        {
+                                            MoveToReserveOkPositions();
+                                            sw.Reset();
+                                        }
+                                    }
+                                    else if (UpdateVehiclePositionInMovingStep())
                                     {
                                         sw.Reset();
                                     }
@@ -637,6 +648,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             AfterTrackPosition(total);
         }
+
         public void StartTrackPosition()
         {
             trackPositionPauseEvent.Set();
@@ -680,6 +692,60 @@ namespace Mirle.Agv.AseMiddler.Controller
             OnMessageShowEvent?.Invoke(this, msg);
             //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
             //    , msg));
+        }
+        private void MoveToReserveOkPositions()
+        {
+            SpinWait.SpinUntil(() => false, 2000);
+            FakeReserveOkAseMoveStatus.TryDequeue(out AseMoveStatus targetAseMoveStatus);
+            AseMoveStatus tempMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+
+            if (targetAseMoveStatus.LastSection.Id != theVehicle.AseMoveStatus.LastSection.Id)
+            {
+                tempMoveStatus.LastSection = targetAseMoveStatus.LastSection;
+                GetFakeSectionDistance(tempMoveStatus);
+                theVehicle.AseMoveStatus = tempMoveStatus;
+                agvcConnector.ReportSectionPass();
+
+                tempMoveStatus.LastMapPosition = targetAseMoveStatus.LastMapPosition;
+                tempMoveStatus.Speed = targetAseMoveStatus.Speed;
+                tempMoveStatus.HeadDirection = targetAseMoveStatus.HeadDirection;
+                tempMoveStatus.LastAddress = targetAseMoveStatus.LastAddress;
+                GetFakeSectionDistance(tempMoveStatus);
+                theVehicle.AseMoveStatus = tempMoveStatus;
+                agvcConnector.ReportSectionPass();
+
+                theVehicle.AseMovingGuide.MovingSectionsIndex++;
+                UpdateAgvcConnectorGotReserveOkSections(targetAseMoveStatus.LastSection.Id);
+            }
+
+            if (targetAseMoveStatus.LastAddress.Id != theVehicle.AseMoveStatus.LastAddress.Id)
+            {
+                tempMoveStatus.LastMapPosition = targetAseMoveStatus.LastMapPosition;
+                tempMoveStatus.Speed = targetAseMoveStatus.Speed;
+                tempMoveStatus.HeadDirection = targetAseMoveStatus.HeadDirection;
+                tempMoveStatus.LastAddress = targetAseMoveStatus.LastAddress;
+                GetFakeSectionDistance(tempMoveStatus);
+                theVehicle.AseMoveStatus = tempMoveStatus;
+                agvcConnector.ReportSectionPass();
+            }
+
+            if (targetAseMoveStatus.IsMoveEnd)
+            {
+                AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                theVehicle.AseMoveStatus.IsMoveEnd = true;
+            }
+        }
+
+        private static void GetFakeSectionDistance(AseMoveStatus tempMoveStatus)
+        {
+            if (tempMoveStatus.LastAddress.Id == tempMoveStatus.LastSection.TailAddress.Id)
+            {
+                tempMoveStatus.LastSection.VehicleDistanceSinceHead = tempMoveStatus.LastSection.HeadToTailDistance;
+            }
+            else
+            {
+                tempMoveStatus.LastSection.VehicleDistanceSinceHead = 0;
+            }
         }
         #endregion
 
@@ -1296,13 +1362,21 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (theVehicle.IsSimulation)
                 {
-                    MapPosition lastPosition = theVehicle.AseMoveStatus.LastMapPosition;
-                    MapPosition addressPosition = address.Position;
-                    MapPosition midPosition = new MapPosition((lastPosition.X + addressPosition.X) / 2, (lastPosition.Y + addressPosition.Y) / 2);
-                    SpinWait.SpinUntil(() => false, 5000);
-                    SimulationArrival(false, midPosition, headAngle, speed);
-                    SpinWait.SpinUntil(() => false, 5000);
-                    SimulationArrival(isEnd, address.Position, headAngle, speed);
+                    AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                    aseMoveStatus.LastAddress = address;
+                    aseMoveStatus.LastMapPosition = address.Position;
+                    aseMoveStatus.LastSection = mapSection;
+                    aseMoveStatus.HeadDirection = headAngle;
+                    aseMoveStatus.Speed = speed;
+                    aseMoveStatus.IsMoveEnd = isEnd;
+                    FakeReserveOkAseMoveStatus.Enqueue(aseMoveStatus);
+
+                    //MapPosition lastPosition = theVehicle.AseMoveStatus.LastMapPosition;
+                    //MapPosition addressPosition = address.Position;
+                    //MapPosition midPosition = new MapPosition((lastPosition.X + addressPosition.X) / 2, (lastPosition.Y + addressPosition.Y) / 2);
+                    //SimulationArrival(false, midPosition, headAngle, speed);
+                    //SpinWait.SpinUntil(() => false, 5000);
+                    //SimulationArrival(isEnd, address.Position, headAngle, speed);
                 }
                 else
                 {
@@ -1327,6 +1401,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             if (isEnd)
             {
+                SpinWait.SpinUntil(() => false, 1000);
                 AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
             }
         }
@@ -1960,7 +2035,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         while (aseMovingGuide.MovingSectionsIndex < searchingSectionIndex)
                         {
                             batteryLog.MoveDistanceTotalM += (int)(aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex].HeadToTailDistance / 1000);
-                            aseMovingGuide.MovingSectionsIndex++;
+                            theVehicle.AseMovingGuide.MovingSectionsIndex++;
                             FitVehicalLocationAndMoveCmd();
                             agvcConnector.ReportSectionPass();
                             isUpdateSection = true;
