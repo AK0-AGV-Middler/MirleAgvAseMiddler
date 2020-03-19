@@ -141,9 +141,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                         throw new Exception($"Robot command type error.[{RobotCommand.GetTransferStepType()}]");
                 }
 
-                string gateType = gateTypeMap[RobotCommand.PortAddressId].Substring(0,1);
+                string gateType = RobotCommand.GateType.Substring(0, 1);
+                string portNumber = RobotCommand.PortNumber.Substring(0, 1);
 
-                return string.Concat(pioDirection, fromPort, toPort,gateType);
+                return string.Concat(pioDirection, fromPort, toPort, gateType, portNumber).PadRight(24, '0');
             }
             catch (Exception ex)
             {

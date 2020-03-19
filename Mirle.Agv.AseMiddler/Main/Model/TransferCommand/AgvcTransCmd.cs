@@ -27,7 +27,9 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public int RobotNgRetryTimes { get; set; } = 1;
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
         public CommandState CommandState { get; set; } = CommandState.None;
-        public string LotId { get; set; } = "";       
+        public string LotId { get; set; } = "";
+        public string LoadPortId { get; set; } = "";
+        public string UnloadPortId { get; set; } = "";
 
         public AgvcTransCmd()
         {
@@ -40,6 +42,9 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             AgvcTransCommandType = SetupCommandType(transRequest.CommandAction);
             SeqNum = aSeqNum;
             CompleteStatus = SetupCompleteStatus(transRequest.CommandAction);
+            
+            LoadPortId = string.IsNullOrEmpty(transRequest.LoadPortID) ? "" : transRequest.LoadPortID.Trim();
+            UnloadPortId = string.IsNullOrEmpty(transRequest.UnloadPortID) ? "" : transRequest.UnloadPortID.Trim();
         }
 
         protected CompleteStatus SetupCompleteStatus(CommandActionType actType)

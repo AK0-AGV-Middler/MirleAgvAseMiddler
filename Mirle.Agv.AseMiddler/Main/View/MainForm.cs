@@ -675,8 +675,8 @@ namespace Mirle.Agv.AseMiddler.View
         private void AseMoveControlForm_SendMove(object sender, AseMoveEventArgs e)
         {
             try
-            {
-                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed);
+            {                
+                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed,e.isEnd);
             }
             catch (Exception ex)
             {
@@ -731,7 +731,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 robotCommand = new LoadCmdInfo(agvcTransCmd);
                 robotCommand.PortAddressId = e.FromPort.PadLeft(5, '0');
-                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.ToPort.Trim('0'));
+                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.ToPort.Trim('0'));                
             }
             else
             {
@@ -740,6 +740,8 @@ namespace Mirle.Agv.AseMiddler.View
                 robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.FromPort.Trim('0'));
             }
             robotCommand.PioDirection = e.PioDirection;
+            robotCommand.GateType = e.GateType;
+            robotCommand.PortNumber = e.PortNumber;
 
             return robotCommand;
         }

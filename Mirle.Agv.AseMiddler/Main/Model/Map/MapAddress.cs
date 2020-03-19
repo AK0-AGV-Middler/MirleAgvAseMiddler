@@ -19,7 +19,8 @@ namespace Mirle.Agv.AseMiddler.Model
         public bool IsTR50 { get; set; }
         public string InsideSectionId { get; set; }
         public MapAddressOffset AddressOffset { get; set; } = new MapAddressOffset();
-        public double VehicleHeadAngle { get; set; }       
+        public double VehicleHeadAngle { get; set; }
+        public Dictionary<string, string> PortIdMap { get; set; } = new Dictionary<string, string>();
 
         public EnumAddressDirection AddressDirectionParse(string v)
         {           

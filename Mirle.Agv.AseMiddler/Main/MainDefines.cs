@@ -17,6 +17,13 @@ namespace Mirle.Agv.AseMiddler
         R2000
     }    
 
+    public enum EnumAseMoveCommandIsEnd
+    {
+        None,
+        End,
+        Begin
+    }
+
     public enum EnumAddressDirection
     {
         None = 0,

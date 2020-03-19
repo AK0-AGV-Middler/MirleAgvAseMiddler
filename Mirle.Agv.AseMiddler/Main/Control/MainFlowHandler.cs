@@ -379,6 +379,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
+                        agvcConnector.ReportSectionPass();
+                        asePackage.aseMoveControl.PartMove(theVehicle.AseMoveStatus);
                         agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
                     }
                     break;
@@ -1230,11 +1232,31 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void TransferStepsAddUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             UnloadCmdInfo unloadCmdInfo = new UnloadCmdInfo(agvcTransCmd);
+            MapAddress unloadAddress = theMapInfo.addressMap[unloadCmdInfo.PortAddressId];
+            unloadCmdInfo.GateType = unloadAddress.GateType;
+            if (unloadAddress.PortIdMap.ContainsKey(agvcTransCmd.UnloadPortId))
+            {
+                unloadCmdInfo.PortNumber = unloadAddress.PortIdMap[agvcTransCmd.UnloadPortId];
+            }
+            else
+            {
+                unloadCmdInfo.PortNumber = "1";
+            }
             transferSteps.Add(unloadCmdInfo);
         }
         private void TransferStepsAddLoadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             LoadCmdInfo loadCmdInfo = new LoadCmdInfo(agvcTransCmd);
+            MapAddress loadAddress = theMapInfo.addressMap[loadCmdInfo.PortAddressId];
+            loadCmdInfo.GateType = loadAddress.GateType;
+            if (loadAddress.PortIdMap.ContainsKey(agvcTransCmd.LoadPortId))
+            {
+                loadCmdInfo.PortNumber = loadAddress.PortIdMap[agvcTransCmd.LoadPortId];
+            }
+            else
+            {
+                loadCmdInfo.PortNumber = "1";
+            }            
             transferSteps.Add(loadCmdInfo);
         }
         private void TransferStepsAddMoveCmdInfo(string endAddressId, string cmdId)
@@ -1380,7 +1402,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    asePackage.aseMoveControl.PartMove(addressDirection, address.Position, headAngle, speed);
+                    EnumAseMoveCommandIsEnd moveCommandIsEnd = isEnd ? EnumAseMoveCommandIsEnd.End : EnumAseMoveCommandIsEnd.None;
+                    asePackage.aseMoveControl.PartMove(addressDirection, address.Position, headAngle, speed, moveCommandIsEnd);
                 }
 
                 OnMessageShowEvent?.Invoke(this, $"通知MoveControl延攬通行權{mapSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");

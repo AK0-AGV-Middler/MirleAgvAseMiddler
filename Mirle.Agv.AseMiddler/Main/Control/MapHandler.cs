@@ -17,6 +17,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private MapConfig mapConfig;
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }
+        public string PortIdMapPath { get; set; }
         public string SectionBeamDisablePath { get; set; }
         public MapInfo theMapInfo { get; private set; } = new MapInfo();
         private double AddressAreaMm { get; set; } = 30;
@@ -32,6 +33,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             mirleLogger = MirleLogger.Instance;
             SectionPath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionFileName);
             AddressPath = Path.Combine(Environment.CurrentDirectory, mapConfig.AddressFileName);
+            PortIdMapPath = Path.Combine(Environment.CurrentDirectory, mapConfig.PortIdMapFileName);
             SectionBeamDisablePath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionBeamDisablePathFileName);
             AddressAreaMm = mapConfig.AddressAreaMm;
 
@@ -41,6 +43,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void LoadMapInfo()
         {
             ReadAddressCsv();
+            ReadPortIdMapCsv();
             ReadSectionCsv();
         }
 
@@ -143,7 +146,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 mirleLogger.Log(new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                      , $"Load Address File Ok. [lastReadAdrId={lastReadAdrId}]"));
-
             }
             catch (Exception ex)
             {
@@ -152,6 +154,70 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
         }
+
+        public void ReadPortIdMapCsv()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(PortIdMapPath))
+                {
+                    return;
+                }
+
+                foreach (var address in theMapInfo.addressMap.Values)
+                {
+                    address.PortIdMap.Clear();
+                }
+
+                string[] allRows = File.ReadAllLines(PortIdMapPath);
+                if (allRows == null || allRows.Length < 2)
+                {
+                    return;
+                }
+
+                string[] titleRow = allRows[0].Split(',');
+                allRows = allRows.Skip(1).ToArray();
+
+                int nRows = allRows.Length;
+                int nColumns = titleRow.Length;
+
+                Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
+                for (int i = 0; i < nColumns; i++)
+                {
+                    var keyword = titleRow[i].Trim();
+                    if (!string.IsNullOrWhiteSpace(keyword))
+                    {
+                        dicHeaderIndexes.Add(keyword, i);
+                    }
+                }
+
+                for (int i = 0; i < nRows; i++)
+                {
+                    string[] getThisRow = allRows[i].Split(',');
+                    try
+                    {
+                        string portId = getThisRow[dicHeaderIndexes["Id"]];
+                        string addressId = getThisRow[dicHeaderIndexes["AddressId"]]; 
+                        string portNumber = getThisRow[dicHeaderIndexes["PortNumber"]];
+
+                        if (theMapInfo.addressMap.ContainsKey(addressId))
+                        {
+                            theMapInfo.addressMap[addressId].PortIdMap.Add(portId, portNumber);
+                        }
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                    }
+               }                
+            }
+            catch (Exception ex)
+            {
+                mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+            }
+        }
+
 
         private string FitZero(string v)
         {

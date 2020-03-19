@@ -119,17 +119,39 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed)
+        public void PartMove(AseMoveStatus aseMoveStatus)
+        {
+            try
+            {
+                string beginString = "2";
+               
+                string positionX = GetPositionString(aseMoveStatus.LastAddress.Position.X);
+                string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);
+                string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
+                string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
+                string pioDirection = ((int)aseMoveStatus.LastAddress.PioDirection).ToString();
+                string  message = string.Concat(beginString, positionX, positionY, thetaString, speedString, pioDirection);
+
+                PrimarySend("P41", message);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd)
         {
             ResumePositionWatcher();
             try
             {
-                string message = ((int)addressDirection).ToString();
+                string isEndString = ((int)isEnd).ToString();
                 string positionX = GetPositionString(mapPosition.X);
                 string positionY = GetPositionString(mapPosition.Y);
                 string thetaString = GetNumberToString(headAngle, 3);
                 string speedString = GetNumberToString(speed, 4);
-                message = string.Concat(message, positionX, positionY, thetaString, speedString);
+                string pioDirection = ((int)addressDirection).ToString();
+                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, pioDirection);
 
                 PrimarySend("P41", message);
             }
@@ -253,6 +275,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
+
 
     }
 }

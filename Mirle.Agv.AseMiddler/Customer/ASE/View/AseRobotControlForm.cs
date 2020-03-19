@@ -52,6 +52,8 @@ namespace Mirle.Agv.AseMiddler.View
             aseRobotEventArgs.PioDirection = (EnumAddressDirection)Enum.Parse(typeof(EnumAddressDirection), boxPioDirection.Text);
             aseRobotEventArgs.FromPort = txtFromPort.Text;
             aseRobotEventArgs.ToPort = txtToPort.Text;
+            aseRobotEventArgs.GateType = txtGateType.Text;
+            aseRobotEventArgs.PortNumber = txtPortNumber.Text;
             return aseRobotEventArgs;
         }
 
@@ -67,5 +69,7 @@ namespace Mirle.Agv.AseMiddler.View
         public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
         public string FromPort { get; set; } = "";
         public string ToPort { get; set; } = "";
+        public string GateType { get; set; } = "0";
+        public string PortNumber { get; set; } = "1";
     }
 }

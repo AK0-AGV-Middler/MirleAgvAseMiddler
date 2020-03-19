@@ -31,12 +31,13 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageMoveAppend = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.boxIsEnd = new System.Windows.Forms.ComboBox();
+            this.boxAddressDirection = new System.Windows.Forms.ComboBox();
             this.btnSendMove = new System.Windows.Forms.Button();
             this.numMoveSpeed = new System.Windows.Forms.NumericUpDown();
             this.numHeadAngle = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionY = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionX = new System.Windows.Forms.NumericUpDown();
-            this.boxAddressDirection = new System.Windows.Forms.ComboBox();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.tabControl1.SuspendLayout();
             this.pageMoveAppend.SuspendLayout();
@@ -69,6 +70,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.boxIsEnd);
             this.groupBox3.Controls.Add(this.boxAddressDirection);
             this.groupBox3.Controls.Add(this.btnSendMove);
             this.groupBox3.Controls.Add(this.numMoveSpeed);
@@ -77,14 +79,30 @@
             this.groupBox3.Controls.Add(this.numMovePositionX);
             this.groupBox3.Location = new System.Drawing.Point(6, 6);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(257, 170);
+            this.groupBox3.Size = new System.Drawing.Size(257, 197);
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Move(P41)";
             // 
+            // boxIsEnd
+            // 
+            this.boxIsEnd.FormattingEnabled = true;
+            this.boxIsEnd.Location = new System.Drawing.Point(6, 17);
+            this.boxIsEnd.Name = "boxIsEnd";
+            this.boxIsEnd.Size = new System.Drawing.Size(245, 20);
+            this.boxIsEnd.TabIndex = 6;
+            // 
+            // boxAddressDirection
+            // 
+            this.boxAddressDirection.FormattingEnabled = true;
+            this.boxAddressDirection.Location = new System.Drawing.Point(6, 127);
+            this.boxAddressDirection.Name = "boxAddressDirection";
+            this.boxAddressDirection.Size = new System.Drawing.Size(245, 20);
+            this.boxAddressDirection.TabIndex = 6;
+            // 
             // btnSendMove
             // 
-            this.btnSendMove.Location = new System.Drawing.Point(6, 127);
+            this.btnSendMove.Location = new System.Drawing.Point(6, 153);
             this.btnSendMove.Name = "btnSendMove";
             this.btnSendMove.Size = new System.Drawing.Size(245, 33);
             this.btnSendMove.TabIndex = 5;
@@ -174,14 +192,6 @@
             0,
             0});
             // 
-            // boxAddressDirection
-            // 
-            this.boxAddressDirection.FormattingEnabled = true;
-            this.boxAddressDirection.Location = new System.Drawing.Point(6, 17);
-            this.boxAddressDirection.Name = "boxAddressDirection";
-            this.boxAddressDirection.Size = new System.Drawing.Size(245, 20);
-            this.boxAddressDirection.TabIndex = 6;
-            // 
             // AseMoveControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -213,5 +223,6 @@
         private System.Windows.Forms.NumericUpDown numMovePositionX;
         private System.Windows.Forms.ComboBox boxAddressDirection;
         private System.Windows.Forms.ColorDialog colorDialog1;
+        private System.Windows.Forms.ComboBox boxIsEnd;
     }
 }

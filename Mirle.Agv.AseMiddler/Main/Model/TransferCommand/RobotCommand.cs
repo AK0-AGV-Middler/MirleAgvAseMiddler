@@ -14,7 +14,8 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
         public int RobotNgRetryTimes { get; set; } = 1;
         public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
-        public int GateType { get; set; } = 100;       
+        public string GateType { get; set; } = "0";
+        public string PortNumber { get; set; } = "1";
 
         public RobotCommand(AgvcTransCmd agvcTransCmd) : base(agvcTransCmd.CommandId)
         {
