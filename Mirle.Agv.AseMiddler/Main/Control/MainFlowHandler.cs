@@ -267,8 +267,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 case EnumAutoState.Auto:
                     MainFlowAbnormalMsg = "";
-                    alarmHandler.ResetAllAlarms();
                     asePackage.SetVehicleAutoScenario();
+                    alarmHandler.ResetAllAlarms();                   
+                    IntoAuto();
                     break;
                 case EnumAutoState.Manual:
                     StopClearAndReset();
@@ -697,6 +698,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private void MoveToReserveOkPositions()
         {
+            theVehicle.AseMoveStatus.AseMoveState = EnumAseMoveState.Working;
             SpinWait.SpinUntil(() => false, 2000);
             FakeReserveOkAseMoveStatus.TryDequeue(out AseMoveStatus targetAseMoveStatus);
             AseMoveStatus tempMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
@@ -729,6 +731,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 GetFakeSectionDistance(tempMoveStatus);
                 theVehicle.AseMoveStatus = tempMoveStatus;
                 agvcConnector.ReportSectionPass();
+            }
+
+            if (FakeReserveOkAseMoveStatus.IsEmpty)
+            {
+                theVehicle.AseMoveStatus.AseMoveState = EnumAseMoveState.Idle;
             }
 
             if (targetAseMoveStatus.IsMoveEnd)
@@ -1357,6 +1364,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             return theVehicle.AgvcTransCmdBuffer.Count == 0;
         }
 
+       
 
         #endregion
 
@@ -2471,6 +2479,19 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             StopClearAndReset();
         }
+
+        public void IntoAuto()
+        {
+            try
+            {
+                ResumeTransfer();                
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
 
         public void StopClearAndReset()
         {

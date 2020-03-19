@@ -51,8 +51,6 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.btnRefreshPosition = new System.Windows.Forms.Button();
-            this.btnPrintScreen = new System.Windows.Forms.Button();
             this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.tbxTransferStepMsg = new System.Windows.Forms.TextBox();
@@ -90,12 +88,14 @@
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radAgvcOnline = new System.Windows.Forms.RadioButton();
             this.radAgvcOffline = new System.Windows.Forms.RadioButton();
+            this.btnRefreshPosition = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtBatterysAbnormal = new System.Windows.Forms.Label();
             this.txtMainFlowAbnormal = new System.Windows.Forms.Label();
             this.txtAgvcConnectorAbnormal = new System.Windows.Forms.Label();
             this.txtRobotAbnormal = new System.Windows.Forms.Label();
             this.txtMoveControlAbnormal = new System.Windows.Forms.Label();
+            this.btnPrintScreen = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.txtWatchLowPower = new System.Windows.Forms.Label();
             this.txtAskingReserve = new System.Windows.Forms.Label();
@@ -325,28 +325,6 @@
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
-            // 
-            // btnRefreshPosition
-            // 
-            this.btnRefreshPosition.Location = new System.Drawing.Point(162, 101);
-            this.btnRefreshPosition.Name = "btnRefreshPosition";
-            this.btnRefreshPosition.Size = new System.Drawing.Size(126, 70);
-            this.btnRefreshPosition.TabIndex = 60;
-            this.btnRefreshPosition.Text = "Refresh Position";
-            this.btnRefreshPosition.UseVisualStyleBackColor = true;
-            this.btnRefreshPosition.Click += new System.EventHandler(this.btnRefreshPosition_Click);
-            // 
-            // btnPrintScreen
-            // 
-            this.btnPrintScreen.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnPrintScreen.ForeColor = System.Drawing.Color.OrangeRed;
-            this.btnPrintScreen.Location = new System.Drawing.Point(162, 28);
-            this.btnPrintScreen.Name = "btnPrintScreen";
-            this.btnPrintScreen.Size = new System.Drawing.Size(205, 71);
-            this.btnPrintScreen.TabIndex = 59;
-            this.btnPrintScreen.Text = "拍照截圖";
-            this.btnPrintScreen.UseVisualStyleBackColor = true;
-            this.btnPrintScreen.Click += new System.EventHandler(this.btnPrintScreen_Click);
             // 
             // tbxDebugLogMsg
             // 
@@ -798,6 +776,16 @@
             this.radAgvcOffline.UseVisualStyleBackColor = true;
             this.radAgvcOffline.CheckedChanged += new System.EventHandler(this.radAgvcOffline_CheckedChanged);
             // 
+            // btnRefreshPosition
+            // 
+            this.btnRefreshPosition.Location = new System.Drawing.Point(162, 101);
+            this.btnRefreshPosition.Name = "btnRefreshPosition";
+            this.btnRefreshPosition.Size = new System.Drawing.Size(126, 70);
+            this.btnRefreshPosition.TabIndex = 60;
+            this.btnRefreshPosition.Text = "Refresh Position";
+            this.btnRefreshPosition.UseVisualStyleBackColor = true;
+            this.btnRefreshPosition.Click += new System.EventHandler(this.btnRefreshPosition_Click);
+            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.txtBatterysAbnormal);
@@ -866,6 +854,18 @@
             this.txtMoveControlAbnormal.TabIndex = 0;
             this.txtMoveControlAbnormal.Text = "走行";
             this.txtMoveControlAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnPrintScreen
+            // 
+            this.btnPrintScreen.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnPrintScreen.ForeColor = System.Drawing.Color.OrangeRed;
+            this.btnPrintScreen.Location = new System.Drawing.Point(162, 28);
+            this.btnPrintScreen.Name = "btnPrintScreen";
+            this.btnPrintScreen.Size = new System.Drawing.Size(205, 71);
+            this.btnPrintScreen.TabIndex = 59;
+            this.btnPrintScreen.Text = "拍照截圖";
+            this.btnPrintScreen.UseVisualStyleBackColor = true;
+            this.btnPrintScreen.Click += new System.EventHandler(this.btnPrintScreen_Click);
             // 
             // groupBox2
             // 

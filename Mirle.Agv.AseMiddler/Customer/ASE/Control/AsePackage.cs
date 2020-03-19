@@ -540,6 +540,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void SetVehicleAuto()
         {
             theVehicle.AutoState = EnumAutoState.Auto;
+
             string msg = "車輛狀態切換 : Auto";
             ImportantPspLog?.Invoke(this, msg);
         }

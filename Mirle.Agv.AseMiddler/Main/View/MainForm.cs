@@ -1092,6 +1092,7 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateAgvcConnection();
                 UpdateAgvlConnection();
                 //UpdateAgvFailResult();
+                UpdateReserveStopState();
             }
             catch (Exception ex)
             {
@@ -1099,6 +1100,28 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
+        private void UpdateReserveStopState()
+        {
+            try
+            {
+              var reserveStop =  theVehicle.AseMovingGuide.ReserveStop == com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
+
+                if (reserveStop)
+                {
+                    lbxNeedReserveSections.ForeColor = Color.OrangeRed;
+                    lbxReserveOkSections.ForeColor = Color.OrangeRed;
+                }
+                else
+                {
+                    lbxNeedReserveSections.ForeColor = Color.GreenYellow;
+                    lbxReserveOkSections.ForeColor = Color.GreenYellow;
+                }                
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
 
         public void UpdateAgvcConnection()
         {
@@ -1474,7 +1497,6 @@ namespace Mirle.Agv.AseMiddler.View
                 {
                     case EnumAutoState.Auto:
                         theVehicle.AutoState = EnumAutoState.Manual;
-                        mainFlowHandler.StopClearAndReset();
                         break;
                     case EnumAutoState.Manual:
                         theVehicle.AutoState = EnumAutoState.Auto;

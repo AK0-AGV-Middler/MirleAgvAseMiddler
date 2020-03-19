@@ -1712,6 +1712,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 SetupNeedReserveSections();
                 theVehicle.AseMoveStatus.IsMoveEnd = false;
                 IsAskReservePause = false;
+                StatusChangeReport();
             }
             catch (Exception ex)
             {
