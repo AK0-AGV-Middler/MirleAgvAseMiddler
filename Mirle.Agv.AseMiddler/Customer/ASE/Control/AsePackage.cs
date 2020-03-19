@@ -103,9 +103,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string msg = $"PrimarySent : [{transaction.PSPrimaryMessage.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                //string msg = $"PrimarySent : [{transaction.PSPrimaryMessage.ToString()}]";
+                //AllPspLog?.Invoke(this, msg);
+                //LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
             }
             catch (Exception ex)
             {
@@ -725,6 +725,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 psTransaction.PSPrimaryMessage = psMessage;
 
                 psWrapper.PrimarySent(ref psTransaction);
+
+                string msg = $"PrimarySent : [{psTransaction.PSPrimaryMessage.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+
                 return psTransaction;
             }
             catch (Exception ex)
