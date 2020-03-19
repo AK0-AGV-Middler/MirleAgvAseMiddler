@@ -705,7 +705,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     ImportantPspLog?.Invoke(this, msg);
                 }
-                OnConnectionChangeEvent?.Invoke(this, psWrapper.IsConnected());
+                OnConnectionChangeEvent?.Invoke(this, psWrapper.ConnectionState== enumConnectState.Connected);
             }
             catch (Exception ex)
             {
@@ -810,7 +810,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool IsConnected()
         {
-            return psWrapper.IsConnected();
+            return psWrapper.ConnectionState== enumConnectState.Connected;
         }
 
         public void Connect()

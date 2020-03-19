@@ -1888,17 +1888,18 @@ namespace Mirle.Agv.AseMiddler.Controller
                 RobotCommand robotCommand = (RobotCommand)transferStep;
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(robotCommand.SlotNumber);
 
-                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType = EventType.Bcrread;
-                iD_136_TRANS_EVENT_REP.CSTID = aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading ? aseCarrierSlotStatus.CarrierId : "";
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = aseMoveStatus.LastAddress.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = aseMoveStatus.LastSection.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-                iD_136_TRANS_EVENT_REP.BCRReadResult = BCRReadResultParse(readResult);
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+                report.EventType = EventType.Bcrread;
+                report.CSTID = aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading ? aseCarrierSlotStatus.CarrierId : "";
+                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = aseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.BCRReadResult = BCRReadResultParse(readResult);
+                report.CmdID = robotCommand.CmdId;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+                wrappers.ImpTransEventRep = report;
 
                 LogSendMsg(wrappers);
 
@@ -2199,14 +2200,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(agvcTransCmd.SlotNumber);
 
                 var msg = $"命令結束，結束狀態{agvcTransCmd.CompleteStatus}，命令編號{agvcTransCmd.CommandId}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
 
                 ID_132_TRANS_COMPLETE_REPORT iD_132_TRANS_COMPLETE_REPORT = new ID_132_TRANS_COMPLETE_REPORT();
                 iD_132_TRANS_COMPLETE_REPORT.CmdID = agvcTransCmd.CommandId;
-                iD_132_TRANS_COMPLETE_REPORT.CSTID = aseCarrierSlotStatus.CarrierId;
+                iD_132_TRANS_COMPLETE_REPORT.CSTID = agvcTransCmd.CassetteId;
                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = agvcTransCmd.CompleteStatus;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = aseMoveStatus.LastAddress.Id;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = aseMoveStatus.LastSection.Id;
