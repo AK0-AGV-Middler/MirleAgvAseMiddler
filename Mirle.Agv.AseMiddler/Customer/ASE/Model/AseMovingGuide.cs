@@ -58,6 +58,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.GuideAddressIds = request.GuideAddresses.Any() ? request.GuideAddresses.ToList() : new List<string>();
             this.SeqNum = seqNum;
             this.commandId = string.IsNullOrEmpty(Vehicle.Instance.AseMovingGuide.commandId) ? "" : Vehicle.Instance.AseMovingGuide.commandId;
+            this.ReserveStop = VhStopSingle.On;
         }
     }
 }

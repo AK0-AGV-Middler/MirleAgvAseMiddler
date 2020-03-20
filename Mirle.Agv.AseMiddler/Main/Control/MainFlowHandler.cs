@@ -1376,7 +1376,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             return theVehicle.AseRobotStatus.IsHome && !theVehicle.IsCharging;
         }
 
-        public void UpdateMoveControlReserveOkPositions(MapSection mapSection)
+        public void AgvcConnector_UpdateMoveControlReserveOkPositions(MapSection mapSection)
         {
             try
             {
@@ -1403,13 +1403,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                     aseMoveStatus.Speed = speed;
                     aseMoveStatus.IsMoveEnd = isEnd;
                     FakeReserveOkAseMoveStatus.Enqueue(aseMoveStatus);
-
-                    //MapPosition lastPosition = theVehicle.AseMoveStatus.LastMapPosition;
-                    //MapPosition addressPosition = address.Position;
-                    //MapPosition midPosition = new MapPosition((lastPosition.X + addressPosition.X) / 2, (lastPosition.Y + addressPosition.Y) / 2);
-                    //SimulationArrival(false, midPosition, headAngle, speed);
-                    //SpinWait.SpinUntil(() => false, 5000);
-                    //SimulationArrival(isEnd, address.Position, headAngle, speed);
                 }
                 else
                 {

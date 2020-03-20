@@ -660,7 +660,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
                     queReserveOkSections.Enqueue(aReserveOkSection);
                     OnReserveOkEvent?.Invoke(this, aReserveOkSection.Id);
-                    mainFlowHandler.UpdateMoveControlReserveOkPositions(needReserveSection);
+                    mainFlowHandler.AgvcConnector_UpdateMoveControlReserveOkPositions(needReserveSection);
                     ReserveOkAskNext = true;
                 }
                 else
