@@ -1350,7 +1350,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
         public void Receive_Cmd91_AlarmResetRequest(object sender, TcpIpEventArgs e)
         {
             ID_91_ALARM_RESET_REQUEST receive = (ID_91_ALARM_RESET_REQUEST)e.objPacket;
@@ -1438,27 +1437,41 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void Receive_Cmd51_AvoidRequest(object sender, TcpIpEventArgs e)
         {
-            ID_51_AVOID_REQUEST receive = (ID_51_AVOID_REQUEST)e.objPacket;
-            OnMessageShowOnMainFormEvent?.Invoke(this, $"收到避車指令");
-            AseMovingGuide aseMovingGuide = new AseMovingGuide(receive, e.iSeqNum);
-            ShowAvoidRequestToForm(aseMovingGuide);
-            OnAvoideRequestEvent?.Invoke(this, aseMovingGuide);
+            try
+            {
+                ID_51_AVOID_REQUEST receive = (ID_51_AVOID_REQUEST)e.objPacket;
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"收到避車指令");
+                AseMovingGuide aseMovingGuide = new AseMovingGuide(receive, e.iSeqNum);
+                ShowAvoidRequestToForm(aseMovingGuide);
+                OnAvoideRequestEvent?.Invoke(this, aseMovingGuide);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
         private void ShowAvoidRequestToForm(AseMovingGuide aseMovingGuide)
         {
-            var msg = $"收到避車指令,避車終點={aseMovingGuide.ToAddressId}.";
+            try
+            {
+                var msg = $"收到避車指令,避車終點={aseMovingGuide.ToAddressId}.";
 
-            msg += Environment.NewLine + "避車路徑ID:";
-            foreach (var secId in aseMovingGuide.GuideSectionIds)
-            {
-                msg += $"({secId})";
+                msg += Environment.NewLine + "避車路徑ID:";
+                foreach (var secId in aseMovingGuide.GuideSectionIds)
+                {
+                    msg += $"({secId})";
+                }
+                msg += Environment.NewLine + "避車過點ID:";
+                foreach (var adrId in aseMovingGuide.GuideAddressIds)
+                {
+                    msg += $"({adrId})";
+                }
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
             }
-            msg += Environment.NewLine + "避車過點ID:";
-            foreach (var adrId in aseMovingGuide.GuideAddressIds)
+            catch (Exception ex)
             {
-                msg += $"({adrId})";
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
         public void Send_Cmd151_AvoidResponse(ushort seqNum, int replyCode, string reason)
         {

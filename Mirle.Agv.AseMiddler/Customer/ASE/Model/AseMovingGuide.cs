@@ -48,15 +48,16 @@ namespace Mirle.Agv.AseMiddler.Model
             this.MovingSections = aseMovingGuide.MovingSections;
             this.MovingSectionsIndex = aseMovingGuide.MovingSectionsIndex;
             this.commandId = aseMovingGuide.commandId;
+            this.SeqNum = aseMovingGuide.SeqNum;
         }
 
-        public AseMovingGuide(ID_51_AVOID_REQUEST request,ushort seqNum)
+        public AseMovingGuide(ID_51_AVOID_REQUEST request, ushort seqNum)
         {
-            this.ToAddressId = request.DestinationAdr;
-            this.GuideSectionIds = request.GuideSections.ToList();
-            this.GuideAddressIds = request.GuideAddresses.ToList();
-            this.SeqNum = SeqNum;
-            this.commandId = Vehicle.Instance.AseMovingGuide.commandId;
+            this.ToAddressId = string.IsNullOrEmpty(request.DestinationAdr.Trim()) ? "" : request.DestinationAdr.Trim();
+            this.GuideSectionIds = request.GuideSections.Any() ? request.GuideSections.ToList() : new List<string>();
+            this.GuideAddressIds = request.GuideAddresses.Any() ? request.GuideAddresses.ToList() : new List<string>();
+            this.SeqNum = seqNum;
+            this.commandId = string.IsNullOrEmpty(Vehicle.Instance.AseMovingGuide.commandId) ? "" : Vehicle.Instance.AseMovingGuide.commandId;
         }
     }
 }

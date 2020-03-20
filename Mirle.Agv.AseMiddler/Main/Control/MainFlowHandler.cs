@@ -1118,12 +1118,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void AgvcConnector_OnAvoideRequestEvent(object sender, AseMovingGuide aseMovingGuide)
         {
-            var msg = $"MainFlow : 收到避車命令，終點[{aseMovingGuide.ToAddressId}]，開始檢查。";
-            OnMessageShowEvent?.Invoke(this, msg);
-
             #region 避車檢查
             try
             {
+                var msg = $"MainFlow : 收到避車命令，終點[{aseMovingGuide.ToAddressId}]，開始檢查。";
+                OnMessageShowEvent?.Invoke(this, msg);
+
                 agvcConnector.PauseAskReserve();
 
                 if (IsAgvcTransferCommandEmpty())
@@ -1362,9 +1362,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAgvcTransferCommandEmpty()
         {
             return theVehicle.AgvcTransCmdBuffer.Count == 0;
-        }
-
-       
+        }       
 
         #endregion
 
