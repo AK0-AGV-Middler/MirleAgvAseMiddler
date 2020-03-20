@@ -268,7 +268,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case EnumAutoState.Auto:
                     MainFlowAbnormalMsg = "";
                     asePackage.SetVehicleAutoScenario();
-                    alarmHandler.ResetAllAlarms();                   
+                    alarmHandler.ResetAllAlarms();
                     IntoAuto();
                     break;
                 case EnumAutoState.Manual:
@@ -613,6 +613,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     {
                                         if (FakeReserveOkAseMoveStatus.Any())
                                         {
+                                            if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.On)
+                                            {
+                                                theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
+                                                agvcConnector.StatusChangeReport();
+                                            }
                                             MoveToReserveOkPositions();
                                             sw.Reset();
                                         }
@@ -1263,7 +1268,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             else
             {
                 loadCmdInfo.PortNumber = "1";
-            }            
+            }
             transferSteps.Add(loadCmdInfo);
         }
         private void TransferStepsAddMoveCmdInfo(string endAddressId, string cmdId)
@@ -1362,7 +1367,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAgvcTransferCommandEmpty()
         {
             return theVehicle.AgvcTransCmdBuffer.Count == 0;
-        }       
+        }
 
         #endregion
 
@@ -2482,7 +2487,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ResumeTransfer();                
+                ResumeTransfer();
             }
             catch (Exception ex)
             {
