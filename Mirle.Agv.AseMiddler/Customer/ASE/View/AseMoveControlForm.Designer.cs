@@ -39,6 +39,9 @@
             this.numMovePositionY = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionX = new System.Windows.Forms.NumericUpDown();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.txtMapAddress = new System.Windows.Forms.TextBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnSearchMapAddress = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.pageMoveAppend.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -46,6 +49,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numHeadAngle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionX)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -59,6 +63,7 @@
             // 
             // pageMoveAppend
             // 
+            this.pageMoveAppend.Controls.Add(this.groupBox1);
             this.pageMoveAppend.Controls.Add(this.groupBox3);
             this.pageMoveAppend.Location = new System.Drawing.Point(4, 22);
             this.pageMoveAppend.Name = "pageMoveAppend";
@@ -79,7 +84,7 @@
             this.groupBox3.Controls.Add(this.numMovePositionX);
             this.groupBox3.Location = new System.Drawing.Point(6, 6);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(257, 197);
+            this.groupBox3.Size = new System.Drawing.Size(257, 198);
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Move(P41)";
@@ -192,6 +197,34 @@
             0,
             0});
             // 
+            // txtMapAddress
+            // 
+            this.txtMapAddress.Location = new System.Drawing.Point(6, 15);
+            this.txtMapAddress.Name = "txtMapAddress";
+            this.txtMapAddress.Size = new System.Drawing.Size(247, 22);
+            this.txtMapAddress.TabIndex = 2;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.btnSearchMapAddress);
+            this.groupBox1.Controls.Add(this.txtMapAddress);
+            this.groupBox1.Location = new System.Drawing.Point(269, 6);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(259, 197);
+            this.groupBox1.TabIndex = 3;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "MapAddress";
+            // 
+            // btnSearchMapAddress
+            // 
+            this.btnSearchMapAddress.Location = new System.Drawing.Point(6, 153);
+            this.btnSearchMapAddress.Name = "btnSearchMapAddress";
+            this.btnSearchMapAddress.Size = new System.Drawing.Size(247, 33);
+            this.btnSearchMapAddress.TabIndex = 3;
+            this.btnSearchMapAddress.Text = "Search MapAddress";
+            this.btnSearchMapAddress.UseVisualStyleBackColor = true;
+            this.btnSearchMapAddress.Click += new System.EventHandler(this.btnSearchMapAddress_Click);
+            // 
             // AseMoveControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -207,6 +240,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.numHeadAngle)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionX)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -224,5 +259,8 @@
         private System.Windows.Forms.ComboBox boxAddressDirection;
         private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.ComboBox boxIsEnd;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button btnSearchMapAddress;
+        private System.Windows.Forms.TextBox txtMapAddress;
     }
 }

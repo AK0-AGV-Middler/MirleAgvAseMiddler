@@ -15,12 +15,14 @@ namespace Mirle.Agv.AseMiddler.View
     {
         public event EventHandler<AseMoveEventArgs> SendMove;
         public event EventHandler<string> OnException;
+        private MapInfo mapInfo;
 
-        public AseMoveControlForm()
+        public AseMoveControlForm(MapInfo mapInfo)
         {
             InitializeComponent();
             InitialBoxAddressDirection();
             InitialBoxIsEnd();
+            this.mapInfo = mapInfo;
         }
 
         private void InitialBoxIsEnd()
@@ -59,6 +61,35 @@ namespace Mirle.Agv.AseMiddler.View
             aseMoveEventArgs.isEnd = (EnumAseMoveCommandIsEnd)boxIsEnd.SelectedItem;
 
             return aseMoveEventArgs;
+        }
+
+        private void btnSearchMapAddress_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(txtMapAddress.Text.Trim())) return;
+
+                string addressId = txtMapAddress.Text.Trim();
+
+                if (mapInfo.addressMap.ContainsKey(addressId))
+                {
+                    MapAddress mapAddress = mapInfo.addressMap[addressId];
+                    UpdateMapAddressUserControls(mapAddress);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
+        }
+
+        private void UpdateMapAddressUserControls(MapAddress mapAddress)
+        {
+            boxIsEnd.SelectedIndex = (int)EnumAseMoveCommandIsEnd.Begin;
+            numMovePositionX.Value = Convert.ToDecimal(mapAddress.Position.X);
+            numMovePositionY.Value = Convert.ToDecimal(mapAddress.Position.Y);
+            numHeadAngle.Value = Convert.ToDecimal((int)mapAddress.VehicleHeadAngle);
+            boxAddressDirection.SelectedIndex = (int)mapAddress.TransferPortDirection;
         }
     }
 

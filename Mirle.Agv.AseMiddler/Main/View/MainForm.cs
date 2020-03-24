@@ -667,7 +667,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialAseMoveControlForm()
         {
-            aseMoveControlForm = new AseMoveControlForm();
+            aseMoveControlForm = new AseMoveControlForm(theMapInfo);
             aseMoveControlForm.SendMove += AseMoveControlForm_SendMove;
             aseMoveControlForm.OnException += AseControlForm_OnException;
         }
