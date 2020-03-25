@@ -34,16 +34,68 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<string> AllPspLog;
         public event EventHandler<string> ImportantPspLog;
 
-
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
             LoadConfigs();
             InitialWrapper();
-            aseMoveControl = new AseMoveControl(psWrapper, aseMoveConfig);
-            aseRobotControl = new AseRobotControl(psWrapper, gateTypeMap);
-            aseBatteryControl = new AseBatteryControl(psWrapper, aseBatteryConfig);
-            aseBuzzerControl = new AseBuzzerControl(psWrapper);
+            InitialAseMoveControl();
+            InitialAseRobotControl(gateTypeMap);
+            InitialAseBatteryControl();
+            InitialAseBuzzerControl();
         }
+
+        private void InitialAseBuzzerControl()
+        {
+            try
+            {
+                aseBuzzerControl = new AseBuzzerControl();
+                aseBuzzerControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void InitialAseBatteryControl()
+        {
+            try
+            {
+                aseBatteryControl = new AseBatteryControl(psWrapper, aseBatteryConfig);
+                aseBatteryControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void InitialAseRobotControl(Dictionary<string, string> gateTypeMap)
+        {
+            try
+            {
+                aseRobotControl = new AseRobotControl(gateTypeMap);
+                aseRobotControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void InitialAseMoveControl()
+        {
+            try
+            {
+                aseMoveControl = new AseMoveControl(psWrapper, aseMoveConfig);
+                aseMoveControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
 
         private void LoadConfigs()
         {
@@ -678,11 +730,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string msg = $"SecodaryReceived : [{transaction.ToString()}]";
-                if (transaction.PSPrimaryMessage.Number!="33" && transaction.PSPrimaryMessage.Number != "35")
+                if (transaction.PSPrimaryMessage.Number != "33" && transaction.PSPrimaryMessage.Number != "35")
                 {
                     AllPspLog?.Invoke(this, msg);
                     LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                }      
+                }
 
                 OnSecondaryReceived(transaction);
             }
@@ -706,7 +758,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     ImportantPspLog?.Invoke(this, msg);
                 }
-                OnConnectionChangeEvent?.Invoke(this, psWrapper.ConnectionState== enumConnectState.Connected);
+                OnConnectionChangeEvent?.Invoke(this, psWrapper.ConnectionState == enumConnectState.Connected);
             }
             catch (Exception ex)
             {
@@ -738,6 +790,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return null;
             }
+        }
+
+        private void AseControl_OnPrimarySendEvent(object sender, PSTransactionXClass psTransaction)
+        {
+            try
+            {
+                psWrapper.PrimarySent(ref psTransaction);
+
+                string msg = $"PrimarySent : [{psTransaction.PSPrimaryMessage.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+
         }
 
         private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
@@ -816,7 +885,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool IsConnected()
         {
-            return psWrapper.ConnectionState== enumConnectState.Connected;
+            return psWrapper.ConnectionState == enumConnectState.Connected;
         }
 
         public void Connect()

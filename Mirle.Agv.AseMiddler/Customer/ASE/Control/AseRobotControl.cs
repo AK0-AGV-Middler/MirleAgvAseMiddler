@@ -14,21 +14,20 @@ namespace Mirle.Agv.AseMiddler.Controller
 {
     public class AseRobotControl
     {
-        private PSWrapperXClass psWrapper;
         private MirleLogger mirleLogger = MirleLogger.Instance;
 
         public event EventHandler<EnumSlotNumber> OnReadCarrierIdFinishEvent;
         public event EventHandler<TransferStep> OnRobotInterlockErrorEvent;
         public event EventHandler<TransferStep> OnRobotCommandFinishEvent;
         public event EventHandler<TransferStep> OnRobotCommandErrorEvent;
+        public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
 
         private Vehicle theVehicle = Vehicle.Instance;
         public RobotCommand RobotCommand { get; set; }
         private Dictionary<string, string> gateTypeMap = new Dictionary<string, string>();
 
-        public AseRobotControl(PSWrapperXClass psWrapper, Dictionary<string, string> gateTypeMap)
+        public AseRobotControl(Dictionary<string, string> gateTypeMap)
         {
-            this.psWrapper = psWrapper;
             this.gateTypeMap = gateTypeMap;
         }
 
@@ -176,7 +175,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
-                psWrapper.PrimarySent(ref psTransaction);
+                OnPrimarySendEvent?.Invoke(this, psTransaction);
+                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)

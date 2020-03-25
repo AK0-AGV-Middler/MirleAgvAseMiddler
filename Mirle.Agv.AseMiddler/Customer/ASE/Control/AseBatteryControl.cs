@@ -24,6 +24,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsWatchBatteryStatusStop { get; private set; } = false;
 
         public event EventHandler<double> OnBatteryPercentageChangeEvent;
+        public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
 
         public AseBatteryControl(PSWrapperXClass psWrapper, AseBatteryConfig aseBatteryConfig)
         {
@@ -230,7 +231,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
-                psWrapper.PrimarySent(ref psTransaction);
+                OnPrimarySendEvent?.Invoke(this, psTransaction);
+                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)

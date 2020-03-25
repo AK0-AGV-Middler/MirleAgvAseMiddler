@@ -13,17 +13,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 {
     public class AseBuzzerControl
     {
-        private PSWrapperXClass psWrapper;
         private MirleLogger mirleLogger = MirleLogger.Instance;
 
         public event EventHandler<int> OnAlarmCodeSetEvent;
         public event EventHandler<int> OnAlarmCodeResetEvent;
         public event EventHandler OnAlarmCodeAllResetEvent;
-
-        public AseBuzzerControl(PSWrapperXClass psWrapper)
-        {
-            this.psWrapper = psWrapper;
-        }
+        public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
 
         public void OnAlarmCodeSet(int alarmCode,bool isSet)
         {          
@@ -106,7 +101,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
-                psWrapper.PrimarySent(ref psTransaction);
+                OnPrimarySendEvent?.Invoke(this, psTransaction);
+                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)

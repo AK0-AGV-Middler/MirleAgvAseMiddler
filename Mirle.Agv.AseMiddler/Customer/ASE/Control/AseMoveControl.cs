@@ -25,6 +25,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public event EventHandler<EnumMoveComplete> OnMoveFinishedEvent;
         public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;
+        public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
 
         public string StopResult { get; set; } = "";
 
@@ -256,7 +257,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
-                psWrapper.PrimarySent(ref psTransaction);
+                OnPrimarySendEvent?.Invoke(this, psTransaction);
+                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)
