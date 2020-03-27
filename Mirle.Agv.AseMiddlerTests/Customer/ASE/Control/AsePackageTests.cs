@@ -25,5 +25,15 @@ namespace Mirle.Agv.AseMiddler.Controller.Tests
 
             Assert.IsTrue(true);
         }
+
+        [TestMethod()]
+        public void SubStringTest0327()
+        {
+            string word = "ABCDEF";
+
+            string the3rd = word.Substring(2,1);
+
+            Assert.AreEqual("C",the3rd);
+        }
     }
 }

@@ -600,9 +600,17 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void SetVehicleAutoScenario()
         {
             SetLocalDateTime();
+            SpinWait.SpinUntil(() => false, 1000);
+
             AllStatusReport();
+            SpinWait.SpinUntil(() => false, 1000);
+
             aseMoveControl.SendPositionReportRequest();
+            SpinWait.SpinUntil(() => false, 1000);
+
             aseBatteryControl.SendBatteryStatusRequest();
+            SpinWait.SpinUntil(() => false, 1000);
+
             SetTransferCommandInfoRequest();
         }
 
