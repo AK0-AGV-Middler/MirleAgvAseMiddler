@@ -376,7 +376,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
                     }
                     else
-                    {                        
+                    {
                         theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
                         agvcConnector.ReportSectionPass();
                         asePackage.aseMoveControl.PartMove(theVehicle.AseMoveStatus);
@@ -1361,13 +1361,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             UnloadCmdInfo unloadCmdInfo = new UnloadCmdInfo(agvcTransCmd);
             MapAddress unloadAddress = theMapInfo.addressMap[unloadCmdInfo.PortAddressId];
             unloadCmdInfo.GateType = unloadAddress.GateType;
-            if (unloadAddress.PortIdMap.ContainsKey(agvcTransCmd.UnloadPortId))
+            if (string.IsNullOrEmpty(agvcTransCmd.UnloadPortId) || !unloadAddress.PortIdMap.ContainsKey(agvcTransCmd.UnloadPortId))
             {
-                unloadCmdInfo.PortNumber = unloadAddress.PortIdMap[agvcTransCmd.UnloadPortId];
+                unloadCmdInfo.PortNumber = "1";
             }
             else
             {
-                unloadCmdInfo.PortNumber = "1";
+                unloadCmdInfo.PortNumber = unloadAddress.PortIdMap[agvcTransCmd.UnloadPortId];
             }
             transferSteps.Add(unloadCmdInfo);
         }
@@ -1377,13 +1377,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             LoadCmdInfo loadCmdInfo = new LoadCmdInfo(agvcTransCmd);
             MapAddress loadAddress = theMapInfo.addressMap[loadCmdInfo.PortAddressId];
             loadCmdInfo.GateType = loadAddress.GateType;
-            if (loadAddress.PortIdMap.ContainsKey(agvcTransCmd.LoadPortId))
-            {
-                loadCmdInfo.PortNumber = loadAddress.PortIdMap[agvcTransCmd.LoadPortId];
-            }
-            else
+            if (string.IsNullOrEmpty(agvcTransCmd.LoadPortId)|| !loadAddress.PortIdMap.ContainsKey(agvcTransCmd.LoadPortId))
             {
                 loadCmdInfo.PortNumber = "1";
+            }           
+            else
+            {
+                loadCmdInfo.PortNumber = loadAddress.PortIdMap[agvcTransCmd.LoadPortId];
             }
             transferSteps.Add(loadCmdInfo);
         }

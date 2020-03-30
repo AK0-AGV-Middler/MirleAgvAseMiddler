@@ -35,5 +35,32 @@ namespace Mirle.Agv.AseMiddler.Controller.Tests
 
             Assert.AreEqual("C",the3rd);
         }
+
+        [TestMethod()]
+        public void DictionaryContainsKeyTest0330()
+        {
+            Dictionary<string, int> myDictionary = new Dictionary<string, int>();
+            myDictionary.Add("PQR", 100);
+
+            if (myDictionary.ContainsKey(""))
+            {
+                Assert.IsTrue(string.IsNullOrEmpty(""));
+            }
+
+            string nWord = null;
+
+            Assert.IsTrue(string.IsNullOrEmpty(""));
+            Assert.IsTrue(string.IsNullOrEmpty(nWord));
+
+            if (string.IsNullOrEmpty(nWord) || !myDictionary.ContainsKey(nWord))
+            {
+                Assert.IsTrue(string.IsNullOrEmpty(""));
+            }
+
+            //if (myDictionary.ContainsKey(nWord))
+            //{
+            //    Assert.IsTrue(string.IsNullOrEmpty(""));
+            //}          
+        }
     }
 }
