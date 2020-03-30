@@ -668,8 +668,29 @@ namespace Mirle.Agv.AseMiddler.View
         private void InitialAseMoveControlForm()
         {
             aseMoveControlForm = new AseMoveControlForm(theMapInfo);
+            asePackage.AllPspLog += aseMoveControlForm.AsePackage_AllPspLog;
             aseMoveControlForm.SendMove += AseMoveControlForm_SendMove;
             aseMoveControlForm.OnException += AseControlForm_OnException;
+            aseMoveControlForm.PauseOrResumeAskPosition += AseMoveControlForm_PauseOrResumeAskPosition;
+        }
+
+        private void AseMoveControlForm_PauseOrResumeAskPosition(object sender, bool e)
+        {
+            try
+            {
+                if (e)
+                {
+                    asePackage.aseMoveControl.PausePositionWatcher();
+                }
+                else
+                {
+                    asePackage.aseMoveControl.ResumePositionWatcher();
+                }              
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         private void AseMoveControlForm_SendMove(object sender, AseMoveEventArgs e)

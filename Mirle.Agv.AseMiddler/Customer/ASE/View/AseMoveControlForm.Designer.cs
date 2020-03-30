@@ -28,8 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageMoveAppend = new System.Windows.Forms.TabPage();
+            this.btnPauseAskPosition = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnSearchMapAddress = new System.Windows.Forms.Button();
+            this.txtMapAddress = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.boxIsEnd = new System.Windows.Forms.ComboBox();
             this.boxAddressDirection = new System.Windows.Forms.ComboBox();
@@ -38,18 +43,17 @@
             this.numHeadAngle = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionY = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionX = new System.Windows.Forms.NumericUpDown();
-            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.txtMapAddress = new System.Windows.Forms.TextBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.btnSearchMapAddress = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.btnResumeAskPosition = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.pageMoveAppend.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMoveSpeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeadAngle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionX)).BeginInit();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -58,20 +62,61 @@
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(776, 426);
+            this.tabControl1.Size = new System.Drawing.Size(1142, 251);
             this.tabControl1.TabIndex = 0;
             // 
             // pageMoveAppend
             // 
+            this.pageMoveAppend.Controls.Add(this.btnResumeAskPosition);
+            this.pageMoveAppend.Controls.Add(this.btnPauseAskPosition);
             this.pageMoveAppend.Controls.Add(this.groupBox1);
             this.pageMoveAppend.Controls.Add(this.groupBox3);
             this.pageMoveAppend.Location = new System.Drawing.Point(4, 22);
             this.pageMoveAppend.Name = "pageMoveAppend";
             this.pageMoveAppend.Padding = new System.Windows.Forms.Padding(3);
-            this.pageMoveAppend.Size = new System.Drawing.Size(768, 400);
+            this.pageMoveAppend.Size = new System.Drawing.Size(1134, 225);
             this.pageMoveAppend.TabIndex = 0;
             this.pageMoveAppend.Text = "MoveAppend";
             this.pageMoveAppend.UseVisualStyleBackColor = true;
+            // 
+            // btnPauseAskPosition
+            // 
+            this.btnPauseAskPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnPauseAskPosition.Location = new System.Drawing.Point(534, 16);
+            this.btnPauseAskPosition.Name = "btnPauseAskPosition";
+            this.btnPauseAskPosition.Size = new System.Drawing.Size(272, 33);
+            this.btnPauseAskPosition.TabIndex = 4;
+            this.btnPauseAskPosition.Text = "Pause Ask Position";
+            this.btnPauseAskPosition.UseVisualStyleBackColor = true;
+            this.btnPauseAskPosition.Click += new System.EventHandler(this.btnPauseAskPosition_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.btnSearchMapAddress);
+            this.groupBox1.Controls.Add(this.txtMapAddress);
+            this.groupBox1.Location = new System.Drawing.Point(269, 6);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(259, 197);
+            this.groupBox1.TabIndex = 3;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "MapAddress";
+            // 
+            // btnSearchMapAddress
+            // 
+            this.btnSearchMapAddress.Location = new System.Drawing.Point(6, 153);
+            this.btnSearchMapAddress.Name = "btnSearchMapAddress";
+            this.btnSearchMapAddress.Size = new System.Drawing.Size(247, 33);
+            this.btnSearchMapAddress.TabIndex = 3;
+            this.btnSearchMapAddress.Text = "Search MapAddress";
+            this.btnSearchMapAddress.UseVisualStyleBackColor = true;
+            this.btnSearchMapAddress.Click += new System.EventHandler(this.btnSearchMapAddress_Click);
+            // 
+            // txtMapAddress
+            // 
+            this.txtMapAddress.Location = new System.Drawing.Point(6, 15);
+            this.txtMapAddress.Name = "txtMapAddress";
+            this.txtMapAddress.Size = new System.Drawing.Size(247, 22);
+            this.txtMapAddress.TabIndex = 2;
             // 
             // groupBox3
             // 
@@ -197,52 +242,53 @@
             0,
             0});
             // 
-            // txtMapAddress
+            // textBox1
             // 
-            this.txtMapAddress.Location = new System.Drawing.Point(6, 15);
-            this.txtMapAddress.Name = "txtMapAddress";
-            this.txtMapAddress.Size = new System.Drawing.Size(247, 22);
-            this.txtMapAddress.TabIndex = 2;
+            this.textBox1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.textBox1.Location = new System.Drawing.Point(12, 269);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBox1.Size = new System.Drawing.Size(1142, 439);
+            this.textBox1.TabIndex = 3;
             // 
-            // groupBox1
+            // timer1
             // 
-            this.groupBox1.Controls.Add(this.btnSearchMapAddress);
-            this.groupBox1.Controls.Add(this.txtMapAddress);
-            this.groupBox1.Location = new System.Drawing.Point(269, 6);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(259, 197);
-            this.groupBox1.TabIndex = 3;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "MapAddress";
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 500;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // btnSearchMapAddress
+            // btnResumeAskPosition
             // 
-            this.btnSearchMapAddress.Location = new System.Drawing.Point(6, 153);
-            this.btnSearchMapAddress.Name = "btnSearchMapAddress";
-            this.btnSearchMapAddress.Size = new System.Drawing.Size(247, 33);
-            this.btnSearchMapAddress.TabIndex = 3;
-            this.btnSearchMapAddress.Text = "Search MapAddress";
-            this.btnSearchMapAddress.UseVisualStyleBackColor = true;
-            this.btnSearchMapAddress.Click += new System.EventHandler(this.btnSearchMapAddress_Click);
+            this.btnResumeAskPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnResumeAskPosition.Location = new System.Drawing.Point(534, 55);
+            this.btnResumeAskPosition.Name = "btnResumeAskPosition";
+            this.btnResumeAskPosition.Size = new System.Drawing.Size(272, 33);
+            this.btnResumeAskPosition.TabIndex = 4;
+            this.btnResumeAskPosition.Text = "Resume Ask Position";
+            this.btnResumeAskPosition.UseVisualStyleBackColor = true;
+            this.btnResumeAskPosition.Click += new System.EventHandler(this.btnResumeAskPosition_Click);
             // 
             // AseMoveControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1166, 720);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.tabControl1);
             this.Name = "AseMoveControlForm";
             this.Text = "AseMoveControlForm";
             this.tabControl1.ResumeLayout(false);
             this.pageMoveAppend.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numMoveSpeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeadAngle)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMovePositionX)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -257,10 +303,13 @@
         private System.Windows.Forms.NumericUpDown numMovePositionY;
         private System.Windows.Forms.NumericUpDown numMovePositionX;
         private System.Windows.Forms.ComboBox boxAddressDirection;
-        private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.ComboBox boxIsEnd;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button btnSearchMapAddress;
         private System.Windows.Forms.TextBox txtMapAddress;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button btnPauseAskPosition;
+        private System.Windows.Forms.Button btnResumeAskPosition;
     }
 }

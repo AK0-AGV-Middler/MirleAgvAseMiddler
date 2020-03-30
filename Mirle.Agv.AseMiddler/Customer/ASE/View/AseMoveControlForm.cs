@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mirle.Agv.AseMiddler.Model;
+using Mirle.Agv.AseMiddler.Controller;
 
 namespace Mirle.Agv.AseMiddler.View
 {
@@ -15,7 +16,9 @@ namespace Mirle.Agv.AseMiddler.View
     {
         public event EventHandler<AseMoveEventArgs> SendMove;
         public event EventHandler<string> OnException;
+        public event EventHandler<bool> PauseOrResumeAskPosition;
         private MapInfo mapInfo;
+        public string PspLogMsg { get; set; } = "";        
 
         public AseMoveControlForm(MapInfo mapInfo)
         {
@@ -90,6 +93,43 @@ namespace Mirle.Agv.AseMiddler.View
             numMovePositionY.Value = Convert.ToDecimal(mapAddress.Position.Y);
             numHeadAngle.Value = Convert.ToDecimal((int)mapAddress.VehicleHeadAngle);
             boxAddressDirection.SelectedIndex = (int)mapAddress.TransferPortDirection;
+        }
+
+        public void AsePackage_AllPspLog(object sender, string e)
+        {
+            AppendPspLogMsg(e);
+        }
+
+        private void AppendPspLogMsg(string msg)
+        {
+            try
+            {
+                PspLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", PspLogMsg);
+
+                if (PspLogMsg.Length > 65535)
+                {
+                    PspLogMsg = PspLogMsg.Substring(65535);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            textBox1.Text = PspLogMsg;
+        }
+
+        private void btnPauseAskPosition_Click(object sender, EventArgs e)
+        {
+            PauseOrResumeAskPosition?.Invoke(this, true);
+        }
+
+        private void btnResumeAskPosition_Click(object sender, EventArgs e)
+        {
+            PauseOrResumeAskPosition?.Invoke(this, false);
         }
     }
 
