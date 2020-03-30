@@ -660,7 +660,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
                     queReserveOkSections.Enqueue(aReserveOkSection);
                     OnReserveOkEvent?.Invoke(this, aReserveOkSection.Id);
-                    mainFlowHandler.AgvcConnector_UpdateMoveControlReserveOkPositions(needReserveSection);
+                    mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(needReserveSection);
                     ReserveOkAskNext = true;
                 }
                 else
@@ -2190,7 +2190,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                 wrappers.TransEventRep = id_134_TRANS_EVENT_REP;
 
-                SendCommandWrapper(wrappers);
+                //SendCommandWrapper(wrappers);
             }
             catch (Exception ex)
             {

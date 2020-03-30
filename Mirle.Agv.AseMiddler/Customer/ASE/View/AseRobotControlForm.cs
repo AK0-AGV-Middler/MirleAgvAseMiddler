@@ -16,7 +16,9 @@ namespace Mirle.Agv.AseMiddler.View
         public event EventHandler<AseRobotEventArgs> SendRobotCommand;
         public event EventHandler<string> OnException;
 
-        public string CassetteId { get; set; } = "";
+        public string LCassetteId { get; set; } = "";
+        public string RCassetteId { get; set; } = "";
+
 
         public AseRobotControlForm()
         {
@@ -59,7 +61,8 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            txtCassetteId.Text = CassetteId;
+            txtLCstId.Text = LCassetteId;
+            txtRCstId.Text = RCassetteId;
         }
     }
 

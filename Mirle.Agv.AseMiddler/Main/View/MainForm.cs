@@ -510,11 +510,11 @@ namespace Mirle.Agv.AseMiddler.View
                 {
                     tmpO = addr.Position;
                 }
-                }
+            }
             tmp = theMapInfo.addressMap.Values.FirstOrDefault();
             tmpMaxY.Y = tmpMinY.Y = tmp.Position.Y;
             foreach (var address in theMapInfo.addressMap.Values)
-                {
+            {
                 if (Math.Abs(address.Position.Y - tmpO.Y) > Math.Abs(tmpMaxY.Y - tmpO.Y))
                 {
                     tmpMaxY = address.Position;
@@ -535,8 +535,8 @@ namespace Mirle.Agv.AseMiddler.View
             maxPos.Y = yMax;//200318 dabid+
             minPos.X = xMin;//200318 dabid+
             minPos.Y = yMin;//200318 dabid+
-            var maxPosInPixel = MapPixelExchange(new MapPosition(xMax,yMax));
-            var minPosInPixel = MapPixelExchange(new MapPosition(xMin,yMin));
+            var maxPosInPixel = MapPixelExchange(new MapPosition(xMax, yMax));
+            var minPosInPixel = MapPixelExchange(new MapPosition(xMin, yMin));
             Point point = new Point(100 + Math.Abs(maxPosInPixel.X - minPosInPixel.X), 100 + Math.Abs(maxPosInPixel.Y - minPosInPixel.Y));
             pictureBox1.Size = new Size(point);
             image = new Bitmap(point.X, point.Y, PixelFormat.Format32bppArgb);
@@ -685,7 +685,7 @@ namespace Mirle.Agv.AseMiddler.View
                 else
                 {
                     asePackage.aseMoveControl.ResumePositionWatcher();
-                }              
+                }
             }
             catch (Exception ex)
             {
@@ -696,8 +696,8 @@ namespace Mirle.Agv.AseMiddler.View
         private void AseMoveControlForm_SendMove(object sender, AseMoveEventArgs e)
         {
             try
-            {                
-                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed,e.isEnd);
+            {
+                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed, e.isEnd);
             }
             catch (Exception ex)
             {
@@ -752,7 +752,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 robotCommand = new LoadCmdInfo(agvcTransCmd);
                 robotCommand.PortAddressId = e.FromPort.PadLeft(5, '0');
-                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.ToPort.Trim('0'));                
+                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.ToPort.Trim('0'));
             }
             else
             {
@@ -1125,7 +1125,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-              var reserveStop =  theVehicle.AseMovingGuide.ReserveStop == com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
+                var reserveStop = theVehicle.AseMovingGuide.ReserveStop == com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
 
                 if (reserveStop)
                 {
@@ -1136,7 +1136,7 @@ namespace Mirle.Agv.AseMiddler.View
                 {
                     lbxNeedReserveSections.ForeColor = Color.GreenYellow;
                     lbxReserveOkSections.ForeColor = Color.GreenYellow;
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -1392,29 +1392,11 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                //TODO: SlotA and SlotB
-                if (theVehicle.AseCarrierSlotL.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
-                {
-                    ucLoading.TagValue = theVehicle.AseCarrierSlotL.CarrierSlotStatus.ToString();
-                    ucVehicleImage.Loading = true;
-                    ucCstId.TagValue = theVehicle.AseCarrierSlotL.CarrierId;
-                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotL.CarrierId;
-                }
-                else if (theVehicle.AseCarrierSlotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
-                {
-                    ucLoading.TagValue = theVehicle.AseCarrierSlotR.CarrierSlotStatus.ToString();
-                    ucVehicleImage.Loading = true;
-                    ucCstId.TagValue = theVehicle.AseCarrierSlotR.CarrierId;
-                    aseRobotControlForm.CassetteId = theVehicle.AseCarrierSlotR.CarrierId;
-                }
-                else
-                {
-                    ucLoading.TagValue = EnumAseCarrierSlotStatus.Empty.ToString();
-                    ucVehicleImage.Loading = false;
-                    ucCstId.TagValue = "";
-                    aseRobotControlForm.CassetteId = "";
-                }
-
+                ucLCstId.TagValue = theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? "" : theVehicle.AseCarrierSlotL.CarrierId;
+                aseRobotControlForm.LCassetteId = ucLCstId.TagValue;
+                ucRCstId.TagValue = theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? "" : theVehicle.AseCarrierSlotR.CarrierId;
+                aseRobotControlForm.RCassetteId = ucRCstId.TagValue;
+                ucRobotHome.TagValue = theVehicle.AseRobotStatus.IsHome ? "Home" : "NG";              
                 ucCharging.TagValue = theVehicle.IsCharging ? "Yes" : "No";
             }
             catch (Exception ex)

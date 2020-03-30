@@ -32,15 +32,16 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageRobotCommnad = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.txtCassetteId = new System.Windows.Forms.TextBox();
+            this.txtLCstId = new System.Windows.Forms.TextBox();
             this.boxPioDirection = new System.Windows.Forms.ComboBox();
             this.txtToPort = new System.Windows.Forms.TextBox();
-            this.txtFromPort = new System.Windows.Forms.TextBox();
-            this.btnSendRobot = new System.Windows.Forms.Button();
-            this.cbIsLoad = new System.Windows.Forms.CheckBox();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.txtGateType = new System.Windows.Forms.TextBox();
             this.txtPortNumber = new System.Windows.Forms.TextBox();
+            this.txtGateType = new System.Windows.Forms.TextBox();
+            this.txtFromPort = new System.Windows.Forms.TextBox();
+            this.cbIsLoad = new System.Windows.Forms.CheckBox();
+            this.btnSendRobot = new System.Windows.Forms.Button();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.txtRCstId = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.pageRobotCommnad.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -57,6 +58,8 @@
             // 
             // pageRobotCommnad
             // 
+            this.pageRobotCommnad.Controls.Add(this.txtRCstId);
+            this.pageRobotCommnad.Controls.Add(this.txtLCstId);
             this.pageRobotCommnad.Controls.Add(this.groupBox4);
             this.pageRobotCommnad.Controls.Add(this.btnSendRobot);
             this.pageRobotCommnad.Location = new System.Drawing.Point(4, 22);
@@ -69,7 +72,6 @@
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.txtCassetteId);
             this.groupBox4.Controls.Add(this.boxPioDirection);
             this.groupBox4.Controls.Add(this.txtToPort);
             this.groupBox4.Controls.Add(this.txtPortNumber);
@@ -78,17 +80,17 @@
             this.groupBox4.Controls.Add(this.cbIsLoad);
             this.groupBox4.Location = new System.Drawing.Point(17, 17);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(253, 142);
+            this.groupBox4.Size = new System.Drawing.Size(253, 113);
             this.groupBox4.TabIndex = 1;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Robot(P45)";
             // 
-            // txtCassetteId
+            // txtLCstId
             // 
-            this.txtCassetteId.Location = new System.Drawing.Point(7, 75);
-            this.txtCassetteId.Name = "txtCassetteId";
-            this.txtCassetteId.Size = new System.Drawing.Size(240, 22);
-            this.txtCassetteId.TabIndex = 11;
+            this.txtLCstId.Location = new System.Drawing.Point(276, 64);
+            this.txtLCstId.Name = "txtLCstId";
+            this.txtLCstId.Size = new System.Drawing.Size(240, 22);
+            this.txtLCstId.TabIndex = 11;
             // 
             // boxPioDirection
             // 
@@ -106,6 +108,22 @@
             this.txtToPort.TabIndex = 9;
             this.txtToPort.Text = "To";
             // 
+            // txtPortNumber
+            // 
+            this.txtPortNumber.Location = new System.Drawing.Point(129, 75);
+            this.txtPortNumber.Name = "txtPortNumber";
+            this.txtPortNumber.Size = new System.Drawing.Size(117, 22);
+            this.txtPortNumber.TabIndex = 8;
+            this.txtPortNumber.Text = "1";
+            // 
+            // txtGateType
+            // 
+            this.txtGateType.Location = new System.Drawing.Point(6, 75);
+            this.txtGateType.Name = "txtGateType";
+            this.txtGateType.Size = new System.Drawing.Size(117, 22);
+            this.txtGateType.TabIndex = 8;
+            this.txtGateType.Text = "0";
+            // 
             // txtFromPort
             // 
             this.txtFromPort.Location = new System.Drawing.Point(6, 47);
@@ -113,16 +131,6 @@
             this.txtFromPort.Size = new System.Drawing.Size(117, 22);
             this.txtFromPort.TabIndex = 8;
             this.txtFromPort.Text = "From";
-            // 
-            // btnSendRobot
-            // 
-            this.btnSendRobot.Location = new System.Drawing.Point(17, 165);
-            this.btnSendRobot.Name = "btnSendRobot";
-            this.btnSendRobot.Size = new System.Drawing.Size(253, 33);
-            this.btnSendRobot.TabIndex = 5;
-            this.btnSendRobot.Text = "Send";
-            this.btnSendRobot.UseVisualStyleBackColor = true;
-            this.btnSendRobot.Click += new System.EventHandler(this.btnSendRobot_Click);
             // 
             // cbIsLoad
             // 
@@ -134,27 +142,28 @@
             this.cbIsLoad.Text = "Is Load ?";
             this.cbIsLoad.UseVisualStyleBackColor = true;
             // 
+            // btnSendRobot
+            // 
+            this.btnSendRobot.Location = new System.Drawing.Point(17, 136);
+            this.btnSendRobot.Name = "btnSendRobot";
+            this.btnSendRobot.Size = new System.Drawing.Size(253, 33);
+            this.btnSendRobot.TabIndex = 5;
+            this.btnSendRobot.Text = "Send";
+            this.btnSendRobot.UseVisualStyleBackColor = true;
+            this.btnSendRobot.Click += new System.EventHandler(this.btnSendRobot_Click);
+            // 
             // timer1
             // 
             this.timer1.Enabled = true;
             this.timer1.Interval = 500;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // txtGateType
+            // txtRCstId
             // 
-            this.txtGateType.Location = new System.Drawing.Point(7, 103);
-            this.txtGateType.Name = "txtGateType";
-            this.txtGateType.Size = new System.Drawing.Size(117, 22);
-            this.txtGateType.TabIndex = 8;
-            this.txtGateType.Text = "0";
-            // 
-            // txtPortNumber
-            // 
-            this.txtPortNumber.Location = new System.Drawing.Point(130, 103);
-            this.txtPortNumber.Name = "txtPortNumber";
-            this.txtPortNumber.Size = new System.Drawing.Size(117, 22);
-            this.txtPortNumber.TabIndex = 8;
-            this.txtPortNumber.Text = "1";
+            this.txtRCstId.Location = new System.Drawing.Point(276, 92);
+            this.txtRCstId.Name = "txtRCstId";
+            this.txtRCstId.Size = new System.Drawing.Size(240, 22);
+            this.txtRCstId.TabIndex = 11;
             // 
             // AseRobotControlForm
             // 
@@ -166,6 +175,7 @@
             this.Text = "AseRobotControlForm";
             this.tabControl1.ResumeLayout(false);
             this.pageRobotCommnad.ResumeLayout(false);
+            this.pageRobotCommnad.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
@@ -181,10 +191,11 @@
         private System.Windows.Forms.TextBox txtFromPort;
         private System.Windows.Forms.Button btnSendRobot;
         private System.Windows.Forms.ComboBox boxPioDirection;
-        private System.Windows.Forms.TextBox txtCassetteId;
+        private System.Windows.Forms.TextBox txtLCstId;
         private System.Windows.Forms.CheckBox cbIsLoad;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.TextBox txtPortNumber;
         private System.Windows.Forms.TextBox txtGateType;
+        private System.Windows.Forms.TextBox txtRCstId;
     }
 }
