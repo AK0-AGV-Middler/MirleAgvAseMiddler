@@ -744,6 +744,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 theVehicle.AseMoveStatus = tempMoveStatus;
                 agvcConnector.ReportSectionPass();
 
+                SpinWait.SpinUntil(() => false, 1000);
+
                 tempMoveStatus.LastMapPosition = targetAseMoveStatus.LastMapPosition;
                 tempMoveStatus.Speed = targetAseMoveStatus.Speed;
                 tempMoveStatus.HeadDirection = targetAseMoveStatus.HeadDirection;
@@ -754,10 +756,13 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 theVehicle.AseMovingGuide.MovingSectionsIndex++;
                 UpdateAgvcConnectorGotReserveOkSections(targetAseMoveStatus.LastSection.Id);
+                SpinWait.SpinUntil(() => false, 1000);
             }
 
             if (targetAseMoveStatus.LastAddress.Id != theVehicle.AseMoveStatus.LastAddress.Id)
             {
+                SpinWait.SpinUntil(() => false, 1000);
+
                 tempMoveStatus.LastMapPosition = targetAseMoveStatus.LastMapPosition;
                 tempMoveStatus.Speed = targetAseMoveStatus.Speed;
                 tempMoveStatus.HeadDirection = targetAseMoveStatus.HeadDirection;

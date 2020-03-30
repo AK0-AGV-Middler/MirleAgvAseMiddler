@@ -2190,7 +2190,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
                 wrappers.TransEventRep = id_134_TRANS_EVENT_REP;
 
-                //SendCommandWrapper(wrappers);
+                SendCommandWrapper(wrappers);
             }
             catch (Exception ex)
             {
