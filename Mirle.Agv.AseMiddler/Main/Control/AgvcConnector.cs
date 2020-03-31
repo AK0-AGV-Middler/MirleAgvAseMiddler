@@ -1890,7 +1890,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public async Task<bool> Send_Cmd136_CstIdReadReport(TransferStep transferStep, EnumCstIdReadResult readResult, bool isLoadComplete = true)
         {
-
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);

@@ -19,6 +19,7 @@ namespace Mirle.Agv.AseMiddler.View
         public string LCassetteId { get; set; } = "";
         public string RCassetteId { get; set; } = "";
 
+        public string PspLogMsg { get; set; } = "";
 
         public AseRobotControlForm()
         {
@@ -63,6 +64,29 @@ namespace Mirle.Agv.AseMiddler.View
         {
             txtLCstId.Text = LCassetteId;
             txtRCstId.Text = RCassetteId;
+            textBox1.Text = PspLogMsg;
+        }
+
+        public void AsePackage_AllPspLog(object sender, string e)
+        {
+            AppendPspLogMsg(e);
+        }
+
+        private void AppendPspLogMsg(string msg)
+        {
+            try
+            {
+                PspLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", PspLogMsg);
+
+                if (PspLogMsg.Length > 65535)
+                {
+                    PspLogMsg = PspLogMsg.Substring(65535);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
         }
     }
 

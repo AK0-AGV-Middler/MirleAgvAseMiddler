@@ -379,10 +379,17 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
                         agvcConnector.ReportSectionPass();
-                        asePackage.aseMoveControl.PartMove(theVehicle.AseMoveStatus);
                         theVehicle.AseMoveStatus.IsMoveEnd = false;
+                        asePackage.aseMoveControl.PartMove(theVehicle.AseMoveStatus);
                         agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
                     }
+                    //{
+                    //    theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
+                    //    agvcConnector.ReportSectionPass();
+                    //    theVehicle.AseMoveStatus.IsMoveEnd = false;
+                    //    asePackage.aseMoveControl.PartMove(theVehicle.AseMoveStatus);
+                    //    agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
+                    //}
                     break;
                 case EnumTransferStepType.Load:
                     Load((LoadCmdInfo)transferStep);

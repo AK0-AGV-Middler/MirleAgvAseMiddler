@@ -197,7 +197,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 foreach (var agvcTransCmd in agvcTransCmds)
                 {
                     string transferCommandInfo = GetTransferCommandInfo(agvcTransCmd);
-                    //PrimarySend("P37", transferCommandInfo);
+                    PrimarySend("P37", transferCommandInfo);
                 }
             }
             catch (Exception ex)

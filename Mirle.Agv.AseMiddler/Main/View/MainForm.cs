@@ -728,6 +728,7 @@ namespace Mirle.Agv.AseMiddler.View
             aseRobotControlForm = new AseRobotControlForm();
             aseRobotControlForm.SendRobotCommand += AseRobotControlForm_SendRobotCommand;
             aseRobotControlForm.OnException += AseControlForm_OnException;
+            asePackage.AllPspLog += aseRobotControlForm.AsePackage_AllPspLog;
         }
 
         private void AseRobotControlForm_SendRobotCommand(object sender, AseRobotEventArgs e)
