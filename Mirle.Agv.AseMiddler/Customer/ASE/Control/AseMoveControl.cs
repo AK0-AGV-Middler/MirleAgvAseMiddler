@@ -10,6 +10,7 @@ using Mirle.Tools;
 using System.Reflection;
 using Mirle.Agv.AseMiddler.Model.Configs;
 using System.Threading;
+using Mirle.Agv.AseMiddler.Model;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -118,28 +119,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
-
-        public void PartMove(AseMoveStatus aseMoveStatus)
-        {
-            try
-            {
-                string beginString = "2";
-               
-                string positionX = GetPositionString(aseMoveStatus.LastAddress.Position.X);
-                string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);
-                string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
-                string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
-                string pioDirection = ((int)aseMoveStatus.LastAddress.PioDirection).ToString();
-                string  message = string.Concat(beginString, positionX, positionY, thetaString, speedString, pioDirection);
-
-                PrimarySend("P41", message);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
+        }        
 
         public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd)
         {
@@ -153,6 +133,27 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string speedString = GetNumberToString(speed, 4);
                 string pioDirection = ((int)addressDirection).ToString();
                 string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, pioDirection);
+
+                PrimarySend("P41", message);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd)
+        {
+            try
+            {
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.Instance.AseMoveStatus);
+                string beginString = ((int)enumAseMoveCommandIsEnd).ToString();
+                string positionX = GetPositionString(aseMoveStatus.LastAddress.Position.X);
+                string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);
+                string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
+                string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
+                string pioDirection = ((int)aseMoveStatus.LastAddress.PioDirection).ToString();
+                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, pioDirection);
 
                 PrimarySend("P41", message);
             }

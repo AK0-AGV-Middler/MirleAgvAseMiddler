@@ -1399,6 +1399,14 @@ namespace Mirle.Agv.AseMiddler.View
                 aseRobotControlForm.RCassetteId = ucRCstId.TagValue;
                 ucRobotHome.TagValue = theVehicle.AseRobotStatus.IsHome ? "Home" : "NG";              
                 ucCharging.TagValue = theVehicle.IsCharging ? "Yes" : "No";
+                if (theVehicle.AseCarrierSlotL.CarrierSlotStatus!= EnumAseCarrierSlotStatus.Empty|| theVehicle.AseCarrierSlotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
+                {
+                    ucVehicleImage.Loading = true;
+                }
+                else
+                {
+                    ucVehicleImage.Loading = false;
+                }
             }
             catch (Exception ex)
             {

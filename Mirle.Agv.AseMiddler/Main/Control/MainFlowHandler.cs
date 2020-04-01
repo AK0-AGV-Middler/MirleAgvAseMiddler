@@ -373,23 +373,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                     MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
                     if (moveCmdInfo.EndAddress.Id == theVehicle.AseMoveStatus.LastAddress.Id)
                     {
-                        AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                        if (theVehicle.IsSimulation)
+                        {
+                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                        }
+                        else
+                        {
+                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End);
+                        }
                     }
                     else
                     {
                         theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
                         agvcConnector.ReportSectionPass();
                         theVehicle.AseMoveStatus.IsMoveEnd = false;
-                        asePackage.aseMoveControl.PartMove(theVehicle.AseMoveStatus);
+                        asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.Begin);
                         agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
                     }
-                    //{
-                    //    theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
-                    //    agvcConnector.ReportSectionPass();
-                    //    theVehicle.AseMoveStatus.IsMoveEnd = false;
-                    //    asePackage.aseMoveControl.PartMove(theVehicle.AseMoveStatus);
-                    //    agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
-                    //}
                     break;
                 case EnumTransferStepType.Load:
                     Load((LoadCmdInfo)transferStep);
@@ -649,7 +649,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                                 theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
                                                 agvcConnector.StatusChangeReport();
                                             }
-                                            MoveToReserveOkPositions();
+                                            FakeMoveToReserveOkPositions();
                                             sw.Reset();
                                         }
                                     }
@@ -737,7 +737,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             //    , msg));
         }
 
-        private void MoveToReserveOkPositions()
+        private void FakeMoveToReserveOkPositions()
         {
             theVehicle.AseMoveStatus.AseMoveState = EnumAseMoveState.Working;
             SpinWait.SpinUntil(() => false, 2000);
@@ -1384,10 +1384,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             LoadCmdInfo loadCmdInfo = new LoadCmdInfo(agvcTransCmd);
             MapAddress loadAddress = theMapInfo.addressMap[loadCmdInfo.PortAddressId];
             loadCmdInfo.GateType = loadAddress.GateType;
-            if (string.IsNullOrEmpty(agvcTransCmd.LoadPortId)|| !loadAddress.PortIdMap.ContainsKey(agvcTransCmd.LoadPortId))
+            if (string.IsNullOrEmpty(agvcTransCmd.LoadPortId) || !loadAddress.PortIdMap.ContainsKey(agvcTransCmd.LoadPortId))
             {
                 loadCmdInfo.PortNumber = "1";
-            }           
+            }
             else
             {
                 loadCmdInfo.PortNumber = loadAddress.PortIdMap[agvcTransCmd.LoadPortId];
@@ -1478,22 +1478,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
-
-        private void SimulationArrival(bool isEnd, MapPosition position, int theta, int speed)
-        {
-            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-            aseMoveStatus.LastMapPosition = position;
-            aseMoveStatus.HeadDirection = theta;
-            aseMoveStatus.Speed = speed;
-            theVehicle.AseMoveStatus = aseMoveStatus;
-
-            if (isEnd)
-            {
-                SpinWait.SpinUntil(() => false, 1000);
-                AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
-            }
-        }
+        }       
 
         public bool IsMoveStep() => GetCurrentTransferStepType() == EnumTransferStepType.Move || GetCurrentTransferStepType() == EnumTransferStepType.MoveToCharger;
 
