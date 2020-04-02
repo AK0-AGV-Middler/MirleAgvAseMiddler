@@ -31,7 +31,7 @@ namespace Mirle.Agv.AseMiddler.View
         private void InitialBoxIsEnd()
         {
             boxIsEnd.DataSource = Enum.GetValues(typeof(EnumAseMoveCommandIsEnd));
-            boxIsEnd.SelectedIndex = 0;
+            boxIsEnd.SelectedIndex = (int)EnumAseMoveCommandIsEnd.None;
         }
 
         private void InitialBoxAddressDirection()
@@ -88,7 +88,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void UpdateMapAddressUserControls(MapAddress mapAddress)
         {
-            boxIsEnd.SelectedIndex = (int)EnumAseMoveCommandIsEnd.Begin;
+            boxIsEnd.SelectedIndex = (int)EnumAseMoveCommandIsEnd.None;
             numMovePositionX.Value = Convert.ToDecimal(mapAddress.Position.X);
             numMovePositionY.Value = Convert.ToDecimal(mapAddress.Position.Y);
             numHeadAngle.Value = Convert.ToDecimal((int)mapAddress.VehicleHeadAngle);

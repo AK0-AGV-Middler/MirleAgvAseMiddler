@@ -76,7 +76,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P33", "");
+                PrimarySend("33", "");
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string pioDirection = ((int)addressDirection).ToString();
                 string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, pioDirection);
 
-                PrimarySend("P41", message);
+                PrimarySend("41", message);
             }
             catch (Exception ex)
             {
@@ -155,7 +155,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string pioDirection = ((int)aseMoveStatus.LastAddress.PioDirection).ToString();
                 string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, pioDirection);
 
-                PrimarySend("P41", message);
+                PrimarySend("41", message);
             }
             catch (Exception ex)
             {
@@ -203,7 +203,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P51", "2");
+                PrimarySend("51", "2");
             }
             catch (Exception ex)
             {
@@ -215,7 +215,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P51", "2");
+                PrimarySend("51", "2");
             }
             catch (Exception ex)
             {
@@ -227,7 +227,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P51", "1");
+                PrimarySend("51", "1");
             }
             catch (Exception ex)
             {
@@ -239,7 +239,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P51", "0");
+                PrimarySend("51", "0");
             }
             catch (Exception ex)
             {
@@ -252,14 +252,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PSMessageXClass psMessage = new PSMessageXClass();
-                psMessage.Type = index.Substring(0, 1);
-                psMessage.Number = index.Substring(1, 2);
+                psMessage.Type = "P";
+                psMessage.Number = index;
                 psMessage.PSMessage = message;
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
                 OnPrimarySendEvent?.Invoke(this, psTransaction);
-                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)

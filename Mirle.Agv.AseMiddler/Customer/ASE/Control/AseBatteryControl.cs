@@ -79,7 +79,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P35", "");
+                PrimarySend("35", "");
             }
             catch (Exception ex)
             {
@@ -110,7 +110,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 if (!theVehicle.IsCharging) return true;
 
-                PrimarySend("P47", "0");
+                PrimarySend("47", "0");
 
                 return !theVehicle.IsCharging;
             }
@@ -140,7 +140,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     default:
                         throw new Exception($"Start charge command direction error.[{chargeDirection}]");
                 }
-                PrimarySend("P47", chargeDirectionString);
+                PrimarySend("47", chargeDirectionString);
 
                 return theVehicle.IsCharging;
             }
@@ -225,14 +225,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PSMessageXClass psMessage = new PSMessageXClass();
-                psMessage.Type = index.Substring(0, 1);
-                psMessage.Number = index.Substring(1, 2);
+                psMessage.Type = "P";
+                psMessage.Number = index;
                 psMessage.PSMessage = message;
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
                 OnPrimarySendEvent?.Invoke(this, psTransaction);
-                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)

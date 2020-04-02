@@ -2065,8 +2065,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 for (int i = 0; i < theVehicle.AseMovingGuide.GuideSectionIds.Count; i++)
                 {
                     MapSection mapSection = new MapSection();
-                    string sectionId = theVehicle.AseMovingGuide.GuideSectionIds[i];
-                    string addressId = theVehicle.AseMovingGuide.GuideAddressIds[i + 1];
+                    string sectionId = theVehicle.AseMovingGuide.GuideSectionIds[i].Trim();
+                    string addressId = theVehicle.AseMovingGuide.GuideAddressIds[i + 1].Trim();
                     if (!theMapInfo.sectionMap.ContainsKey(sectionId))
                     {
                         throw new Exception($"Map info has no this section ID.[{sectionId}]");

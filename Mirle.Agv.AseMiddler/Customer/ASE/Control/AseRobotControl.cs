@@ -55,7 +55,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P49", "");
+                PrimarySend("49", "");
             }
             catch (Exception ex)
             {
@@ -67,7 +67,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P31", "3");
+                PrimarySend("31", "3");
                 return "";
             }
             catch (Exception ex)
@@ -83,7 +83,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 RobotCommand = robotCommand;
                 string robotCommandString = GetRobotCommandString();
-                PSTransactionXClass psTransaction = PrimarySend("P45", robotCommandString);
+                PSTransactionXClass psTransaction = PrimarySend("45", robotCommandString);
                 int timeoutCount = 10;
                 while (timeoutCount >= 0)
                 {
@@ -169,14 +169,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PSMessageXClass psMessage = new PSMessageXClass();
-                psMessage.Type = index.Substring(0, 1);
-                psMessage.Number = index.Substring(1, 2);
+                psMessage.Type = "P";
+                psMessage.Number = index;
                 psMessage.PSMessage = message;
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
                 OnPrimarySendEvent?.Invoke(this, psTransaction);
-                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)

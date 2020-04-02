@@ -95,14 +95,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PSMessageXClass psMessage = new PSMessageXClass();
-                psMessage.Type = index.Substring(0, 1);
-                psMessage.Number = index.Substring(1, 2);
+                psMessage.Type = "P";
+                psMessage.Number = index;
                 psMessage.PSMessage = message;
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
 
                 OnPrimarySendEvent?.Invoke(this, psTransaction);
-                //psWrapper.PrimarySent(ref psTransaction);
                 return psTransaction;
             }
             catch (Exception ex)
