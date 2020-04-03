@@ -577,10 +577,23 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private string QueMapSectionsToString(ConcurrentQueue<MapSection> aQue)
         {
-            string sectionIds = "[";
-            foreach (var item in aQue) sectionIds = string.Concat(sectionIds, $"({item.Id})");
-            sectionIds += "]";
-            return sectionIds;
+            string lastSecId = "";
+            try
+            {
+                string sectionIds = "[";
+                foreach (var item in aQue.ToList())
+                {
+                    lastSecId = item.Id;
+                    sectionIds = string.Concat(sectionIds, $"({item.Id})");
+                }
+                sectionIds += "]";
+                return sectionIds;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"lastSec = [{lastSecId}]" + ex.StackTrace);
+                return "";
+            }
         }
         private int GetReserveOkSectionsTotalLength()
         {
@@ -607,15 +620,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public void SetupNeedReserveSections()
         {
-            queNeedReserveSections = new ConcurrentQueue<MapSection>(theVehicle.AseMovingGuide.MovingSections);
-            var msg = $"AgvcConnector : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-        }
-        public void SetupNeedReserveSections(List<MapSection> mapSections)
-        {
-            queNeedReserveSections = new ConcurrentQueue<MapSection>(mapSections);
-            var msg = $"AgvcConnector : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            try
+            {
+                queNeedReserveSections = new ConcurrentQueue<MapSection>(theVehicle.AseMovingGuide.MovingSections);
+                var msg = $"AgvcConnector : 更新需要通行權路徑列表[{QueMapSectionsToString(queNeedReserveSections)}][Count={queNeedReserveSections.Count}]";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
         public List<MapSection> GetNeedReserveSections()
         {
@@ -1197,10 +1211,17 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private bool IsNeerlyNoMove()
         {
-            var realPos = theVehicle.AseMoveStatus.LastMapPosition;
-            var lastAddr = theVehicle.AseMoveStatus.LastAddress;
-            if (string.IsNullOrEmpty(lastAddr.Id)) return true;
-            return Math.Abs(realPos.X - lastAddr.Position.X) <= agvcConnectorConfig.NeerlyNoMoveRangeMm && Math.Abs(realPos.Y - lastAddr.Position.Y) <= agvcConnectorConfig.NeerlyNoMoveRangeMm;
+            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+            var lastPosition = aseMoveStatus.LastMapPosition;
+            if (Math.Abs(lastPosition.X - lastReportPosition.X) <= agvcConnectorConfig.NeerlyNoMoveRangeMm && Math.Abs(lastPosition.Y - lastReportPosition.Y) <= agvcConnectorConfig.NeerlyNoMoveRangeMm)
+            {
+                return true;
+            }
+            else
+            {
+                lastReportPosition = lastPosition;
+                return false;
+            }
         }
         public void LoadArrivals(string cmdId)
         {
@@ -2121,7 +2142,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             ID_35_CST_ID_RENAME_REQUEST receive = (ID_35_CST_ID_RENAME_REQUEST)e.objPacket;
             var result = false;
-            
+
             if (theVehicle.AseCarrierSlotL.CarrierId == receive.OLDCSTID.Trim())
             {
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.AseCarrierSlotL;

@@ -2061,12 +2061,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 StopCharge();
-                theVehicle.AseMovingGuide.MovingSections = new List<MapSection>();
+                AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
+                aseMovingGuide.MovingSections.Clear();
                 for (int i = 0; i < theVehicle.AseMovingGuide.GuideSectionIds.Count; i++)
                 {
                     MapSection mapSection = new MapSection();
-                    string sectionId = theVehicle.AseMovingGuide.GuideSectionIds[i].Trim();
-                    string addressId = theVehicle.AseMovingGuide.GuideAddressIds[i + 1].Trim();
+                    string sectionId = aseMovingGuide.GuideSectionIds[i].Trim();
+                    string addressId = aseMovingGuide.GuideAddressIds[i + 1].Trim();
                     if (!theMapInfo.sectionMap.ContainsKey(sectionId))
                     {
                         throw new Exception($"Map info has no this section ID.[{sectionId}]");
@@ -2078,8 +2079,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     mapSection = theMapInfo.sectionMap[sectionId];
                     mapSection.CmdDirection = addressId == mapSection.TailAddress.Id ? EnumCommandDirection.Forward : EnumCommandDirection.Backward;
-                    theVehicle.AseMovingGuide.MovingSections.Add(mapSection);
+                    aseMovingGuide.MovingSections.Add(mapSection);
                 }
+                theVehicle.AseMovingGuide = aseMovingGuide;
             }
             catch (Exception ex)
             {
@@ -2744,18 +2746,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private bool IsMoveControlStop()
         {
             return (theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Idle || theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Stoping);
-        }
-
-        private void UpdateAgvcConnectorNeedReserveSections(string reserveSectionID)
-        {
-            var needReserveSections = agvcConnector.GetNeedReserveSections();
-            var index = needReserveSections.FindIndex(x => x.Id == reserveSectionID);
-            if (index > -1)
-            {
-                needReserveSections.RemoveAt(index);
-                agvcConnector.SetupNeedReserveSections(needReserveSections);
-            }
-        }
+        }    
 
         public void AgvcConnector_OnCmdCancelAbortEvent(ushort iSeqNum, ID_37_TRANS_CANCEL_REQUEST receive)
         {
