@@ -154,21 +154,7 @@ namespace Mirle.Agv.AseMiddler
         Cmd174_AddressTeachReport = 174,
         Cmd191_AlarmResetResponse = 191,
         Cmd194_AlarmReport = 194,
-    }
-
-    public enum EnumAddressAction
-    {
-        ST,
-        BST,
-        TR50,
-        TR350,
-        BTR50,
-        BTR350,
-        R2000,
-        BR2000,
-        End,
-        SlowStop
-    }
+    }    
 
     public enum EnumAlarmLevel
     {
@@ -192,14 +178,7 @@ namespace Mirle.Agv.AseMiddler
         Noraml,
         Mismatch,
         Fail
-    }
-
-    public enum EnumBarcodeMaterial
-    {
-        Iron,
-        Papper,
-        None
-    }
+    }   
 
     public enum EnumBeamDirection
     {
@@ -207,14 +186,7 @@ namespace Mirle.Agv.AseMiddler
         Back,
         Left,
         Right
-    }
-
-    public enum EnumVehicleLocation
-    {
-        None,
-        Section,
-        Address
-    }
+    }   
 
     public enum EnumPspConnectionState
     {

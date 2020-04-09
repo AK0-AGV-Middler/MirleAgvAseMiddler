@@ -43,14 +43,13 @@
             this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AlarmPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AgvcConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.RobotPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.RobotAndChargePage = new System.Windows.Forms.ToolStripMenuItem();
             this.MovePage = new System.Windows.Forms.ToolStripMenuItem();
             this.AgvlConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
             this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.模擬測試ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.tbxTransferStepMsg = new System.Windows.Forms.TextBox();
@@ -101,14 +100,26 @@
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.pageMoveState = new System.Windows.Forms.TabPage();
+            this.pageRobotSate = new System.Windows.Forms.TabPage();
+            this.pageChargeState = new System.Windows.Forms.TabPage();
+            this.pageVehicleState = new System.Windows.Forms.TabPage();
+            this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucCharging = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucSoc = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucLastPosition = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucMapAddress = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucMapSection = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryAh = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.btnRefreshBatteryState = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -118,7 +129,6 @@
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -134,6 +144,9 @@
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.tabControl1.SuspendLayout();
+            this.pageChargeState.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -212,8 +225,8 @@
             this.VehicleStatusPage,
             this.AlarmPage,
             this.AgvcConnectorPage,
-            this.RobotPage,
             this.MovePage,
+            this.RobotAndChargePage,
             this.AgvlConnectorPage});
             this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
             this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
@@ -222,42 +235,42 @@
             // VehicleStatusPage
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(161, 22);
+            this.VehicleStatusPage.Size = new System.Drawing.Size(179, 22);
             this.VehicleStatusPage.Text = "Parameter";
             this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(161, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(179, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // AgvcConnectorPage
             // 
             this.AgvcConnectorPage.Name = "AgvcConnectorPage";
-            this.AgvcConnectorPage.Size = new System.Drawing.Size(161, 22);
+            this.AgvcConnectorPage.Size = new System.Drawing.Size(179, 22);
             this.AgvcConnectorPage.Text = "AgvcConnector";
             this.AgvcConnectorPage.Click += new System.EventHandler(this.AgvcConnectorPage_Click);
             // 
-            // RobotPage
+            // RobotAndChargePage
             // 
-            this.RobotPage.Name = "RobotPage";
-            this.RobotPage.Size = new System.Drawing.Size(161, 22);
-            this.RobotPage.Text = "Robot";
-            this.RobotPage.Click += new System.EventHandler(this.RobotControlPage_Click);
+            this.RobotAndChargePage.Name = "RobotAndChargePage";
+            this.RobotAndChargePage.Size = new System.Drawing.Size(179, 22);
+            this.RobotAndChargePage.Text = "Robot and Charge";
+            this.RobotAndChargePage.Click += new System.EventHandler(this.RobotControlPage_Click);
             // 
             // MovePage
             // 
             this.MovePage.Name = "MovePage";
-            this.MovePage.Size = new System.Drawing.Size(161, 22);
+            this.MovePage.Size = new System.Drawing.Size(179, 22);
             this.MovePage.Text = "Move";
             this.MovePage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
             // 
             // AgvlConnectorPage
             // 
             this.AgvlConnectorPage.Name = "AgvlConnectorPage";
-            this.AgvlConnectorPage.Size = new System.Drawing.Size(161, 22);
+            this.AgvlConnectorPage.Size = new System.Drawing.Size(179, 22);
             this.AgvlConnectorPage.Text = "AgvlConnector";
             this.AgvlConnectorPage.Click += new System.EventHandler(this.AgvlConnectorPage_Click);
             // 
@@ -309,21 +322,13 @@
             // 
             // splitContainer3.Panel2
             // 
+            this.splitContainer3.Panel2.Controls.Add(this.btnRefreshPosition);
             this.splitContainer3.Panel2.Controls.Add(this.tbxDebugLogMsg);
+            this.splitContainer3.Panel2.Controls.Add(this.btnPrintScreen);
             this.splitContainer3.Size = new System.Drawing.Size(1178, 1017);
             this.splitContainer3.SplitterDistance = 677;
             this.splitContainer3.SplitterIncrement = 10;
             this.splitContainer3.TabIndex = 0;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             // 
             // tbxDebugLogMsg
             // 
@@ -362,9 +367,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.AutoScroll = true;
-            this.splitContainer2.Panel2.Controls.Add(this.btnRefreshPosition);
+            this.splitContainer2.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer2.Panel2.Controls.Add(this.groupBox3);
-            this.splitContainer2.Panel2.Controls.Add(this.btnPrintScreen);
             this.splitContainer2.Panel2.Controls.Add(this.groupBox2);
             this.splitContainer2.Size = new System.Drawing.Size(722, 1017);
             this.splitContainer2.SplitterDistance = 660;
@@ -686,7 +690,7 @@
             // 
             // btnRefreshPosition
             // 
-            this.btnRefreshPosition.Location = new System.Drawing.Point(162, 101);
+            this.btnRefreshPosition.Location = new System.Drawing.Point(827, 4);
             this.btnRefreshPosition.Name = "btnRefreshPosition";
             this.btnRefreshPosition.Size = new System.Drawing.Size(126, 70);
             this.btnRefreshPosition.TabIndex = 60;
@@ -703,7 +707,7 @@
             this.groupBox3.Controls.Add(this.txtMoveControlAbnormal);
             this.groupBox3.Location = new System.Drawing.Point(18, 21);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(138, 181);
+            this.groupBox3.Size = new System.Drawing.Size(159, 181);
             this.groupBox3.TabIndex = 62;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "IsAbnormal";
@@ -767,7 +771,7 @@
             // 
             this.btnPrintScreen.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnPrintScreen.ForeColor = System.Drawing.Color.OrangeRed;
-            this.btnPrintScreen.Location = new System.Drawing.Point(162, 28);
+            this.btnPrintScreen.Location = new System.Drawing.Point(959, 4);
             this.btnPrintScreen.Name = "btnPrintScreen";
             this.btnPrintScreen.Size = new System.Drawing.Size(205, 71);
             this.btnPrintScreen.TabIndex = 59;
@@ -893,6 +897,82 @@
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.pageMoveState);
+            this.tabControl1.Controls.Add(this.pageRobotSate);
+            this.tabControl1.Controls.Add(this.pageChargeState);
+            this.tabControl1.Controls.Add(this.pageVehicleState);
+            this.tabControl1.Location = new System.Drawing.Point(183, 21);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(527, 303);
+            this.tabControl1.TabIndex = 63;
+            // 
+            // pageMoveState
+            // 
+            this.pageMoveState.Location = new System.Drawing.Point(4, 22);
+            this.pageMoveState.Name = "pageMoveState";
+            this.pageMoveState.Padding = new System.Windows.Forms.Padding(3);
+            this.pageMoveState.Size = new System.Drawing.Size(519, 277);
+            this.pageMoveState.TabIndex = 0;
+            this.pageMoveState.Text = "Move";
+            this.pageMoveState.UseVisualStyleBackColor = true;
+            // 
+            // pageRobotSate
+            // 
+            this.pageRobotSate.Location = new System.Drawing.Point(4, 22);
+            this.pageRobotSate.Name = "pageRobotSate";
+            this.pageRobotSate.Padding = new System.Windows.Forms.Padding(3);
+            this.pageRobotSate.Size = new System.Drawing.Size(519, 277);
+            this.pageRobotSate.TabIndex = 1;
+            this.pageRobotSate.Text = "Robot";
+            this.pageRobotSate.UseVisualStyleBackColor = true;
+            // 
+            // pageChargeState
+            // 
+            this.pageChargeState.Controls.Add(this.btnRefreshBatteryState);
+            this.pageChargeState.Controls.Add(this.ucBatteryCharging);
+            this.pageChargeState.Controls.Add(this.ucBatteryTemperature);
+            this.pageChargeState.Controls.Add(this.ucBatteryVoltage);
+            this.pageChargeState.Controls.Add(this.ucBatteryAh);
+            this.pageChargeState.Controls.Add(this.ucBatteryPercentage);
+            this.pageChargeState.Location = new System.Drawing.Point(4, 22);
+            this.pageChargeState.Name = "pageChargeState";
+            this.pageChargeState.Size = new System.Drawing.Size(519, 277);
+            this.pageChargeState.TabIndex = 2;
+            this.pageChargeState.Text = "Charge";
+            this.pageChargeState.UseVisualStyleBackColor = true;
+            // 
+            // pageVehicleState
+            // 
+            this.pageVehicleState.Location = new System.Drawing.Point(4, 22);
+            this.pageVehicleState.Name = "pageVehicleState";
+            this.pageVehicleState.Size = new System.Drawing.Size(519, 277);
+            this.pageVehicleState.TabIndex = 3;
+            this.pageVehicleState.Text = "Vehicle";
+            this.pageVehicleState.UseVisualStyleBackColor = true;
+            // 
+            // ucRCstId
+            // 
+            this.ucRCstId.Location = new System.Drawing.Point(11, 57);
+            this.ucRCstId.Name = "ucRCstId";
+            this.ucRCstId.Size = new System.Drawing.Size(187, 26);
+            this.ucRCstId.TabIndex = 42;
+            this.ucRCstId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucRCstId.TagName = "RCstId";
+            this.ucRCstId.TagValue = "";
+            // 
             // ucLCstId
             // 
             this.ucLCstId.Location = new System.Drawing.Point(10, 25);
@@ -902,6 +982,16 @@
             this.ucLCstId.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucLCstId.TagName = "LCstId";
             this.ucLCstId.TagValue = "";
+            // 
+            // ucRobotHome
+            // 
+            this.ucRobotHome.Location = new System.Drawing.Point(6, 161);
+            this.ucRobotHome.Name = "ucRobotHome";
+            this.ucRobotHome.Size = new System.Drawing.Size(187, 30);
+            this.ucRobotHome.TabIndex = 3;
+            this.ucRobotHome.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucRobotHome.TagName = "Robot";
+            this.ucRobotHome.TagValue = "";
             // 
             // ucCharging
             // 
@@ -953,25 +1043,66 @@
             this.ucMapSection.TagName = "L.Sec";
             this.ucMapSection.TagValue = "";
             // 
-            // ucRCstId
+            // ucBatteryCharging
             // 
-            this.ucRCstId.Location = new System.Drawing.Point(11, 57);
-            this.ucRCstId.Name = "ucRCstId";
-            this.ucRCstId.Size = new System.Drawing.Size(187, 26);
-            this.ucRCstId.TabIndex = 42;
-            this.ucRCstId.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucRCstId.TagName = "RCstId";
-            this.ucRCstId.TagValue = "";
+            this.ucBatteryCharging.Location = new System.Drawing.Point(3, 146);
+            this.ucBatteryCharging.Name = "ucBatteryCharging";
+            this.ucBatteryCharging.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryCharging.TabIndex = 5;
+            this.ucBatteryCharging.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryCharging.TagName = "Charging";
+            this.ucBatteryCharging.TagValue = "false";
             // 
-            // ucRobotHome
+            // ucBatteryTemperature
             // 
-            this.ucRobotHome.Location = new System.Drawing.Point(6, 161);
-            this.ucRobotHome.Name = "ucRobotHome";
-            this.ucRobotHome.Size = new System.Drawing.Size(187, 30);
-            this.ucRobotHome.TabIndex = 3;
-            this.ucRobotHome.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucRobotHome.TagName = "Robot";
-            this.ucRobotHome.TagValue = "";
+            this.ucBatteryTemperature.Location = new System.Drawing.Point(236, 78);
+            this.ucBatteryTemperature.Name = "ucBatteryTemperature";
+            this.ucBatteryTemperature.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryTemperature.TabIndex = 6;
+            this.ucBatteryTemperature.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryTemperature.TagName = "Temperature";
+            this.ucBatteryTemperature.TagValue = "40.5";
+            // 
+            // ucBatteryVoltage
+            // 
+            this.ucBatteryVoltage.Location = new System.Drawing.Point(236, 13);
+            this.ucBatteryVoltage.Name = "ucBatteryVoltage";
+            this.ucBatteryVoltage.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryVoltage.TabIndex = 7;
+            this.ucBatteryVoltage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryVoltage.TagName = "Voltage";
+            this.ucBatteryVoltage.TagValue = "55.66";
+            // 
+            // ucBatteryAh
+            // 
+            this.ucBatteryAh.Location = new System.Drawing.Point(3, 78);
+            this.ucBatteryAh.Name = "ucBatteryAh";
+            this.ucBatteryAh.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryAh.TabIndex = 4;
+            this.ucBatteryAh.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryAh.TagName = "AH";
+            this.ucBatteryAh.TagValue = "12.34";
+            // 
+            // ucBatteryPercentage
+            // 
+            this.ucBatteryPercentage.Location = new System.Drawing.Point(3, 13);
+            this.ucBatteryPercentage.Name = "ucBatteryPercentage";
+            this.ucBatteryPercentage.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryPercentage.TabIndex = 3;
+            this.ucBatteryPercentage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryPercentage.TagName = "Percentage";
+            this.ucBatteryPercentage.TagValue = " 70.0";
+            // 
+            // btnRefreshBatteryState
+            // 
+            this.btnRefreshBatteryState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshBatteryState.Location = new System.Drawing.Point(236, 165);
+            this.btnRefreshBatteryState.Name = "btnRefreshBatteryState";
+            this.btnRefreshBatteryState.Size = new System.Drawing.Size(200, 40);
+            this.btnRefreshBatteryState.TabIndex = 41;
+            this.btnRefreshBatteryState.Text = "更新電池狀態";
+            this.btnRefreshBatteryState.UseVisualStyleBackColor = true;
+            this.btnRefreshBatteryState.Click += new System.EventHandler(this.AseRobotControlForm_RefreshBatteryState);
             // 
             // MainForm
             // 
@@ -1002,7 +1133,6 @@
             this.splitContainer3.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -1022,6 +1152,9 @@
             this.groupBox2.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.tabControl1.ResumeLayout(false);
+            this.pageChargeState.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1063,7 +1196,7 @@
         private System.Windows.Forms.NumericUpDown numPositionY;
         private System.Windows.Forms.NumericUpDown numPositionX;
         private System.Windows.Forms.GroupBox gbPerformanceCounter;
-        private System.Windows.Forms.ToolStripMenuItem RobotPage;
+        private System.Windows.Forms.ToolStripMenuItem RobotAndChargePage;
         private System.Windows.Forms.Label txtLastAlarm;
         private UcLabelTextBox ucSoc;
         private System.Windows.Forms.PictureBox pictureBox1;
@@ -1108,5 +1241,16 @@
         private System.Windows.Forms.ToolStripMenuItem AgvlConnectorPage;
         private UcLabelTextBox ucRCstId;
         private UcLabelTextBox ucRobotHome;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage pageMoveState;
+        private System.Windows.Forms.TabPage pageRobotSate;
+        private System.Windows.Forms.TabPage pageChargeState;
+        private System.Windows.Forms.TabPage pageVehicleState;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryCharging;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryTemperature;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryVoltage;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryAh;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryPercentage;
+        private System.Windows.Forms.Button btnRefreshBatteryState;
     }
 }

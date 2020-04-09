@@ -41,16 +41,34 @@
             this.txtFromPort = new System.Windows.Forms.TextBox();
             this.cbIsLoad = new System.Windows.Forms.CheckBox();
             this.btnSendRobot = new System.Windows.Forms.Button();
+            this.pageChargeCommand = new System.Windows.Forms.TabPage();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnSearchChargeAddress = new System.Windows.Forms.Button();
+            this.btnStopCharge = new System.Windows.Forms.Button();
+            this.btnStartCharge = new System.Windows.Forms.Button();
+            this.boxChargeDirection = new System.Windows.Forms.ComboBox();
+            this.txtChargeAddress = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryAh = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.btnRefreshBatterySate = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.pageRobotCommnad.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            this.pageChargeCommand.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.pageRobotCommnad);
+            this.tabControl1.Controls.Add(this.pageChargeCommand);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -93,9 +111,9 @@
             this.groupBox4.Controls.Add(this.txtGateType);
             this.groupBox4.Controls.Add(this.txtFromPort);
             this.groupBox4.Controls.Add(this.cbIsLoad);
-            this.groupBox4.Location = new System.Drawing.Point(17, 17);
+            this.groupBox4.Location = new System.Drawing.Point(6, 6);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(253, 113);
+            this.groupBox4.Size = new System.Drawing.Size(264, 124);
             this.groupBox4.TabIndex = 1;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Robot(P45)";
@@ -160,6 +178,95 @@
             this.btnSendRobot.UseVisualStyleBackColor = true;
             this.btnSendRobot.Click += new System.EventHandler(this.btnSendRobot_Click);
             // 
+            // pageChargeCommand
+            // 
+            this.pageChargeCommand.Controls.Add(this.groupBox2);
+            this.pageChargeCommand.Controls.Add(this.groupBox1);
+            this.pageChargeCommand.Location = new System.Drawing.Point(4, 22);
+            this.pageChargeCommand.Name = "pageChargeCommand";
+            this.pageChargeCommand.Size = new System.Drawing.Size(1174, 185);
+            this.pageChargeCommand.TabIndex = 1;
+            this.pageChargeCommand.Text = "ChargeCommand";
+            this.pageChargeCommand.UseVisualStyleBackColor = true;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.ucBatteryCharging);
+            this.groupBox2.Controls.Add(this.ucBatteryTemperature);
+            this.groupBox2.Controls.Add(this.btnRefreshBatterySate);
+            this.groupBox2.Controls.Add(this.ucBatteryVoltage);
+            this.groupBox2.Controls.Add(this.ucBatteryAh);
+            this.groupBox2.Controls.Add(this.ucBatteryPercentage);
+            this.groupBox2.Location = new System.Drawing.Point(294, 3);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(718, 179);
+            this.groupBox2.TabIndex = 1;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Info";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.btnSearchChargeAddress);
+            this.groupBox1.Controls.Add(this.btnStopCharge);
+            this.groupBox1.Controls.Add(this.btnStartCharge);
+            this.groupBox1.Controls.Add(this.boxChargeDirection);
+            this.groupBox1.Controls.Add(this.txtChargeAddress);
+            this.groupBox1.Location = new System.Drawing.Point(3, 3);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(285, 179);
+            this.groupBox1.TabIndex = 0;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Charge(P47)";
+            // 
+            // btnSearchChargeAddress
+            // 
+            this.btnSearchChargeAddress.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSearchChargeAddress.Location = new System.Drawing.Point(6, 53);
+            this.btnSearchChargeAddress.Name = "btnSearchChargeAddress";
+            this.btnSearchChargeAddress.Size = new System.Drawing.Size(273, 34);
+            this.btnSearchChargeAddress.TabIndex = 4;
+            this.btnSearchChargeAddress.Text = "Search Address";
+            this.btnSearchChargeAddress.UseVisualStyleBackColor = true;
+            this.btnSearchChargeAddress.Click += new System.EventHandler(this.btnSearchChargeAddress_Click);
+            // 
+            // btnStopCharge
+            // 
+            this.btnStopCharge.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnStopCharge.Location = new System.Drawing.Point(140, 131);
+            this.btnStopCharge.Name = "btnStopCharge";
+            this.btnStopCharge.Size = new System.Drawing.Size(139, 42);
+            this.btnStopCharge.TabIndex = 3;
+            this.btnStopCharge.Text = "DisCharge";
+            this.btnStopCharge.UseVisualStyleBackColor = true;
+            // 
+            // btnStartCharge
+            // 
+            this.btnStartCharge.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnStartCharge.Location = new System.Drawing.Point(6, 131);
+            this.btnStartCharge.Name = "btnStartCharge";
+            this.btnStartCharge.Size = new System.Drawing.Size(128, 42);
+            this.btnStartCharge.TabIndex = 3;
+            this.btnStartCharge.Text = "Charge";
+            this.btnStartCharge.UseVisualStyleBackColor = true;
+            this.btnStartCharge.Click += new System.EventHandler(this.btnStartCharge_Click);
+            // 
+            // boxChargeDirection
+            // 
+            this.boxChargeDirection.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.boxChargeDirection.FormattingEnabled = true;
+            this.boxChargeDirection.Location = new System.Drawing.Point(6, 93);
+            this.boxChargeDirection.Name = "boxChargeDirection";
+            this.boxChargeDirection.Size = new System.Drawing.Size(273, 32);
+            this.boxChargeDirection.TabIndex = 1;
+            // 
+            // txtChargeAddress
+            // 
+            this.txtChargeAddress.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtChargeAddress.Location = new System.Drawing.Point(6, 21);
+            this.txtChargeAddress.Name = "txtChargeAddress";
+            this.txtChargeAddress.Size = new System.Drawing.Size(273, 27);
+            this.txtChargeAddress.TabIndex = 0;
+            // 
             // timer1
             // 
             this.timer1.Enabled = true;
@@ -176,6 +283,67 @@
             this.textBox1.Size = new System.Drawing.Size(1182, 481);
             this.textBox1.TabIndex = 4;
             // 
+            // ucBatteryCharging
+            // 
+            this.ucBatteryCharging.Location = new System.Drawing.Point(462, 21);
+            this.ucBatteryCharging.Name = "ucBatteryCharging";
+            this.ucBatteryCharging.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryCharging.TabIndex = 2;
+            this.ucBatteryCharging.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryCharging.TagName = "Charging";
+            this.ucBatteryCharging.TagValue = "false";
+            // 
+            // ucBatteryTemperature
+            // 
+            this.ucBatteryTemperature.Location = new System.Drawing.Point(236, 114);
+            this.ucBatteryTemperature.Name = "ucBatteryTemperature";
+            this.ucBatteryTemperature.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryTemperature.TabIndex = 2;
+            this.ucBatteryTemperature.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryTemperature.TagName = "Temperature";
+            this.ucBatteryTemperature.TagValue = "40.5";
+            // 
+            // ucBatteryVoltage
+            // 
+            this.ucBatteryVoltage.Location = new System.Drawing.Point(236, 21);
+            this.ucBatteryVoltage.Name = "ucBatteryVoltage";
+            this.ucBatteryVoltage.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryVoltage.TabIndex = 2;
+            this.ucBatteryVoltage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryVoltage.TagName = "Voltage";
+            this.ucBatteryVoltage.TagValue = "55.66";
+            // 
+            // ucBatteryAh
+            // 
+            this.ucBatteryAh.Location = new System.Drawing.Point(6, 114);
+            this.ucBatteryAh.Name = "ucBatteryAh";
+            this.ucBatteryAh.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryAh.TabIndex = 1;
+            this.ucBatteryAh.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryAh.TagName = "AH";
+            this.ucBatteryAh.TagValue = "12.34";
+            // 
+            // ucBatteryPercentage
+            // 
+            this.ucBatteryPercentage.Location = new System.Drawing.Point(6, 21);
+            this.ucBatteryPercentage.Name = "ucBatteryPercentage";
+            this.ucBatteryPercentage.Size = new System.Drawing.Size(200, 59);
+            this.ucBatteryPercentage.TabIndex = 0;
+            this.ucBatteryPercentage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryPercentage.TagName = "Percentage";
+            this.ucBatteryPercentage.TagValue = " 70.0";
+            // 
+            // btnRefreshBatterySate
+            // 
+            this.btnRefreshBatterySate.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshBatterySate.Location = new System.Drawing.Point(462, 131);
+            this.btnRefreshBatterySate.Name = "btnRefreshBatterySate";
+            this.btnRefreshBatterySate.Size = new System.Drawing.Size(200, 42);
+            this.btnRefreshBatterySate.TabIndex = 3;
+            this.btnRefreshBatterySate.Text = "Refresh State";
+            this.btnRefreshBatterySate.UseVisualStyleBackColor = true;
+            this.btnRefreshBatterySate.Click += new System.EventHandler(this.btnRefreshBatterySate_Click);
+            // 
             // AseRobotControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -190,6 +358,10 @@
             this.pageRobotCommnad.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            this.pageChargeCommand.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -211,5 +383,19 @@
         private System.Windows.Forms.TextBox txtGateType;
         private System.Windows.Forms.TextBox txtRCstId;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TabPage pageChargeCommand;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button btnSearchChargeAddress;
+        private System.Windows.Forms.Button btnStopCharge;
+        private System.Windows.Forms.Button btnStartCharge;
+        private System.Windows.Forms.ComboBox boxChargeDirection;
+        private System.Windows.Forms.TextBox txtChargeAddress;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryPercentage;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryAh;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryTemperature;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryVoltage;
+        private Main.View.UserControls.UcVerticalLabelText ucBatteryCharging;
+        private System.Windows.Forms.Button btnRefreshBatterySate;
     }
 }

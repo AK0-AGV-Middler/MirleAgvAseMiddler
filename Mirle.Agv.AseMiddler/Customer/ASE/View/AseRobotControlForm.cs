@@ -8,23 +8,43 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
+using Mirle.Agv.AseMiddler.Model;
 
 namespace Mirle.Agv.AseMiddler.View
 {
     public partial class AseRobotControlForm : Form
     {
         public event EventHandler<AseRobotEventArgs> SendRobotCommand;
+        public event EventHandler<AseChargeEventArgs> SendChargeCommand;
+        public event EventHandler RefreshBatteryState;
         public event EventHandler<string> OnException;
 
         public string LCassetteId { get; set; } = "";
         public string RCassetteId { get; set; } = "";
 
         public string PspLogMsg { get; set; } = "";
+        private MapInfo mapInfo;
 
-        public AseRobotControlForm()
+        public string BatteryPercentage { get; set; } = "";
+        public string BatteryAH { get; set; } = "";
+        public string BatteryVoltage { get; set; } = "";
+        public string BatteryTemperature { get; set; } = "";
+
+        public AseRobotControlForm(MapInfo mapInfo)
         {
             InitializeComponent();
             InitialBoxPioDirection();
+            InitialBoxChargeDirection();
+            this.mapInfo = mapInfo;
+        }
+
+        private void InitialBoxChargeDirection()
+        {
+            foreach (var item in Enum.GetNames(typeof(EnumAddressDirection)))
+            {
+                boxChargeDirection.Items.Add(item);
+            }
+            boxChargeDirection.SelectedItem = EnumAddressDirection.Left.ToString();
         }
 
         private void InitialBoxPioDirection()
@@ -33,6 +53,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 boxPioDirection.Items.Add(item);
             }
+            boxPioDirection.SelectedItem = EnumAddressDirection.None.ToString();
         }
 
         private void btnSendRobot_Click(object sender, EventArgs e)
@@ -65,6 +86,12 @@ namespace Mirle.Agv.AseMiddler.View
             txtLCstId.Text = LCassetteId;
             txtRCstId.Text = RCassetteId;
             textBox1.Text = PspLogMsg;
+            ucBatteryPercentage.TagValue = BatteryPercentage;
+            ucBatteryAh.TagValue = BatteryAH;
+            ucBatteryVoltage.TagValue = BatteryVoltage;
+            ucBatteryTemperature.TagValue = BatteryTemperature;
+            ucBatteryCharging.TagValue = Vehicle.Instance.IsCharging ? "Yes" : "No";
+            ucBatteryCharging.TagColor = Vehicle.Instance.IsCharging ? Color.LightGreen : Color.Pink;
         }
 
         public void AsePackage_AllPspLog(object sender, string e)
@@ -88,6 +115,35 @@ namespace Mirle.Agv.AseMiddler.View
                 OnException?.Invoke(this, ex.StackTrace);
             }
         }
+
+        private void btnSearchChargeAddress_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string addressId = txtChargeAddress.Text;
+                if (mapInfo.addressMap.ContainsKey(addressId))
+                {
+                    boxChargeDirection.SelectedItem = mapInfo.addressMap[addressId].ChargeDirection.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
+        }
+
+        private void btnStartCharge_Click(object sender, EventArgs e)
+        {
+            AseChargeEventArgs aseChargeEventArgs = new AseChargeEventArgs();
+            aseChargeEventArgs.IsCharge = true;
+            aseChargeEventArgs.ChargeDirection = (EnumAddressDirection)Enum.Parse(typeof(EnumAddressDirection), boxChargeDirection.Text);
+            SendChargeCommand?.Invoke(this, aseChargeEventArgs);
+        }
+
+        private void btnRefreshBatterySate_Click(object sender, EventArgs e)
+        {
+            RefreshBatteryState?.Invoke(this, e);
+        }
     }
 
     public class AseRobotEventArgs : EventArgs
@@ -98,5 +154,11 @@ namespace Mirle.Agv.AseMiddler.View
         public string ToPort { get; set; } = "";
         public string GateType { get; set; } = "0";
         public string PortNumber { get; set; } = "1";
+    }
+
+    public class AseChargeEventArgs : EventArgs
+    {
+        public bool IsCharge { get; set; }
+        public EnumAddressDirection ChargeDirection { get; set; } = EnumAddressDirection.Left;
     }
 }

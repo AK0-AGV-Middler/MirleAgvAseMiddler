@@ -577,21 +577,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private string QueMapSectionsToString(ConcurrentQueue<MapSection> aQue)
         {
-            string lastSecId = "";
             try
             {
-                string sectionIds = "[";
-                foreach (var item in aQue.ToList())
-                {
-                    lastSecId = item.Id;
-                    sectionIds = string.Concat(sectionIds, $"({item.Id})");
-                }
-                sectionIds += "]";
-                return sectionIds;
+                var sectionIds = aQue.ToList().Select(x => string.IsNullOrEmpty(x.Id) ? "" : x.Id).ToList();
+                return string.Concat("[", string.Join(", ", sectionIds), "]");
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"lastSec = [{lastSecId}]" + ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 return "";
             }
         }
@@ -1739,7 +1732,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 ID_38_GUIDE_INFO_RESPONSE response = (ID_38_GUIDE_INFO_RESPONSE)e.objPacket;
+                ShowGuideInfoResponse(response);
                 theVehicle.AseMovingGuide = new AseMovingGuide(response);
+                ShowAseMovigGuideSectionAndAddressList();
                 IsAskReservePause = true;
                 ClearAllReserve();
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
@@ -1753,6 +1748,33 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
+        private void ShowAseMovigGuideSectionAndAddressList()
+        {
+            try
+            {
+                OnMessageShowOnMainFormEvent?.Invoke(this, theVehicle.AseMovingGuide.GetInfo());
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ShowGuideInfoResponse(ID_38_GUIDE_INFO_RESPONSE response)
+        {
+            try
+            {
+                var info = response.GuideInfoList[0];
+                string msg = $"收到路徑規劃[{info.FromTo.From}]->[{info.FromTo.To}],經過[{info.GuideSections.Count}]個 Sections 和 [{info.GuideAddresses.Count}]個 Addresses.";
+                OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
         public void Send_Cmd138_GuideInfoRequest(string fromAddress, string toAddress)
         {
             try

@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Mirle.Agv.AseMiddler
+namespace Mirle.Agv.AseMiddler.Main.View.UserControls
 {
-    public partial class UcLabelTextBox : UserControl
+    public partial class UcVerticalLabelText : UserControl
     {
         public string TagName
         {
@@ -26,13 +26,13 @@ namespace Mirle.Agv.AseMiddler
 
         public Color TagColor
         {
-            get { return label1.ForeColor; }
-            set { label1.ForeColor = value; }
+            get { return label1.BackColor; }
+            set { label1.BackColor = value; }
         }
 
-        public UcLabelTextBox()
+        public UcVerticalLabelText()
         {
-            InitializeComponent();         
+            InitializeComponent();
         }
     }
 }

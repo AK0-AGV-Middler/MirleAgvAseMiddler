@@ -62,5 +62,16 @@ namespace Mirle.Agv.AseMiddler.Controller.Tests
             //    Assert.IsTrue(string.IsNullOrEmpty(""));
             //}          
         }
+
+        [TestMethod()]
+        public void ListStringToStringTest0403()
+        {
+            List<string> words = new List<string>();
+            words.Add("A");
+            words.Add("[B]");
+            words.Add("C");
+            string xx = string.Join(", ", words);
+            Assert.AreEqual("A, [B], C", xx);
+        }
     }
 }

@@ -60,5 +60,29 @@ namespace Mirle.Agv.AseMiddler.Model
             this.commandId = string.IsNullOrEmpty(Vehicle.Instance.AseMovingGuide.commandId) ? "" : Vehicle.Instance.AseMovingGuide.commandId;
             this.ReserveStop = VhStopSingle.On;
         }
+
+        public string GetInfo()
+        {
+            string fromToString = $"From = [{FromAddressId}], To = [{ToAddressId}]\r\n";
+            string guideSectionsString = "GuideSections is Empty.\r\n";
+            if (GuideSectionIds.Any())
+            {
+                guideSectionsString = string.Concat("GuideSections = ", string.Join(", ", GuideSectionIds), Environment.NewLine);
+            }
+            string guideAddressesString = "GuideAddresses is Empty.\r\n";
+            if (GuideAddressIds.Any())
+            {
+                guideAddressesString = string.Concat("GuideAddresses = ", string.Join(", ", GuideAddressIds), Environment.NewLine);
+            }
+            string movingSectionsString = "MovingSections is Empty.\r\n";
+            if (MovingSections.Any())
+            {
+                List<string> movingSectionIds = MovingSections.Select(x => x.Id).ToList();
+                movingSectionsString = string.Concat("MovingSections = ", string.Join(", ", movingSectionIds), Environment.NewLine);
+            }
+
+            string msg = string.Concat(fromToString, guideSectionsString, guideAddressesString, movingSectionsString);
+            return msg;
+        }
     }
 }
