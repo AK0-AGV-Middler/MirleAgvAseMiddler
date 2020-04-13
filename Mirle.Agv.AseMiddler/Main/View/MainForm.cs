@@ -1363,9 +1363,6 @@ namespace Mirle.Agv.AseMiddler.View
                 string batteryPercentage = theVehicle.AseBatteryStatus.Percentage.ToString("F1");
                 ucBatteryPercentage.TagValue = batteryPercentage;
                 aseRobotControlForm.BatteryPercentage = batteryPercentage;
-                string batteryAh = theVehicle.AseBatteryStatus.Ah.ToString("F2");
-                ucBatteryAh.TagValue = batteryAh;
-                aseRobotControlForm.BatteryAH = batteryAh;
                 string batteryVoltage = theVehicle.AseBatteryStatus.Voltage.ToString("F2");
                 ucBatteryVoltage.TagValue = batteryVoltage;
                 aseRobotControlForm.BatteryVoltage = batteryVoltage;
@@ -1463,7 +1460,7 @@ namespace Mirle.Agv.AseMiddler.View
             btnAutoManual.Enabled = false;
             SwitchAutoStatus();
             ClearColor();
-            Thread.Sleep(500);
+            Thread.Sleep(100);
             btnAutoManual.Enabled = true;
         }
 
@@ -1533,7 +1530,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void btnKeyInSoc_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.SetupVehicleSoc(decimal.ToDouble(numSoc.Value));
+            mainFlowHandler.SetupVehicleSoc(decimal.ToInt32(numSoc.Value));
         }
 
         private void radAgvcOnline_CheckedChanged(object sender, EventArgs e)

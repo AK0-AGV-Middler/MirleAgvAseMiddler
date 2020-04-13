@@ -382,7 +382,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
                     aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(1, 9));
                     aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(10, 4)) * 0.01;
-                    aseBatteryStatus.Temperature = double.Parse(psMessage.Substring(14, 3));
+                    aseBatteryStatus.Temperature = int.Parse(psMessage.Substring(14, 3));
                     theVehicle.AseBatteryStatus = aseBatteryStatus;
                     aseBatteryControl.FullCharge();
                 }
@@ -673,11 +673,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
-                aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(0, 9));
-                aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(9, 4)) * 0.01;
-                aseBatteryStatus.Temperature = double.Parse(psMessage.Substring(13, 3));
+                aseBatteryStatus.Percentage = int.Parse(psMessage.Substring(0, 3));
+                aseBatteryStatus.Voltage = int.Parse(psMessage.Substring(3, 4)) * 0.01;
+                aseBatteryStatus.Temperature = int.Parse(psMessage.Substring(7, 3));
                 theVehicle.AseBatteryStatus = aseBatteryStatus;
-                aseBatteryControl.UpdateBatteryStatus();
+                //aseBatteryControl.UpdateBatteryStatus();
             }
             catch (Exception ex)
             {
@@ -737,11 +737,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string msg = $"SecodaryReceived : [{transaction.ToString()}]";
-                if (transaction.PSPrimaryMessage.Number != "33" && transaction.PSPrimaryMessage.Number != "35")
-                {
-                    AllPspLog?.Invoke(this, msg);
-                    LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                }
+                AllPspLog?.Invoke(this, msg);
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
 
                 OnSecondaryReceived(transaction);
             }

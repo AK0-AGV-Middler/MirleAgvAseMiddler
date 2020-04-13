@@ -86,7 +86,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public Vehicle theVehicle;
         private bool isIniOk;
         public MapInfo theMapInfo { get; private set; } = new MapInfo();
-        public double InitialSoc { get; set; } = 70;
+        public int InitialSoc { get; set; } = 70;
         public bool IsFirstAhGet { get; set; }
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Noraml;
         public bool NeedRename { get; set; } = false;
@@ -1915,7 +1915,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void Load(LoadCmdInfo loadCmd)
         {
-            FitRobotCommand(loadCmd);
+            GetPioDirection(loadCmd);
 
             AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(loadCmd.SlotNumber);
 
@@ -2037,10 +2037,17 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void FitRobotCommand(RobotCommand robotCommand)
+        private void GetPioDirection(RobotCommand robotCommand)
         {
-            MapAddress portAddress = theMapInfo.addressMap[robotCommand.PortAddressId];
-            robotCommand.PioDirection = portAddress.PioDirection;
+            try
+            {
+                MapAddress portAddress = theMapInfo.addressMap[robotCommand.PortAddressId];
+                robotCommand.PioDirection = portAddress.PioDirection;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
         }
 
         #region Simple Getters
@@ -2663,7 +2670,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             asePackage.aseBuzzerControl.SetAlarmCode(alarm.Id, true);
         }
 
-        public void SetupVehicleSoc(double percentage)
+        public void SetupVehicleSoc(int percentage)
         {
             asePackage.aseBatteryControl.SetPercentage(percentage);
         }

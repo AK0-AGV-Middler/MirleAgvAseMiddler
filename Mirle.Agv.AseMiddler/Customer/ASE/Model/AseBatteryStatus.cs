@@ -10,8 +10,8 @@ namespace Mirle.Agv.AseMiddler.Model
     {
         public double Ah { get; set; } = 0;
         public double Voltage { get; set; } = 0;
-        public double Percentage { get; set; } = 0;
-        public double Temperature { get; set; } = 0;
+        public int Percentage { get; set; } = 0;
+        public int Temperature { get; set; } = 0;
 
         public AseBatteryStatus() { }        
 
