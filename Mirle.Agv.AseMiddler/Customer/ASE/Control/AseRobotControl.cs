@@ -164,6 +164,30 @@ namespace Mirle.Agv.AseMiddler.Controller
             return true;
         }
 
+        public void RefreshRobotState()
+        {
+            try
+            {
+                PrimarySend("31", "2");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void RefreshCarrierSlotState()
+        {
+            try
+            {
+                PrimarySend("31", "3");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
         private PSTransactionXClass PrimarySend(string index, string message)
         {
             try
@@ -195,5 +219,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
+        
     }
 }

@@ -679,6 +679,15 @@ namespace Mirle.Agv.AseMiddler.View
             asePackage.aseMoveControl.SendPositionReportRequest();
         }
 
+        private void btnRefreshMoveState_Click(object sender, EventArgs e)
+        {
+            asePackage.aseMoveControl.SendPositionReportRequest();
+
+            SpinWait.SpinUntil(() => false, 50);
+
+            asePackage.aseMoveControl.RefreshMoveState();
+        }
+
         private void AseMoveControlForm_PauseOrResumeAskPosition(object sender, bool e)
         {
             try
@@ -715,6 +724,23 @@ namespace Mirle.Agv.AseMiddler.View
             LogException(sender.ToString(), exMsg);
         }
 
+        private void btnRefreshRobotState_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                asePackage.aseRobotControl.RefreshRobotState();
+
+                SpinWait.SpinUntil(() => false, 50);
+
+                asePackage.aseRobotControl.RefreshCarrierSlotState();
+
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
         private void RobotControlPage_Click(object sender, EventArgs e)
         {
             if (aseRobotControlForm.IsDisposed)
@@ -736,7 +762,7 @@ namespace Mirle.Agv.AseMiddler.View
             asePackage.AllPspLog += aseRobotControlForm.AsePackage_AllPspLog;
             aseRobotControlForm.SendChargeCommand += AseRobotControlForm_SendChargeCommand;
             aseRobotControlForm.RefreshBatteryState += AseRobotControlForm_RefreshBatteryState;
-        }       
+        }
 
         private void AseRobotControlForm_RefreshBatteryState(object sender, EventArgs e)
         {
@@ -761,7 +787,7 @@ namespace Mirle.Agv.AseMiddler.View
                 else
                 {
                     asePackage.aseBatteryControl.StopCharge();
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -1047,7 +1073,8 @@ namespace Mirle.Agv.AseMiddler.View
 
                 UpdateAutoManual();
                 UpdateVehLocation();
-                UpdateCharginAndLoading();
+                UpdateBatteryState();
+                UpdateRobotAndCarrierSlotState();
                 //DrawReserveSections();
                 UpdateThreadPicture();
                 UpdateTbxAgvcTransCmd();
@@ -1307,17 +1334,30 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
 
                 var lastPos = aseMoveStatus.LastMapPosition;
                 ucLastPosition.TagValue = $"({(int)lastPos.X},{(int)lastPos.Y})";
-                tstextLastPosX.Text = lastPos.X.ToString("F2");
-                tstextLastPosY.Text = lastPos.Y.ToString("F2");
+                string lastPosX = lastPos.X.ToString("F2");
+                tstextLastPosX.Text = lastPosX;
+                ucMovePositionX.TagValue = lastPosX;
+                string lastPosY = lastPos.Y.ToString("F2");
+                tstextLastPosY.Text = lastPosY;
+                ucMovePositionY.TagValue = lastPosY;
 
                 var lastAddress = aseMoveStatus.LastAddress;
                 ucMapAddress.TagValue = lastAddress.Id;
+                ucMoveLastAddress.TagValue = lastAddress.Id;
 
                 var lastSection = aseMoveStatus.LastSection;
                 ucMapSection.TagValue = lastSection.Id;
+                ucMoveLastSection.TagValue = lastSection.Id;
+
+                ucMoveIsMoveEnd.TagValue = aseMoveStatus.IsMoveEnd.ToString();
+
+                ucMoveReserveStop.TagValue = aseMovingGuide.ReserveStop.ToString();
+                ucMovePauseStop.TagValue = aseMovingGuide.PauseStatus.ToString();
+                ucMoveMovingIndex.TagValue = aseMovingGuide.MovingSectionsIndex.ToString();
 
                 ucVehicleImage.Hide();
                 ucVehicleImage.Location = MapPixelExchange(lastPos);
@@ -1331,31 +1371,10 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-        private void UpdateCharginAndLoading()
+        private void UpdateBatteryState()
         {
             try
             {
-                #region Cassette and Loading
-
-                ucLCstId.TagValue = theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? "" : theVehicle.AseCarrierSlotL.CarrierId;
-                aseRobotControlForm.LCassetteId = ucLCstId.TagValue;
-                ucRCstId.TagValue = theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? "" : theVehicle.AseCarrierSlotR.CarrierId;
-                aseRobotControlForm.RCassetteId = ucRCstId.TagValue;
-                ucRobotHome.TagValue = theVehicle.AseRobotStatus.IsHome ? "Home" : "NG";
-
-                if (theVehicle.AseCarrierSlotL.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty || theVehicle.AseCarrierSlotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
-                {
-                    ucVehicleImage.Loading = true;
-                }
-                else
-                {
-                    ucVehicleImage.Loading = false;
-                }
-
-                #endregion
-
-                #region Battery and Charging
-
                 bool isCharging = theVehicle.IsCharging;
                 ucCharging.TagValue = isCharging ? "Yes" : "No";
                 ucBatteryCharging.TagValue = isCharging ? "Yes" : "No";
@@ -1369,7 +1388,37 @@ namespace Mirle.Agv.AseMiddler.View
                 string batteryTemperature = theVehicle.AseBatteryStatus.Temperature.ToString("F1");
                 ucBatteryTemperature.TagValue = batteryTemperature;
                 aseRobotControlForm.BatteryTemperature = batteryTemperature;
-                #endregion
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+        private void UpdateRobotAndCarrierSlotState()
+        {
+            try
+            {
+                AseRobotStatus aseRobotStatus = new AseRobotStatus(theVehicle.AseRobotStatus);
+                ucRobotRobotState.TagValue = aseRobotStatus.RobotState.ToString();
+                ucRobotIsHome.TagValue = aseRobotStatus.IsHome.ToString();
+                ucRobotHome.TagValue = aseRobotStatus.IsHome.ToString();
+
+                AseCarrierSlotStatus slotL = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
+                AseCarrierSlotStatus slotR = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotR);
+                ucRobotSlotLState.TagValue = slotL.CarrierSlotStatus.ToString();
+                ucRobotSlotLId.TagValue = slotL.CarrierId;
+                ucLCstId.TagValue = slotL.CarrierId;
+                aseRobotControlForm.LCassetteId = slotL.CarrierId;
+
+                ucRobotSlotRState.TagValue = slotR.CarrierSlotStatus.ToString();
+                ucRobotSlotRId.TagValue = slotR.CarrierId;
+                ucRCstId.TagValue = slotR.CarrierId;
+                aseRobotControlForm.RCassetteId = slotR.CarrierId;               
+
+                ucVehicleImage.Loading = slotL.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty || slotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty
+                    ? true
+                    : false;
+
             }
             catch (Exception ex)
             {
@@ -1835,6 +1884,6 @@ namespace Mirle.Agv.AseMiddler.View
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
-       
+
     }
 }

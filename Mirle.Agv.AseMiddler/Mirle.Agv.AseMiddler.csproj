@@ -68,7 +68,7 @@
     </Reference>
     <Reference Include="Mirle.Logger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\DesignPatternsSample\Mirle.Logger\Mirle.Logger\bin\Release\Mirle.Logger.dll</HintPath>
+      <HintPath>..\..\..\..\DesignPatternsSample\Mirle.Logger\Mirle.Logger\bin\Release\Mirle.Logger.dll</HintPath>
     </Reference>
     <Reference Include="Mirle.Tools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

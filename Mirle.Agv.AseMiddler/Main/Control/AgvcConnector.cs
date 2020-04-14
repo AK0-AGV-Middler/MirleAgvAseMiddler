@@ -1748,7 +1748,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private void ShowAseMovigGuideSectionAndAddressList()
         {
             try
@@ -1760,7 +1759,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private void ShowGuideInfoResponse(ID_38_GUIDE_INFO_RESPONSE response)
         {
             try
@@ -1774,7 +1772,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         public void Send_Cmd138_GuideInfoRequest(string fromAddress, string toAddress)
         {
             try
@@ -1911,16 +1908,17 @@ namespace Mirle.Agv.AseMiddler.Controller
             AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
             try
             {
-                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
-                iD_136_TRANS_EVENT_REP.EventType = eventType;
-                iD_136_TRANS_EVENT_REP.CurrentAdrID = aseMoveStatus.LastAddress.Id;
-                iD_136_TRANS_EVENT_REP.CurrentSecID = aseMoveStatus.LastSection.Id;
-                iD_136_TRANS_EVENT_REP.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-                iD_136_TRANS_EVENT_REP.CmdID = cmdId;
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+                report.EventType = eventType;
+                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = aseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.CmdID = cmdId;
+                
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+                wrappers.ImpTransEventRep = report;
 
                 SendCommandWrapper(wrappers);
             }

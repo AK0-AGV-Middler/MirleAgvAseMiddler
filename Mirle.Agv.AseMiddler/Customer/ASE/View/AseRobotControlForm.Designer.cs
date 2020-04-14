@@ -51,11 +51,11 @@
             this.txtChargeAddress = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
-            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
-            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
-            this.ucBatteryAh = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
-            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.Main.View.UserControls.UcVerticalLabelText();
+            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryAh = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.btnRefreshBatterySate = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.pageRobotCommnad.SuspendLayout();
@@ -391,11 +391,11 @@
         private System.Windows.Forms.ComboBox boxChargeDirection;
         private System.Windows.Forms.TextBox txtChargeAddress;
         private System.Windows.Forms.GroupBox groupBox2;
-        private Main.View.UserControls.UcVerticalLabelText ucBatteryPercentage;
-        private Main.View.UserControls.UcVerticalLabelText ucBatteryAh;
-        private Main.View.UserControls.UcVerticalLabelText ucBatteryTemperature;
-        private Main.View.UserControls.UcVerticalLabelText ucBatteryVoltage;
-        private Main.View.UserControls.UcVerticalLabelText ucBatteryCharging;
+        private  UcVerticalLabelText ucBatteryPercentage;
+        private  UcVerticalLabelText ucBatteryAh;
+        private  UcVerticalLabelText ucBatteryTemperature;
+        private  UcVerticalLabelText ucBatteryVoltage;
+        private  UcVerticalLabelText ucBatteryCharging;
         private System.Windows.Forms.Button btnRefreshBatterySate;
     }
 }

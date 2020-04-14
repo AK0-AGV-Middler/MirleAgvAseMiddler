@@ -1,4 +1,4 @@
-﻿namespace Mirle.Agv.AseMiddler.Main.View.UserControls
+﻿namespace Mirle.Agv.AseMiddler
 {
     partial class UcVerticalLabelText
     {
@@ -51,8 +51,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.textBox1);
-            this.splitContainer1.Size = new System.Drawing.Size(200, 59);
-            this.splitContainer1.SplitterDistance = 25;
+            this.splitContainer1.Size = new System.Drawing.Size(200, 66);
+            this.splitContainer1.SplitterDistance = 26;
             this.splitContainer1.TabIndex = 0;
             // 
             // label1
@@ -61,7 +61,7 @@
             this.label1.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(200, 25);
+            this.label1.Size = new System.Drawing.Size(200, 26);
             this.label1.TabIndex = 0;
             this.label1.Text = "TagName";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -83,7 +83,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.splitContainer1);
             this.Name = "UcVerticalLabelText";
-            this.Size = new System.Drawing.Size(200, 59);
+            this.Size = new System.Drawing.Size(200, 66);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();

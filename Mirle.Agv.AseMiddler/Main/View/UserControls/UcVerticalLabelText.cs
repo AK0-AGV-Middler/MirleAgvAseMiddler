@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Mirle.Agv.AseMiddler.Main.View.UserControls
+namespace Mirle.Agv.AseMiddler
 {
     public partial class UcVerticalLabelText : UserControl
     {

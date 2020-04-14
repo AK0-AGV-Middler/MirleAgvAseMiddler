@@ -1668,6 +1668,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void AseRobotControl_OnRobotCommandErrorEvent(object sender, TransferStep transferStep)
         {
+            OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotCommandErrorEvent");            
         }
 
         public void AseRobotContorl_OnRobotCommandFinishEvent(object sender, TransferStep transferStep)
@@ -1852,6 +1853,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void Unload(UnloadCmdInfo unloadCmd)
         {
+            GetPioDirection(unloadCmd);
+
             AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(unloadCmd.SlotNumber);
 
             if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
@@ -1875,7 +1878,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             if (asePackage.aseRobotControl.IsRobotCommandExist())
                             {
-                                asePackage.aseRobotControl.ClearRobotCommand();
+                               //asePackage.aseRobotControl.ClearRobotCommand();
                                 SpinWait.SpinUntil(() => false, 200);
                             }
                             else
@@ -1940,7 +1943,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             if (asePackage.aseRobotControl.IsRobotCommandExist())
                             {
-                                asePackage.aseRobotControl.ClearRobotCommand();
+                                //asePackage.aseRobotControl.ClearRobotCommand();
                                 SpinWait.SpinUntil(() => false, 200);
                             }
                             else
@@ -2117,7 +2120,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         while (aseMovingGuide.MovingSectionsIndex < searchingSectionIndex)
                         {
-                            batteryLog.MoveDistanceTotalM += (int)(aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex].HeadToTailDistance / 1000);
+                            //batteryLog.MoveDistanceTotalM += (int)(aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex].HeadToTailDistance / 1000);
                             theVehicle.AseMovingGuide.MovingSectionsIndex++;
                             FitVehicalLocationAndMoveCmd();
                             agvcConnector.ReportSectionPass();

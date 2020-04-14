@@ -18,5 +18,12 @@ namespace Mirle.Agv.AseMiddler.Model
         {
             this.SlotNumber = slotNumber;
         }
+
+        public AseCarrierSlotStatus(AseCarrierSlotStatus aseCarrierSlotStatus)
+        {
+            this.CarrierSlotStatus = aseCarrierSlotStatus.CarrierSlotStatus;
+            this.CarrierId = aseCarrierSlotStatus.CarrierId;
+            this.SlotNumber = aseCarrierSlotStatus.SlotNumber;
+        }
     }
 }

@@ -247,6 +247,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void RefreshMoveState()
+        {
+            try
+            {
+                PrimarySend("31", "1");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
         private PSTransactionXClass PrimarySend(string index, string message)
         {
             try
