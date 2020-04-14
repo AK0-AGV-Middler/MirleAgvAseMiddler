@@ -1478,7 +1478,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }       
+        }
 
         public bool IsMoveStep() => GetCurrentTransferStepType() == EnumTransferStepType.Move || GetCurrentTransferStepType() == EnumTransferStepType.MoveToCharger;
 
@@ -1668,7 +1668,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void AseRobotControl_OnRobotCommandErrorEvent(object sender, TransferStep transferStep)
         {
-            OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotCommandErrorEvent");            
+            OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotCommandErrorEvent");
         }
 
         public void AseRobotContorl_OnRobotCommandFinishEvent(object sender, TransferStep transferStep)
@@ -1878,7 +1878,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             if (asePackage.aseRobotControl.IsRobotCommandExist())
                             {
-                               //asePackage.aseRobotControl.ClearRobotCommand();
+                                //asePackage.aseRobotControl.ClearRobotCommand();
                                 SpinWait.SpinUntil(() => false, 200);
                             }
                             else
@@ -2025,6 +2025,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             theVehicle.AgvcTransCmdBuffer.Remove(cmdId);
             agvcTransCmd.CompleteStatus = completeStatus;
             agvcConnector.TransferComplete(agvcTransCmd);
+
+            if (theVehicle.AgvcTransCmdBuffer.Count == 0)
+            {
+                agvcConnector.NoCommand();
+            }
         }
 
         public void AbortAllAgvcTransCmdInBuffer()
@@ -2037,7 +2042,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     agvcTransCmd.CompleteStatus = CompleteStatus.VehicleAbort;
                 }
                 AbortCommand(agvcTransCmd.CommandId, agvcTransCmd.CompleteStatus);
-            }
+            }           
         }
 
         private void GetPioDirection(RobotCommand robotCommand)
@@ -2756,7 +2761,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private bool IsMoveControlStop()
         {
             return (theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Idle || theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Stoping);
-        }    
+        }
 
         public void AgvcConnector_OnCmdCancelAbortEvent(ushort iSeqNum, ID_37_TRANS_CANCEL_REQUEST receive)
         {
