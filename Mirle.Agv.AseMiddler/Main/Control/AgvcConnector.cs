@@ -72,7 +72,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Connect();
             }
-            StartAskReserve();
+            StartAskReserve();           
         }
 
         #region Initial

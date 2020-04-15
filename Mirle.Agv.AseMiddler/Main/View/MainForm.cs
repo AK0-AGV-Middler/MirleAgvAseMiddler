@@ -1396,7 +1396,9 @@ namespace Mirle.Agv.AseMiddler.View
                 AseRobotStatus aseRobotStatus = new AseRobotStatus(theVehicle.AseRobotStatus);
                 ucRobotRobotState.TagValue = aseRobotStatus.RobotState.ToString();
                 ucRobotIsHome.TagValue = aseRobotStatus.IsHome.ToString();
+                ucRobotIsHome.TagColor = aseRobotStatus.IsHome? Color.Black:  Color.OrangeRed;              
                 ucRobotHome.TagValue = aseRobotStatus.IsHome.ToString();
+                ucRobotHome.TagColor = aseRobotStatus.IsHome ? Color.Black : Color.OrangeRed;
 
                 AseCarrierSlotStatus slotL = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
                 AseCarrierSlotStatus slotR = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotR);

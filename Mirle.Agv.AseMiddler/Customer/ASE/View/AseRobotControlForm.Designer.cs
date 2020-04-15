@@ -289,7 +289,7 @@
             this.ucBatteryCharging.Name = "ucBatteryCharging";
             this.ucBatteryCharging.Size = new System.Drawing.Size(200, 59);
             this.ucBatteryCharging.TabIndex = 2;
-            this.ucBatteryCharging.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryCharging.TagColor = System.Drawing.Color.Black;
             this.ucBatteryCharging.TagName = "Charging";
             this.ucBatteryCharging.TagValue = "false";
             // 
@@ -299,7 +299,7 @@
             this.ucBatteryTemperature.Name = "ucBatteryTemperature";
             this.ucBatteryTemperature.Size = new System.Drawing.Size(200, 59);
             this.ucBatteryTemperature.TabIndex = 2;
-            this.ucBatteryTemperature.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryTemperature.TagColor = System.Drawing.Color.Black;
             this.ucBatteryTemperature.TagName = "Temperature";
             this.ucBatteryTemperature.TagValue = "40.5";
             // 
@@ -309,7 +309,7 @@
             this.ucBatteryVoltage.Name = "ucBatteryVoltage";
             this.ucBatteryVoltage.Size = new System.Drawing.Size(200, 59);
             this.ucBatteryVoltage.TabIndex = 2;
-            this.ucBatteryVoltage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryVoltage.TagColor = System.Drawing.Color.Black;
             this.ucBatteryVoltage.TagName = "Voltage";
             this.ucBatteryVoltage.TagValue = "55.66";
             // 
@@ -319,7 +319,7 @@
             this.ucBatteryAh.Name = "ucBatteryAh";
             this.ucBatteryAh.Size = new System.Drawing.Size(200, 59);
             this.ucBatteryAh.TabIndex = 1;
-            this.ucBatteryAh.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryAh.TagColor = System.Drawing.Color.Black;
             this.ucBatteryAh.TagName = "AH";
             this.ucBatteryAh.TagValue = "12.34";
             // 
@@ -329,7 +329,7 @@
             this.ucBatteryPercentage.Name = "ucBatteryPercentage";
             this.ucBatteryPercentage.Size = new System.Drawing.Size(200, 59);
             this.ucBatteryPercentage.TabIndex = 0;
-            this.ucBatteryPercentage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryPercentage.TagColor = System.Drawing.Color.Black;
             this.ucBatteryPercentage.TagName = "Percentage";
             this.ucBatteryPercentage.TagValue = " 70.0";
             // 

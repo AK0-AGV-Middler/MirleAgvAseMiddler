@@ -26,8 +26,8 @@ namespace Mirle.Agv.AseMiddler
 
         public Color TagColor
         {
-            get { return label1.BackColor; }
-            set { label1.BackColor = value; }
+            get { return label1.ForeColor; }
+            set { label1.ForeColor = value; }
         }
 
         public UcVerticalLabelText()

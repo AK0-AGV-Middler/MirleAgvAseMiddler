@@ -230,6 +230,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
                 asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += AseBatteryControl_OnBatteryPercentageChangeEvent;
 
+                asePackage.OnStatusChangeReportEvent += AsePackage_OnStatusChangeReportEvent;                
+
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
                 alarmHandler.OnSetAlarmEvent += agvcConnector.AlarmHandler_OnSetAlarmEvent;
@@ -252,6 +254,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void AsePackage_OnStatusChangeReportEvent(object sender, string e)
+        {
+            OnMessageShowEvent?.Invoke(this, e);
+            agvcConnector.StatusChangeReport();
         }
 
         private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
@@ -282,7 +290,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void VehicleLocationInitialAndThreadsInitial()
         {
-            if (IsRealPositionEmpty())
+            if (mainFlowConfig.IsSimulation)
             {
                 try
                 {
@@ -292,6 +300,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     theVehicle.AseMoveStatus.LastMapPosition = new MapPosition();
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                }
+            }
+            else
+            {
+                if (asePackage.IsConnected())
+                {
+                    asePackage.AllAgvlStatusReportRequest();
                 }
             }
             StartVisitTransferSteps();

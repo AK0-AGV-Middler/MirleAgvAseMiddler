@@ -33,6 +33,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> AllPspLog;
         public event EventHandler<string> ImportantPspLog;
+        public event EventHandler<string> OnStatusChangeReportEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -177,7 +178,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void AllStatusReport()
+        public void AllAgvlStatusReportRequest()
         {
             try
             {
@@ -419,6 +420,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                 }
 
+                OnStatusChangeReportEvent?.Invoke(this, $"ReceiveMoveAppendArrivalReport:[{aseArrival}]");
             }
             catch (Exception ex)
             {
@@ -439,6 +441,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
                 aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
                 theVehicle.AseMoveStatus = aseMoveStatus;
+
+                OnStatusChangeReportEvent?.Invoke(this, $"ArrivalPosition:[{(int)x}][{(int)y}]");
+
             }
             catch (Exception ex)
             {
@@ -451,6 +456,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 aseBuzzerControl.OnAlarmCodeAllReset();
+
+                OnStatusChangeReportEvent?.Invoke(this, $"AllAlarmReset:");
+
             }
             catch (Exception ex)
             {
@@ -466,6 +474,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 int alarmCode = int.Parse(psMessage.Substring(1, 6));
 
                 aseBuzzerControl.OnAlarmCodeSet(alarmCode, IsValueTrue(isAlarmSet));
+
+                OnStatusChangeReportEvent?.Invoke(this, $"AlarmReport:[{ alarmCode}]");
             }
             catch (Exception ex)
             {
@@ -481,8 +491,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (theVehicle.IsCharging != IsValueTrue(isCharging))
                 {
                     theVehicle.IsCharging = IsValueTrue(isCharging);
-                    string msg = $"充電狀態改變[{isCharging}]";
-                    ImportantPspLog?.Invoke(this, msg);
+                    OnStatusChangeReportEvent?.Invoke(this, $"UpdateChargeStatus:[{ theVehicle.IsCharging }]");
                 }
             }
             catch (Exception ex)
@@ -525,6 +534,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
 
                 aseRobotControl.OnReadCarrierIdFinish(slotNumber);
+
+                OnStatusChangeReportEvent?.Invoke(this, $"UpdateCarrierSlotStatus:[{slotNumber}][{theVehicle.GetAseCarrierSlotStatus(slotNumber).CarrierSlotStatus}]");
             }
             catch (Exception ex)
             {
@@ -559,6 +570,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     theVehicle.AseRobotStatus = aseRobotStatus;
                 }
+
+                OnStatusChangeReportEvent?.Invoke(this, $"UpdateRobotStatus:[{theVehicle.AseRobotStatus.RobotState}]");
             }
             catch (Exception ex)
             {
@@ -574,6 +587,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(1, 3));
                 theVehicle.AseMoveStatus = aseMoveStatus;
+
+                OnStatusChangeReportEvent?.Invoke(this, $"UpdateMoveStatus:[{theVehicle.AseMoveStatus.AseMoveState}]");
             }
             catch (Exception ex)
             {
@@ -601,7 +616,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             SetLocalDateTime();
             SpinWait.SpinUntil(() => false, 1000);
 
-            AllStatusReport();
+            AllAgvlStatusReportRequest();
             SpinWait.SpinUntil(() => false, 1000);
 
             aseMoveControl.SendPositionReportRequest();
