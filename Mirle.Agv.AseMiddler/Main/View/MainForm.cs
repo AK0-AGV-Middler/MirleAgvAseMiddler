@@ -101,6 +101,9 @@ namespace Mirle.Agv.AseMiddler.View
             InitialEvents();
             ResetImageAndPb();
             InitialSoc();
+            asePackage.AllAgvlStatusReportRequest();
+            asePackage.aseMoveControl.SendPositionReportRequest();
+            asePackage.aseBatteryControl.SendBatteryStatusRequest();
             InitialConnectionAndCarrierStatus();
             txtLastAlarm.Text = "";
             var msg = "MainForm : 讀取主畫面";
@@ -141,6 +144,7 @@ namespace Mirle.Agv.AseMiddler.View
             InitialAseMoveControlForm();
             InitialAseRobotControlForm();
             InitialAseAgvlConnectorForm();
+
         }
 
         private void InitialPaintingItems()
