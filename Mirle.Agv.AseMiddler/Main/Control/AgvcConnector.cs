@@ -1929,7 +1929,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         }
 
-        public async Task<bool> Send_Cmd136_CstIdReadReport(TransferStep transferStep, EnumCstIdReadResult readResult, bool isLoadComplete = true)
+        public async Task<bool> Send_Cmd136_CstIdReadReport(TransferStep transferStep, EnumCstIdReadResult readResult)
         {
             try
             {
@@ -1955,7 +1955,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
                 string rtnMsg = "";
 
+                //LoadComplete(transferStep.CmdId);
+
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
+
                 TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0));
+
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"After Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {

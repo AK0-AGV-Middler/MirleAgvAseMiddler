@@ -1482,6 +1482,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool IsMoveStep() => GetCurrentTransferStepType() == EnumTransferStepType.Move || GetCurrentTransferStepType() == EnumTransferStepType.MoveToCharger;
 
+        public bool IsRobotStep() => GetCurrentTransferStepType() == EnumTransferStepType.Load || GetCurrentTransferStepType() == EnumTransferStepType.Unload;
+
         public void AseMoveControl_OnMoveFinished(object sender, EnumMoveComplete status)
         {
             try
@@ -1675,8 +1677,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                EnumTransferStepType transferStepType = transferStep.GetTransferStepType();
-
+                OnMessageShowEvent?.Invoke(this, "AseRobotContorl_OnRobotCommandFinishEvent");
+                EnumTransferStepType transferStepType = transferStep.GetTransferStepType();                             
                 if (transferStepType == EnumTransferStepType.Load)
                 {
                     if (agvcConnector.IsCstIdReadReplyOk(transferStep, ReadResult))
@@ -1686,6 +1688,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                             TransferComplete(transferStep.CmdId);
                         }
                         VisitNextTransferStep();
+                    }
+                    else
+                    {
+                        OnMessageShowEvent?.Invoke(this, "Not CstIdReadReplyOk");
                     }
                 }
                 else if (transferStepType == EnumTransferStepType.Unload)
@@ -1699,6 +1705,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot放貨完成");
                     TransferComplete(transferStep.CmdId);
                     VisitNextTransferStep();
+                }
+                else
+                {
+                    OnMessageShowEvent?.Invoke(this, $"[{transferStepType}]");
                 }
             }
             catch (Exception ex)
@@ -1714,6 +1724,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 #region 2019.12.16 Report to Agvc when ForkFinished
 
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(slotNumber);
+                if (!IsRobotStep()) return;              
                 var robotCmdInfo = (RobotCommand)GetCurTransferStep();
                 if (robotCmdInfo.SlotNumber != slotNumber) return;
                 if (robotCmdInfo.GetTransferStepType() == EnumTransferStepType.Unload) return;
@@ -1755,6 +1766,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotInterlockErrorEvent");
                 EnumTransferStepType transferType = transferStep.GetTransferStepType();
                 if (transferType == EnumTransferStepType.Load || transferType == EnumTransferStepType.Unload)
                 {
@@ -1873,33 +1885,33 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        int timeoutCount = 10;
-                        while (true)
-                        {
-                            if (asePackage.aseRobotControl.IsRobotCommandExist())
-                            {
-                                //asePackage.aseRobotControl.ClearRobotCommand();
-                                SpinWait.SpinUntil(() => false, 200);
-                            }
-                            else
-                            {
-                                break;
-                            }
+                        //int timeoutCount = 10;
+                        //while (true)
+                        //{
+                        //    if (asePackage.aseRobotControl.IsRobotCommandExist())
+                        //    {
+                        //        //asePackage.aseRobotControl.ClearRobotCommand();
+                        //        SpinWait.SpinUntil(() => false, 200);
+                        //    }
+                        //    else
+                        //    {
+                        //        break;
+                        //    }
 
-                            if (timeoutCount > 0)
-                            {
-                                timeoutCount--;
-                            }
-                            else
-                            {
-                                alarmHandler.ResetAllAlarms();
-                                var errorMsg = $"MainFlow : 放貨異常，無法清除Robot命令，流程放棄。";
-                                OnMessageShowEvent?.Invoke(this, errorMsg);
-                                MainFlowAbnormalMsg = errorMsg;
-                                AbortCommand(unloadCmd.CmdId, CompleteStatus.InterlockError);
-                                return;
-                            }
-                        }
+                        //    if (timeoutCount > 0)
+                        //    {
+                        //        timeoutCount--;
+                        //    }
+                        //    else
+                        //    {
+                        //        alarmHandler.ResetAllAlarms();
+                        //        var errorMsg = $"MainFlow : 放貨異常，無法清除Robot命令，流程放棄。";
+                        //        OnMessageShowEvent?.Invoke(this, errorMsg);
+                        //        MainFlowAbnormalMsg = errorMsg;
+                        //        AbortCommand(unloadCmd.CmdId, CompleteStatus.InterlockError);
+                        //        return;
+                        //    }
+                        //}
 
                         agvcConnector.Unloading(unloadCmd.CmdId);
                         PublishOnDoTransferStepEvent(unloadCmd);
@@ -1939,32 +1951,32 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         int timeoutCount = 10;
-                        while (true)
-                        {
-                            if (asePackage.aseRobotControl.IsRobotCommandExist())
-                            {
-                                //asePackage.aseRobotControl.ClearRobotCommand();
-                                SpinWait.SpinUntil(() => false, 200);
-                            }
-                            else
-                            {
-                                break;
-                            }
+                        //while (true)
+                        //{
+                        //    if (asePackage.aseRobotControl.IsRobotCommandExist())
+                        //    {
+                        //        //asePackage.aseRobotControl.ClearRobotCommand();
+                        //        SpinWait.SpinUntil(() => false, 200);
+                        //    }
+                        //    else
+                        //    {
+                        //        break;
+                        //    }
 
-                            if (timeoutCount > 0)
-                            {
-                                timeoutCount--;
-                            }
-                            else
-                            {
-                                alarmHandler.ResetAllAlarms();
-                                var errorMsg = $"MainFlow : 取貨異常，無法清除Robot命令，流程放棄。";
-                                MainFlowAbnormalMsg = errorMsg;
-                                OnMessageShowEvent?.Invoke(this, errorMsg);
-                                AbortCommand(loadCmd.CmdId, CompleteStatus.InterlockError);
-                                return;
-                            }
-                        }
+                        //    if (timeoutCount > 0)
+                        //    {
+                        //        timeoutCount--;
+                        //    }
+                        //    else
+                        //    {
+                        //        alarmHandler.ResetAllAlarms();
+                        //        var errorMsg = $"MainFlow : 取貨異常，無法清除Robot命令，流程放棄。";
+                        //        MainFlowAbnormalMsg = errorMsg;
+                        //        OnMessageShowEvent?.Invoke(this, errorMsg);
+                        //        AbortCommand(loadCmd.CmdId, CompleteStatus.InterlockError);
+                        //        return;
+                        //    }
+                        //}
 
                         agvcConnector.Loading(loadCmd.CmdId);
                         PublishOnDoTransferStepEvent(loadCmd);

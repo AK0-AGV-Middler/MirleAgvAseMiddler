@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mirle.Agv.AseMiddler.Model.TransferSteps;
 
 
 namespace Mirle.Agv.AseMiddler.Controller.Tests
@@ -72,6 +73,6 @@ namespace Mirle.Agv.AseMiddler.Controller.Tests
             words.Add("C");
             string xx = string.Join(", ", words);
             Assert.AreEqual("A, [B], C", xx);
-        }
+        }      
     }
 }

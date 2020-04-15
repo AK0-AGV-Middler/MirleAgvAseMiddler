@@ -60,13 +60,8 @@
             this.txtCannotAutoReason = new System.Windows.Forms.Label();
             this.txtCanAuto = new System.Windows.Forms.Label();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
-            this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
-            this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucCharging = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.ucSoc = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.gbReserve = new System.Windows.Forms.GroupBox();
             this.lbxReserveOkSections = new System.Windows.Forms.ListBox();
             this.lbxNeedReserveSections = new System.Windows.Forms.ListBox();
@@ -78,9 +73,6 @@
             this.numPositionY = new System.Windows.Forms.NumericUpDown();
             this.numPositionX = new System.Windows.Forms.NumericUpDown();
             this.btnKeyInPosition = new System.Windows.Forms.Button();
-            this.ucLastPosition = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucMapAddress = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucMapSection = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.txtAgvlConnection = new System.Windows.Forms.Label();
             this.radAgvlOnline = new System.Windows.Forms.RadioButton();
@@ -92,21 +84,10 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageMoveState = new System.Windows.Forms.TabPage();
             this.btnRefreshMoveState = new System.Windows.Forms.Button();
-            this.ucMoveMovingIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMovePauseStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveReserveStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveLastAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveLastSection = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMovePositionY = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMovePositionX = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageRobotSate = new System.Windows.Forms.TabPage();
+            this.btnRefreshRobotState = new System.Windows.Forms.Button();
             this.pageBatteryState = new System.Windows.Forms.TabPage();
             this.btnRefreshBatteryState = new System.Windows.Forms.Button();
-            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageVehicleState = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtBatterysAbnormal = new System.Windows.Forms.Label();
@@ -128,13 +109,36 @@
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
-            this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucCharging = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucSoc = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucLastPosition = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucMapAddress = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucMapSection = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucMoveMovingIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePauseStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveReserveStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveLastAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveLastSection = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePositionY = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePositionX = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucRobotIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucRobotSlotLId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucRobotSlotRId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucRobotSlotLState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucRobotSlotRState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.btnRefreshRobotState = new System.Windows.Forms.Button();
+            this.ucRobotSlotLState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotLId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferSteps = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferStepType = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucGoNextStep = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -161,6 +165,7 @@
             this.pageMoveState.SuspendLayout();
             this.pageRobotSate.SuspendLayout();
             this.pageBatteryState.SuspendLayout();
+            this.pageVehicleState.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -479,26 +484,6 @@
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
             // 
-            // ucRCstId
-            // 
-            this.ucRCstId.Location = new System.Drawing.Point(11, 57);
-            this.ucRCstId.Name = "ucRCstId";
-            this.ucRCstId.Size = new System.Drawing.Size(187, 26);
-            this.ucRCstId.TabIndex = 42;
-            this.ucRCstId.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucRCstId.TagName = "RCstId";
-            this.ucRCstId.TagValue = "";
-            // 
-            // ucLCstId
-            // 
-            this.ucLCstId.Location = new System.Drawing.Point(10, 25);
-            this.ucLCstId.Name = "ucLCstId";
-            this.ucLCstId.Size = new System.Drawing.Size(187, 26);
-            this.ucLCstId.TabIndex = 42;
-            this.ucLCstId.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucLCstId.TagName = "LCstId";
-            this.ucLCstId.TagValue = "";
-            // 
             // btnKeyInSoc
             // 
             this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -509,26 +494,6 @@
             this.btnKeyInSoc.Text = "校正電量";
             this.btnKeyInSoc.UseVisualStyleBackColor = true;
             this.btnKeyInSoc.Click += new System.EventHandler(this.btnKeyInSoc_Click);
-            // 
-            // ucRobotHome
-            // 
-            this.ucRobotHome.Location = new System.Drawing.Point(6, 161);
-            this.ucRobotHome.Name = "ucRobotHome";
-            this.ucRobotHome.Size = new System.Drawing.Size(187, 30);
-            this.ucRobotHome.TabIndex = 3;
-            this.ucRobotHome.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucRobotHome.TagName = "Robot";
-            this.ucRobotHome.TagValue = "";
-            // 
-            // ucCharging
-            // 
-            this.ucCharging.Location = new System.Drawing.Point(10, 89);
-            this.ucCharging.Name = "ucCharging";
-            this.ucCharging.Size = new System.Drawing.Size(187, 30);
-            this.ucCharging.TabIndex = 3;
-            this.ucCharging.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucCharging.TagName = "Charge";
-            this.ucCharging.TagValue = "";
             // 
             // numSoc
             // 
@@ -543,16 +508,6 @@
             0,
             0,
             0});
-            // 
-            // ucSoc
-            // 
-            this.ucSoc.Location = new System.Drawing.Point(10, 125);
-            this.ucSoc.Name = "ucSoc";
-            this.ucSoc.Size = new System.Drawing.Size(187, 30);
-            this.ucSoc.TabIndex = 2;
-            this.ucSoc.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucSoc.TagName = "SOC";
-            this.ucSoc.TagValue = "";
             // 
             // gbReserve
             // 
@@ -690,36 +645,6 @@
             this.btnKeyInPosition.Text = "鍵入車輛位置";
             this.btnKeyInPosition.UseVisualStyleBackColor = true;
             this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click);
-            // 
-            // ucLastPosition
-            // 
-            this.ucLastPosition.Location = new System.Drawing.Point(0, 85);
-            this.ucLastPosition.Name = "ucLastPosition";
-            this.ucLastPosition.Size = new System.Drawing.Size(194, 26);
-            this.ucLastPosition.TabIndex = 5;
-            this.ucLastPosition.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucLastPosition.TagName = "L.Pos";
-            this.ucLastPosition.TagValue = "";
-            // 
-            // ucMapAddress
-            // 
-            this.ucMapAddress.Location = new System.Drawing.Point(0, 53);
-            this.ucMapAddress.Name = "ucMapAddress";
-            this.ucMapAddress.Size = new System.Drawing.Size(194, 26);
-            this.ucMapAddress.TabIndex = 1;
-            this.ucMapAddress.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucMapAddress.TagName = "L.Adr";
-            this.ucMapAddress.TagValue = "";
-            // 
-            // ucMapSection
-            // 
-            this.ucMapSection.Location = new System.Drawing.Point(0, 21);
-            this.ucMapSection.Name = "ucMapSection";
-            this.ucMapSection.Size = new System.Drawing.Size(194, 26);
-            this.ucMapSection.TabIndex = 0;
-            this.ucMapSection.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucMapSection.TagName = "L.Sec";
-            this.ucMapSection.TagValue = "";
             // 
             // groupBox1
             // 
@@ -859,86 +784,6 @@
             this.btnRefreshMoveState.UseVisualStyleBackColor = true;
             this.btnRefreshMoveState.Click += new System.EventHandler(this.btnRefreshMoveState_Click);
             // 
-            // ucMoveMovingIndex
-            // 
-            this.ucMoveMovingIndex.Location = new System.Drawing.Point(288, 86);
-            this.ucMoveMovingIndex.Name = "ucMoveMovingIndex";
-            this.ucMoveMovingIndex.Size = new System.Drawing.Size(135, 65);
-            this.ucMoveMovingIndex.TabIndex = 0;
-            this.ucMoveMovingIndex.TagColor = System.Drawing.Color.Transparent;
-            this.ucMoveMovingIndex.TagName = "MovingIndex";
-            this.ucMoveMovingIndex.TagValue = "0";
-            // 
-            // ucMovePauseStop
-            // 
-            this.ucMovePauseStop.Location = new System.Drawing.Point(147, 164);
-            this.ucMovePauseStop.Name = "ucMovePauseStop";
-            this.ucMovePauseStop.Size = new System.Drawing.Size(135, 65);
-            this.ucMovePauseStop.TabIndex = 0;
-            this.ucMovePauseStop.TagColor = System.Drawing.Color.Transparent;
-            this.ucMovePauseStop.TagName = "Pause Stop";
-            this.ucMovePauseStop.TagValue = "Off";
-            // 
-            // ucMoveReserveStop
-            // 
-            this.ucMoveReserveStop.Location = new System.Drawing.Point(6, 165);
-            this.ucMoveReserveStop.Name = "ucMoveReserveStop";
-            this.ucMoveReserveStop.Size = new System.Drawing.Size(135, 65);
-            this.ucMoveReserveStop.TabIndex = 0;
-            this.ucMoveReserveStop.TagColor = System.Drawing.Color.Transparent;
-            this.ucMoveReserveStop.TagName = "Reserve Stop";
-            this.ucMoveReserveStop.TagValue = "Off";
-            // 
-            // ucMoveLastAddress
-            // 
-            this.ucMoveLastAddress.Location = new System.Drawing.Point(147, 86);
-            this.ucMoveLastAddress.Name = "ucMoveLastAddress";
-            this.ucMoveLastAddress.Size = new System.Drawing.Size(135, 65);
-            this.ucMoveLastAddress.TabIndex = 0;
-            this.ucMoveLastAddress.TagColor = System.Drawing.Color.Transparent;
-            this.ucMoveLastAddress.TagName = "Last Address";
-            this.ucMoveLastAddress.TagValue = "10001";
-            // 
-            // ucMoveIsMoveEnd
-            // 
-            this.ucMoveIsMoveEnd.Location = new System.Drawing.Point(288, 17);
-            this.ucMoveIsMoveEnd.Name = "ucMoveIsMoveEnd";
-            this.ucMoveIsMoveEnd.Size = new System.Drawing.Size(135, 65);
-            this.ucMoveIsMoveEnd.TabIndex = 0;
-            this.ucMoveIsMoveEnd.TagColor = System.Drawing.Color.Transparent;
-            this.ucMoveIsMoveEnd.TagName = "Is Move End";
-            this.ucMoveIsMoveEnd.TagValue = "True";
-            // 
-            // ucMoveLastSection
-            // 
-            this.ucMoveLastSection.Location = new System.Drawing.Point(6, 89);
-            this.ucMoveLastSection.Name = "ucMoveLastSection";
-            this.ucMoveLastSection.Size = new System.Drawing.Size(135, 65);
-            this.ucMoveLastSection.TabIndex = 0;
-            this.ucMoveLastSection.TagColor = System.Drawing.Color.Transparent;
-            this.ucMoveLastSection.TagName = "Last Section";
-            this.ucMoveLastSection.TagValue = "00101";
-            // 
-            // ucMovePositionY
-            // 
-            this.ucMovePositionY.Location = new System.Drawing.Point(147, 17);
-            this.ucMovePositionY.Name = "ucMovePositionY";
-            this.ucMovePositionY.Size = new System.Drawing.Size(135, 65);
-            this.ucMovePositionY.TabIndex = 0;
-            this.ucMovePositionY.TagColor = System.Drawing.Color.Transparent;
-            this.ucMovePositionY.TagName = "Y";
-            this.ucMovePositionY.TagValue = "-13579";
-            // 
-            // ucMovePositionX
-            // 
-            this.ucMovePositionX.Location = new System.Drawing.Point(6, 17);
-            this.ucMovePositionX.Name = "ucMovePositionX";
-            this.ucMovePositionX.Size = new System.Drawing.Size(135, 65);
-            this.ucMovePositionX.TabIndex = 0;
-            this.ucMovePositionX.TagColor = System.Drawing.Color.Transparent;
-            this.ucMovePositionX.TagName = "X";
-            this.ucMovePositionX.TagValue = "123456";
-            // 
             // pageRobotSate
             // 
             this.pageRobotSate.Controls.Add(this.btnRefreshRobotState);
@@ -955,6 +800,17 @@
             this.pageRobotSate.TabIndex = 1;
             this.pageRobotSate.Text = "Robot";
             this.pageRobotSate.UseVisualStyleBackColor = true;
+            // 
+            // btnRefreshRobotState
+            // 
+            this.btnRefreshRobotState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshRobotState.Location = new System.Drawing.Point(396, 6);
+            this.btnRefreshRobotState.Name = "btnRefreshRobotState";
+            this.btnRefreshRobotState.Size = new System.Drawing.Size(117, 89);
+            this.btnRefreshRobotState.TabIndex = 43;
+            this.btnRefreshRobotState.Text = "更新手臂儲位狀態";
+            this.btnRefreshRobotState.UseVisualStyleBackColor = true;
+            this.btnRefreshRobotState.Click += new System.EventHandler(this.btnRefreshRobotState_Click);
             // 
             // pageBatteryState
             // 
@@ -981,48 +837,12 @@
             this.btnRefreshBatteryState.UseVisualStyleBackColor = true;
             this.btnRefreshBatteryState.Click += new System.EventHandler(this.AseRobotControlForm_RefreshBatteryState);
             // 
-            // ucBatteryCharging
-            // 
-            this.ucBatteryCharging.Location = new System.Drawing.Point(3, 84);
-            this.ucBatteryCharging.Name = "ucBatteryCharging";
-            this.ucBatteryCharging.Size = new System.Drawing.Size(135, 65);
-            this.ucBatteryCharging.TabIndex = 5;
-            this.ucBatteryCharging.TagColor = System.Drawing.Color.Transparent;
-            this.ucBatteryCharging.TagName = "Charging";
-            this.ucBatteryCharging.TagValue = "false";
-            // 
-            // ucBatteryTemperature
-            // 
-            this.ucBatteryTemperature.Location = new System.Drawing.Point(285, 13);
-            this.ucBatteryTemperature.Name = "ucBatteryTemperature";
-            this.ucBatteryTemperature.Size = new System.Drawing.Size(135, 65);
-            this.ucBatteryTemperature.TabIndex = 6;
-            this.ucBatteryTemperature.TagColor = System.Drawing.Color.Transparent;
-            this.ucBatteryTemperature.TagName = "Temperature";
-            this.ucBatteryTemperature.TagValue = "40.5";
-            // 
-            // ucBatteryVoltage
-            // 
-            this.ucBatteryVoltage.Location = new System.Drawing.Point(144, 13);
-            this.ucBatteryVoltage.Name = "ucBatteryVoltage";
-            this.ucBatteryVoltage.Size = new System.Drawing.Size(135, 65);
-            this.ucBatteryVoltage.TabIndex = 7;
-            this.ucBatteryVoltage.TagColor = System.Drawing.Color.Transparent;
-            this.ucBatteryVoltage.TagName = "Voltage";
-            this.ucBatteryVoltage.TagValue = "55.66";
-            // 
-            // ucBatteryPercentage
-            // 
-            this.ucBatteryPercentage.Location = new System.Drawing.Point(3, 13);
-            this.ucBatteryPercentage.Name = "ucBatteryPercentage";
-            this.ucBatteryPercentage.Size = new System.Drawing.Size(135, 65);
-            this.ucBatteryPercentage.TabIndex = 3;
-            this.ucBatteryPercentage.TagColor = System.Drawing.Color.Transparent;
-            this.ucBatteryPercentage.TagName = "Percentage";
-            this.ucBatteryPercentage.TagValue = " 70.0";
-            // 
             // pageVehicleState
             // 
+            this.pageVehicleState.Controls.Add(this.ucGoNextStep);
+            this.pageVehicleState.Controls.Add(this.ucTransferStepType);
+            this.pageVehicleState.Controls.Add(this.ucTransferSteps);
+            this.pageVehicleState.Controls.Add(this.ucTransferIndex);
             this.pageVehicleState.Location = new System.Drawing.Point(4, 22);
             this.pageVehicleState.Name = "pageVehicleState";
             this.pageVehicleState.Size = new System.Drawing.Size(519, 277);
@@ -1217,15 +1037,165 @@
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
-            // ucRobotRobotState
+            // ucRCstId
             // 
-            this.ucRobotRobotState.Location = new System.Drawing.Point(6, 6);
-            this.ucRobotRobotState.Name = "ucRobotRobotState";
-            this.ucRobotRobotState.Size = new System.Drawing.Size(135, 65);
-            this.ucRobotRobotState.TabIndex = 1;
-            this.ucRobotRobotState.TagColor = System.Drawing.Color.Transparent;
-            this.ucRobotRobotState.TagName = "Robot State";
-            this.ucRobotRobotState.TagValue = "Idle";
+            this.ucRCstId.Location = new System.Drawing.Point(11, 57);
+            this.ucRCstId.Name = "ucRCstId";
+            this.ucRCstId.Size = new System.Drawing.Size(187, 26);
+            this.ucRCstId.TabIndex = 42;
+            this.ucRCstId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucRCstId.TagName = "RCstId";
+            this.ucRCstId.TagValue = "";
+            // 
+            // ucLCstId
+            // 
+            this.ucLCstId.Location = new System.Drawing.Point(10, 25);
+            this.ucLCstId.Name = "ucLCstId";
+            this.ucLCstId.Size = new System.Drawing.Size(187, 26);
+            this.ucLCstId.TabIndex = 42;
+            this.ucLCstId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucLCstId.TagName = "LCstId";
+            this.ucLCstId.TagValue = "";
+            // 
+            // ucRobotHome
+            // 
+            this.ucRobotHome.Location = new System.Drawing.Point(6, 161);
+            this.ucRobotHome.Name = "ucRobotHome";
+            this.ucRobotHome.Size = new System.Drawing.Size(187, 30);
+            this.ucRobotHome.TabIndex = 3;
+            this.ucRobotHome.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucRobotHome.TagName = "Robot";
+            this.ucRobotHome.TagValue = "";
+            // 
+            // ucCharging
+            // 
+            this.ucCharging.Location = new System.Drawing.Point(10, 89);
+            this.ucCharging.Name = "ucCharging";
+            this.ucCharging.Size = new System.Drawing.Size(187, 30);
+            this.ucCharging.TabIndex = 3;
+            this.ucCharging.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucCharging.TagName = "Charge";
+            this.ucCharging.TagValue = "";
+            // 
+            // ucSoc
+            // 
+            this.ucSoc.Location = new System.Drawing.Point(10, 125);
+            this.ucSoc.Name = "ucSoc";
+            this.ucSoc.Size = new System.Drawing.Size(187, 30);
+            this.ucSoc.TabIndex = 2;
+            this.ucSoc.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucSoc.TagName = "SOC";
+            this.ucSoc.TagValue = "";
+            // 
+            // ucLastPosition
+            // 
+            this.ucLastPosition.Location = new System.Drawing.Point(0, 85);
+            this.ucLastPosition.Name = "ucLastPosition";
+            this.ucLastPosition.Size = new System.Drawing.Size(194, 26);
+            this.ucLastPosition.TabIndex = 5;
+            this.ucLastPosition.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucLastPosition.TagName = "L.Pos";
+            this.ucLastPosition.TagValue = "";
+            // 
+            // ucMapAddress
+            // 
+            this.ucMapAddress.Location = new System.Drawing.Point(0, 53);
+            this.ucMapAddress.Name = "ucMapAddress";
+            this.ucMapAddress.Size = new System.Drawing.Size(194, 26);
+            this.ucMapAddress.TabIndex = 1;
+            this.ucMapAddress.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucMapAddress.TagName = "L.Adr";
+            this.ucMapAddress.TagValue = "";
+            // 
+            // ucMapSection
+            // 
+            this.ucMapSection.Location = new System.Drawing.Point(0, 21);
+            this.ucMapSection.Name = "ucMapSection";
+            this.ucMapSection.Size = new System.Drawing.Size(194, 26);
+            this.ucMapSection.TabIndex = 0;
+            this.ucMapSection.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucMapSection.TagName = "L.Sec";
+            this.ucMapSection.TagValue = "";
+            // 
+            // ucMoveMovingIndex
+            // 
+            this.ucMoveMovingIndex.Location = new System.Drawing.Point(288, 86);
+            this.ucMoveMovingIndex.Name = "ucMoveMovingIndex";
+            this.ucMoveMovingIndex.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveMovingIndex.TabIndex = 0;
+            this.ucMoveMovingIndex.TagColor = System.Drawing.Color.Transparent;
+            this.ucMoveMovingIndex.TagName = "MovingIndex";
+            this.ucMoveMovingIndex.TagValue = "0";
+            // 
+            // ucMovePauseStop
+            // 
+            this.ucMovePauseStop.Location = new System.Drawing.Point(147, 164);
+            this.ucMovePauseStop.Name = "ucMovePauseStop";
+            this.ucMovePauseStop.Size = new System.Drawing.Size(135, 65);
+            this.ucMovePauseStop.TabIndex = 0;
+            this.ucMovePauseStop.TagColor = System.Drawing.Color.Transparent;
+            this.ucMovePauseStop.TagName = "Pause Stop";
+            this.ucMovePauseStop.TagValue = "Off";
+            // 
+            // ucMoveReserveStop
+            // 
+            this.ucMoveReserveStop.Location = new System.Drawing.Point(6, 165);
+            this.ucMoveReserveStop.Name = "ucMoveReserveStop";
+            this.ucMoveReserveStop.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveReserveStop.TabIndex = 0;
+            this.ucMoveReserveStop.TagColor = System.Drawing.Color.Transparent;
+            this.ucMoveReserveStop.TagName = "Reserve Stop";
+            this.ucMoveReserveStop.TagValue = "Off";
+            // 
+            // ucMoveLastAddress
+            // 
+            this.ucMoveLastAddress.Location = new System.Drawing.Point(147, 86);
+            this.ucMoveLastAddress.Name = "ucMoveLastAddress";
+            this.ucMoveLastAddress.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveLastAddress.TabIndex = 0;
+            this.ucMoveLastAddress.TagColor = System.Drawing.Color.Transparent;
+            this.ucMoveLastAddress.TagName = "Last Address";
+            this.ucMoveLastAddress.TagValue = "10001";
+            // 
+            // ucMoveIsMoveEnd
+            // 
+            this.ucMoveIsMoveEnd.Location = new System.Drawing.Point(288, 17);
+            this.ucMoveIsMoveEnd.Name = "ucMoveIsMoveEnd";
+            this.ucMoveIsMoveEnd.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveIsMoveEnd.TabIndex = 0;
+            this.ucMoveIsMoveEnd.TagColor = System.Drawing.Color.Transparent;
+            this.ucMoveIsMoveEnd.TagName = "Is Move End";
+            this.ucMoveIsMoveEnd.TagValue = "True";
+            // 
+            // ucMoveLastSection
+            // 
+            this.ucMoveLastSection.Location = new System.Drawing.Point(6, 89);
+            this.ucMoveLastSection.Name = "ucMoveLastSection";
+            this.ucMoveLastSection.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveLastSection.TabIndex = 0;
+            this.ucMoveLastSection.TagColor = System.Drawing.Color.Transparent;
+            this.ucMoveLastSection.TagName = "Last Section";
+            this.ucMoveLastSection.TagValue = "00101";
+            // 
+            // ucMovePositionY
+            // 
+            this.ucMovePositionY.Location = new System.Drawing.Point(147, 17);
+            this.ucMovePositionY.Name = "ucMovePositionY";
+            this.ucMovePositionY.Size = new System.Drawing.Size(135, 65);
+            this.ucMovePositionY.TabIndex = 0;
+            this.ucMovePositionY.TagColor = System.Drawing.Color.Transparent;
+            this.ucMovePositionY.TagName = "Y";
+            this.ucMovePositionY.TagValue = "-13579";
+            // 
+            // ucMovePositionX
+            // 
+            this.ucMovePositionX.Location = new System.Drawing.Point(6, 17);
+            this.ucMovePositionX.Name = "ucMovePositionX";
+            this.ucMovePositionX.Size = new System.Drawing.Size(135, 65);
+            this.ucMovePositionX.TabIndex = 0;
+            this.ucMovePositionX.TagColor = System.Drawing.Color.Transparent;
+            this.ucMovePositionX.TagName = "X";
+            this.ucMovePositionX.TagValue = "123456";
             // 
             // ucRobotIsHome
             // 
@@ -1237,16 +1207,6 @@
             this.ucRobotIsHome.TagName = "Is Home";
             this.ucRobotIsHome.TagValue = "false";
             // 
-            // ucRobotSlotLId
-            // 
-            this.ucRobotSlotLId.Location = new System.Drawing.Point(147, 88);
-            this.ucRobotSlotLId.Name = "ucRobotSlotLId";
-            this.ucRobotSlotLId.Size = new System.Drawing.Size(135, 65);
-            this.ucRobotSlotLId.TabIndex = 1;
-            this.ucRobotSlotLId.TagColor = System.Drawing.Color.Transparent;
-            this.ucRobotSlotLId.TagName = "Slot L Id";
-            this.ucRobotSlotLId.TagValue = "ABC";
-            // 
             // ucRobotSlotRId
             // 
             this.ucRobotSlotRId.Location = new System.Drawing.Point(147, 180);
@@ -1256,16 +1216,6 @@
             this.ucRobotSlotRId.TagColor = System.Drawing.Color.Transparent;
             this.ucRobotSlotRId.TagName = "Slot R Id";
             this.ucRobotSlotRId.TagValue = "PQR";
-            // 
-            // ucRobotSlotLState
-            // 
-            this.ucRobotSlotLState.Location = new System.Drawing.Point(6, 88);
-            this.ucRobotSlotLState.Name = "ucRobotSlotLState";
-            this.ucRobotSlotLState.Size = new System.Drawing.Size(135, 65);
-            this.ucRobotSlotLState.TabIndex = 1;
-            this.ucRobotSlotLState.TagColor = System.Drawing.Color.Transparent;
-            this.ucRobotSlotLState.TagName = "Slot L State";
-            this.ucRobotSlotLState.TagValue = "Empty";
             // 
             // ucRobotSlotRState
             // 
@@ -1277,16 +1227,115 @@
             this.ucRobotSlotRState.TagName = "Slot R State";
             this.ucRobotSlotRState.TagValue = "Empty";
             // 
-            // btnRefreshRobotState
+            // ucRobotSlotLState
             // 
-            this.btnRefreshRobotState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRefreshRobotState.Location = new System.Drawing.Point(396, 6);
-            this.btnRefreshRobotState.Name = "btnRefreshRobotState";
-            this.btnRefreshRobotState.Size = new System.Drawing.Size(117, 89);
-            this.btnRefreshRobotState.TabIndex = 43;
-            this.btnRefreshRobotState.Text = "更新手臂儲位狀態";
-            this.btnRefreshRobotState.UseVisualStyleBackColor = true;
-            this.btnRefreshRobotState.Click += new System.EventHandler(this.btnRefreshRobotState_Click);
+            this.ucRobotSlotLState.Location = new System.Drawing.Point(6, 88);
+            this.ucRobotSlotLState.Name = "ucRobotSlotLState";
+            this.ucRobotSlotLState.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotSlotLState.TabIndex = 1;
+            this.ucRobotSlotLState.TagColor = System.Drawing.Color.Transparent;
+            this.ucRobotSlotLState.TagName = "Slot L State";
+            this.ucRobotSlotLState.TagValue = "Empty";
+            // 
+            // ucRobotSlotLId
+            // 
+            this.ucRobotSlotLId.Location = new System.Drawing.Point(147, 88);
+            this.ucRobotSlotLId.Name = "ucRobotSlotLId";
+            this.ucRobotSlotLId.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotSlotLId.TabIndex = 1;
+            this.ucRobotSlotLId.TagColor = System.Drawing.Color.Transparent;
+            this.ucRobotSlotLId.TagName = "Slot L Id";
+            this.ucRobotSlotLId.TagValue = "ABC";
+            // 
+            // ucRobotRobotState
+            // 
+            this.ucRobotRobotState.Location = new System.Drawing.Point(6, 6);
+            this.ucRobotRobotState.Name = "ucRobotRobotState";
+            this.ucRobotRobotState.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotRobotState.TabIndex = 1;
+            this.ucRobotRobotState.TagColor = System.Drawing.Color.Transparent;
+            this.ucRobotRobotState.TagName = "Robot State";
+            this.ucRobotRobotState.TagValue = "Idle";
+            // 
+            // ucBatteryCharging
+            // 
+            this.ucBatteryCharging.Location = new System.Drawing.Point(3, 84);
+            this.ucBatteryCharging.Name = "ucBatteryCharging";
+            this.ucBatteryCharging.Size = new System.Drawing.Size(135, 65);
+            this.ucBatteryCharging.TabIndex = 5;
+            this.ucBatteryCharging.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryCharging.TagName = "Charging";
+            this.ucBatteryCharging.TagValue = "false";
+            // 
+            // ucBatteryTemperature
+            // 
+            this.ucBatteryTemperature.Location = new System.Drawing.Point(285, 13);
+            this.ucBatteryTemperature.Name = "ucBatteryTemperature";
+            this.ucBatteryTemperature.Size = new System.Drawing.Size(135, 65);
+            this.ucBatteryTemperature.TabIndex = 6;
+            this.ucBatteryTemperature.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryTemperature.TagName = "Temperature";
+            this.ucBatteryTemperature.TagValue = "40.5";
+            // 
+            // ucBatteryVoltage
+            // 
+            this.ucBatteryVoltage.Location = new System.Drawing.Point(144, 13);
+            this.ucBatteryVoltage.Name = "ucBatteryVoltage";
+            this.ucBatteryVoltage.Size = new System.Drawing.Size(135, 65);
+            this.ucBatteryVoltage.TabIndex = 7;
+            this.ucBatteryVoltage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryVoltage.TagName = "Voltage";
+            this.ucBatteryVoltage.TagValue = "55.66";
+            // 
+            // ucBatteryPercentage
+            // 
+            this.ucBatteryPercentage.Location = new System.Drawing.Point(3, 13);
+            this.ucBatteryPercentage.Name = "ucBatteryPercentage";
+            this.ucBatteryPercentage.Size = new System.Drawing.Size(135, 65);
+            this.ucBatteryPercentage.TabIndex = 3;
+            this.ucBatteryPercentage.TagColor = System.Drawing.Color.Transparent;
+            this.ucBatteryPercentage.TagName = "Percentage";
+            this.ucBatteryPercentage.TagValue = " 70.0";
+            // 
+            // ucTransferIndex
+            // 
+            this.ucTransferIndex.Location = new System.Drawing.Point(14, 18);
+            this.ucTransferIndex.Name = "ucTransferIndex";
+            this.ucTransferIndex.Size = new System.Drawing.Size(135, 65);
+            this.ucTransferIndex.TabIndex = 1;
+            this.ucTransferIndex.TagColor = System.Drawing.Color.Transparent;
+            this.ucTransferIndex.TagName = "TransIndex";
+            this.ucTransferIndex.TagValue = "-1";
+            // 
+            // ucTransferSteps
+            // 
+            this.ucTransferSteps.Location = new System.Drawing.Point(155, 18);
+            this.ucTransferSteps.Name = "ucTransferSteps";
+            this.ucTransferSteps.Size = new System.Drawing.Size(135, 65);
+            this.ucTransferSteps.TabIndex = 1;
+            this.ucTransferSteps.TagColor = System.Drawing.Color.Transparent;
+            this.ucTransferSteps.TagName = "TransferSteps";
+            this.ucTransferSteps.TagValue = "-1";
+            // 
+            // ucTransferStepType
+            // 
+            this.ucTransferStepType.Location = new System.Drawing.Point(14, 102);
+            this.ucTransferStepType.Name = "ucTransferStepType";
+            this.ucTransferStepType.Size = new System.Drawing.Size(135, 65);
+            this.ucTransferStepType.TabIndex = 1;
+            this.ucTransferStepType.TagColor = System.Drawing.Color.Transparent;
+            this.ucTransferStepType.TagName = "TransType";
+            this.ucTransferStepType.TagValue = "None";
+            // 
+            // ucGoNextStep
+            // 
+            this.ucGoNextStep.Location = new System.Drawing.Point(155, 102);
+            this.ucGoNextStep.Name = "ucGoNextStep";
+            this.ucGoNextStep.Size = new System.Drawing.Size(135, 65);
+            this.ucGoNextStep.TabIndex = 1;
+            this.ucGoNextStep.TagColor = System.Drawing.Color.Transparent;
+            this.ucGoNextStep.TagName = "GoNext";
+            this.ucGoNextStep.TagValue = "-1";
             // 
             // MainForm
             // 
@@ -1337,6 +1386,7 @@
             this.pageMoveState.ResumeLayout(false);
             this.pageRobotSate.ResumeLayout(false);
             this.pageBatteryState.ResumeLayout(false);
+            this.pageVehicleState.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
@@ -1453,5 +1503,9 @@
         private UcVerticalLabelText ucRobotSlotRState;
         private UcVerticalLabelText ucRobotSlotLState;
         private System.Windows.Forms.Button btnRefreshRobotState;
+        private UcVerticalLabelText ucGoNextStep;
+        private UcVerticalLabelText ucTransferStepType;
+        private UcVerticalLabelText ucTransferSteps;
+        private UcVerticalLabelText ucTransferIndex;
     }
 }

@@ -11,7 +11,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
     [Serializable]
     public abstract class TransferStep
     {
-        protected EnumTransferStepType type;
+        protected EnumTransferStepType type = EnumTransferStepType.Empty;
         public string CmdId { get; set; } = "";
 
         public TransferStep(string cmdId)

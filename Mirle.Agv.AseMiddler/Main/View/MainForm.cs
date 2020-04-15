@@ -1174,15 +1174,10 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 tbxTransferStepMsg.Text = TransferStepMsg;
-                //tspbCommding.Maximum = mainFlowHandler.GetTransferStepsCount() - 1;
-                //if (mainFlowHandler.TransferStepsIndex >= tspbCommding.Maximum)
-                //{
-                //    tspbCommding.Value = tspbCommding.Maximum;
-                //}
-                //else
-                //{
-                //    tspbCommding.Value = mainFlowHandler.TransferStepsIndex;
-                //}
+                ucTransferIndex.TagValue = mainFlowHandler.TransferStepsIndex.ToString();
+                ucTransferSteps.TagValue = mainFlowHandler.GetTransferStepsCount().ToString();
+                ucTransferStepType.TagValue = mainFlowHandler.GetCurrentTransferStepType().ToString();
+                ucGoNextStep.TagValue = mainFlowHandler.GoNextTransferStep.ToString();
             }
             catch (Exception ex)
             {
