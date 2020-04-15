@@ -72,7 +72,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Connect();
             }
-            StartAskReserve();           
+            StartAskReserve();
         }
 
         #region Initial
@@ -1914,7 +1914,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 report.CurrentSecID = aseMoveStatus.LastSection.Id;
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
                 report.CmdID = cmdId;
-                
+
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -1957,11 +1957,30 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 //LoadComplete(transferStep.CmdId);
 
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time0 Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
 
-                TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0));
+                //TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0));
 
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"After Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() =>
+                {
+                    try
+                    {
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+
+                        var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
+                        
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        return result;
+                    }
+                    catch (Exception ex)
+                    {
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"TimeTaskInExp Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        return TrxTcpIp.ReturnCode.SendDataFail;
+                    }
+                });
+
+
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time3 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {

@@ -54,15 +54,6 @@
             this.btnRefreshPosition = new System.Windows.Forms.Button();
             this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.btnPrintScreen = new System.Windows.Forms.Button();
-            this.timeUpdateUI = new System.Windows.Forms.Timer(this.components);
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.tspbCommding = new System.Windows.Forms.ToolStripProgressBar();
-            this.tstextClientName = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tstextRemoteIp = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tstextRemotePort = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
-            this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.tbxTransferStepMsg = new System.Windows.Forms.TextBox();
             this.tbxTransferCommandMsg = new System.Windows.Forms.TextBox();
@@ -139,6 +130,16 @@
             this.txtAskingReserve = new System.Windows.Forms.Label();
             this.txtTrackPosition = new System.Windows.Forms.Label();
             this.txtTransferStep = new System.Windows.Forms.Label();
+            this.timeUpdateUI = new System.Windows.Forms.Timer(this.components);
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.tspbCommding = new System.Windows.Forms.ToolStripProgressBar();
+            this.tstextClientName = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tstextRemoteIp = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tstextRemotePort = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
+            this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
+            this.ucMoveMoveState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -149,7 +150,6 @@
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -169,6 +169,7 @@
             this.pageVehicleState.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -180,7 +181,7 @@
             this.工程師ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1833, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1904, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -325,8 +326,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(1833, 1037);
-            this.splitContainer1.SplitterDistance = 1134;
+            this.splitContainer1.Size = new System.Drawing.Size(1904, 1017);
+            this.splitContainer1.SplitterDistance = 1177;
             this.splitContainer1.TabIndex = 1;
             // 
             // splitContainer3
@@ -347,8 +348,8 @@
             this.splitContainer3.Panel2.Controls.Add(this.btnRefreshPosition);
             this.splitContainer3.Panel2.Controls.Add(this.tbxDebugLogMsg);
             this.splitContainer3.Panel2.Controls.Add(this.btnPrintScreen);
-            this.splitContainer3.Size = new System.Drawing.Size(1134, 1037);
-            this.splitContainer3.SplitterDistance = 710;
+            this.splitContainer3.Size = new System.Drawing.Size(1177, 1017);
+            this.splitContainer3.SplitterDistance = 696;
             this.splitContainer3.SplitterIncrement = 10;
             this.splitContainer3.TabIndex = 0;
             // 
@@ -394,67 +395,6 @@
             this.btnPrintScreen.UseVisualStyleBackColor = true;
             this.btnPrintScreen.Click += new System.EventHandler(this.btnPrintScreen_Click);
             // 
-            // timeUpdateUI
-            // 
-            this.timeUpdateUI.Enabled = true;
-            this.timeUpdateUI.Interval = 250;
-            this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tspbCommding,
-            this.tstextClientName,
-            this.tstextRemoteIp,
-            this.tstextRemotePort,
-            this.tstextLastPosX,
-            this.tstextLastPosY});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 1039);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1833, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // tspbCommding
-            // 
-            this.tspbCommding.Name = "tspbCommding";
-            this.tspbCommding.Size = new System.Drawing.Size(100, 16);
-            // 
-            // tstextClientName
-            // 
-            this.tstextClientName.Name = "tstextClientName";
-            this.tstextClientName.Size = new System.Drawing.Size(104, 17);
-            this.tstextClientName.Text = "tstextClientName";
-            // 
-            // tstextRemoteIp
-            // 
-            this.tstextRemoteIp.Name = "tstextRemoteIp";
-            this.tstextRemoteIp.Size = new System.Drawing.Size(93, 17);
-            this.tstextRemoteIp.Text = "tstextRemoteIp";
-            // 
-            // tstextRemotePort
-            // 
-            this.tstextRemotePort.Name = "tstextRemotePort";
-            this.tstextRemotePort.Size = new System.Drawing.Size(105, 17);
-            this.tstextRemotePort.Text = "tstextRemotePort";
-            // 
-            // tstextLastPosX
-            // 
-            this.tstextLastPosX.Name = "tstextLastPosX";
-            this.tstextLastPosX.Size = new System.Drawing.Size(90, 17);
-            this.tstextLastPosX.Text = "tstextRealPosX";
-            // 
-            // tstextLastPosY
-            // 
-            this.tstextLastPosY.Name = "tstextLastPosY";
-            this.tstextLastPosY.Size = new System.Drawing.Size(89, 17);
-            this.tstextLastPosY.Text = "tstextRealPosY";
-            // 
-            // timer_SetupInitialSoc
-            // 
-            this.timer_SetupInitialSoc.Interval = 50;
-            this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
-            // 
             // splitContainer2
             // 
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -485,8 +425,8 @@
             this.splitContainer2.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer2.Panel2.Controls.Add(this.groupBox3);
             this.splitContainer2.Panel2.Controls.Add(this.groupBox2);
-            this.splitContainer2.Size = new System.Drawing.Size(695, 1037);
-            this.splitContainer2.SplitterDistance = 693;
+            this.splitContainer2.Size = new System.Drawing.Size(723, 1017);
+            this.splitContainer2.SplitterDistance = 679;
             this.splitContainer2.TabIndex = 0;
             // 
             // tbxTransferStepMsg
@@ -892,13 +832,14 @@
             this.tabControl1.Location = new System.Drawing.Point(171, 19);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(527, 303);
+            this.tabControl1.Size = new System.Drawing.Size(548, 290);
             this.tabControl1.TabIndex = 63;
             // 
             // pageMoveState
             // 
             this.pageMoveState.Controls.Add(this.btnRefreshMoveState);
             this.pageMoveState.Controls.Add(this.ucMoveMovingIndex);
+            this.pageMoveState.Controls.Add(this.ucMoveMoveState);
             this.pageMoveState.Controls.Add(this.ucMovePauseStop);
             this.pageMoveState.Controls.Add(this.ucMoveReserveStop);
             this.pageMoveState.Controls.Add(this.ucMoveLastAddress);
@@ -909,7 +850,7 @@
             this.pageMoveState.Location = new System.Drawing.Point(4, 22);
             this.pageMoveState.Name = "pageMoveState";
             this.pageMoveState.Padding = new System.Windows.Forms.Padding(3);
-            this.pageMoveState.Size = new System.Drawing.Size(519, 277);
+            this.pageMoveState.Size = new System.Drawing.Size(540, 264);
             this.pageMoveState.TabIndex = 0;
             this.pageMoveState.Text = "Move";
             this.pageMoveState.UseVisualStyleBackColor = true;
@@ -1337,12 +1278,83 @@
             this.txtTransferStep.Text = "Step : Move";
             this.txtTransferStep.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // timeUpdateUI
+            // 
+            this.timeUpdateUI.Enabled = true;
+            this.timeUpdateUI.Interval = 250;
+            this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tspbCommding,
+            this.tstextClientName,
+            this.tstextRemoteIp,
+            this.tstextRemotePort,
+            this.tstextLastPosX,
+            this.tstextLastPosY});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 1019);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1904, 22);
+            this.statusStrip1.TabIndex = 2;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // tspbCommding
+            // 
+            this.tspbCommding.Name = "tspbCommding";
+            this.tspbCommding.Size = new System.Drawing.Size(100, 16);
+            // 
+            // tstextClientName
+            // 
+            this.tstextClientName.Name = "tstextClientName";
+            this.tstextClientName.Size = new System.Drawing.Size(104, 17);
+            this.tstextClientName.Text = "tstextClientName";
+            // 
+            // tstextRemoteIp
+            // 
+            this.tstextRemoteIp.Name = "tstextRemoteIp";
+            this.tstextRemoteIp.Size = new System.Drawing.Size(93, 17);
+            this.tstextRemoteIp.Text = "tstextRemoteIp";
+            // 
+            // tstextRemotePort
+            // 
+            this.tstextRemotePort.Name = "tstextRemotePort";
+            this.tstextRemotePort.Size = new System.Drawing.Size(105, 17);
+            this.tstextRemotePort.Text = "tstextRemotePort";
+            // 
+            // tstextLastPosX
+            // 
+            this.tstextLastPosX.Name = "tstextLastPosX";
+            this.tstextLastPosX.Size = new System.Drawing.Size(90, 17);
+            this.tstextLastPosX.Text = "tstextRealPosX";
+            // 
+            // tstextLastPosY
+            // 
+            this.tstextLastPosY.Name = "tstextLastPosY";
+            this.tstextLastPosY.Size = new System.Drawing.Size(89, 17);
+            this.tstextLastPosY.Text = "tstextRealPosY";
+            // 
+            // timer_SetupInitialSoc
+            // 
+            this.timer_SetupInitialSoc.Interval = 50;
+            this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
+            // 
+            // ucMoveMoveState
+            // 
+            this.ucMoveMoveState.Location = new System.Drawing.Point(288, 165);
+            this.ucMoveMoveState.Name = "ucMoveMoveState";
+            this.ucMoveMoveState.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveMoveState.TabIndex = 0;
+            this.ucMoveMoveState.TagColor = System.Drawing.Color.Black;
+            this.ucMoveMoveState.TagName = "MoveState";
+            this.ucMoveMoveState.TagValue = "Idle";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(1833, 1061);
+            this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.ControlBox = false;
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.splitContainer1);
@@ -1367,8 +1379,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -1391,6 +1401,8 @@
             this.pageVehicleState.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1507,5 +1519,6 @@
         private UcVerticalLabelText ucTransferStepType;
         private UcVerticalLabelText ucTransferSteps;
         private UcVerticalLabelText ucTransferIndex;
+        private UcVerticalLabelText ucMoveMoveState;
     }
 }

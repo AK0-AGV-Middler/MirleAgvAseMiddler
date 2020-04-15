@@ -1354,6 +1354,8 @@ namespace Mirle.Agv.AseMiddler.View
 
                 ucMoveIsMoveEnd.TagValue = aseMoveStatus.IsMoveEnd.ToString();
 
+                ucMoveMoveState.TagValue = aseMoveStatus.AseMoveState.ToString();
+
                 ucMoveReserveStop.TagValue = aseMovingGuide.ReserveStop.ToString();
                 ucMovePauseStop.TagValue = aseMovingGuide.PauseStatus.ToString();
                 ucMoveMovingIndex.TagValue = aseMovingGuide.MovingSectionsIndex.ToString();
