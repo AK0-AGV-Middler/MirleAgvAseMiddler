@@ -240,6 +240,63 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public PSTransactionXClass PrimarySend(string index, string message)
+        {
+            try
+            {
+                PSMessageXClass psMessage = new PSMessageXClass();
+                psMessage.Type = "P";
+                psMessage.Number = index.Substring(0, 2);
+                psMessage.PSMessage = message;
+                PSTransactionXClass psTransaction = new PSTransactionXClass();
+                psTransaction.PSPrimaryMessage = psMessage;
+
+                psWrapper.PrimarySent(ref psTransaction);
+
+                string msg = $"PrimarySent : [{psTransaction.PSPrimaryMessage.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+
+                return psTransaction;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                return null;
+            }
+        }
+
+        private void AseControl_OnPrimarySendEvent(object sender, PSTransactionXClass psTransaction)
+        {
+            try
+            {
+                psWrapper.PrimarySent(ref psTransaction);
+
+                string msg = $"PrimarySent : [{psTransaction.PSPrimaryMessage.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+
+        }
+
+        private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
+        {
+            if (psMessage == null)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n PsMessage is null");
+
+            }
+            else
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
+
+            }
+        }
+
         public void SetLocalDateTime()
         {
             try
@@ -862,63 +919,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public PSTransactionXClass PrimarySend(string index, string message)
-        {
-            try
-            {
-                PSMessageXClass psMessage = new PSMessageXClass();
-                psMessage.Type = "P";
-                psMessage.Number = index.Substring(0, 2);
-                psMessage.PSMessage = message;
-                PSTransactionXClass psTransaction = new PSTransactionXClass();
-                psTransaction.PSPrimaryMessage = psMessage;
-
-                psWrapper.PrimarySent(ref psTransaction);
-
-                string msg = $"PrimarySent : [{psTransaction.PSPrimaryMessage.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-
-                return psTransaction;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return null;
-            }
-        }
-
-        private void AseControl_OnPrimarySendEvent(object sender, PSTransactionXClass psTransaction)
-        {
-            try
-            {
-                psWrapper.PrimarySent(ref psTransaction);
-
-                string msg = $"PrimarySent : [{psTransaction.PSPrimaryMessage.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-
-        }
-
-        private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
-        {
-            if (psMessage == null)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n PsMessage is null");
-
-            }
-            else
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
-
-            }
-        }
-
         private void LoadPspConnectionConfig()
         {
             try
@@ -990,7 +990,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             versionInfoRequestPsMessage.PSMessage = "";
             psMessageMap.Add("P17", versionInfoRequestPsMessage);
 
-            string versionInfo = string.Concat("Sw", theVehicle.SoftwareVersion.Substring(0, 13), "Sp", theVehicle.PspSpecVersion.PadRight(5));
+            string versionInfo = string.Concat("Sw", theVehicle.SoftwareVersion.PadRight(13), "Sp", theVehicle.PspSpecVersion.PadRight(5));
             PSMessageXClass versionInfoRequestAckPsMessage = new PSMessageXClass();
             versionInfoRequestAckPsMessage.Type = "S";
             versionInfoRequestAckPsMessage.Number = "18";
