@@ -11,6 +11,7 @@ using System.IO;
 using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
 using System.Threading;
+using SimpleWifi;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -28,6 +29,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         private AseMoveConfig aseMoveConfig = new AseMoveConfig();
         private Vehicle theVehicle = Vehicle.Instance;
         public Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
+        private Thread thdWatchWifiSignalStrength;
+        public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
+        public bool IsWatchWifiSignalStrengthStop { get; set; } = false;
 
         public event EventHandler<string> OnMessageShowEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
@@ -43,6 +47,76 @@ namespace Mirle.Agv.AseMiddler.Controller
             InitialAseRobotControl(gateTypeMap);
             InitialAseBatteryControl();
             InitialAseBuzzerControl();
+            InitialThread();
+        }
+
+        private void InitialThread()
+        {
+            thdWatchWifiSignalStrength = new Thread(WatchWifiSignalStrength);
+            thdWatchWifiSignalStrength.IsBackground = true;
+            thdWatchWifiSignalStrength.Start();
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AsePackage : 開始監看WIFI強度");
+        }
+
+        private void WatchWifiSignalStrength()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (IsWatchWifiSignalStrengthPause) continue;
+                    if (IsWatchWifiSignalStrengthStop) break;
+
+                    if (psWrapper.IsConnected())
+                    {
+                        SendWifiSignalStrength();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => (IsWatchWifiSignalStrengthPause || IsWatchWifiSignalStrengthStop), asePackageConfig.WatchWifiSignalIntervalMs);
+                }
+            }
+        }
+
+        private void SendWifiSignalStrength()
+        {
+            try
+            {
+                List<AccessPoint> accessPoints = new Wifi().GetAccessPoints();
+                if (accessPoints.Any())
+                {
+                    var connectedAccessPoint = accessPoints.FirstOrDefault(x => x.IsConnected);
+                    if (connectedAccessPoint != null)
+                    {
+                        SendWifiSignalStrength(connectedAccessPoint.SignalStrength);
+                        return;
+                    }
+                }
+
+                SendWifiSignalStrength(0);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                SendWifiSignalStrength(0);
+            }
+        }
+
+        private void SendWifiSignalStrength(uint signalStrength)
+        {
+            try
+            {
+                PrimarySend("19", signalStrength.ToString().PadLeft(3, '0'));
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         private void InitialAseBuzzerControl()
@@ -102,6 +176,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             XmlHandler xmlHandler = new XmlHandler();
             asePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
             pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>(asePackageConfig.PspConnectionConfigFilePath);
+            theVehicle.PspSpecVersion = pspConnectionConfig.SpecVersion;
             aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>(asePackageConfig.AseBatteryConfigFilePath);
             aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>(asePackageConfig.AseMoveConfigFilePath);
 
@@ -170,7 +245,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-                PrimarySend("P15", timeStamp);
+                PrimarySend("15", timeStamp);
             }
             catch (Exception ex)
             {
@@ -182,7 +257,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P31", "0");
+                PrimarySend("31", "0");
             }
             catch (Exception ex)
             {
@@ -198,7 +273,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 foreach (var agvcTransCmd in agvcTransCmds)
                 {
                     string transferCommandInfo = GetTransferCommandInfo(agvcTransCmd);
-                    PrimarySend("P37", transferCommandInfo);
+                    PrimarySend("37", transferCommandInfo);
                 }
             }
             catch (Exception ex)
@@ -229,6 +304,82 @@ namespace Mirle.Agv.AseMiddler.Controller
         #endregion
 
         #region PrimaryReceived
+
+        private void OnPrimaryReceived(PSTransactionXClass transaction)
+        {
+            try
+            {
+                if (transaction.PSPrimaryMessage == null)
+                {
+                    throw new Exception("Primary message is empty.");
+                }
+
+                if (transaction.PSPrimaryMessage.Type.ToUpper() != "P")
+                {
+                    throw new Exception("Primary message type is not P.");
+                }
+
+                switch (transaction.PSPrimaryMessage.Number)
+                {
+                    case "11":
+                        SetVehicleAuto();
+                        break;
+                    case "13":
+                        SetVehicleManual();
+                        break;
+                    case "21":
+                        UpdateMoveStatus(transaction.PSPrimaryMessage.PSMessage);
+                        break;
+                    case "23":
+                        UpdateRobotStatus(transaction.PSPrimaryMessage.PSMessage);
+                        break;
+                    case "25":
+                        UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage);
+                        break;
+                    case "29":
+                        UpdateChargeStatus(transaction.PSPrimaryMessage.PSMessage);
+                        break;
+                    case "43":
+                        ReceiveMoveAppendArrivalReport(transaction.PSPrimaryMessage.PSMessage);
+                        break;
+                    case "53":
+                        ReceiveRobotCommandFinishedReport(transaction.PSPrimaryMessage.PSMessage);
+                        break;
+                    case "61":
+                        AlarmReport(transaction.PSPrimaryMessage.PSMessage);
+                        break;
+                    case "63":
+                        AllAlarmReset();
+                        break;
+                    case "97":
+                        ShowTestMsg();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ReceiveRobotCommandFinishedReport(string psMessage)
+        {
+            string finishedMsg = psMessage.Trim();
+            switch (finishedMsg)
+            {
+                case "Finished":
+                    aseRobotControl.OnRobotCommandFinish();
+                    break;
+                case "InterlockError":
+                    aseRobotControl.OnRobotInterlockError();
+                    break;
+                default:
+                    aseRobotControl.OnRobotCommandError();
+                    break;
+            }
+        }
 
         private void PsWrapper_OnPrimaryReceived(ref PSTransactionXClass transaction)
         {
@@ -312,86 +463,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private bool IsPrimaryEmpty(PSTransactionXClass psTransaction)
         {
             return psTransaction.PSPrimaryMessage == null;
-        }
-
-        private void OnPrimaryReceived(PSTransactionXClass transaction)
-        {
-            try
-            {
-                if (transaction.PSPrimaryMessage == null)
-                {
-                    throw new Exception("Primary message is empty.");
-                }
-
-                if (transaction.PSPrimaryMessage.Type.ToUpper() != "P")
-                {
-                    throw new Exception("Primary message type is not P.");
-                }
-
-                switch (transaction.PSPrimaryMessage.Number)
-                {
-                    case "11":
-                        SetVehicleAuto();
-                        break;
-                    case "13":
-                        SetVehicleManual();
-                        break;
-                    case "21":
-                        UpdateMoveStatus(transaction.PSPrimaryMessage.PSMessage);
-                        break;
-                    case "23":
-                        UpdateRobotStatus(transaction.PSPrimaryMessage.PSMessage);
-                        break;
-                    case "25":
-                        UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage);
-                        break;
-                    case "29":
-                        UpdateChargeStatus(transaction.PSPrimaryMessage.PSMessage);
-                        break;
-                    case "43":
-                        ReceiveMoveAppendArrivalReport(transaction.PSPrimaryMessage.PSMessage);
-                        break;
-                    case "53":
-                        ReceiveChargeStopReport(transaction.PSPrimaryMessage.PSMessage);
-                        break;
-                    case "61":
-                        AlarmReport(transaction.PSPrimaryMessage.PSMessage);
-                        break;
-                    case "63":
-                        AllAlarmReset();
-                        break;
-                    case "97":
-                        ShowTestMsg();
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void ReceiveChargeStopReport(string psMessage)
-        {
-            try
-            {
-                string isFullCharge = psMessage.Substring(0, 1);
-                if (isFullCharge == "0")
-                {
-                    AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
-                    aseBatteryStatus.Ah = GetAhFromPsMessage(psMessage.Substring(1, 9));
-                    aseBatteryStatus.Voltage = double.Parse(psMessage.Substring(10, 4)) * 0.01;
-                    aseBatteryStatus.Temperature = int.Parse(psMessage.Substring(14, 3));
-                    theVehicle.AseBatteryStatus = aseBatteryStatus;
-                    aseBatteryControl.FullCharge();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
         }
 
         private void ShowTestMsg()
@@ -487,11 +558,18 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string isCharging = psMessage.Substring(0, 1).ToUpper().Trim();
-                if (theVehicle.IsCharging != IsValueTrue(isCharging))
+                bool isCharging = IsValueTrue(psMessage.Substring(0, 1).ToUpper().Trim());
+                if (theVehicle.IsCharging != isCharging)
                 {
-                    theVehicle.IsCharging = IsValueTrue(isCharging);
+                    theVehicle.IsCharging = isCharging;
                     OnStatusChangeReportEvent?.Invoke(this, $"UpdateChargeStatus:[{ theVehicle.IsCharging }]");
+                    if (!isCharging)
+                    {
+                        if (theVehicle.AseBatteryStatus.Percentage >= 98)
+                        {
+                            aseBatteryControl.FullCharge();
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -551,25 +629,27 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseRobotStatus.RobotState = (EnumAseRobotState)Enum.Parse(typeof(EnumAseRobotState), psMessage.Substring(0, 1));
                 aseRobotStatus.IsHome = IsValueTrue(psMessage.Substring(1, 1));
 
-                if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Idle && aseRobotStatus.RobotState == EnumAseRobotState.Error)
-                {
-                    theVehicle.AseRobotStatus = aseRobotStatus;
-                    aseRobotControl.OnRobotInterlockError();
-                }
-                else if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Busy && aseRobotStatus.RobotState == EnumAseRobotState.Error)
-                {
-                    theVehicle.AseRobotStatus = aseRobotStatus;
-                    aseRobotControl.OnRobotCommandError();
-                }
-                else if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Busy && aseRobotStatus.RobotState == EnumAseRobotState.Idle)
-                {
-                    theVehicle.AseRobotStatus = aseRobotStatus;
-                    aseRobotControl.OnRobotCommandFinish();
-                }
-                else
-                {
-                    theVehicle.AseRobotStatus = aseRobotStatus;
-                }
+                //if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Idle && aseRobotStatus.RobotState == EnumAseRobotState.Error)
+                //{
+                //    theVehicle.AseRobotStatus = aseRobotStatus;
+                //    aseRobotControl.OnRobotInterlockError();
+                //}
+                //else if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Busy && aseRobotStatus.RobotState == EnumAseRobotState.Error)
+                //{
+                //    theVehicle.AseRobotStatus = aseRobotStatus;
+                //    aseRobotControl.OnRobotCommandError();
+                //}
+                //else if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Busy && aseRobotStatus.RobotState == EnumAseRobotState.Idle)
+                //{
+                //    theVehicle.AseRobotStatus = aseRobotStatus;
+                //    aseRobotControl.OnRobotCommandFinish();
+                //}
+                //else
+                //{
+                //    theVehicle.AseRobotStatus = aseRobotStatus;
+                //}
+
+                theVehicle.AseRobotStatus = aseRobotStatus;
 
                 OnStatusChangeReportEvent?.Invoke(this, $"UpdateRobotStatus:[{theVehicle.AseRobotStatus.RobotState}]");
             }
@@ -692,19 +772,16 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseBatteryStatus.Voltage = int.Parse(psMessage.Substring(3, 4)) * 0.01;
                 aseBatteryStatus.Temperature = int.Parse(psMessage.Substring(7, 3));
                 theVehicle.AseBatteryStatus = aseBatteryStatus;
-                //aseBatteryControl.UpdateBatteryStatus();
+
+                if (aseBatteryStatus.Percentage >= 98)
+                {
+                    aseBatteryControl.FullCharge();
+                }
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-        private double GetAhFromPsMessage(string v)
-        {
-            string isPositive = v.Substring(0, 1);
-            double value = double.Parse(v.Substring(1, 8)) * 0.01;
-            return IsValuePositive(isPositive) ? value : -value;
         }
 
         private void ReceivePositionReportRequestAck(string psMessage)
@@ -790,8 +867,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PSMessageXClass psMessage = new PSMessageXClass();
-                psMessage.Type = index.Substring(0, 1);
-                psMessage.Number = index.Substring(1, 2);
+                psMessage.Type = "P";
+                psMessage.Number = index.Substring(0, 2);
                 psMessage.PSMessage = message;
                 PSTransactionXClass psTransaction = new PSTransactionXClass();
                 psTransaction.PSPrimaryMessage = psMessage;
@@ -895,11 +972,31 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     psMessageMap.Add(key, psMessage);
                 }
+
+                PsMessageMapAddVersionInfo();
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void PsMessageMapAddVersionInfo()
+        {
+            PSMessageXClass versionInfoRequestPsMessage = new PSMessageXClass();
+            versionInfoRequestPsMessage.Type = "P";
+            versionInfoRequestPsMessage.Number = "17";
+            versionInfoRequestPsMessage.Description = "Version Info Request";
+            versionInfoRequestPsMessage.PSMessage = "";
+            psMessageMap.Add("P17", versionInfoRequestPsMessage);
+
+            string versionInfo = string.Concat("Sw", theVehicle.SoftwareVersion.Substring(0, 13), "Sp", theVehicle.PspSpecVersion.PadRight(5));
+            PSMessageXClass versionInfoRequestAckPsMessage = new PSMessageXClass();
+            versionInfoRequestAckPsMessage.Type = "S";
+            versionInfoRequestAckPsMessage.Number = "18";
+            versionInfoRequestAckPsMessage.Description = "Version Info Request Ack.";
+            versionInfoRequestAckPsMessage.PSMessage = versionInfo;
+            psMessageMap.Add("S18", versionInfoRequestAckPsMessage);
         }
 
         public bool IsConnected()

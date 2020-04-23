@@ -35,6 +35,7 @@ namespace Mirle.Agv.AseMiddler.Model
         }
         public event EventHandler<EnumAutoState> OnAutoStateChangeEvent;
         public bool IsSimulation { get; set; } = false;
+        public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();       
 
         #region AsePackage
 
@@ -47,6 +48,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public double AutoChargeLowThreshold { get; set; } = 50;
         public double AutoChargeHighThreshold { get; set; } = 90;
         public AseMovingGuide AseMovingGuide { get; set; } = new AseMovingGuide();
+        public string PspSpecVersion { get; set; } = "1.0";
 
         #endregion
 

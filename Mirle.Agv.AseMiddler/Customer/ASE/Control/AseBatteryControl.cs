@@ -151,49 +151,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        //public void UpdateBatteryStatus()
-        //{
-        //    try
-        //    {
-        //        AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
-
-        //        if (aseBatteryStatus.Voltage >= aseBatteryConfig.CcmodeStopVoltage)
-        //        {
-        //            StopCharge();
-        //            FullCharge();
-        //            return;
-        //        }
-
-        //        double tempPercentage = (aseBatteryConfig.WorkingAh - (aseBatteryConfig.CcmodeAh - aseBatteryStatus.Ah)) / aseBatteryConfig.WorkingAh * 100;
-        //        tempPercentage = Math.Max(aseBatteryStatus.Percentage, 0);
-
-        //        if (tempPercentage >= 100)
-        //        {
-        //            StopCharge();
-        //            FullCharge();
-        //            return;
-        //        }
-
-        //        if (aseBatteryStatus.Percentage == 100)
-        //        {
-        //            if (tempPercentage <= 99.98)
-        //            {
-        //                aseBatteryStatus.Percentage = tempPercentage;
-        //                theVehicle.AseBatteryStatus = aseBatteryStatus;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            aseBatteryStatus.Percentage = tempPercentage;
-        //            theVehicle.AseBatteryStatus = aseBatteryStatus;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-        //    }
-        //}
-
         public void FullCharge()
         {
             try
@@ -201,23 +158,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
                 theVehicle.AseBatteryStatus.Percentage = 100;
 
-                aseBatteryConfig.CcmodeAh = aseBatteryStatus.Ah;
-                aseBatteryConfig.CcmodeCounter++;
-                if (aseBatteryConfig.CcmodeCounter >= aseBatteryConfig.AhResetCcmodeCounter)
-                {
-                    SendResetCcmodeAh();
-                }
+                OnBatteryPercentageChangeEvent?.Invoke(this, 100);
+
+                StopCharge();
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-        private void SendResetCcmodeAh()
-        {
-            //TODO : Set AGVL battery ah to 0
-            //TODO : After AGVL set ah to 0, fix middler ccmode ah to 0 in case ah<->percentage error
         }
 
         private PSTransactionXClass PrimarySend(string index, string message)

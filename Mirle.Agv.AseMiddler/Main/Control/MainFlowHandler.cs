@@ -88,7 +88,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public MapInfo theMapInfo { get; private set; } = new MapInfo();
         public int InitialSoc { get; set; } = 70;
         public bool IsFirstAhGet { get; set; }
-        public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Noraml;
+        public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Normal;
         public bool NeedRename { get; set; } = false;
         public bool IsSimulation { get; set; }
         public string MainFlowAbnormalMsg { get; set; }
@@ -1767,7 +1767,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 var msg = $"貨物ID[{aseCarrierSlotStatus.CarrierId}]讀取成功";
                 OnMessageShowEvent?.Invoke(this, msg);
-                ReadResult = EnumCstIdReadResult.Noraml;
+                ReadResult = EnumCstIdReadResult.Normal;
 
                 #endregion
             }
@@ -1995,7 +1995,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                         agvcConnector.Loading(loadCmd.CmdId);
                         PublishOnDoTransferStepEvent(loadCmd);
-                        ReadResult = EnumCstIdReadResult.Noraml;
+                        ReadResult = EnumCstIdReadResult.Normal;
                         Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(loadCmd));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Robot取貨中, [方向={loadCmd.PioDirection}][儲位={loadCmd.SlotNumber}][取貨站={loadCmd.PortAddressId}]");
                     }
@@ -2512,12 +2512,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (!theVehicle.IsCharging) return true;
 
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                //if (!mapHandler.IsPositionInThisAddress(aseMoveStatus.LastMapPosition, aseMoveStatus.LastAddress.Position))
-                //{
-                //    var msg = $"Stop charge fail, RealPos is not in LastAddress [Real=({(int)aseMoveStatus.LastMapPosition.X},{(int)aseMoveStatus.LastMapPosition.Y})][LastAddress={aseMoveStatus.LastAddress.Id}]";
-                //    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                //    return true;
-                //}
                 var address = aseMoveStatus.LastAddress;
                 if (address.IsCharger())
                 {
@@ -2534,7 +2528,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         if (!theVehicle.IsCharging) break;
                         timeoutCount--;
                         asePackage.aseBatteryControl.StopCharge();
-                        SpinWait.SpinUntil(() => !theVehicle.IsCharging, 100);
+                        SpinWait.SpinUntil(() => !theVehicle.IsCharging, 2000);
                     } while (timeoutCount >= 0);
 
                     if (theVehicle.IsCharging)
@@ -2546,7 +2540,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         agvcConnector.ChargeOff();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge, [IsCharging={theVehicle.IsCharging}]");
+                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge OK.");
                         return true;
                     }
                 }
@@ -2600,7 +2594,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     asePackage.aseRobotControl.ReadCarrierId();
                 }
 
-                ReadResult = EnumCstIdReadResult.Noraml;
+                ReadResult = EnumCstIdReadResult.Normal;
 
                 var msg = $"MainFlow : Stop And Clear";
                 OnMessageShowEvent?.Invoke(this, msg);

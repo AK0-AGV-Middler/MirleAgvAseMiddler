@@ -2065,7 +2065,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case EnumCstIdReadResult.Fail:
                     theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.IdreadFailed;
                     break;
-                case EnumCstIdReadResult.Noraml:
+                case EnumCstIdReadResult.Normal:
                 default:
                     theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.VehicleAbort;
                     break;
@@ -2626,7 +2626,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     return BCRReadResult.BcrMisMatch;
                 case EnumCstIdReadResult.Fail:
                     return BCRReadResult.BcrReadFail;
-                case EnumCstIdReadResult.Noraml:
+                case EnumCstIdReadResult.Normal:
                 default:
                     return BCRReadResult.BcrNormal;
             }

@@ -11,5 +11,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public string Ip { get; set; } = "127.0.0.1";
         public int Port { get; set; } = 5000;
         public bool IsServer { get; set; } = true;
+        public string SpecVersion { get; set; } = "1.0";
     }
 }

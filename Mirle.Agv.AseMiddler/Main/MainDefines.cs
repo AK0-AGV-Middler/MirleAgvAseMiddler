@@ -108,10 +108,10 @@ namespace Mirle.Agv.AseMiddler
         Cancel = 20,
         Abort = 21,
         VehicleAbort = 22,
-        IdMissmatch = 23,
+        IdMismatch = 23,
         IdReadFail = 24,
         InterlockError = 64,
-        TransferComplete = 123  //Yiming
+        TransferComplete = 123  
     }
 
     public enum EnumCmdNum
@@ -175,7 +175,7 @@ namespace Mirle.Agv.AseMiddler
 
     public enum EnumCstIdReadResult
     {
-        Noraml,
+        Normal,
         Mismatch,
         Fail
     }   
@@ -192,7 +192,7 @@ namespace Mirle.Agv.AseMiddler
     {
         Offline,
         Online,
-        CheckCheckConnectMode
+        CheckConnectMode
     }
 
     public enum EnumAseRobotState

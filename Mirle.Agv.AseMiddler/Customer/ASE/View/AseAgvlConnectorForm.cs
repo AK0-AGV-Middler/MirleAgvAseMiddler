@@ -72,8 +72,11 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                string typeAndNumber = cbPsMessageType.Text + numPsMessageNumber.Value.ToString("00");
-                asePackage.PrimarySend(typeAndNumber, txtPsMessageText.Text);
+                if (cbPsMessageType.Text.Equals("P"))
+                {
+                    string typeAndNumber = numPsMessageNumber.Value.ToString("00");
+                    asePackage.PrimarySend(typeAndNumber, txtPsMessageText.Text);
+                }              
             }
             catch (Exception ex)
             {
