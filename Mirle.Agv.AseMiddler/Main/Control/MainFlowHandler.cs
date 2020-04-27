@@ -1419,16 +1419,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 unloadCmdInfo.PortNumber = unloadAddress.PortIdMap[agvcTransCmd.UnloadPortId];
             }
-            /*
-                        if(agvcTransCmd.UnloadPortId == "B7_OHBLINE2_A01")
-                        {
-                            unloadCmdInfo.PortNumber = "2";
-                        }
-                        if(agvcTransCmd.UnloadPortId == "B7_OHBLINE2_A02")
-                        {
-                            unloadCmdInfo.PortNumber = "1";
-                        }
-            */
             transferSteps.Add(unloadCmdInfo);
         }
 
