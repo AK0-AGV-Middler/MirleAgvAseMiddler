@@ -218,6 +218,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnStopClearAndResetEvent += AgvcConnector_OnStopClearAndResetEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                asePackage.OnPositionChangeEvent += AsePackage_OnPositionChangeEvent;
                 asePackage.OnPartMoveArrivalEvent += AsePackage_OnPartMoveArrivalEvent;
                 asePackage.aseMoveControl.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
                 asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
@@ -258,6 +259,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void AsePackage_OnPositionChangeEvent(object sender, AseMoveStatus aseMoveStatus)
+        {
+            UpdateVehicleDistanceSinceHead(aseMoveStatus);
         }
 
         private void AsePackage_OnPartMoveArrivalEvent(object sender, AseMoveStatus aseMoveStatus)
@@ -2211,13 +2217,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void UpdateVehicleDistanceSinceHead()
+        private void UpdateVehicleDistanceSinceHead(AseMoveStatus aseMoveStatus)
         {
-            AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
-            var section = aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex];
-            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-            aseMoveStatus.LastSection = section;
-            aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(section.HeadAddress.Position, aseMoveStatus.LastMapPosition);
+            if (mapHandler.IsPositionInThisSection(aseMoveStatus.LastSection,aseMoveStatus.LastMapPosition))
+            {
+                aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.LastSection.HeadAddress.Position, aseMoveStatus.LastMapPosition);
+            }
             theVehicle.AseMoveStatus = aseMoveStatus;
         }
 

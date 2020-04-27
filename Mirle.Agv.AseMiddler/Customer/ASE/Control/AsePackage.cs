@@ -39,6 +39,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<string> ImportantPspLog;
         public event EventHandler<string> OnStatusChangeReportEvent;
         public event EventHandler<AseMoveStatus> OnPartMoveArrivalEvent;
+        public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -847,12 +848,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                 aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
                 double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-                double y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
-                aseMoveStatus.LastMapPosition = new MapPosition(x, y);
+                double y = GetPositionFromPsMessage(psMessage.Substring(10, 9));
+                aseMoveStatus.LastMapPosition = new MapPosition(x, y);               
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
                 aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
                 aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
-                theVehicle.AseMoveStatus = aseMoveStatus;
+                //theVehicle.AseMoveStatus = aseMoveStatus;
+                OnPositionChangeEvent?.Invoke(this, aseMoveStatus);
             }
             catch (Exception ex)
             {
