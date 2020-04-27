@@ -56,8 +56,11 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsVisitTransferStepPause { get; set; } = false;
 
         private Thread thdTrackPosition;
-        private ManualResetEvent trackPositionShutdownEvent = new ManualResetEvent(false);
-        private ManualResetEvent trackPositionPauseEvent = new ManualResetEvent(true);
+        //private ManualResetEvent trackPositionShutdownEvent = new ManualResetEvent(false);
+        //private ManualResetEvent trackPositionPauseEvent = new ManualResetEvent(true);
+        private bool IsTrackPositionPause { get; set; } = false;
+        private bool IsTrackPositionStop { get; set; } = false;
+        public bool IsUpdatePositionReport { get; set; } = false;
         public EnumThreadStatus TrackPositionStatus { get; private set; } = EnumThreadStatus.None;
 
         public EnumThreadStatus PreTrackPositionStatus { get; private set; } = EnumThreadStatus.None;
@@ -215,6 +218,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnStopClearAndResetEvent += AgvcConnector_OnStopClearAndResetEvent;
 
                 //來自MoveControl的移動結束訊息，通知MainFlow(this)'middleAgent'mapHandler
+                asePackage.OnPartMoveArrivalEvent += AsePackage_OnPartMoveArrivalEvent;
                 asePackage.aseMoveControl.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
                 asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
 
@@ -230,7 +234,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
                 asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += AseBatteryControl_OnBatteryPercentageChangeEvent;
 
-                asePackage.OnStatusChangeReportEvent += AsePackage_OnStatusChangeReportEvent;                
+                asePackage.OnStatusChangeReportEvent += AsePackage_OnStatusChangeReportEvent;
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告，通知MainFlow,middleAgent
                 alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
@@ -254,6 +258,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void AsePackage_OnPartMoveArrivalEvent(object sender, AseMoveStatus aseMoveStatus)
+        {
+            IsUpdatePositionReport = UpdateVehiclePositionInMovingStep(aseMoveStatus);
         }
 
         private void AsePackage_OnStatusChangeReportEvent(object sender, string e)
@@ -399,7 +408,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        theVehicle.AseMovingGuide.commandId = moveCmdInfo.CmdId;
+                        theVehicle.AseMovingGuide.CommandId = moveCmdInfo.CmdId;
                         agvcConnector.ReportSectionPass();
                         theVehicle.AseMoveStatus.IsMoveEnd = false;
                         asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.Begin);
@@ -636,15 +645,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                     sw.Start();
 
                     #region Pause And Stop Check
-                    trackPositionPauseEvent.WaitOne(Timeout.Infinite);
-                    if (trackPositionShutdownEvent.WaitOne(0)) break;
+                    if (IsTrackPositionPause) continue;
+                    if (IsTrackPositionStop) break;
                     #endregion
 
                     TrackPositionStatus = EnumThreadStatus.Working;
 
                     AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                     if (theVehicle.AseMoveStatus.LastMapPosition == null) continue;
-                    //if (IsVehlocStayInSameAddress(vehicleLocation)) continue;
 
                     if (theVehicle.AutoState == EnumAutoState.Auto)
                     {
@@ -655,7 +663,20 @@ namespace Mirle.Agv.AseMiddler.Controller
                             {
                                 if (!theVehicle.AseMoveStatus.IsMoveEnd)
                                 {
-                                    if (theVehicle.IsSimulation)
+                                    if (!theVehicle.IsSimulation)
+                                    {
+                                        //if (UpdateVehiclePositionInMovingStep())
+                                        //{
+                                        //    sw.Reset();
+                                        //}
+
+                                        if (IsUpdatePositionReport)
+                                        {
+                                            IsUpdatePositionReport = false;
+                                            sw.Reset();
+                                        }
+                                    }
+                                    else
                                     {
                                         if (FakeReserveOkAseMoveStatus.Any())
                                         {
@@ -667,10 +688,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                                             FakeMoveToReserveOkPositions();
                                             sw.Reset();
                                         }
-                                    }
-                                    else if (UpdateVehiclePositionInMovingStep())
-                                    {
-                                        sw.Reset();
                                     }
                                 }
                             }
@@ -705,8 +722,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void StartTrackPosition()
         {
-            trackPositionPauseEvent.Set();
-            trackPositionShutdownEvent.Reset();
+            IsTrackPositionPause = false;
+            IsTrackPositionStop = false;
             thdTrackPosition = new Thread(TrackPosition);
             thdTrackPosition.IsBackground = true;
             thdTrackPosition.Start();
@@ -716,7 +733,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void PauseTrackPosition()
         {
-            trackPositionPauseEvent.Reset();
+            IsTrackPositionPause = true;
             PreTrackPositionStatus = TrackPositionStatus;
             TrackPositionStatus = EnumThreadStatus.Pause;
             OnMessageShowEvent?.Invoke(this, $"MainFlow : 暫停追蹤座標, [TrackPositionStatus={TrackPositionStatus}][PreTrackPositionStatus={PreTrackPositionStatus}]");
@@ -724,17 +741,24 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void ResumeTrackPosition()
         {
-            trackPositionPauseEvent.Set();
-            var tempStatus = TrackPositionStatus;
-            TrackPositionStatus = PreTrackPositionStatus;
-            PreTrackPositionStatus = tempStatus;
-            OnMessageShowEvent?.Invoke(this, $"MainFlow : 恢復追蹤座標, [TrackPositionStatus={TrackPositionStatus}][PreTrackPositionStatus={PreTrackPositionStatus}]");
+            if (thdTrackPosition != null && thdTrackPosition.IsAlive)
+            {
+                IsTrackPositionPause = false;
+                var tempStatus = TrackPositionStatus;
+                TrackPositionStatus = PreTrackPositionStatus;
+                PreTrackPositionStatus = tempStatus;
+                OnMessageShowEvent?.Invoke(this, $"MainFlow : 恢復追蹤座標, [TrackPositionStatus={TrackPositionStatus}][PreTrackPositionStatus={PreTrackPositionStatus}]");
+            }
+            else
+            {
+                StartTrackPosition();
+            }
         }
 
         public void StopTrackPosition()
         {
-            trackPositionShutdownEvent.Set();
-            trackPositionPauseEvent.Set();
+            IsTrackPositionPause = false;
+            IsTrackPositionStop = true;
             if (TrackPositionStatus != EnumThreadStatus.None)
             {
                 TrackPositionStatus = EnumThreadStatus.Stop;
@@ -748,8 +772,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             TrackPositionStatus = EnumThreadStatus.None;
             var msg = $"MainFlow : 追蹤座標 後處理, [ThreadStatus={TrackPositionStatus}][TotalSpendMs={total}]";
             OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
         }
 
         private void FakeMoveToReserveOkPositions()
@@ -1391,6 +1413,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 unloadCmdInfo.PortNumber = unloadAddress.PortIdMap[agvcTransCmd.UnloadPortId];
             }
+            /*
+                        if(agvcTransCmd.UnloadPortId == "B7_OHBLINE2_A01")
+                        {
+                            unloadCmdInfo.PortNumber = "2";
+                        }
+                        if(agvcTransCmd.UnloadPortId == "B7_OHBLINE2_A02")
+                        {
+                            unloadCmdInfo.PortNumber = "1";
+                        }
+            */
             transferSteps.Add(unloadCmdInfo);
         }
 
@@ -1693,7 +1725,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 OnMessageShowEvent?.Invoke(this, "AseRobotContorl_OnRobotCommandFinishEvent");
-                EnumTransferStepType transferStepType = transferStep.GetTransferStepType();                             
+                EnumTransferStepType transferStepType = transferStep.GetTransferStepType();
                 if (transferStepType == EnumTransferStepType.Load)
                 {
                     if (agvcConnector.IsCstIdReadReplyOk(transferStep, ReadResult))
@@ -1739,7 +1771,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 #region 2019.12.16 Report to Agvc when ForkFinished
 
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(slotNumber);
-                if (!IsRobotStep()) return;              
+                if (!IsRobotStep()) return;
                 var robotCmdInfo = (RobotCommand)GetCurTransferStep();
                 if (robotCmdInfo.SlotNumber != slotNumber) return;
                 if (robotCmdInfo.GetTransferStepType() == EnumTransferStepType.Unload) return;
@@ -2069,7 +2101,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     agvcTransCmd.CompleteStatus = CompleteStatus.VehicleAbort;
                 }
                 AbortCommand(agvcTransCmd.CommandId, agvcTransCmd.CompleteStatus);
-            }           
+            }
         }
 
         private void GetPioDirection(RobotCommand robotCommand)
@@ -2132,76 +2164,69 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private bool UpdateVehiclePositionInMovingStep()
+        private bool UpdateVehiclePositionInMovingStep(AseMoveStatus aseMoveStatus)
         {
-            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-            if (mapHandler.IsPositionInThisAddress(aseMoveStatus.LastMapPosition, aseMoveStatus.LastAddress.Position))
+            AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
+
+            if (!aseMovingGuide.MovingSections.Any())
             {
+                theVehicle.AseMoveStatus = aseMoveStatus;
                 return false;
             }
-            AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
-            List<MapSection> MovingSections = aseMovingGuide.MovingSections;
-            if (MovingSections.Count <= 0) return false;
-            int searchingSectionIndex = aseMovingGuide.MovingSectionsIndex;
-            bool isUpdateSection = false;
-            while (searchingSectionIndex < MovingSections.Count)
+
+            var lastMapPosition = aseMoveStatus.LastMapPosition;
+            var nearlyAddress = theMapInfo.addressMap[aseMovingGuide.GuideAddressIds[0]];
+            var minDistance = mapHandler.GetDistance(nearlyAddress.Position, lastMapPosition);
+            int nearlyIndex = 0;
+
+            for (int i = 0; i < aseMovingGuide.GuideAddressIds.Count; i++)
             {
-                try
+                var targetAddress = theMapInfo.addressMap[aseMovingGuide.GuideAddressIds[i]];
+                var targetAddressDistance = mapHandler.GetDistance(targetAddress.Position, lastMapPosition);
+                if (targetAddressDistance < minDistance)
                 {
-                    if (mapHandler.IsPositionInThisSection(MovingSections[searchingSectionIndex], theVehicle.AseMoveStatus.LastMapPosition))
-                    {
-                        while (aseMovingGuide.MovingSectionsIndex < searchingSectionIndex)
-                        {
-                            //batteryLog.MoveDistanceTotalM += (int)(aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex].HeadToTailDistance / 1000);
-                            theVehicle.AseMovingGuide.MovingSectionsIndex++;
-                            FitVehicalLocationAndMoveCmd();
-                            agvcConnector.ReportSectionPass();
-                            isUpdateSection = true;
-                        }
-
-                        FitVehicalLocation();
-
-                        UpdateAgvcConnectorGotReserveOkSections(MovingSections[searchingSectionIndex].Id);
-
-                        //if (mainFlowConfig.CustomerName == "AUO")
-                        //{
-                        //    UpdatePlcVehicleBeamSensor();
-                        //}
-
-                        break;
-                    }
-                    else
-                    {
-                        searchingSectionIndex++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                    break;
+                    minDistance = targetAddressDistance;
+                    nearlyAddress = targetAddress;
+                    nearlyIndex = i;
                 }
             }
-            return isUpdateSection;
+            nearlyIndex = Math.Max(nearlyIndex -1, 0); //Address index --> Section index
+
+            if (nearlyIndex > theVehicle.AseMovingGuide.MovingSectionsIndex)
+            {
+                while (nearlyIndex > theVehicle.AseMovingGuide.MovingSectionsIndex)
+                {
+                    theVehicle.AseMovingGuide.MovingSectionsIndex++;
+                    MakeUpAlreadyPassSectionReport(aseMoveStatus);
+                }
+
+                //UpdateVehicleDistanceSinceHead();
+                UpdateAgvcConnectorGotReserveOkSections(aseMovingGuide.MovingSections[nearlyIndex].Id);
+                return true;
+            }
+            else
+            {
+                theVehicle.AseMoveStatus = aseMoveStatus;
+                return false;
+            }
         }
 
-        private void FitVehicalLocation()
+        private void UpdateVehicleDistanceSinceHead()
         {
             AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
             var section = aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex];
             AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-            FindeNeerlyAddressInTheMovingSection(section, ref aseMoveStatus);
-            aseMoveStatus.LastSection = theMapInfo.sectionMap[section.Id];
-            aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(theVehicle.AseMoveStatus.LastMapPosition, aseMoveStatus.LastSection.HeadAddress.Position);
+            aseMoveStatus.LastSection = section;
+            aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(section.HeadAddress.Position, aseMoveStatus.LastMapPosition);
             theVehicle.AseMoveStatus = aseMoveStatus;
         }
 
-        private void FitVehicalLocationAndMoveCmd()
+        private void MakeUpAlreadyPassSectionReport(AseMoveStatus aseMoveStatus)
         {
             AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
             MapSection section = aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex];
-            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
             aseMoveStatus.LastSection = section;
-            if (section.CmdDirection == EnumCommandDirection.Forward)
+            if (section.CmdDirection == EnumCommandDirection.Backward)
             {
                 aseMoveStatus.LastAddress = section.HeadAddress;
                 aseMoveStatus.LastSection.VehicleDistanceSinceHead = 0;
@@ -2212,30 +2237,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseMoveStatus.LastSection.VehicleDistanceSinceHead = section.HeadToTailDistance;
             }
             theVehicle.AseMoveStatus = aseMoveStatus;
-        }
-
-        private void FindeNeerlyAddressInTheMovingSection(MapSection mapSection, ref AseMoveStatus aseMoveStatus)
-        {
-            try
-            {
-                double neerlyDistance = 999999;
-                foreach (MapAddress mapAddress in mapSection.InsideAddresses)
-                {
-                    double dis = mapHandler.GetDistance(theVehicle.AseMoveStatus.LastMapPosition, mapAddress.Position);
-
-                    if (dis < neerlyDistance)
-                    {
-                        neerlyDistance = dis;
-                        aseMoveStatus.NeerlyAddress = mapAddress;
-                    }
-                }
-                aseMoveStatus.LastAddress = aseMoveStatus.NeerlyAddress;
-
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
+            agvcConnector.ReportSectionPass();
         }
 
         private void UpdateVehiclePositionAfterArrival(MapAddress lastAddress)
@@ -2275,7 +2277,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void UpdateVehiclePositionManual()
         {
             AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-            FindeNeerlyAddress(ref aseMoveStatus);
+            FindNearlyAddress(ref aseMoveStatus);
 
             var sectionsWithinNeerlyAddress = new List<MapSection>();
             FindSectionsWithinNeerlyAddress(aseMoveStatus.NeerlyAddress.Id, ref sectionsWithinNeerlyAddress);
@@ -2307,7 +2309,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void FindeNeerlyAddress(ref AseMoveStatus aseMoveStatus)
+        private void FindNearlyAddress(ref AseMoveStatus aseMoveStatus)
         {
             try
             {

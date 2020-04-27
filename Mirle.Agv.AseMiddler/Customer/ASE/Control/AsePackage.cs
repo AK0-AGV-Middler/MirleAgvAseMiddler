@@ -38,6 +38,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<string> AllPspLog;
         public event EventHandler<string> ImportantPspLog;
         public event EventHandler<string> OnStatusChangeReportEvent;
+        public event EventHandler<AseMoveStatus> OnPartMoveArrivalEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -562,16 +563,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
 
-                double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-                double y = GetPositionFromPsMessage(psMessage.Substring(10, 18));
+                double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));                
+                double y = GetPositionFromPsMessage(psMessage.Substring(10, 9));
                 aseMoveStatus.LastMapPosition = new MapPosition(x, y);
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
                 aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
                 aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
-                theVehicle.AseMoveStatus = aseMoveStatus;
 
-                OnStatusChangeReportEvent?.Invoke(this, $"ArrivalPosition:[{(int)x}][{(int)y}]");
-
+                OnPartMoveArrivalEvent?.Invoke(this, aseMoveStatus);
             }
             catch (Exception ex)
             {

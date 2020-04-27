@@ -552,6 +552,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             return Math.Sqrt((diffX * diffX) + (diffY * diffY));
         }
 
+        public double GetDistance(MapSection section, MapPosition position)
+        {
+            var midX = (section.HeadAddress.Position.X + section.TailAddress.Position.X) / 2;
+            var midY = (section.HeadAddress.Position.Y + section.TailAddress.Position.Y) / 2;
+            var midSecPos = new MapPosition(midX, midY);
+            return GetDistance(midSecPos, position);
+        }
+
         #region Log
 
         private void LogException(string classMethodName, string exMsg)

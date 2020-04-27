@@ -20,7 +20,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
         public ushort SeqNum { get; set; }
-        public string commandId { get; set; } = "";
+        public string CommandId { get; set; } = "";
 
         public AseMovingGuide() { }
 
@@ -32,7 +32,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.FromAddressId = info.FromTo.From;
             this.ToAddressId = info.FromTo.To;
             this.GuideDistance = info.Distance;
-            this.commandId = Vehicle.Instance.AseMovingGuide.commandId;
+            this.CommandId = Vehicle.Instance.AseMovingGuide.CommandId;
         }
 
         public AseMovingGuide(AseMovingGuide aseMovingGuide)
@@ -47,7 +47,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.IsAvoidComplete = aseMovingGuide.IsAvoidComplete;
             this.MovingSections = aseMovingGuide.MovingSections;
             this.MovingSectionsIndex = aseMovingGuide.MovingSectionsIndex;
-            this.commandId = aseMovingGuide.commandId;
+            this.CommandId = aseMovingGuide.CommandId;
             this.SeqNum = aseMovingGuide.SeqNum;
         }
 
@@ -57,7 +57,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.GuideSectionIds = request.GuideSections.Any() ? request.GuideSections.ToList() : new List<string>();
             this.GuideAddressIds = request.GuideAddresses.Any() ? request.GuideAddresses.ToList() : new List<string>();
             this.SeqNum = seqNum;
-            this.commandId = string.IsNullOrEmpty(Vehicle.Instance.AseMovingGuide.commandId) ? "" : Vehicle.Instance.AseMovingGuide.commandId;
+            this.CommandId = string.IsNullOrEmpty(Vehicle.Instance.AseMovingGuide.CommandId) ? "" : Vehicle.Instance.AseMovingGuide.CommandId;
             this.ReserveStop = VhStopSingle.On;
         }
 

@@ -1955,9 +1955,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
                 string rtnMsg = "";
 
-                //LoadComplete(transferStep.CmdId);
+                LoadComplete(transferStep.CmdId);
 
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time0 Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
+                //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time0 Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
 
                 //TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0));
 
@@ -1965,22 +1965,20 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     try
                     {
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
 
                         var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
                         
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
                         return result;
                     }
                     catch (Exception ex)
                     {
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"TimeTaskInExp Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Send BcrRead event exception.");
                         return TrxTcpIp.ReturnCode.SendDataFail;
                     }
                 });
-
-
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time3 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {
@@ -1993,14 +1991,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                             aseCarrierSlotStatus.CarrierId = response.RenameCarrierID.Trim();
                             aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
                         }
-                        LoadComplete(transferStep.CmdId);
+                        //LoadComplete(transferStep.CmdId);
                         AbortCommand(response.ReplyAction, transferStep.CmdId);
                         return false;
                     }
                     else
                     {
 
-                        LoadComplete(transferStep.CmdId);
+                        //LoadComplete(transferStep.CmdId);
                         OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨完成");
                         return true;
                     }
@@ -2009,7 +2007,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨異常，等待回應逾時");
                     alarmHandler.ResetAllAlarms();
-                    LoadComplete(transferStep.CmdId);
+                    //LoadComplete(transferStep.CmdId);
                     AbortCommand(readResult, transferStep.CmdId);
                     return false;
                 }
@@ -2215,13 +2213,13 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ID_135_CST_ID_RENAME_RESPONSE iD_135_CST_ID_RENAME_RESPONSE = new ID_135_CST_ID_RENAME_RESPONSE();
-                iD_135_CST_ID_RENAME_RESPONSE.ReplyCode = replyCode;
+                ID_135_CST_ID_RENAME_RESPONSE response = new ID_135_CST_ID_RENAME_RESPONSE();
+                response.ReplyCode = replyCode;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.CSTIDRenameRespFieldNumber;
                 wrappers.SeqNum = seqNum;
-                wrappers.CSTIDRenameResp = iD_135_CST_ID_RENAME_RESPONSE;
+                wrappers.CSTIDRenameResp = response;
 
                 SendCommandWrapper(wrappers, true);
             }
@@ -2237,23 +2235,23 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             try
             {
-                ID_134_TRANS_EVENT_REP id_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
-                id_134_TRANS_EVENT_REP.EventType = type;
-                id_134_TRANS_EVENT_REP.CurrentAdrID = aseMoveStatus.LastAddress.Id;
-                id_134_TRANS_EVENT_REP.CurrentSecID = aseMoveStatus.LastSection.Id;
-                id_134_TRANS_EVENT_REP.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-                id_134_TRANS_EVENT_REP.DrivingDirection = DriveDirctionParse(aseMoveStatus.LastSection.CmdDirection);
-                id_134_TRANS_EVENT_REP.XAxis = theVehicle.AseMoveStatus.LastMapPosition.X;
-                id_134_TRANS_EVENT_REP.YAxis = theVehicle.AseMoveStatus.LastMapPosition.Y;
-                id_134_TRANS_EVENT_REP.Speed = theVehicle.AseMoveStatus.Speed;
-                id_134_TRANS_EVENT_REP.DirectionAngle = theVehicle.AseMoveStatus.MovingDirection;
-                id_134_TRANS_EVENT_REP.VehicleAngle = theVehicle.AseMoveStatus.HeadDirection;
+                ID_134_TRANS_EVENT_REP report = new ID_134_TRANS_EVENT_REP();
+                report.EventType = type;
+                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = aseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.DrivingDirection = DriveDirctionParse(aseMoveStatus.LastSection.CmdDirection);
+                report.XAxis = theVehicle.AseMoveStatus.LastMapPosition.X;
+                report.YAxis = theVehicle.AseMoveStatus.LastMapPosition.Y;
+                report.Speed = theVehicle.AseMoveStatus.Speed;
+                report.DirectionAngle = theVehicle.AseMoveStatus.MovingDirection;
+                report.VehicleAngle = theVehicle.AseMoveStatus.HeadDirection;
 
                 mirleLogger.Log(new LogFormat("Info", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"Angle=[{aseMoveStatus.MovingDirection}]"));
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransEventRepFieldNumber;
-                wrappers.TransEventRep = id_134_TRANS_EVENT_REP;
+                wrappers.TransEventRep = report;
 
                 SendCommandWrapper(wrappers);
             }
@@ -2278,23 +2276,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var msg = $"命令結束，結束狀態{agvcTransCmd.CompleteStatus}，命令編號{agvcTransCmd.CommandId}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
 
-                ID_132_TRANS_COMPLETE_REPORT iD_132_TRANS_COMPLETE_REPORT = new ID_132_TRANS_COMPLETE_REPORT();
-                iD_132_TRANS_COMPLETE_REPORT.CmdID = agvcTransCmd.CommandId;
-                iD_132_TRANS_COMPLETE_REPORT.CSTID = agvcTransCmd.CassetteId;
-                iD_132_TRANS_COMPLETE_REPORT.CmpStatus = agvcTransCmd.CompleteStatus;
-                iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = aseMoveStatus.LastAddress.Id;
-                iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = aseMoveStatus.LastSection.Id;
-                iD_132_TRANS_COMPLETE_REPORT.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-                iD_132_TRANS_COMPLETE_REPORT.CmdPowerConsume = theVehicle.CmdPowerConsume;
-                iD_132_TRANS_COMPLETE_REPORT.CmdDistance = theVehicle.CmdDistance;
-                iD_132_TRANS_COMPLETE_REPORT.XAxis = theVehicle.AseMoveStatus.LastMapPosition.X;
-                iD_132_TRANS_COMPLETE_REPORT.YAxis = theVehicle.AseMoveStatus.LastMapPosition.Y;
-                iD_132_TRANS_COMPLETE_REPORT.DirectionAngle = theVehicle.AseMoveStatus.MovingDirection;
-                iD_132_TRANS_COMPLETE_REPORT.VehicleAngle = theVehicle.AseMoveStatus.HeadDirection;
+                ID_132_TRANS_COMPLETE_REPORT report = new ID_132_TRANS_COMPLETE_REPORT();
+                report.CmdID = agvcTransCmd.CommandId;
+                report.CSTID = agvcTransCmd.CassetteId;
+                report.CmpStatus = agvcTransCmd.CompleteStatus;
+                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = aseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.CmdPowerConsume = theVehicle.CmdPowerConsume;
+                report.CmdDistance = theVehicle.CmdDistance;
+                report.XAxis = theVehicle.AseMoveStatus.LastMapPosition.X;
+                report.YAxis = theVehicle.AseMoveStatus.LastMapPosition.Y;
+                report.DirectionAngle = theVehicle.AseMoveStatus.MovingDirection;
+                report.VehicleAngle = theVehicle.AseMoveStatus.HeadDirection;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TranCmpRepFieldNumber;
-                wrappers.TranCmpRep = iD_132_TRANS_COMPLETE_REPORT;
+                wrappers.TranCmpRep = report;
 
                 SendCommandWrapper(wrappers, false, delay);
             }
