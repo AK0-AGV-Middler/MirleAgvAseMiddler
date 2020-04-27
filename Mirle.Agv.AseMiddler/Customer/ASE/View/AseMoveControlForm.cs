@@ -25,7 +25,14 @@ namespace Mirle.Agv.AseMiddler.View
             InitializeComponent();
             InitialBoxAddressDirection();
             InitialBoxIsEnd();
+            InitialBoxKeepOrGo();
             this.mapInfo = mapInfo;
+        }
+
+        private void InitialBoxKeepOrGo()
+        {
+            boxKeepOrGo.DataSource = Enum.GetValues(typeof(EnumKeepOrGo));
+            boxKeepOrGo.SelectedIndex = (int)EnumKeepOrGo.Keep;
         }
 
         private void InitialBoxIsEnd()
@@ -61,7 +68,8 @@ namespace Mirle.Agv.AseMiddler.View
             aseMoveEventArgs.MapPosition = new MapPosition(Convert.ToDouble(numMovePositionX.Value), Convert.ToDouble(numMovePositionY.Value));
             aseMoveEventArgs.HeadAngle = Convert.ToInt32(numHeadAngle.Value);
             aseMoveEventArgs.Speed = Convert.ToInt32(numMoveSpeed.Value);
-            aseMoveEventArgs.isEnd = (EnumAseMoveCommandIsEnd)boxIsEnd.SelectedItem;
+            aseMoveEventArgs.IsEnd = (EnumAseMoveCommandIsEnd)boxIsEnd.SelectedItem;
+            aseMoveEventArgs.KeepOrGo = (EnumKeepOrGo)boxKeepOrGo.SelectedItem;
 
             return aseMoveEventArgs;
         }
@@ -135,10 +143,11 @@ namespace Mirle.Agv.AseMiddler.View
 
     public class AseMoveEventArgs : EventArgs
     {
-        public EnumAseMoveCommandIsEnd isEnd { get; set; }
+        public EnumAseMoveCommandIsEnd IsEnd { get; set; }
         public EnumAddressDirection AddressDirection { get; set; }
         public MapPosition MapPosition { get; set; } = new MapPosition();
         public int HeadAngle { get; set; }
         public int Speed { get; set; }
+        public EnumKeepOrGo KeepOrGo { get; set; } =  EnumKeepOrGo.Keep;
     }
 }

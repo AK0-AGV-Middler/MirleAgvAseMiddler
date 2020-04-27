@@ -1490,7 +1490,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             return theVehicle.AseRobotStatus.IsHome && !theVehicle.IsCharging;
         }
 
-        public void AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(MapSection mapSection)
+        public void AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(MapSection mapSection, EnumKeepOrGo keepOrGo)
         {
             try
             {
@@ -1522,7 +1522,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 else
                 {
                     EnumAseMoveCommandIsEnd moveCommandIsEnd = isEnd ? EnumAseMoveCommandIsEnd.End : EnumAseMoveCommandIsEnd.None;
-                    asePackage.aseMoveControl.PartMove(addressDirection, address.Position, headAngle, speed, moveCommandIsEnd);
+                    asePackage.aseMoveControl.PartMove(addressDirection, address.Position, headAngle, speed, moveCommandIsEnd, keepOrGo);
                 }
 
                 OnMessageShowEvent?.Invoke(this, $"通知MoveControl延攬通行權{mapSection.Id}成功，下一個可行終點為[{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)})。");
@@ -2196,7 +2196,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     nearlyIndex = i;
                 }
             }
-            nearlyIndex = Math.Max(nearlyIndex -1, 0); //Address index --> Section index
+            nearlyIndex = Math.Max(nearlyIndex - 1, 0); //Address index --> Section index
 
             if (nearlyIndex > theVehicle.AseMovingGuide.MovingSectionsIndex)
             {
@@ -2219,7 +2219,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void UpdateVehicleDistanceSinceHead(AseMoveStatus aseMoveStatus)
         {
-            if (mapHandler.IsPositionInThisSection(aseMoveStatus.LastSection,aseMoveStatus.LastMapPosition))
+            if (mapHandler.IsPositionInThisSection(aseMoveStatus.LastSection, aseMoveStatus.LastMapPosition))
             {
                 aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.LastSection.HeadAddress.Position, aseMoveStatus.LastMapPosition);
             }

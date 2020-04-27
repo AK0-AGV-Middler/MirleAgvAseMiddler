@@ -47,6 +47,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public EnumThreadStatus AskReserveStatus { get; private set; } = EnumThreadStatus.None;
         public EnumThreadStatus PreAskReserveStatus { get; private set; } = EnumThreadStatus.None;
 
+        private ConcurrentQueue<MapSection> quePartMoveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
         private bool ReserveOkAskNext { get; set; } = false;
@@ -54,7 +55,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAskReservePause { get; private set; }
         public bool IsAskReserveStop { get; private set; }
         private bool IsWaitReserveReply { get; set; }
-        public bool IsAgvcRejectReserve { get; set; }
         private MapPosition lastReportPosition { get; set; } = new MapPosition();
 
         public TcpIpAgent ClientAgent { get; private set; }
@@ -466,22 +466,28 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
+                    if (IsAskReserveStop || IsAskReservePause || theVehicle.AseMoveStatus.IsMoveEnd)
+                    {
+                        SpinWait.SpinUntil(() => false, 50);
+                    }
+
                     #region Pause And Stop Check
                     if (IsAskReservePause) continue;
                     if (IsAskReserveStop) break;
                     #endregion
 
-                    if (queNeedReserveSections.IsEmpty) continue;
-
                     AskReserveStatus = EnumThreadStatus.Working;
 
-                    if (CanAskReserve())
+                    if (queNeedReserveSections.Any())
                     {
-                        queNeedReserveSections.TryPeek(out MapSection askReserveSection);
-                        if (askReserveSection == null) continue;
-                        if (CanDoReserveWork())
+                        if (CanAskReserve())
                         {
+                            ReserveOkAskNext = false;
+                            queNeedReserveSections.TryPeek(out MapSection askReserveSection);
+
                             Send_Cmd136_AskReserve(askReserveSection);
+                            SpinWait.SpinUntil(() => ReserveOkAskNext, agvcConnectorConfig.AskReserveIntervalMs);
+                            ReserveOkAskNext = false;
                             SpinWait.SpinUntil(() => false, 5);
                         }
                     }
@@ -489,19 +495,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                }
-                finally
-                {
-                    if (IsAskReserveStop || IsAskReservePause || theVehicle.AseMoveStatus.IsMoveEnd)
-                    {
-                        SpinWait.SpinUntil(() => false, 50);
-                    }
-                    else
-                    {
-                        SpinWait.SpinUntil(() => ReserveOkAskNext, agvcConnectorConfig.AskReserveIntervalMs);
-                        ReserveOkAskNext = false;
-                        SpinWait.SpinUntil(() => false, 5);
-                    }
                 }
             }
 
@@ -668,7 +661,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                     queNeedReserveSections.TryDequeue(out MapSection aReserveOkSection);
                     queReserveOkSections.Enqueue(aReserveOkSection);
                     OnReserveOkEvent?.Invoke(this, aReserveOkSection.Id);
-                    mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(needReserveSection);
+                    //mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(needReserveSection);
+                    quePartMoveSections.Enqueue(aReserveOkSection);
+                    if (queNeedReserveSections.IsEmpty)
+                    {
+                        RefreshPartMoveSections();
+                    }
                     ReserveOkAskNext = true;
                 }
                 else
@@ -678,6 +676,29 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
             }
         }
+
+        private void RefreshPartMoveSections()
+        {
+            try
+            {
+                if (quePartMoveSections.Any())
+                {
+                    List<MapSection> partMoveSections = quePartMoveSections.ToList();
+                    for (int i = 0; i < partMoveSections.Count; i++)
+                    {
+                        EnumKeepOrGo enumKeepOrGo = (i +1 == partMoveSections.Count) ? EnumKeepOrGo.Go : EnumKeepOrGo.Keep;
+                        mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(partMoveSections[i], enumKeepOrGo);
+                        SpinWait.SpinUntil(() => false, 200);
+                    }
+                    quePartMoveSections = new ConcurrentQueue<MapSection>();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
         public void ClearAllReserve()
         {
             IsAskReservePause = true;
@@ -2100,16 +2121,25 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 var returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
 
-                if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                if (CanDoReserveWork())
                 {
-                    OnReceiveReserveReply(response);
+                    if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                    {
+                        OnReceiveReserveReply(response);
+                    }
+                    else
+                    {
+                        ReserveOkAskNext = false;
+                        string xxmsg = $"詢問{mapSection.Id}通行權結果[{returnCode}][{rtnMsg}]";
+                        OnMessageShowOnMainFormEvent?.Invoke(this, xxmsg);
+                    }
                 }
                 else
                 {
-                    IsAgvcRejectReserve = true;
-                    string xxmsg = $"詢問{mapSection.Id}通行權結果[{returnCode}][{rtnMsg}]";
+                    string xxmsg = $"詢問{mapSection.Id}通行權，收到回應時[IsPause{IsAskReservePause}][IsStop{IsAskReserveStop}][IsMoveEnd{theVehicle.AseMoveStatus.IsMoveEnd}]";
                     OnMessageShowOnMainFormEvent?.Invoke(this, xxmsg);
                 }
+
                 #endregion
 
             }
@@ -2145,7 +2175,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string sectionId = receive.ReserveInfos[0].ReserveSectionID;
                 if (receive.IsReserveSuccess == ReserveResult.Success)
                 {
-                    IsAgvcRejectReserve = false;
                     string msg = $"收到{sectionId}通行權可行";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                     if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.On)
@@ -2160,10 +2189,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    IsAgvcRejectReserve = true;
-                    ReserveOkAskNext = false;
                     string msg = $"收到{sectionId}通行權不可行";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                    RefreshPartMoveSections();
+                    SpinWait.SpinUntil(() => false, agvcConnectorConfig.AskReserveIntervalMs);
                     if (theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Idle)
                     {
                         if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)
@@ -2171,15 +2200,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                             theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.On;
                             StatusChangeReport();
                         }
-                    }
+                    }                   
                 }
                 IsAskReservePause = false;
             }
-            else
-            {
-                IsAgvcRejectReserve = false;
-            }
-
         }
 
         public void Receive_Cmd35_CarrierIdRenameRequest(object sender, TcpIpEventArgs e)

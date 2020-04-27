@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
+using System.Collections.Concurrent;
 
 
 namespace Mirle.Agv.AseMiddler.Controller.Tests
@@ -73,6 +74,36 @@ namespace Mirle.Agv.AseMiddler.Controller.Tests
             words.Add("C");
             string xx = string.Join(", ", words);
             Assert.AreEqual("A, [B], C", xx);
-        }      
+        }
+
+        [TestMethod()]
+        public void ConcurrentQueueToListTest0427()
+        {
+            ConcurrentQueue<string> words = new ConcurrentQueue<string>();
+            words.Enqueue("101");
+            words.Enqueue("102");
+            words.Enqueue("103");
+
+            List<string> aList = words.ToList();
+            string xx = aList.Last();
+            xx += "G";
+
+            Assert.AreEqual(3, aList.Count);
+        }
+
+        [TestMethod()]
+        public void ConcurrentBagToListTest0427()
+        {
+            ConcurrentBag<string> words = new ConcurrentBag<string>();
+            words.Add("101");
+            words.Add("102");
+            words.Add("103");
+
+            List<string> aList = words.ToList();
+            string xx = aList.Last();
+            xx += "G";
+
+            Assert.AreEqual(3, aList.Count);
+        }
     }
 }

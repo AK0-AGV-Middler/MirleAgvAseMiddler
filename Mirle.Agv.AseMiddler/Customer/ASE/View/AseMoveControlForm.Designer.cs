@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageMoveAppend = new System.Windows.Forms.TabPage();
+            this.btnResumeAskPosition = new System.Windows.Forms.Button();
             this.btnPauseAskPosition = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnSearchMapAddress = new System.Windows.Forms.Button();
@@ -45,7 +46,7 @@
             this.numMovePositionX = new System.Windows.Forms.NumericUpDown();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.btnResumeAskPosition = new System.Windows.Forms.Button();
+            this.boxKeepOrGo = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.pageMoveAppend.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -79,6 +80,17 @@
             this.pageMoveAppend.Text = "MoveAppend";
             this.pageMoveAppend.UseVisualStyleBackColor = true;
             // 
+            // btnResumeAskPosition
+            // 
+            this.btnResumeAskPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnResumeAskPosition.Location = new System.Drawing.Point(534, 55);
+            this.btnResumeAskPosition.Name = "btnResumeAskPosition";
+            this.btnResumeAskPosition.Size = new System.Drawing.Size(272, 33);
+            this.btnResumeAskPosition.TabIndex = 4;
+            this.btnResumeAskPosition.Text = "Resume Ask Position";
+            this.btnResumeAskPosition.UseVisualStyleBackColor = true;
+            this.btnResumeAskPosition.Click += new System.EventHandler(this.btnResumeAskPosition_Click);
+            // 
             // btnPauseAskPosition
             // 
             this.btnPauseAskPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -92,6 +104,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.boxKeepOrGo);
             this.groupBox1.Controls.Add(this.btnSearchMapAddress);
             this.groupBox1.Controls.Add(this.txtMapAddress);
             this.groupBox1.Location = new System.Drawing.Point(269, 6);
@@ -258,16 +271,13 @@
             this.timer1.Interval = 500;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // btnResumeAskPosition
+            // boxKeepOrGo
             // 
-            this.btnResumeAskPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnResumeAskPosition.Location = new System.Drawing.Point(534, 55);
-            this.btnResumeAskPosition.Name = "btnResumeAskPosition";
-            this.btnResumeAskPosition.Size = new System.Drawing.Size(272, 33);
-            this.btnResumeAskPosition.TabIndex = 4;
-            this.btnResumeAskPosition.Text = "Resume Ask Position";
-            this.btnResumeAskPosition.UseVisualStyleBackColor = true;
-            this.btnResumeAskPosition.Click += new System.EventHandler(this.btnResumeAskPosition_Click);
+            this.boxKeepOrGo.FormattingEnabled = true;
+            this.boxKeepOrGo.Location = new System.Drawing.Point(6, 42);
+            this.boxKeepOrGo.Name = "boxKeepOrGo";
+            this.boxKeepOrGo.Size = new System.Drawing.Size(247, 20);
+            this.boxKeepOrGo.TabIndex = 7;
             // 
             // AseMoveControlForm
             // 
@@ -311,5 +321,6 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button btnPauseAskPosition;
         private System.Windows.Forms.Button btnResumeAskPosition;
+        private System.Windows.Forms.ComboBox boxKeepOrGo;
     }
 }

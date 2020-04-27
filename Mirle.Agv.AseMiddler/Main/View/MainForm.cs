@@ -715,7 +715,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed, e.isEnd);
+                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed, e.IsEnd, e.KeepOrGo);
             }
             catch (Exception ex)
             {
@@ -1402,7 +1402,7 @@ namespace Mirle.Agv.AseMiddler.View
                 AseRobotStatus aseRobotStatus = new AseRobotStatus(theVehicle.AseRobotStatus);
                 ucRobotRobotState.TagValue = aseRobotStatus.RobotState.ToString();
                 ucRobotIsHome.TagValue = aseRobotStatus.IsHome.ToString();
-                ucRobotIsHome.TagColor = aseRobotStatus.IsHome? Color.Black:  Color.OrangeRed;              
+                ucRobotIsHome.TagColor = aseRobotStatus.IsHome ? Color.Black : Color.OrangeRed;
                 ucRobotHome.TagValue = aseRobotStatus.IsHome.ToString();
                 ucRobotHome.TagColor = aseRobotStatus.IsHome ? Color.Black : Color.OrangeRed;
 
@@ -1416,7 +1416,7 @@ namespace Mirle.Agv.AseMiddler.View
                 ucRobotSlotRState.TagValue = slotR.CarrierSlotStatus.ToString();
                 ucRobotSlotRId.TagValue = slotR.CarrierId;
                 ucRCstId.TagValue = slotR.CarrierId;
-                aseRobotControlForm.RCassetteId = slotR.CarrierId;               
+                aseRobotControlForm.RCassetteId = slotR.CarrierId;
 
                 ucVehicleImage.Loading = slotL.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty || slotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty
                     ? true

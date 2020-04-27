@@ -248,6 +248,12 @@ namespace Mirle.Agv.AseMiddler
         EndArrival
     }
 
+    public enum EnumKeepOrGo
+    {
+        Keep,
+        Go
+    }
+
     #endregion
 
     /// <summary>

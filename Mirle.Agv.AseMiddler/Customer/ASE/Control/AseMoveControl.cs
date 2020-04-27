@@ -121,7 +121,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }        
 
-        public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd)
+        public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumKeepOrGo keepOrGo)
         {
             ResumePositionWatcher();
             try
@@ -132,7 +132,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string thetaString = GetNumberToString(headAngle, 3);
                 string speedString = GetNumberToString(speed, 4);
                 string pioDirection = ((int)addressDirection).ToString();
-                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, pioDirection);
+                string keepOrGoString = keepOrGo.ToString().Substring(0, 1).ToUpper();
+                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, pioDirection, keepOrGoString);
 
                 PrimarySend("41", message);
             }
@@ -153,7 +154,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
                 string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
                 string pioDirection = ((int)aseMoveStatus.LastAddress.PioDirection).ToString();
-                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, pioDirection);
+                string keepOrGoString = "G";
+                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, pioDirection, keepOrGoString);
 
                 PrimarySend("41", message);
             }
