@@ -572,6 +572,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public bool IsGotReserveOkSectionsFull()
         {
+            if (agvcConnectorConfig.ReserveLengthMeter < 0) return false;
             int reserveOkSectionsTotalLength = GetReserveOkSectionsTotalLength();
             return reserveOkSectionsTotalLength >= agvcConnectorConfig.ReserveLengthMeter * 1000;
         }
@@ -1968,7 +1969,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
 
                         var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
-                        
+
                         //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
                         return result;
                     }
