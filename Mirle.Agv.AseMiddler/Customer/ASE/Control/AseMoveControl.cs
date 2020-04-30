@@ -10,7 +10,6 @@ using Mirle.Tools;
 using System.Reflection;
 using Mirle.Agv.AseMiddler.Model.Configs;
 using System.Threading;
-using Mirle.Agv.AseMiddler.Model;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {

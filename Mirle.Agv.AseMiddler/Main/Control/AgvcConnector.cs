@@ -686,7 +686,22 @@ namespace Mirle.Agv.AseMiddler.Controller
                     List<MapSection> partMoveSections = quePartMoveSections.ToList();
                     for (int i = 0; i < partMoveSections.Count; i++)
                     {
-                        EnumKeepOrGo enumKeepOrGo = (i +1 == partMoveSections.Count) ? EnumKeepOrGo.Go : EnumKeepOrGo.Keep;
+                        EnumKeepOrGo enumKeepOrGo = EnumKeepOrGo.Keep;
+                        // End of PartMoveSections => Go
+                        if (i + 1 == partMoveSections.Count)
+                        {
+                            enumKeepOrGo = EnumKeepOrGo.Go;
+
+                        }//partMoveSections[i] and partMoveSections[i+1] exist
+                        else if (HeadDirectionChange(partMoveSections[i + 1]))
+                        {
+                            enumKeepOrGo = EnumKeepOrGo.Go;
+                        }
+                        else if (partMoveSections[i].Type != partMoveSections[i + 1].Type)  //Section Type Change => Go
+                        {
+                            enumKeepOrGo = EnumKeepOrGo.Go;
+                        }
+
                         mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(partMoveSections[i], enumKeepOrGo);
                         SpinWait.SpinUntil(() => false, 200);
                     }
@@ -697,6 +712,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private bool HeadDirectionChange(MapSection mapSection)
+        {
+            return mapSection.HeadAddress.VehicleHeadAngle != mapSection.TailAddress.VehicleHeadAngle;
         }
 
         public void ClearAllReserve()
@@ -2200,7 +2220,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.On;
                             StatusChangeReport();
                         }
-                    }                   
+                    }
                 }
                 IsAskReservePause = false;
             }
