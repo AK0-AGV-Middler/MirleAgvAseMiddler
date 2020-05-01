@@ -188,13 +188,11 @@ namespace Mirle.Agv.AseMiddler.View
             panelLeftDown.HorizontalScroll.Enabled = true;
             panelLeftDown.VerticalScroll.Enabled = true;
 
-            panelRightUp = splitContainer2.Panel1;
-            panelRightUp.HorizontalScroll.Enabled = true;
-            panelRightUp.VerticalScroll.Enabled = true;
+            //panelRightUp.HorizontalScroll.Enabled = true;
+            //panelRightUp.VerticalScroll.Enabled = true;
 
-            panelRightDown = splitContainer2.Panel2;
-            panelRightDown.HorizontalScroll.Enabled = true;
-            panelRightDown.VerticalScroll.Enabled = true;
+            //panelRightDown.HorizontalScroll.Enabled = true;
+            //panelRightDown.VerticalScroll.Enabled = true;
         }
 
         private void InitialEvents()
@@ -1336,7 +1334,6 @@ namespace Mirle.Agv.AseMiddler.View
                 AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
 
                 var lastPos = aseMoveStatus.LastMapPosition;
-                ucLastPosition.TagValue = $"({(int)lastPos.X},{(int)lastPos.Y})";
                 string lastPosX = lastPos.X.ToString("F2");
                 tstextLastPosX.Text = lastPosX;
                 ucMovePositionX.TagValue = lastPosX;
@@ -1345,11 +1342,9 @@ namespace Mirle.Agv.AseMiddler.View
                 ucMovePositionY.TagValue = lastPosY;
 
                 var lastAddress = aseMoveStatus.LastAddress;
-                ucMapAddress.TagValue = lastAddress.Id;
                 ucMoveLastAddress.TagValue = lastAddress.Id;
 
                 var lastSection = aseMoveStatus.LastSection;
-                ucMapSection.TagValue = lastSection.Id;
                 ucMoveLastSection.TagValue = lastSection.Id;
 
                 ucMoveIsMoveEnd.TagValue = aseMoveStatus.IsMoveEnd.ToString();

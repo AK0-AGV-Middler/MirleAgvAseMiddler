@@ -1999,7 +1999,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 LoadComplete(transferStep.CmdId);
 
-                //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time0 Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time0 Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
 
                 //TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0));
 
@@ -2007,11 +2007,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     try
                     {
-                        //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
 
                         var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
 
-                        //OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport，[{result}][{DateTime.Now.ToString("mm:ss.fff")}]");
+
+                        LogDebug("Send_Cmd136_CstIdReadReport", result.ToString());
+
                         return result;
                     }
                     catch (Exception ex)
@@ -2021,6 +2024,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                         return TrxTcpIp.ReturnCode.SendDataFail;
                     }
                 });
+
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time3 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {
@@ -2213,6 +2219,41 @@ namespace Mirle.Agv.AseMiddler.Controller
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                     RefreshPartMoveSections();
                     SpinWait.SpinUntil(() => false, agvcConnectorConfig.AskReserveIntervalMs);
+                    if (queReserveOkSections.Count == 0)
+                    {
+                        if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)
+                        {
+                            theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.On;
+                            StatusChangeReport();
+                        }
+                    }
+                    else if (queReserveOkSections.Count == 1)
+                    {
+                        queReserveOkSections.TryPeek(out MapSection mapSection);
+                        var moveSection = theVehicle.AseMovingGuide.MovingSections.Find(x => x.Id == mapSection.Id);
+                        if (moveSection.CmdDirection == EnumCommandDirection.Forward)
+                        {
+                            if (theVehicle.AseMoveStatus.LastAddress.Id == moveSection.TailAddress.Id)
+                            {
+                                if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)
+                                {
+                                    theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.On;
+                                    StatusChangeReport();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (theVehicle.AseMoveStatus.LastAddress.Id == moveSection.HeadAddress.Id)
+                            {
+                                if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)
+                                {
+                                    theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.On;
+                                    StatusChangeReport();
+                                }
+                            }
+                        }
+                    }
                     if (theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Idle)
                     {
                         if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)

@@ -2797,6 +2797,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (IsMoveStep())
                     {
                         theVehicle.AseMovingGuide = new AseMovingGuide();
+                        asePackage.aseMoveControl.VehcleCancel();
                     }
                     else
                     {
