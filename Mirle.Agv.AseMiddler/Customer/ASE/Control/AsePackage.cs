@@ -598,7 +598,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string isAlarmSet = psMessage.Substring(0, 1).ToUpper().Trim();
+                string isAlarmSet = psMessage.Substring(0, 1).Trim();
                 int alarmCode = int.Parse(psMessage.Substring(1, 6));
 
                 aseBuzzerControl.OnAlarmCodeSet(alarmCode, IsValueTrue(isAlarmSet));

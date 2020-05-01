@@ -449,7 +449,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (!theMapInfo.sectionMap.ContainsKey(oneRow.SectionId))
                 {
                     mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                     , $"Section[{oneRow.SectionId}]加入Beam Sensor Disable清單失敗，圖資不包含Section[{oneRow.SectionId}]"));
+                     , $"Section[{oneRow.SectionId}]加入Beam Sensor Disable清單失敗, 圖資不包含Section[{oneRow.SectionId}]"));
 
                     return;
                 }

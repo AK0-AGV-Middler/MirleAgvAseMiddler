@@ -920,7 +920,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void MainFlowHandler_OnOverrideCommandCheckedEvent(object sender, AgvcOverrideCmd agvcOverrideCmd)
         {
-            SetTransferCommandMsg("[替代路徑]", agvcOverrideCmd);
+            SetTransferCommandMsg("[ Override ]", agvcOverrideCmd);
         }
 
         private void MainFlowHandler_OnTransferCommandCheckedEvent(object sender, AgvcTransCmd agvcTransCmd)
@@ -934,7 +934,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
                                       type, "\t", $"{agvcTransCmd.AgvcTransCommandType}", "\r\n",
-                                      $"[命令號={agvcTransCmd.CommandId}]\r\n",
+                                      $"[Command號={agvcTransCmd.CommandId}]\r\n",
                                       $"[貨號={agvcTransCmd.CassetteId}]\r\n",
                                       $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
                                       $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n"
@@ -1008,7 +1008,7 @@ namespace Mirle.Agv.AseMiddler.View
                 MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
 
                 string result = string.Concat($"移動\t{moveCmdInfo.GetTransferStepType()}\r\n",
-                                       $"[命令號={moveCmdInfo.CmdId}]\r\n",
+                                       $"[Command號={moveCmdInfo.CmdId}]\r\n",
                                        $"[Addresses={GuideListToString(theVehicle.AseMovingGuide.GuideAddressIds)}]\r\n",
                                        $"[Sections={GuideListToString(theVehicle.AseMovingGuide.GuideSectionIds)}]"
                                        );
@@ -1028,7 +1028,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 RobotCommand robotCommand = (RobotCommand)transferStep;
                 return string.Concat($"類型\t{robotCommand.GetTransferStepType()}\r\n",
-                                      $"[命令號={robotCommand.CmdId}]\r\n",
+                                      $"[Command號={robotCommand.CmdId}]\r\n",
                                       $"[貨號={robotCommand.CassetteId}]\r\n",
                                       $"[站點={robotCommand.PortAddressId}]\r\n",
                                       $"[PIO方向={robotCommand.PioDirection}]\r\n",
@@ -1546,11 +1546,11 @@ namespace Mirle.Agv.AseMiddler.View
                         {
                             TakeAPicture();
                         }
-                        AppendDebugLogMsg($"Manual 切換 Auto 成功");
+                        AppendDebugLogMsg($"Manual 切換 Auto  ok ");
                         ResetAllAbnormalMsg();
                         break;
                     case EnumAutoState.Manual:
-                        AppendDebugLogMsg($"Auto 切換 Manual 成功");
+                        AppendDebugLogMsg($"Auto 切換 Manual  ok ");
 
                         break;
                     case EnumAutoState.PreManual:

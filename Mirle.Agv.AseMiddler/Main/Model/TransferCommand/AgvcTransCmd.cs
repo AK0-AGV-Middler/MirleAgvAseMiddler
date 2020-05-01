@@ -151,6 +151,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             try
             {
                 LoadAddressId = transRequest.LoadAdr;
+                CommandState = CommandState.LoadEnroute;
             }
             catch (Exception ex)
             {
@@ -166,6 +167,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             try
             {
                 UnloadAddressId = transRequest.DestinationAdr;
+                CommandState = CommandState.UnloadEnroute;
             }
             catch (Exception ex)
             {
@@ -182,6 +184,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             {
                 LoadAddressId = transRequest.LoadAdr;
                 UnloadAddressId = transRequest.DestinationAdr;
+                CommandState = CommandState.LoadEnroute;
             }
             catch (Exception ex)
             {

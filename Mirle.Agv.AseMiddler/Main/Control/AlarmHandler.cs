@@ -18,7 +18,7 @@ namespace Mirle.Agv.AseMiddler.Controller
     public class AlarmHandler
     {
         //TODO: 
-        //(未實作)將檔案讀入到AlarmForm的History欄位，檢視或檢索。目前無想法。
+        //(未實作)將檔案讀入到AlarmForm的History欄位, 檢視或檢索.目前無想法.
         #region Containers
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
         public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
@@ -212,7 +212,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     LastAlarm = new Alarm();                   
                 }
                 sw.Stop();
-                var msg = $"清除所有警報，花費{sw.ElapsedMilliseconds}毫秒";
+                var msg = $"清除所有警報, 花費{sw.ElapsedMilliseconds}毫秒";
                 OnResetAllAlarmsEvent?.Invoke(this, msg);
                 mirleLogger.Log( new LogFormat("AlarmHistory", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
@@ -254,5 +254,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     , ex.StackTrace));
             }
         }
+
+        
     }
 }

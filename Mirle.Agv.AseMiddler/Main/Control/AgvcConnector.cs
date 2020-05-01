@@ -226,7 +226,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (!IsConnected())
             {
-                var msg = $"AgvcConnector : 斷線中，無法發送[{wrapper.SeqNum}][id {wrapper.ID}{(EnumCmdNum)wrapper.ID}]資訊";
+                var msg = $"AgvcConnector : 斷線中, 無法發送[{wrapper.SeqNum}][id {wrapper.ID}{(EnumCmdNum)wrapper.ID}]資訊";
                 OnCmdSendEvent?.Invoke(this, msg);
                 msg += wrapper.ToString();
                 LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
@@ -262,7 +262,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             if (theVehicle.AutoState != EnumAutoState.Auto && !IsApplyOnly(cmdNum))
             {
-                var msg = $"AgvcConnector : 手動模式下，不接受AGVC命令";
+                var msg = $"AgvcConnector : 手動模式下, 不Get AGVCCommand";
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 return;
             }
@@ -630,7 +630,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (queReserveOkSections.IsEmpty)
             {
-                var msg = $"AgvcConnector :可通行路徑數量為[{queReserveOkSections.Count}]，無法清除已通過的路徑。";
+                var msg = $"AgvcConnector :可通行路徑數量為[{queReserveOkSections.Count}], 無法清除已通過的路徑.";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                 return;
             }
@@ -639,7 +639,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 queReserveOkSections.TryDequeue(out MapSection passSection);
                 string passSectionId = passSection.Id;
                 OnPassReserveSectionEvent?.Invoke(this, passSectionId);
-                var msg = $"AgvcConnector : 清除已通過路徑[{passSectionId}]。";
+                var msg = $"AgvcConnector : 清除已通過路徑[{passSectionId}].";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
             }
         }
@@ -647,7 +647,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (queNeedReserveSections.IsEmpty)
             {
-                var msg = $"AgvcConnector : 收到{sectionId}通行權但延攬失敗，因為未取得通行權路段清單為空";
+                var msg = $"AgvcConnector :  Get {sectionId}通行權但延攬失敗, 因為未取得通行權路段清單為空";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                 return;
             }
@@ -671,7 +671,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    var msg = $"AgvcConnector : 收到{sectionId}通行權但延攬失敗，因為需要通行權路段為{needReserveSection.Id}";
+                    var msg = $"AgvcConnector :  Get {sectionId}通行權但延攬失敗, 因為需要通行權路段為{needReserveSection.Id}";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                 }
             }
@@ -725,7 +725,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             ClearGotReserveOkSections();
             ClearNeedReserveSections();
             IsAskReservePause = false;
-            var msg = $"AgvcConnector : 清除所有通行權。";
+            var msg = $"AgvcConnector : 清除所有通行權.";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
         public void AskGuideAddressesAndSections(MoveCmdInfo moveCmdInfo)
@@ -1371,7 +1371,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private void ShowTransferCmdToForm(AgvcTransCmd agvcTransCmd)
         {
-            var msg = $"收到{agvcTransCmd.AgvcTransCommandType},loadAdr={agvcTransCmd.LoadAddressId},unloadAdr={agvcTransCmd.UnloadAddressId}.";
+            var msg = $" Get {agvcTransCmd.AgvcTransCommandType},loadAdr={agvcTransCmd.LoadAddressId},unloadAdr={agvcTransCmd.UnloadAddressId}.";
             OnMessageShowOnMainFormEvent?.Invoke(this, msg);
         }
         public bool IsConnected() => ClientAgent == null ? false : ClientAgent.IsConnection;
@@ -1496,7 +1496,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 ID_51_AVOID_REQUEST receive = (ID_51_AVOID_REQUEST)e.objPacket;
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"收到避車指令");
+                OnMessageShowOnMainFormEvent?.Invoke(this, $" Get 避車指令");
                 AseMovingGuide aseMovingGuide = new AseMovingGuide(receive, e.iSeqNum);
                 ShowAvoidRequestToForm(aseMovingGuide);
                 OnAvoideRequestEvent?.Invoke(this, aseMovingGuide);
@@ -1510,7 +1510,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                var msg = $"收到避車指令,避車終點={aseMovingGuide.ToAddressId}.";
+                var msg = $" Get 避車指令,避車終點={aseMovingGuide.ToAddressId}.";
 
                 msg += Environment.NewLine + "避車路徑ID:";
                 foreach (var secId in aseMovingGuide.GuideSectionIds)
@@ -1728,7 +1728,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
 
-                var msg = $"AgvcConnector : 收到[{receive.EventType}]命令。";
+                var msg = $"AgvcConnector :  Get [{receive.EventType}]Command.";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
 
                 switch (receive.EventType)
@@ -1806,7 +1806,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 var info = response.GuideInfoList[0];
-                string msg = $"收到路徑規劃[{info.FromTo.From}]->[{info.FromTo.To}],經過[{info.GuideSections.Count}]個 Sections 和 [{info.GuideAddresses.Count}]個 Addresses.";
+                string msg = $" Get 路徑規劃[{info.FromTo.From}]->[{info.FromTo.To}],經過[{info.GuideSections.Count}]個 Sections 和 [{info.GuideAddresses.Count}]個 Addresses.";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
             }
             catch (Exception ex)
@@ -1848,7 +1848,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 int replyCode = 0;
                 ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
 
-                var msg = $"AgvcConnector : 收到[{receive.CancelAction}]命令。";
+                var msg = $"AgvcConnector : Get [{receive.CancelAction}] command";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
 
                 var cmdId = receive.CmdID.Trim();
@@ -1857,7 +1857,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     replyCode = 1;
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                    var ngMsg = $"AgvcConnector : 車輛無命令，拒絕[{receive.CancelAction}]命令，";
+                    var ngMsg = $"AgvcConnector : Vehicle Idle, reject [{receive.CancelAction}].";
                     OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
                     return;
                 }
@@ -1874,7 +1874,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     replyCode = 1;
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                    var ngMsg = $"AgvcConnector : 車上無ID({cmdId})命令可以取消，拒絕[{receive.CancelAction}]命令，";
+                    var ngMsg = $"AgvcConnector : No [{cmdId}] to cancel, reject [{receive.CancelAction}].";
                     OnMessageShowOnMainFormEvent?.Invoke(this, ngMsg);
                     return;
                 }
@@ -1992,14 +1992,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = report;
 
-                LogSendMsg(wrappers);
-
                 ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
                 string rtnMsg = "";
 
                 LoadComplete(transferStep.CmdId);
 
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time0 Send_Cmd136_CstIdReadReport，[{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time0 Send_Cmd136_CstIdReadReport, [{readResult}][{DateTime.Now.ToString("mm:ss.fff")}]");
 
                 //TrxTcpIp.ReturnCode returnCode = await Task.Run<TrxTcpIp.ReturnCode>(() => ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0));
 
@@ -2007,11 +2005,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     try
                     {
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time1 Send_Cmd136_CstIdReadReport, [{DateTime.Now.ToString("mm:ss.fff")}]");
 
                         var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrappers, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
 
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport，[{result}][{DateTime.Now.ToString("mm:ss.fff")}]");
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Time2 Send_Cmd136_CstIdReadReport, [{result}][{DateTime.Now.ToString("mm:ss.fff")}]");
 
                         LogDebug("Send_Cmd136_CstIdReadReport", result.ToString());
 
@@ -2025,37 +2023,37 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                 });
 
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time3 Send_Cmd136_CstIdReadReport，[{DateTime.Now.ToString("mm:ss.fff")}]");
-
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Time3 Send_Cmd136_CstIdReadReport, [{DateTime.Now.ToString("mm:ss.fff")}]");
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {
+                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Bcr read reply, Action = [{response.ReplyAction}], Rename = [{response.RenameCarrierID}]");
+
                     if (response.ReplyAction != ReplyActionType.Continue)
                     {
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨異常，處理方式為[{response.ReplyAction}]，CstID變更為[{response.RenameCarrierID}]");
                         alarmHandler.ResetAllAlarms();
                         if (!string.IsNullOrEmpty(response.RenameCarrierID))
                         {
                             aseCarrierSlotStatus.CarrierId = response.RenameCarrierID.Trim();
                             aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
                         }
-                        //LoadComplete(transferStep.CmdId);
                         AbortCommand(response.ReplyAction, transferStep.CmdId);
                         return false;
                     }
                     else
                     {
-
-                        //LoadComplete(transferStep.CmdId);
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨完成");
+                        if (!string.IsNullOrEmpty(response.RenameCarrierID))
+                        {
+                            aseCarrierSlotStatus.CarrierId = response.RenameCarrierID.Trim();
+                            aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
+                        }
                         return true;
                     }
                 }
                 else
                 {
-                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨異常，等待回應逾時");
+                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Bcr Read, timeout");
                     alarmHandler.ResetAllAlarms();
-                    //LoadComplete(transferStep.CmdId);
                     AbortCommand(readResult, transferStep.CmdId);
                     return false;
                 }
@@ -2063,7 +2061,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Robot取貨異常，Exception");
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Bcr Read , Exception");
                 alarmHandler.ResetAllAlarms();
                 LoadComplete(transferStep.CmdId);
                 AbortCommand(readResult, transferStep.CmdId);
@@ -2162,7 +2160,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    string xxmsg = $"詢問{mapSection.Id}通行權，收到回應時[IsPause{IsAskReservePause}][IsStop{IsAskReserveStop}][IsMoveEnd{theVehicle.AseMoveStatus.IsMoveEnd}]";
+                    string xxmsg = $"詢問{mapSection.Id}通行權,  Get 回應時[IsPause{IsAskReservePause}][IsStop{IsAskReserveStop}][IsMoveEnd{theVehicle.AseMoveStatus.IsMoveEnd}]";
                     OnMessageShowOnMainFormEvent?.Invoke(this, xxmsg);
                 }
 
@@ -2201,7 +2199,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string sectionId = receive.ReserveInfos[0].ReserveSectionID;
                 if (receive.IsReserveSuccess == ReserveResult.Success)
                 {
-                    string msg = $"收到{sectionId}通行權可行";
+                    string msg = $" Get {sectionId}通行權可行";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                     if (theVehicle.AseMovingGuide.ReserveStop == VhStopSingle.On)
                     {
@@ -2215,7 +2213,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    string msg = $"收到{sectionId}通行權不可行";
+                    string msg = $" Get {sectionId}通行權不可行";
                     OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                     RefreshPartMoveSections();
                     SpinWait.SpinUntil(() => false, agvcConnectorConfig.AskReserveIntervalMs);
@@ -2359,7 +2357,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
 
-                var msg = $"命令結束，結束狀態{agvcTransCmd.CompleteStatus}，命令編號{agvcTransCmd.CommandId}";
+                var msg = $"Command結束, 結束狀態{agvcTransCmd.CompleteStatus}, Command編號{agvcTransCmd.CommandId}";
                 OnMessageShowOnMainFormEvent?.Invoke(this, msg);
 
                 ID_132_TRANS_COMPLETE_REPORT report = new ID_132_TRANS_COMPLETE_REPORT();
@@ -2393,7 +2391,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"收到傳送指令: {transRequest.CommandAction}");
+                OnMessageShowOnMainFormEvent?.Invoke(this, $" Get 傳送指令: {transRequest.CommandAction}");
 
                 switch (transRequest.CommandAction)
                 {
@@ -2409,7 +2407,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         DoOverride(transRequest, e.iSeqNum);
                         return;
                     default:
-                        var msg = $"拒絕傳送指令: {transRequest.CommandAction}";
+                        var msg = $"Reject傳送指令: {transRequest.CommandAction}";
                         OnMessageShowOnMainFormEvent?.Invoke(this, msg);
                         Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, 1, "Unknow command.");
                         return;
@@ -2450,7 +2448,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
         {
-            //解析收到的ID_31_TRANS_REQUEST並且填入AgvcTransCmd     
+            //解析 Get 的ID_31_TRANS_REQUEST並且填入AgvcTransCmd     
 
             switch (transRequest.CommandAction)
             {

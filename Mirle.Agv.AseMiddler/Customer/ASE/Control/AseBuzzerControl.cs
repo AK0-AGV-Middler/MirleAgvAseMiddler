@@ -78,6 +78,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
+        {
+            SetAlarmCode(alarm.Id, true);
+        }
+
         public void BuzzerOff()
         {
             try
@@ -120,5 +125,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
+
+        
     }
 }
