@@ -145,8 +145,8 @@
   <data name="Mirle_LOGO" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resource\Mirle_LOGO.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Mirle_口號" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resource\Mirle_口號.JPG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Mirle_Slogan" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resource\Mirle_Slogan.JPG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="VehHasCarrier" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resource\VehHasCarrier.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

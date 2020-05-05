@@ -35,7 +35,8 @@ namespace Mirle.Agv.AseMiddler.Model
         }
         public event EventHandler<EnumAutoState> OnAutoStateChangeEvent;
         public bool IsSimulation { get; set; } = false;
-        public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();       
+        public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public bool IsAgvcConnect { get; set; } = false;
 
         #region AsePackage
 

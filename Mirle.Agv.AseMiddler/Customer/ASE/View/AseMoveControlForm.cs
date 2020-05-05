@@ -17,6 +17,7 @@ namespace Mirle.Agv.AseMiddler.View
         public event EventHandler<AseMoveEventArgs> SendMove;
         public event EventHandler<string> OnException;
         public event EventHandler<bool> PauseOrResumeAskPosition;
+        public event EventHandler RefreshMoveStatusAndPosition;
         private MapInfo mapInfo;
         public string PspLogMsg { get; set; } = "";        
 
@@ -128,6 +129,39 @@ namespace Mirle.Agv.AseMiddler.View
         private void timer1_Tick(object sender, EventArgs e)
         {
             textBox1.Text = PspLogMsg;
+            UpdateMoveState();
+        }
+
+        private void UpdateMoveState()
+        {
+            try
+            {
+                var theVehicle = Vehicle.Instance;
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
+
+                var lastPos = aseMoveStatus.LastMapPosition;
+                string lastPosX = lastPos.X.ToString("F2");
+                ucMovePositionX.TagValue = lastPosX;
+                string lastPosY = lastPos.Y.ToString("F2");
+                ucMovePositionY.TagValue = lastPosY;
+
+                var lastAddress = aseMoveStatus.LastAddress;
+                ucMoveLastAddress.TagValue = lastAddress.Id;
+
+                var lastSection = aseMoveStatus.LastSection;
+                ucMoveLastSection.TagValue = lastSection.Id;
+
+                ucMoveIsMoveEnd.TagValue = aseMoveStatus.IsMoveEnd.ToString();
+
+                ucMoveMoveState.TagValue = aseMoveStatus.AseMoveState.ToString();
+
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
+
         }
 
         private void btnPauseAskPosition_Click(object sender, EventArgs e)
@@ -138,6 +172,11 @@ namespace Mirle.Agv.AseMiddler.View
         private void btnResumeAskPosition_Click(object sender, EventArgs e)
         {
             PauseOrResumeAskPosition?.Invoke(this, false);
+        }
+
+        private void btnRefreshPosition_Click(object sender, EventArgs e)
+        {
+            RefreshMoveStatusAndPosition?.Invoke(this, new EventArgs());
         }
     }
 

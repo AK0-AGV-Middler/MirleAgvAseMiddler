@@ -31,8 +31,7 @@
             this.components = new System.ComponentModel.Container();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageRobotCommnad = new System.Windows.Forms.TabPage();
-            this.txtRCstId = new System.Windows.Forms.TextBox();
-            this.txtLCstId = new System.Windows.Forms.TextBox();
+            this.btnRefreshRobotState = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.boxPioDirection = new System.Windows.Forms.ComboBox();
             this.txtToPort = new System.Windows.Forms.TextBox();
@@ -43,6 +42,7 @@
             this.btnSendRobot = new System.Windows.Forms.Button();
             this.pageChargeCommand = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnRefreshBatterySate = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnSearchChargeAddress = new System.Windows.Forms.Button();
             this.btnStopCharge = new System.Windows.Forms.Button();
@@ -51,12 +51,16 @@
             this.txtChargeAddress = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.ucRobotIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotRId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotRState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotLState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotLId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucBatteryCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucBatteryAh = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.btnRefreshBatterySate = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.pageRobotCommnad.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -77,8 +81,13 @@
             // 
             // pageRobotCommnad
             // 
-            this.pageRobotCommnad.Controls.Add(this.txtRCstId);
-            this.pageRobotCommnad.Controls.Add(this.txtLCstId);
+            this.pageRobotCommnad.Controls.Add(this.btnRefreshRobotState);
+            this.pageRobotCommnad.Controls.Add(this.ucRobotIsHome);
+            this.pageRobotCommnad.Controls.Add(this.ucRobotSlotRId);
+            this.pageRobotCommnad.Controls.Add(this.ucRobotSlotRState);
+            this.pageRobotCommnad.Controls.Add(this.ucRobotSlotLState);
+            this.pageRobotCommnad.Controls.Add(this.ucRobotSlotLId);
+            this.pageRobotCommnad.Controls.Add(this.ucRobotRobotState);
             this.pageRobotCommnad.Controls.Add(this.groupBox4);
             this.pageRobotCommnad.Controls.Add(this.btnSendRobot);
             this.pageRobotCommnad.Location = new System.Drawing.Point(4, 22);
@@ -89,19 +98,16 @@
             this.pageRobotCommnad.Text = "RobotCommnad";
             this.pageRobotCommnad.UseVisualStyleBackColor = true;
             // 
-            // txtRCstId
+            // btnRefreshRobotState
             // 
-            this.txtRCstId.Location = new System.Drawing.Point(276, 92);
-            this.txtRCstId.Name = "txtRCstId";
-            this.txtRCstId.Size = new System.Drawing.Size(240, 22);
-            this.txtRCstId.TabIndex = 11;
-            // 
-            // txtLCstId
-            // 
-            this.txtLCstId.Location = new System.Drawing.Point(276, 64);
-            this.txtLCstId.Name = "txtLCstId";
-            this.txtLCstId.Size = new System.Drawing.Size(240, 22);
-            this.txtLCstId.TabIndex = 11;
+            this.btnRefreshRobotState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshRobotState.Location = new System.Drawing.Point(699, 70);
+            this.btnRefreshRobotState.Name = "btnRefreshRobotState";
+            this.btnRefreshRobotState.Size = new System.Drawing.Size(156, 78);
+            this.btnRefreshRobotState.TabIndex = 50;
+            this.btnRefreshRobotState.Text = "更新手臂.儲位狀態";
+            this.btnRefreshRobotState.UseVisualStyleBackColor = true;
+            this.btnRefreshRobotState.Click += new System.EventHandler(this.btnRefreshRobotState_Click);
             // 
             // groupBox4
             // 
@@ -128,6 +134,7 @@
             // 
             // txtToPort
             // 
+            this.txtToPort.ImeMode = System.Windows.Forms.ImeMode.Alpha;
             this.txtToPort.Location = new System.Drawing.Point(130, 47);
             this.txtToPort.Name = "txtToPort";
             this.txtToPort.Size = new System.Drawing.Size(117, 22);
@@ -136,6 +143,7 @@
             // 
             // txtPortNumber
             // 
+            this.txtPortNumber.ImeMode = System.Windows.Forms.ImeMode.Alpha;
             this.txtPortNumber.Location = new System.Drawing.Point(129, 75);
             this.txtPortNumber.Name = "txtPortNumber";
             this.txtPortNumber.Size = new System.Drawing.Size(117, 22);
@@ -144,6 +152,7 @@
             // 
             // txtGateType
             // 
+            this.txtGateType.ImeMode = System.Windows.Forms.ImeMode.Alpha;
             this.txtGateType.Location = new System.Drawing.Point(6, 75);
             this.txtGateType.Name = "txtGateType";
             this.txtGateType.Size = new System.Drawing.Size(117, 22);
@@ -152,6 +161,7 @@
             // 
             // txtFromPort
             // 
+            this.txtFromPort.ImeMode = System.Windows.Forms.ImeMode.Alpha;
             this.txtFromPort.Location = new System.Drawing.Point(6, 47);
             this.txtFromPort.Name = "txtFromPort";
             this.txtFromPort.Size = new System.Drawing.Size(117, 22);
@@ -195,7 +205,6 @@
             this.groupBox2.Controls.Add(this.ucBatteryTemperature);
             this.groupBox2.Controls.Add(this.btnRefreshBatterySate);
             this.groupBox2.Controls.Add(this.ucBatteryVoltage);
-            this.groupBox2.Controls.Add(this.ucBatteryAh);
             this.groupBox2.Controls.Add(this.ucBatteryPercentage);
             this.groupBox2.Location = new System.Drawing.Point(294, 3);
             this.groupBox2.Name = "groupBox2";
@@ -203,6 +212,17 @@
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Info";
+            // 
+            // btnRefreshBatterySate
+            // 
+            this.btnRefreshBatterySate.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshBatterySate.Location = new System.Drawing.Point(462, 131);
+            this.btnRefreshBatterySate.Name = "btnRefreshBatterySate";
+            this.btnRefreshBatterySate.Size = new System.Drawing.Size(200, 42);
+            this.btnRefreshBatterySate.TabIndex = 3;
+            this.btnRefreshBatterySate.Text = "Refresh State";
+            this.btnRefreshBatterySate.UseVisualStyleBackColor = true;
+            this.btnRefreshBatterySate.Click += new System.EventHandler(this.btnRefreshBatterySate_Click);
             // 
             // groupBox1
             // 
@@ -283,6 +303,72 @@
             this.textBox1.Size = new System.Drawing.Size(1182, 481);
             this.textBox1.TabIndex = 4;
             // 
+            // ucRobotIsHome
+            // 
+            this.ucRobotIsHome.Location = new System.Drawing.Point(276, 83);
+            this.ucRobotIsHome.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRobotIsHome.Name = "ucRobotIsHome";
+            this.ucRobotIsHome.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotIsHome.TabIndex = 44;
+            this.ucRobotIsHome.TagColor = System.Drawing.Color.Black;
+            this.ucRobotIsHome.TagName = "Is Home";
+            this.ucRobotIsHome.TagValue = "false";
+            // 
+            // ucRobotSlotRId
+            // 
+            this.ucRobotSlotRId.Location = new System.Drawing.Point(558, 83);
+            this.ucRobotSlotRId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRobotSlotRId.Name = "ucRobotSlotRId";
+            this.ucRobotSlotRId.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotSlotRId.TabIndex = 45;
+            this.ucRobotSlotRId.TagColor = System.Drawing.Color.Black;
+            this.ucRobotSlotRId.TagName = "Slot R Id";
+            this.ucRobotSlotRId.TagValue = "PQR";
+            // 
+            // ucRobotSlotRState
+            // 
+            this.ucRobotSlotRState.Location = new System.Drawing.Point(558, 10);
+            this.ucRobotSlotRState.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRobotSlotRState.Name = "ucRobotSlotRState";
+            this.ucRobotSlotRState.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotSlotRState.TabIndex = 46;
+            this.ucRobotSlotRState.TagColor = System.Drawing.Color.Black;
+            this.ucRobotSlotRState.TagName = "Slot R State";
+            this.ucRobotSlotRState.TagValue = "Empty";
+            // 
+            // ucRobotSlotLState
+            // 
+            this.ucRobotSlotLState.Location = new System.Drawing.Point(417, 10);
+            this.ucRobotSlotLState.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRobotSlotLState.Name = "ucRobotSlotLState";
+            this.ucRobotSlotLState.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotSlotLState.TabIndex = 47;
+            this.ucRobotSlotLState.TagColor = System.Drawing.Color.Black;
+            this.ucRobotSlotLState.TagName = "Slot L State";
+            this.ucRobotSlotLState.TagValue = "Empty";
+            // 
+            // ucRobotSlotLId
+            // 
+            this.ucRobotSlotLId.Location = new System.Drawing.Point(417, 83);
+            this.ucRobotSlotLId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRobotSlotLId.Name = "ucRobotSlotLId";
+            this.ucRobotSlotLId.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotSlotLId.TabIndex = 48;
+            this.ucRobotSlotLId.TagColor = System.Drawing.Color.Black;
+            this.ucRobotSlotLId.TagName = "Slot L Id";
+            this.ucRobotSlotLId.TagValue = "ABC";
+            // 
+            // ucRobotRobotState
+            // 
+            this.ucRobotRobotState.Location = new System.Drawing.Point(276, 10);
+            this.ucRobotRobotState.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRobotRobotState.Name = "ucRobotRobotState";
+            this.ucRobotRobotState.Size = new System.Drawing.Size(135, 65);
+            this.ucRobotRobotState.TabIndex = 49;
+            this.ucRobotRobotState.TagColor = System.Drawing.Color.Black;
+            this.ucRobotRobotState.TagName = "Robot State";
+            this.ucRobotRobotState.TagValue = "Idle";
+            // 
             // ucBatteryCharging
             // 
             this.ucBatteryCharging.Location = new System.Drawing.Point(462, 21);
@@ -313,16 +399,6 @@
             this.ucBatteryVoltage.TagName = "Voltage";
             this.ucBatteryVoltage.TagValue = "55.66";
             // 
-            // ucBatteryAh
-            // 
-            this.ucBatteryAh.Location = new System.Drawing.Point(6, 114);
-            this.ucBatteryAh.Name = "ucBatteryAh";
-            this.ucBatteryAh.Size = new System.Drawing.Size(200, 59);
-            this.ucBatteryAh.TabIndex = 1;
-            this.ucBatteryAh.TagColor = System.Drawing.Color.Black;
-            this.ucBatteryAh.TagName = "AH";
-            this.ucBatteryAh.TagValue = "12.34";
-            // 
             // ucBatteryPercentage
             // 
             this.ucBatteryPercentage.Location = new System.Drawing.Point(6, 21);
@@ -332,17 +408,6 @@
             this.ucBatteryPercentage.TagColor = System.Drawing.Color.Black;
             this.ucBatteryPercentage.TagName = "Percentage";
             this.ucBatteryPercentage.TagValue = " 70.0";
-            // 
-            // btnRefreshBatterySate
-            // 
-            this.btnRefreshBatterySate.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRefreshBatterySate.Location = new System.Drawing.Point(462, 131);
-            this.btnRefreshBatterySate.Name = "btnRefreshBatterySate";
-            this.btnRefreshBatterySate.Size = new System.Drawing.Size(200, 42);
-            this.btnRefreshBatterySate.TabIndex = 3;
-            this.btnRefreshBatterySate.Text = "Refresh State";
-            this.btnRefreshBatterySate.UseVisualStyleBackColor = true;
-            this.btnRefreshBatterySate.Click += new System.EventHandler(this.btnRefreshBatterySate_Click);
             // 
             // AseRobotControlForm
             // 
@@ -355,7 +420,6 @@
             this.Text = "AseRobotControlForm";
             this.tabControl1.ResumeLayout(false);
             this.pageRobotCommnad.ResumeLayout(false);
-            this.pageRobotCommnad.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.pageChargeCommand.ResumeLayout(false);
@@ -376,12 +440,10 @@
         private System.Windows.Forms.TextBox txtFromPort;
         private System.Windows.Forms.Button btnSendRobot;
         private System.Windows.Forms.ComboBox boxPioDirection;
-        private System.Windows.Forms.TextBox txtLCstId;
         private System.Windows.Forms.CheckBox cbIsLoad;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.TextBox txtPortNumber;
         private System.Windows.Forms.TextBox txtGateType;
-        private System.Windows.Forms.TextBox txtRCstId;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.TabPage pageChargeCommand;
         private System.Windows.Forms.GroupBox groupBox1;
@@ -392,10 +454,16 @@
         private System.Windows.Forms.TextBox txtChargeAddress;
         private System.Windows.Forms.GroupBox groupBox2;
         private  UcVerticalLabelText ucBatteryPercentage;
-        private  UcVerticalLabelText ucBatteryAh;
         private  UcVerticalLabelText ucBatteryTemperature;
         private  UcVerticalLabelText ucBatteryVoltage;
         private  UcVerticalLabelText ucBatteryCharging;
         private System.Windows.Forms.Button btnRefreshBatterySate;
+        private System.Windows.Forms.Button btnRefreshRobotState;
+        private UcVerticalLabelText ucRobotIsHome;
+        private UcVerticalLabelText ucRobotSlotRId;
+        private UcVerticalLabelText ucRobotSlotRState;
+        private UcVerticalLabelText ucRobotSlotLState;
+        private UcVerticalLabelText ucRobotSlotLId;
+        private UcVerticalLabelText ucRobotRobotState;
     }
 }

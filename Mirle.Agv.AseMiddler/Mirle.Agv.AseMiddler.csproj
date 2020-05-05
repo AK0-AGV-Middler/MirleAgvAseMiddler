@@ -325,7 +325,7 @@
     <None Include="Resource\Close_32x32.png" />
     <None Include="Resource\Mirle_Home.JPG" />
     <None Include="Resource\Mirle_LOGO.jpg" />
-    <None Include="Resource\Mirle_口號.JPG" />
+    <None Include="Resource\Mirle_Slogan.JPG" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

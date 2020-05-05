@@ -40,6 +40,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<string> OnStatusChangeReportEvent;
         public event EventHandler<AseMoveStatus> OnPartMoveArrivalEvent;
         public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
+        public event EventHandler OnAgvlErrorEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -57,7 +58,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             thdWatchWifiSignalStrength = new Thread(WatchWifiSignalStrength);
             thdWatchWifiSignalStrength.IsBackground = true;
             thdWatchWifiSignalStrength.Start();
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AsePackage : 開始監看WIFI強度");
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AsePackage : Start WatchWifiSignalStrength");
         }
 
         private void WatchWifiSignalStrength()
@@ -89,6 +90,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                if (Vehicle.Instance.IsAgvcConnect)
+                {
                 List<AccessPoint> accessPoints = new Wifi().GetAccessPoints();
                 if (accessPoints.Any())
                 {
@@ -99,6 +102,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         return;
                     }
                 }
+                }    
 
                 SendWifiSignalStrength(0);
             }
@@ -433,9 +437,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                     break;
                 case "InterlockError":
                     aseRobotControl.OnRobotInterlockError();
+                    OnAgvlErrorEvent?.Invoke(this, new EventArgs());
                     break;
                 default:
                     aseRobotControl.OnRobotCommandError();
+                    OnAgvlErrorEvent?.Invoke(this, new EventArgs());
                     break;
             }
         }
@@ -538,6 +544,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     case EnumAseArrival.Fail:
                         aseMoveControl.MoveFinished(EnumMoveComplete.Fail);
+                        OnAgvlErrorEvent?.Invoke(this, new EventArgs());
                         break;
                     case EnumAseArrival.Arrival:
                         ArrivalPosition(psMessage);
@@ -644,7 +651,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case "0":
                     return false;
                 default:
-                    throw new Exception($"字串無法辨別真假.{v}");
+                    throw new Exception($"My bool parse fail. {v}");
             }
         }
 
@@ -683,32 +690,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseRobotStatus aseRobotStatus = new AseRobotStatus();
-                aseRobotStatus.RobotState = (EnumAseRobotState)Enum.Parse(typeof(EnumAseRobotState), psMessage.Substring(0, 1));
+                var robotState = (EnumAseRobotState)Enum.Parse(typeof(EnumAseRobotState), psMessage.Substring(0, 1));
+                aseRobotStatus.RobotState = robotState;
                 aseRobotStatus.IsHome = IsValueTrue(psMessage.Substring(1, 1));
-
-                //if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Idle && aseRobotStatus.RobotState == EnumAseRobotState.Error)
-                //{
-                //    theVehicle.AseRobotStatus = aseRobotStatus;
-                //    aseRobotControl.OnRobotInterlockError();
-                //}
-                //else if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Busy && aseRobotStatus.RobotState == EnumAseRobotState.Error)
-                //{
-                //    theVehicle.AseRobotStatus = aseRobotStatus;
-                //    aseRobotControl.OnRobotCommandError();
-                //}
-                //else if (theVehicle.AseRobotStatus.RobotState == EnumAseRobotState.Busy && aseRobotStatus.RobotState == EnumAseRobotState.Idle)
-                //{
-                //    theVehicle.AseRobotStatus = aseRobotStatus;
-                //    aseRobotControl.OnRobotCommandFinish();
-                //}
-                //else
-                //{
-                //    theVehicle.AseRobotStatus = aseRobotStatus;
-                //}
 
                 theVehicle.AseRobotStatus = aseRobotStatus;
 
-                OnStatusChangeReportEvent?.Invoke(this, $"UpdateRobotStatus:[{theVehicle.AseRobotStatus.RobotState}]");
+                OnStatusChangeReportEvent?.Invoke(this, $"UpdateRobotStatus:[{theVehicle.AseRobotStatus.RobotState}][RobotHome={theVehicle.AseRobotStatus.IsHome}]");
+
+                if (robotState== EnumAseRobotState.Error)
+                {
+                    OnAgvlErrorEvent?.Invoke(this, new EventArgs());
+                }
             }
             catch (Exception ex)
             {
@@ -721,11 +714,17 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                aseMoveStatus.AseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
+                var aseMoveState = (EnumAseMoveState)Enum.Parse(typeof(EnumAseMoveState), psMessage.Substring(0, 1));
+                aseMoveStatus.AseMoveState = aseMoveState;
                 aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(1, 3));
                 theVehicle.AseMoveStatus = aseMoveStatus;
 
                 OnStatusChangeReportEvent?.Invoke(this, $"UpdateMoveStatus:[{theVehicle.AseMoveStatus.AseMoveState}]");
+
+                if (aseMoveState== EnumAseMoveState.Error)
+                {
+                    OnAgvlErrorEvent?.Invoke(this, new EventArgs());
+                }
             }
             catch (Exception ex)
             {
@@ -736,7 +735,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void SetVehicleManual()
         {
             theVehicle.AutoState = EnumAutoState.Manual;
-            string msg = "車輛狀態切換 : Manual";
+            string msg = "AGVL switch to  : Manual";
             ImportantPspLog?.Invoke(this, msg);
         }
 
@@ -744,7 +743,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             theVehicle.AutoState = EnumAutoState.Auto;
 
-            string msg = "車輛狀態切換 : Auto";
+            string msg = "AGVL switch to  : Auto";
             ImportantPspLog?.Invoke(this, msg);
         }
 
@@ -878,7 +877,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case "N":
                     return false;
                 default:
-                    throw new Exception($"字串無法辨別正負.{v}");
+                    throw new Exception($"My positive parse fail. {v}");
             }
         }
 

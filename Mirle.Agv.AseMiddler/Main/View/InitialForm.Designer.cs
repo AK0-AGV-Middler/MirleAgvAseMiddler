@@ -97,7 +97,7 @@
             // 
             // PictureBox3
             // 
-            this.PictureBox3.Image = global::Mirle.Agv.AseMiddler.Properties.Resources.Mirle_口號;
+            this.PictureBox3.Image = global::Mirle.Agv.AseMiddler.Properties.Resources.Mirle_Slogan;
             this.PictureBox3.Location = new System.Drawing.Point(165, 12);
             this.PictureBox3.Name = "PictureBox3";
             this.PictureBox3.Size = new System.Drawing.Size(219, 31);

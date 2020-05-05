@@ -31,9 +31,17 @@
             this.components = new System.ComponentModel.Container();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageMoveAppend = new System.Windows.Forms.TabPage();
+            this.ucMoveMoveState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveLastAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveLastSection = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePositionY = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePositionX = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.btnResumeAskPosition = new System.Windows.Forms.Button();
+            this.btnRefreshPosition = new System.Windows.Forms.Button();
             this.btnPauseAskPosition = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.boxKeepOrGo = new System.Windows.Forms.ComboBox();
             this.btnSearchMapAddress = new System.Windows.Forms.Button();
             this.txtMapAddress = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -46,7 +54,6 @@
             this.numMovePositionX = new System.Windows.Forms.NumericUpDown();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.boxKeepOrGo = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.pageMoveAppend.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -68,17 +75,90 @@
             // 
             // pageMoveAppend
             // 
+            this.pageMoveAppend.Controls.Add(this.ucMoveMoveState);
+            this.pageMoveAppend.Controls.Add(this.ucMoveLastAddress);
+            this.pageMoveAppend.Controls.Add(this.ucMoveIsMoveEnd);
+            this.pageMoveAppend.Controls.Add(this.ucMoveLastSection);
+            this.pageMoveAppend.Controls.Add(this.ucMovePositionY);
+            this.pageMoveAppend.Controls.Add(this.ucMovePositionX);
             this.pageMoveAppend.Controls.Add(this.btnResumeAskPosition);
+            this.pageMoveAppend.Controls.Add(this.btnRefreshPosition);
             this.pageMoveAppend.Controls.Add(this.btnPauseAskPosition);
             this.pageMoveAppend.Controls.Add(this.groupBox1);
             this.pageMoveAppend.Controls.Add(this.groupBox3);
             this.pageMoveAppend.Location = new System.Drawing.Point(4, 22);
             this.pageMoveAppend.Name = "pageMoveAppend";
-            this.pageMoveAppend.Padding = new System.Windows.Forms.Padding(3);
+            this.pageMoveAppend.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.pageMoveAppend.Size = new System.Drawing.Size(1134, 225);
             this.pageMoveAppend.TabIndex = 0;
             this.pageMoveAppend.Text = "MoveAppend";
             this.pageMoveAppend.UseVisualStyleBackColor = true;
+            // 
+            // ucMoveMoveState
+            // 
+            this.ucMoveMoveState.Location = new System.Drawing.Point(966, 6);
+            this.ucMoveMoveState.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucMoveMoveState.Name = "ucMoveMoveState";
+            this.ucMoveMoveState.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveMoveState.TabIndex = 5;
+            this.ucMoveMoveState.TagColor = System.Drawing.Color.Black;
+            this.ucMoveMoveState.TagName = "MoveState";
+            this.ucMoveMoveState.TagValue = "Idle";
+            // 
+            // ucMoveLastAddress
+            // 
+            this.ucMoveLastAddress.Location = new System.Drawing.Point(825, 78);
+            this.ucMoveLastAddress.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucMoveLastAddress.Name = "ucMoveLastAddress";
+            this.ucMoveLastAddress.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveLastAddress.TabIndex = 6;
+            this.ucMoveLastAddress.TagColor = System.Drawing.Color.Black;
+            this.ucMoveLastAddress.TagName = "Last Address";
+            this.ucMoveLastAddress.TagValue = "10001";
+            // 
+            // ucMoveIsMoveEnd
+            // 
+            this.ucMoveIsMoveEnd.Location = new System.Drawing.Point(966, 78);
+            this.ucMoveIsMoveEnd.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucMoveIsMoveEnd.Name = "ucMoveIsMoveEnd";
+            this.ucMoveIsMoveEnd.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveIsMoveEnd.TabIndex = 7;
+            this.ucMoveIsMoveEnd.TagColor = System.Drawing.Color.Black;
+            this.ucMoveIsMoveEnd.TagName = "Is Move End";
+            this.ucMoveIsMoveEnd.TagValue = "True";
+            // 
+            // ucMoveLastSection
+            // 
+            this.ucMoveLastSection.Location = new System.Drawing.Point(825, 6);
+            this.ucMoveLastSection.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucMoveLastSection.Name = "ucMoveLastSection";
+            this.ucMoveLastSection.Size = new System.Drawing.Size(135, 65);
+            this.ucMoveLastSection.TabIndex = 8;
+            this.ucMoveLastSection.TagColor = System.Drawing.Color.Black;
+            this.ucMoveLastSection.TagName = "Last Section";
+            this.ucMoveLastSection.TagValue = "00101";
+            // 
+            // ucMovePositionY
+            // 
+            this.ucMovePositionY.Location = new System.Drawing.Point(966, 149);
+            this.ucMovePositionY.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucMovePositionY.Name = "ucMovePositionY";
+            this.ucMovePositionY.Size = new System.Drawing.Size(135, 65);
+            this.ucMovePositionY.TabIndex = 9;
+            this.ucMovePositionY.TagColor = System.Drawing.Color.Black;
+            this.ucMovePositionY.TagName = "Y";
+            this.ucMovePositionY.TagValue = "-13579";
+            // 
+            // ucMovePositionX
+            // 
+            this.ucMovePositionX.Location = new System.Drawing.Point(825, 149);
+            this.ucMovePositionX.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucMovePositionX.Name = "ucMovePositionX";
+            this.ucMovePositionX.Size = new System.Drawing.Size(135, 65);
+            this.ucMovePositionX.TabIndex = 10;
+            this.ucMovePositionX.TagColor = System.Drawing.Color.Black;
+            this.ucMovePositionX.TagName = "X";
+            this.ucMovePositionX.TagValue = "123456";
             // 
             // btnResumeAskPosition
             // 
@@ -90,6 +170,17 @@
             this.btnResumeAskPosition.Text = "Resume Ask Position";
             this.btnResumeAskPosition.UseVisualStyleBackColor = true;
             this.btnResumeAskPosition.Click += new System.EventHandler(this.btnResumeAskPosition_Click);
+            // 
+            // btnRefreshPosition
+            // 
+            this.btnRefreshPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshPosition.Location = new System.Drawing.Point(534, 159);
+            this.btnRefreshPosition.Name = "btnRefreshPosition";
+            this.btnRefreshPosition.Size = new System.Drawing.Size(272, 33);
+            this.btnRefreshPosition.TabIndex = 4;
+            this.btnRefreshPosition.Text = "Refresh  Position";
+            this.btnRefreshPosition.UseVisualStyleBackColor = true;
+            this.btnRefreshPosition.Click += new System.EventHandler(this.btnRefreshPosition_Click);
             // 
             // btnPauseAskPosition
             // 
@@ -114,6 +205,14 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "MapAddress";
             // 
+            // boxKeepOrGo
+            // 
+            this.boxKeepOrGo.FormattingEnabled = true;
+            this.boxKeepOrGo.Location = new System.Drawing.Point(6, 42);
+            this.boxKeepOrGo.Name = "boxKeepOrGo";
+            this.boxKeepOrGo.Size = new System.Drawing.Size(247, 20);
+            this.boxKeepOrGo.TabIndex = 7;
+            // 
             // btnSearchMapAddress
             // 
             this.btnSearchMapAddress.Location = new System.Drawing.Point(6, 153);
@@ -126,6 +225,7 @@
             // 
             // txtMapAddress
             // 
+            this.txtMapAddress.ImeMode = System.Windows.Forms.ImeMode.Alpha;
             this.txtMapAddress.Location = new System.Drawing.Point(6, 15);
             this.txtMapAddress.Name = "txtMapAddress";
             this.txtMapAddress.Size = new System.Drawing.Size(247, 22);
@@ -271,19 +371,11 @@
             this.timer1.Interval = 500;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // boxKeepOrGo
-            // 
-            this.boxKeepOrGo.FormattingEnabled = true;
-            this.boxKeepOrGo.Location = new System.Drawing.Point(6, 42);
-            this.boxKeepOrGo.Name = "boxKeepOrGo";
-            this.boxKeepOrGo.Size = new System.Drawing.Size(247, 20);
-            this.boxKeepOrGo.TabIndex = 7;
-            // 
             // AseMoveControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1166, 720);
+            this.ClientSize = new System.Drawing.Size(1166, 705);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.tabControl1);
             this.Name = "AseMoveControlForm";
@@ -322,5 +414,12 @@
         private System.Windows.Forms.Button btnPauseAskPosition;
         private System.Windows.Forms.Button btnResumeAskPosition;
         private System.Windows.Forms.ComboBox boxKeepOrGo;
+        private System.Windows.Forms.Button btnRefreshPosition;
+        private UcVerticalLabelText ucMoveMoveState;
+        private UcVerticalLabelText ucMoveLastAddress;
+        private UcVerticalLabelText ucMoveIsMoveEnd;
+        private UcVerticalLabelText ucMoveLastSection;
+        private UcVerticalLabelText ucMovePositionY;
+        private UcVerticalLabelText ucMovePositionX;
     }
 }

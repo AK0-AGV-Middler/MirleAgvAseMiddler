@@ -24,7 +24,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsWatchPositionStop { get; private set; } = false;
 
         public event EventHandler<EnumMoveComplete> OnMoveFinishedEvent;
-        public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;
+        //public event EventHandler<EnumMoveComplete> OnRetryMoveFinishEvent;
         public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
 
         public string StopResult { get; set; } = "";
@@ -108,17 +108,17 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void OnRetryMoveFinish(EnumMoveComplete enumMoveComplete)
-        {
-            try
-            {
-                OnRetryMoveFinishEvent?.Invoke(this, enumMoveComplete);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }        
+        //public void OnRetryMoveFinish(EnumMoveComplete enumMoveComplete)
+        //{
+        //    try
+        //    {
+        //        OnRetryMoveFinishEvent?.Invoke(this, enumMoveComplete);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+        //    }
+        //}        
 
         public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumKeepOrGo keepOrGo)
         {

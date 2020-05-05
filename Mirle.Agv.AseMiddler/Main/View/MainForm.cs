@@ -674,6 +674,16 @@ namespace Mirle.Agv.AseMiddler.View
             aseMoveControlForm.SendMove += AseMoveControlForm_SendMove;
             aseMoveControlForm.OnException += AseControlForm_OnException;
             aseMoveControlForm.PauseOrResumeAskPosition += AseMoveControlForm_PauseOrResumeAskPosition;
+            aseMoveControlForm.RefreshMoveStatusAndPosition += AseMoveControlForm_RefreshMoveStatusAndPosition;
+        }
+
+        private void AseMoveControlForm_RefreshMoveStatusAndPosition(object sender, EventArgs e)
+        {
+            asePackage.aseMoveControl.SendPositionReportRequest();
+
+            SpinWait.SpinUntil(() => false, 50);
+
+            asePackage.aseMoveControl.RefreshMoveState();
         }
 
         private void btnRefreshPosition_Click(object sender, EventArgs e)
@@ -764,6 +774,23 @@ namespace Mirle.Agv.AseMiddler.View
             asePackage.AllPspLog += aseRobotControlForm.AsePackage_AllPspLog;
             aseRobotControlForm.SendChargeCommand += AseRobotControlForm_SendChargeCommand;
             aseRobotControlForm.RefreshBatteryState += AseRobotControlForm_RefreshBatteryState;
+            aseRobotControlForm.RefreshRobotState += AseRobotControlForm_RefreshRobotState;
+        }
+
+        private void AseRobotControlForm_RefreshRobotState(object sender, EventArgs e)
+        {
+            try
+            {
+                asePackage.aseRobotControl.RefreshRobotState();
+
+                SpinWait.SpinUntil(() => false, 50);
+
+                asePackage.aseRobotControl.RefreshCarrierSlotState();
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         private void AseRobotControlForm_RefreshBatteryState(object sender, EventArgs e)
@@ -915,7 +942,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void MainFlowHandler_OnAvoidCommandCheckedEvent(object sender, AseMovingGuide aseMovingGuide)
         {
-            SetTransferCommandMsg("[避車路徑]", aseMovingGuide);
+            SetTransferCommandMsg("[ Avoid ]", aseMovingGuide);
         }
 
         private void MainFlowHandler_OnOverrideCommandCheckedEvent(object sender, AgvcOverrideCmd agvcOverrideCmd)
@@ -925,7 +952,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void MainFlowHandler_OnTransferCommandCheckedEvent(object sender, AgvcTransCmd agvcTransCmd)
         {
-            SetTransferCommandMsg("[一般路徑]", agvcTransCmd);
+            SetTransferCommandMsg("[ Transfer ]", agvcTransCmd);
         }
 
         private void SetTransferCommandMsg(string type, AgvcTransCmd agvcTransCmd)
@@ -934,10 +961,12 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
                                       type, "\t", $"{agvcTransCmd.AgvcTransCommandType}", "\r\n",
-                                      $"[Command號={agvcTransCmd.CommandId}]\r\n",
-                                      $"[貨號={agvcTransCmd.CassetteId}]\r\n",
-                                      $"[取貨站={agvcTransCmd.LoadAddressId}]\r\n",
-                                      $"[放貨站={agvcTransCmd.UnloadAddressId}]\r\n"
+                                      $"[Command ID={agvcTransCmd.CommandId}]\r\n",
+                                      $"[CST ID={agvcTransCmd.CassetteId}]\r\n",
+                                      $"[Load Adr={agvcTransCmd.LoadAddressId}]\r\n",
+                                      $"[Load Port ID={agvcTransCmd.LoadPortId}]\r\n",
+                                      $"[Unload Adr={agvcTransCmd.UnloadAddressId}]\r\n",
+                                      $"[Unload Port Id={agvcTransCmd.UnloadPortId}]\r\n"
                                       );
 
                 if (TransferCommandMsg.Length > 32767)
@@ -958,7 +987,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
                                       type, "\t", $"{aseMovingGuide.SeqNum}", "\r\n",
-                                      $"[避車終點={aseMovingGuide.ToAddressId}]\r\n"
+                                      $"[Avoid Adr={aseMovingGuide.ToAddressId}]\r\n"
                                       );
 
                 if (TransferCommandMsg.Length > 32767)
@@ -1007,8 +1036,8 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
 
-                string result = string.Concat($"移動\t{moveCmdInfo.GetTransferStepType()}\r\n",
-                                       $"[Command號={moveCmdInfo.CmdId}]\r\n",
+                string result = string.Concat($"Move\t{moveCmdInfo.GetTransferStepType()}\r\n",
+                                       $"[Command ID={moveCmdInfo.CmdId}]\r\n",
                                        $"[Addresses={GuideListToString(theVehicle.AseMovingGuide.GuideAddressIds)}]\r\n",
                                        $"[Sections={GuideListToString(theVehicle.AseMovingGuide.GuideSectionIds)}]"
                                        );
@@ -1027,13 +1056,14 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 RobotCommand robotCommand = (RobotCommand)transferStep;
-                return string.Concat($"類型\t{robotCommand.GetTransferStepType()}\r\n",
-                                      $"[Command號={robotCommand.CmdId}]\r\n",
-                                      $"[貨號={robotCommand.CassetteId}]\r\n",
-                                      $"[站點={robotCommand.PortAddressId}]\r\n",
-                                      $"[PIO方向={robotCommand.PioDirection}]\r\n",
-                                      $"[SlotNumber={robotCommand.SlotNumber}]\r\n",
-                                      $"[GateType={theMapInfo.gateTypeMap[robotCommand.PortAddressId]}]");
+                return string.Concat($" Type \t{robotCommand.GetTransferStepType()}\r\n",
+                                      $"[ Command ID ={robotCommand.CmdId}]\r\n",
+                                      $"[ CST ID ={robotCommand.CassetteId}]\r\n",
+                                      $"[ Port Adr ={robotCommand.PortAddressId}]\r\n",
+                                      $"[ Port Num ={robotCommand.PortNumber}]\r\n",
+                                      $"[ PIO Direction ={robotCommand.PioDirection}]\r\n",
+                                      $"[ SlotNumber ={robotCommand.SlotNumber}]\r\n",
+                                      $"[ GateType ={theMapInfo.gateTypeMap[robotCommand.PortAddressId]}]");
             }
             catch (Exception ex)
             {
@@ -1086,10 +1116,98 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateAgvlConnection();
                 //UpdateAgvFailResult();
                 UpdateReserveStopState();
+                UpdateCannotAutoReason();
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void UpdateCannotAutoReason()
+        {
+            try
+            {
+                if (VehicleLocationLost())
+                {
+                    return;
+                }
+                else if (MoveStateError())
+                {
+                    return;
+                }
+                else if (RobotStateError())
+                {
+                    return;
+                }
+                else
+                {
+                    txtCannotAutoReason.Text = "Can Auto";
+                    txtCannotAutoReason.BackColor = Color.LightGreen;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private bool RobotStateError()
+        {
+            var aseRobotStatus = theVehicle.AseRobotStatus;
+            if (aseRobotStatus.RobotState != EnumAseRobotState.Idle)
+            {
+                txtCannotAutoReason.Text = $"Robot State = {aseRobotStatus.RobotState}";
+                txtCannotAutoReason.BackColor = Color.Pink;
+                return true;
+
+            }
+            else if (!aseRobotStatus.IsHome)
+            {
+                txtCannotAutoReason.Text = $"Robot IsHome = {aseRobotStatus.IsHome}";
+                txtCannotAutoReason.BackColor = Color.Pink;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool MoveStateError()
+        {
+            var moveState = theVehicle.AseMoveStatus.AseMoveState;
+            if (moveState != EnumAseMoveState.Idle && moveState != EnumAseMoveState.Block)
+            {
+                txtCannotAutoReason.Text = $"Move State = {moveState}";
+                txtCannotAutoReason.BackColor = Color.Pink;
+                return true;
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool VehicleLocationLost()
+        {
+            if (theVehicle.AseMoveStatus.LastSection == null || string.IsNullOrEmpty(theVehicle.AseMoveStatus.LastSection.Id))
+            {
+                txtCannotAutoReason.Text = "Section Lost";
+                txtCannotAutoReason.BackColor = Color.Pink;
+                return true;
+            }
+            else if (theVehicle.AseMoveStatus.LastAddress == null || string.IsNullOrEmpty(theVehicle.AseMoveStatus.LastAddress.Id))
+            {
+                txtCannotAutoReason.Text = "Address Lost";
+                txtCannotAutoReason.BackColor = Color.Pink;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -1122,13 +1240,13 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (IsAgvcConnect)
                 {
-                    txtAgvcConnection.Text = "AGVC 連線中";
+                    txtAgvcConnection.Text = "AGVC Connect";
                     txtAgvcConnection.BackColor = Color.LightGreen;
                     radAgvcOnline.Checked = true;
                 }
                 else
                 {
-                    txtAgvcConnection.Text = "AGVC 斷線";
+                    txtAgvcConnection.Text = "AGVC Dis-Connect";
                     txtAgvcConnection.BackColor = Color.Pink;
                     radAgvcOffline.Checked = true;
                 }
@@ -1144,13 +1262,13 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (IsAgvlConnect)
                 {
-                    txtAgvlConnection.Text = "AGVL 連線中";
+                    txtAgvlConnection.Text = "AGVL  Connect ";
                     txtAgvlConnection.BackColor = Color.LightGreen;
                     radAgvlOnline.Checked = true;
                 }
                 else
                 {
-                    txtAgvlConnection.Text = "AGVL 斷線";
+                    txtAgvlConnection.Text = "AGVL  Dis-Connect ";
                     txtAgvlConnection.BackColor = Color.Pink;
                     radAgvlOffline.Checked = true;
                 }
@@ -1546,11 +1664,11 @@ namespace Mirle.Agv.AseMiddler.View
                         {
                             TakeAPicture();
                         }
-                        AppendDebugLogMsg($"Manual 切換 Auto  ok ");
+                        AppendDebugLogMsg($"Manual switch to  Auto  ok ");
                         ResetAllAbnormalMsg();
                         break;
                     case EnumAutoState.Manual:
-                        AppendDebugLogMsg($"Auto 切換 Manual  ok ");
+                        AppendDebugLogMsg($"Auto switch to  Manual  ok ");
 
                         break;
                     case EnumAutoState.PreManual:

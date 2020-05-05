@@ -60,11 +60,11 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (isConnect)
                 {
-                    ConnectionMsg = "連線中";
+                    ConnectionMsg = " Connect ";
                 }
                 else
                 {
-                    ConnectionMsg = "已斷線";
+                    ConnectionMsg = "已 Dis-Connect ";
                 }
             }
             catch (Exception ex)

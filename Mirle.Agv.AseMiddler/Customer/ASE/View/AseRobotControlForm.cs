@@ -17,6 +17,7 @@ namespace Mirle.Agv.AseMiddler.View
         public event EventHandler<AseRobotEventArgs> SendRobotCommand;
         public event EventHandler<AseChargeEventArgs> SendChargeCommand;
         public event EventHandler RefreshBatteryState;
+        public event EventHandler RefreshRobotState;
         public event EventHandler<string> OnException;
 
         public string LCassetteId { get; set; } = "";
@@ -83,15 +84,59 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            txtLCstId.Text = LCassetteId;
-            txtRCstId.Text = RCassetteId;
             textBox1.Text = PspLogMsg;
+            UpdateRobotState();
+            UpdateSlotState();
+            UpdateBatteryState();
             ucBatteryPercentage.TagValue = BatteryPercentage;
-            ucBatteryAh.TagValue = BatteryAH;
             ucBatteryVoltage.TagValue = BatteryVoltage;
             ucBatteryTemperature.TagValue = BatteryTemperature;
             ucBatteryCharging.TagValue = Vehicle.Instance.IsCharging ? "Yes" : "No";
             ucBatteryCharging.TagColor = Vehicle.Instance.IsCharging ? Color.LightGreen : Color.Pink;
+        }
+
+        private void UpdateBatteryState()
+        {
+            try
+            {
+                ucBatteryPercentage.TagValue = BatteryPercentage;
+                ucBatteryVoltage.TagValue = BatteryVoltage;
+                ucBatteryTemperature.TagValue = BatteryTemperature;
+                ucBatteryCharging.TagValue = Vehicle.Instance.IsCharging ? "Yes" : "No";
+                ucBatteryCharging.TagColor = Vehicle.Instance.IsCharging ? Color.LightGreen : Color.Pink;
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
+        }
+
+        private void UpdateSlotState()
+        {
+            try
+            {
+                ucRobotSlotLState.TagValue = Vehicle.Instance.AseCarrierSlotL.CarrierSlotStatus.ToString();
+                ucRobotSlotLId.TagValue = Vehicle.Instance.AseCarrierSlotL.CarrierId;
+                ucRobotSlotRState.TagValue = Vehicle.Instance.AseCarrierSlotR.CarrierSlotStatus.ToString();
+                ucRobotSlotRId.TagValue = Vehicle.Instance.AseCarrierSlotR.CarrierId;
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
+        }
+
+        private void UpdateRobotState()
+        {
+            try
+            {
+                ucRobotRobotState.TagValue = Vehicle.Instance.AseRobotStatus.RobotState.ToString();
+                ucRobotIsHome.TagValue = Vehicle.Instance.AseRobotStatus.IsHome.ToString();
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
         }
 
         public void AsePackage_AllPspLog(object sender, string e)
@@ -143,6 +188,11 @@ namespace Mirle.Agv.AseMiddler.View
         private void btnRefreshBatterySate_Click(object sender, EventArgs e)
         {
             RefreshBatteryState?.Invoke(this, e);
+        }
+
+        private void btnRefreshRobotState_Click(object sender, EventArgs e)
+        {
+            RefreshRobotState?.Invoke(this, e);
         }
     }
 
