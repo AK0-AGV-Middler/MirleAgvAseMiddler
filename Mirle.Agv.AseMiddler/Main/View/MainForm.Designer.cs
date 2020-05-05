@@ -174,6 +174,11 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.系統ToolStripMenuItem,
+            this.語言ToolStripMenuItem,
+            this.模式ToolStripMenuItem,
+            this.工程師ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1375, 24);
@@ -194,25 +199,25 @@
             // 啟動ToolStripMenuItem
             // 
             this.啟動ToolStripMenuItem.Name = "啟動ToolStripMenuItem";
-            this.啟動ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+            this.啟動ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.啟動ToolStripMenuItem.Text = "啟動";
             // 
             // 登入ToolStripMenuItem
             // 
             this.登入ToolStripMenuItem.Name = "登入ToolStripMenuItem";
-            this.登入ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+            this.登入ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.登入ToolStripMenuItem.Text = "登入";
             // 
             // 登出ToolStripMenuItem
             // 
             this.登出ToolStripMenuItem.Name = "登出ToolStripMenuItem";
-            this.登出ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+            this.登出ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.登出ToolStripMenuItem.Text = "登出";
             // 
             // 關閉ToolStripMenuItem
             // 
             this.關閉ToolStripMenuItem.Name = "關閉ToolStripMenuItem";
-            this.關閉ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+            this.關閉ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.關閉ToolStripMenuItem.Text = "關閉";
             this.關閉ToolStripMenuItem.Click += new System.EventHandler(this.關閉ToolStripMenuItem_Click);
             // 
@@ -753,10 +758,10 @@
             this.pageMoveState.Controls.Add(this.ucMovePositionY);
             this.pageMoveState.Controls.Add(this.ucMovePositionX);
             this.pageMoveState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.pageMoveState.Location = new System.Drawing.Point(4, 22);
+            this.pageMoveState.Location = new System.Drawing.Point(4, 29);
             this.pageMoveState.Name = "pageMoveState";
             this.pageMoveState.Padding = new System.Windows.Forms.Padding(3);
-            this.pageMoveState.Size = new System.Drawing.Size(607, 683);
+            this.pageMoveState.Size = new System.Drawing.Size(607, 676);
             this.pageMoveState.TabIndex = 0;
             this.pageMoveState.Text = "Move";
             this.pageMoveState.UseVisualStyleBackColor = true;

@@ -1270,7 +1270,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void LoadComplete(string cmdId)
         {
             AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
-            agvcTransCmd.CommandState = CommandState.UnloadEnroute;
+            agvcTransCmd.EnrouteState = CommandState.UnloadEnroute;
             StatusChangeReport();
             Send_Cmd136_TransferEventReport(EventType.LoadComplete, cmdId);
         }
@@ -1285,7 +1285,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void UnloadComplete(string cmdId)
         {
             AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
-            agvcTransCmd.CommandState = CommandState.None;
+            agvcTransCmd.EnrouteState = CommandState.None;
             StatusChangeReport();
             Send_Cmd136_TransferEventReport(EventType.UnloadComplete, cmdId);
         }
@@ -1613,9 +1613,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             List<AgvcTransCmd> agvcTransCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
             report.CmdId1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].CommandId : "";
-            report.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].CommandState : CommandState.None;
+            report.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].EnrouteState : CommandState.None;
             report.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
-            report.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandState : CommandState.None;
+            report.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
 
             report.HasCstL = theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
             report.CstIdL = theVehicle.AseCarrierSlotL.CarrierId;
@@ -1669,9 +1669,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 List<AgvcTransCmd> agvcTransCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
                 response.CmdId1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].CommandId : "";
-                response.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].CommandState : CommandState.None;
+                response.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].EnrouteState : CommandState.None;
                 response.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
-                response.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandState : CommandState.None;
+                response.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
 
 
                 WrapperMessage wrappers = new WrapperMessage();

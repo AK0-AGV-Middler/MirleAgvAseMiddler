@@ -24,9 +24,8 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public double CommandDistance { get; set; }
         public CompleteStatus CompleteStatus { get; set; }
         public bool IsAvoidComplete { get; set; }
-        public int RobotNgRetryTimes { get; set; } = 1;
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
-        public CommandState CommandState { get; set; } = CommandState.None;
+        public CommandState EnrouteState { get; set; } = CommandState.None;
         public string LotId { get; set; } = "";
         public string LoadPortId { get; set; } = "";
         public string UnloadPortId { get; set; } = "";
@@ -151,7 +150,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             try
             {
                 LoadAddressId = transRequest.LoadAdr;
-                CommandState = CommandState.LoadEnroute;
+                EnrouteState = CommandState.LoadEnroute;
             }
             catch (Exception ex)
             {
@@ -167,7 +166,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             try
             {
                 UnloadAddressId = transRequest.DestinationAdr;
-                CommandState = CommandState.UnloadEnroute;
+                EnrouteState = CommandState.UnloadEnroute;
             }
             catch (Exception ex)
             {
@@ -184,7 +183,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             {
                 LoadAddressId = transRequest.LoadAdr;
                 UnloadAddressId = transRequest.DestinationAdr;
-                CommandState = CommandState.LoadEnroute;
+                EnrouteState = CommandState.LoadEnroute;
             }
             catch (Exception ex)
             {

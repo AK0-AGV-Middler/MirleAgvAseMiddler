@@ -938,7 +938,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 PauseTransfer();
                 theVehicle.AgvcTransCmdBuffer.Add(agvcTransCmd.CommandId, agvcTransCmd);
-                agvcTransCmd.RobotNgRetryTimes = mainFlowConfig.RobotNgRetryTimes;
                 SetupTransferSteps(agvcTransCmd);
                 agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
                 if (theVehicle.AgvcTransCmdBuffer.Count != 2) GoNextTransferStep = true;
@@ -1031,7 +1030,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             var msg = $"MainFlow :  Get [ Override ]Command[{agvcOverrideCmd.CommandId}],  start check .";
             OnMessageShowEvent?.Invoke(this, msg);
 
-            //#region  Override 檢查
+            #region  Override 檢查
             //try
             //{
             //    agvcConnector.PauseAskReserve();
@@ -1215,7 +1214,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             //    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             //}
 
-            //#endregion
+            #endregion
         }
 
         private void RejectTransferCommandAndResume(int alarmCode, string reason, AgvcTransCmd agvcTransferCmd)

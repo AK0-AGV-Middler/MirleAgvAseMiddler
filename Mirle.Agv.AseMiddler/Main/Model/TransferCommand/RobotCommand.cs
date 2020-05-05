@@ -12,7 +12,6 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public string PortAddressId { get; set; } = "";
         public string CassetteId { get; set; } = "";
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
-        public int RobotNgRetryTimes { get; set; } = 1;
         public EnumAddressDirection PioDirection { get; set; } = EnumAddressDirection.None;
         public string GateType { get; set; } = "0";
         public string PortNumber { get; set; } = "1";
@@ -21,7 +20,6 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         {
             this.CassetteId = agvcTransCmd.CassetteId;
             this.SlotNumber = agvcTransCmd.SlotNumber;
-            this.RobotNgRetryTimes = agvcTransCmd.RobotNgRetryTimes;
         }
 
     }
