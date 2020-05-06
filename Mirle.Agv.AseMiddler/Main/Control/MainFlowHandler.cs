@@ -248,7 +248,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 alarmHandler.OnResetAllAlarmsEvent += asePackage.aseBuzzerControl.ResetAllAlarmCode;
                 alarmHandler.OnResetAllAlarmsEvent += agvcConnector.AlarmHandler_OnResetAllAlarmsEvent;
-                              
+
                 asePackage.aseBuzzerControl.OnAlarmCodeSetEvent += AseBuzzerControl_OnAlarmCodeSetEvent1;
                 asePackage.aseBuzzerControl.OnAlarmCodeResetEvent += AseBuzzerControl_OnAlarmCodeResetEvent;
 
@@ -285,7 +285,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AseBuzzerControl_OnAlarmCodeSetEvent1(object sender, int id)
         {
             alarmHandler.SetAlarm(id);
-        }        
+        }
 
         private void AsePackage_OnPositionChangeEvent(object sender, AseMoveStatus aseMoveStatus)
         {
@@ -523,6 +523,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void ClearTransferSteps(string cmdId)
         {
             IsVisitTransferStepPause = true;
+            SpinWait.SpinUntil(() => false, 2000);
             GoNextTransferStep = false;
             int transferStepCountBeforeRemove = transferSteps.Count;
             transferSteps.RemoveAll(x => x.CmdId == cmdId);
@@ -961,19 +962,69 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             var slotLState = theVehicle.AseCarrierSlotL.CarrierSlotStatus;
             var slotRState = theVehicle.AseCarrierSlotR.CarrierSlotStatus;
+            var agvcTransCmdBuffer = theVehicle.AgvcTransCmdBuffer.Values.ToList();
 
-            if (slotLState != EnumAseCarrierSlotStatus.Empty&& slotRState != EnumAseCarrierSlotStatus.Empty)
+            if (slotLState != EnumAseCarrierSlotStatus.Empty && slotRState != EnumAseCarrierSlotStatus.Empty)
             {
                 throw new Exception("Vehicle no Slot to load.");
             }
-            else if (slotLState == EnumAseCarrierSlotStatus.Empty)
+            else if (theVehicle.AgvcTransCmdBuffer.Count >= 2)
             {
-                return EnumSlotNumber.L;
+                throw new Exception("Vehicle no Slot to load.");
             }
-            else
+            else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
             {
-                return EnumSlotNumber.R;
+                var curCmd = theVehicle.AgvcTransCmdBuffer.Values.First();
+                switch (curCmd.EnrouteState)
+                {
+                 
+                    case CommandState.LoadEnroute:                       
+                    case CommandState.UnloadEnroute:
+                        if (curCmd.SlotNumber == EnumSlotNumber.L)
+                        {
+                            if (slotRState != EnumAseCarrierSlotStatus.Empty)
+                            {
+                                throw new Exception("Vehicle no Slot to load.");
+                            }
+                            else
+                            {
+                                return EnumSlotNumber.R;
+                            }
+                        }
+                        else
+                        {
+                            if (slotLState != EnumAseCarrierSlotStatus.Empty)
+                            {
+                                throw new Exception("Vehicle no Slot to load.");
+                            }
+                            else
+                            {
+                                return EnumSlotNumber.L;
+                            }
+                        }
+                    case CommandState.None:
+                    default:
+                        if (slotLState == EnumAseCarrierSlotStatus.Empty)
+                        {
+                            return EnumSlotNumber.L;
+                        }
+                        else
+                        {
+                            return EnumSlotNumber.R;
+                        }
+                }
             }
+            else 
+            {
+                if (slotLState == EnumAseCarrierSlotStatus.Empty)
+                {
+                    return EnumSlotNumber.L;
+                }
+                else
+                {
+                    return EnumSlotNumber.R;
+                }
+            }           
         }
 
         private EnumSlotNumber CheckUnloadCstId(string cassetteId)
@@ -1411,32 +1462,36 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void SetupTransferSteps(AgvcTransCmd agvcTransCmd)
         {
-            switch (agvcTransCmd.AgvcTransCommandType)
+            if (theVehicle.AgvcTransCmdBuffer.Count == 1)
             {
-                case EnumAgvcTransCommandType.Move:
-                    TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
-                    break;
-                case EnumAgvcTransCommandType.Load:
-                    TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
-                    TransferStepsAddLoadCmdInfo(agvcTransCmd);
-                    break;
-                case EnumAgvcTransCommandType.Unload:
-                    TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
-                    TransferStepsAddUnloadCmdInfo(agvcTransCmd);
-                    break;
-                case EnumAgvcTransCommandType.LoadUnload:
-                    TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
-                    TransferStepsAddLoadCmdInfo(agvcTransCmd);
-                    TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
-                    TransferStepsAddUnloadCmdInfo(agvcTransCmd);
-                    break;
-                case EnumAgvcTransCommandType.MoveToCharger:
-                    TransferStepsAddMoveToChargerCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
-                    break;
-                case EnumAgvcTransCommandType.Override:
-                case EnumAgvcTransCommandType.Else:
-                default:
-                    break;
+                switch (agvcTransCmd.AgvcTransCommandType)
+                {
+                    case EnumAgvcTransCommandType.Move:
+                        TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                        break;
+                    case EnumAgvcTransCommandType.Load:
+                        TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
+                        TransferStepsAddLoadCmdInfo(agvcTransCmd);
+                        break;
+                    case EnumAgvcTransCommandType.Unload:
+                        TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                        TransferStepsAddUnloadCmdInfo(agvcTransCmd);
+                        break;
+                    case EnumAgvcTransCommandType.LoadUnload:
+                        TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
+                        TransferStepsAddLoadCmdInfo(agvcTransCmd);
+                        //TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                        //TransferStepsAddUnloadCmdInfo(agvcTransCmd);
+                        break;
+                    case EnumAgvcTransCommandType.MoveToCharger:
+                        TransferStepsAddMoveToChargerCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                        break;
+                    case EnumAgvcTransCommandType.Override:
+                    case EnumAgvcTransCommandType.Else:
+                    default:
+                        break;
+                }
+
             }
 
             //transferSteps.Add(new EmptyTransferStep(agvcTransCmd.CommandId));
@@ -1678,48 +1733,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void AseMoveControl_OnRetryMoveFinished(object sender, EnumMoveComplete e)
-        {
-            try
-            {
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常, 觸發重試機制, 到站.");
-
-                ForkNgRetryArrivalStartCharge();
-
-                IsRetryArrival = true;
-
-                int timeoutCount = 10;
-                while (true)
-                {
-                    if (asePackage.aseRobotControl.IsRobotCommandExist())
-                    {
-                        asePackage.aseRobotControl.ClearRobotCommand();
-                        SpinWait.SpinUntil(() => false, 200);
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                    if (timeoutCount > 0)
-                    {
-                        timeoutCount--;
-                    }
-                    else
-                    {
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : 取放貨異常, 觸發重試機制, 到站.無法清除ForkCommand");
-                        return;
-                    }
-                }
-
-                GoNextTransferStep = true;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
         private void ForkNgRetryArrivalStartCharge()
         {
             MoveCmdInfo moveCmd = (MoveCmdInfo)GetPreTransferStep();
@@ -1750,8 +1763,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AseRobotControl_OnRobotCommandErrorEvent(object sender, TransferStep transferStep)
         {
             OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotCommandErrorEvent");
-            EnumTransferStepType transferType = transferStep.GetTransferStepType();
-            AbortCommand(transferStep.CmdId, CompleteStatus.VehicleAbort);
+            //EnumTransferStepType transferType = transferStep.GetTransferStepType();
+            //AbortCommand(transferStep.CmdId, CompleteStatus.VehicleAbort);
+            StopClearAndReset();
         }
 
         public void AseRobotContorl_OnRobotCommandFinishEvent(object sender, TransferStep transferStep)
@@ -1764,8 +1778,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (agvcConnector.IsCstIdReadReplyOk(transferStep, ReadResult))
                     {
-                        if (IsNextTransferStepIdle())
+                        if (IsNextTransferStepIdle() || (TransferStepsIndex + 1 == transferSteps.Count))
                         {
+                            string cmdId = transferStep.CmdId;
+                            theVehicle.AgvcTransCmdBuffer[cmdId].EnrouteState = CommandState.None;
                             TransferComplete(transferStep.CmdId);
                         }
                         VisitNextTransferStep();
@@ -1785,6 +1801,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     agvcConnector.UnloadComplete(transferStep.CmdId);
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload Complete");
                     SpinWait.SpinUntil(() => false, 2000);
+                    string cmdId = transferStep.CmdId;
+                    theVehicle.AgvcTransCmdBuffer[cmdId].EnrouteState = CommandState.None;
                     TransferComplete(transferStep.CmdId);
                     VisitNextTransferStep();
                 }
@@ -1849,8 +1867,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotInterlockErrorEvent");
-                EnumTransferStepType transferType = transferStep.GetTransferStepType();
-                AbortCommand(transferStep.CmdId, CompleteStatus.InterlockError);
+                theVehicle.AgvcTransCmdBuffer[transferStep.CmdId].CompleteStatus = CompleteStatus.InterlockError;
+                //EnumTransferStepType transferType = transferStep.GetTransferStepType();
+                //AbortCommand(transferStep.CmdId, CompleteStatus.InterlockError);
+                StopClearAndReset();
             }
             catch (Exception ex)
             {
@@ -1910,6 +1930,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void Unload(UnloadCmdInfo unloadCmd)
         {
+            OptimizeTransferSteps();
+
             GetPioDirection(unloadCmd);
 
             AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(unloadCmd.SlotNumber);
@@ -1930,39 +1952,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        //int timeoutCount = 10;
-                        //while (true)
-                        //{
-                        //    if (asePackage.aseRobotControl.IsRobotCommandExist())
-                        //    {
-                        //        //asePackage.aseRobotControl.ClearRobotCommand();
-                        //        SpinWait.SpinUntil(() => false, 200);
-                        //    }
-                        //    else
-                        //    {
-                        //        break;
-                        //    }
-
-                        //    if (timeoutCount > 0)
-                        //    {
-                        //        timeoutCount--;
-                        //    }
-                        //    else
-                        //    {
-                        //        alarmHandler.ResetAllAlarms();
-                        //        var errorMsg = $"MainFlow : 放貨異常, 無法清除RobotCommand, 流程放棄.";
-                        //        OnMessageShowEvent?.Invoke(this, errorMsg);
-                        //        MainFlowAbnormalMsg = errorMsg;
-                        //        AbortCommand(unloadCmd.CmdId, CompleteStatus.InterlockError);
-                        //        return;
-                        //    }
-                        //}
-
                         agvcConnector.Unloading(unloadCmd.CmdId);
                         PublishOnDoTransferStepEvent(unloadCmd);
                         Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(unloadCmd));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Unloading, [Direction{unloadCmd.PioDirection}][SlotNum={unloadCmd.SlotNumber}][Unload Adr={unloadCmd.PortAddressId}][Unload Port Num={unloadCmd.PortNumber}]");
-
                     }
                     batteryLog.LoadUnloadCount++;
                 }
@@ -1975,6 +1968,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void Load(LoadCmdInfo loadCmd)
         {
+            OptimizeTransferSteps();
+
             GetPioDirection(loadCmd);
 
             AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(loadCmd.SlotNumber);
@@ -1995,47 +1990,121 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        int timeoutCount = 10;
-                        //while (true)
-                        //{
-                        //    if (asePackage.aseRobotControl.IsRobotCommandExist())
-                        //    {
-                        //        //asePackage.aseRobotControl.ClearRobotCommand();
-                        //        SpinWait.SpinUntil(() => false, 200);
-                        //    }
-                        //    else
-                        //    {
-                        //        break;
-                        //    }
-
-                        //    if (timeoutCount > 0)
-                        //    {
-                        //        timeoutCount--;
-                        //    }
-                        //    else
-                        //    {
-                        //        alarmHandler.ResetAllAlarms();
-                        //        var errorMsg = $"MainFlow :  load , 無法清除RobotCommand, 流程放棄.";
-                        //        MainFlowAbnormalMsg = errorMsg;
-                        //        OnMessageShowEvent?.Invoke(this, errorMsg);
-                        //        AbortCommand(loadCmd.CmdId, CompleteStatus.InterlockError);
-                        //        return;
-                        //    }
-                        //}
-
                         agvcConnector.Loading(loadCmd.CmdId);
                         PublishOnDoTransferStepEvent(loadCmd);
                         ReadResult = EnumCstIdReadResult.Normal;
                         Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(loadCmd));
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Loading, [Direction={loadCmd.PioDirection}][SlotNum={loadCmd.SlotNumber}][Load Adr={loadCmd.PortAddressId}][Load Port Num={loadCmd.PortNumber}]");
                     }
-
                 }
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
             }
+        }
+
+        private void OptimizeTransferSteps()
+        {
+            try
+            {
+                OnMessageShowEvent?.Invoke(this, $"OptimizeTransferSteps");
+
+                IsVisitTransferStepPause = true;
+
+                var curCmdId = GetCurTransferStep().CmdId;
+                var curCmd = theVehicle.AgvcTransCmdBuffer[curCmdId];
+
+                switch (curCmd.EnrouteState)
+                {
+                    case CommandState.LoadEnroute:
+                        if (theVehicle.AgvcTransCmdBuffer.Count > 1)
+                        {
+
+                            var nextCmdId = theVehicle.AgvcTransCmdBuffer.First(x => x.Key != curCmdId).Value.CommandId;
+                            var nextCmd = theVehicle.AgvcTransCmdBuffer[nextCmdId];
+
+                            if (curCmd.GetCommandActionType() == CommandActionType.Loadunload)
+                            {
+                                if (nextCmd.EnrouteState == CommandState.LoadEnroute)
+                                {
+                                    var disCurCmdUnload = DistanceFromLastPosition(curCmd.UnloadAddressId);
+                                    var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
+                                    if (DistanceFromLastPosition(curCmd.UnloadAddressId) <= DistanceFromLastPosition(nextCmd.LoadAddressId))
+                                    {
+                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                        TransferStepsAddUnloadCmdInfo(curCmd);
+                                    }
+                                    else
+                                    {
+                                        TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                                        TransferStepsAddLoadCmdInfo(nextCmd);
+                                    }
+                                }
+                                else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
+                                {
+                                    if (DistanceFromLastPosition(curCmd.UnloadAddressId) <= DistanceFromLastPosition(nextCmd.UnloadAddressId))
+                                    {
+                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                        TransferStepsAddUnloadCmdInfo(curCmd);
+                                    }
+                                    else
+                                    {
+                                        TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
+                                        TransferStepsAddUnloadCmdInfo(nextCmd);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                                TransferStepsAddLoadCmdInfo(nextCmd);
+                            }
+                        }
+                        else if (curCmd.GetCommandActionType() == CommandActionType.Loadunload)
+                        {
+                            TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                            TransferStepsAddUnloadCmdInfo(curCmd);
+                        }
+                        break;
+                    case CommandState.UnloadEnroute:
+                        if (theVehicle.AgvcTransCmdBuffer.Count > 1)
+                        {
+                            var nextCmdId = theVehicle.AgvcTransCmdBuffer.First(x => x.Key != curCmdId).Value.CommandId;
+                            var nextCmd = theVehicle.AgvcTransCmdBuffer[nextCmdId];
+
+                            if (nextCmd.EnrouteState == CommandState.LoadEnroute)
+                            {
+                                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                                TransferStepsAddLoadCmdInfo(nextCmd);
+                            }
+                            else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
+                            {
+                                TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
+                                TransferStepsAddUnloadCmdInfo(nextCmd);
+                            }
+                        }
+                        break;
+                    case CommandState.None:
+
+                        break;
+                    default:
+                        break;
+                }
+
+                IsVisitTransferStepPause = false;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private int DistanceFromLastPosition(string addressId)
+        {
+            var lastPosition = theVehicle.AseMoveStatus.LastMapPosition;
+            var addressPosition = theMapInfo.addressMap[addressId].Position;
+            return (int)mapHandler.GetDistance(lastPosition, addressPosition);
         }
 
         private void SimulationLoad(LoadCmdInfo loadCmd, AseCarrierSlotStatus aseCarrierSlotStatus)
@@ -2691,7 +2760,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void ResetAllarms()
         {
             alarmHandler.ResetAllAlarms();
-        }      
+        }
 
         public void SetupVehicleSoc(int percentage)
         {
@@ -2782,27 +2851,24 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                var msg = $"MainFlow : Get [{receive.CancelAction}]Command.";
+                var msg = $"MainFlow : Get [{receive.CancelAction}] Command.";
                 OnMessageShowEvent(this, msg);
-                PauseTransfer();
+                PauseTransfer();               
                 agvcConnector.CancelAbortReply(iSeqNum, 0, receive);
+                SpinWait.SpinUntil(() => false, 1000);
 
-                string abortCmdId = receive.CmdID;
+                string abortCmdId = receive.CmdID.Trim();
                 var step = GetCurTransferStep();
+
                 if (step.CmdId == abortCmdId)
                 {
-                    if (IsMoveStep())
-                    {
-                        theVehicle.AseMovingGuide = new AseMovingGuide();
-                        asePackage.aseMoveControl.VehcleCancel();
-                    }
-                    else
-                    {
-                        asePackage.aseRobotControl.ClearRobotCommand();
-                    }
-                }
+                    agvcConnector.PauseAskReserve();
+                    asePackage.aseMoveControl.VehcleCancel();
+                    agvcConnector.ResumeAskReserve();
+                }               
 
                 AbortCommand(abortCmdId, GetCompleteStatusFromCancelRequest(receive.CancelAction));
+
                 ResumeTransfer();
             }
             catch (Exception ex)

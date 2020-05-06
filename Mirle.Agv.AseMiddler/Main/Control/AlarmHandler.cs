@@ -212,7 +212,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     LastAlarm = new Alarm();                   
                 }
                 sw.Stop();
-                var msg = $"清除所有警報, 花費{sw.ElapsedMilliseconds}毫秒";
+                var msg = $"ResetAllAlarms, cost {sw.ElapsedMilliseconds} ms";
                 OnResetAllAlarmsEvent?.Invoke(this, msg);
                 mirleLogger.Log( new LogFormat("AlarmHistory", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
