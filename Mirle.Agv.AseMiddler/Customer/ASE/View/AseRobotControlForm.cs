@@ -16,6 +16,7 @@ namespace Mirle.Agv.AseMiddler.View
     {
         public event EventHandler<AseRobotEventArgs> SendRobotCommand;
         public event EventHandler<AseChargeEventArgs> SendChargeCommand;
+        public event EventHandler<bool> PauseAskBattery;
         public event EventHandler RefreshBatteryState;
         public event EventHandler RefreshRobotState;
         public event EventHandler<string> OnException;
@@ -193,6 +194,24 @@ namespace Mirle.Agv.AseMiddler.View
         private void btnRefreshRobotState_Click(object sender, EventArgs e)
         {
             RefreshRobotState?.Invoke(this, e);
+        }
+
+        private void btnStopCharge_Click(object sender, EventArgs e)
+        {
+            AseChargeEventArgs aseChargeEventArgs = new AseChargeEventArgs();
+            aseChargeEventArgs.IsCharge = false;
+            aseChargeEventArgs.ChargeDirection = EnumAddressDirection.None;
+            SendChargeCommand?.Invoke(this, aseChargeEventArgs);
+        }
+
+        private void btnPauseAskBattery_Click(object sender, EventArgs e)
+        {
+            PauseAskBattery?.Invoke(this, true);
+        }
+
+        private void btnResumeAskBattery_Click(object sender, EventArgs e)
+        {
+            PauseAskBattery?.Invoke(this, false);
         }
     }
 

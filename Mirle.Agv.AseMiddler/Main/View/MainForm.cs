@@ -775,6 +775,26 @@ namespace Mirle.Agv.AseMiddler.View
             aseRobotControlForm.SendChargeCommand += AseRobotControlForm_SendChargeCommand;
             aseRobotControlForm.RefreshBatteryState += AseRobotControlForm_RefreshBatteryState;
             aseRobotControlForm.RefreshRobotState += AseRobotControlForm_RefreshRobotState;
+            aseRobotControlForm.PauseAskBattery += AseRobotControlForm_PauseAskBattery;
+        }
+
+        private void AseRobotControlForm_PauseAskBattery(object sender, bool e)
+        {
+            try
+            {
+                if (e)
+                {
+                    asePackage.aseBatteryControl.PauseWatchBatteryState();
+                }
+                else
+                {
+                    asePackage.aseBatteryControl.ResumeWatchBatteryState();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         private void AseRobotControlForm_RefreshRobotState(object sender, EventArgs e)
@@ -1308,12 +1328,57 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                tbxTransferCommandMsg.Text = TransferCommandMsg;
+                //tbxTransferCommand01Msg.Text = TransferCommandMsg;
+
+                var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+
+                if (transferCommands.Count==0)
+                {
+                    tbxTransferCommand01Msg.Text = "";
+                    tbxTransferCommand02Msg.Text = "";
+                }
+                else if (transferCommands.Count == 1)
+                {
+                    tbxTransferCommand01Msg.Text = GetTransferCmdInfo(transferCommands[0]);
+                    tbxTransferCommand02Msg.Text = "";
+                }
+                else
+                {
+                    tbxTransferCommand01Msg.Text = GetTransferCmdInfo(transferCommands[0]);
+                    tbxTransferCommand02Msg.Text = GetTransferCmdInfo(transferCommands[1]);
+                }
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private string GetTransferCmdInfo(AgvcTransCmd agvcTransCmd)
+        {
+            try
+            {
+                string msg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
+                                      $"{agvcTransCmd.AgvcTransCommandType}", "\r\n",
+                                      $"[Command ID={agvcTransCmd.CommandId}]\r\n",
+                                      $"[CST ID={agvcTransCmd.CassetteId}]\r\n",
+                                      $"[SlotNum={agvcTransCmd.SlotNumber}]\r\n",
+                                      $"[EnrouteState={agvcTransCmd.EnrouteState}]\r\n",
+                                      $"[Load Adr={agvcTransCmd.LoadAddressId}]\r\n",
+                                      $"[Load Port ID={agvcTransCmd.LoadPortId}]\r\n",
+                                      $"[Unload Adr={agvcTransCmd.UnloadAddressId}]\r\n",
+                                      $"[Unload Port Id={agvcTransCmd.UnloadPortId}]\r\n"
+                                      );
+
+                return msg;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                return $"GetTransferCmdInfo exception";
+            }
+
+            
         }
         private string GuideListToString(List<string> aList)
         {
@@ -1384,26 +1449,11 @@ namespace Mirle.Agv.AseMiddler.View
                 {
                     case EnumAutoState.Manual:
                         btnAutoManual.BackColor = Color.Pink;
-                        txtCanAuto.Visible = true;
                         txtCannotAutoReason.Visible = true;
-                        //if (mainFlowConfig.CustomerName == "AUO")
-                        //{
-                        //    if (true/*jogPitchForm.CanAuto*/)
-                        //    {
-                        //        txtCanAuto.BackColor = Color.LightGreen;
-                        //        txtCanAuto.Text = "可以 Auto";
-                        //    }
-                        //    else
-                        //    {
-                        //        txtCanAuto.BackColor = Color.Pink;
-                        //        txtCanAuto.Text = "不行 Auto";
-                        //    }
-                        //}
                         break;
                     case EnumAutoState.Auto:
                     default:
                         btnAutoManual.BackColor = Color.LightGreen;
-                        txtCanAuto.Visible = false;
                         txtCannotAutoReason.Visible = false;
                         break;
                 }
@@ -1660,10 +1710,10 @@ namespace Mirle.Agv.AseMiddler.View
                 switch (autoState)
                 {
                     case EnumAutoState.Auto:
-                        if (!mainFlowConfig.IsSimulation)
-                        {
-                            TakeAPicture();
-                        }
+                        //if (!mainFlowConfig.IsSimulation)
+                        //{
+                        //    TakeAPicture();
+                        //}
                         AppendDebugLogMsg($"Manual switch to  Auto  ok ");
                         ResetAllAbnormalMsg();
                         break;

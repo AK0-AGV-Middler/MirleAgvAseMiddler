@@ -33,7 +33,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
         public bool IsWatchWifiSignalStrengthStop { get; set; } = false;
 
-        public event EventHandler<string> OnMessageShowEvent;
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> AllPspLog;
         public event EventHandler<string> ImportantPspLog;
@@ -41,6 +40,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<AseMoveStatus> OnPartMoveArrivalEvent;
         public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
         public event EventHandler OnAgvlErrorEvent;
+        public event EventHandler ArrivalCharge;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -50,7 +50,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             InitialAseRobotControl(gateTypeMap);
             InitialAseBatteryControl();
             InitialAseBuzzerControl();
-            InitialThread();
+            //InitialThread();
         }
 
         private void InitialThread()
@@ -368,7 +368,24 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region PrimaryReceived
 
-        private void OnPrimaryReceived(PSTransactionXClass transaction)
+        private void PsWrapper_OnPrimaryReceived(ref PSTransactionXClass transaction)
+        {
+            try
+            {
+                string msg = $"PrimaryReceived : [{transaction.ToString()}]";
+                AllPspLog?.Invoke(this, msg);
+                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+
+                AutoReplyFromPsMessageMap(transaction);
+                DealPrimaryReceived(transaction);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void DealPrimaryReceived(PSTransactionXClass transaction)
         {
             try
             {
@@ -446,22 +463,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void PsWrapper_OnPrimaryReceived(ref PSTransactionXClass transaction)
-        {
-            try
-            {
-                string msg = $"PrimaryReceived : [{transaction.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-
-                OnPrimaryReceived(transaction);
-                AutoReplyFromPsMessageMap(transaction);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
 
         private void AutoReplyFromPsMessageMap(PSTransactionXClass psTransaction)
         {
@@ -627,9 +628,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     theVehicle.IsCharging = isCharging;
                     OnStatusChangeReportEvent?.Invoke(this, $"UpdateChargeStatus:[{ theVehicle.IsCharging }]");
-                    if (!isCharging)
+                    if (isCharging)
                     {
-                        if (theVehicle.AseBatteryStatus.Percentage >= 98)
+                        if (theVehicle.AseBatteryStatus.Percentage + 3 >= aseBatteryConfig.FullChargePercentage)
                         {
                             aseBatteryControl.FullCharge();
                         }
@@ -829,10 +830,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseBatteryStatus.Temperature = int.Parse(psMessage.Substring(7, 3));
                 theVehicle.AseBatteryStatus = aseBatteryStatus;
 
-                if (aseBatteryStatus.Percentage >= 98)
+                if (theVehicle.IsCharging)
+                {
+                    if (aseBatteryStatus.Percentage + 3 >= aseBatteryConfig.FullChargePercentage)
                 {
                     aseBatteryControl.FullCharge();
                 }
+            }
             }
             catch (Exception ex)
             {

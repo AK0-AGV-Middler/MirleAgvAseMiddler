@@ -84,30 +84,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 RobotCommand = robotCommand;
                 string robotCommandString = GetRobotCommandString();
                 PSTransactionXClass psTransaction = PrimarySend("45", robotCommandString);
-                //int timeoutCount = 10;
-                //while (timeoutCount >= 0)
-                //{
-                //    timeoutCount--;
 
-                //    SpinWait.SpinUntil(() => !string.IsNullOrEmpty(psTransaction.PSSecondaryMessage.Type), 1500);
-                //}
-
-                //if (timeoutCount < 0)
-                //{
-                //    throw new Exception($"Receive robot command reply timeout.");
-                //}
-
-                //switch (psTransaction.PSSecondaryMessage.PSMessage.Substring(0, 1))
-                //{
-                //    case "0":
-                //        return true;
-                //    case "1":
-                //        throw new Exception($"From port is empty");
-                //    case "2":
-                //        throw new Exception($"To port is full");
-                //    default:
-                //        return false;
-                //}
                 return true;
             }
             catch (Exception ex)

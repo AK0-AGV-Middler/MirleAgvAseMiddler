@@ -1,4 +1,5 @@
-﻿namespace Mirle.Agv.AseMiddler.View
+﻿
+namespace Mirle.Agv.AseMiddler.View
 {
     partial class MainForm
     {
@@ -62,13 +63,8 @@
             this.txtTrackPosition = new System.Windows.Forms.Label();
             this.txtTransferStep = new System.Windows.Forms.Label();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
-            this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
-            this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucCharging = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.ucSoc = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radAgvcOnline = new System.Windows.Forms.RadioButton();
@@ -81,7 +77,6 @@
             this.txtAgvlConnection = new System.Windows.Forms.Label();
             this.radAgvlOnline = new System.Windows.Forms.RadioButton();
             this.radAgvlOffline = new System.Windows.Forms.RadioButton();
-            this.txtCanAuto = new System.Windows.Forms.Label();
             this.btnAutoManual = new System.Windows.Forms.Button();
             this.pageMoveState = new System.Windows.Forms.TabPage();
             this.btnRefreshMoveState = new System.Windows.Forms.Button();
@@ -89,29 +84,10 @@
             this.numPositionY = new System.Windows.Forms.NumericUpDown();
             this.numPositionX = new System.Windows.Forms.NumericUpDown();
             this.btnKeyInPosition = new System.Windows.Forms.Button();
-            this.ucMoveMovingIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveMoveState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMovePauseStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveReserveStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveLastAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMoveLastSection = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMovePositionY = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucMovePositionX = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageRobotSate = new System.Windows.Forms.TabPage();
             this.btnRefreshRobotState = new System.Windows.Forms.Button();
-            this.ucRobotIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucRobotSlotRId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucRobotSlotRState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucRobotSlotLState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucRobotSlotLId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageBatteryState = new System.Windows.Forms.TabPage();
             this.btnRefreshBatteryState = new System.Windows.Forms.Button();
-            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageVehicleState = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtBatterysAbnormal = new System.Windows.Forms.Label();
@@ -119,10 +95,6 @@
             this.txtAgvcConnectorAbnormal = new System.Windows.Forms.Label();
             this.txtRobotAbnormal = new System.Windows.Forms.Label();
             this.txtMoveControlAbnormal = new System.Windows.Forms.Label();
-            this.ucGoNextStep = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucTransferStepType = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucTransferSteps = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucTransferIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageReserveInfo = new System.Windows.Forms.TabPage();
             this.gbReserve = new System.Windows.Forms.GroupBox();
             this.lbxReserveOkSections = new System.Windows.Forms.ListBox();
@@ -130,7 +102,8 @@
             this.pageTransferCommand = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tbxTransferStepMsg = new System.Windows.Forms.TextBox();
-            this.tbxTransferCommandMsg = new System.Windows.Forms.TextBox();
+            this.tbxTransferCommand02Msg = new System.Windows.Forms.TextBox();
+            this.tbxTransferCommand01Msg = new System.Windows.Forms.TextBox();
             this.timeUpdateUI = new System.Windows.Forms.Timer(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tspbCommding = new System.Windows.Forms.ToolStripProgressBar();
@@ -140,6 +113,34 @@
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
+            this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucCharging = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucSoc = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucMoveMovingIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveMoveState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePauseStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveReserveStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveLastAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMoveLastSection = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePositionY = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucMovePositionX = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotRId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotRState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotLState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotSlotLId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucGoNextStep = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferStepType = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferSteps = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -199,25 +200,25 @@
             // 啟動ToolStripMenuItem
             // 
             this.啟動ToolStripMenuItem.Name = "啟動ToolStripMenuItem";
-            this.啟動ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.啟動ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             this.啟動ToolStripMenuItem.Text = "啟動";
             // 
             // 登入ToolStripMenuItem
             // 
             this.登入ToolStripMenuItem.Name = "登入ToolStripMenuItem";
-            this.登入ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.登入ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             this.登入ToolStripMenuItem.Text = "登入";
             // 
             // 登出ToolStripMenuItem
             // 
             this.登出ToolStripMenuItem.Name = "登出ToolStripMenuItem";
-            this.登出ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.登出ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             this.登出ToolStripMenuItem.Text = "登出";
             // 
             // 關閉ToolStripMenuItem
             // 
             this.關閉ToolStripMenuItem.Name = "關閉ToolStripMenuItem";
-            this.關閉ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.關閉ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             this.關閉ToolStripMenuItem.Text = "關閉";
             this.關閉ToolStripMenuItem.Click += new System.EventHandler(this.關閉ToolStripMenuItem_Click);
             // 
@@ -327,7 +328,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer1.Size = new System.Drawing.Size(1375, 737);
-            this.splitContainer1.SplitterDistance = 750;
+            this.splitContainer1.SplitterDistance = 749;
             this.splitContainer1.TabIndex = 1;
             // 
             // splitContainer3
@@ -346,8 +347,8 @@
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.tbxDebugLogMsg);
-            this.splitContainer3.Size = new System.Drawing.Size(750, 737);
-            this.splitContainer3.SplitterDistance = 502;
+            this.splitContainer3.Size = new System.Drawing.Size(749, 737);
+            this.splitContainer3.SplitterDistance = 470;
             this.splitContainer3.SplitterIncrement = 10;
             this.splitContainer3.TabIndex = 0;
             // 
@@ -399,7 +400,6 @@
             this.pageBasicState.Controls.Add(this.btnAlarmReset);
             this.pageBasicState.Controls.Add(this.txtCannotAutoReason);
             this.pageBasicState.Controls.Add(this.groupBox1);
-            this.pageBasicState.Controls.Add(this.txtCanAuto);
             this.pageBasicState.Controls.Add(this.btnAutoManual);
             this.pageBasicState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.pageBasicState.Location = new System.Drawing.Point(4, 29);
@@ -504,28 +504,6 @@
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
             // 
-            // ucRCstId
-            // 
-            this.ucRCstId.Location = new System.Drawing.Point(11, 57);
-            this.ucRCstId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ucRCstId.Name = "ucRCstId";
-            this.ucRCstId.Size = new System.Drawing.Size(187, 26);
-            this.ucRCstId.TabIndex = 42;
-            this.ucRCstId.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucRCstId.TagName = "RCstId";
-            this.ucRCstId.TagValue = "";
-            // 
-            // ucLCstId
-            // 
-            this.ucLCstId.Location = new System.Drawing.Point(10, 25);
-            this.ucLCstId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ucLCstId.Name = "ucLCstId";
-            this.ucLCstId.Size = new System.Drawing.Size(187, 26);
-            this.ucLCstId.TabIndex = 42;
-            this.ucLCstId.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucLCstId.TagName = "LCstId";
-            this.ucLCstId.TagValue = "";
-            // 
             // btnKeyInSoc
             // 
             this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -536,28 +514,6 @@
             this.btnKeyInSoc.Text = "校正電量";
             this.btnKeyInSoc.UseVisualStyleBackColor = true;
             this.btnKeyInSoc.Click += new System.EventHandler(this.btnKeyInSoc_Click);
-            // 
-            // ucRobotHome
-            // 
-            this.ucRobotHome.Location = new System.Drawing.Point(6, 161);
-            this.ucRobotHome.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ucRobotHome.Name = "ucRobotHome";
-            this.ucRobotHome.Size = new System.Drawing.Size(187, 30);
-            this.ucRobotHome.TabIndex = 3;
-            this.ucRobotHome.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucRobotHome.TagName = "Robot";
-            this.ucRobotHome.TagValue = "";
-            // 
-            // ucCharging
-            // 
-            this.ucCharging.Location = new System.Drawing.Point(10, 89);
-            this.ucCharging.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ucCharging.Name = "ucCharging";
-            this.ucCharging.Size = new System.Drawing.Size(187, 30);
-            this.ucCharging.TabIndex = 3;
-            this.ucCharging.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucCharging.TagName = "Charge";
-            this.ucCharging.TagValue = "";
             // 
             // numSoc
             // 
@@ -572,17 +528,6 @@
             0,
             0,
             0});
-            // 
-            // ucSoc
-            // 
-            this.ucSoc.Location = new System.Drawing.Point(10, 125);
-            this.ucSoc.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ucSoc.Name = "ucSoc";
-            this.ucSoc.Size = new System.Drawing.Size(187, 30);
-            this.ucSoc.TabIndex = 2;
-            this.ucSoc.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucSoc.TagName = "SOC";
-            this.ucSoc.TagValue = "";
             // 
             // gbConnection
             // 
@@ -647,9 +592,9 @@
             // txtLastAlarm
             // 
             this.txtLastAlarm.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtLastAlarm.Location = new System.Drawing.Point(436, 187);
+            this.txtLastAlarm.Location = new System.Drawing.Point(435, 184);
             this.txtLastAlarm.Name = "txtLastAlarm";
-            this.txtLastAlarm.Size = new System.Drawing.Size(209, 92);
+            this.txtLastAlarm.Size = new System.Drawing.Size(155, 92);
             this.txtLastAlarm.TabIndex = 50;
             this.txtLastAlarm.Text = "Last Alarm";
             // 
@@ -668,9 +613,9 @@
             // txtCannotAutoReason
             // 
             this.txtCannotAutoReason.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtCannotAutoReason.Location = new System.Drawing.Point(436, 101);
+            this.txtCannotAutoReason.Location = new System.Drawing.Point(218, 104);
             this.txtCannotAutoReason.Name = "txtCannotAutoReason";
-            this.txtCannotAutoReason.Size = new System.Drawing.Size(143, 79);
+            this.txtCannotAutoReason.Size = new System.Drawing.Size(213, 77);
             this.txtCannotAutoReason.TabIndex = 58;
             this.txtCannotAutoReason.Text = "Not Auto Reason";
             // 
@@ -722,17 +667,6 @@
             this.radAgvlOffline.UseVisualStyleBackColor = true;
             this.radAgvlOffline.CheckedChanged += new System.EventHandler(this.radAgvlOffline_CheckedChanged);
             // 
-            // txtCanAuto
-            // 
-            this.txtCanAuto.BackColor = System.Drawing.Color.LightGreen;
-            this.txtCanAuto.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtCanAuto.Location = new System.Drawing.Point(221, 101);
-            this.txtCanAuto.Name = "txtCanAuto";
-            this.txtCanAuto.Size = new System.Drawing.Size(209, 80);
-            this.txtCanAuto.TabIndex = 57;
-            this.txtCanAuto.Text = "可以 Auto";
-            this.txtCanAuto.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // btnAutoManual
             // 
             this.btnAutoManual.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -760,7 +694,7 @@
             this.pageMoveState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.pageMoveState.Location = new System.Drawing.Point(4, 29);
             this.pageMoveState.Name = "pageMoveState";
-            this.pageMoveState.Padding = new System.Windows.Forms.Padding(3);
+            this.pageMoveState.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.pageMoveState.Size = new System.Drawing.Size(607, 676);
             this.pageMoveState.TabIndex = 0;
             this.pageMoveState.Text = "Move";
@@ -833,6 +767,359 @@
             this.btnKeyInPosition.Text = "鍵入車輛位置";
             this.btnKeyInPosition.UseVisualStyleBackColor = true;
             this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click);
+            // 
+            // pageRobotSate
+            // 
+            this.pageRobotSate.Controls.Add(this.btnRefreshRobotState);
+            this.pageRobotSate.Controls.Add(this.ucRobotIsHome);
+            this.pageRobotSate.Controls.Add(this.ucRobotSlotRId);
+            this.pageRobotSate.Controls.Add(this.ucRobotSlotRState);
+            this.pageRobotSate.Controls.Add(this.ucRobotSlotLState);
+            this.pageRobotSate.Controls.Add(this.ucRobotSlotLId);
+            this.pageRobotSate.Controls.Add(this.ucRobotRobotState);
+            this.pageRobotSate.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.pageRobotSate.Location = new System.Drawing.Point(4, 29);
+            this.pageRobotSate.Name = "pageRobotSate";
+            this.pageRobotSate.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.pageRobotSate.Size = new System.Drawing.Size(607, 676);
+            this.pageRobotSate.TabIndex = 1;
+            this.pageRobotSate.Text = "Robot";
+            this.pageRobotSate.UseVisualStyleBackColor = true;
+            // 
+            // btnRefreshRobotState
+            // 
+            this.btnRefreshRobotState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshRobotState.Location = new System.Drawing.Point(3, 180);
+            this.btnRefreshRobotState.Name = "btnRefreshRobotState";
+            this.btnRefreshRobotState.Size = new System.Drawing.Size(135, 65);
+            this.btnRefreshRobotState.TabIndex = 43;
+            this.btnRefreshRobotState.Text = "更新手臂狀態";
+            this.btnRefreshRobotState.UseVisualStyleBackColor = true;
+            this.btnRefreshRobotState.Click += new System.EventHandler(this.btnRefreshRobotState_Click);
+            // 
+            // pageBatteryState
+            // 
+            this.pageBatteryState.Controls.Add(this.btnRefreshBatteryState);
+            this.pageBatteryState.Controls.Add(this.ucBatteryCharging);
+            this.pageBatteryState.Controls.Add(this.ucBatteryTemperature);
+            this.pageBatteryState.Controls.Add(this.ucBatteryVoltage);
+            this.pageBatteryState.Controls.Add(this.ucBatteryPercentage);
+            this.pageBatteryState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.pageBatteryState.Location = new System.Drawing.Point(4, 29);
+            this.pageBatteryState.Name = "pageBatteryState";
+            this.pageBatteryState.Size = new System.Drawing.Size(607, 676);
+            this.pageBatteryState.TabIndex = 2;
+            this.pageBatteryState.Text = "Battery";
+            this.pageBatteryState.UseVisualStyleBackColor = true;
+            // 
+            // btnRefreshBatteryState
+            // 
+            this.btnRefreshBatteryState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshBatteryState.Location = new System.Drawing.Point(3, 353);
+            this.btnRefreshBatteryState.Name = "btnRefreshBatteryState";
+            this.btnRefreshBatteryState.Size = new System.Drawing.Size(135, 65);
+            this.btnRefreshBatteryState.TabIndex = 41;
+            this.btnRefreshBatteryState.Text = "更新電池狀態";
+            this.btnRefreshBatteryState.UseVisualStyleBackColor = true;
+            this.btnRefreshBatteryState.Click += new System.EventHandler(this.AseRobotControlForm_RefreshBatteryState);
+            // 
+            // pageVehicleState
+            // 
+            this.pageVehicleState.Controls.Add(this.groupBox3);
+            this.pageVehicleState.Controls.Add(this.ucGoNextStep);
+            this.pageVehicleState.Controls.Add(this.ucTransferStepType);
+            this.pageVehicleState.Controls.Add(this.ucTransferSteps);
+            this.pageVehicleState.Controls.Add(this.ucTransferIndex);
+            this.pageVehicleState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.pageVehicleState.Location = new System.Drawing.Point(4, 29);
+            this.pageVehicleState.Name = "pageVehicleState";
+            this.pageVehicleState.Size = new System.Drawing.Size(607, 676);
+            this.pageVehicleState.TabIndex = 3;
+            this.pageVehicleState.Text = "Vehicle";
+            this.pageVehicleState.UseVisualStyleBackColor = true;
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.txtBatterysAbnormal);
+            this.groupBox3.Controls.Add(this.txtMainFlowAbnormal);
+            this.groupBox3.Controls.Add(this.txtAgvcConnectorAbnormal);
+            this.groupBox3.Controls.Add(this.txtRobotAbnormal);
+            this.groupBox3.Controls.Add(this.txtMoveControlAbnormal);
+            this.groupBox3.Location = new System.Drawing.Point(3, 3);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(140, 181);
+            this.groupBox3.TabIndex = 62;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "IsAbnormal";
+            // 
+            // txtBatterysAbnormal
+            // 
+            this.txtBatterysAbnormal.BackColor = System.Drawing.Color.LightGreen;
+            this.txtBatterysAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtBatterysAbnormal.Location = new System.Drawing.Point(6, 142);
+            this.txtBatterysAbnormal.Name = "txtBatterysAbnormal";
+            this.txtBatterysAbnormal.Size = new System.Drawing.Size(126, 31);
+            this.txtBatterysAbnormal.TabIndex = 4;
+            this.txtBatterysAbnormal.Text = "電池";
+            this.txtBatterysAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtMainFlowAbnormal
+            // 
+            this.txtMainFlowAbnormal.BackColor = System.Drawing.Color.LightGreen;
+            this.txtMainFlowAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtMainFlowAbnormal.Location = new System.Drawing.Point(6, 18);
+            this.txtMainFlowAbnormal.Name = "txtMainFlowAbnormal";
+            this.txtMainFlowAbnormal.Size = new System.Drawing.Size(126, 31);
+            this.txtMainFlowAbnormal.TabIndex = 1;
+            this.txtMainFlowAbnormal.Text = "流程";
+            this.txtMainFlowAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtAgvcConnectorAbnormal
+            // 
+            this.txtAgvcConnectorAbnormal.BackColor = System.Drawing.Color.LightGreen;
+            this.txtAgvcConnectorAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtAgvcConnectorAbnormal.Location = new System.Drawing.Point(6, 49);
+            this.txtAgvcConnectorAbnormal.Name = "txtAgvcConnectorAbnormal";
+            this.txtAgvcConnectorAbnormal.Size = new System.Drawing.Size(126, 31);
+            this.txtAgvcConnectorAbnormal.TabIndex = 3;
+            this.txtAgvcConnectorAbnormal.Text = "通訊";
+            this.txtAgvcConnectorAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtRobotAbnormal
+            // 
+            this.txtRobotAbnormal.BackColor = System.Drawing.Color.LightGreen;
+            this.txtRobotAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtRobotAbnormal.Location = new System.Drawing.Point(6, 111);
+            this.txtRobotAbnormal.Name = "txtRobotAbnormal";
+            this.txtRobotAbnormal.Size = new System.Drawing.Size(126, 31);
+            this.txtRobotAbnormal.TabIndex = 2;
+            this.txtRobotAbnormal.Text = "手臂";
+            this.txtRobotAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // txtMoveControlAbnormal
+            // 
+            this.txtMoveControlAbnormal.BackColor = System.Drawing.Color.LightGreen;
+            this.txtMoveControlAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtMoveControlAbnormal.Location = new System.Drawing.Point(6, 80);
+            this.txtMoveControlAbnormal.Name = "txtMoveControlAbnormal";
+            this.txtMoveControlAbnormal.Size = new System.Drawing.Size(126, 31);
+            this.txtMoveControlAbnormal.TabIndex = 0;
+            this.txtMoveControlAbnormal.Text = "走行";
+            this.txtMoveControlAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // pageReserveInfo
+            // 
+            this.pageReserveInfo.Controls.Add(this.gbReserve);
+            this.pageReserveInfo.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.pageReserveInfo.Location = new System.Drawing.Point(4, 29);
+            this.pageReserveInfo.Name = "pageReserveInfo";
+            this.pageReserveInfo.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.pageReserveInfo.Size = new System.Drawing.Size(607, 676);
+            this.pageReserveInfo.TabIndex = 4;
+            this.pageReserveInfo.Text = "Reserve";
+            this.pageReserveInfo.UseVisualStyleBackColor = true;
+            // 
+            // gbReserve
+            // 
+            this.gbReserve.Controls.Add(this.lbxReserveOkSections);
+            this.gbReserve.Controls.Add(this.lbxNeedReserveSections);
+            this.gbReserve.Location = new System.Drawing.Point(6, 9);
+            this.gbReserve.Name = "gbReserve";
+            this.gbReserve.Size = new System.Drawing.Size(595, 661);
+            this.gbReserve.TabIndex = 49;
+            this.gbReserve.TabStop = false;
+            this.gbReserve.Text = "Reserve";
+            // 
+            // lbxReserveOkSections
+            // 
+            this.lbxReserveOkSections.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lbxReserveOkSections.FormattingEnabled = true;
+            this.lbxReserveOkSections.ItemHeight = 19;
+            this.lbxReserveOkSections.Location = new System.Drawing.Point(238, 21);
+            this.lbxReserveOkSections.Name = "lbxReserveOkSections";
+            this.lbxReserveOkSections.ScrollAlwaysVisible = true;
+            this.lbxReserveOkSections.Size = new System.Drawing.Size(235, 631);
+            this.lbxReserveOkSections.TabIndex = 42;
+            // 
+            // lbxNeedReserveSections
+            // 
+            this.lbxNeedReserveSections.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lbxNeedReserveSections.FormattingEnabled = true;
+            this.lbxNeedReserveSections.ItemHeight = 19;
+            this.lbxNeedReserveSections.Location = new System.Drawing.Point(6, 21);
+            this.lbxNeedReserveSections.Name = "lbxNeedReserveSections";
+            this.lbxNeedReserveSections.ScrollAlwaysVisible = true;
+            this.lbxNeedReserveSections.Size = new System.Drawing.Size(215, 631);
+            this.lbxNeedReserveSections.TabIndex = 41;
+            // 
+            // pageTransferCommand
+            // 
+            this.pageTransferCommand.Controls.Add(this.groupBox4);
+            this.pageTransferCommand.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.pageTransferCommand.Location = new System.Drawing.Point(4, 29);
+            this.pageTransferCommand.Name = "pageTransferCommand";
+            this.pageTransferCommand.Size = new System.Drawing.Size(607, 676);
+            this.pageTransferCommand.TabIndex = 5;
+            this.pageTransferCommand.Text = "TransferCmd";
+            this.pageTransferCommand.UseVisualStyleBackColor = true;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.tbxTransferStepMsg);
+            this.groupBox4.Controls.Add(this.tbxTransferCommand02Msg);
+            this.groupBox4.Controls.Add(this.tbxTransferCommand01Msg);
+            this.groupBox4.Location = new System.Drawing.Point(3, 3);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(603, 676);
+            this.groupBox4.TabIndex = 60;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Transfer Command";
+            // 
+            // tbxTransferStepMsg
+            // 
+            this.tbxTransferStepMsg.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxTransferStepMsg.Location = new System.Drawing.Point(6, 418);
+            this.tbxTransferStepMsg.Multiline = true;
+            this.tbxTransferStepMsg.Name = "tbxTransferStepMsg";
+            this.tbxTransferStepMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxTransferStepMsg.Size = new System.Drawing.Size(593, 253);
+            this.tbxTransferStepMsg.TabIndex = 60;
+            // 
+            // tbxTransferCommand02Msg
+            // 
+            this.tbxTransferCommand02Msg.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxTransferCommand02Msg.Location = new System.Drawing.Point(6, 217);
+            this.tbxTransferCommand02Msg.Multiline = true;
+            this.tbxTransferCommand02Msg.Name = "tbxTransferCommand02Msg";
+            this.tbxTransferCommand02Msg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxTransferCommand02Msg.Size = new System.Drawing.Size(592, 195);
+            this.tbxTransferCommand02Msg.TabIndex = 59;
+            // 
+            // tbxTransferCommand01Msg
+            // 
+            this.tbxTransferCommand01Msg.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.tbxTransferCommand01Msg.Location = new System.Drawing.Point(6, 23);
+            this.tbxTransferCommand01Msg.Multiline = true;
+            this.tbxTransferCommand01Msg.Name = "tbxTransferCommand01Msg";
+            this.tbxTransferCommand01Msg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbxTransferCommand01Msg.Size = new System.Drawing.Size(592, 188);
+            this.tbxTransferCommand01Msg.TabIndex = 59;
+            // 
+            // timeUpdateUI
+            // 
+            this.timeUpdateUI.Enabled = true;
+            this.timeUpdateUI.Interval = 250;
+            this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tspbCommding,
+            this.tstextClientName,
+            this.tstextRemoteIp,
+            this.tstextRemotePort,
+            this.tstextLastPosX,
+            this.tstextLastPosY});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 739);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1375, 22);
+            this.statusStrip1.TabIndex = 2;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // tspbCommding
+            // 
+            this.tspbCommding.Name = "tspbCommding";
+            this.tspbCommding.Size = new System.Drawing.Size(100, 16);
+            // 
+            // tstextClientName
+            // 
+            this.tstextClientName.Name = "tstextClientName";
+            this.tstextClientName.Size = new System.Drawing.Size(104, 17);
+            this.tstextClientName.Text = "tstextClientName";
+            // 
+            // tstextRemoteIp
+            // 
+            this.tstextRemoteIp.Name = "tstextRemoteIp";
+            this.tstextRemoteIp.Size = new System.Drawing.Size(93, 17);
+            this.tstextRemoteIp.Text = "tstextRemoteIp";
+            // 
+            // tstextRemotePort
+            // 
+            this.tstextRemotePort.Name = "tstextRemotePort";
+            this.tstextRemotePort.Size = new System.Drawing.Size(105, 17);
+            this.tstextRemotePort.Text = "tstextRemotePort";
+            // 
+            // tstextLastPosX
+            // 
+            this.tstextLastPosX.Name = "tstextLastPosX";
+            this.tstextLastPosX.Size = new System.Drawing.Size(90, 17);
+            this.tstextLastPosX.Text = "tstextRealPosX";
+            // 
+            // tstextLastPosY
+            // 
+            this.tstextLastPosY.Name = "tstextLastPosY";
+            this.tstextLastPosY.Size = new System.Drawing.Size(89, 17);
+            this.tstextLastPosY.Text = "tstextRealPosY";
+            // 
+            // timer_SetupInitialSoc
+            // 
+            this.timer_SetupInitialSoc.Interval = 50;
+            this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
+            // 
+            // ucRCstId
+            // 
+            this.ucRCstId.Location = new System.Drawing.Point(11, 57);
+            this.ucRCstId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRCstId.Name = "ucRCstId";
+            this.ucRCstId.Size = new System.Drawing.Size(187, 26);
+            this.ucRCstId.TabIndex = 42;
+            this.ucRCstId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucRCstId.TagName = "RCstId";
+            this.ucRCstId.TagValue = "";
+            // 
+            // ucLCstId
+            // 
+            this.ucLCstId.Location = new System.Drawing.Point(10, 25);
+            this.ucLCstId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucLCstId.Name = "ucLCstId";
+            this.ucLCstId.Size = new System.Drawing.Size(187, 26);
+            this.ucLCstId.TabIndex = 42;
+            this.ucLCstId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucLCstId.TagName = "LCstId";
+            this.ucLCstId.TagValue = "";
+            // 
+            // ucRobotHome
+            // 
+            this.ucRobotHome.Location = new System.Drawing.Point(6, 161);
+            this.ucRobotHome.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucRobotHome.Name = "ucRobotHome";
+            this.ucRobotHome.Size = new System.Drawing.Size(187, 30);
+            this.ucRobotHome.TabIndex = 3;
+            this.ucRobotHome.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucRobotHome.TagName = "Robot";
+            this.ucRobotHome.TagValue = "";
+            // 
+            // ucCharging
+            // 
+            this.ucCharging.Location = new System.Drawing.Point(10, 89);
+            this.ucCharging.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucCharging.Name = "ucCharging";
+            this.ucCharging.Size = new System.Drawing.Size(187, 30);
+            this.ucCharging.TabIndex = 3;
+            this.ucCharging.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucCharging.TagName = "Charge";
+            this.ucCharging.TagValue = "";
+            // 
+            // ucSoc
+            // 
+            this.ucSoc.Location = new System.Drawing.Point(10, 125);
+            this.ucSoc.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucSoc.Name = "ucSoc";
+            this.ucSoc.Size = new System.Drawing.Size(187, 30);
+            this.ucSoc.TabIndex = 2;
+            this.ucSoc.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucSoc.TagName = "SOC";
+            this.ucSoc.TagValue = "";
             // 
             // ucMoveMovingIndex
             // 
@@ -933,35 +1220,6 @@
             this.ucMovePositionX.TagName = "X";
             this.ucMovePositionX.TagValue = "123456";
             // 
-            // pageRobotSate
-            // 
-            this.pageRobotSate.Controls.Add(this.btnRefreshRobotState);
-            this.pageRobotSate.Controls.Add(this.ucRobotIsHome);
-            this.pageRobotSate.Controls.Add(this.ucRobotSlotRId);
-            this.pageRobotSate.Controls.Add(this.ucRobotSlotRState);
-            this.pageRobotSate.Controls.Add(this.ucRobotSlotLState);
-            this.pageRobotSate.Controls.Add(this.ucRobotSlotLId);
-            this.pageRobotSate.Controls.Add(this.ucRobotRobotState);
-            this.pageRobotSate.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.pageRobotSate.Location = new System.Drawing.Point(4, 22);
-            this.pageRobotSate.Name = "pageRobotSate";
-            this.pageRobotSate.Padding = new System.Windows.Forms.Padding(3);
-            this.pageRobotSate.Size = new System.Drawing.Size(607, 683);
-            this.pageRobotSate.TabIndex = 1;
-            this.pageRobotSate.Text = "Robot";
-            this.pageRobotSate.UseVisualStyleBackColor = true;
-            // 
-            // btnRefreshRobotState
-            // 
-            this.btnRefreshRobotState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRefreshRobotState.Location = new System.Drawing.Point(3, 180);
-            this.btnRefreshRobotState.Name = "btnRefreshRobotState";
-            this.btnRefreshRobotState.Size = new System.Drawing.Size(135, 65);
-            this.btnRefreshRobotState.TabIndex = 43;
-            this.btnRefreshRobotState.Text = "更新手臂狀態";
-            this.btnRefreshRobotState.UseVisualStyleBackColor = true;
-            this.btnRefreshRobotState.Click += new System.EventHandler(this.btnRefreshRobotState_Click);
-            // 
             // ucRobotIsHome
             // 
             this.ucRobotIsHome.Location = new System.Drawing.Point(3, 88);
@@ -1028,32 +1286,6 @@
             this.ucRobotRobotState.TagName = "Robot State";
             this.ucRobotRobotState.TagValue = "Idle";
             // 
-            // pageBatteryState
-            // 
-            this.pageBatteryState.Controls.Add(this.btnRefreshBatteryState);
-            this.pageBatteryState.Controls.Add(this.ucBatteryCharging);
-            this.pageBatteryState.Controls.Add(this.ucBatteryTemperature);
-            this.pageBatteryState.Controls.Add(this.ucBatteryVoltage);
-            this.pageBatteryState.Controls.Add(this.ucBatteryPercentage);
-            this.pageBatteryState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.pageBatteryState.Location = new System.Drawing.Point(4, 22);
-            this.pageBatteryState.Name = "pageBatteryState";
-            this.pageBatteryState.Size = new System.Drawing.Size(607, 683);
-            this.pageBatteryState.TabIndex = 2;
-            this.pageBatteryState.Text = "Battery";
-            this.pageBatteryState.UseVisualStyleBackColor = true;
-            // 
-            // btnRefreshBatteryState
-            // 
-            this.btnRefreshBatteryState.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRefreshBatteryState.Location = new System.Drawing.Point(3, 353);
-            this.btnRefreshBatteryState.Name = "btnRefreshBatteryState";
-            this.btnRefreshBatteryState.Size = new System.Drawing.Size(135, 65);
-            this.btnRefreshBatteryState.TabIndex = 41;
-            this.btnRefreshBatteryState.Text = "更新電池狀態";
-            this.btnRefreshBatteryState.UseVisualStyleBackColor = true;
-            this.btnRefreshBatteryState.Click += new System.EventHandler(this.AseRobotControlForm_RefreshBatteryState);
-            // 
             // ucBatteryCharging
             // 
             this.ucBatteryCharging.Location = new System.Drawing.Point(3, 258);
@@ -1097,90 +1329,6 @@
             this.ucBatteryPercentage.TagColor = System.Drawing.Color.Black;
             this.ucBatteryPercentage.TagName = "Percentage";
             this.ucBatteryPercentage.TagValue = " 70.0";
-            // 
-            // pageVehicleState
-            // 
-            this.pageVehicleState.Controls.Add(this.groupBox3);
-            this.pageVehicleState.Controls.Add(this.ucGoNextStep);
-            this.pageVehicleState.Controls.Add(this.ucTransferStepType);
-            this.pageVehicleState.Controls.Add(this.ucTransferSteps);
-            this.pageVehicleState.Controls.Add(this.ucTransferIndex);
-            this.pageVehicleState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.pageVehicleState.Location = new System.Drawing.Point(4, 22);
-            this.pageVehicleState.Name = "pageVehicleState";
-            this.pageVehicleState.Size = new System.Drawing.Size(607, 683);
-            this.pageVehicleState.TabIndex = 3;
-            this.pageVehicleState.Text = "Vehicle";
-            this.pageVehicleState.UseVisualStyleBackColor = true;
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.txtBatterysAbnormal);
-            this.groupBox3.Controls.Add(this.txtMainFlowAbnormal);
-            this.groupBox3.Controls.Add(this.txtAgvcConnectorAbnormal);
-            this.groupBox3.Controls.Add(this.txtRobotAbnormal);
-            this.groupBox3.Controls.Add(this.txtMoveControlAbnormal);
-            this.groupBox3.Location = new System.Drawing.Point(3, 3);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(140, 181);
-            this.groupBox3.TabIndex = 62;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "IsAbnormal";
-            // 
-            // txtBatterysAbnormal
-            // 
-            this.txtBatterysAbnormal.BackColor = System.Drawing.Color.LightGreen;
-            this.txtBatterysAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtBatterysAbnormal.Location = new System.Drawing.Point(6, 142);
-            this.txtBatterysAbnormal.Name = "txtBatterysAbnormal";
-            this.txtBatterysAbnormal.Size = new System.Drawing.Size(126, 31);
-            this.txtBatterysAbnormal.TabIndex = 4;
-            this.txtBatterysAbnormal.Text = "電池";
-            this.txtBatterysAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // txtMainFlowAbnormal
-            // 
-            this.txtMainFlowAbnormal.BackColor = System.Drawing.Color.LightGreen;
-            this.txtMainFlowAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtMainFlowAbnormal.Location = new System.Drawing.Point(6, 18);
-            this.txtMainFlowAbnormal.Name = "txtMainFlowAbnormal";
-            this.txtMainFlowAbnormal.Size = new System.Drawing.Size(126, 31);
-            this.txtMainFlowAbnormal.TabIndex = 1;
-            this.txtMainFlowAbnormal.Text = "流程";
-            this.txtMainFlowAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // txtAgvcConnectorAbnormal
-            // 
-            this.txtAgvcConnectorAbnormal.BackColor = System.Drawing.Color.LightGreen;
-            this.txtAgvcConnectorAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtAgvcConnectorAbnormal.Location = new System.Drawing.Point(6, 49);
-            this.txtAgvcConnectorAbnormal.Name = "txtAgvcConnectorAbnormal";
-            this.txtAgvcConnectorAbnormal.Size = new System.Drawing.Size(126, 31);
-            this.txtAgvcConnectorAbnormal.TabIndex = 3;
-            this.txtAgvcConnectorAbnormal.Text = "通訊";
-            this.txtAgvcConnectorAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // txtRobotAbnormal
-            // 
-            this.txtRobotAbnormal.BackColor = System.Drawing.Color.LightGreen;
-            this.txtRobotAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtRobotAbnormal.Location = new System.Drawing.Point(6, 111);
-            this.txtRobotAbnormal.Name = "txtRobotAbnormal";
-            this.txtRobotAbnormal.Size = new System.Drawing.Size(126, 31);
-            this.txtRobotAbnormal.TabIndex = 2;
-            this.txtRobotAbnormal.Text = "手臂";
-            this.txtRobotAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // txtMoveControlAbnormal
-            // 
-            this.txtMoveControlAbnormal.BackColor = System.Drawing.Color.LightGreen;
-            this.txtMoveControlAbnormal.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtMoveControlAbnormal.Location = new System.Drawing.Point(6, 80);
-            this.txtMoveControlAbnormal.Name = "txtMoveControlAbnormal";
-            this.txtMoveControlAbnormal.Size = new System.Drawing.Size(126, 31);
-            this.txtMoveControlAbnormal.TabIndex = 0;
-            this.txtMoveControlAbnormal.Text = "走行";
-            this.txtMoveControlAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // ucGoNextStep
             // 
@@ -1226,147 +1374,6 @@
             this.ucTransferIndex.TagName = "TransIndex";
             this.ucTransferIndex.TagValue = "-1";
             // 
-            // pageReserveInfo
-            // 
-            this.pageReserveInfo.Controls.Add(this.gbReserve);
-            this.pageReserveInfo.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.pageReserveInfo.Location = new System.Drawing.Point(4, 22);
-            this.pageReserveInfo.Name = "pageReserveInfo";
-            this.pageReserveInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.pageReserveInfo.Size = new System.Drawing.Size(607, 683);
-            this.pageReserveInfo.TabIndex = 4;
-            this.pageReserveInfo.Text = "Reserve";
-            this.pageReserveInfo.UseVisualStyleBackColor = true;
-            // 
-            // gbReserve
-            // 
-            this.gbReserve.Controls.Add(this.lbxReserveOkSections);
-            this.gbReserve.Controls.Add(this.lbxNeedReserveSections);
-            this.gbReserve.Location = new System.Drawing.Point(6, 9);
-            this.gbReserve.Name = "gbReserve";
-            this.gbReserve.Size = new System.Drawing.Size(489, 404);
-            this.gbReserve.TabIndex = 49;
-            this.gbReserve.TabStop = false;
-            this.gbReserve.Text = "Reserve";
-            // 
-            // lbxReserveOkSections
-            // 
-            this.lbxReserveOkSections.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lbxReserveOkSections.FormattingEnabled = true;
-            this.lbxReserveOkSections.ItemHeight = 19;
-            this.lbxReserveOkSections.Location = new System.Drawing.Point(238, 21);
-            this.lbxReserveOkSections.Name = "lbxReserveOkSections";
-            this.lbxReserveOkSections.ScrollAlwaysVisible = true;
-            this.lbxReserveOkSections.Size = new System.Drawing.Size(235, 365);
-            this.lbxReserveOkSections.TabIndex = 42;
-            // 
-            // lbxNeedReserveSections
-            // 
-            this.lbxNeedReserveSections.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lbxNeedReserveSections.FormattingEnabled = true;
-            this.lbxNeedReserveSections.ItemHeight = 19;
-            this.lbxNeedReserveSections.Location = new System.Drawing.Point(6, 21);
-            this.lbxNeedReserveSections.Name = "lbxNeedReserveSections";
-            this.lbxNeedReserveSections.ScrollAlwaysVisible = true;
-            this.lbxNeedReserveSections.Size = new System.Drawing.Size(215, 365);
-            this.lbxNeedReserveSections.TabIndex = 41;
-            // 
-            // pageTransferCommand
-            // 
-            this.pageTransferCommand.Controls.Add(this.groupBox4);
-            this.pageTransferCommand.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.pageTransferCommand.Location = new System.Drawing.Point(4, 22);
-            this.pageTransferCommand.Name = "pageTransferCommand";
-            this.pageTransferCommand.Size = new System.Drawing.Size(607, 683);
-            this.pageTransferCommand.TabIndex = 5;
-            this.pageTransferCommand.Text = "TransferCmd";
-            this.pageTransferCommand.UseVisualStyleBackColor = true;
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.tbxTransferStepMsg);
-            this.groupBox4.Controls.Add(this.tbxTransferCommandMsg);
-            this.groupBox4.Location = new System.Drawing.Point(3, 3);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(757, 459);
-            this.groupBox4.TabIndex = 60;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Transfer Command";
-            // 
-            // tbxTransferStepMsg
-            // 
-            this.tbxTransferStepMsg.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxTransferStepMsg.Location = new System.Drawing.Point(427, 13);
-            this.tbxTransferStepMsg.Multiline = true;
-            this.tbxTransferStepMsg.Name = "tbxTransferStepMsg";
-            this.tbxTransferStepMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbxTransferStepMsg.Size = new System.Drawing.Size(324, 247);
-            this.tbxTransferStepMsg.TabIndex = 60;
-            // 
-            // tbxTransferCommandMsg
-            // 
-            this.tbxTransferCommandMsg.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tbxTransferCommandMsg.Location = new System.Drawing.Point(6, 23);
-            this.tbxTransferCommandMsg.Multiline = true;
-            this.tbxTransferCommandMsg.Name = "tbxTransferCommandMsg";
-            this.tbxTransferCommandMsg.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbxTransferCommandMsg.Size = new System.Drawing.Size(415, 247);
-            this.tbxTransferCommandMsg.TabIndex = 59;
-            // 
-            // timeUpdateUI
-            // 
-            this.timeUpdateUI.Enabled = true;
-            this.timeUpdateUI.Interval = 250;
-            this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Location = new System.Drawing.Point(0, 739);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1375, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // tspbCommding
-            // 
-            this.tspbCommding.Name = "tspbCommding";
-            this.tspbCommding.Size = new System.Drawing.Size(100, 16);
-            // 
-            // tstextClientName
-            // 
-            this.tstextClientName.Name = "tstextClientName";
-            this.tstextClientName.Size = new System.Drawing.Size(104, 17);
-            this.tstextClientName.Text = "tstextClientName";
-            // 
-            // tstextRemoteIp
-            // 
-            this.tstextRemoteIp.Name = "tstextRemoteIp";
-            this.tstextRemoteIp.Size = new System.Drawing.Size(93, 17);
-            this.tstextRemoteIp.Text = "tstextRemoteIp";
-            // 
-            // tstextRemotePort
-            // 
-            this.tstextRemotePort.Name = "tstextRemotePort";
-            this.tstextRemotePort.Size = new System.Drawing.Size(105, 17);
-            this.tstextRemotePort.Text = "tstextRemotePort";
-            // 
-            // tstextLastPosX
-            // 
-            this.tstextLastPosX.Name = "tstextLastPosX";
-            this.tstextLastPosX.Size = new System.Drawing.Size(90, 17);
-            this.tstextLastPosX.Text = "tstextRealPosX";
-            // 
-            // tstextLastPosY
-            // 
-            this.tstextLastPosY.Name = "tstextLastPosY";
-            this.tstextLastPosY.Size = new System.Drawing.Size(89, 17);
-            this.tstextLastPosY.Text = "tstextRealPosY";
-            // 
-            // timer_SetupInitialSoc
-            // 
-            this.timer_SetupInitialSoc.Interval = 50;
-            this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1382,7 +1389,6 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MainForm";
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip1.ResumeLayout(false);
@@ -1483,9 +1489,8 @@
         private System.Windows.Forms.Timer timer_SetupInitialSoc;
         private System.Windows.Forms.ToolStripMenuItem 模擬測試ToolStripMenuItem;
         private System.Windows.Forms.Label txtCannotAutoReason;
-        private System.Windows.Forms.Label txtCanAuto;
         private System.Windows.Forms.TextBox tbxDebugLogMsg;
-        private System.Windows.Forms.TextBox tbxTransferCommandMsg;
+        private System.Windows.Forms.TextBox tbxTransferCommand01Msg;
         private System.Windows.Forms.TextBox tbxTransferStepMsg;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
@@ -1538,5 +1543,6 @@
         private System.Windows.Forms.TabPage pageReserveInfo;
         private System.Windows.Forms.TabPage pageTransferCommand;
         private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.TextBox tbxTransferCommand02Msg;
     }
 }

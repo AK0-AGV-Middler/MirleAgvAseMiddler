@@ -427,6 +427,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case EnumTransferStepType.Move:
                 case EnumTransferStepType.MoveToCharger:
                     MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
+                    StopCharge();
                     if (moveCmdInfo.EndAddress.Id == theVehicle.AseMoveStatus.LastAddress.Id)
                     {
                         if (theVehicle.IsSimulation)
@@ -977,8 +978,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var curCmd = theVehicle.AgvcTransCmdBuffer.Values.First();
                 switch (curCmd.EnrouteState)
                 {
-                 
-                    case CommandState.LoadEnroute:                       
+
+                    case CommandState.LoadEnroute:
                     case CommandState.UnloadEnroute:
                         if (curCmd.SlotNumber == EnumSlotNumber.L)
                         {
@@ -1014,7 +1015,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
                 }
             }
-            else 
+            else
             {
                 if (slotLState == EnumAseCarrierSlotStatus.Empty)
                 {
@@ -1024,7 +1025,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     return EnumSlotNumber.R;
                 }
-            }           
+            }
         }
 
         private EnumSlotNumber CheckUnloadCstId(string cassetteId)
@@ -1427,6 +1428,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             // 判斷當前是否可卸貨 若否 則發送報告
             var curAddress = theVehicle.AseMoveStatus.LastAddress;
             var loadAddressId = loadCmdInfo.PortAddressId;
+            OnMessageShowEvent?.Invoke(this, $"PreLoadArrival, lastAddr=[{curAddress.Id}], loadAddr=[{loadAddressId}], loadCmdId=[{loadCmdInfo.CmdId}].");
 
             if (curAddress.Id == loadAddressId)
             {
@@ -1682,7 +1684,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     var endAddress = theMapInfo.addressMap[theVehicle.AseMovingGuide.ToAddressId];
                     UpdateVehiclePositionAfterArrival(endAddress);
-                    ArrivalStartCharge(endAddress);
                     theVehicle.AseMovingGuide.IsAvoidComplete = true;
                     agvcConnector.AvoidComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Avoid Move End Ok.");
@@ -1691,10 +1692,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     MoveCmdInfo moveCmdInfo = (MoveCmdInfo)GetCurTransferStep();
                     UpdateVehiclePositionAfterArrival(moveCmdInfo.EndAddress);
-                    ArrivalStartCharge(moveCmdInfo.EndAddress);
                     agvcConnector.MoveArrival();
                     if (IsNextTransferStepIdle())
                     {
+                        ArrivalStartCharge(moveCmdInfo.EndAddress);
                         TransferComplete(moveCmdInfo.CmdId);
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Move End Ok.");
                     }
@@ -1747,7 +1748,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    StartCharge(endAddress);
+                    Task.Run(() =>
+                    {
+                        Thread.Sleep(500);
+                        StartCharge(endAddress);
+                    });
+
                 }
                 catch (Exception ex)
                 {
@@ -1868,9 +1874,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotInterlockErrorEvent");
                 theVehicle.AgvcTransCmdBuffer[transferStep.CmdId].CompleteStatus = CompleteStatus.InterlockError;
-                //EnumTransferStepType transferType = transferStep.GetTransferStepType();
-                //AbortCommand(transferStep.CmdId, CompleteStatus.InterlockError);
-                StopClearAndReset();
+                EnumTransferStepType transferType = transferStep.GetTransferStepType();
+                AbortCommand(transferStep.CmdId, CompleteStatus.InterlockError);
+                RefreshTransferStepsAfterCurCommandCancel();
+                //StopClearAndReset();
             }
             catch (Exception ex)
             {
@@ -1974,6 +1981,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(loadCmd.SlotNumber);
 
+            OnMessageShowEvent?.Invoke(this, $"PreLoadSlotCheck, [slotNum={aseCarrierSlotStatus.SlotNumber}][slotState={aseCarrierSlotStatus.CarrierSlotStatus}][loadCmdId={loadCmd.CmdId}]");
+
             if (aseCarrierSlotStatus.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
             {
                 alarmHandler.SetAlarm(000016);
@@ -2014,6 +2023,10 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 var curCmdId = GetCurTransferStep().CmdId;
                 var curCmd = theVehicle.AgvcTransCmdBuffer[curCmdId];
+                var curStep = GetCurTransferStep();
+                transferSteps = new List<TransferStep>();
+                transferSteps.Add(curStep);
+                TransferStepsIndex = 0;
 
                 switch (curCmd.EnrouteState)
                 {
@@ -2028,8 +2041,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                             {
                                 if (nextCmd.EnrouteState == CommandState.LoadEnroute)
                                 {
-                                    var disCurCmdUnload = DistanceFromLastPosition(curCmd.UnloadAddressId);
-                                    var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
+                                    //var disCurCmdUnload = DistanceFromLastPosition(curCmd.UnloadAddressId);
+                                    //var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
                                     if (DistanceFromLastPosition(curCmd.UnloadAddressId) <= DistanceFromLastPosition(nextCmd.LoadAddressId))
                                     {
                                         TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
@@ -2137,6 +2150,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AbortCommand(e, theVehicle.AgvcTransCmdBuffer[e].CompleteStatus);
+                RefreshTransferStepsAfterCurCommandCancel();
             }
             catch (Exception ex)
             {
@@ -2201,7 +2215,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                StopCharge();
+                //StopCharge();
                 AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
                 aseMovingGuide.MovingSections.Clear();
                 for (int i = 0; i < theVehicle.AseMovingGuide.GuideSectionIds.Count; i++)
@@ -2482,7 +2496,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         var msg = $"Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2} < {highPercentage:F2}(High Threshold),  thus SEND charge command.";
-                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                         OnMessageShowEvent?.Invoke(this, msg);
                     }
 
@@ -2492,14 +2505,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                         theVehicle.IsCharging = true;
                     }
 
+                    asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
+
                     int timeoutCount = 10;
-                    do
+                    while (timeoutCount > 0)
                     {
                         if (theVehicle.IsCharging) break;
                         timeoutCount--;
-                        asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
-                        SpinWait.SpinUntil(() => theVehicle.IsCharging, 100);
-                    } while (timeoutCount >= 0);
+                        Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
+                    }
 
                     if (!theVehicle.IsCharging)
                     {
@@ -2543,14 +2557,22 @@ namespace Mirle.Agv.AseMiddler.Controller
                         theVehicle.IsCharging = true;
                     }
 
+                    asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
+
                     int timeoutCount = 10;
-                    do
+                    while (timeoutCount > 0)
                     {
                         if (theVehicle.IsCharging) break;
                         timeoutCount--;
-                        asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
-                        SpinWait.SpinUntil(() => theVehicle.IsCharging, 100);
-                    } while (timeoutCount >= 0);
+                        Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
+                    }
+                    //do
+                    //{
+                    //    if (theVehicle.IsCharging) break;
+                    //    timeoutCount--;
+                    //    Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
+                    //    //SpinWait.SpinUntil(() => false, mainFlowConfig.StartChargeWaitingTimeoutMs);
+                    //} while (timeoutCount >= 0);
 
                     if (!theVehicle.IsCharging)
                     {
@@ -2590,14 +2612,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                         theVehicle.IsCharging = false;
                     }
 
+                    asePackage.aseBatteryControl.StopCharge();
                     int timeoutCount = 10;
-                    do
+                    while (timeoutCount > 0)
                     {
                         if (!theVehicle.IsCharging) break;
                         timeoutCount--;
-                        asePackage.aseBatteryControl.StopCharge();
-                        SpinWait.SpinUntil(() => !theVehicle.IsCharging, 2000);
-                    } while (timeoutCount >= 0);
+                        Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
+                    }
 
                     if (theVehicle.IsCharging)
                     {
@@ -2853,21 +2875,27 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 var msg = $"MainFlow : Get [{receive.CancelAction}] Command.";
                 OnMessageShowEvent(this, msg);
-                PauseTransfer();               
+                PauseTransfer();
                 agvcConnector.CancelAbortReply(iSeqNum, 0, receive);
                 SpinWait.SpinUntil(() => false, 1000);
 
                 string abortCmdId = receive.CmdID.Trim();
                 var step = GetCurTransferStep();
+                bool abortCurCommand = GetCurTransferStep().CmdId == abortCmdId;
 
-                if (step.CmdId == abortCmdId)
+                if (abortCurCommand)
                 {
                     agvcConnector.PauseAskReserve();
                     asePackage.aseMoveControl.VehcleCancel();
                     agvcConnector.ResumeAskReserve();
-                }               
-
-                AbortCommand(abortCmdId, GetCompleteStatusFromCancelRequest(receive.CancelAction));
+                    AbortCommand(abortCmdId, GetCompleteStatusFromCancelRequest(receive.CancelAction));
+                    RefreshTransferStepsAfterCurCommandCancel();
+                }
+                else
+                {
+                    AbortCommand(abortCmdId, GetCompleteStatusFromCancelRequest(receive.CancelAction));
+                    RefreshTransferStepsAfterNextCommandCancel();
+                }
 
                 ResumeTransfer();
             }
@@ -2875,6 +2903,47 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
+        }
+
+        private void RefreshTransferStepsAfterNextCommandCancel()
+        {
+            OnMessageShowEvent?.Invoke(this, $"RefreshTransferStepsAfterNextCommandCancel");
+
+            List<AgvcTransCmd> transferCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+            var curCmd = transferCmds[0];
+
+            if (curCmd.EnrouteState == CommandState.LoadEnroute)
+            {
+                if (transferSteps.Count <= 2)
+                {
+                    TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmd.CommandId);
+                    TransferStepsAddUnloadCmdInfo(curCmd);
+                }
+            }
+        }
+
+        private void RefreshTransferStepsAfterCurCommandCancel()
+        {
+            OnMessageShowEvent?.Invoke(this, $"RefreshTransferStepsAfterNextCommandCancel");
+
+            transferSteps = new List<TransferStep>();
+            TransferStepsIndex = 0;
+            GoNextTransferStep = true;
+
+            List<AgvcTransCmd> transferCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+            var nextCmd = transferCmds[0];
+
+            if (nextCmd.EnrouteState == CommandState.LoadEnroute)
+            {
+                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmd.CommandId);
+                TransferStepsAddLoadCmdInfo(nextCmd);
+            }
+            else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
+            {
+                TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmd.CommandId);
+                TransferStepsAddUnloadCmdInfo(nextCmd);
+            }
+
         }
 
         private CompleteStatus GetCompleteStatusFromCancelRequest(CancelActionType cancelAction)

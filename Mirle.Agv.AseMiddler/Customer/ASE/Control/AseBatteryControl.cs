@@ -75,6 +75,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void PauseWatchBatteryState()
+        {
+            IsWatchBatteryStatusPause = true;
+        }
+
+        public void ResumeWatchBatteryState()
+        {
+            IsWatchBatteryStatusPause = false;
+        }
+
         public void SendBatteryStatusRequest()
         {
             try
@@ -104,28 +114,26 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public bool StopCharge()
+        public void StopCharge()
         {
             try
             {
-                if (!theVehicle.IsCharging) return true;
+                if (!theVehicle.IsCharging) return;
 
                 PrimarySend("47", "0");
 
-                return !theVehicle.IsCharging;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return false;
             }
         }
 
-        public bool StartCharge(EnumAddressDirection chargeDirection)
+        public void StartCharge(EnumAddressDirection chargeDirection)
         {
             try
             {
-                if (theVehicle.IsCharging) return true;
+                if (theVehicle.IsCharging) return;
 
                 string chargeDirectionString;
                 switch (chargeDirection)
@@ -142,12 +150,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 PrimarySend("47", chargeDirectionString);
 
-                return theVehicle.IsCharging;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return false;
             }
         }
 
@@ -156,7 +162,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
-                theVehicle.AseBatteryStatus.Percentage = 100;
+                theVehicle.AseBatteryStatus.Percentage = aseBatteryConfig.FullChargePercentage;
 
                 OnBatteryPercentageChangeEvent?.Invoke(this, 100);
 

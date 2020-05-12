@@ -1305,12 +1305,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAskReserveAlive() => (thdAskReserve != null) && thdAskReserve.IsAlive;
         public void NoCommand()
         {
-            theVehicle.ActionStatus = VHActionStatus.NoCommand;
+            //theVehicle.ActionStatus = VHActionStatus.NoCommand;
             StatusChangeReport();
         }
         public void Commanding()
         {
-            theVehicle.ActionStatus = VHActionStatus.Commanding;
+            //theVehicle.ActionStatus = VHActionStatus.Commanding;
             StatusChangeReport();
         }
         public void ReplyTransferCommand(string cmdId, CommandActionType type, ushort seqNum, int replyCode, string reason)
@@ -1586,7 +1586,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             ID_144_STATUS_CHANGE_REP report = new ID_144_STATUS_CHANGE_REP();
             report.ModeStatus = VHModeStatusParse(theVehicle.AutoState);
-            report.ActionStatus = theVehicle.ActionStatus;
             report.PowerStatus = theVehicle.PowerStatus;
             report.ObstacleStatus = theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
             report.ReserveStatus = theVehicle.AseMovingGuide.ReserveStop;
@@ -1622,6 +1621,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.HasCstR = theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
             report.CstIdR = theVehicle.AseCarrierSlotR.CarrierId;
 
+            report.ActionStatus = agvcTransCmds.Count > 0 ? VHActionStatus.Commanding : VHActionStatus.NoCommand;
+
             return report;
         }
 
@@ -1638,7 +1639,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 ID_143_STATUS_RESPONSE response = new ID_143_STATUS_RESPONSE();
                 response.ModeStatus = VHModeStatusParse(theVehicle.AutoState);
-                response.ActionStatus = theVehicle.ActionStatus;
+               
                 response.PowerStatus = theVehicle.PowerStatus;
                 response.ObstacleStatus = theVehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
                 response.ReserveStatus = theVehicle.AseMovingGuide.ReserveStop;
@@ -1672,7 +1673,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].EnrouteState : CommandState.None;
                 response.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
                 response.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
-
+                response.ActionStatus = agvcTransCmds.Count > 0 ? VHActionStatus.Commanding : VHActionStatus.NoCommand;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.StatusReqRespFieldNumber;
@@ -1844,7 +1845,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 var cmdId = receive.CmdID.Trim();
 
-                if (theVehicle.ActionStatus == VHActionStatus.NoCommand)
+                if (theVehicle.AgvcTransCmdBuffer.Count == 0)
                 {
                     replyCode = 1;
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
@@ -2340,7 +2341,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void Receive_Cmd32_TransferCompleteResponse(object sender, TcpIpEventArgs e)
         {
             ID_32_TRANS_COMPLETE_RESPONSE receive = (ID_32_TRANS_COMPLETE_RESPONSE)e.objPacket;
-            theVehicle.ActionStatus = receive.ReplyCode == 0 ? VHActionStatus.NoCommand : VHActionStatus.Commanding;
+            //theVehicle.ActionStatus = receive.ReplyCode == 0 ? VHActionStatus.NoCommand : VHActionStatus.Commanding;
             StatusChangeReport();
         }
         public void Send_Cmd132_TransferCompleteReport(AgvcTransCmd agvcTransCmd, int delay = 0)
