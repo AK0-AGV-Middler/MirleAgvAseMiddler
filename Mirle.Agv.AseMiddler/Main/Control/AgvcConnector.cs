@@ -547,6 +547,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     if (returnCode == TrxTcpIp.ReturnCode.Normal)
                                     {
                                         queSendWaitWrappers.TryDequeue(out SendWaitWrapper replyedWrapper);
+                                        //Sleep and Optimize
+                                        int waitTime = response.WaitTime;
+                                        SpinWait.SpinUntil(() => false, waitTime);
+                                        mainFlowHandler.OptimizeTransferSteps();
                                     }
                                     else
                                     {
@@ -556,6 +560,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                                             queSendWaitWrappers.TryDequeue(out SendWaitWrapper timeoutWrapper);
                                             string msg = $"TransferComplete send wait timeout[{timeoutWrapper.Wrapper.TranCmpRep.CmdID}][queNeedReserveSections.Count={queNeedReserveSections.Count}]";
                                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                                            OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                                            mainFlowHandler.ResumeVisitTransferSteps();
                                         }
                                     }
                                 }
@@ -2207,7 +2213,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             return completeStatus;
         }
 
-
         //public bool Send_Cmd136_CstIdReadReport(TransferStep transferStep, EnumCstIdReadResult readResult)
         //{
         //    try
@@ -2618,6 +2623,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.TranCmpRep = report;
 
                 //SendCommandWrapper(wrappers, false, delay);
+
+                mainFlowHandler.PauseVisitTransferSteps();
 
                 SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
                 queSendWaitWrappers.Enqueue(sendWaitWrapper);

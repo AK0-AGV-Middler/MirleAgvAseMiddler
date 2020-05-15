@@ -294,10 +294,17 @@ namespace Mirle.Agv.AseMiddler.Controller
             CheckLoadArrival(loadCmd);
         }
 
-        private void OptimizeTransferSteps()
+        public void OptimizeTransferSteps()
         {
             try
             {
+                if (transferSteps.Count == 0)
+                {
+                    OnMessageShowEvent?.Invoke(this, $"OptimizeTransferSteps fail. No next agvcTransCmd after last agvcTransferCmd complete.");
+                    IsVisitTransferStepPause = false;
+                    return;
+                }                
+
                 OnMessageShowEvent?.Invoke(this, $"OptimizeTransferSteps");
 
                 IsVisitTransferStepPause = true;
@@ -677,7 +684,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AgvcConnector_OnAgvcAcceptLoadUnloadCompleteEvent(object sender, EventArgs e)
         {
             VisitNextTransferStep();
-        }              
+        }
 
         private void AgvcConnector_OnAgvcAcceptMoveArrivalEvent(object sender, EventArgs e)
         {
@@ -687,7 +694,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 VisitNextTransferStep();
             }
         }
-        
+
         #endregion
 
         private void AgvcConnector_OnConnectionChangeEvent(object sender, bool e)
