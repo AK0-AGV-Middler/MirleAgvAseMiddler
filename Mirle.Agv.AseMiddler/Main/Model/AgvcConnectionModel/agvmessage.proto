@@ -340,6 +340,7 @@ message Timestamp {
 
   message ID_32_TRANS_COMPLETE_RESPONSE {
 	int32 ReplyCode = 1;
+	int32 WaitTime = 2;
   }
 
   enum DriveDirction
@@ -547,6 +548,7 @@ message Timestamp {
 	double VehicleAngle = 34;
 	double Speed = 35;
 	repeated string WillPassGuideSection = 36;
+	string SystemTime = 37;
   }
 
   message ID_144_STATUS_CHANGE_REP {
@@ -586,6 +588,7 @@ message Timestamp {
 	double VehicleAngle = 34;
 	double Speed = 35;
 	repeated string WillPassGuideSection = 36;
+	string SystemTime = 37;
   }
   message ID_44_STATUS_CHANGE_RESPONSE {
 	int32 ReplyCode = 1;
@@ -665,6 +668,7 @@ message Timestamp {
   message WrapperMessage {
     int32 ID = 1000;
 	int32 SeqNum = 1001;    
+	string LocalSystemTime = 1002;
     oneof msg {
 
 		ID_1_HOST_BASIC_INFO_VERSION_REP Host_Basic_Info_Rep = 1;
@@ -761,51 +765,12 @@ message Timestamp {
 		ID_94_ALARM_RESPONSE Alarm_Resp = 94;
 
     }   
-}
-
-	message SYSTEMPROCESS_INFO {
-	   string TIME = 1;
-	   uint64 SEQ = 2;
-	   string LOG_LEVEL = 3;
-	   string CLASS = 4;
-       string METHOD = 5;
-       string DEVICE = 6;
-	   string DATA = 7;
-	   string VH_ID = 8;
-	   string CRR_ID = 9;
-	   string TYPE = 10;
-	   string LOG_ID = 11;
-	   string THREAD_ID = 12;
-	   string LOT = 13;
-	   string LEVEL = 14;
-	   string XID = 15;
-	   string TRX_ID = 16;
-	   string DETAILS = 17;
+ }
+	enum CurrentMessageVersion
+    {
+		v1_0_0=0;
+		v1_0_2=1;
     }
 
-	message HOSTLOG_INFO {
-	   string TIME = 1;
-	   string EQ_ID = 2;
-	   string SEND_RECEIVE = 3;
-       string SX = 4;
-       string FY = 5;
-	   string DEVICE = 6;
-	   string FUN_NAME = 7;
-	   string MESSAGE = 8;
-    }
-
-    message EQLOG_INFO {
-	   string TIME = 1;
-	   string SEND_RECEIVE = 2;
-	   string FUN_NAME = 3;
-	   int32 SEQ_NO = 4;
-	   string VH_ID = 5;
-	   string OHTC_CMD_ID = 6;
-       string ACT_TYPE = 7;
-       string MCS_CMD_ID = 8;
-	   string EVENT_TYPE = 9;
-	   string VH_STATUS = 10;
-	   string MESSAGE = 11;
-    }
 
 // [END messages]
