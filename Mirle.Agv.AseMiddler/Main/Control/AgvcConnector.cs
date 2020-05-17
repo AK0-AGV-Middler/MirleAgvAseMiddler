@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Collections.Concurrent;
 using Mirle.Tools;
+using System.Runtime.InteropServices;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -1757,10 +1758,18 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void Receive_Cmd43_StatusRequest(object sender, TcpIpEventArgs e)
         {
-            ID_43_STATUS_REQUEST receive = (ID_43_STATUS_REQUEST)e.objPacket;
-            var receiveTime = receive.SystemTime; //可以記錄AGVC最後發送時間
+            try
+            {
+                Send_Cmd143_StatusResponse(e.iSeqNum);
 
-            Send_Cmd143_StatusResponse(e.iSeqNum);
+                ID_43_STATUS_REQUEST receive = (ID_43_STATUS_REQUEST)e.objPacket;
+                var receiveTime = receive.SystemTime; //可以記錄AGVC最後發送時間
+                SetSystemTime(receiveTime);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
         public void Send_Cmd143_StatusResponse(ushort seqNum)
         {
@@ -1873,14 +1882,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ID_139_PAUSE_RESPONSE iD_139_PAUSE_RESPONSE = new ID_139_PAUSE_RESPONSE();
-                iD_139_PAUSE_RESPONSE.EventType = eventType;
-                iD_139_PAUSE_RESPONSE.ReplyCode = replyCode;
+                ID_139_PAUSE_RESPONSE response = new ID_139_PAUSE_RESPONSE();
+                response.EventType = eventType;
+                response.ReplyCode = replyCode;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.PauseRespFieldNumber;
                 wrappers.SeqNum = seqNum;
-                wrappers.PauseResp = iD_139_PAUSE_RESPONSE;
+                wrappers.PauseResp = response;
 
                 SendCommandWrapper(wrappers, true);
             }
@@ -2166,7 +2175,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             else
             {
                 //LoadComplete();
-               
+
                 OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
                 OnAgvcAcceptBcrReadReply?.Invoke(this, default(EventArgs));
             }
@@ -3001,6 +3010,51 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         #endregion
 
+
+        #region Get/Set System Date Time
+
+        // 用於設置系統時間
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetSystemTime(ref SYSTEMTIME st);
+
+        // 用於獲得系統時間
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool GetSystemTime(ref SYSTEMTIME st);
+
+        private void SetSystemTime(string timeStamp)
+        {
+            try
+            {
+                SYSTEMTIME st = GetSYSTEMTIME(timeStamp);
+                SetSystemTime(ref st);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private SYSTEMTIME GetSYSTEMTIME(string timeStamp)
+        {
+            SYSTEMTIME st = new SYSTEMTIME();
+            st.wYear = short.Parse(timeStamp.Substring(0, 4));
+            st.wMonth = short.Parse(timeStamp.Substring(4, 2));
+            st.wDay = short.Parse(timeStamp.Substring(6, 2));
+
+            int hour = (int.Parse(timeStamp.Substring(8, 2)) + 8) % 24;
+            st.wHour = (short)hour;
+            st.wMinute = short.Parse(timeStamp.Substring(10, 2));
+            st.wSecond = short.Parse(timeStamp.Substring(12, 2));
+            int ms = int.Parse(timeStamp.Substring(14, 2)) * 10;
+            st.wMilliseconds = (short)ms;
+
+            return st;
+        }
+
+        #endregion
+
+        #region Log
+
         private void LogException(string classMethodName, string exMsg)
         {
             LogFormat logFormat = new LogFormat("Error", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", exMsg);
@@ -3017,6 +3071,21 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             mirleLogger.Log(new LogFormat("Comm", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg));
         }
+
+        #endregion
     }
 
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SYSTEMTIME
+    {
+        public short wYear;
+        public short wMonth;
+        public short wDayOfWeek;
+        public short wDay;
+        public short wHour;
+        public short wMinute;
+        public short wSecond;
+        public short wMilliseconds;
+    }
 }
