@@ -215,7 +215,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
         private string FitZero(string v)
         {
             int sectionIdToInt = int.Parse(v);

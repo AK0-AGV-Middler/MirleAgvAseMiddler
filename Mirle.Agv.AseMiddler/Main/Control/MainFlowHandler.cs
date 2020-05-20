@@ -38,6 +38,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool IsReportingPosition { get; set; }
         public bool IsReserveMechanism { get; set; } = true;
+
+        public bool IsAgvcReplySendWaitMessage { get; set; } = false;
+
         #endregion
 
         #region Controller
@@ -219,9 +222,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 agvcConnector.OnAgvcAcceptMoveArrivalEvent += AgvcConnector_OnAgvcAcceptMoveArrivalEvent;
                 agvcConnector.OnAgvcAcceptLoadArrivalEvent += AgvcConnector_OnAgvcAcceptLoadArrivalEvent;
-                agvcConnector.OnAgvcAcceptBcrReadReply += AgvcConnector_OnAgvcAcceptLoadUnloadCompleteEvent;
+                agvcConnector.OnAgvcAcceptBcrReadReply += AgvcConnector_OnAgvcAcceptLoadCompleteEvent;
                 agvcConnector.OnAgvcAcceptUnloadArrivalEvent += AgvcConnector_OnAgvcAcceptUnloadArrivalEvent;
-                agvcConnector.OnAgvcAcceptUnloadCompleteEvent += AgvcConnector_OnAgvcAcceptLoadUnloadCompleteEvent;
+                agvcConnector.OnAgvcAcceptUnloadCompleteEvent += AgvcConnector_OnAgvcAcceptUnloadCompleteEvent;
                 agvcConnector.OnSendRecvTimeoutEvent += AgvcConnector_OnSendRecvTimeoutEvent;
 
                 //來自MoveControl的移動結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
@@ -273,6 +276,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+
+
+
         #region Load Unload
 
         public void Load(LoadCmdInfo loadCmd)
@@ -298,12 +304,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (transferSteps.Count == 0)
-                {
-                    OnMessageShowEvent?.Invoke(this, $"OptimizeTransferSteps fail. No next agvcTransCmd after last agvcTransferCmd complete.");
-                    IsVisitTransferStepPause = false;
-                    return;
-                }                
+                //if (transferSteps.Count == 0)
+                //{
+                //    OnMessageShowEvent?.Invoke(this, $"OptimizeTransferSteps fail. No next agvcTransCmd after last agvcTransferCmd complete.");
+                //    IsVisitTransferStepPause = false;
+                //    return;
+                //}
 
                 OnMessageShowEvent?.Invoke(this, $"OptimizeTransferSteps");
 
@@ -313,85 +319,102 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var curCmd = theVehicle.AgvcTransCmdBuffer[curCmdId];
                 var curStep = GetCurTransferStep();
                 transferSteps = new List<TransferStep>();
-                transferSteps.Add(curStep);
                 TransferStepsIndex = 0;
+                transferSteps.Add(curStep);
 
-                switch (curCmd.EnrouteState)
+                if (curCmd.AgvcTransCommandType == EnumAgvcTransCommandType.LoadUnload)
                 {
-                    case CommandState.LoadEnroute:
-                        if (theVehicle.AgvcTransCmdBuffer.Count > 1)
-                        {
-
-                            var nextCmdId = theVehicle.AgvcTransCmdBuffer.First(x => x.Key != curCmdId).Value.CommandId;
-                            var nextCmd = theVehicle.AgvcTransCmdBuffer[nextCmdId];
-
-                            if (curCmd.GetCommandActionType() == CommandActionType.Loadunload)
-                            {
-                                if (nextCmd.EnrouteState == CommandState.LoadEnroute)
-                                {
-                                    //var disCurCmdUnload = DistanceFromLastPosition(curCmd.UnloadAddressId);
-                                    //var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
-                                    if (DistanceFromLastPosition(curCmd.UnloadAddressId) <= DistanceFromLastPosition(nextCmd.LoadAddressId))
-                                    {
-                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                        TransferStepsAddUnloadCmdInfo(curCmd);
-                                    }
-                                    else
-                                    {
-                                        TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
-                                        TransferStepsAddLoadCmdInfo(nextCmd);
-                                    }
-                                }
-                                else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
-                                {
-                                    if (DistanceFromLastPosition(curCmd.UnloadAddressId) <= DistanceFromLastPosition(nextCmd.UnloadAddressId))
-                                    {
-                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                        TransferStepsAddUnloadCmdInfo(curCmd);
-                                    }
-                                    else
-                                    {
-                                        TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
-                                        TransferStepsAddUnloadCmdInfo(nextCmd);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
-                                TransferStepsAddLoadCmdInfo(nextCmd);
-                            }
-                        }
-                        else if (curCmd.GetCommandActionType() == CommandActionType.Loadunload)
-                        {
-                            TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                            TransferStepsAddUnloadCmdInfo(curCmd);
-                        }
-                        break;
-                    case CommandState.UnloadEnroute:
-                        if (theVehicle.AgvcTransCmdBuffer.Count > 1)
-                        {
-                            var nextCmdId = theVehicle.AgvcTransCmdBuffer.First(x => x.Key != curCmdId).Value.CommandId;
-                            var nextCmd = theVehicle.AgvcTransCmdBuffer[nextCmdId];
-
-                            if (nextCmd.EnrouteState == CommandState.LoadEnroute)
-                            {
-                                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
-                                TransferStepsAddLoadCmdInfo(nextCmd);
-                            }
-                            else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
-                            {
-                                TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
-                                TransferStepsAddUnloadCmdInfo(nextCmd);
-                            }
-                        }
-                        break;
-                    case CommandState.None:
-
-                        break;
-                    default:
-                        break;
+                    TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                    TransferStepsAddUnloadCmdInfo(curCmd);
                 }
+                else
+                {
+                    transferSteps.Add(new EmptyTransferStep());
+                }
+
+                //switch (curCmd.EnrouteState)
+                //{
+                //    case CommandState.LoadEnroute:
+                //        if (theVehicle.AgvcTransCmdBuffer.Count > 1)
+                //        {
+
+                //            var nextCmdId = theVehicle.AgvcTransCmdBuffer.First(x => x.Key != curCmdId).Value.CommandId;
+                //            var nextCmd = theVehicle.AgvcTransCmdBuffer[nextCmdId];
+
+                //            if (curCmd.GetCommandActionType() == CommandActionType.Loadunload)
+                //            {
+                //                if (nextCmd.EnrouteState == CommandState.LoadEnroute)
+                //                {
+                //                    //var disCurCmdUnload = DistanceFromLastPosition(curCmd.UnloadAddressId);
+                //                    //var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
+                //                    if (DistanceFromLastPosition(curCmd.UnloadAddressId) <= DistanceFromLastPosition(nextCmd.LoadAddressId))
+                //                    {
+                //                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                //                        TransferStepsAddUnloadCmdInfo(curCmd);
+                //                    }
+                //                    else
+                //                    {
+                //                        TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                //                        TransferStepsAddLoadCmdInfo(nextCmd);
+                //                    }
+                //                }
+                //                else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
+                //                {
+                //                    if (DistanceFromLastPosition(curCmd.UnloadAddressId) <= DistanceFromLastPosition(nextCmd.UnloadAddressId))
+                //                    {
+                //                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                //                        TransferStepsAddUnloadCmdInfo(curCmd);
+                //                    }
+                //                    else
+                //                    {
+                //                        TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
+                //                        TransferStepsAddUnloadCmdInfo(nextCmd);
+                //                    }
+                //                }
+                //            }
+                //            else
+                //            {
+                //                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                //                TransferStepsAddLoadCmdInfo(nextCmd);
+                //            }
+                //        }
+                //        else if (curCmd.GetCommandActionType() == CommandActionType.Loadunload)
+                //        {
+                //            TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                //            TransferStepsAddUnloadCmdInfo(curCmd);
+                //        }
+                //        break;
+                //    case CommandState.UnloadEnroute:
+                //        if (theVehicle.AgvcTransCmdBuffer.Count > 1)
+                //        {
+                //            var nextCmdId = theVehicle.AgvcTransCmdBuffer.First(x => x.Key != curCmdId).Value.CommandId;
+                //            var nextCmd = theVehicle.AgvcTransCmdBuffer[nextCmdId];
+
+                //            if (nextCmd.EnrouteState == CommandState.LoadEnroute)
+                //            {
+                //                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                //                TransferStepsAddLoadCmdInfo(nextCmd);
+                //            }
+                //            else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
+                //            {
+                //                TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
+                //                TransferStepsAddUnloadCmdInfo(nextCmd);
+                //            }
+                //        }
+                //        break;
+                //    case CommandState.None:
+                //        if (theVehicle.AgvcTransCmdBuffer.Count > 0)
+                //        {
+                //            var nextCmd = theVehicle.AgvcTransCmdBuffer.Values.First(x => !string.IsNullOrEmpty(x.CommandId));
+                //            if (nextCmd != null)
+                //            {
+                //                TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmd.CommandId);
+                //            }
+                //        }
+                //        break;
+                //    default:
+                //        break;
+                //}
 
                 IsVisitTransferStepPause = false;
             }
@@ -406,6 +429,55 @@ namespace Mirle.Agv.AseMiddler.Controller
             var lastPosition = theVehicle.AseMoveStatus.LastMapPosition;
             var addressPosition = theMapInfo.addressMap[addressId].Position;
             return (int)mapHandler.GetDistance(lastPosition, addressPosition);
+        }
+
+        private void OptimizeTransferStepsAfterTransferComplete()
+        {
+            try
+            {
+                OnMessageShowEvent?.Invoke(this, $"OptimizeTransferStepsAfterTransferComplete");
+
+                transferSteps = new List<TransferStep>();
+                TransferStepsIndex = 0;
+
+                if (theVehicle.AgvcTransCmdBuffer.Count >= 1)
+                {
+                    var agvcTransCmd = theVehicle.AgvcTransCmdBuffer.Values.First(cmd => !string.IsNullOrEmpty(cmd.CommandId));
+                    switch (agvcTransCmd.AgvcTransCommandType)
+                    {
+                        case EnumAgvcTransCommandType.Move:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            transferSteps.Add(new EmptyTransferStep());
+                            break;
+                        case EnumAgvcTransCommandType.Load:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
+                            TransferStepsAddLoadCmdInfo(agvcTransCmd);
+                            break;
+                        case EnumAgvcTransCommandType.Unload:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            TransferStepsAddUnloadCmdInfo(agvcTransCmd);
+                            break;
+                        case EnumAgvcTransCommandType.LoadUnload:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
+                            TransferStepsAddLoadCmdInfo(agvcTransCmd);
+                            //TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            //TransferStepsAddUnloadCmdInfo(agvcTransCmd);
+                            break;
+                        case EnumAgvcTransCommandType.MoveToCharger:
+                            TransferStepsAddMoveToChargerCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            transferSteps.Add(new EmptyTransferStep());
+                            break;
+                        case EnumAgvcTransCommandType.Override:
+                        case EnumAgvcTransCommandType.Else:
+                        default:
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         private void CheckLoadArrival(LoadCmdInfo loadCmdInfo)
@@ -473,7 +545,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void Unload(UnloadCmdInfo unloadCmd)
         {
-            OptimizeTransferSteps();
+            //OptimizeTransferSteps();
 
             GetPioDirection(unloadCmd);
 
@@ -595,11 +667,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     agvcConnector.UnloadComplete(transferStep.CmdId);
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Unload Complete");
-                    SpinWait.SpinUntil(() => false, 2000);
-                    string cmdId = transferStep.CmdId;
-                    theVehicle.AgvcTransCmdBuffer[cmdId].EnrouteState = CommandState.None;
-                    TransferComplete(transferStep.CmdId);
-                    VisitNextTransferStep();
+                    //SpinWait.SpinUntil(() => false, 2000);
                 }
                 else
                 {
@@ -681,7 +749,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             StopClearAndReset();
         }
 
-        private void AgvcConnector_OnAgvcAcceptLoadUnloadCompleteEvent(object sender, EventArgs e)
+        private void AgvcConnector_OnAgvcAcceptLoadCompleteEvent(object sender, EventArgs e)
         {
             VisitNextTransferStep();
         }
@@ -692,6 +760,19 @@ namespace Mirle.Agv.AseMiddler.Controller
             if (transferSteps.Count > 0)
             {
                 VisitNextTransferStep();
+            }
+        }
+
+        private void AgvcConnector_OnAgvcAcceptUnloadCompleteEvent(object sender, EventArgs e)
+        {
+            try
+            {
+                var transferStep = GetCurTransferStep();
+                TransferComplete(transferStep.CmdId);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -953,19 +1034,20 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void ClearTransferSteps(string cmdId)
         {
-            IsVisitTransferStepPause = true;
-            SpinWait.SpinUntil(() => false, 2000);
-            GoNextTransferStep = false;
-            int transferStepCountBeforeRemove = transferSteps.Count;
+            //IsVisitTransferStepPause = true;
+            //SpinWait.SpinUntil(() => false, 2000);
+            //GoNextTransferStep = false;
+            //int transferStepCountBeforeRemove = transferSteps.Count;
             transferSteps.RemoveAll(x => x.CmdId == cmdId);
-            TransferStepsIndex = TransferStepsIndex + transferSteps.Count - transferStepCountBeforeRemove;
-            if (transferSteps.Count == 0)
-            {
-                TransferStepsIndex = -1;
-                transferSteps.Add(new EmptyTransferStep());
-            }
-            GoNextTransferStep = true;
-            IsVisitTransferStepPause = false;
+            //TransferStepsIndex = TransferStepsIndex + transferSteps.Count - transferStepCountBeforeRemove;
+            //if (transferSteps.Count == 0)
+            //{
+            //    TransferStepsIndex = -1;
+            //    transferSteps.Add(new EmptyTransferStep());
+            //}
+
+            //GoNextTransferStep = true;
+            //IsVisitTransferStepPause = false;
 
             var msg = $"MainFlow : Clear Finished Command[{cmdId}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -1844,6 +1926,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     case EnumAgvcTransCommandType.Move:
                         TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                        transferSteps.Add(new EmptyTransferStep());
                         break;
                     case EnumAgvcTransCommandType.Load:
                         TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
@@ -1861,6 +1944,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case EnumAgvcTransCommandType.MoveToCharger:
                         TransferStepsAddMoveToChargerCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                        transferSteps.Add(new EmptyTransferStep());
                         break;
                     case EnumAgvcTransCommandType.Override:
                     case EnumAgvcTransCommandType.Else:
@@ -2067,14 +2151,18 @@ namespace Mirle.Agv.AseMiddler.Controller
                     MoveCmdInfo moveCmdInfo = (MoveCmdInfo)GetCurTransferStep();
                     UpdateVehiclePositionAfterArrival(moveCmdInfo.EndAddress);
                     agvcConnector.MoveArrival();
+                    ArrivalStartCharge(moveCmdInfo.EndAddress);
+
                     if (IsNextTransferStepIdle())
                     {
-                        ArrivalStartCharge(moveCmdInfo.EndAddress);
+                        //ArrivalStartCharge(moveCmdInfo.EndAddress);
                         TransferComplete(moveCmdInfo.CmdId);
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Move End Ok.");
                     }
-
-                    VisitNextTransferStep();
+                    else
+                    {
+                        VisitNextTransferStep();
+                    }
                 }
 
                 IsAvoidMove = false;
@@ -2092,8 +2180,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                IsVisitTransferStepPause = true;
                 AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
-                agvcConnector.TransferComplete(agvcTransCmd);
+                ReportAgvcTransferComplete(agvcTransCmd);
                 ClearTransferSteps(cmdId);
                 theVehicle.AgvcTransCmdBuffer.Remove(cmdId);
                 if (theVehicle.AgvcTransCmdBuffer.Count == 0)
@@ -2101,19 +2190,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                     agvcConnector.NoCommand();
                 }
                 asePackage.SetTransferCommandInfoRequest();
+                OptimizeTransferStepsAfterTransferComplete();
+                GoNextTransferStep = true;
+                IsVisitTransferStepPause = false;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
-
-        private void ForkNgRetryArrivalStartCharge()
-        {
-            MoveCmdInfo moveCmd = (MoveCmdInfo)GetPreTransferStep();
-
-            ArrivalStartCharge(moveCmd.EndAddress);
-
         }
 
         private void ArrivalStartCharge(MapAddress endAddress)
@@ -2139,7 +2223,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-
 
         private void LogRetry(int forkNgRetryTimes)
         {
@@ -2206,16 +2289,74 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void AbortCommand(string cmdId, CompleteStatus completeStatus)
         {
+            IsVisitTransferStepPause = true;
+            string curTransferId = GetCurTransferStep().CmdId;
+
+            AgvcTransCmd cancelingAgvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
+            cancelingAgvcTransCmd.CompleteStatus = completeStatus;
+            ReportAgvcTransferComplete(cancelingAgvcTransCmd);
+
             ClearTransferSteps(cmdId);
-            var agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
             theVehicle.AgvcTransCmdBuffer.Remove(cmdId);
-            agvcTransCmd.CompleteStatus = completeStatus;
-            agvcConnector.TransferComplete(agvcTransCmd);
+
+            if (curTransferId == cmdId)
+            {
+                if (theVehicle.AgvcTransCmdBuffer.Count == 1)
+                {
+                    var agvcTransCmd = theVehicle.AgvcTransCmdBuffer.Values.First(cmd => !string.IsNullOrEmpty(cmd.CommandId));
+                    switch (agvcTransCmd.AgvcTransCommandType)
+                    {
+                        case EnumAgvcTransCommandType.Move:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            break;
+                        case EnumAgvcTransCommandType.Load:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
+                            TransferStepsAddLoadCmdInfo(agvcTransCmd);
+                            break;
+                        case EnumAgvcTransCommandType.Unload:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            TransferStepsAddUnloadCmdInfo(agvcTransCmd);
+                            break;
+                        case EnumAgvcTransCommandType.LoadUnload:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.LoadAddressId, agvcTransCmd.CommandId);
+                            TransferStepsAddLoadCmdInfo(agvcTransCmd);
+                            //TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            //TransferStepsAddUnloadCmdInfo(agvcTransCmd);
+                            break;
+                        case EnumAgvcTransCommandType.MoveToCharger:
+                            TransferStepsAddMoveToChargerCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
+                            break;
+                        case EnumAgvcTransCommandType.Override:
+                        case EnumAgvcTransCommandType.Else:
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    transferSteps = new List<TransferStep>();
+                    TransferStepsIndex = 0;
+                }
+            }
 
             if (theVehicle.AgvcTransCmdBuffer.Count == 0)
             {
                 agvcConnector.NoCommand();
             }
+
+            GoNextTransferStep = true;
+            IsVisitTransferStepPause = false;
+        }
+
+        private void ReportAgvcTransferComplete(AgvcTransCmd agvcTransCmd)
+        {
+            IsAgvcReplySendWaitMessage = false;
+            agvcConnector.TransferComplete(agvcTransCmd);
+            while (!IsAgvcReplySendWaitMessage)
+            {
+                SpinWait.SpinUntil(() => IsAgvcReplySendWaitMessage, 500);
+            }
+            IsAgvcReplySendWaitMessage = false;
         }
 
         public void AbortAllAgvcTransCmdInBuffer()
