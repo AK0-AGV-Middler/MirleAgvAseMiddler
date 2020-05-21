@@ -66,7 +66,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void ResetAllAlarmCode(object sneder,string msg)
+        public void ResetAllAlarmCode(object sneder,EventArgs eventArgs)
         {
             try
             {

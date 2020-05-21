@@ -49,6 +49,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler OnAgvcAcceptMoveArrivalEvent;
         public event EventHandler OnAgvcAcceptLoadArrivalEvent;
         public event EventHandler OnAgvcAcceptUnloadArrivalEvent;
+        public event EventHandler OnAgvcAcceptLoadCompleteEvent;
         public event EventHandler OnAgvcAcceptBcrReadReply;
         public event EventHandler OnAgvcAcceptUnloadCompleteEvent;
         public event EventHandler OnSendRecvTimeoutEvent;
@@ -62,20 +63,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         private MainFlowHandler mainFlowHandler;
 
         private Thread thdAskReserve;
-        public EnumThreadStatus AskReserveStatus { get; private set; } = EnumThreadStatus.None;
-        public EnumThreadStatus PreAskReserveStatus { get; private set; } = EnumThreadStatus.None;
-
         private ConcurrentQueue<MapSection> quePartMoveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
         private bool ReserveOkAskNext { get; set; } = false;
         private ConcurrentBag<MapSection> CbagNeedReserveSections { get; set; } = new ConcurrentBag<MapSection>();
         public bool IsAskReservePause { get; private set; }
-        public bool IsAskReserveStop { get; private set; }
         private bool IsWaitReserveReply { get; set; }
         private MapPosition lastReportPosition { get; set; } = new MapPosition();
 
-        private ConcurrentQueue<SendWaitWrapper> queSendWaitWrappers = new ConcurrentQueue<SendWaitWrapper>();
+        public ConcurrentQueue<SendWaitWrapper> queSendWaitWrappers = new ConcurrentQueue<SendWaitWrapper>();
 
 
         public TcpIpAgent ClientAgent { get; private set; }
@@ -84,23 +81,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public TrxTcpIp.ReturnCode ReturnCode { get; set; } = TrxTcpIp.ReturnCode.Timeout;
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Fail;
 
-        object sendRecv_LockObj = new object();
-        public TrxTcpIp.ReturnCode SendRecv<TSource2>(WrapperMessage wrapper, out TSource2 stRecv, out string rtnMsg)
-        {
-            bool lockTaken = false;
-            try
-            {
-                Monitor.TryEnter(sendRecv_LockObj, 30000, ref lockTaken);
-                if (!lockTaken)
-                    throw new TimeoutException("snedRecv time out lock happen");
-                LogSendMsg(wrapper);
-                return ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out stRecv, out rtnMsg);
-            }
-            finally
-            {
-                if (lockTaken) Monitor.Exit(sendRecv_LockObj);
-            }
-        }
 
         public AgvcConnector(MainFlowHandler mainFlowHandler)
         {
@@ -400,6 +380,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                     break;
             }
         }
+        object sendRecv_LockObj = new object();
+        public TrxTcpIp.ReturnCode SendRecv<TSource2>(WrapperMessage wrapper, out TSource2 stRecv, out string rtnMsg)
+        {
+            bool lockTaken = false;
+            try
+            {
+                Monitor.TryEnter(sendRecv_LockObj, 30000, ref lockTaken);
+                if (!lockTaken)
+                    throw new TimeoutException("snedRecv time out lock happen");
+                LogSendMsg(wrapper);
+                return ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out stRecv, out rtnMsg);
+            }
+            finally
+            {
+                if (lockTaken) Monitor.Exit(sendRecv_LockObj);
+            }
+        }
 
         private bool IsApplyOnly(EnumCmdNum cmdNum)
         {
@@ -502,23 +499,23 @@ namespace Mirle.Agv.AseMiddler.Controller
         #region Thd Ask Reserve
         private void AskReserve()
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
             while (true)
             {
                 try
                 {
-                    if (IsAskReserveStop || IsAskReservePause || theVehicle.AseMoveStatus.IsMoveEnd)
+                    if (IsAskReservePause || theVehicle.AseMoveStatus.IsMoveEnd)
                     {
                         SpinWait.SpinUntil(() => false, 50);
                     }
 
                     #region Pause And Stop Check
                     if (IsAskReservePause) continue;
-                    if (IsAskReserveStop) break;
+                    if (!ClientAgent.IsConnection)
+                    {
+                        SpinWait.SpinUntil(() => false, 100);
+                        continue;
+                    } 
                     #endregion
-
-                    AskReserveStatus = EnumThreadStatus.Working;
 
                     if (queNeedReserveSections.Any())
                     {
@@ -588,13 +585,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                                                 break;
                                             case EventType.LoadComplete:
                                                 //OnAgvcAcceptLoadCompleteEvent?.Invoke(this, default(EventArgs));
-                                                SendRecv_Cmd136_CstIdReadReport();
+                                                //SendRecv_Cmd136_CstIdReadReport();
+                                                mainFlowHandler.IsAgvcReplySendWaitMessage = true;
                                                 break;
                                             case EventType.UnloadComplete:
                                                 OnAgvcAcceptUnloadCompleteEvent?.Invoke(this, default(EventArgs));
                                                 break;
                                             case EventType.Bcrread:
                                                 OnAgvcReplyCstIdReadEvent(response);
+                                                mainFlowHandler.IsAgvcReplySendWaitMessage = true;
                                                 break;
                                             default:
                                                 break;
@@ -614,6 +613,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                             string msg = $"TransferEvent[{timeoutWrapper.Wrapper.ImpTransEventRep.EventType}] send wait timeout[{timeoutWrapper.Wrapper.TranCmpRep.CmdID}]";
                                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                                             OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                                            mainFlowHandler.IsAgvcReplySendWaitMessage = true;
                                         }
                                     }
                                 }
@@ -624,61 +624,34 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                         SpinWait.SpinUntil(() => false, 500);
                     }
-
                 }
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
                 }
             }
-
-            AfterAskReserve(sw.ElapsedMilliseconds);
         }
         public void StartAskReserve()
         {
             IsAskReservePause = false;
-            IsAskReserveStop = false;
             thdAskReserve = new Thread(new ThreadStart(AskReserve));
             thdAskReserve.IsBackground = true;
             thdAskReserve.Start();
-            AskReserveStatus = EnumThreadStatus.Start;
-            var msg = $"AgvcConnector : StartAskReserve";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            OnMessageShowOnMainFormEvent?.Invoke(this, $"AgvcConnector : StartAskReserve");
         }
         public void PauseAskReserve()
         {
             IsAskReservePause = true;
-            PreAskReserveStatus = AskReserveStatus;
-            AskReserveStatus = EnumThreadStatus.Pause;
-            var getSectionOk = queNeedReserveSections.TryPeek(out MapSection mapSection);
-            var msg = getSectionOk ? $"AgvcConnector : PauseAskReserve,[AskingSectionId={mapSection.Id}]" : $"AgvcConnector : PauseAskReserve";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            OnMessageShowOnMainFormEvent?.Invoke(this, $"AgvcConnector : PauseAskReserve");
         }
         public void ResumeAskReserve()
         {
             IsAskReservePause = false;
-            AskReserveStatus = PreAskReserveStatus;
-            var getSectionOk = queNeedReserveSections.TryPeek(out MapSection mapSection);
-            var msg = getSectionOk ? $"AgvcConnector : ResumeAskReserve,[AskingSectionId={mapSection.Id}]" : "AgvcConnector : ResumeAskReserve";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-        }
-        public void StopAskReserve()
-        {
-            IsAskReserveStop = true;
-            AskReserveStatus = EnumThreadStatus.Stop;
-            ClearAllReserve();
-            var msg = $"AgvcConnector : StopAskReserve";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-        }
-        private void AfterAskReserve(long total)
-        {
-            AskReserveStatus = EnumThreadStatus.None;
-            var msg = $"MainFlow : AfterAskReserve, [ThreadStatus={AskReserveStatus}][TotalSpendMs={total}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            OnMessageShowOnMainFormEvent?.Invoke(this, "AgvcConnector : ResumeAskReserve");
         }
         public bool CanDoReserveWork()
         {
-            return !IsAskReservePause && !IsAskReserveStop && !theVehicle.AseMoveStatus.IsMoveEnd;
+            return !IsAskReservePause && !theVehicle.AseMoveStatus.IsMoveEnd;
         }
         private bool CanAskReserve()
         {
@@ -773,7 +746,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return;
             }
 
-            if (!IsAskReserveStop && !theVehicle.AseMoveStatus.IsMoveEnd)
+            if (!theVehicle.AseMoveStatus.IsMoveEnd)
             {
                 queNeedReserveSections.TryPeek(out MapSection needReserveSection);
 
@@ -1319,7 +1292,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             Send_Cmd144_StatusChangeReport(sender, batteryPercentage);
         }
 
-        public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
+        public void SetlAlarmToAgvc(object sender, Alarm alarm)
         {
             if (theVehicle.ErrorStatus == VhStopSingle.Off && alarmHandler.HasAlarm)
             {
@@ -1328,16 +1301,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrSet);
         }
-        public void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
-        {
-            if (theVehicle.ErrorStatus == VhStopSingle.On && !alarmHandler.HasAlarm)
-            {
-                theVehicle.ErrorStatus = VhStopSingle.Off;
-                StatusChangeReport();
-            }
-            Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrReset);
-        }
-        public void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
+        public void ResetAllAlarmsToAgvc(object sender, EventArgs eventArgs)
         {
             if (theVehicle.ErrorStatus == VhStopSingle.On)
             {
@@ -1995,7 +1959,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (receive.CancelAction == CancelActionType.CmdEms)
                 {
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                    alarmHandler.SetAlarm(000037);
+                    alarmHandler.SetAlarmFromAgvm(000037);
                     OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
                     return;
                 }
@@ -2017,7 +1981,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case CancelActionType.CmdCancelIdMismatch:
                     case CancelActionType.CmdCancelIdReadFailed:
-                        alarmHandler.ResetAllAlarms();
+                        alarmHandler.ResetAllAlarmsFromAgvm();
                         OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
                         break;
                     case CancelActionType.CmdNone:
@@ -2115,15 +2079,63 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrapper.ImpTransEventRep = report;
 
-                SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
-                queSendWaitWrappers.Enqueue(sendWaitWrapper);
+                //SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
+                //queSendWaitWrappers.Enqueue(sendWaitWrapper);
+
+                LogSendMsg(wrapper);
+
+                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Send transfer event report. [{eventType}]");
+                string rtnMsg = "";
+
+                TrxTcpIp.ReturnCode returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
+                if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                {
+                    switch (eventType)
+                    {
+                        case EventType.AdrOrMoveArrivals:
+                            OnAgvcAcceptMoveArrivalEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.LoadArrivals:
+                            OnAgvcAcceptLoadArrivalEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.UnloadArrivals:
+                            OnAgvcAcceptUnloadArrivalEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.LoadComplete:
+                            //mainFlowHandler.IsAgvcReplySendWaitMessage = true;
+                            OnAgvcAcceptLoadCompleteEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.UnloadComplete:
+                            OnAgvcAcceptUnloadCompleteEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.Bcrread:
+                            OnAgvcReplyCstIdReadEvent(response);
+                            //mainFlowHandler.IsAgvcReplySendWaitMessage = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                        if (eventType == EventType.Bcrread)
+                        {
+                            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(report.BCRReadResult, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
+                        }
+                        string msg = $"TransferEvent[{eventType}] send wait timeout[{report.CmdID}]";
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                        //mainFlowHandler.IsAgvcReplySendWaitMessage = true;
+                }
+
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-        private void SendRecv_Cmd136_CstIdReadReport()
+        public void SendRecv_Cmd136_CstIdReadReport()
         {
 
             AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
@@ -2157,27 +2169,22 @@ namespace Mirle.Agv.AseMiddler.Controller
             if (response.ReplyAction != ReplyActionType.Continue)
             {
                 OnMessageShowOnMainFormEvent?.Invoke(this, $"Load fail, [ReplyAction = {response.ReplyAction}][RenameCarrierID = {response.RenameCarrierID}]");
-                alarmHandler.ResetAllAlarms();
+                alarmHandler.ResetAllAlarmsFromAgvm();
                 var cmdId = mainFlowHandler.GetCurTransferStep().CmdId;
                 if (!string.IsNullOrEmpty(response.RenameCarrierID))
                 {
-
                     var slotNum = theVehicle.AgvcTransCmdBuffer[cmdId].SlotNumber;
                     var slot = theVehicle.GetAseCarrierSlotStatus(slotNum);
                     theVehicle.AgvcTransCmdBuffer[cmdId].CassetteId = response.RenameCarrierID;
                     slot.CarrierId = response.RenameCarrierID;
                 }
-                // LoadComplete();
                 theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
-                mainFlowHandler.AbortCommand(cmdId, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
-                OnAgvcAcceptBcrReadReply?.Invoke(this, default(EventArgs));
+                mainFlowHandler.BcrReadAbortCommand(cmdId, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
             }
             else
             {
-                //LoadComplete();
-
                 OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
-                OnAgvcAcceptBcrReadReply?.Invoke(this, default(EventArgs));
+                OnAgvcAcceptBcrReadReply?.Invoke(this, new EventArgs());
             }
         }
         private CompleteStatus GetCancelCompleteStatus(ReplyActionType replyAction, CompleteStatus completeStatus)
@@ -2222,154 +2229,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             return completeStatus;
         }
 
-        //public bool Send_Cmd136_CstIdReadReport(TransferStep transferStep, EnumCstIdReadResult readResult)
-        //{
-        //    try
-        //    {
-        //        AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-        //        RobotCommand robotCommand = (RobotCommand)transferStep;
-        //        AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(robotCommand.SlotNumber);
-
-        //        ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
-        //        report.EventType = EventType.Bcrread;
-        //        report.CSTID = aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading ? aseCarrierSlotStatus.CarrierId : "";
-        //        report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
-        //        report.CurrentSecID = aseMoveStatus.LastSection.Id;
-        //        report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-        //        report.BCRReadResult = BCRReadResultParse(readResult);
-        //        report.CmdID = robotCommand.CmdId;
-
-        //        WrapperMessage wrapper = new WrapperMessage();
-        //        wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-        //        wrapper.ImpTransEventRep = report;
-
-        //        ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-        //        string rtnMsg = "";
-
-        //        LoadComplete(transferStep.CmdId);
-
-        //        IsAgvcReplyBcrRead = false;
-        //        ReturnCode = TrxTcpIp.ReturnCode.Timeout;
-
-        //        LogSendMsg(wrapper);
-
-        //        Task.Run(() =>
-        //        {
-        //            try
-        //            {
-        //                var result = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
-
-        //                ReturnCode = result;
-        //                IsAgvcReplyBcrRead = true;
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-        //            }
-        //        });
-
-        //        int watchingCount = 10;
-        //        while (watchingCount > 0)
-        //        {
-        //            if (IsAgvcReplyBcrRead) break;
-
-        //            watchingCount--;
-        //            SpinWait.SpinUntil(() => false, 1000);
-        //        }
-
-        //        if (ReturnCode == TrxTcpIp.ReturnCode.Normal)
-        //        {
-        //            OnMessageShowOnMainFormEvent?.Invoke(this, $"Bcr read reply, Action = [{response.ReplyAction}], Rename = [{response.RenameCarrierID}]");
-
-        //            if (response.ReplyAction != ReplyActionType.Continue)
-        //            {
-        //                alarmHandler.ResetAllAlarms();
-        //                if (!string.IsNullOrEmpty(response.RenameCarrierID))
-        //                {
-        //                    aseCarrierSlotStatus.CarrierId = response.RenameCarrierID.Trim();
-        //                    aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
-        //                }
-        //                AbortCommand(response.ReplyAction, transferStep.CmdId);
-        //                return false;
-        //            }
-        //            else
-        //            {
-        //                if (!string.IsNullOrEmpty(response.RenameCarrierID))
-        //                {
-        //                    aseCarrierSlotStatus.CarrierId = response.RenameCarrierID.Trim();
-        //                    aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
-        //                }
-        //                return true;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            OnMessageShowOnMainFormEvent?.Invoke(this, $"Bcr Read, timeout. [{watchingCount}]");
-        //            alarmHandler.ResetAllAlarms();
-        //            AbortCommand(readResult, transferStep.CmdId);
-        //            return false;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-        //        OnMessageShowOnMainFormEvent?.Invoke(this, $"Bcr Read , Exception");
-        //        alarmHandler.ResetAllAlarms();
-        //        LoadComplete(transferStep.CmdId);
-        //        AbortCommand(readResult, transferStep.CmdId);
-        //        return false;
-        //    }
-        //}
-        //private void AbortCommand(ReplyActionType replyActionType, string cmdId)
-        //{
-        //    switch (replyActionType)
-        //    {
-        //        case ReplyActionType.Continue:
-        //            break;
-        //        case ReplyActionType.Wait:
-        //            break;
-        //        case ReplyActionType.Retry:
-        //            break;
-        //        case ReplyActionType.Cancel:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.Cancel;
-        //            break;
-        //        case ReplyActionType.Abort:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.Abort;
-        //            break;
-        //        case ReplyActionType.CancelIdMisnatch:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.IdmisMatch;
-        //            break;
-        //        case ReplyActionType.CancelIdReadFailed:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.IdreadFailed;
-        //            break;
-        //        case ReplyActionType.CancelPidFailed:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.Cancel;
-        //            break;
-        //        default:
-        //            break;
-        //    }
-        //    OnCassetteIdReadReplyAbortCommandEvent?.Invoke(this, cmdId);
-        //}
-        //private void AbortCommand(EnumCstIdReadResult readResult, string cmdId)
-        //{
-        //    switch (readResult)
-        //    {
-
-        //        case EnumCstIdReadResult.Mismatch:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.IdmisMatch;
-        //            break;
-        //        case EnumCstIdReadResult.Fail:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.IdreadFailed;
-        //            break;
-        //        case EnumCstIdReadResult.Normal:
-        //        default:
-        //            theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = CompleteStatus.VehicleAbort;
-        //            break;
-        //    }
-        //    OnCassetteIdReadReplyAbortCommandEvent?.Invoke(this, cmdId);
-        //}
-
-
         public void Send_Cmd136_AskReserve(MapSection mapSection)
         {
             var msg = $"Ask Reserve {mapSection.Id}";
@@ -2413,7 +2272,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    string xxmsg = $"Ask Reserve{mapSection.Id},  Thd State=[IsPause{IsAskReservePause}][IsStop{IsAskReserveStop}][IsMoveEnd{theVehicle.AseMoveStatus.IsMoveEnd}]";
+                    string xxmsg = $"Ask Reserve{mapSection.Id},  Thd State=[IsPause{IsAskReservePause}][IsMoveEnd{theVehicle.AseMoveStatus.IsMoveEnd}]";
                     OnMessageShowOnMainFormEvent?.Invoke(this, xxmsg);
                 }
 
@@ -2459,7 +2318,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         theVehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
                         StatusChangeReport();
                     }
-                    if (!IsAskReserveStop && !theVehicle.AseMoveStatus.IsMoveEnd)
+                    if (!theVehicle.AseMoveStatus.IsMoveEnd)
                     {
                         OnGetReserveOk(sectionId);
                     }
@@ -2632,7 +2491,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.TranCmpRep = report;
 
                 //SendCommandWrapper(wrappers, false, delay);
-                
+
                 SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
                 queSendWaitWrappers.Enqueue(sendWaitWrapper);
 

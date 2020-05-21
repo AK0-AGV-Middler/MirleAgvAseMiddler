@@ -1,4 +1,5 @@
-﻿
+﻿using Mirle.Agv.AseMiddler;
+
 namespace Mirle.Agv.AseMiddler.View
 {
     partial class MainForm

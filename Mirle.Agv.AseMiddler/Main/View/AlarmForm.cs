@@ -31,18 +31,8 @@ namespace Mirle.Agv.AseMiddler.View
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
-            alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
-            alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
-            alarmHandler.OnPlcResetOneAlarmEvent += AlarmHandler_OnPlcResetOneAlarmEvent;
-        }
-
-        private void AlarmHandler_OnPlcResetOneAlarmEvent(object sender, Alarm alarm)
-        {
-            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("HH-mm-ss.fff")}][Description={alarm.Description}]";
-            AppendHappenedingAlarmsMsg(msgForHappeningAlarms);
-
-            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[ResetTime={alarm.ResetTime.ToString("yyyy-MM-dd HH-mm")}]";
-            AppendHistoryAlarmsMsg(msgForHistoryAlarms);
+            alarmHandler.ResetAllAlarmsToUI += AlarmHandler_OnResetAllAlarmsEvent;
+            alarmHandler.SetAlarmToUI += AlarmHandler_OnSetAlarmEvent;
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
@@ -78,7 +68,7 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 //Test Set a non-empty alarm
-                alarmHandler.SetAlarm(alarmHandler.allAlarms.First(x => x.Key != 0).Key);
+                alarmHandler.SetAlarmFromAgvm(alarmHandler.allAlarms.First(x => x.Key != 0).Key);
             }
             catch (Exception ex)
             {
@@ -95,7 +85,7 @@ namespace Mirle.Agv.AseMiddler.View
         private void btnAlarmTest_Click(object sender, EventArgs e)
         {
             var id = Convert.ToInt32(num1.Value);
-            alarmHandler.SetAlarm(id);
+            alarmHandler.SetAlarmFromAgvm(id);
         }
 
 

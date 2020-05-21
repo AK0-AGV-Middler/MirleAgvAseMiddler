@@ -50,9 +50,13 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         #endregion
 
-        public event EventHandler<Alarm> OnSetAlarmEvent;
-        public event EventHandler<Alarm> OnPlcResetOneAlarmEvent;
-        public event EventHandler<string> OnResetAllAlarmsEvent;
+        public event EventHandler<Alarm> SetAlarmToUI;
+        public event EventHandler<string> ResetAllAlarmsToUI;
+
+        public event EventHandler<Alarm> SetAlarmToAgvl;
+        public event EventHandler<Alarm> SetAlarmToAgvc;
+        public event EventHandler ResetAllAlarmsToAgvl;
+        public event EventHandler ResetAllAlarmsToAgvc;
 
         private MainFlowHandler mainFlowHandler;
         private AlarmConfig alarmConfig;
@@ -127,19 +131,32 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }        
 
-        public bool SetAlarm(int id)
+        public void SetAlarmFromAgvm(int id)
+        {
+            SetAlarm(id);
+            Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
+            SetAlarmToAgvl?.Invoke(this, alarm);
+            SetAlarmToAgvc?.Invoke(this, alarm);
+            SetAlarmToUI?.Invoke(this, alarm);
+        }
+
+        public void SetAlarmFromAgvl(int id)
+        {
+            SetAlarm(id);
+            Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
+            SetAlarmToAgvc?.Invoke(this, alarm);
+            SetAlarmToUI?.Invoke(this, alarm);
+        }
+
+        public void SetAlarm(int id)
         {
             try
             {
                 DateTime timeStamp = DateTime.Now;
-                Alarm alarm = allAlarms.ContainsKey(id)? allAlarms[id]: new Alarm { Id = id };
+                Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
                 alarm.SetTime = timeStamp;
 
-                if (dicHappeningAlarms.ContainsKey(id))
-                {
-                    return false;
-                }
-                else
+                if (!dicHappeningAlarms.ContainsKey(id))
                 {
                     dicHappeningAlarms.TryAdd(id, alarm);
                     LogAlarmHistory(alarm);
@@ -154,54 +171,38 @@ namespace Mirle.Agv.AseMiddler.Controller
                             HasWarn = true;
                             break;
                     }
-                    OnSetAlarmEvent?.Invoke(this, alarm);
-                    return true;
                 }
             }
             catch (Exception ex)
             {
-                mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
-                return false;
+                mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+
         }
 
-        public void ResetAlarm(int id)
+        public void ResetAllAlarmsFromAgvm()
         {
-            if (!dicHappeningAlarms.ContainsKey(id))
-            {
-                var ngMsg = $"AlarmHandler : Reset alarm fail, [Id={id}][Not in HappeningAlarms]";
+            ResetAllAlarms();
+            ResetAllAlarmsToAgvc?.Invoke(this, new EventArgs());
+            ResetAllAlarmsToAgvl?.Invoke(this, new EventArgs());
+        }
 
-               mirleLogger.Log( new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                    , ngMsg));
-                return;
-            }
-            DateTime timeStamp = DateTime.Now;
-            dicHappeningAlarms.TryRemove(id, out Alarm alarm);
-            var happeningAlarms = dicHappeningAlarms.Values.ToList();
-            HasAlarm = false;
-            HasWarn = false;
-            foreach (var item in happeningAlarms)
-            {
-                if (item.Level== EnumAlarmLevel.Alarm)
-                {
-                    HasAlarm = true;
-                }
+        public void ResetAllAlarmsFromAgvl()
+        {
+            ResetAllAlarms();
+            ResetAllAlarmsToAgvc?.Invoke(this, new EventArgs());
+        }
 
-                if (item.Level == EnumAlarmLevel.Warn)
-                {
-                    HasWarn = true;
-                }
-            }
-            alarm.ResetTime = timeStamp;
-            LogAlarmHistory(alarm);
-            OnPlcResetOneAlarmEvent?.Invoke(this, alarm);
+        public void ResetAllAlarmFromAgvc()
+        {
+            ResetAllAlarms();
+            ResetAllAlarmsToAgvl?.Invoke(this, new EventArgs());
         }
 
         public void ResetAllAlarms()
         {
             try
             {
-                DateTime timeStamp = DateTime.Now;
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
                 lock (dicHappeningAlarms)
@@ -209,18 +210,19 @@ namespace Mirle.Agv.AseMiddler.Controller
                     dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
                     HasAlarm = false;
                     HasWarn = false;
-                    LastAlarm = new Alarm();                   
+                    LastAlarm = new Alarm();
                 }
                 sw.Stop();
                 var msg = $"ResetAllAlarms, cost {sw.ElapsedMilliseconds} ms";
-                OnResetAllAlarmsEvent?.Invoke(this, msg);
-                mirleLogger.Log( new LogFormat("AlarmHistory", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
+                ResetAllAlarmsToUI?.Invoke(this, msg);
+                mirleLogger.Log(new LogFormat("AlarmHistory", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
                     , msg));
             }
             catch (Exception ex)
             {
-                mirleLogger.Log( new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
+                mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.StackTrace));
             }
+
         }
 
         private EnumAlarmLevel EnumAlarmLevelParse(string v)

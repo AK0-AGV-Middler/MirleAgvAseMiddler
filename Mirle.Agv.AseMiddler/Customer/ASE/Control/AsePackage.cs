@@ -463,7 +463,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
         private void AutoReplyFromPsMessageMap(PSTransactionXClass psTransaction)
         {
             try

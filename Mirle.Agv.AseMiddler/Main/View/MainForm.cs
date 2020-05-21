@@ -45,8 +45,6 @@ namespace Mirle.Agv.AseMiddler.View
         public bool IsAgvcConnect { get; set; } = false;
         public bool IsAgvlConnect { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
-        public string TransferCommandMsg { get; set; } = "";
-        public string TransferStepMsg { get; set; } = "";
         public string MainFlowAbnormalReasonMsg { get; set; } = "";
         public string AgvcConnectorAbnormalReasonMsg { get; set; } = "";
         public string MoveControllerAbnormalReasonMsg { get; set; } = "";
@@ -199,18 +197,10 @@ namespace Mirle.Agv.AseMiddler.View
         {
             mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
-            mainFlowHandler.OnPrepareForAskingReserveEvent += MainFlowHandler_OnPrepareForAskingReserveEvent;
-            mainFlowHandler.OnMoveArrivalEvent += MainFlowHandler_OnMoveArrivalEvent;
-            mainFlowHandler.OnTransferCommandCheckedEvent += MainFlowHandler_OnTransferCommandCheckedEvent;
-            mainFlowHandler.OnOverrideCommandCheckedEvent += MainFlowHandler_OnOverrideCommandCheckedEvent;
-            mainFlowHandler.OnAvoidCommandCheckedEvent += MainFlowHandler_OnAvoidCommandCheckedEvent;
-            mainFlowHandler.OnDoTransferStepEvent += MainFlowHandler_OnDoTransferStepEvent;
             agvcConnector.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
-            agvcConnector.OnReserveOkEvent += AgvcConnector_OnReserveOkEvent;
-            agvcConnector.OnPassReserveSectionEvent += AgvcConnector_OnPassReserveSectionEvent;
-            alarmHandler.OnSetAlarmEvent += AlarmHandler_OnSetAlarmEvent;
-            alarmHandler.OnResetAllAlarmsEvent += AlarmHandler_OnResetAllAlarmsEvent;
+            alarmHandler.SetAlarmToUI += AlarmHandler_OnSetAlarmEvent;
+            alarmHandler.ResetAllAlarmsToUI += AlarmHandler_OnResetAllAlarmsEvent;
 
             theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
             mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
@@ -322,62 +312,16 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-
-        private void MainFlowHandler_OnPrepareForAskingReserveEvent(object sender, MoveCmdInfo moveCmd)
-        {
-            try
-            {
-                //Task.Run(() => SetMovingSectionAndEndPosition(moveCmd.MovingSections, moveCmd.EndAddress));
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-        private void MainFlowHandler_OnMoveArrivalEvent(object sender, EventArgs e)
-        {
-            try
-            {
-                //Task.Run(() => ResetSectionColor());
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
         private void AgvcConnector_OnConnectionChangeEvent(object sender, bool isConnect)
         {
             IsAgvcConnect = isConnect;
-        }
-        private void AgvcConnector_OnReserveOkEvent(object sender, string sectionId)
-        {
-            try
-            {
-                //Task.Run(() => GetReserveSection(sectionId));
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-        private void AgvcConnector_OnPassReserveSectionEvent(object sender, string passSectionId)
-        {
-            try
-            {
-                //Task.Run(() => ChangeToNormalSection(passSectionId));
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
         }
 
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
             try
             {
-                var msg = $"發生 Alarm, [Id={alarm.Id}][Text={alarm.AlarmText}]";
+                var msg = $"Alarm Set, [Id={alarm.Id}][Text={alarm.AlarmText}]";
                 AppendDebugLogMsg(msg);
 
                 LastAlarmMsg = $"[Id={alarm.Id}]\r\n[Text={alarm.AlarmText}]";
@@ -960,148 +904,6 @@ namespace Mirle.Agv.AseMiddler.View
 
         #endregion
 
-        private void MainFlowHandler_OnAvoidCommandCheckedEvent(object sender, AseMovingGuide aseMovingGuide)
-        {
-            SetTransferCommandMsg("[ Avoid ]", aseMovingGuide);
-        }
-
-        private void MainFlowHandler_OnOverrideCommandCheckedEvent(object sender, AgvcOverrideCmd agvcOverrideCmd)
-        {
-            SetTransferCommandMsg("[ Override ]", agvcOverrideCmd);
-        }
-
-        private void MainFlowHandler_OnTransferCommandCheckedEvent(object sender, AgvcTransCmd agvcTransCmd)
-        {
-            SetTransferCommandMsg("[ Transfer ]", agvcTransCmd);
-        }
-
-        private void SetTransferCommandMsg(string type, AgvcTransCmd agvcTransCmd)
-        {
-            try
-            {
-                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
-                                      type, "\t", $"{agvcTransCmd.AgvcTransCommandType}", "\r\n",
-                                      $"[Command ID={agvcTransCmd.CommandId}]\r\n",
-                                      $"[CST ID={agvcTransCmd.CassetteId}]\r\n",
-                                      $"[Load Adr={agvcTransCmd.LoadAddressId}]\r\n",
-                                      $"[Load Port ID={agvcTransCmd.LoadPortId}]\r\n",
-                                      $"[Unload Adr={agvcTransCmd.UnloadAddressId}]\r\n",
-                                      $"[Unload Port Id={agvcTransCmd.UnloadPortId}]\r\n"
-                                      );
-
-                if (TransferCommandMsg.Length > 32767)
-                {
-                    TransferCommandMsg = TransferCommandMsg.Substring(32767);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-
-        }
-
-        private void SetTransferCommandMsg(string type, AseMovingGuide aseMovingGuide)
-        {
-            try
-            {
-                TransferCommandMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
-                                      type, "\t", $"{aseMovingGuide.SeqNum}", "\r\n",
-                                      $"[Avoid Adr={aseMovingGuide.ToAddressId}]\r\n"
-                                      );
-
-                if (TransferCommandMsg.Length > 32767)
-                {
-                    TransferCommandMsg = TransferCommandMsg.Substring(32767);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-
-        }
-
-        private void MainFlowHandler_OnDoTransferStepEvent(object sender, TransferStep transferStep)
-        {
-            try
-            {
-                string msg = "";
-                switch (transferStep.GetTransferStepType())
-                {
-                    case EnumTransferStepType.Load:
-                    case EnumTransferStepType.Unload:
-                        msg = GetTransferStepMsgFromRobotCommand(transferStep);
-                        break;
-                    case EnumTransferStepType.Move:
-                    case EnumTransferStepType.MoveToCharger:
-                        msg = GetTransferStepMsgFromMoveCmdInfo(transferStep);
-                        break;
-                    case EnumTransferStepType.Empty:
-                    default:
-                        return;
-                }
-
-                SetTransferStepMsg(msg);
-
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-        private string GetTransferStepMsgFromMoveCmdInfo(TransferStep transferStep)
-        {
-            try
-            {
-                MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
-
-                string result = string.Concat($"Move\t{moveCmdInfo.GetTransferStepType()}\r\n",
-                                       $"[Command ID={moveCmdInfo.CmdId}]\r\n",
-                                       $"[Addresses={GuideListToString(theVehicle.AseMovingGuide.GuideAddressIds)}]\r\n",
-                                       $"[Sections={GuideListToString(theVehicle.AseMovingGuide.GuideSectionIds)}]"
-                                       );
-                AppendDebugLogMsg(result);
-                return result;
-
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return "";
-            }
-        }
-        private string GetTransferStepMsgFromRobotCommand(TransferStep transferStep)
-        {
-            try
-            {
-                RobotCommand robotCommand = (RobotCommand)transferStep;
-                return string.Concat($" Type \t{robotCommand.GetTransferStepType()}\r\n",
-                                      $"[ Command ID ={robotCommand.CmdId}]\r\n",
-                                      $"[ CST ID ={robotCommand.CassetteId}]\r\n",
-                                      $"[ Port Adr ={robotCommand.PortAddressId}]\r\n",
-                                      $"[ Port Num ={robotCommand.PortNumber}]\r\n",
-                                      $"[ PIO Direction ={robotCommand.PioDirection}]\r\n",
-                                      $"[ SlotNumber ={robotCommand.SlotNumber}]\r\n",
-                                      $"[ GateType ={theMapInfo.gateTypeMap[robotCommand.PortAddressId]}]");
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return "";
-            }
-        }
-
-        private void SetTransferStepMsg(string msg)
-        {
-            TransferStepMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg);
-
-            if (TransferStepMsg.Length > 32767)
-            {
-                TransferStepMsg = TransferStepMsg.Substring(32767);
-            }
-        }
-
         private void timeUpdateUI_Tick(object sender, EventArgs e)
         {
             try
@@ -1313,7 +1115,6 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                tbxTransferStepMsg.Text = TransferStepMsg;
                 ucTransferIndex.TagValue = mainFlowHandler.TransferStepsIndex.ToString();
                 ucTransferSteps.TagValue = mainFlowHandler.GetTransferStepsCount().ToString();
                 ucTransferStepType.TagValue = mainFlowHandler.GetCurrentTransferStepType().ToString();
@@ -1332,7 +1133,7 @@ namespace Mirle.Agv.AseMiddler.View
 
                 var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
 
-                if (transferCommands.Count==0)
+                if (transferCommands.Count == 0)
                 {
                     tbxTransferCommand01Msg.Text = "";
                     tbxTransferCommand02Msg.Text = "";
@@ -1378,7 +1179,7 @@ namespace Mirle.Agv.AseMiddler.View
                 return $"GetTransferCmdInfo exception";
             }
 
-            
+
         }
         private string GuideListToString(List<string> aList)
         {
@@ -1672,11 +1473,11 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void btnAutoManual_Click(object sender, EventArgs e)
         {
-            btnAutoManual.Enabled = false;
+            //btnAutoManual.Enabled = false;
             SwitchAutoStatus();
-            ClearColor();
-            Thread.Sleep(100);
-            btnAutoManual.Enabled = true;
+            //ClearColor();
+            //Thread.Sleep(100);
+            //btnAutoManual.Enabled = true;
         }
 
         public void SwitchAutoStatus()

@@ -8,6 +8,7 @@ using com.mirle.aka.sc.ProtocolFormat.ase.agvMessage;
 using Mirle.Agv.AseMiddler.Model.Configs;
 using Mirle.Agv.AseMiddler.Controller;
 using System.Reflection;
+using System.Collections.Concurrent;
 
 namespace Mirle.Agv.AseMiddler.Model
 {
@@ -16,7 +17,7 @@ namespace Mirle.Agv.AseMiddler.Model
     {
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
-        public Dictionary<string, AgvcTransCmd> AgvcTransCmdBuffer { get; set; } = new Dictionary<string, AgvcTransCmd>();
+        public ConcurrentDictionary<string, AgvcTransCmd> AgvcTransCmdBuffer { get; set; } = new ConcurrentDictionary<string, AgvcTransCmd>();
         private EnumAutoState autoState = EnumAutoState.Manual;
         public EnumAutoState AutoState
         {
