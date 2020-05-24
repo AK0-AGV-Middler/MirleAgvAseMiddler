@@ -41,6 +41,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
         public event EventHandler OnAgvlErrorEvent;
         public event EventHandler ArrivalCharge;
+        public event EventHandler<EnumAutoState> OnModeChangeEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -734,17 +735,21 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void SetVehicleManual()
         {
-            theVehicle.AutoState = EnumAutoState.Manual;
-            string msg = "AGVL switch to  : Manual";
-            ImportantPspLog?.Invoke(this, msg);
+            OnModeChangeEvent?.Invoke(this, EnumAutoState.Manual);
+
+            //theVehicle.AutoState = EnumAutoState.Manual;
+            //string msg = "AGVL switch to  : Manual";
+            //ImportantPspLog?.Invoke(this, msg);
         }
 
         private void SetVehicleAuto()
         {
-            theVehicle.AutoState = EnumAutoState.Auto;
+            OnModeChangeEvent?.Invoke(this, EnumAutoState.Auto);
 
-            string msg = "AGVL switch to  : Auto";
-            ImportantPspLog?.Invoke(this, msg);
+            //theVehicle.AutoState = EnumAutoState.Auto;
+
+            //string msg = "AGVL switch to  : Auto";
+            //ImportantPspLog?.Invoke(this, msg);
         }
 
         public void SetVehicleAutoScenario()
@@ -914,7 +919,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                     LogPsWrapper(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                     ImportantPspLog?.Invoke(this, msg);
                 }
-                OnConnectionChangeEvent?.Invoke(this, psWrapper.ConnectionState == enumConnectState.Connected);
+                bool isConnected = psWrapper.ConnectionState == enumConnectState.Connected;
+                theVehicle.IsAgvlConnect = isConnected;
+                OnConnectionChangeEvent?.Invoke(this, isConnected);
             }
             catch (Exception ex)
             {

@@ -114,8 +114,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                     Alarm oneRow = new Alarm();
                     oneRow.Id = int.Parse(getThisRow[dicAlarmIndexes["Id"]]);
                     oneRow.AlarmText = getThisRow[dicAlarmIndexes["AlarmText"]];
-                    oneRow.PlcWord = ushort.Parse(getThisRow[dicAlarmIndexes["PlcWord"]]);
-                    oneRow.PlcBit = ushort.Parse(getThisRow[dicAlarmIndexes["PlcBit"]]);
                     oneRow.Level = EnumAlarmLevelParse(getThisRow[dicAlarmIndexes["Level"]]);
                     oneRow.Description = getThisRow[dicAlarmIndexes["Description"]];
 
@@ -135,17 +133,17 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             SetAlarm(id);
             Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
+            SetAlarmToUI?.Invoke(this, alarm);
             SetAlarmToAgvl?.Invoke(this, alarm);
             SetAlarmToAgvc?.Invoke(this, alarm);
-            SetAlarmToUI?.Invoke(this, alarm);
         }
 
         public void SetAlarmFromAgvl(int id)
         {
             SetAlarm(id);
             Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
-            SetAlarmToAgvc?.Invoke(this, alarm);
             SetAlarmToUI?.Invoke(this, alarm);
+            SetAlarmToAgvc?.Invoke(this, alarm);
         }
 
         public void SetAlarm(int id)

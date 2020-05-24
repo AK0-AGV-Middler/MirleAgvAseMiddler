@@ -18,28 +18,12 @@ namespace Mirle.Agv.AseMiddler.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
         public ConcurrentDictionary<string, AgvcTransCmd> AgvcTransCmdBuffer { get; set; } = new ConcurrentDictionary<string, AgvcTransCmd>();
-        private EnumAutoState autoState = EnumAutoState.Manual;
-        public EnumAutoState AutoState
-        {
-            get { return autoState; }
-            set
-            {
-                if (value != autoState)
-                {
-                    autoState = value;                    
-                    if (value != EnumAutoState.PreManual)
-                    {
-                        OnAutoStateChangeEvent?.Invoke(this, value);
-                    }
-                }
-            }
-        }
-        public event EventHandler<EnumAutoState> OnAutoStateChangeEvent;
+        public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
         public bool IsSimulation { get; set; } = false;
         public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        public bool IsAgvcConnect { get; set; } = false;
 
         #region AsePackage
+        public bool IsAgvlConnect { get; set; } = false;
 
         public AseMoveStatus AseMoveStatus { get; set; } = new AseMoveStatus();
         public AseRobotStatus AseRobotStatus { get; set; } = new AseRobotStatus();
@@ -55,6 +39,8 @@ namespace Mirle.Agv.AseMiddler.Model
         #endregion
 
         #region Comm Property
+        public bool IsAgvcConnect { get; set; } = false;
+
         //public VHActionStatus ActionStatus { get; set; } = VHActionStatus.NoCommand;
         public VhStopSingle BlockingStatus { get; set; }
         public VhChargeStatus ChargeStatus { get; set; }
