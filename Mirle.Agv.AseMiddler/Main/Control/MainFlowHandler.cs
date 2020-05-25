@@ -2002,6 +2002,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 TransferStepsIndex = 1;
                 transferSteps.Add(curStep);
 
+                agvcConnector.IsOptimizingSteps = true;
+
+
                 if (theVehicle.AgvcTransCmdBuffer.Count == 1)
                 {
                     //Add cur unload or load-end
@@ -2106,6 +2109,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
                     }
                 }
+
+                agvcConnector.IsOptimizingSteps = false;
 
                 GoNextTransferStep = true;
                 IsVisitTransferStepPause = false;
@@ -2634,8 +2639,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var address = aseMoveStatus.LastAddress;
                 if (address.IsCharger())
                 {
-                    agvcConnector.ChargHandshaking();
-
                     if (theVehicle.IsSimulation)
                     {
                         theVehicle.IsCharging = false;
@@ -2656,7 +2659,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (theVehicle.IsCharging)
                     {
                         alarmHandler.SetAlarmFromAgvm(000014);
-                        StopVehicle();
+                        StopClearAndReset();
                     }
                     else
                     {

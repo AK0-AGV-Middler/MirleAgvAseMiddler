@@ -40,7 +40,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<AseMovingGuide> OnAvoideRequestEvent;
         public event EventHandler<string> OnCmdReceiveEvent;
         public event EventHandler<string> OnCmdSendEvent;
-        public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> OnReserveOkEvent;
         public event EventHandler<string> OnPassReserveSectionEvent;
         public event EventHandler<LogFormat> OnLogMsgEvent;
@@ -71,6 +70,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAskReservePause { get; private set; }
         private bool IsWaitReserveReply { get; set; }
         private MapPosition lastReportPosition { get; set; } = new MapPosition();
+        public bool IsOptimizingSteps { get; set; } = false;
 
         public ConcurrentQueue<SendWaitWrapper> queSendWaitWrappers = new ConcurrentQueue<SendWaitWrapper>();
 
@@ -227,7 +227,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 theVehicle.IsAgvcConnect = isConnected;
                 OnMessageShowOnMainFormEvent?.Invoke(this, $"AGVC connection changed.{agent.IsConnection}");
-                OnConnectionChangeEvent?.Invoke(this, isConnected);
             }
         }
         private void EventInitial()
@@ -1859,6 +1858,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                if (IsOptimizingSteps) return;
+
                 ID_38_GUIDE_INFO_RESPONSE response = (ID_38_GUIDE_INFO_RESPONSE)e.objPacket;
                 ShowGuideInfoResponse(response);
                 theVehicle.AseMovingGuide = new AseMovingGuide(response);
