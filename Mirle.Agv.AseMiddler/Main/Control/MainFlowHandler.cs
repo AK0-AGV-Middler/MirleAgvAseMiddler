@@ -2015,14 +2015,37 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        transferSteps.Add(new EmptyTransferStep());
+                        TransferComplete(curCmdId);
                     }
                 }
                 else
                 {
                     if (curCmd.AgvcTransCommandType == EnumAgvcTransCommandType.Load)
                     {
-                        transferSteps.Add(new EmptyTransferStep());
+                        var nextCmdId = theVehicle.AgvcTransCmdBuffer.First(x => x.Key != curCmdId).Value.CommandId;
+                        var nextCmd = theVehicle.AgvcTransCmdBuffer[nextCmdId];
+
+                        switch (nextCmd.EnrouteState)
+                        {
+                            case CommandState.None:
+                                TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                transferSteps.Add(new EmptyTransferStep());
+                                break;
+                            case CommandState.LoadEnroute:
+                                TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                                TransferStepsAddLoadCmdInfo(nextCmd);
+                                break;
+                            case CommandState.UnloadEnroute:
+                                TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                TransferStepsAddUnloadCmdInfo(curCmd);
+                                break;
+                            default:
+                                TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                transferSteps.Add(new EmptyTransferStep());
+                                break;
+                        }
+
+                        TransferComplete(curCmdId);
                     }
                     else
                     {
@@ -2214,6 +2237,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             TransferStepsAddUnloadCmdInfo(agvcTransCmd);
                             break;
                         default:
+                            TransferStepsAddMoveCmdInfo(agvcTransCmd.UnloadAddressId, agvcTransCmd.CommandId);
                             transferSteps.Add(new EmptyTransferStep());
                             break;
                     }
@@ -2230,7 +2254,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
 
         #endregion
-
 
         #region Simple Getters
         public AlarmHandler GetAlarmHandler() => alarmHandler;
@@ -2445,19 +2468,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-
-        //private bool IsVehlocStayInSameAddress(VehicleLocation vehloc)
-        //{
-        //    if (!string.IsNullOrEmpty(vehloc.LastAddress.Id) && !string.IsNullOrEmpty(vehloc.LastSection.Id))
-        //    {
-        //        if (mapHandler.IsPositionInThisAddress(vehloc.RealPosition, vehloc.LastAddress.Position))
-        //        {
-        //            return true;
-        //        }
-        //    }
-
-        //    return false;
-        //}
 
         private void UpdatePlcVehicleBeamSensor()
         {

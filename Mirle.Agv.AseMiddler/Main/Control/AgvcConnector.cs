@@ -2181,6 +2181,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 report.CurrentSecID = aseMoveStatus.LastSection.Id;
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
                 report.BCRReadResult = BCRReadResultParse(ReadResult);
+                report.CmdID = robotCommand.CmdId;
 
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
