@@ -455,7 +455,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     break;
                 case "InterlockError":
                     aseRobotControl.OnRobotInterlockError();
-                    OnAgvlErrorEvent?.Invoke(this, new EventArgs());
+                    //OnAgvlErrorEvent?.Invoke(this, new EventArgs());
                     break;
                 default:
                     aseRobotControl.OnRobotCommandError();

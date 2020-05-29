@@ -1331,6 +1331,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool CanVehMove()
         {
+            if (theVehicle.IsCharging) StopCharge();
             return theVehicle.AseRobotStatus.IsHome && !theVehicle.IsCharging;
         }
 
@@ -1713,7 +1714,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 agvcConnector.Loading(loadCmd.CmdId);
-                ReadResult = EnumCstIdReadResult.Normal;
+                ReadResult = EnumCstIdReadResult.Fail;
 
                 if (theVehicle.IsSimulation)
                 {
@@ -1738,6 +1739,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             SpinWait.SpinUntil(() => false, 3000);
             aseCarrierSlotStatus.CarrierId = loadCmd.CassetteId;
             aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
+            ReadResult = EnumCstIdReadResult.Normal;
             AseRobotControl_OnReadCarrierIdFinishEvent(this, aseCarrierSlotStatus.SlotNumber);
             SpinWait.SpinUntil(() => false, 2000);
             AseRobotContorl_OnRobotCommandFinishEvent(this, GetCurTransferStep());
@@ -2643,7 +2645,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var beginMsg = $"MainFlow : Try STOP charge, [IsCharging={theVehicle.IsCharging}]";
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, beginMsg);
 
-                if (!theVehicle.IsCharging) return;
+               // if (!theVehicle.IsCharging) return;
 
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                 var address = aseMoveStatus.LastAddress;
@@ -2722,7 +2724,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     asePackage.aseRobotControl.ReadCarrierId();
                 }
 
-                ReadResult = EnumCstIdReadResult.Normal;
+                ReadResult = EnumCstIdReadResult.Fail;
 
                 var msg = $"MainFlow : Stop And Clear";
                 OnMessageShowEvent?.Invoke(this, msg);
