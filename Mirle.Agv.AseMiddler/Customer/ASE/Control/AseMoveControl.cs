@@ -51,13 +51,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsWatchPositionPause) continue;
+                    if (IsWatchPositionPause)
+                    {
+                        SpinWait.SpinUntil(() => false, aseMoveConfig.WatchPositionInterval);
+                        continue;
+                    }
                     if (IsWatchPositionStop) break;
 
-                    if (psWrapper.IsConnected())
-                    {
-                        SendPositionReportRequest();
-                    }
+                    SendPositionReportRequest();
                 }
                 catch (Exception ex)
                 {
@@ -98,7 +99,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PausePositionWatcher();
+                //PausePositionWatcher();
                 OnMoveFinishedEvent?.Invoke(this, enumMoveComplete);
             }
             catch (Exception ex)

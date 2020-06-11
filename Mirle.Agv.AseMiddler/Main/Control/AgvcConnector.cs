@@ -40,6 +40,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<AseMovingGuide> OnAvoideRequestEvent;
         public event EventHandler<string> OnCmdReceiveEvent;
         public event EventHandler<string> OnCmdSendEvent;
+        public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> OnReserveOkEvent;
         public event EventHandler<string> OnPassReserveSectionEvent;
         public event EventHandler<LogFormat> OnLogMsgEvent;
@@ -70,7 +71,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAskReservePause { get; private set; }
         private bool IsWaitReserveReply { get; set; }
         private MapPosition lastReportPosition { get; set; } = new MapPosition();
-        public bool IsOptimizingSteps { get; set; } = false;
 
         public ConcurrentQueue<SendWaitWrapper> queSendWaitWrappers = new ConcurrentQueue<SendWaitWrapper>();
 
@@ -222,13 +222,17 @@ namespace Mirle.Agv.AseMiddler.Controller
         protected void ClientAgent_OnConnectionChangeEvent(object sender, TcpIpEventArgs e)
         {
             TcpIpAgent agent = sender as TcpIpAgent;
-            bool isConnected = agent.IsConnection;
-            if (theVehicle.IsAgvcConnect != isConnected)
-            {
-                theVehicle.IsAgvcConnect = isConnected;
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"AGVC connection changed.{agent.IsConnection}");
-            }
+            OnConnectionChangeEvent?.Invoke(this, agent.IsConnection);
+            var isConnect = agent.IsConnection ? " Connect " : " Dis-Connect ";
+            OnMessageShowOnMainFormEvent?.Invoke(this, $"AgvcConnector : {agent.Name},AgvcConnection = {isConnect}");
         }
+        //protected void DoDisconnection(object sender, TcpIpEventArgs e)
+        //{
+        //    TcpIpAgent agent = sender as TcpIpAgent;
+        //    var msg = $"Vh ID:{agent.Name}, disconnection.";
+        //    OnConnectionChangeEvent?.Invoke(this, false);
+        //    OnMessageShowOnMainFormEvent?.Invoke(this, "AgvcConnector : Dis-Connect");
+        //}
         private void EventInitial()
         {
             foreach (var item in Enum.GetValues(typeof(EnumCmdNum)))
@@ -501,11 +505,16 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (IsAskReservePause || theVehicle.AseMoveStatus.IsMoveEnd)
                     {
-                        SpinWait.SpinUntil(() => false, 50);
+                        SpinWait.SpinUntil(() => false, 500);
                     }
 
                     #region Pause And Stop Check
-                    if (IsAskReservePause) continue;
+                    if (IsAskReservePause)
+                    {
+                        SpinWait.SpinUntil(() => false, 500);
+                        continue;
+                    }
+
                     if (!ClientAgent.IsConnection)
                     {
                         SpinWait.SpinUntil(() => false, 100);
@@ -524,6 +533,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                             SpinWait.SpinUntil(() => ReserveOkAskNext, agvcConnectorConfig.AskReserveIntervalMs);
                             ReserveOkAskNext = false;
                             SpinWait.SpinUntil(() => false, 5);
+                        }
+                        else if (!theVehicle.IsCharging)
+                        {
+
                         }
                     }
 
@@ -1263,6 +1276,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void TriggerConnect(bool v)
+        {
+            OnConnectionChangeEvent?.Invoke(this, v);
+        }
+
         private string[] StringSpilter(string v)
         {
             v = v.Trim(new char[] { ' ', '[', ']' });
@@ -1390,12 +1408,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAskReserveAlive() => (thdAskReserve != null) && thdAskReserve.IsAlive;
         public void NoCommand()
         {
-            //theVehicle.ActionStatus = VHActionStatus.NoCommand;
+            theVehicle.ActionStatus = VHActionStatus.NoCommand;
             StatusChangeReport();
         }
         public void Commanding()
         {
-            //theVehicle.ActionStatus = VHActionStatus.Commanding;
+            theVehicle.ActionStatus = VHActionStatus.Commanding;
             StatusChangeReport();
         }
         public void ReplyTransferCommand(string cmdId, CommandActionType type, ushort seqNum, int replyCode, string reason)
@@ -1486,7 +1504,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             ID_91_ALARM_RESET_REQUEST receive = (ID_91_ALARM_RESET_REQUEST)e.objPacket;
 
-            alarmHandler.ResetAllAlarmFromAgvc();
+            mainFlowHandler.ResetAllarms();
 
             int replyCode = 0;
             Send_Cmd191_AlarmResetResponse(e.iSeqNum, replyCode);
@@ -1552,12 +1570,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ID_152_AVOID_COMPLETE_REPORT iD_152_AVOID_COMPLETE_REPORT = new ID_152_AVOID_COMPLETE_REPORT();
-                iD_152_AVOID_COMPLETE_REPORT.CmpStatus = completeStatus;
+                ID_152_AVOID_COMPLETE_REPORT report = new ID_152_AVOID_COMPLETE_REPORT();
+                report.CmpStatus = completeStatus;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.AvoidCompleteRepFieldNumber;
-                wrappers.AvoidCompleteRep = iD_152_AVOID_COMPLETE_REPORT;
+                wrappers.AvoidCompleteRep = report;
 
                 SendCommandWrapper(wrappers);
             }
@@ -1706,7 +1724,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.HasCstR = theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
             report.CstIdR = theVehicle.AseCarrierSlotR.CarrierId;
 
-            report.ActionStatus = agvcTransCmds.Count > 0 ? VHActionStatus.Commanding : VHActionStatus.NoCommand;
+            report.ActionStatus = theVehicle.ActionStatus;
 
             return report;
         }
@@ -1766,7 +1784,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].EnrouteState : CommandState.None;
                 response.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
                 response.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
-                response.ActionStatus = agvcTransCmds.Count > 0 ? VHActionStatus.Commanding : VHActionStatus.NoCommand;
+                response.ActionStatus = theVehicle.ActionStatus;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.StatusReqRespFieldNumber;
@@ -1858,12 +1876,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (IsOptimizingSteps) return;
-
                 ID_38_GUIDE_INFO_RESPONSE response = (ID_38_GUIDE_INFO_RESPONSE)e.objPacket;
                 ShowGuideInfoResponse(response);
                 theVehicle.AseMovingGuide = new AseMovingGuide(response);
-                ShowAseMovigGuideSectionAndAddressList();
                 IsAskReservePause = true;
                 ClearAllReserve();
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
@@ -1871,6 +1886,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 theVehicle.AseMoveStatus.IsMoveEnd = false;
                 IsAskReservePause = false;
                 StatusChangeReport();
+                ShowAseMovigGuideSectionAndAddressList();
             }
             catch (Exception ex)
             {
@@ -1926,43 +1942,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             fromToAdr.From = fromAddress;
             fromToAdr.To = toAddress;
             fromToAdrList.Add(fromToAdr);
-        }
-        public int SendRecv_Cmd138_GuideInfoRequest(string fromAddress, string toAddress)
-        {
-            try
-            {
-
-                ID_138_GUIDE_INFO_REQUEST request = new ID_138_GUIDE_INFO_REQUEST();
-                FitGuideInfos(request.FromToAdrList, fromAddress, toAddress);
-
-                WrapperMessage wrapper = new WrapperMessage();
-                wrapper.ID = WrapperMessage.GuideInfoReqFieldNumber;
-                wrapper.GuideInfoReq = request;
-
-                LogSendMsg(wrapper);
-
-                ID_38_GUIDE_INFO_RESPONSE response = new ID_38_GUIDE_INFO_RESPONSE();
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Send GuideInfoRequest. [{fromAddress}]->[{toAddress}]");
-                string rtnMsg = "";
-                TrxTcpIp.ReturnCode returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
-                if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                {
-                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Recv GuideInfoResponse. [{fromAddress}]->[{toAddress}]");
-                    return (int)response.GuideInfoList[0].Distance;
-                }
-                else
-                {
-                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Recv GuideInfoResponse Timeout. [{fromAddress}]->[{toAddress}]");
-                    return -1;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Send GuideInfoRequest Exception. [{fromAddress}]->[{toAddress}]");
-
-                return -1;
-            }
         }
 
         public void Receive_Cmd37_TransferCancelRequest(object sender, TcpIpEventArgs e)
@@ -2181,35 +2160,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 report.CurrentSecID = aseMoveStatus.LastSection.Id;
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
                 report.BCRReadResult = BCRReadResultParse(ReadResult);
-                report.CmdID = robotCommand.CmdId;
+                report.CmdID = robotCommand.CmdId;//200525 dabid#
 
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrapper.ImpTransEventRep = report;
 
-                //SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
-                //queSendWaitWrappers.Enqueue(sendWaitWrapper);
-
-                LogSendMsg(wrapper);
-
-                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                OnMessageShowOnMainFormEvent?.Invoke(this, $"Send transfer event report. [{report.EventType}]");
-                string rtnMsg = "";
-
-                TrxTcpIp.ReturnCode returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
-                if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                {
-                    OnAgvcReplyCstIdReadEvent(response);
-                }
-                else
-                {
-                    string cmdId = mainFlowHandler.GetCurTransferStep().CmdId;
-                    theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(report.BCRReadResult, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
-                    string msg = $"TransferEvent[{report.EventType}] send wait timeout[{report.CmdID}]";
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                    OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                }
-
+                SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
+                queSendWaitWrappers.Enqueue(sendWaitWrapper);
             }
             catch (Exception ex)
             {
@@ -2231,7 +2189,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     slot.CarrierId = response.RenameCarrierID;
                 }
                 theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
-                mainFlowHandler.BcrReadAbortCommand(cmdId, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
+                mainFlowHandler.TransferComplete(cmdId);
             }
             else
             {
@@ -2512,7 +2470,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void Receive_Cmd32_TransferCompleteResponse(object sender, TcpIpEventArgs e)
         {
             ID_32_TRANS_COMPLETE_RESPONSE receive = (ID_32_TRANS_COMPLETE_RESPONSE)e.objPacket;
-            //theVehicle.ActionStatus = receive.ReplyCode == 0 ? VHActionStatus.NoCommand : VHActionStatus.Commanding;
+            mainFlowHandler.IsAgvcReplySendWaitMessage = true;
+
             StatusChangeReport();
         }
         public void SendRecv_Cmd132_TransferCompleteReport(AgvcTransCmd agvcTransCmd, int delay = 0)
@@ -2542,10 +2501,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.TranCmpRepFieldNumber;
                 wrapper.TranCmpRep = report;
 
-                //SendCommandWrapper(wrappers, false, delay);
+                SendCommandWrapper(wrapper, false, delay);
 
-                SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
-                queSendWaitWrappers.Enqueue(sendWaitWrapper);
+                //SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
+                //queSendWaitWrappers.Enqueue(sendWaitWrapper);
 
             }
             catch (Exception ex)
@@ -2560,7 +2519,27 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;
                 OnMessageShowOnMainFormEvent?.Invoke(this, $" Get Transfer Command: {transRequest.CommandAction}");
-
+                //200526 dabid+
+                if (transRequest.CommandAction == CommandActionType.Unload)
+                {
+                    if (mainFlowHandler.theVehicle.AseCarrierSlotL.CarrierId != transRequest.CSTID && mainFlowHandler.theVehicle.AseCarrierSlotR.CarrierId != transRequest.CSTID)
+                    {
+                        var msg = $"Reject Transfer Command: I DONT HAVE WHAT YOU WANT!!!!!{transRequest.CommandAction}";
+                        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                        Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, 1, "I DONT HAVE WHAT YOU WANT!!!!!");
+                        return;
+                    }
+                }
+                if (transRequest.CommandAction == CommandActionType.Unload)
+                {
+                    if (mainFlowHandler.theVehicle.AseCarrierSlotL.CarrierId == "" && mainFlowHandler.theVehicle.AseCarrierSlotR.CarrierId == "")
+                    {
+                        var msg = $"Reject Transfer Command: I HAVE NOTHING!!!!!{transRequest.CommandAction}";
+                        OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+                        Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, 1, "I HAVE NOTHING!!!!!");
+                        return;
+                    }
+                }
                 switch (transRequest.CommandAction)
                 {
                     case CommandActionType.Move:
@@ -2773,6 +2752,20 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return PauseEvent.Pause;
             }
         }
+        //private CMDCancelType CMDCancelTypeParse(string v)
+        //{
+        //    try
+        //    {
+        //        v = v.Trim();
+
+        //        return (CMDCancelType)Enum.Parse(typeof(CMDCancelType), v);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+        //        return CMDCancelType.CmdAbort;
+        //    }
+        //}
         private ReserveResult ReserveResultParse(string v)
         {
             try
@@ -2815,6 +2808,34 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return ErrorStatus.ErrReset;
             }
         }
+        //private ActiveType ActiveTypeParse(string v)
+        //{
+        //    try
+        //    {
+        //        v = v.Trim();
+
+        //        return (ActiveType)Enum.Parse(typeof(ActiveType), v);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+        //        return ActiveType.Home;
+        //    }
+        //}
+        //private ControlType ControlTypeParse(string v)
+        //{
+        //    try
+        //    {
+        //        v = v.Trim();
+
+        //        return (ControlType)Enum.Parse(typeof(ControlType), v);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+        //        return ControlType.Nothing;
+        //    }
+        //}
         private VhLoadCSTStatus VhLoadCSTStatusParse(bool loading)
         {
             if (loading)

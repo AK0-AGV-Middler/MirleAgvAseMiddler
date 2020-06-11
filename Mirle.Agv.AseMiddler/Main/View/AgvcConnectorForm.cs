@@ -11,7 +11,6 @@ using System.Windows.Forms;
 using com.mirle.aka.sc.ProtocolFormat.ase.agvMessage;
 using System.Threading.Tasks;
 using Mirle.Tools;
-using Mirle.Agv.AseMiddler.Model;
 
 namespace Mirle.Agv.AseMiddler.View
 {
@@ -20,6 +19,7 @@ namespace Mirle.Agv.AseMiddler.View
         private AgvcConnector agvcConnector;
         private AgvcConnectorConfig agvcConnectorConfig;
         private string CommLogMsg { get; set; } = "";
+        private string ConnectionMsg { get; set; } = "";
 
         public AgvcConnectorForm(AgvcConnector agvcConnector)
         {
@@ -51,6 +51,26 @@ namespace Mirle.Agv.AseMiddler.View
         {
             agvcConnector.OnCmdReceiveEvent += SendOrReceiveCmdToTextBox;
             agvcConnector.OnCmdSendEvent += SendOrReceiveCmdToTextBox;
+            agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
+        }
+
+        private void AgvcConnector_OnConnectionChangeEvent(object sender, bool isConnect)
+        {
+            try
+            {
+                if (isConnect)
+                {
+                    ConnectionMsg = " Connect ";
+                }
+                else
+                {
+                    ConnectionMsg = "已 Dis-Connect ";
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
         }
 
         public void SendOrReceiveCmdToTextBox(object sender, string msg)
@@ -422,7 +442,7 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 tbxCommLogMsg.Text = CommLogMsg;
-                toolStripStatusLabel1.Text = $"IsConnection {Vehicle.Instance.IsAgvcConnect}";
+                toolStripStatusLabel1.Text = ConnectionMsg;
             }
             catch (Exception ex)
             {

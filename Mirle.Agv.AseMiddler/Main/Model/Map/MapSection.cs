@@ -32,6 +32,23 @@ namespace Mirle.Agv.AseMiddler.Model
             v = v.Trim();
             return (EnumSectionType)Enum.Parse(typeof(EnumSectionType), v);
         }
+
+        public bool InSection(string addressId)
+        {
+            if (InsideAddresses.Count == 0) return false;
+
+            bool result = false;
+            foreach (MapAddress mapAddress in InsideAddresses)
+            {
+                if (mapAddress.Id == addressId)
+                {
+                    return true;
+                }
+            }
+            return result;
+
+            //return InsideAddresses.FindIndex(x => x.Id == lastAddress.Id) > 0;
+        }
     }
 
 }

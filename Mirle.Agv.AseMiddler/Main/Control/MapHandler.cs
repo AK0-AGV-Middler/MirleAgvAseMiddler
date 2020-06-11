@@ -109,8 +109,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             oneRow.PioDirection = oneRow.AddressDirectionParse(getThisRow[dicHeaderIndexes["PioDirection"]]);
                         }
-                        oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
-                        oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
+                        //oneRow.CanSpin = bool.Parse(getThisRow[dicHeaderIndexes["CanSpin"]]);
+                        //oneRow.IsTR50 = bool.Parse(getThisRow[dicHeaderIndexes["IsTR50"]]);
                         if (dicHeaderIndexes.ContainsKey("InsideSectionId"))
                         {
                             oneRow.InsideSectionId = FitZero(getThisRow[dicHeaderIndexes["InsideSectionId"]]);
@@ -291,7 +291,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     theMapInfo.sectionMap.Add(oneRow.Id, oneRow);
                 }
 
-                LoadBeamSensorDisable();
+                //LoadBeamSensorDisable();
 
                 AddInsideAddresses();
 
@@ -371,73 +371,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,
                     $"AddInsideAddresses FAIL at Sec[{lastReadSecId}] and Adr[{lastReadAdrId}]" + ex.StackTrace);
-            }
-        }
-
-        public void LoadBeamSensorDisable()
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(SectionBeamDisablePath))
-                {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,
-                        $"IsSectionBeamDisablePathNull={string.IsNullOrWhiteSpace(SectionBeamDisablePath)}");
-                    return;
-                }
-
-                string[] allRows = File.ReadAllLines(SectionBeamDisablePath);
-                if (allRows == null || allRows.Length < 2)
-                {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,
-                          $"There are no beam-disable in file");
-                    return;
-                }
-
-                string[] titleRow = allRows[0].Split(',');
-                allRows = allRows.Skip(1).ToArray();
-
-                int nRows = allRows.Length;
-                int nColumns = titleRow.Length;
-
-                Dictionary<string, int> dicHeaderIndexes = new Dictionary<string, int>();
-                //Id, FromAddress, ToAddress, Speed, Type, PermitDirection
-                for (int i = 0; i < nColumns; i++)
-                {
-                    var keyword = titleRow[i].Trim();
-                    if (!string.IsNullOrWhiteSpace(keyword))
-                    {
-                        dicHeaderIndexes.Add(keyword, i);
-                    }
-                }
-
-                for (int i = 0; i < nRows; i++)
-                {
-                    string[] getThisRow = allRows[i].Split(',');
-                    MapSectionBeamDisable oneRow = new MapSectionBeamDisable();
-                    try
-                    {
-                        oneRow.SectionId = getThisRow[dicHeaderIndexes["SectionId"]];
-                        oneRow.Min = double.Parse(getThisRow[dicHeaderIndexes["Min"]]);
-                        oneRow.Max = double.Parse(getThisRow[dicHeaderIndexes["Max"]]);
-                        oneRow.FrontDisable = bool.Parse(getThisRow[dicHeaderIndexes["FrontDisable"]]);
-                        oneRow.BackDisable = bool.Parse(getThisRow[dicHeaderIndexes["BackDisable"]]);
-                        oneRow.LeftDisable = bool.Parse(getThisRow[dicHeaderIndexes["LeftDisable"]]);
-                        oneRow.RightDisable = bool.Parse(getThisRow[dicHeaderIndexes["RightDisable"]]);
-                    }
-                    catch (Exception ex)
-                    {
-                        mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadBeamSensorDisable read oneRow, [SecId={oneRow.SectionId}][Max={(int)oneRow.Max}][Min={(int)oneRow.Min}]"));
-                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                    }
-
-                    AddMapSectionBeamDisableIntoList(oneRow);
-                }
-
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Load BeamDisable File Ok.");
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
 
@@ -549,14 +482,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             var diffX = Math.Abs(aPosition.X - bPosition.X);
             var diffY = Math.Abs(aPosition.Y - bPosition.Y);
             return Math.Sqrt((diffX * diffX) + (diffY * diffY));
-        }
-
-        public double GetDistance(MapSection section, MapPosition position)
-        {
-            var midX = (section.HeadAddress.Position.X + section.TailAddress.Position.X) / 2;
-            var midY = (section.HeadAddress.Position.Y + section.TailAddress.Position.Y) / 2;
-            var midSecPos = new MapPosition(midX, midY);
-            return GetDistance(midSecPos, position);
         }
 
         #region Log

@@ -21,5 +21,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int RobotNgRetryTimes { get; set; }
         public bool IsSimulation { get; set; }
         public string CustomerName { get; set; } = "ASE";
+        public bool DualCommandOptimize { get; set; } = false;
     }
 }

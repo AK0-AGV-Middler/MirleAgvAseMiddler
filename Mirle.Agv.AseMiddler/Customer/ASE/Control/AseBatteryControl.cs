@@ -49,7 +49,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsWatchBatteryStatusPause) continue;
+                    if (IsWatchBatteryStatusPause)
+                    {
+                        Thread.Sleep(500);
+                        continue;
+                    }
                     if (IsWatchBatteryStatusStop) break;
 
                     if (psWrapper.IsConnected())
@@ -90,6 +94,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PrimarySend("35", "");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void SendChargeStatusRequest()
+        {
+            try
+            {
+                PrimarySend("31", "4");
             }
             catch (Exception ex)
             {

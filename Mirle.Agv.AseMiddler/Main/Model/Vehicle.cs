@@ -18,12 +18,32 @@ namespace Mirle.Agv.AseMiddler.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
         public ConcurrentDictionary<string, AgvcTransCmd> AgvcTransCmdBuffer { get; set; } = new ConcurrentDictionary<string, AgvcTransCmd>();
-        public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
+        private EnumAutoState autoState = EnumAutoState.Manual;
+        public EnumAutoState AutoState
+        {
+            get { return autoState; }
+            set
+            {
+                if (value != autoState)
+                {
+                    autoState = value;                    
+                    if (value != EnumAutoState.PreManual)
+                    {
+                        OnAutoStateChangeEvent?.Invoke(this, value);
+                    }
+                    if (value == EnumAutoState.Auto)
+                    {
+                        IsReAuto = true;
+                    }
+                }
+            }
+        }
+        public event EventHandler<EnumAutoState> OnAutoStateChangeEvent;
         public bool IsSimulation { get; set; } = false;
         public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public bool IsAgvcConnect { get; set; } = false;
 
         #region AsePackage
-        public bool IsAgvlConnect { get; set; } = false;
 
         public AseMoveStatus AseMoveStatus { get; set; } = new AseMoveStatus();
         public AseRobotStatus AseRobotStatus { get; set; } = new AseRobotStatus();
@@ -36,11 +56,10 @@ namespace Mirle.Agv.AseMiddler.Model
         public AseMovingGuide AseMovingGuide { get; set; } = new AseMovingGuide();
         public string PspSpecVersion { get; set; } = "1.0";
 
+        public bool IsReAuto { get; set; } = true;
         #endregion
 
         #region Comm Property
-        public bool IsAgvcConnect { get; set; } = false;
-
         //public VHActionStatus ActionStatus { get; set; } = VHActionStatus.NoCommand;
         public VhStopSingle BlockingStatus { get; set; }
         public VhChargeStatus ChargeStatus { get; set; }
@@ -55,6 +74,8 @@ namespace Mirle.Agv.AseMiddler.Model
         public int CmdDistance { get; set; }
         public string TeachingFromAddress { get; internal set; } = "";
         public string TeachingToAddress { get; internal set; } = "";
+        public VHActionStatus ActionStatus { get;  set; }
+        public bool IsOptimize { get; internal set; }
         #endregion
 
         private Vehicle() { }             

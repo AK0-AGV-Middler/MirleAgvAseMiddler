@@ -17,9 +17,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         private MirleLogger mirleLogger = MirleLogger.Instance;
 
         public event EventHandler<EnumSlotNumber> OnReadCarrierIdFinishEvent;
-        public event EventHandler<TransferStep> OnRobotInterlockErrorEvent;
-        public event EventHandler<TransferStep> OnRobotCommandFinishEvent;
-        public event EventHandler<TransferStep> OnRobotCommandErrorEvent;
+        public event EventHandler<RobotCommand> OnRobotInterlockErrorEvent;
+        public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
+        public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
         public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
 
         private Vehicle theVehicle = Vehicle.Instance;

@@ -42,6 +42,8 @@ namespace Mirle.Agv.AseMiddler.View
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
         private MirleLogger mirleLogger = MirleLogger.Instance;
         private Vehicle theVehicle = Vehicle.Instance;
+        public bool IsAgvcConnect { get; set; } = false;
+        public bool IsAgvlConnect { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
         public string MainFlowAbnormalReasonMsg { get; set; } = "";
         public string AgvcConnectorAbnormalReasonMsg { get; set; } = "";
@@ -81,7 +83,7 @@ namespace Mirle.Agv.AseMiddler.View
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
             mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
-            theMapInfo = mainFlowHandler.theMapInfo;
+            theMapInfo = mainFlowHandler.Mapinfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             asePackage = mainFlowHandler.GetAsePackage();
 
@@ -196,10 +198,12 @@ namespace Mirle.Agv.AseMiddler.View
             mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
             agvcConnector.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
+            agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
             alarmHandler.SetAlarmToUI += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.ResetAllAlarmsToUI += AlarmHandler_OnResetAllAlarmsEvent;
-          
-            mainFlowHandler.GetAseMoveControl().OnMoveFinishedEvent += AseMoveControl_OnMoveFinishEvent;
+
+            theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
+            mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
 
             asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
         }
@@ -212,9 +216,12 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialConnectionAndCarrierStatus()
         {
+            IsAgvcConnect = agvcConnector.IsConnected();
             UpdateAgvcConnection();
 
+            IsAgvlConnect = mainFlowHandler.GetAsePackage().psWrapper.ConnectionState == PSDriver.PSDriver.enumConnectState.Connected;
             UpdateAgvlConnection();
+
 
             if (theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
             {
@@ -303,7 +310,12 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
-    
+
+        private void AgvcConnector_OnConnectionChangeEvent(object sender, bool isConnect)
+        {
+            IsAgvcConnect = isConnect;
+        }
+
         private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
         {
             try
@@ -348,19 +360,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void AseMoveControl_OnMoveFinishEvent(object sender, EnumMoveComplete e)
-        {
-            try
-            {
-                //Task.Run(() => ResetSectionColor());
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-
         private void TheVehicle_OnBeamDisableChangeEvent(object sender, BeamDisableArgs e)
         {
             try
@@ -394,7 +393,12 @@ namespace Mirle.Agv.AseMiddler.View
                 default:
                     return "未知";
             }
-        }   
+        }
+
+        private void MainFlowHandler_OnAgvlConnectionChangedEvent(object sender, bool e)
+        {
+            IsAgvlConnect = e;
+        }
 
         private void AsePackage_ImportantPspLog(object sender, string e)
         {
@@ -612,18 +616,28 @@ namespace Mirle.Agv.AseMiddler.View
             asePackage.aseMoveControl.RefreshMoveState();
         }
 
-        private void btnRefreshPosition_Click(object sender, EventArgs e)
+        private void btnRefreshStatus_Click(object sender, EventArgs e)
         {
+            btnRefreshStatus.Enabled = false;
+            asePackage.AllAgvlStatusReportRequest();
+            SpinWait.SpinUntil(() => false, 50);
             asePackage.aseMoveControl.SendPositionReportRequest();
+            SpinWait.SpinUntil(() => false, 50);
+            asePackage.aseBatteryControl.SendBatteryStatusRequest();
+            btnRefreshStatus.Enabled = true;
         }
 
         private void btnRefreshMoveState_Click(object sender, EventArgs e)
         {
+            btnRefreshMoveState.Enabled = false;
+
             asePackage.aseMoveControl.SendPositionReportRequest();
 
             SpinWait.SpinUntil(() => false, 50);
 
             asePackage.aseMoveControl.RefreshMoveState();
+
+            btnRefreshMoveState.Enabled = true;
         }
 
         private void AseMoveControlForm_PauseOrResumeAskPosition(object sender, bool e)
@@ -666,12 +680,15 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
+                btnRefreshRobotState.Enabled = false;
+
                 asePackage.aseRobotControl.RefreshRobotState();
 
                 SpinWait.SpinUntil(() => false, 50);
 
                 asePackage.aseRobotControl.RefreshCarrierSlotState();
 
+                btnRefreshRobotState.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -743,7 +760,11 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
+                btnRefreshBatteryState.Enabled = false;
                 asePackage.aseBatteryControl.SendBatteryStatusRequest();
+                SpinWait.SpinUntil(() => false, 50);
+                asePackage.aseBatteryControl.SendChargeStatusRequest();
+                btnRefreshBatteryState.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -792,13 +813,31 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 robotCommand = new LoadCmdInfo(agvcTransCmd);
                 robotCommand.PortAddressId = e.FromPort.PadLeft(5, '0');
-                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.ToPort.Trim('0'));
+                EnumSlotNumber slotNumber = e.ToPort.Trim('0') == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
+                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
+                if (aseCarrierSlotStatus.CarrierSlotStatus!= EnumAseCarrierSlotStatus.Empty)
+                {
+                    string errorMsg = $"GetRobotCommandFromAseRobotControlForm fail. Can not load, [ToPort = {e.ToPort}][SlotNum = {slotNumber}][SlotState = {aseCarrierSlotStatus.CarrierSlotStatus}]";
+                    AppendDebugLogMsg(errorMsg);
+                    throw new Exception(errorMsg);
+                }
+
+                robotCommand.SlotNumber = slotNumber;
             }
             else
             {
                 robotCommand = new UnloadCmdInfo(agvcTransCmd);
                 robotCommand.PortAddressId = e.ToPort.PadLeft(5, '0');
-                robotCommand.SlotNumber = (EnumSlotNumber)Enum.Parse(typeof(EnumSlotNumber), e.FromPort.Trim('0'));
+                EnumSlotNumber slotNumber = e.FromPort.Trim('0') == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
+                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
+                if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
+                {
+                    string errorMsg = $"GetRobotCommandFromAseRobotControlForm fail. Can not unload, [FromPort = {e.FromPort}][SlotNum = {slotNumber}][SlotState = {aseCarrierSlotStatus.CarrierSlotStatus}]";
+                    AppendDebugLogMsg(errorMsg);
+                    throw new Exception(errorMsg);
+                }
+
+                robotCommand.SlotNumber = slotNumber;
             }
             robotCommand.PioDirection = e.PioDirection;
             robotCommand.GateType = e.GateType;
@@ -1042,7 +1081,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                if (theVehicle.IsAgvcConnect)
+                if (IsAgvcConnect)
                 {
                     txtAgvcConnection.Text = "AGVC Connect";
                     txtAgvcConnection.BackColor = Color.LightGreen;
@@ -1064,7 +1103,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                if (theVehicle.IsAgvlConnect)
+                if (IsAgvlConnect)
                 {
                     txtAgvlConnection.Text = "AGVL  Connect ";
                     txtAgvlConnection.BackColor = Color.LightGreen;
@@ -1130,6 +1169,17 @@ namespace Mirle.Agv.AseMiddler.View
                     tbxTransferCommand01Msg.Text = GetTransferCmdInfo(transferCommands[0]);
                     tbxTransferCommand02Msg.Text = GetTransferCmdInfo(transferCommands[1]);
                 }
+                //200523 dabid+
+                var lstTransferStep = mainFlowHandler.PtransferSteps;
+                string step = "";
+                for (int i = 0; i < lstTransferStep.Count(); i++)
+                {
+                    if (lstTransferStep[i].GetTransferStepType() == EnumTransferStepType.Empty)
+                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}";
+                    else
+                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({theVehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].LoadPortId})({theVehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].UnloadPortId})";
+                }
+                tbxTransferStepMsg.Text = step;
             }
             catch (Exception ex)
             {
@@ -1242,7 +1292,6 @@ namespace Mirle.Agv.AseMiddler.View
                 }
 
                 btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
-
 
             }
             catch (Exception ex)
@@ -1443,7 +1492,7 @@ namespace Mirle.Agv.AseMiddler.View
         private void btnAlarmReset_Click(object sender, EventArgs e)
         {
             btnAlarmReset.Enabled = false;
-            TakeAPicture();
+            //TakeAPicture();
             mainFlowHandler.ResetAllarms();
             Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
@@ -1456,11 +1505,11 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void btnAutoManual_Click(object sender, EventArgs e)
         {
-            btnAutoManual.Enabled = false;
+            //btnAutoManual.Enabled = false;
             SwitchAutoStatus();
             //ClearColor();
-            Thread.Sleep(100);
-            btnAutoManual.Enabled = true;
+            //Thread.Sleep(100);
+            //btnAutoManual.Enabled = true;
         }
 
         public void SwitchAutoStatus()
@@ -1470,10 +1519,40 @@ namespace Mirle.Agv.AseMiddler.View
                 switch (theVehicle.AutoState)
                 {
                     case EnumAutoState.Auto:
-                        mainFlowHandler.AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                        theVehicle.AutoState = EnumAutoState.Manual;
                         break;
                     case EnumAutoState.Manual:
-                        mainFlowHandler.AsePackage_OnModeChangeEvent(this, EnumAutoState.Auto);
+                        theVehicle.AutoState = EnumAutoState.Auto;
+                        break;
+                    case EnumAutoState.PreManual:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void TheVehicle_OnAutoStateChangeEvent(object sender, EnumAutoState autoState)
+        {
+            try
+            {
+                switch (autoState)
+                {
+                    case EnumAutoState.Auto:
+                        //if (!mainFlowConfig.IsSimulation)
+                        //{
+                        //    TakeAPicture();
+                        //}
+                        AppendDebugLogMsg($"Manual switch to  Auto  ok ");
+                        ResetAllAbnormalMsg();
+                        break;
+                    case EnumAutoState.Manual:
+                        AppendDebugLogMsg($"Auto switch to  Manual  ok ");
+
                         break;
                     case EnumAutoState.PreManual:
                         break;
@@ -1508,7 +1587,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (radAgvcOnline.Checked)
                 {
-                    if (!theVehicle.IsAgvcConnect)
+                    if (!agvcConnector.IsConnected())
                     {
                         agvcConnector.ReConnect();
                     }
@@ -1526,7 +1605,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (radAgvcOffline.Checked)
                 {
-                    if (theVehicle.IsAgvcConnect)
+                    if (agvcConnector.IsConnected())
                     {
                         agvcConnector.DisConnect();
                     }
@@ -1544,8 +1623,9 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 if (radAgvlOnline.Checked)
-                {                    
-                    if (!theVehicle.IsAgvlConnect)
+                {
+                    AsePackage asePackage = mainFlowHandler.GetAsePackage();
+                    if (!asePackage.IsConnected())
                     {
                         asePackage.Connect();
                     }
@@ -1564,7 +1644,8 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (radAgvlOffline.Checked)
                 {
-                    if (theVehicle.IsAgvlConnect)
+                    AsePackage asePackage = mainFlowHandler.GetAsePackage();
+                    if (asePackage.IsConnected())
                     {
                         asePackage.DisConnect();
                     }

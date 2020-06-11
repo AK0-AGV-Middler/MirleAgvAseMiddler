@@ -17,7 +17,8 @@ namespace Mirle.Agv.AseMiddler.Model
         public MapAddress NeerlyAddress { get; set; } = new MapAddress();
         public int Speed { get; set; } = 0;
         public bool IsMoveEnd { get; set; } = false;
-        
+        public MapSection NeerlySection { get; internal set; } = new MapSection();
+
         public AseMoveStatus() { }
 
         public AseMoveStatus(AseMoveStatus aseMoveStatus)
