@@ -1768,14 +1768,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void ReportAgvcTransferComplete(AgvcTransCmd agvcTransCmd)
         {
-            IsAgvcReplySendWaitMessage = false;
             agvcConnector.TransferComplete(agvcTransCmd);
-            while (!IsAgvcReplySendWaitMessage)
-            {
-                Thread.Sleep(500);
-                //SpinWait.SpinUntil(() => IsAgvcReplySendWaitMessage, 500);
-            }
-            IsAgvcReplySendWaitMessage = false;
         }
 
         private void GetPioDirection(RobotCommand robotCommand)
@@ -2018,13 +2011,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private void ReportAgvcBcrRead()
         {
-            //IsAgvcReplySendWaitMessage = false;
             agvcConnector.SendRecv_Cmd136_CstIdReadReport();
-            //while (!IsAgvcReplySendWaitMessage)
-            //{
-            //    SpinWait.SpinUntil(() => IsAgvcReplySendWaitMessage, 500);
-            //}
-            //IsAgvcReplySendWaitMessage = false;
         }
 
         private void AseRobotControl_OnReadCarrierIdFinishEvent(object sender, EnumSlotNumber slotNumber)
@@ -2084,6 +2071,13 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                             ReadResult = EnumCstIdReadResult.Fail;
                             aseCarrierSlotStatus.CarrierId = "";
+                        }
+                        else if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.PositionError)
+                        {
+                            OnMessageShowEvent?.Invoke(this, $"CST Position Error.");
+                            alarmHandler.SetAlarmFromAgvm(000051);
+                            ReadResult = EnumCstIdReadResult.Fail;
+                            StopClearAndReset();
                         }
                         else
                         {

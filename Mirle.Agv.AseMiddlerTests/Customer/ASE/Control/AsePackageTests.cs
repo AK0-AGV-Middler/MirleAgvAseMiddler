@@ -21,9 +21,6 @@ namespace Mirle.Agv.AseMiddler.Controller.Tests
 
             var xx = asePackage.mirleLogger;
 
-            asePackage.LogPsWrapper("ABC", "DEF");
-
-            asePackage.LogDebug("PQR", "ZYX");
 
             Assert.IsTrue(true);
         }
