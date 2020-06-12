@@ -1040,6 +1040,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var okmsg = $"MainFlow : Get 避車Command checked , 終點[{aseMovingGuide.ToAddressId}].";
                 OnMessageShowEvent?.Invoke(this, okmsg);
                 IsAvoidMove = true;
+                agvcConnector.AskAllSectionsReserveInOnce();
                 agvcConnector.ResumeAskReserve();
             }
             catch (Exception ex)

@@ -1789,6 +1789,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
                 SetupNeedReserveSections();
                 theVehicle.AseMoveStatus.IsMoveEnd = false;
+                AskAllSectionsReserveInOnce();
                 IsAskReservePause = false;
                 StatusChangeReport();
                 ShowAseMovigGuideSectionAndAddressList();
@@ -2301,6 +2302,113 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                 }
                 IsAskReservePause = false;
+            }
+        }
+
+        public void AskAllSectionsReserveInOnce()
+        {
+            var msg = $"Ask All Sections Reserve In Once [{theVehicle.AseMovingGuide.MovingSections.Count}]";
+            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
+            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+
+            try
+            {
+                var movingSections = theVehicle.AseMovingGuide.MovingSections.ToList();
+
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+                report.EventType = EventType.ReserveReq;
+                FitReserveInfos(report.ReserveInfos, movingSections);
+                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = aseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
+
+                WrapperMessage wrapper = new WrapperMessage();
+                wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrapper.ImpTransEventRep = report;
+
+                #region Ask reserve and wait reply
+                LogSendMsg(wrapper);
+
+                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
+                string rtnMsg = "";
+
+                var returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg, agvcConnectorConfig.RecvTimeoutMs, 0);
+
+                if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                {
+                    if (response.IsReserveSuccess == ReserveResult.Success)
+                    {
+                        List<MapSection> reserveOkSections = new List<MapSection>();
+                        var reserveInfos = response.ReserveInfos.ToList();
+                        for (int i = 0; i < reserveInfos.Count; i++)
+                        {
+                            var reserveInfo = reserveInfos[i];
+                            var movingSection = movingSections[i];
+                            if (reserveInfo.ReserveSectionID.Trim() == movingSection.Id)
+                            {
+                                if (reserveInfo.DriveDirction == DriveDirctionParse(movingSection.CmdDirection))
+                                {
+                                    reserveOkSections.Add(movingSection);
+                                }
+                                else
+                                {
+                                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Ask All Sections Reserve In Once Reply. Section [{movingSection.Id}] in AGVC [{reserveInfo.DriveDirction}] is not equal to AGVM[{movingSection.CmdDirection}]");
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        foreach (var mapSection in reserveOkSections)
+                        {
+                            OnGetReserveOk(mapSection.Id);
+                        }
+
+                        RefreshPartMoveSections();
+                    }
+                    else
+                    {
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Ask All Sections Reserve In Once Reply. Unsuccess.");
+                    }
+                }
+                else
+                {
+                    OnMessageShowOnMainFormEvent?.Invoke(this, $"AskAllSectionsReserveInOnce send wait timeout[{mainFlowHandler.GetCurTransferStep().CmdId}]");
+                    OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                }
+
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void FitReserveInfos(RepeatedField<ReserveInfo> reserveInfos, List<MapSection> movingSections)
+        {
+            reserveInfos.Clear();
+            ReserveInfo reserveInfo = new ReserveInfo();
+            foreach (var mapSection in movingSections)
+            {
+                reserveInfo.ReserveSectionID = mapSection.Id;
+                if (mapSection.CmdDirection == EnumCommandDirection.Backward)
+                {
+                    reserveInfo.DriveDirction = DriveDirction.DriveDirReverse;
+                }
+                else if (mapSection.CmdDirection == EnumCommandDirection.None)
+                {
+                    reserveInfo.DriveDirction = DriveDirction.DriveDirNone;
+                }
+                else
+                {
+                    reserveInfo.DriveDirction = DriveDirction.DriveDirForward;
+                }
+                reserveInfos.Add(reserveInfo);
             }
         }
 
