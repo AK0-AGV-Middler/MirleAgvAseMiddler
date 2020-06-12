@@ -22,5 +22,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public bool IsSimulation { get; set; }
         public string CustomerName { get; set; } = "ASE";
         public bool DualCommandOptimize { get; set; } = false;
+        public bool BcrByPass { get; set; } = false;
     }
 }
