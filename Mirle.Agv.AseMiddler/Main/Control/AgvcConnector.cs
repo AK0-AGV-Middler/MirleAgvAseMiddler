@@ -1262,9 +1262,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             SendRecv_Cmd136_TransferEventReport(EventType.LoadArrivals, cmdId);
         }
-        public void Loading(string cmdId)
+        public void Loading(string cmdId, EnumSlotNumber slotNumber)
         {
-            Send_Cmd136_TransferEventReport(EventType.Vhloading, cmdId);
+            Send_Cmd136_TransferEventReport(EventType.Vhloading, cmdId, slotNumber);
         }
         public void CstIdReadReport(TransferStep transferStep, EnumCstIdReadResult result)
         {
@@ -1280,22 +1280,22 @@ namespace Mirle.Agv.AseMiddler.Controller
             AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
             agvcTransCmd.EnrouteState = CommandState.UnloadEnroute;
             StatusChangeReport();
-            SendRecv_Cmd136_TransferEventReport(EventType.LoadComplete, cmdId);
+            SendRecv_Cmd136_TransferEventReport(EventType.LoadComplete, cmdId, agvcTransCmd.SlotNumber);
         }
         public void ReportUnloadArrival(string cmdId)
         {
             SendRecv_Cmd136_TransferEventReport(EventType.UnloadArrivals, cmdId);
         }
-        public void Unloading(string cmdId)
+        public void Unloading(string cmdId, EnumSlotNumber slotNumber)
         {
-            Send_Cmd136_TransferEventReport(EventType.Vhunloading, cmdId);
+            Send_Cmd136_TransferEventReport(EventType.Vhunloading, cmdId, slotNumber);
         }
         public void UnloadComplete(string cmdId)
         {
             AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
             agvcTransCmd.EnrouteState = CommandState.None;
             StatusChangeReport();
-            SendRecv_Cmd136_TransferEventReport(EventType.UnloadComplete, cmdId);
+            SendRecv_Cmd136_TransferEventReport(EventType.UnloadComplete, cmdId, agvcTransCmd.SlotNumber);
         }
         public void MoveArrival()
         {
@@ -1966,7 +1966,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
                 report.CmdID = cmdId;
 
-
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrappers.ImpTransEventRep = report;
@@ -1979,6 +1978,31 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
 
         }
+        public void Send_Cmd136_TransferEventReport(EventType eventType, string cmdId, EnumSlotNumber slotNumber)
+        {
+            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+            try
+            {
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+                report.EventType = eventType;
+                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = aseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.CmdID = cmdId;
+                report.Location = slotNumber == EnumSlotNumber.L ? AGVLocation.Left : AGVLocation.Right;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrappers.ImpTransEventRep = report;
+
+                SendCommandWrapper(wrappers);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
         private void SendRecv_Cmd136_TransferEventReport(EventType eventType, string cmdId)
         {
             try
@@ -2047,6 +2071,76 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
+        private void SendRecv_Cmd136_TransferEventReport(EventType eventType, string cmdId, EnumSlotNumber slotNumber)
+        {
+            try
+            {
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+                report.EventType = eventType;
+                report.CurrentAdrID = theVehicle.AseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = theVehicle.AseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)theVehicle.AseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.CmdID = cmdId;
+                report.Location = slotNumber == EnumSlotNumber.L ? AGVLocation.Left : AGVLocation.Right;
+
+                WrapperMessage wrapper = new WrapperMessage();
+                wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrapper.ImpTransEventRep = report;
+
+                //SendWaitWrapper sendWaitWrapper = new SendWaitWrapper(wrapper);
+                //queSendWaitWrappers.Enqueue(sendWaitWrapper);
+
+                LogSendMsg(wrapper);
+
+                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Send transfer event report. [{eventType}]");
+                string rtnMsg = "";
+
+                TrxTcpIp.ReturnCode returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
+                if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                {
+                    switch (eventType)
+                    {
+                        case EventType.AdrOrMoveArrivals:
+                            OnAgvcAcceptMoveArrivalEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.LoadArrivals:
+                            OnAgvcAcceptLoadArrivalEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.UnloadArrivals:
+                            OnAgvcAcceptUnloadArrivalEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.LoadComplete:
+                            //mainFlowHandler.IsAgvcReplySendWaitMessage = true;
+                            OnAgvcAcceptLoadCompleteEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.UnloadComplete:
+                            OnAgvcAcceptUnloadCompleteEvent?.Invoke(this, default(EventArgs));
+                            break;
+                        case EventType.Bcrread:
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    if (eventType == EventType.Bcrread)
+                    {
+                        theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(report.BCRReadResult, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
+                    }
+                    string msg = $"TransferEvent[{eventType}] send wait timeout[{report.CmdID}]";
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                    OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                    //mainFlowHandler.IsAgvcReplySendWaitMessage = true;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
         public void SendRecv_Cmd136_CstIdReadReport()
         {
 

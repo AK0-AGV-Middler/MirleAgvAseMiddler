@@ -1820,7 +1820,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             try
             {
-                agvcConnector.Loading(loadCmd.CmdId);
+                agvcConnector.Loading(loadCmd.CmdId,loadCmd.SlotNumber);
                 ReadResult = EnumCstIdReadResult.Fail;//dabid
 
                 if (theVehicle.IsSimulation)
@@ -1876,7 +1876,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 UnloadCmdInfo unloadCmd = (UnloadCmdInfo)GetCurTransferStep();
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(unloadCmd.SlotNumber);
 
-                agvcConnector.Unloading(unloadCmd.CmdId);
+                agvcConnector.Unloading(unloadCmd.CmdId,unloadCmd.SlotNumber);
 
                 if (theVehicle.IsSimulation)
                 {
@@ -2464,7 +2464,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
 
         #endregion
-
 
         #region Simple Getters
         public AlarmHandler GetAlarmHandler() => alarmHandler;

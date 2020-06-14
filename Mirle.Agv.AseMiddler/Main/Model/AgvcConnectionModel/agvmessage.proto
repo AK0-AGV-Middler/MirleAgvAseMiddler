@@ -314,6 +314,8 @@ message Timestamp {
 	string CST_ID = 5;
 	string LoadPortID = 6;
 	string UnloadPortID = 7;
+	bool IsLoadPortHasGate = 8;
+	bool IsUnloadPortHasGate = 9;
   }
   message ID_131_TRANS_RESPONSE {
   	string Cmd_ID = 1;
@@ -396,6 +398,12 @@ message Timestamp {
 	ReplyActionType_Cancel_PID_Failed = 25;
   }
 
+  enum AGVLocation
+  {
+	AGVLocation_Right=0;
+	AGVLocation_Left=1;
+	AGVLocation_None=2;
+  }
    message ID_136_TRANS_EVENT_REP {
     EventType EventType = 1;
 	repeated ReserveInfo ReserveInfos = 2;
@@ -407,6 +415,7 @@ message Timestamp {
 	uint32 Sec_Distance = 8;
 	BCRReadResult BCRReadResult =9;
 	string Cmd_ID =10;
+	AGVLocation Location = 11;
   }
 
   message ID_36_TRANS_EVENT_RESPONSE {
