@@ -1665,8 +1665,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 IsVisitTransferStepPause = true;
                 AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
                 agvcTransCmd.EnrouteState = CommandState.None;
-                ClearTransferSteps(cmdId);
-                AgvcTransCmd cmd = new AgvcTransCmd();
+                ClearTransferSteps(cmdId);              
                 ConcurrentDictionary<string, AgvcTransCmd> tempTransCmdBuffer = new ConcurrentDictionary<string, AgvcTransCmd>();
                 foreach (var transCmd in theVehicle.AgvcTransCmdBuffer.Values.ToList())
                 {
@@ -1675,8 +1674,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         tempTransCmdBuffer.TryAdd(transCmd.CommandId, transCmd);
                     }
                 }
-                theVehicle.AgvcTransCmdBuffer = tempTransCmdBuffer;
-                //theVehicle.AgvcTransCmdBuffer.TryRemove(cmdId, out cmd);
+                theVehicle.AgvcTransCmdBuffer = tempTransCmdBuffer;           
                 ReportAgvcTransferComplete(agvcTransCmd);
                 OptimizeTransferStepsAfterTransferComplete();
                 if (theVehicle.AgvcTransCmdBuffer.Count == 0)
@@ -3155,38 +3153,42 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 string abortCmdId = receive.CmdID.Trim();
                 var step = GetCurTransferStep();
-                bool abortCurCommand = GetCurTransferStep().CmdId == abortCmdId;
-                var curCmd = theVehicle.AgvcTransCmdBuffer[abortCmdId];
+                bool IsAbortCurCommand = GetCurTransferStep().CmdId == abortCmdId;
+                var targetAbortCmd = theVehicle.AgvcTransCmdBuffer[abortCmdId];
 
-                if (abortCurCommand)
+                if (IsAbortCurCommand)
                 {
                     agvcConnector.ClearAllReserve();
                     asePackage.aseMoveControl.VehcleCancel();
-                    curCmd.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
-                    TransferComplete(curCmd.CommandId);
+                    targetAbortCmd.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
+                    TransferComplete(targetAbortCmd.CommandId);
                 }
                 else
                 {
-                    curCmd.EnrouteState = CommandState.None;
-                    ReportAgvcTransferComplete(curCmd);
-                    if (GetCurTransferStep().CmdId == abortCmdId)
+                   
+                    targetAbortCmd.EnrouteState = CommandState.None;
+                    targetAbortCmd.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
+
+                    ConcurrentDictionary<string, AgvcTransCmd> tempTransCmdBuffer = new ConcurrentDictionary<string, AgvcTransCmd>();
+                    foreach (var transCmd in theVehicle.AgvcTransCmdBuffer.Values.ToList())
                     {
-                        StopClearAndReset();
-                        alarmHandler.SetAlarmFromAgvm(1);
-                    }
-                    else
-                    {
-                        AgvcTransCmd cmd = new AgvcTransCmd();
-                        theVehicle.AgvcTransCmdBuffer.TryRemove(abortCmdId, out cmd);
-                        if (theVehicle.AgvcTransCmdBuffer.Count == 0)
+                        if (transCmd.CommandId != abortCmdId)
                         {
-                            agvcConnector.NoCommand();
+                            tempTransCmdBuffer.TryAdd(transCmd.CommandId, transCmd);
                         }
-                        asePackage.SetTransferCommandInfoRequest();
-                        OptimizeTransferStepsAfterTransferComplete();
+                    }
+                    theVehicle.AgvcTransCmdBuffer = tempTransCmdBuffer;
+                    agvcConnector.StatusChangeReport();
+                    ReportAgvcTransferComplete(targetAbortCmd);
+
+                    asePackage.SetTransferCommandInfoRequest();
+
+                    if (theVehicle.AgvcTransCmdBuffer.Count == 0)
+                    {
+                        agvcConnector.NoCommand();
                         GoNextTransferStep = true;
                         IsVisitTransferStepPause = false;
-                    }
+                    }                   
                 }
 
                 ResumeTransfer();
