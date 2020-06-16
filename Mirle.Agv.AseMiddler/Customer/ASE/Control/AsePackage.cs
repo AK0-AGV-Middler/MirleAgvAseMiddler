@@ -41,6 +41,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
         public event EventHandler OnAgvlErrorEvent;
         public event EventHandler ArrivalCharge;
+        public event EventHandler<EnumAutoState> OnModeChangeEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -836,21 +837,14 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void SetVehicleManual()
         {
-            theVehicle.AutoState = EnumAutoState.Manual;
-            string msg = "AGVL switch to  : Manual";
-            ImportantPspLog?.Invoke(this, msg);
-
-            SetVehicleAutoScenario();
+            OnModeChangeEvent?.Invoke(this, EnumAutoState.Manual);
+            ImportantPspLog?.Invoke(this, $"ModeChange : Manual");
         }
 
         private void SetVehicleAuto()
         {
-            theVehicle.AutoState = EnumAutoState.Auto;
-
-            string msg = "AGVL switch to  : Auto";
-            ImportantPspLog?.Invoke(this, msg);
-
-            SetVehicleAutoScenario();
+            OnModeChangeEvent?.Invoke(this, EnumAutoState.Auto);
+            ImportantPspLog?.Invoke(this, $"ModeChange : Auto");
         }
 
         public void SetVehicleAutoScenario()

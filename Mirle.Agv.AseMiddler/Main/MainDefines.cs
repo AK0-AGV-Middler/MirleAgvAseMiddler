@@ -82,7 +82,7 @@ namespace Mirle.Agv.AseMiddler
     {
         Auto,
         Manual,
-        PreManual
+        None
     }
 
     public enum EnumLoginLevel

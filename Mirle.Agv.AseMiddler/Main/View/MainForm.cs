@@ -202,7 +202,6 @@ namespace Mirle.Agv.AseMiddler.View
             alarmHandler.SetAlarmToUI += AlarmHandler_OnSetAlarmEvent;
             alarmHandler.ResetAllAlarmsToUI += AlarmHandler_OnResetAllAlarmsEvent;
 
-            theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
             mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
 
             asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
@@ -959,7 +958,7 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateAgvlConnection();
                 //UpdateAgvFailResult();
                 UpdateReserveStopState();
-                UpdateCannotAutoReason();
+               
             }
             catch (Exception ex)
             {
@@ -1283,6 +1282,7 @@ namespace Mirle.Agv.AseMiddler.View
                     case EnumAutoState.Manual:
                         btnAutoManual.BackColor = Color.Pink;
                         txtCannotAutoReason.Visible = true;
+                        UpdateCannotAutoReason();
                         break;
                     case EnumAutoState.Auto:
                     default:
@@ -1291,7 +1291,7 @@ namespace Mirle.Agv.AseMiddler.View
                         break;
                 }
 
-                btnAutoManual.Text = "Now : " + Vehicle.Instance.AutoState.ToString();
+                btnAutoManual.Text = "Now : " + theVehicle.AutoState.ToString();
 
             }
             catch (Exception ex)
@@ -1299,6 +1299,7 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
+
         private void DrawReserveSections()
         {
             var transferStepCount = mainFlowHandler.GetTransferStepsCount();
@@ -1505,11 +1506,11 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void btnAutoManual_Click(object sender, EventArgs e)
         {
-            //btnAutoManual.Enabled = false;
+            btnAutoManual.Enabled = false;
             SwitchAutoStatus();
             //ClearColor();
-            //Thread.Sleep(100);
-            //btnAutoManual.Enabled = true;
+            Thread.Sleep(500);
+            btnAutoManual.Enabled = true;
         }
 
         public void SwitchAutoStatus()
@@ -1519,12 +1520,12 @@ namespace Mirle.Agv.AseMiddler.View
                 switch (theVehicle.AutoState)
                 {
                     case EnumAutoState.Auto:
-                        theVehicle.AutoState = EnumAutoState.Manual;
+                        mainFlowHandler.AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                         break;
                     case EnumAutoState.Manual:
-                        theVehicle.AutoState = EnumAutoState.Auto;
+                        mainFlowHandler.AsePackage_OnModeChangeEvent(this, EnumAutoState.Auto);
                         break;
-                    case EnumAutoState.PreManual:
+                    case EnumAutoState.None:
                         break;
                     default:
                         break;
@@ -1554,7 +1555,7 @@ namespace Mirle.Agv.AseMiddler.View
                         AppendDebugLogMsg($"Auto switch to  Manual  ok ");
 
                         break;
-                    case EnumAutoState.PreManual:
+                    case EnumAutoState.None:
                         break;
                     default:
                         break;

@@ -3002,7 +3002,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     return VHModeStatus.AutoRemote;
                 case EnumAutoState.Manual:
                     return VHModeStatus.Manual;
-                case EnumAutoState.PreManual:
+                case EnumAutoState.None:
                     return VHModeStatus.Manual;
                 default:
                     return VHModeStatus.None;

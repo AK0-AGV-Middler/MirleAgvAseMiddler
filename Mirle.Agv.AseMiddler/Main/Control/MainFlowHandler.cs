@@ -233,6 +233,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
 
                 asePackage.OnAgvlErrorEvent += AsePackage_OnAgvlErrorEvent;
+                asePackage.OnModeChangeEvent += AsePackage_OnModeChangeEvent;
+
 
                 //來自IRobotControl的取放貨結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
                 asePackage.aseRobotControl.OnRobotInterlockErrorEvent += AseRobotControl_OnRobotInterlockErrorEvent;
@@ -258,8 +260,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.aseBuzzerControl.OnAlarmCodeSetEvent += AseBuzzerControl_OnAlarmCodeSetEvent1;
                 asePackage.aseBuzzerControl.OnAlarmCodeResetEvent += AseBuzzerControl_OnAlarmCodeResetEvent;
 
-                theVehicle.OnAutoStateChangeEvent += TheVehicle_OnAutoStateChangeEvent;
-
                 asePackage.OnConnectionChangeEvent += AsePackage_OnConnectionChangeEvent;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
@@ -269,6 +269,41 @@ namespace Mirle.Agv.AseMiddler.Controller
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "事件"));
 
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void AsePackage_OnModeChangeEvent(object sender, EnumAutoState autoState)
+        {
+            try
+            {
+                if (theVehicle.AutoState != autoState)
+                {
+                    asePackage.SetVehicleAutoScenario();
+
+                    switch (autoState)
+                    {
+                        case EnumAutoState.Auto:
+                            alarmHandler.ResetAllAlarmsFromAgvm();
+                            StopClearAndReset();
+                            theVehicle.IsReAuto = true;
+                            break;
+                        case EnumAutoState.Manual:
+                            StopClearAndReset();
+                            break;
+                        case EnumAutoState.None:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                theVehicle.AutoState = autoState;
+                agvcConnector.StatusChangeReport();
+                OnMessageShowEvent?.Invoke(this, $"Switch to {autoState}");
+            }
+            catch (Exception ex)
+            {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
         }
@@ -312,33 +347,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
         {
             OnAgvlConnectionChangedEvent?.Invoke(this, e);
-        }
-
-        private void TheVehicle_OnAutoStateChangeEvent(object sender, EnumAutoState autoState)
-        {
-            switch (autoState)
-            {
-                case EnumAutoState.Auto:
-                    if (!theVehicle.IsSimulation)
-                    {
-                        alarmHandler.ResetAllAlarmsFromAgvm();
-                        ResumeTransfer();
-                    }
-                    else
-                    {
-                        alarmHandler.ResetAllAlarmsFromAgvm();
-                        ResumeTransfer();
-                    }
-                    break;
-                case EnumAutoState.Manual:
-                    StopClearAndReset();
-                    break;
-                case EnumAutoState.PreManual:
-                    break;
-                default:
-                    break;
-            }
-            agvcConnector.StatusChangeReport();
         }
 
         private void VehicleLocationInitialAndThreadsInitial()
@@ -1665,16 +1673,16 @@ namespace Mirle.Agv.AseMiddler.Controller
                 IsVisitTransferStepPause = true;
                 AgvcTransCmd agvcTransCmd = theVehicle.AgvcTransCmdBuffer[cmdId];
                 agvcTransCmd.EnrouteState = CommandState.None;
-                ClearTransferSteps(cmdId);              
+                ClearTransferSteps(cmdId);
                 ConcurrentDictionary<string, AgvcTransCmd> tempTransCmdBuffer = new ConcurrentDictionary<string, AgvcTransCmd>();
                 foreach (var transCmd in theVehicle.AgvcTransCmdBuffer.Values.ToList())
                 {
-                    if (transCmd.CommandId!=cmdId)
+                    if (transCmd.CommandId != cmdId)
                     {
                         tempTransCmdBuffer.TryAdd(transCmd.CommandId, transCmd);
                     }
                 }
-                theVehicle.AgvcTransCmdBuffer = tempTransCmdBuffer;           
+                theVehicle.AgvcTransCmdBuffer = tempTransCmdBuffer;
                 ReportAgvcTransferComplete(agvcTransCmd);
                 OptimizeTransferStepsAfterTransferComplete();
                 if (theVehicle.AgvcTransCmdBuffer.Count == 0)
@@ -1818,7 +1826,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             try
             {
-                agvcConnector.Loading(loadCmd.CmdId,loadCmd.SlotNumber);
+                agvcConnector.Loading(loadCmd.CmdId, loadCmd.SlotNumber);
                 ReadResult = EnumCstIdReadResult.Fail;//dabid
 
                 if (theVehicle.IsSimulation)
@@ -1874,7 +1882,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 UnloadCmdInfo unloadCmd = (UnloadCmdInfo)GetCurTransferStep();
                 AseCarrierSlotStatus aseCarrierSlotStatus = theVehicle.GetAseCarrierSlotStatus(unloadCmd.SlotNumber);
 
-                agvcConnector.Unloading(unloadCmd.CmdId,unloadCmd.SlotNumber);
+                agvcConnector.Unloading(unloadCmd.CmdId, unloadCmd.SlotNumber);
 
                 if (theVehicle.IsSimulation)
                 {
@@ -2916,14 +2924,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 StopVehicle();
                 ReadResult = EnumCstIdReadResult.Fail;//dabid
 
-
                 var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
                 foreach (var transCmd in transferCommands)
                 {
                     theVehicle.AgvcTransCmdBuffer[transCmd.CommandId].CompleteStatus = GetStopAndClearCompleteStatus(transCmd.CompleteStatus);
                     TransferComplete(transCmd.CommandId);
                 }
-
 
                 if (theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
                 {
@@ -3165,7 +3171,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                   
+
                     targetAbortCmd.EnrouteState = CommandState.None;
                     targetAbortCmd.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
 
@@ -3188,7 +3194,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         agvcConnector.NoCommand();
                         GoNextTransferStep = true;
                         IsVisitTransferStepPause = false;
-                    }                   
+                    }
                 }
 
                 ResumeTransfer();
