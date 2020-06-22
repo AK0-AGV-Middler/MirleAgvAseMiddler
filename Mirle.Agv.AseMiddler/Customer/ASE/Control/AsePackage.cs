@@ -716,6 +716,21 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 aseCarrierSlotStatus.CarrierSlotStatus = GetCarrierSlotStatus(psMessage.Substring(1, 1));
                 aseCarrierSlotStatus.CarrierId = psMessage.Substring(2);
+                if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+                {
+                    if (string.IsNullOrEmpty(aseCarrierSlotStatus.CarrierId.Trim()))
+                    {
+                        aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                    }
+                    else if (aseCarrierSlotStatus.CarrierId == "ReadIdFail")
+                    {
+                        aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                    }
+                    else if (aseCarrierSlotStatus.CarrierId == "PositionError")
+                    {
+                        aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
+                    }
+                }
 
                 switch (slotNumber)
                 {
@@ -751,8 +766,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case "1":
                     return EnumAseCarrierSlotStatus.Loading;
                 case "2":
-                    return EnumAseCarrierSlotStatus.ReadFail;
-                case "3":
                     return EnumAseCarrierSlotStatus.PositionError;
                 default:
                     throw new Exception($"Can not parse position report.[{v}]");
@@ -975,7 +988,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 ImportantPspLog?.Invoke(this, ex.Message);
             }
         }
-        
+
         private bool IsValuePositive(string v)
         {
             switch (v)

@@ -217,8 +217,8 @@ namespace Mirle.Agv.AseMiddler
     {
         Empty,
         Loading,
-        ReadFail,
-        PositionError
+        PositionError,
+        ReadFail      
     }
 
     public enum EnumMoveComplete

@@ -1934,7 +1934,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     agvcConnector.ReadResult = ReadResult;
                     ReportAgvcLoadComplete(robotCommand.CmdId);
-
                 }
                 else if (transferStepType == EnumTransferStepType.Unload)
                 {
