@@ -2179,19 +2179,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         OnMessageShowOnMainFormEvent?.Invoke(this, $"Load fail, [ReplyAction = {response.ReplyAction}][RenameCarrierID = {response.RenameCarrierID}]");
                         alarmHandler.ResetAllAlarmsFromAgvm();
-                        var cmdId = mainFlowHandler.GetCurTransferStep().CmdId;
+                        var cmdId = robotCommand.CmdId;
                         if (!string.IsNullOrEmpty(response.RenameCarrierID))
-                        {
-                            var slotNum = theVehicle.AgvcTransCmdBuffer[cmdId].SlotNumber;
-                            var slot = theVehicle.GetAseCarrierSlotStatus(slotNum);
+                        {                          
                             theVehicle.AgvcTransCmdBuffer[cmdId].CassetteId = response.RenameCarrierID;
-                            slot.CarrierId = response.RenameCarrierID;
+                            aseCarrierSlotStatus.CarrierId = response.RenameCarrierID;
                         }
                         theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
                         mainFlowHandler.TransferComplete(cmdId);
                     }
                     else
                     {
+                        var cmdId = robotCommand.CmdId;
+                        if (!string.IsNullOrEmpty(response.RenameCarrierID))
+                        {                            
+                            theVehicle.AgvcTransCmdBuffer[cmdId].CassetteId = response.RenameCarrierID;
+                            aseCarrierSlotStatus.CarrierId = response.RenameCarrierID;
+                        }
                         OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
                         OnAgvcAcceptBcrReadReply?.Invoke(this, new EventArgs());
                     }

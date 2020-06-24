@@ -742,9 +742,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                 }
 
-                OnStatusChangeReportEvent?.Invoke(this, $"UpdateCarrierSlotStatus:[{slotNumber}][{aseCarrierSlotStatus.CarrierSlotStatus}]");
+                //OnStatusChangeReportEvent?.Invoke(this, $"UpdateCarrierSlotStatus:[{slotNumber}][{aseCarrierSlotStatus.CarrierSlotStatus}]");
 
-                aseRobotControl.OnReadCarrierIdFinish(slotNumber);
+                //aseRobotControl.OnReadCarrierIdFinish(slotNumber);
             }
             catch (Exception ex)
             {
@@ -753,7 +753,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 ImportantPspLog?.Invoke(this, msg);
                 aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
                 aseCarrierSlotStatus.CarrierId = "ERROR";
-                aseRobotControl.OnReadCarrierIdFinish(slotNumber);
+                //aseRobotControl.OnReadCarrierIdFinish(slotNumber);
             }
         }
 

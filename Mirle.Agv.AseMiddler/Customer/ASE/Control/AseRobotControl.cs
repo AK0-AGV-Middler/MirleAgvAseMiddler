@@ -33,7 +33,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void OnReadCarrierIdFinish(EnumSlotNumber slotNumber)
         {
-            OnReadCarrierIdFinishEvent?.Invoke(this, slotNumber);
+            //OnReadCarrierIdFinishEvent?.Invoke(this, slotNumber);
         }
 
         public void OnRobotInterlockError()
