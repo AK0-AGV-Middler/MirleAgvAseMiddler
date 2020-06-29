@@ -1368,6 +1368,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             Send_Cmd144_StatusChangeReport();
         }
+        public void CSTStatusReport()
+        {
+            //Send_Cmd144_StatusChangeReport();
+            Thread.Sleep(500);
+            SendRecv_Cmd136_CstIdReadReport(EnumSlotNumber.L);//200625 dabid+
+            Thread.Sleep(500);
+            SendRecv_Cmd136_CstIdReadReport(EnumSlotNumber.R);//200625 dabid+
+        }
         private void ShowTransferCmdToForm(AgvcTransCmd agvcTransCmd)
         {
             var msg = $"\r\n Get {agvcTransCmd.AgvcTransCommandType},\r\n Load Adr={agvcTransCmd.LoadAddressId}, Load Port Id={agvcTransCmd.LoadPortId},\r\n Unload Adr={agvcTransCmd.UnloadAddressId}, Unload Port Id={agvcTransCmd.UnloadPortId}.";
@@ -2156,8 +2164,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
                 report.CurrentSecID = aseMoveStatus.LastSection.Id;
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-                report.BCRReadResult = BCRReadResultParse(ReadResult);
+                report.BCRReadResult = robotCommand.SlotNumber == EnumSlotNumber.L ? theVehicle.LeftReadResult : theVehicle.RightReadResult;
                 report.CmdID = robotCommand.CmdId;//200525 dabid#
+
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"BCRReadResult : {report.BCRReadResult}");//200525 dabid+
 
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
@@ -2207,6 +2217,34 @@ namespace Mirle.Agv.AseMiddler.Controller
                     OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport send wait timeout[{cmdId}]");
                     OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+        public void SendRecv_Cmd136_CstIdReadReport(EnumSlotNumber SlotNumber) //200625 dabid+
+        {
+
+            AseMoveStatus moveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+            AseCarrierSlotStatus slotStatus = theVehicle.GetAseCarrierSlotStatus(SlotNumber);
+
+            try
+            {              
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+
+                report.EventType = EventType.Bcrread;
+                report.CSTID = slotStatus.CarrierId;
+                report.CurrentAdrID = moveStatus.LastAddress.Id;
+                report.CurrentSecID = moveStatus.LastSection.Id;
+                report.SecDistance = (uint)moveStatus.LastSection.VehicleDistanceSinceHead;
+                report.BCRReadResult = SlotNumber == EnumSlotNumber.L ? theVehicle.LeftReadResult : theVehicle.RightReadResult;
+
+                WrapperMessage wrapper = new WrapperMessage();
+                wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrapper.ImpTransEventRep = report;
+
+                SendCommandWrapper(wrapper);
             }
             catch (Exception ex)
             {

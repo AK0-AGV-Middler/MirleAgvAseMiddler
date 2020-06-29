@@ -56,6 +56,9 @@ namespace Mirle.Agv.AseMiddler.Model
         public string TeachingToAddress { get; internal set; } = "";
         public VHActionStatus ActionStatus { get;  set; }
         public bool IsOptimize { get; internal set; }
+        public BCRReadResult LeftReadResult { get; set; } = BCRReadResult.BcrReadFail;
+        public BCRReadResult RightReadResult { get; set; } = BCRReadResult.BcrReadFail;
+
         #endregion
 
         private Vehicle() { }             

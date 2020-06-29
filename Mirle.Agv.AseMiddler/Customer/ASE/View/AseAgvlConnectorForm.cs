@@ -127,5 +127,9 @@ namespace Mirle.Agv.AseMiddler.View
             mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
+        private void btnSaveAutoReplyMessage_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -305,12 +305,117 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
 
                 theVehicle.AutoState = autoState;
+                UpdateSlotStatus();
                 agvcConnector.StatusChangeReport();
+
+                
+
                 OnMessageShowEvent?.Invoke(this, $"Switch to {autoState}");
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void UpdateSlotStatus()
+        {
+            try
+            {
+                AseCarrierSlotStatus leftSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
+                AseCarrierSlotStatus rightSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
+
+                switch (leftSlotStatus.CarrierSlotStatus)
+                {
+                    case EnumAseCarrierSlotStatus.Empty:
+                        {
+                            leftSlotStatus.CarrierId = "";
+                            leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                            theVehicle.AseCarrierSlotL = leftSlotStatus;
+                            theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.Loading:
+                        {
+                            if (string.IsNullOrEmpty(leftSlotStatus.CarrierId.Trim()))
+                            {
+                                leftSlotStatus.CarrierId = "ReadFail";
+                                leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                                theVehicle.AseCarrierSlotL = leftSlotStatus;
+                                theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                            }
+                            else
+                            {
+                                theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                            }
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.PositionError:
+                        {
+                            StopClearAndReset();
+                            alarmHandler.SetAlarmFromAgvm(51);
+                        }
+                        return;
+                    case EnumAseCarrierSlotStatus.ReadFail:
+                        {
+                            leftSlotStatus.CarrierId = "ReadFail";
+                            leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                            theVehicle.AseCarrierSlotL = leftSlotStatus;
+                            theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                switch (rightSlotStatus.CarrierSlotStatus)
+                {
+                    case EnumAseCarrierSlotStatus.Empty:
+                        {
+                            rightSlotStatus.CarrierId = "";
+                            rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                            theVehicle.AseCarrierSlotR = rightSlotStatus;
+                            theVehicle.RightReadResult = BCRReadResult.BcrNormal;
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.Loading:
+                        {
+                            if (string.IsNullOrEmpty(rightSlotStatus.CarrierId.Trim()))
+                            {
+                                rightSlotStatus.CarrierId = "ReadFail";
+                                rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                                theVehicle.AseCarrierSlotR = rightSlotStatus;
+                                theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                            }
+                            else
+                            {
+                                theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                            }
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.PositionError:
+                        {
+                            StopClearAndReset();
+                            alarmHandler.SetAlarmFromAgvm(51);
+                        }
+                        return;
+                    case EnumAseCarrierSlotStatus.ReadFail:
+                        {
+                            rightSlotStatus.CarrierId = "ReadFail";
+                            rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                            theVehicle.AseCarrierSlotR = rightSlotStatus;
+                            theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                agvcConnector.CSTStatusReport();//200625 dabid#
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1833,7 +1938,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 agvcConnector.Loading(loadCmd.CmdId, loadCmd.SlotNumber);
-                ReadResult = EnumCstIdReadResult.Fail;//dabid
+                if (loadCmd.SlotNumber == EnumSlotNumber.L)
+                {
+                    theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                }
+                else
+                {
+                    theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                }
 
                 if (theVehicle.IsSimulation)
                 {
@@ -1858,7 +1970,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             SpinWait.SpinUntil(() => false, 3000);
             aseCarrierSlotStatus.CarrierId = loadCmd.CassetteId;
             aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
-            ReadResult = EnumCstIdReadResult.Normal;//dabid
+            if (loadCmd.SlotNumber == EnumSlotNumber.L)
+            {
+                theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+            }
+            else
+            {
+                theVehicle.RightReadResult = BCRReadResult.BcrNormal;
+            }
             AseRobotControl_OnReadCarrierIdFinishEvent(this, aseCarrierSlotStatus.SlotNumber);
             SpinWait.SpinUntil(() => false, 2000);
             AseRobotContorl_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
@@ -1967,6 +2086,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             break;
                         case EnumAseCarrierSlotStatus.PositionError:
                             StopClearAndReset();
+                            alarmHandler.SetAlarmFromAgvm(51);
                             break;
                     }
                 }
@@ -1986,7 +2106,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 RobotCommand robotCommand = (RobotCommand)GetCurTransferStep();
-                AseCarrierSlotStatus slotStatus = robotCommand.SlotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
+                EnumSlotNumber slotNumber = robotCommand.SlotNumber;
+                AseCarrierSlotStatus slotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
 
                 if (!mainFlowConfig.BcrByPass)
                 {
@@ -1994,38 +2115,93 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         case EnumAseCarrierSlotStatus.Empty:
                             {
-                                OnMessageShowEvent?.Invoke(this, $"CST ID = [{slotStatus.CarrierId.Trim()}] read ok.");
+                                OnMessageShowEvent?.Invoke(this, $"After Load Complete, CST ID is empty.");
 
-                                ReadResult = EnumCstIdReadResult.Fail;
-                                alarmHandler.SetAlarmFromAgvm(000051);
                                 slotStatus.CarrierId = "";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.AseCarrierSlotL = slotStatus;
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    theVehicle.AseCarrierSlotR = slotStatus;
+                                    theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+
+                                }
+
+                                alarmHandler.SetAlarmFromAgvm(000051);
                             }
                             break;
                         case EnumAseCarrierSlotStatus.Loading:
                             if (robotCommand.CassetteId.Trim() == slotStatus.CarrierId.Trim())
                             {
-                                ReadResult = EnumCstIdReadResult.Normal;
+                                OnMessageShowEvent?.Invoke(this, $"CST ID = [{slotStatus.CarrierId.Trim()}] read ok.");
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                                }
+                                else
+                                {
+                                    theVehicle.RightReadResult = BCRReadResult.BcrNormal;
+                                }
                             }
                             else
                             {
                                 OnMessageShowEvent?.Invoke(this, $"Read CST ID = [{slotStatus.CarrierId}], unmatch command CST ID = [{robotCommand.CassetteId}]");
 
-                                ReadResult = EnumCstIdReadResult.Mismatch;
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrMisMatch;
+                                }
+                                else
+                                {
+                                    theVehicle.RightReadResult = BCRReadResult.BcrMisMatch;
+                                }                            
+
                                 alarmHandler.SetAlarmFromAgvm(000028);
                             }
                             break;
                         case EnumAseCarrierSlotStatus.ReadFail:
                             {
-                                ReadResult = EnumCstIdReadResult.Fail;
+                                slotStatus.CarrierId = "ReadFail";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.AseCarrierSlotL =  slotStatus;
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    theVehicle.AseCarrierSlotR = slotStatus;
+                                    theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                                }
                                 alarmHandler.SetAlarmFromAgvm(000004);
                             }
                             break;
                         case EnumAseCarrierSlotStatus.PositionError:
                             {
-                                ReadResult = EnumCstIdReadResult.Fail;
                                 OnMessageShowEvent?.Invoke(this, $"CST Position Error.");
-                                alarmHandler.SetAlarmFromAgvm(000051);
+
+                                slotStatus.CarrierId = "PositionError";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.AseCarrierSlotL = slotStatus;
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    theVehicle.AseCarrierSlotR = slotStatus;
+                                    theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                                }
+                               
                                 StopClearAndReset();
+                                alarmHandler.SetAlarmFromAgvm(000051);
                                 return;
                             }
                         default:
@@ -2039,24 +2215,61 @@ namespace Mirle.Agv.AseMiddler.Controller
                         case EnumAseCarrierSlotStatus.Empty:
                             {
                                 OnMessageShowEvent?.Invoke(this, $"Load Complete, BcrByPass, slot is empty.");
-                                ReadResult = EnumCstIdReadResult.Fail;
+
                                 slotStatus.CarrierId = "";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.AseCarrierSlotL = slotStatus;
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    theVehicle.AseCarrierSlotR = slotStatus;
+                                    theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+
+                                }
                             }
                             break;
                         case EnumAseCarrierSlotStatus.ReadFail:
                         case EnumAseCarrierSlotStatus.Loading:
                             {
                                 OnMessageShowEvent?.Invoke(this, $"Load Complete, BcrByPass, loading is true.");
-                                ReadResult = EnumCstIdReadResult.Normal;
                                 slotStatus.CarrierId = robotCommand.CassetteId.Trim();
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.AseCarrierSlotL = slotStatus;
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                                }
+                                else
+                                {
+                                    theVehicle.AseCarrierSlotR = slotStatus;
+                                    theVehicle.RightReadResult = BCRReadResult.BcrNormal;
+                                }
                             }
                             break;
                         case EnumAseCarrierSlotStatus.PositionError:
                             {
                                 OnMessageShowEvent?.Invoke(this, $"CST Position Error.");
-                                alarmHandler.SetAlarmFromAgvm(000051);
-                                ReadResult = EnumCstIdReadResult.Fail;
+
+                                slotStatus.CarrierId = "PositionError";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    theVehicle.AseCarrierSlotL = slotStatus;
+                                    theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    theVehicle.AseCarrierSlotR = slotStatus;
+                                    theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                                }
+
                                 StopClearAndReset();
+                                alarmHandler.SetAlarmFromAgvm(000051);
                                 return;
                             }
                         default:
@@ -2152,7 +2365,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //                }
                 //                break;
                 //            case EnumAseCarrierSlotStatus.ReadFail:
-                                
+
                 //                ReadResult = EnumCstIdReadResult.Fail;
                 //                break;
                 //            case EnumAseCarrierSlotStatus.PositionError:

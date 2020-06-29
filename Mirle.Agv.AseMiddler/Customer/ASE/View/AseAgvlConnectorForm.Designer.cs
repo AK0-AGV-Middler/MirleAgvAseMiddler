@@ -223,6 +223,7 @@
             this.btnSaveAutoReplyMessage.TabIndex = 10;
             this.btnSaveAutoReplyMessage.Text = "Save";
             this.btnSaveAutoReplyMessage.UseVisualStyleBackColor = true;
+            this.btnSaveAutoReplyMessage.Click += new System.EventHandler(this.btnSaveAutoReplyMessage_Click);
             // 
             // cbPspMessageList
             // 
