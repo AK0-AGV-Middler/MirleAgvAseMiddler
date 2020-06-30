@@ -1296,22 +1296,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void WatchLowPower()
         {
-            Stopwatch sw = new Stopwatch();
-            long total = 0;
             while (true)
             {
                 try
                 {
-                    sw.Restart();
-
-                    #region Pause And Stop Check
-                    watchLowPowerPauseEvent.WaitOne(Timeout.Infinite);
-                    if (watchLowPowerShutdownEvent.WaitOne(0)) break;
-                    #endregion
-
-                    WatchLowPowerStatus = EnumThreadStatus.Working;
-
-                    if (theVehicle.AutoState == EnumAutoState.Auto && transferSteps.Count == 0)
+                    if (theVehicle.AutoState == EnumAutoState.Auto && transferSteps.Count == 0 && !theVehicle.IsOptimize)
                     {
                         if (IsLowPower())
                         {
@@ -1325,13 +1314,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 finally
                 {
-                    SpinWait.SpinUntil(() => false, mainFlowConfig.WatchLowPowerSleepTimeMs);
-                    sw.Stop();
-                    total += sw.ElapsedMilliseconds;
+                    Thread.Sleep(mainFlowConfig.WatchLowPowerSleepTimeMs);
                 }
             }
-            sw.Stop();
-            AfterWatchLowPower(total);
         }
 
         public void StartWatchLowPower()
@@ -1378,13 +1363,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             OnMessageShowEvent?.Invoke(this, msg);
             watchLowPowerShutdownEvent.Set();
             watchLowPowerPauseEvent.Set();
-        }
-
-        public void AfterWatchLowPower(long total)
-        {
-            WatchLowPowerStatus = EnumThreadStatus.None;
-            var msg = $"MainFlow : 監看自動充電 後處理, [ThreadStatus={WatchLowPowerStatus}][TotalSpendMs={total}]";
-            OnMessageShowEvent?.Invoke(this, msg);
         }
 
         private bool IsLowPower()
@@ -1818,7 +1796,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     Task.Run(() =>
                     {
-                        Thread.Sleep(500);
+                        Thread.Sleep(50);
                         StartCharge(endAddress);
                     });
 
@@ -3043,51 +3021,38 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (address.IsCharger())
                 {
-                    if (theVehicle.IsCharging)
-                    {
-                        var msg = $"Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Charge State = {theVehicle.IsCharging}, thus NOT send charge command.";
-                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                        return;
-                    }
-
                     if (IsHighPower())
                     {
                         var msg = $"Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2} > {highPercentage:F2}(High Threshold),  thus NOT send charge command.";
                         OnMessageShowEvent?.Invoke(this, msg);
                         return;
-                    }
-                    else
-                    {
-                        var msg = $"Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2} < {highPercentage:F2}(High Threshold),  thus SEND charge command.";
-                        OnMessageShowEvent?.Invoke(this, msg);
-                    }
+                    }                   
 
                     agvcConnector.ChargHandshaking();
-                    if (theVehicle.IsSimulation)
-                    {
-                        theVehicle.IsCharging = true;
-                    }
+                    theVehicle.IsCharging = true;
+                    agvcConnector.Charging();
 
+                    OnMessageShowEvent?.Invoke(this, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2}.");
+
+                    if (theVehicle.IsSimulation) return;
+
+                    theVehicle.CheckStartChargeReplyEnd = false;
                     asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
 
-                    int timeoutCount = 10;
-                    while (timeoutCount > 0)
-                    {
-                        if (theVehicle.IsCharging) break;
-                        timeoutCount--;
-                        Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
-                    }
+                    SpinWait.SpinUntil(() => theVehicle.CheckStartChargeReplyEnd, 30 * 1000);
 
-                    if (!theVehicle.IsCharging)
+                    if (theVehicle.CheckStartChargeReplyEnd)
                     {
-                        alarmHandler.SetAlarmFromAgvm(000013);
+                        OnMessageShowEvent?.Invoke(this, "Start Charge success.");
+                        batteryLog.ChargeCount++;
                     }
                     else
                     {
-                        agvcConnector.Charging();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Arrival Port Adr [{address.Id}], and Charging.");
-                        batteryLog.ChargeCount++;
+                        theVehicle.IsCharging = false;
+                        alarmHandler.SetAlarmFromAgvm(000013);
                     }
+
+                    theVehicle.CheckStartChargeReplyEnd = true;
                 }
             }
             catch (Exception ex)
@@ -3110,43 +3075,36 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        var msg = $"Addr = {address.Id},and no transfer command,Charge Direction = {address.PioDirection},Precentage = {percentage:F2} < {theVehicle.AutoChargeLowThreshold:F2}(Low Threshold), SEND chsrge command";
+                        string msg = $"Addr = {address.Id},and no transfer command,Charge Direction = {address.PioDirection},Precentage = {percentage:F2} < {theVehicle.AutoChargeLowThreshold:F2}(Low Threshold), SEND chsrge command";
                         OnMessageShowEvent?.Invoke(this, msg);
                     }
 
                     agvcConnector.ChargHandshaking();
-                    if (theVehicle.IsSimulation)
-                    {
-                        theVehicle.IsCharging = true;
-                    }
 
+                    theVehicle.IsCharging = true;
+                    agvcConnector.Charging();
+
+                    OnMessageShowEvent?.Invoke(this, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2}.");
+
+                    if (theVehicle.IsSimulation) return;
+
+                    theVehicle.CheckStartChargeReplyEnd = false;
                     asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
 
-                    int timeoutCount = 10;
-                    while (timeoutCount > 0)
-                    {
-                        if (theVehicle.IsCharging) break;
-                        timeoutCount--;
-                        Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
-                    }
-                    //do
-                    //{
-                    //    if (theVehicle.IsCharging) break;
-                    //    timeoutCount--;
-                    //    Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
-                    //    //SpinWait.SpinUntil(() => false, mainFlowConfig.StartChargeWaitingTimeoutMs);
-                    //} while (timeoutCount >= 0);
+                    SpinWait.SpinUntil(() => theVehicle.CheckStartChargeReplyEnd, 30 * 1000);
 
-                    if (!theVehicle.IsCharging)
+                    if (theVehicle.CheckStartChargeReplyEnd)
                     {
-                        alarmHandler.SetAlarmFromAgvm(000013);
+                        OnMessageShowEvent?.Invoke(this, "Start Charge success.");
+                        batteryLog.ChargeCount++;
                     }
                     else
                     {
-                        agvcConnector.Charging();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Charging, [Address={address.Id}][IsCharging={theVehicle.IsCharging}]");
-                        batteryLog.ChargeCount++;
+                        theVehicle.IsCharging = false;
+                        alarmHandler.SetAlarmFromAgvm(000013);
                     }
+
+                    theVehicle.CheckStartChargeReplyEnd = true;
                 }
             }
             catch (Exception ex)
@@ -3155,57 +3113,47 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public bool StopCharge()
+        public void StopCharge()
         {
             try
             {
-                var beginMsg = $"MainFlow : Try STOP charge, [IsCharging={theVehicle.IsCharging}]";
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, beginMsg);
+                OnMessageShowEvent?.Invoke(this, $@"MainFlow :  Try STOP charge.[IsCharging = {theVehicle.IsCharging}]");
 
-                //if (!theVehicle.IsCharging) return true;//dabid-
-
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                var address = aseMoveStatus.LastAddress;
-                if (address.IsCharger())
+                AseMoveStatus moveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                var address = moveStatus.LastAddress;
+                var pos = moveStatus.LastMapPosition;
+                if (address.IsCharger() && mapHandler.IsPositionInThisAddress(pos, address.Position))
                 {
                     agvcConnector.ChargHandshaking();
 
                     if (theVehicle.IsSimulation)
                     {
                         theVehicle.IsCharging = false;
+                        return;
                     }
+
+                    //in starting charge
+                    if (!theVehicle.CheckStartChargeReplyEnd) Thread.Sleep(30 * 1000);
 
                     asePackage.aseBatteryControl.StopCharge();
-                    int timeoutCount = 10;
-                    while (timeoutCount > 0)
-                    {
-                        if (!theVehicle.IsCharging) break;
-                        timeoutCount--;
-                        Thread.Sleep(mainFlowConfig.StartChargeWaitingTimeoutMs);
-                    }
 
-                    if (theVehicle.IsCharging)
+                    SpinWait.SpinUntil(() => !theVehicle.IsCharging, 30 * 1000);
+
+                    if (!theVehicle.IsCharging)
                     {
-                        alarmHandler.SetAlarmFromAgvm(000014);
-                        StopClearAndReset();//StopVehicle();//200525 dabid# //StopVehicle()
-                        return false;
+                        agvcConnector.ChargeOff();
+                        OnMessageShowEvent?.Invoke(this, $"Stop Charge success.");
                     }
                     else
                     {
-                        agvcConnector.ChargeOff();
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Stop Charge OK.");
-                        return true;
+                        alarmHandler.SetAlarmFromAgvm(000014);
+                        StopClearAndReset();
                     }
-                }
-                else
-                {
-                    return true;
                 }
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-                return false;
             }
         }
 

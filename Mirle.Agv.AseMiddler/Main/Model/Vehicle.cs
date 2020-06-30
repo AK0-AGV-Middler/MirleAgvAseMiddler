@@ -37,6 +37,8 @@ namespace Mirle.Agv.AseMiddler.Model
         public string PspSpecVersion { get; set; } = "1.0";
 
         public bool IsReAuto { get; set; } = true;
+        public bool CheckStartChargeReplyEnd { get; set; } = true;
+
         #endregion
 
         #region Comm Property

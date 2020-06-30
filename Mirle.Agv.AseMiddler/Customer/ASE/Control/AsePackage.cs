@@ -686,20 +686,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 bool isCharging = psMessage.Substring(0, 1) == "1";
-
+                if (isCharging)
+                {
+                    theVehicle.CheckStartChargeReplyEnd = true;
+                }
                 theVehicle.IsCharging = isCharging;
-                OnStatusChangeReportEvent?.Invoke(this, $"UpdateChargeStatus:[{ theVehicle.IsCharging }]");
-
-                //if (theVehicle.IsCharging != isCharging)
-                //{
-                //    //if (isCharging)
-                //    //{
-                //    //    if (theVehicle.AseBatteryStatus.Percentage + 3 >= aseBatteryConfig.FullChargePercentage)
-                //    //    {
-                //    //        aseBatteryControl.FullCharge();
-                //    //    }
-                //    //}
-                //}
+                OnStatusChangeReportEvent?.Invoke(this, $"Local Update Charge Status :[{ theVehicle.IsCharging }]");
             }
             catch (Exception ex)
             {

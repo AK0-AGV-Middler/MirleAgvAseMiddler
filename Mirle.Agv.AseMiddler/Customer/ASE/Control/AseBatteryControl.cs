@@ -149,7 +149,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (theVehicle.IsCharging) return;
+                if (theVehicle.CheckStartChargeReplyEnd) return;
 
                 string chargeDirectionString;
                 switch (chargeDirection)
