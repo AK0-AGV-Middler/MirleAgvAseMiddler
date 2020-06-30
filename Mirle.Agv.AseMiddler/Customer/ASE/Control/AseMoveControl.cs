@@ -108,7 +108,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void PartMove(EnumAddressDirection addressDirection, MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumKeepOrGo keepOrGo)
+        public void PartMove(MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumKeepOrGo keepOrGo, EnumMovingOpenSlot openSlot = EnumMovingOpenSlot.None)
         {
             ResumePositionWatcher();
             try
@@ -118,9 +118,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string positionY = GetPositionString(mapPosition.Y);
                 string thetaString = GetNumberToString(headAngle, 3);
                 string speedString = GetNumberToString(speed, 4);
-                string pioDirection = ((int)addressDirection).ToString();
+                string openSlotString = ((int)openSlot).ToString();
                 string keepOrGoString = keepOrGo.ToString().Substring(0, 1).ToUpper();
-                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, pioDirection, keepOrGoString);
+                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
 
                 PrimarySend("41", message);
             }
@@ -130,7 +130,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd)
+        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd,EnumMovingOpenSlot openSlot = EnumMovingOpenSlot.None)
         {
             try
             {
@@ -140,9 +140,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);
                 string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
                 string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
-                string pioDirection = ((int)aseMoveStatus.LastAddress.PioDirection).ToString();
+                string openSlotString = ((int)openSlot).ToString();
                 string keepOrGoString = "G";
-                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, pioDirection, keepOrGoString);
+                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
 
                 PrimarySend("41", message);
             }

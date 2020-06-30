@@ -17,38 +17,11 @@ namespace Mirle.Agv.AseMiddler
         R2000
     }    
 
-    public enum EnumAseMoveCommandIsEnd
-    {
-        None,
-        End,
-        Begin
-    }
-
-    public enum EnumAddressDirection
-    {
-        None = 0,
-        Left = 1,
-        Right = 2
-    }
-
-    public enum EnumPioDirection
-    {
-        None,
-        Left,
-        Right
-    }
-
     public enum EnumCommandDirection
     {
         None,
         Forward,
         Backward
-    }
-
-    public enum PsMessageType
-    {
-        P,
-        S
     }
 
     public enum EnumTransferStepType
@@ -186,7 +159,44 @@ namespace Mirle.Agv.AseMiddler
         Back,
         Left,
         Right
-    }   
+    }
+
+    public enum EnumAseMoveCommandIsEnd
+    {
+        None,
+        End,
+        Begin
+    }
+
+    public enum EnumAddressDirection
+    {
+        None = 0,
+        Left = 1,
+        Right = 2
+    }
+
+    public enum EnumPioDirection
+    {
+        None,
+        Left,
+        Right
+    }
+
+    public enum EnumMovingOpenSlot
+    {
+        None,
+        Left,
+        Right,
+        Both
+    }
+
+
+    public enum PsMessageType
+    {
+        P,
+        S
+    }
+
 
     public enum EnumPspConnectionState
     {

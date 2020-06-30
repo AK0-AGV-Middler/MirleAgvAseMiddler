@@ -662,7 +662,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                asePackage.aseMoveControl.PartMove(e.AddressDirection, e.MapPosition, e.HeadAngle, e.Speed, e.IsEnd, e.KeepOrGo);
+                asePackage.aseMoveControl.PartMove(e.MapPosition, e.HeadAngle, e.Speed, e.IsEnd, e.KeepOrGo);
             }
             catch (Exception ex)
             {
@@ -814,7 +814,7 @@ namespace Mirle.Agv.AseMiddler.View
                 robotCommand.PortAddressId = e.FromPort.PadLeft(5, '0');
                 EnumSlotNumber slotNumber = e.ToPort.Trim('0') == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
                 AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
-                if (aseCarrierSlotStatus.CarrierSlotStatus!= EnumAseCarrierSlotStatus.Empty)
+                if (aseCarrierSlotStatus.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
                 {
                     string errorMsg = $"GetRobotCommandFromAseRobotControlForm fail. Can not load, [ToPort = {e.ToPort}][SlotNum = {slotNumber}][SlotState = {aseCarrierSlotStatus.CarrierSlotStatus}]";
                     AppendDebugLogMsg(errorMsg);
@@ -958,7 +958,7 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateAgvlConnection();
                 //UpdateAgvFailResult();
                 UpdateReserveStopState();
-               
+
             }
             catch (Exception ex)
             {

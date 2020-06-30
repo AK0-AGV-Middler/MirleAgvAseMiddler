@@ -42,6 +42,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler OnAgvlErrorEvent;
         public event EventHandler ArrivalCharge;
         public event EventHandler<EnumAutoState> OnModeChangeEvent;
+        public event EventHandler<AseCarrierSlotStatus> OnUpdateSlotStatusEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
@@ -702,50 +703,70 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void UpdateCarrierSlotStatus(string psMessage)
         {
-            EnumSlotNumber slotNumber = psMessage.Substring(0, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-            AseCarrierSlotStatus aseCarrierSlotStatus = new AseCarrierSlotStatus(slotNumber);
+            EnumSlotNumber slotNumber = EnumSlotNumber.L;
+            AseCarrierSlotStatus aseCarrierSlotStatus = new AseCarrierSlotStatus();
+
             try
             {
-                aseCarrierSlotStatus.CarrierSlotStatus = GetCarrierSlotStatus(psMessage.Substring(1, 1));
-                aseCarrierSlotStatus.CarrierId = psMessage.Substring(2);
-                if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+                if (!asePackageConfig.CanManualDeleteCST)
                 {
-                    if (string.IsNullOrEmpty(aseCarrierSlotStatus.CarrierId.Trim()))
-                    {
-                        aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-                    }
-                    else if (aseCarrierSlotStatus.CarrierId == "ReadIdFail")
-                    {
-                        aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-                    }
-                    else if (aseCarrierSlotStatus.CarrierId == "PositionError")
-                    {
-                        aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
-                    }
-                }
+                    slotNumber = psMessage.Substring(0, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
+                    aseCarrierSlotStatus.SlotNumber = slotNumber;
 
-                switch (slotNumber)
+                    aseCarrierSlotStatus.CarrierSlotStatus = GetCarrierSlotStatus(psMessage.Substring(1, 1));
+                    aseCarrierSlotStatus.CarrierId = psMessage.Substring(2);
+                    if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+                    {
+                        if (string.IsNullOrEmpty(aseCarrierSlotStatus.CarrierId.Trim()))
+                        {
+                            aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                        }
+                        else if (aseCarrierSlotStatus.CarrierId == "ReadIdFail")
+                        {
+                            aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                        }
+                        else if (aseCarrierSlotStatus.CarrierId == "PositionError")
+                        {
+                            aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
+                        }
+                    }
+
+                    OnUpdateSlotStatusEvent?.Invoke(this, aseCarrierSlotStatus);
+                }
+                else
                 {
-                    case EnumSlotNumber.L:
-                        theVehicle.AseCarrierSlotL = aseCarrierSlotStatus;
-                        break;
-                    case EnumSlotNumber.R:
-                        theVehicle.AseCarrierSlotR = aseCarrierSlotStatus;
-                        break;
+                    slotNumber = psMessage.Substring(1, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
+                    aseCarrierSlotStatus.SlotNumber = slotNumber;
+
+                    bool manualDeleteCst = psMessage.Substring(0, 1) == "1";
+                    aseCarrierSlotStatus.ManualDeleteCST = manualDeleteCst;
+
+                    aseCarrierSlotStatus.CarrierSlotStatus = GetCarrierSlotStatus(psMessage.Substring(2, 1));
+                    aseCarrierSlotStatus.CarrierId = psMessage.Substring(3);
+                    if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+                    {
+                        if (string.IsNullOrEmpty(aseCarrierSlotStatus.CarrierId.Trim()))
+                        {
+                            aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                        }
+                        else if (aseCarrierSlotStatus.CarrierId == "ReadIdFail")
+                        {
+                            aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                        }
+                        else if (aseCarrierSlotStatus.CarrierId == "PositionError")
+                        {
+                            aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
+                        }
+                    }
+
+                    OnUpdateSlotStatusEvent?.Invoke(this, aseCarrierSlotStatus);
                 }
-
-                //OnStatusChangeReportEvent?.Invoke(this, $"UpdateCarrierSlotStatus:[{slotNumber}][{aseCarrierSlotStatus.CarrierSlotStatus}]");
-
-                //aseRobotControl.OnReadCarrierIdFinish(slotNumber);
             }
             catch (Exception ex)
             {
                 string msg = "Carrier Slot Report, " + ex.Message;
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                ImportantPspLog?.Invoke(this, msg);
-                aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-                aseCarrierSlotStatus.CarrierId = "ERROR";
-                //aseRobotControl.OnReadCarrierIdFinish(slotNumber);
+                ImportantPspLog?.Invoke(this, msg);               
             }
         }
 

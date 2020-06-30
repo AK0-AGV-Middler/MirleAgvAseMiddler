@@ -11,6 +11,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public EnumAseCarrierSlotStatus CarrierSlotStatus { get; set; } = EnumAseCarrierSlotStatus.Empty;
         public string CarrierId { get; set; } = "";
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
+        public bool ManualDeleteCST { get; set; } = false;
 
         public AseCarrierSlotStatus() { }
 
@@ -24,6 +25,7 @@ namespace Mirle.Agv.AseMiddler.Model
             this.CarrierSlotStatus = aseCarrierSlotStatus.CarrierSlotStatus;
             this.CarrierId = aseCarrierSlotStatus.CarrierId;
             this.SlotNumber = aseCarrierSlotStatus.SlotNumber;
+            this.ManualDeleteCST = aseCarrierSlotStatus.ManualDeleteCST;
         }
     }
 }

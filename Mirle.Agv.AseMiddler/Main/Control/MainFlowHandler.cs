@@ -120,7 +120,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");               
+                mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
                 mapConfig = xmlHandler.ReadXml<MapConfig>(@"Map.xml");
                 agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
@@ -224,6 +224,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.OnPartMoveArrivalEvent += AsePackage_OnPartMoveArrivalEvent;
                 asePackage.aseMoveControl.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
                 //asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
+                asePackage.OnUpdateSlotStatusEvent += AsePackage_OnUpdateSlotStatusEvent;
 
                 asePackage.OnAgvlErrorEvent += AsePackage_OnAgvlErrorEvent;
                 asePackage.OnModeChangeEvent += AsePackage_OnModeChangeEvent;
@@ -264,190 +265,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
             }
-        }
-
-        public void AsePackage_OnModeChangeEvent(object sender, EnumAutoState autoState)
-        {
-            try
-            {
-                if (theVehicle.AutoState != autoState)
-                {
-                    asePackage.SetVehicleAutoScenario();
-
-                    switch (autoState)
-                    {
-                        case EnumAutoState.Auto:
-                            alarmHandler.ResetAllAlarmsFromAgvm();
-                            StopClearAndReset();
-                            theVehicle.IsReAuto = true;
-                            asePackage.aseRobotControl.ReadCarrierId();
-                            Thread.Sleep(500);
-                            agvcConnector.StatusChangeReport();
-                            break;
-                        case EnumAutoState.Manual:
-                            StopClearAndReset();
-                            break;
-                        case EnumAutoState.None:
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                theVehicle.AutoState = autoState;
-                UpdateSlotStatus();
-                agvcConnector.StatusChangeReport();
-
-
-
-                OnMessageShowEvent?.Invoke(this, $"Switch to {autoState}");
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
-
-        private void UpdateSlotStatus()
-        {
-            try
-            {
-                AseCarrierSlotStatus leftSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
-                AseCarrierSlotStatus rightSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
-
-                switch (leftSlotStatus.CarrierSlotStatus)
-                {
-                    case EnumAseCarrierSlotStatus.Empty:
-                        {
-                            leftSlotStatus.CarrierId = "";
-                            leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
-                            theVehicle.AseCarrierSlotL = leftSlotStatus;
-                            theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
-                        }
-                        break;
-                    case EnumAseCarrierSlotStatus.Loading:
-                        {
-                            if (string.IsNullOrEmpty(leftSlotStatus.CarrierId.Trim()))
-                            {
-                                leftSlotStatus.CarrierId = "ReadFail";
-                                leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-                                theVehicle.AseCarrierSlotL = leftSlotStatus;
-                                theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
-                            }
-                            else
-                            {
-                                theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
-                            }
-                        }
-                        break;
-                    case EnumAseCarrierSlotStatus.PositionError:
-                        {
-                            StopClearAndReset();
-                            alarmHandler.SetAlarmFromAgvm(51);
-                        }
-                        return;
-                    case EnumAseCarrierSlotStatus.ReadFail:
-                        {
-                            leftSlotStatus.CarrierId = "ReadFail";
-                            leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-                            theVehicle.AseCarrierSlotL = leftSlotStatus;
-                            theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-
-                switch (rightSlotStatus.CarrierSlotStatus)
-                {
-                    case EnumAseCarrierSlotStatus.Empty:
-                        {
-                            rightSlotStatus.CarrierId = "";
-                            rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
-                            theVehicle.AseCarrierSlotR = rightSlotStatus;
-                            theVehicle.RightReadResult = BCRReadResult.BcrNormal;
-                        }
-                        break;
-                    case EnumAseCarrierSlotStatus.Loading:
-                        {
-                            if (string.IsNullOrEmpty(rightSlotStatus.CarrierId.Trim()))
-                            {
-                                rightSlotStatus.CarrierId = "ReadFail";
-                                rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-                                theVehicle.AseCarrierSlotR = rightSlotStatus;
-                                theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
-                            }
-                            else
-                            {
-                                theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
-                            }
-                        }
-                        break;
-                    case EnumAseCarrierSlotStatus.PositionError:
-                        {
-                            StopClearAndReset();
-                            alarmHandler.SetAlarmFromAgvm(51);
-                        }
-                        return;
-                    case EnumAseCarrierSlotStatus.ReadFail:
-                        {
-                            rightSlotStatus.CarrierId = "ReadFail";
-                            rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-                            theVehicle.AseCarrierSlotR = rightSlotStatus;
-                            theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-
-                agvcConnector.CSTStatusReport();//200625 dabid#
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void AgvcConnector_OnConnectionChangeEvent(object sender, bool e)
-        {
-            theVehicle.IsAgvcConnect = e;
-        }
-
-        private void AsePackage_OnAgvlErrorEvent(object sender, EventArgs e)
-        {
-            alarmHandler.SetAlarmFromAgvl(40);
-        }
-
-        private void AseBuzzerControl_OnAlarmCodeResetEvent(object sender, int e)
-        {
-            alarmHandler.ResetAllAlarmsFromAgvl();
-        }
-
-        private void AseBuzzerControl_OnAlarmCodeSetEvent1(object sender, int id)
-        {
-            alarmHandler.SetAlarmFromAgvl(id);
-        }
-
-        private void AsePackage_OnPositionChangeEvent(object sender, AseMoveStatus aseMoveStatus)
-        {
-            UpdateVehicleDistanceSinceHead(aseMoveStatus);
-        }
-
-        private void AsePackage_OnPartMoveArrivalEvent(object sender, AseMoveStatus aseMoveStatus)
-        {
-            IsResetUpdatePositionReportTimer = UpdateVehiclePositionInMovingStep(aseMoveStatus);
-        }
-
-        private void AsePackage_OnStatusChangeReportEvent(object sender, string e)
-        {
-            OnMessageShowEvent?.Invoke(this, e);
-            agvcConnector.StatusChangeReport();
-        }
-
-        private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
-        {
-            OnAgvlConnectionChangedEvent?.Invoke(this, e);
         }
 
         private void VehicleLocationInitialAndThreadsInitial()
@@ -727,11 +544,47 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
                         else
                         {
-                            //asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.Begin);
                             if (theVehicle.IsReAuto)
                             {
                                 theVehicle.IsReAuto = false;
-                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End);
+                                if (IsAvoidMove)
+                                {
+                                    asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End);
+                                }
+                                else
+                                {
+                                    var cmdId = moveCmdInfo.CmdId;
+                                    var transferCommand = theVehicle.AgvcTransCmdBuffer[cmdId];
+                                    if (theVehicle.AgvcTransCmdBuffer.Count == 0)
+                                    {
+                                        asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End);
+                                    }
+                                    else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
+                                    {
+                                        switch (transferCommand.SlotNumber)
+                                        {
+                                            case EnumSlotNumber.L:
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                                break;
+                                            case EnumSlotNumber.R:
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //TODO : check if need open both slot.
+                                        switch (transferCommand.SlotNumber)
+                                        {
+                                            case EnumSlotNumber.L:
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                                break;
+                                            case EnumSlotNumber.R:
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                                break;
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
@@ -1589,8 +1442,59 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    EnumAseMoveCommandIsEnd moveCommandIsEnd = isEnd ? EnumAseMoveCommandIsEnd.End : EnumAseMoveCommandIsEnd.None;
-                    asePackage.aseMoveControl.PartMove(addressDirection, address.Position, headAngle, speed, moveCommandIsEnd, keepOrGo);
+                    if (isEnd)
+                    {
+                        if (IsAvoidMove)
+                        {
+                            asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo);
+                        }
+                        else
+                        {
+                            var cmdId = GetCurTransferStep().CmdId;
+                            if (theVehicle.AgvcTransCmdBuffer.ContainsKey(cmdId))
+                            {
+                                var transferCommand = theVehicle.AgvcTransCmdBuffer[cmdId];
+                                if (theVehicle.AgvcTransCmdBuffer.Count == 0)
+                                {
+                                    asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo);
+                                }
+                                else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
+                                {
+                                    switch (transferCommand.SlotNumber)
+                                    {
+                                        case EnumSlotNumber.L:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                            break;
+                                        case EnumSlotNumber.R:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    //TODO : check if need open both slot.
+                                    switch (transferCommand.SlotNumber)
+                                    {
+                                        case EnumSlotNumber.L:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                            break;
+                                        case EnumSlotNumber.R:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                            break;
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.None, keepOrGo);
+                    }
                 }
 
                 OnMessageShowEvent?.Invoke(this, $"Send to MoveControl get reserve {mapSection.Id} ok , next end point [{address.Id}]({Convert.ToInt32(address.Position.X)},{Convert.ToInt32(address.Position.Y)}).");
@@ -3551,6 +3455,229 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AsePackage_OnMessageShowEvent(object sender, string e)
         {
             OnMessageShowEvent?.Invoke(this, e);
+        }
+
+        private void AsePackage_OnUpdateSlotStatusEvent(object sender, AseCarrierSlotStatus slotStatus)
+        {
+            try
+            {
+                if (slotStatus.ManualDeleteCST)
+                {
+                    slotStatus.CarrierId = "";
+                    slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                    switch (slotStatus.SlotNumber)
+                    {
+                        case EnumSlotNumber.L:
+                            theVehicle.AseCarrierSlotL = slotStatus;
+                            //TODO : 136 ToAgvc Manual Delete CST
+                            break;
+                        case EnumSlotNumber.R:
+                            theVehicle.AseCarrierSlotR = slotStatus;
+                            //TODO : 136 ToAgvc Manual Delete CST
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (slotStatus.SlotNumber)
+                    {
+                        case EnumSlotNumber.L:
+                            theVehicle.AseCarrierSlotL = slotStatus;
+                            break;
+                        case EnumSlotNumber.R:
+                            theVehicle.AseCarrierSlotR = slotStatus;
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        public void AsePackage_OnModeChangeEvent(object sender, EnumAutoState autoState)
+        {
+            try
+            {
+                if (theVehicle.AutoState != autoState)
+                {
+                    asePackage.SetVehicleAutoScenario();
+
+                    switch (autoState)
+                    {
+                        case EnumAutoState.Auto:
+                            alarmHandler.ResetAllAlarmsFromAgvm();
+                            StopClearAndReset();
+                            theVehicle.IsReAuto = true;
+                            asePackage.aseRobotControl.ReadCarrierId();
+                            Thread.Sleep(500);
+                            agvcConnector.StatusChangeReport();
+                            break;
+                        case EnumAutoState.Manual:
+                            StopClearAndReset();
+                            break;
+                        case EnumAutoState.None:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                theVehicle.AutoState = autoState;
+                UpdateSlotStatus();
+                agvcConnector.StatusChangeReport();
+
+
+
+                OnMessageShowEvent?.Invoke(this, $"Switch to {autoState}");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+            }
+        }
+
+        private void UpdateSlotStatus()
+        {
+            try
+            {
+                AseCarrierSlotStatus leftSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
+                AseCarrierSlotStatus rightSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
+
+                switch (leftSlotStatus.CarrierSlotStatus)
+                {
+                    case EnumAseCarrierSlotStatus.Empty:
+                        {
+                            leftSlotStatus.CarrierId = "";
+                            leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                            theVehicle.AseCarrierSlotL = leftSlotStatus;
+                            theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.Loading:
+                        {
+                            if (string.IsNullOrEmpty(leftSlotStatus.CarrierId.Trim()))
+                            {
+                                leftSlotStatus.CarrierId = "ReadFail";
+                                leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                                theVehicle.AseCarrierSlotL = leftSlotStatus;
+                                theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                            }
+                            else
+                            {
+                                theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                            }
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.PositionError:
+                        {
+                            StopClearAndReset();
+                            alarmHandler.SetAlarmFromAgvm(51);
+                        }
+                        return;
+                    case EnumAseCarrierSlotStatus.ReadFail:
+                        {
+                            leftSlotStatus.CarrierId = "ReadFail";
+                            leftSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                            theVehicle.AseCarrierSlotL = leftSlotStatus;
+                            theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                switch (rightSlotStatus.CarrierSlotStatus)
+                {
+                    case EnumAseCarrierSlotStatus.Empty:
+                        {
+                            rightSlotStatus.CarrierId = "";
+                            rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                            theVehicle.AseCarrierSlotR = rightSlotStatus;
+                            theVehicle.RightReadResult = BCRReadResult.BcrNormal;
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.Loading:
+                        {
+                            if (string.IsNullOrEmpty(rightSlotStatus.CarrierId.Trim()))
+                            {
+                                rightSlotStatus.CarrierId = "ReadFail";
+                                rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                                theVehicle.AseCarrierSlotR = rightSlotStatus;
+                                theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                            }
+                            else
+                            {
+                                theVehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                            }
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.PositionError:
+                        {
+                            StopClearAndReset();
+                            alarmHandler.SetAlarmFromAgvm(51);
+                        }
+                        return;
+                    case EnumAseCarrierSlotStatus.ReadFail:
+                        {
+                            rightSlotStatus.CarrierId = "ReadFail";
+                            rightSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+                            theVehicle.AseCarrierSlotR = rightSlotStatus;
+                            theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                agvcConnector.CSTStatusReport();//200625 dabid#
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void AgvcConnector_OnConnectionChangeEvent(object sender, bool e)
+        {
+            theVehicle.IsAgvcConnect = e;
+        }
+
+        private void AsePackage_OnAgvlErrorEvent(object sender, EventArgs e)
+        {
+            alarmHandler.SetAlarmFromAgvl(40);
+        }
+
+        private void AseBuzzerControl_OnAlarmCodeResetEvent(object sender, int e)
+        {
+            alarmHandler.ResetAllAlarmsFromAgvl();
+        }
+
+        private void AseBuzzerControl_OnAlarmCodeSetEvent1(object sender, int id)
+        {
+            alarmHandler.SetAlarmFromAgvl(id);
+        }
+
+        private void AsePackage_OnPositionChangeEvent(object sender, AseMoveStatus aseMoveStatus)
+        {
+            UpdateVehicleDistanceSinceHead(aseMoveStatus);
+        }
+
+        private void AsePackage_OnPartMoveArrivalEvent(object sender, AseMoveStatus aseMoveStatus)
+        {
+            IsResetUpdatePositionReportTimer = UpdateVehiclePositionInMovingStep(aseMoveStatus);
+        }
+
+        private void AsePackage_OnStatusChangeReportEvent(object sender, string e)
+        {
+            OnMessageShowEvent?.Invoke(this, e);
+            agvcConnector.StatusChangeReport();
+        }
+
+        private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
+        {
+            OnAgvlConnectionChangedEvent?.Invoke(this, e);
         }
 
         #endregion
