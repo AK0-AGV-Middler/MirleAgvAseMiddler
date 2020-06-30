@@ -23,5 +23,7 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public string CustomerName { get; set; } = "ASE";
         public bool DualCommandOptimize { get; set; } = false;
         public bool BcrByPass { get; set; } = false;
+        public int LowPowerPercentage { get; set; } = 50;
+        public int HighPowerPercentage { get; set; } = 90;
     }
 }

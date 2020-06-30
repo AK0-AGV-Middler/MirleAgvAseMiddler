@@ -45,9 +45,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool IsAgvcReplySendWaitMessage { get; set; } = false;
 
-        //public bool IsSlotLRenew { get; set; } = false;
-        //public bool IsSlotRRenew { get; set; } = false;
-
         #endregion
 
         #region Controller
@@ -66,8 +63,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsVisitTransferStepPause { get; set; } = false;
 
         private Thread thdTrackPosition;
-        //private ManualResetEvent trackPositionShutdownEvent = new ManualResetEvent(false);
-        //private ManualResetEvent trackPositionPauseEvent = new ManualResetEvent(true);
         private bool IsTrackPositionPause { get; set; } = false;
         private bool IsTrackPositionStop { get; set; } = false;
         public bool IsResetUpdatePositionReportTimer { get; set; } = false;
@@ -76,11 +71,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public EnumThreadStatus PreTrackPositionStatus { get; private set; } = EnumThreadStatus.None;
 
         private Thread thdWatchLowPower;
-        private ManualResetEvent watchLowPowerShutdownEvent = new ManualResetEvent(false);
-
-        private ManualResetEvent watchLowPowerPauseEvent = new ManualResetEvent(true);
-        public EnumThreadStatus WatchLowPowerStatus { get; private set; } = EnumThreadStatus.None;
-        public EnumThreadStatus PreWatchLowPowerStatus { get; private set; } = EnumThreadStatus.None;
         #endregion
 
         #region Events
@@ -130,7 +120,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
+                mainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");               
                 mapConfig = xmlHandler.ReadXml<MapConfig>(@"Map.xml");
                 agvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
                 alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
@@ -308,7 +298,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 UpdateSlotStatus();
                 agvcConnector.StatusChangeReport();
 
-                
+
 
                 OnMessageShowEvent?.Invoke(this, $"Switch to {autoState}");
             }
@@ -1304,6 +1294,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         if (IsLowPower())
                         {
+                            alarmHandler.SetAlarmFromAgvm(2);
                             LowPowerStartCharge(theVehicle.AseMoveStatus.LastAddress);
                         }
                     }
@@ -1321,63 +1312,20 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void StartWatchLowPower()
         {
-            watchLowPowerPauseEvent.Set();
-            watchLowPowerShutdownEvent.Reset();
             thdWatchLowPower = new Thread(WatchLowPower);
             thdWatchLowPower.IsBackground = true;
             thdWatchLowPower.Start();
-            WatchLowPowerStatus = EnumThreadStatus.Start;
-            var msg = $"MainFlow : 開始監看自動充電, [Power={theVehicle.AseBatteryStatus.Percentage}][LowSocGap={theVehicle.AutoChargeLowThreshold}]";
-            OnMessageShowEvent?.Invoke(this, msg);
-        }
-
-        public void PauseWatchLowPower()
-        {
-            watchLowPowerPauseEvent.Reset();
-            PreWatchLowPowerStatus = WatchLowPowerStatus;
-            WatchLowPowerStatus = EnumThreadStatus.Pause;
-            var msg = $"MainFlow : 暫停監看自動充電, [Power={theVehicle.AseBatteryStatus.Percentage}][LowSocGap={theVehicle.AutoChargeLowThreshold}]";
-            OnMessageShowEvent?.Invoke(this, msg);
-            //loggerAgent.LogMsg("Debug", new LogFormat("Debug", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-            //    , msg));
-
-        }
-
-        public void ResumeWatchLowPower()
-        {
-            watchLowPowerPauseEvent.Set();
-            var tempStatus = WatchLowPowerStatus;
-            WatchLowPowerStatus = PreWatchLowPowerStatus;
-            PreWatchLowPowerStatus = tempStatus;
-            var msg = $"MainFlow : 恢復監看自動充電, [Power={theVehicle.AseBatteryStatus.Percentage}][LowSocGap={theVehicle.AutoChargeLowThreshold}]";
-            OnMessageShowEvent?.Invoke(this, msg);
-        }
-
-        public void StopWatchLowPower()
-        {
-            if (WatchLowPowerStatus != EnumThreadStatus.None)
-            {
-                WatchLowPowerStatus = EnumThreadStatus.Stop;
-            }
-            var msg = $"MainFlow : 停止監看自動充電, [Power={theVehicle.AseBatteryStatus.Percentage}][LowSocGap={theVehicle.AutoChargeLowThreshold}]";
-            OnMessageShowEvent?.Invoke(this, msg);
-            watchLowPowerShutdownEvent.Set();
-            watchLowPowerPauseEvent.Set();
+            OnMessageShowEvent?.Invoke(this, $"StartWatchLowPower");
         }
 
         private bool IsLowPower()
         {
-            return theVehicle.AseBatteryStatus.Percentage <= theVehicle.AutoChargeLowThreshold;
+            return theVehicle.AseBatteryStatus.Percentage <= mainFlowConfig.LowPowerPercentage;
         }
 
         private bool IsHighPower()
         {
-            return theVehicle.AseBatteryStatus.Percentage >= theVehicle.AutoChargeHighThreshold;
-        }
-
-        private bool IsWatchLowPowerStop()
-        {
-            return WatchLowPowerStatus == EnumThreadStatus.Stop || WatchLowPowerStatus == EnumThreadStatus.StopComplete || WatchLowPowerStatus == EnumThreadStatus.None;
+            return theVehicle.AseBatteryStatus.Percentage >= mainFlowConfig.HighPowerPercentage;
         }
 
         #endregion
@@ -2137,7 +2085,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 else
                                 {
                                     theVehicle.RightReadResult = BCRReadResult.BcrMisMatch;
-                                }                            
+                                }
 
                                 alarmHandler.SetAlarmFromAgvm(000028);
                             }
@@ -2149,7 +2097,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                                 if (slotNumber == EnumSlotNumber.L)
                                 {
-                                    theVehicle.AseCarrierSlotL =  slotStatus;
+                                    theVehicle.AseCarrierSlotL = slotStatus;
                                     theVehicle.LeftReadResult = BCRReadResult.BcrReadFail;
                                 }
                                 else
@@ -2177,7 +2125,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     theVehicle.AseCarrierSlotR = slotStatus;
                                     theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
                                 }
-                               
+
                                 StopClearAndReset();
                                 alarmHandler.SetAlarmFromAgvm(000051);
                                 return;
@@ -3017,22 +2965,22 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 var address = endAddress;
                 var percentage = theVehicle.AseBatteryStatus.Percentage;
-                var highPercentage = theVehicle.AutoChargeHighThreshold;
+                var highPercentage = mainFlowConfig.HighPowerPercentage;
 
                 if (address.IsCharger())
                 {
                     if (IsHighPower())
                     {
-                        var msg = $"Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2} > {highPercentage:F2}(High Threshold),  thus NOT send charge command.";
+                        var msg = $"Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage} > {highPercentage}(High Threshold),  thus NOT send charge command.";
                         OnMessageShowEvent?.Invoke(this, msg);
                         return;
-                    }                   
+                    }
 
                     agvcConnector.ChargHandshaking();
                     theVehicle.IsCharging = true;
                     agvcConnector.Charging();
 
-                    OnMessageShowEvent?.Invoke(this, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2}.");
+                    OnMessageShowEvent?.Invoke(this, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage}.");
 
                     if (theVehicle.IsSimulation) return;
 
@@ -3075,7 +3023,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        string msg = $"Addr = {address.Id},and no transfer command,Charge Direction = {address.PioDirection},Precentage = {percentage:F2} < {theVehicle.AutoChargeLowThreshold:F2}(Low Threshold), SEND chsrge command";
+                        string msg = $"Addr = {address.Id},and no transfer command,Charge Direction = {address.PioDirection},Precentage = {percentage} < {mainFlowConfig.LowPowerPercentage}(Low Threshold), SEND chsrge command";
                         OnMessageShowEvent?.Invoke(this, msg);
                     }
 
@@ -3084,7 +3032,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     theVehicle.IsCharging = true;
                     agvcConnector.Charging();
 
-                    OnMessageShowEvent?.Invoke(this, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage:F2}.");
+                    OnMessageShowEvent?.Invoke(this, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage}.");
 
                     if (theVehicle.IsSimulation) return;
 

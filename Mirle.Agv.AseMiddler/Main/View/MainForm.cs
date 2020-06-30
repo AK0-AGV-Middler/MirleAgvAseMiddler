@@ -209,7 +209,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialSoc()
         {
-            txtWatchLowPower.Text = $"High/Low : {(int)theVehicle.AutoChargeHighThreshold}/{(int)theVehicle.AutoChargeLowThreshold}";
+            txtWatchLowPower.Text = $"High/Low : {mainFlowConfig.HighPowerPercentage}/{mainFlowConfig.LowPowerPercentage}";
             timer_SetupInitialSoc.Enabled = true;
         }
 

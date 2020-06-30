@@ -31,8 +31,6 @@ namespace Mirle.Agv.AseMiddler.Model
         public AseCarrierSlotStatus AseCarrierSlotR { get; set; } = new AseCarrierSlotStatus(EnumSlotNumber.R);
         public bool IsCharging { get; set; } = false;
         public AseBatteryStatus AseBatteryStatus { get; set; } = new AseBatteryStatus();
-        public double AutoChargeLowThreshold { get; set; } = 50;
-        public double AutoChargeHighThreshold { get; set; } = 90;
         public AseMovingGuide AseMovingGuide { get; set; } = new AseMovingGuide();
         public string PspSpecVersion { get; set; } = "1.0";
 
