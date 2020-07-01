@@ -108,7 +108,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void PartMove(MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumKeepOrGo keepOrGo, EnumMovingOpenSlot openSlot = EnumMovingOpenSlot.None)
+        public void PartMove(MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumKeepOrGo keepOrGo, EnumSlotSelect openSlot = EnumSlotSelect.None)
         {
             ResumePositionWatcher();
             try
@@ -130,7 +130,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd,EnumMovingOpenSlot openSlot = EnumMovingOpenSlot.None)
+        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd,EnumSlotSelect openSlot = EnumSlotSelect.None)
         {
             try
             {

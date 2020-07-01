@@ -25,5 +25,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public bool BcrByPass { get; set; } = false;
         public int LowPowerPercentage { get; set; } = 50;
         public int HighPowerPercentage { get; set; } = 90;
+        public EnumSlotSelect SlotDisable { get; set; } = EnumSlotSelect.None;
     }
 }

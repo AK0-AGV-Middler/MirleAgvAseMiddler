@@ -40,7 +40,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<AseMoveStatus> OnPartMoveArrivalEvent;
         public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
         public event EventHandler OnAgvlErrorEvent;
-        public event EventHandler ArrivalCharge;
         public event EventHandler<EnumAutoState> OnModeChangeEvent;
         public event EventHandler<AseCarrierSlotStatus> OnUpdateSlotStatusEvent;
 
@@ -322,17 +321,19 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void SetTransferCommandInfoRequest()
+        public void SetTransferCommandInfoRequest(AgvcTransCmd transCmd, EnumCommandInfoStep commandInfoStep)
         {
             try
             {
-                List<AgvcTransCmd> agvcTransCmds = theVehicle.AgvcTransCmdBuffer.Values.ToList();
-                for (int i = 0; i < agvcTransCmds.Count; i++)
-                {
-                    AgvcTransCmd agvcTransCmd = agvcTransCmds[i];
-                    string transferCommandInfo = GetTransferCommandInfo(agvcTransCmd);
-                    PrimarySend("37", transferCommandInfo);
-                }
+                string commandStep = ((int)commandInfoStep).ToString();
+                string commandId = transCmd.CommandId.PadLeft(20, '0');
+                string fromPortNum = transCmd.LoadAddressId.PadLeft(5, '0').Substring(0, 5);
+                string toPortNum = transCmd.UnloadAddressId.PadLeft(5, '0').Substring(0, 5);
+                string vehicleSlot = transCmd.SlotNumber.ToString();
+                string lotId = transCmd.LotId.PadLeft(40, '0').Substring(0, 40);
+                string cassetteId = transCmd.CassetteId;
+                string transferCommandInfo = string.Concat(commandStep,commandId, fromPortNum, toPortNum, vehicleSlot, lotId, cassetteId); ;
+                PrimarySend("37", transferCommandInfo);
             }
             catch (Exception ex)
             {
@@ -887,7 +888,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             aseBatteryControl.SendBatteryStatusRequest();
             SpinWait.SpinUntil(() => false, 50);
 
-            SetTransferCommandInfoRequest();
+            var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+            for (int i = 0; i < transferCommands.Count; i++)
+            {
+                SetTransferCommandInfoRequest(transferCommands[i],EnumCommandInfoStep.Begin);
+            }
         }
 
         #endregion

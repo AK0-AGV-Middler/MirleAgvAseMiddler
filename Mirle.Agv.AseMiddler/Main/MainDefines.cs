@@ -58,6 +58,12 @@ namespace Mirle.Agv.AseMiddler
         None
     }
 
+    public enum EnumCommandInfoStep
+    {
+        Begin,
+        End
+    }
+
     public enum EnumLoginLevel
     {
         None,
@@ -175,14 +181,7 @@ namespace Mirle.Agv.AseMiddler
         Right = 2
     }
 
-    public enum EnumPioDirection
-    {
-        None,
-        Left,
-        Right
-    }
-
-    public enum EnumMovingOpenSlot
+    public enum EnumSlotSelect
     {
         None,
         Left,

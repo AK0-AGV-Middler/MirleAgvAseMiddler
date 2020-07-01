@@ -564,10 +564,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                                         switch (transferCommand.SlotNumber)
                                         {
                                             case EnumSlotNumber.L:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
                                                 break;
                                             case EnumSlotNumber.R:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
                                                 break;
                                         }
                                     }
@@ -577,10 +577,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                                         switch (transferCommand.SlotNumber)
                                         {
                                             case EnumSlotNumber.L:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
                                                 break;
                                             case EnumSlotNumber.R:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
                                                 break;
                                         }
                                     }
@@ -756,7 +756,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 theVehicle.AgvcTransCmdBuffer.TryAdd(agvcTransCmd.CommandId, agvcTransCmd);
                 agvcConnector.Commanding();
                 agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
-                asePackage.SetTransferCommandInfoRequest();
+                asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.Begin);
                 if (theVehicle.AgvcTransCmdBuffer.Count == 1)
                 {
                     InitialTransferSteps(agvcTransCmd);
@@ -778,71 +778,181 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private EnumSlotNumber CheckVehicleSlot()
         {
-            var slotLState = theVehicle.AseCarrierSlotL.CarrierSlotStatus;
-            var slotRState = theVehicle.AseCarrierSlotR.CarrierSlotStatus;
+            var leftSlotState = theVehicle.AseCarrierSlotL.CarrierSlotStatus;
+            var rightSlotState = theVehicle.AseCarrierSlotR.CarrierSlotStatus;
             var agvcTransCmdBuffer = theVehicle.AgvcTransCmdBuffer.Values.ToList();
 
-            if (slotLState != EnumAseCarrierSlotStatus.Empty && slotRState != EnumAseCarrierSlotStatus.Empty)
+            switch (mainFlowConfig.SlotDisable)
             {
-                throw new Exception("Vehicle no Slot to load.");
-            }
-            else if (theVehicle.AgvcTransCmdBuffer.Count >= 2)
-            {
-                throw new Exception("Vehicle no Slot to load.");
-            }
-            else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
-            {
-                var curCmd = theVehicle.AgvcTransCmdBuffer.Values.First();
-                switch (curCmd.EnrouteState)
-                {
-
-                    case CommandState.LoadEnroute:
-                    case CommandState.UnloadEnroute:
-                        if (curCmd.SlotNumber == EnumSlotNumber.L)
+                case EnumSlotSelect.None:
+                    {
+                        if (leftSlotState != EnumAseCarrierSlotStatus.Empty && rightSlotState != EnumAseCarrierSlotStatus.Empty)
                         {
-                            if (slotRState != EnumAseCarrierSlotStatus.Empty)
+                            throw new Exception("Vehicle has no Slot to load.");
+                        }
+                        else if (theVehicle.AgvcTransCmdBuffer.Count >= 2)
+                        {
+                            throw new Exception("Vehicle has two other transfer command. Vehicle has no Slot to load.");
+                        }
+                        else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
+                        {
+                            var curCmd = theVehicle.AgvcTransCmdBuffer.Values.First();
+                            switch (curCmd.EnrouteState)
                             {
-                                throw new Exception("Vehicle no Slot to load.");
+
+                                case CommandState.LoadEnroute:
+                                case CommandState.UnloadEnroute:
+                                    if (curCmd.SlotNumber == EnumSlotNumber.L)
+                                    {
+                                        if (rightSlotState != EnumAseCarrierSlotStatus.Empty)
+                                        {
+                                            throw new Exception("Vehicle has no Slot to load.");
+                                        }
+                                        else
+                                        {
+                                            return EnumSlotNumber.R;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (leftSlotState != EnumAseCarrierSlotStatus.Empty)
+                                        {
+                                            throw new Exception("Vehicle has no Slot to load.");
+                                        }
+                                        else
+                                        {
+                                            return EnumSlotNumber.L;
+                                        }
+                                    }
+                                case CommandState.None:
+                                default:
+                                    if (leftSlotState == EnumAseCarrierSlotStatus.Empty)
+                                    {
+                                        return EnumSlotNumber.L;
+                                    }
+                                    else
+                                    {
+                                        return EnumSlotNumber.R;
+                                    }
+                            }
+                        }
+                        else
+                        {
+                            if (leftSlotState == EnumAseCarrierSlotStatus.Empty)
+                            {
+                                return EnumSlotNumber.L;
                             }
                             else
                             {
                                 return EnumSlotNumber.R;
                             }
                         }
+                    }
+                case EnumSlotSelect.Left:
+                    {
+                        if (theVehicle.AgvcTransCmdBuffer.Count >= 2)
+                        {
+                            throw new Exception("Vehicle has two other transfer command. Vehicle has no Slot to load.");
+                        }
                         else
                         {
-                            if (slotLState != EnumAseCarrierSlotStatus.Empty)
+                            if (rightSlotState != EnumAseCarrierSlotStatus.Empty)
                             {
-                                throw new Exception("Vehicle no Slot to load.");
+                                throw new Exception("Left Slot is disable. Vehicle has no Slot to load.");
+
+                            }
+                            else
+                            {
+                                return EnumSlotNumber.R;
+                            }
+                        }
+                    }
+                case EnumSlotSelect.Right:
+                    {
+                        if (theVehicle.AgvcTransCmdBuffer.Count >= 2)
+                        {
+                            throw new Exception("Vehicle has two other transfer command. Vehicle has no Slot to load.");
+                        }
+                        else
+                        {
+                            if (leftSlotState != EnumAseCarrierSlotStatus.Empty)
+                            {
+                                throw new Exception("Right Slot is disable. Vehicle has no Slot to load.");
                             }
                             else
                             {
                                 return EnumSlotNumber.L;
                             }
                         }
-                    case CommandState.None:
-                    default:
-                        if (slotLState == EnumAseCarrierSlotStatus.Empty)
+                    }
+                case EnumSlotSelect.Both:
+                    throw new Exception("Both Slot is disable. Can not do transfer command.");
+                default:
+                    {
+                        if (leftSlotState != EnumAseCarrierSlotStatus.Empty && rightSlotState != EnumAseCarrierSlotStatus.Empty)
                         {
-                            return EnumSlotNumber.L;
+                            throw new Exception("Vehicle has no Slot to load.");
+                        }
+                        else if (theVehicle.AgvcTransCmdBuffer.Count >= 2)
+                        {
+                            throw new Exception("Vehicle has two other transfer command. Vehicle has no Slot to load.");
+                        }
+                        else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
+                        {
+                            var curCmd = theVehicle.AgvcTransCmdBuffer.Values.First();
+                            switch (curCmd.EnrouteState)
+                            {
+
+                                case CommandState.LoadEnroute:
+                                case CommandState.UnloadEnroute:
+                                    if (curCmd.SlotNumber == EnumSlotNumber.L)
+                                    {
+                                        if (rightSlotState != EnumAseCarrierSlotStatus.Empty)
+                                        {
+                                            throw new Exception("Vehicle has no Slot to load.");
+                                        }
+                                        else
+                                        {
+                                            return EnumSlotNumber.R;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (leftSlotState != EnumAseCarrierSlotStatus.Empty)
+                                        {
+                                            throw new Exception("Vehicle has no Slot to load.");
+                                        }
+                                        else
+                                        {
+                                            return EnumSlotNumber.L;
+                                        }
+                                    }
+                                case CommandState.None:
+                                default:
+                                    if (leftSlotState == EnumAseCarrierSlotStatus.Empty)
+                                    {
+                                        return EnumSlotNumber.L;
+                                    }
+                                    else
+                                    {
+                                        return EnumSlotNumber.R;
+                                    }
+                            }
                         }
                         else
                         {
-                            return EnumSlotNumber.R;
+                            if (leftSlotState == EnumAseCarrierSlotStatus.Empty)
+                            {
+                                return EnumSlotNumber.L;
+                            }
+                            else
+                            {
+                                return EnumSlotNumber.R;
+                            }
                         }
-                }
+                    }
             }
-            else
-            {
-                if (slotLState == EnumAseCarrierSlotStatus.Empty)
-                {
-                    return EnumSlotNumber.L;
-                }
-                else
-                {
-                    return EnumSlotNumber.R;
-                }
-            }
+
         }
 
         private EnumSlotNumber CheckUnloadCstId(string cassetteId)
@@ -1114,21 +1224,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             MapAddress endAddress = Mapinfo.addressMap[agvcTransCmd.UnloadAddressId];
             return new MoveToChargerCmdInfo(endAddress, agvcTransCmd.CommandId);
-        }
-
-        private EnumStageDirection EnumStageDirectionParse(EnumPioDirection pioDirection)
-        {
-            switch (pioDirection)
-            {
-                case EnumPioDirection.Left:
-                    return EnumStageDirection.Left;
-                case EnumPioDirection.Right:
-                    return EnumStageDirection.Right;
-                case EnumPioDirection.None:
-                    return EnumStageDirection.None;
-                default:
-                    return EnumStageDirection.None;
-            }
         }
 
         #endregion
@@ -1463,10 +1558,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     switch (transferCommand.SlotNumber)
                                     {
                                         case EnumSlotNumber.L:
-                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
                                             break;
                                         case EnumSlotNumber.R:
-                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
                                             break;
                                     }
                                 }
@@ -1476,10 +1571,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     switch (transferCommand.SlotNumber)
                                     {
                                         case EnumSlotNumber.L:
-                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Left);
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
                                             break;
                                         case EnumSlotNumber.R:
-                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumMovingOpenSlot.Right);
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
                                             break;
                                     }
                                 }
@@ -1630,7 +1725,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     agvcConnector.NoCommand();
                 }
-                asePackage.SetTransferCommandInfoRequest();
+                asePackage.SetTransferCommandInfoRequest(agvcTransCmd,EnumCommandInfoStep.End);
                 GoNextTransferStep = true;
                 IsVisitTransferStepPause = false;
             }
@@ -3298,7 +3393,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     agvcConnector.StatusChangeReport();
                     ReportAgvcTransferComplete(targetAbortCmd);
 
-                    asePackage.SetTransferCommandInfoRequest();
+                    asePackage.SetTransferCommandInfoRequest(targetAbortCmd,EnumCommandInfoStep.End);
 
                     if (theVehicle.AgvcTransCmdBuffer.Count == 0)
                     {
