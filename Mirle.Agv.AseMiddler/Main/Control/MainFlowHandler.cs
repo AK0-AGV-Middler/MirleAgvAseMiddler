@@ -45,6 +45,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool IsAgvcReplySendWaitMessage { get; set; } = false;
 
+        public bool IsArrivalCharge { get; set; } = false;
+
         #endregion
 
         #region Controller
@@ -1240,11 +1242,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (theVehicle.AutoState == EnumAutoState.Auto && transferSteps.Count == 0 && !theVehicle.IsOptimize)
                     {
-                        if (IsLowPower())
+                        if (IsLowPower() && !theVehicle.IsCharging)
                         {
                             alarmHandler.SetAlarmFromAgvm(2);
                             LowPowerStartCharge(theVehicle.AseMoveStatus.LastAddress);
                         }
+                    }
+ 					if (theVehicle.AseBatteryStatus.Percentage < mainFlowConfig.LowPowerPercentage - 11 && !theVehicle.IsCharging)//200701 dabid+
+                    {
+                        alarmHandler.SetAlarmFromAgvm(2);
                     }
                 }
                 catch (Exception ex)
@@ -1483,11 +1489,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 tempMoveStatus.LastSection.VehicleDistanceSinceHead = 0;
             }
-        }
-
-        public bool IsPositionInThisAddress(MapPosition realPosition, MapPosition addressPosition)
-        {
-            return mapHandler.IsPositionInThisAddress(realPosition, addressPosition);
         }
 
         public bool IsAddressInThisSection(MapSection mapSection, MapAddress mapAddress)
@@ -2962,6 +2963,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                IsArrivalCharge = true;
                 var address = endAddress;
                 var percentage = theVehicle.AseBatteryStatus.Percentage;
                 var highPercentage = mainFlowConfig.HighPowerPercentage;
@@ -3000,6 +3002,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
 
                     theVehicle.CheckStartChargeReplyEnd = true;
+                    IsArrivalCharge = false;
                 }
             }
             catch (Exception ex)
@@ -3011,10 +3014,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                if (IsArrivalCharge) return;
+
                 var address = lastAddress;
                 var percentage = theVehicle.AseBatteryStatus.Percentage;
                 var pos = theVehicle.AseMoveStatus.LastMapPosition;
-                if (address.IsCharger() && mapHandler.IsPositionInThisAddress(pos, address.Position))
+                if (address.IsCharger())
                 {
                     if (theVehicle.IsCharging)
                     {
@@ -3069,7 +3074,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 AseMoveStatus moveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                 var address = moveStatus.LastAddress;
                 var pos = moveStatus.LastMapPosition;
-                if (address.IsCharger() && mapHandler.IsPositionInThisAddress(pos, address.Position))
+                if (address.IsCharger() )
                 {
                     agvcConnector.ChargHandshaking();
 
@@ -3638,7 +3643,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseCarrierSlotStatus leftSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
-                AseCarrierSlotStatus rightSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
+                AseCarrierSlotStatus rightSlotStatus = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotR);
 
                 switch (leftSlotStatus.CarrierSlotStatus)
                 {

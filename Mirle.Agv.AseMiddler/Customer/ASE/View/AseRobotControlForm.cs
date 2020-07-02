@@ -180,10 +180,18 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void btnStartCharge_Click(object sender, EventArgs e)
         {
-            AseChargeEventArgs aseChargeEventArgs = new AseChargeEventArgs();
-            aseChargeEventArgs.IsCharge = true;
-            aseChargeEventArgs.ChargeDirection = (EnumAddressDirection)Enum.Parse(typeof(EnumAddressDirection), boxChargeDirection.Text);
-            SendChargeCommand?.Invoke(this, aseChargeEventArgs);
+            try
+            {
+                AseChargeEventArgs aseChargeEventArgs = new AseChargeEventArgs();
+                aseChargeEventArgs.IsCharge = true;
+                
+                aseChargeEventArgs.ChargeDirection = (EnumAddressDirection)Enum.Parse(typeof(EnumAddressDirection), boxChargeDirection.Text);
+                SendChargeCommand?.Invoke(this, aseChargeEventArgs);
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(this, ex.StackTrace);
+            }
         }
 
         private void btnRefreshBatterySate_Click(object sender, EventArgs e)

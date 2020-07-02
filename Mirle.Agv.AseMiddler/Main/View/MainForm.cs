@@ -778,6 +778,8 @@ namespace Mirle.Agv.AseMiddler.View
                 if (e.IsCharge)
                 {
                     asePackage.aseBatteryControl.StartCharge(e.ChargeDirection);
+                    ShowMsgOnMainForm(this, $"IsCharging : {e.ChargeDirection.ToString()} , {theVehicle.IsCharging.ToString()}");
+                    //OnMessageShowEvent?.Invoke(this, $"IsCharging : {e.ChargeDirection.ToString()} , {theVehicle.IsCharging.ToString()}");
                 }
                 else
                 {

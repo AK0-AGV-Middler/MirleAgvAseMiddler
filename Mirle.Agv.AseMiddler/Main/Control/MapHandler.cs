@@ -472,10 +472,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             return Math.Abs(num1 - num2);
         }
 
-        public bool IsPositionInThisAddress(MapPosition aPosition, MapPosition addressPosition)
-        {
-            return Math.Abs(aPosition.X - addressPosition.X) <= AddressAreaMm && Math.Abs(aPosition.Y - addressPosition.Y) <= AddressAreaMm;
-        }
+        //public bool IsPositionInThisAddress(MapPosition aPosition, MapPosition addressPosition)
+        //{
+        //    return Math.Abs(aPosition.X - addressPosition.X) <= AddressAreaMm && Math.Abs(aPosition.Y - addressPosition.Y) <= AddressAreaMm;
+        //}
 
         public double GetDistance(MapPosition aPosition, MapPosition bPosition)
         {
