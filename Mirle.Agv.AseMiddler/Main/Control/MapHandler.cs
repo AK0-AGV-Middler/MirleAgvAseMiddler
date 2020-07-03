@@ -130,7 +130,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     catch (Exception ex)
                     {
                         mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", $"LoadAddressCsv read oneRow : [lastReadAdrId={lastReadAdrId}]"));
-                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                     }
 
                     lastReadAdrId = oneRow.Id;
@@ -148,7 +148,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"LoadAddressCsv : [lastReadAdrId={lastReadAdrId}]");
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -205,13 +205,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     catch (Exception ex)
                     {
-                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,$"lastReadPortId=[{lastReadPortId}]" + ex.StackTrace);
+                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,$"lastReadPortId=[{lastReadPortId}]" + ex.Message);
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"lastReadPortId=[{lastReadPortId}]" + ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"lastReadPortId=[{lastReadPortId}]" + ex.Message);
             }
         }
 
@@ -284,7 +284,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     catch (Exception ex)
                     {
                         LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"LoadSectionCsv read oneRow fail : [lastReadSecId={lastReadSecId}]");
-                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                     }
 
                     lastReadSecId = oneRow.Id;
@@ -300,7 +300,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"LoadSectionCsv : [lastReadSecId={lastReadSecId}]");
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -370,7 +370,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,
-                    $"AddInsideAddresses FAIL at Sec[{lastReadSecId}] and Adr[{lastReadAdrId}]" + ex.StackTrace);
+                    $"AddInsideAddresses FAIL at Sec[{lastReadSecId}] and Adr[{lastReadAdrId}]" + ex.Message);
             }
         }
 
@@ -409,7 +409,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -458,7 +458,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 return false;
             }
         }

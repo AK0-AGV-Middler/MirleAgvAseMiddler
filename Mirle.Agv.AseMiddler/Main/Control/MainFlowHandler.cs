@@ -177,7 +177,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "控制層"));
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -195,7 +195,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "台車"));
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -220,6 +220,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnAgvcAcceptUnloadArrivalEvent += AgvcConnector_OnAgvcAcceptUnloadArrivalEvent;
                 agvcConnector.OnAgvcAcceptUnloadCompleteEvent += AgvcConnector_OnAgvcAcceptUnloadCompleteEvent;
                 agvcConnector.OnSendRecvTimeoutEvent += AgvcConnector_OnSendRecvTimeoutEvent;
+                agvcConnector.OnCstRenameEvent += AgvcConnector_OnCstRenameEvent;
 
                 //來自MoveControl的移動結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
                 asePackage.OnPositionChangeEvent += AsePackage_OnPositionChangeEvent;
@@ -265,9 +266,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 isIniOk = false;
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(false, "事件"));
 
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
 
         private void VehicleLocationInitialAndThreadsInitial()
         {
@@ -280,7 +282,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     theVehicle.AseMoveStatus.LastMapPosition = new MapPosition();
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
             }
             else
@@ -366,7 +368,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 catch (Exception ex)
                 {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
                 finally
                 {
@@ -743,7 +745,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, ex.Message);
                 string reason = $"MainFlow : Reject {agvcTransCmd.AgvcTransCommandType} Command. {ex.Message}";
                 OnMessageShowEvent?.Invoke(this, reason);
@@ -773,7 +775,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, "");
                 var ngMsg = $"MainFlow :  Get  {agvcTransCmd.AgvcTransCommandType}Command{agvcTransCmd.CommandId}  fail .";
                 OnMessageShowEvent?.Invoke(this, ngMsg);
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
             #endregion
         }
@@ -1028,7 +1030,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1044,7 +1046,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1107,7 +1109,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 StopClearAndReset();
                 var reason = "避車Exception";
                 RejectAvoidCommandAndResume(000036, reason, aseMovingGuide);
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
 
             #endregion
@@ -1130,7 +1132,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1255,7 +1257,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 catch (Exception ex)
                 {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
                 finally
                 {
@@ -1352,7 +1354,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 catch (Exception ex)
                 {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
                 finally
                 {
@@ -1597,7 +1599,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1621,19 +1623,18 @@ namespace Mirle.Agv.AseMiddler.Controller
                         agvcConnector.AvoidFail();
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Avoid Fail. ");
                         IsAvoidMove = false;
-                        return;
                     }
                     else if (IsOverrideMove)
                     {
                         OnMessageShowEvent?.Invoke(this, $"MainFlow :  Override Move Fail. ");
                         IsOverrideMove = false;
-                        return;
                     }
                     else
                     {
                         OnMessageShowEvent?.Invoke(this, $"MainFlow : Move Fail. ");
-                        return;
                     }
+                    AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                    return;
                 }
 
                 if (status == EnumMoveComplete.Pause)
@@ -1699,7 +1700,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1732,7 +1733,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1751,12 +1752,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 catch (Exception ex)
                 {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -1948,7 +1949,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
 
         }
@@ -1972,7 +1973,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AseRobotControl_OnRobotCommandErrorEvent(object sender, RobotCommand robotCommand)
         {
             OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotCommandErrorEvent");
-            StopClearAndReset();
+            alarmHandler.SetAlarmFromAgvm(40);
+            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 
         public void AseRobotContorl_OnRobotCommandFinishEvent(object sender, RobotCommand robotCommand)
@@ -2011,8 +2013,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                             }
                             break;
                         case EnumAseCarrierSlotStatus.PositionError:
-                            StopClearAndReset();
                             alarmHandler.SetAlarmFromAgvm(51);
+                            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+
                             break;
                     }
                 }
@@ -2023,7 +2026,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -2126,8 +2129,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
                                 }
 
-                                StopClearAndReset();
                                 alarmHandler.SetAlarmFromAgvm(000051);
+                                AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+
                                 return;
                             }
                         default:
@@ -2194,8 +2198,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     theVehicle.RightReadResult = BCRReadResult.BcrReadFail;
                                 }
 
-                                StopClearAndReset();
                                 alarmHandler.SetAlarmFromAgvm(000051);
+                                AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+
                                 return;
                             }
                         default:
@@ -2207,7 +2212,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -2372,14 +2377,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 OnMessageShowEvent?.Invoke(this, $"InterlockError Exception.");
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
         private void AgvcConnector_OnSendRecvTimeoutEvent(object sender, EventArgs e)
         {
             alarmHandler.SetAlarmFromAgvm(38);
-            StopClearAndReset();
+            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 
         private void AgvcConnector_OnAgvcContinueBcrReadEvent(object sender, EventArgs e)
@@ -2405,7 +2410,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -2514,7 +2519,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -2702,9 +2707,23 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
+        private void AgvcConnector_OnCstRenameEvent(object sender, EnumSlotNumber slotNumber)
+        {
+            try
+            {
+                AseCarrierSlotStatus slotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
+                asePackage.CstRename(slotStatus);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
 
         #endregion
 
@@ -2954,7 +2973,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"FAIL [SecId={id}][Index={getReserveOkSectionIndex}]");
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
 
         }
@@ -3007,7 +3026,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
         private void LowPowerStartCharge(MapAddress lastAddress)
@@ -3061,7 +3080,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3085,11 +3104,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
 
                     //in starting charge
-                    if (!theVehicle.CheckStartChargeReplyEnd) Thread.Sleep(30 * 1000);
+                    if (!theVehicle.CheckStartChargeReplyEnd) Thread.Sleep(mainFlowConfig.StopChargeWaitingTimeoutMs);
 
                     asePackage.aseBatteryControl.StopCharge();
-
-                    SpinWait.SpinUntil(() => !theVehicle.IsCharging, 30 * 1000);
+                    
+                    SpinWait.SpinUntil(() => !theVehicle.IsCharging, mainFlowConfig.StopChargeWaitingTimeoutMs);
 
                     if (!theVehicle.IsCharging)
                     {
@@ -3099,31 +3118,20 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         alarmHandler.SetAlarmFromAgvm(000014);
-                        StopClearAndReset();
+                        AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
         private void AgvcConnector_OnStopClearAndResetEvent(object sender, EventArgs e)
         {
             StopClearAndReset();
-        }
-
-        public void IntoAuto()
-        {
-            try
-            {
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
-            }
-        }
+        }       
 
         public void StopClearAndReset()
         {
@@ -3158,7 +3166,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3206,7 +3214,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 return EnumTransferStepType.Empty;
             }
         }
@@ -3226,7 +3234,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 return EnumTransferStepType.Empty;
             }
         }
@@ -3244,30 +3252,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             var msg = $"MainFlow : Stop Vehicle, [MoveState={theVehicle.AseMoveStatus.AseMoveState}][IsCharging={theVehicle.IsCharging}]";
             OnMessageShowEvent?.Invoke(this, msg);
-        }
-
-        public bool SetManualToAuto()
-        {
-            StopClearAndReset();
-            //string reason = "";
-            //if (!moveControlPlate.CanAuto(ref reason))
-            //{
-            //    reason = $"Manual switch to  Auto 失敗, 原因： " + reason;
-            //    OnMessageShowEvent?.Invoke(this, reason);
-            //    return false;
-            //}
-            //else
-            //{
-            //    string msg = $"Manual switch to  Auto  ok ";
-            //    OnMessageShowEvent?.Invoke(this, msg);
-            //    return true;
-            //}
-
-            string msg = $"Manual switch to  Auto  ok ";
-            OnMessageShowEvent?.Invoke(this, msg);
-            return true;
-
-        }
+        }        
 
         public void ResetAllarms()
         {
@@ -3323,7 +3308,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3345,7 +3330,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3412,7 +3397,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3512,7 +3497,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3524,7 +3509,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3536,7 +3521,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3548,7 +3533,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3592,7 +3577,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3612,10 +3597,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                             theVehicle.IsReAuto = true;
                             asePackage.aseRobotControl.ReadCarrierId();
                             Thread.Sleep(500);
-                            agvcConnector.StatusChangeReport();
                             break;
                         case EnumAutoState.Manual:
                             StopClearAndReset();
+                            asePackage.RequestVehicleToManual();
                             break;
                         case EnumAutoState.None:
                             break;
@@ -3628,13 +3613,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 UpdateSlotStatus();
                 agvcConnector.StatusChangeReport();
 
-
-
                 OnMessageShowEvent?.Invoke(this, $"Switch to {autoState}");
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.StackTrace);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -3672,8 +3655,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case EnumAseCarrierSlotStatus.PositionError:
                         {
-                            StopClearAndReset();
                             alarmHandler.SetAlarmFromAgvm(51);
+                            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                         }
                         return;
                     case EnumAseCarrierSlotStatus.ReadFail:
@@ -3715,8 +3698,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case EnumAseCarrierSlotStatus.PositionError:
                         {
-                            StopClearAndReset();
                             alarmHandler.SetAlarmFromAgvm(51);
+                            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                         }
                         return;
                     case EnumAseCarrierSlotStatus.ReadFail:

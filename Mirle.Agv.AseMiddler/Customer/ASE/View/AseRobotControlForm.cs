@@ -67,7 +67,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             catch (Exception ex)
             {
-                OnException?.Invoke(this, ex.StackTrace);
+                OnException?.Invoke(this, ex.Message);
             }
         }
 
@@ -108,7 +108,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             catch (Exception ex)
             {
-                OnException?.Invoke(this, ex.StackTrace);
+                OnException?.Invoke(this, ex.Message);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             catch (Exception ex)
             {
-                OnException?.Invoke(this, ex.StackTrace);
+                OnException?.Invoke(this, ex.Message);
             }
         }
 
@@ -136,7 +136,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             catch (Exception ex)
             {
-                OnException?.Invoke(this, ex.StackTrace);
+                OnException?.Invoke(this, ex.Message);
             }
         }
 
@@ -158,7 +158,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             catch (Exception ex)
             {
-                OnException?.Invoke(this, ex.StackTrace);
+                OnException?.Invoke(this, ex.Message);
             }
         }
 
@@ -174,7 +174,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             catch (Exception ex)
             {
-                OnException?.Invoke(this, ex.StackTrace);
+                OnException?.Invoke(this, ex.Message);
             }
         }
 
@@ -190,7 +190,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
             catch (Exception ex)
             {
-                OnException?.Invoke(this, ex.StackTrace);
+                OnException?.Invoke(this, ex.Message);
             }
         }
 
