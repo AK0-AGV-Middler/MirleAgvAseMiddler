@@ -1371,6 +1371,10 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public void CSTStatusReport()
         {
+//070302
+
+            //Send_Cmd144_StatusChangeReport();
+            Thread.Sleep(500);
             if (theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
             {
                 SendRecv_Cmd136_CstRemove(EnumSlotNumber.L);
@@ -2272,16 +2276,38 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (returnCode == TrxTcpIp.ReturnCode.Normal)
                 {
-                    if (!string.IsNullOrEmpty(response.RenameCarrierID))
+                    if (response.ReplyAction != ReplyActionType.Continue)
                     {
-                        slotStatus.CarrierId = response.RenameCarrierID;
-                        OnCstRenameEvent?.Invoke(this, SlotNumber);
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Load fail, [ReplyAction = {response.ReplyAction}][RenameCarrierID = {response.RenameCarrierID}]");
+                        alarmHandler.ResetAllAlarmsFromAgvm();
+                        var cmdId = response.CmdID.Trim();
+                        if (!string.IsNullOrEmpty(response.RenameCarrierID))
+                        {
+                            theVehicle.AgvcTransCmdBuffer[cmdId].CassetteId = response.RenameCarrierID;
+                            slotStatus.CarrierId = response.RenameCarrierID;
+                            OnCstRenameEvent?.Invoke(this, SlotNumber);
+                        }
+                        theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
+                        mainFlowHandler.TransferComplete(cmdId);
                     }
-                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
+                    else
+                    {
+                        var cmdId = response.CmdID.Trim();
+                        if (!string.IsNullOrEmpty(response.RenameCarrierID))
+                        {
+                            theVehicle.AgvcTransCmdBuffer[cmdId].CassetteId = response.RenameCarrierID;
+                            slotStatus.CarrierId = response.RenameCarrierID;
+                            OnCstRenameEvent?.Invoke(this, SlotNumber);
+                        }
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
+                        OnAgvcAcceptBcrReadReply?.Invoke(this, new EventArgs());
+                    }
                 }
                 else
                 {
-                    OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport send wait timeout");
+                    var cmdId = response.CmdID.Trim();
+                    theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(report.BCRReadResult, theVehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
+                    OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport send wait timeout[{cmdId}]");
                     OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
                 }
             }
@@ -2289,6 +2315,47 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
+        }
+        private CompleteStatus GetCancelCompleteStatus(ReplyActionType replyAction, CompleteStatus completeStatus)
+        {
+            switch (replyAction)
+            {
+                case ReplyActionType.Continue:
+                    break;
+                case ReplyActionType.Wait:
+                    break;
+                case ReplyActionType.Retry:
+                    break;
+                case ReplyActionType.Cancel:
+                    return CompleteStatus.Cancel;
+                case ReplyActionType.Abort:
+                    return CompleteStatus.Abort;
+                case ReplyActionType.CancelIdMisnatch:
+                    return CompleteStatus.IdmisMatch;
+                case ReplyActionType.CancelIdReadFailed:
+                    return CompleteStatus.IdreadFailed;
+                case ReplyActionType.CancelPidFailed:
+                    break;
+                default:
+                    break;
+            }
+
+            return completeStatus;
+        }
+        private CompleteStatus GetCancelCompleteStatus(BCRReadResult readResult, CompleteStatus completeStatus)
+        {
+            switch (readResult)
+            {
+                case BCRReadResult.BcrReadFail:
+                    return CompleteStatus.IdreadFailed;
+                case BCRReadResult.BcrMisMatch:
+                    return CompleteStatus.IdmisMatch;
+                case BCRReadResult.BcrNormal:
+                default:
+                    break;
+            }
+
+            return completeStatus;
         }
         public void SendRecv_Cmd136_CstRemove(EnumSlotNumber SlotNumber) //200625 dabid+
         {
@@ -2331,48 +2398,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-        private CompleteStatus GetCancelCompleteStatus(ReplyActionType replyAction, CompleteStatus completeStatus)
-        {
-            switch (replyAction)
-            {
-                case ReplyActionType.Continue:
-                    break;
-                case ReplyActionType.Wait:
-                    break;
-                case ReplyActionType.Retry:
-                    break;
-                case ReplyActionType.Cancel:
-                    return CompleteStatus.Cancel;
-                case ReplyActionType.Abort:
-                    return CompleteStatus.Abort;
-                case ReplyActionType.CancelIdMisnatch:
-                    return CompleteStatus.IdmisMatch;
-                case ReplyActionType.CancelIdReadFailed:
-                    return CompleteStatus.IdreadFailed;
-                case ReplyActionType.CancelPidFailed:
-                    break;
-                default:
-                    break;
-            }
-
-            return completeStatus;
-        }
-        private CompleteStatus GetCancelCompleteStatus(BCRReadResult readResult, CompleteStatus completeStatus)
-        {
-            switch (readResult)
-            {
-                case BCRReadResult.BcrReadFail:
-                    return CompleteStatus.IdreadFailed;
-                case BCRReadResult.BcrMisMatch:
-                    return CompleteStatus.IdmisMatch;
-                case BCRReadResult.BcrNormal:
-                default:
-                    break;
-            }
-
-            return completeStatus;
         }
 
         public void Send_Cmd136_AskReserve(MapSection mapSection)

@@ -1545,40 +1545,56 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (isEnd)
                     {
-                        var cmdId = GetCurTransferStep().CmdId;
-                        if (theVehicle.AgvcTransCmdBuffer.ContainsKey(cmdId))
+                        if (IsAvoidMove)
                         {
-                            var transferCommand = theVehicle.AgvcTransCmdBuffer[cmdId];
-                            //TODO : check if need open both slot.
-                            switch (transferCommand.EnrouteState)
-                            {
-                                case CommandState.None:
-                                    asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
-                                    break;
-                                case CommandState.LoadEnroute:
-                                case CommandState.UnloadEnroute:
-                                    if (transferCommand.SlotNumber == EnumSlotNumber.L)
-                                    {
-                                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.Left);
-                                    }
-                                    else
-                                    {
-                                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.Right);
-                                    }
-                                    break;
-                                default:
-                                    asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
-                                    break;
-                            }
+                            asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo);
                         }
                         else
                         {
-                            asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
+                            var cmdId = GetCurTransferStep().CmdId;
+                            if (theVehicle.AgvcTransCmdBuffer.ContainsKey(cmdId))
+                            {
+                                var transferCommand = theVehicle.AgvcTransCmdBuffer[cmdId];
+                                if (theVehicle.AgvcTransCmdBuffer.Count == 0)
+                                {
+                                    asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo);
+                                }
+                                else if (theVehicle.AgvcTransCmdBuffer.Count == 1)
+                                {
+                                    switch (transferCommand.SlotNumber)
+                                    {
+                                        case EnumSlotNumber.L:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
+                                            break;
+                                        case EnumSlotNumber.R:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    //TODO : check if need open both slot.
+                                    switch (transferCommand.SlotNumber)
+                                    {
+                                        case EnumSlotNumber.L:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
+                                            break;
+                                        case EnumSlotNumber.R:
+                                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
+                                            break;
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo);
+                            }
                         }
                     }
                     else
                     {
-                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.None, keepOrGo, EnumSlotSelect.None);
+                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.None, keepOrGo);
                     }
                 }
 
