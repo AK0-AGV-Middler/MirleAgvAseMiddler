@@ -335,7 +335,7 @@ namespace Mirle.Agv.AseMiddler.View
                 }
                 else
                 {
-                    mainFlowHandler.BuzzOff();
+                    //mainFlowHandler.BuzzOff();
                 }
             }
             catch (Exception ex)
