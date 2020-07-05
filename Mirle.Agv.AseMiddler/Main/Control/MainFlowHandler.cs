@@ -600,12 +600,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         theVehicle.AseMovingGuide.CommandId = moveCmdInfo.CmdId;
                         agvcConnector.ReportSectionPass();
-                        if(!theVehicle.IsCharging)
+                        if (!theVehicle.IsCharging)
                         {
-                        theVehicle.AseMoveStatus.IsMoveEnd = false;
-                        asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.Begin);
-                        agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
-                    }
+                            theVehicle.AseMoveStatus.IsMoveEnd = false;
+                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.Begin);
+                            agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
+                        }
                     }
                     break;
                 case EnumTransferStepType.Load:
@@ -1245,7 +1245,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (theVehicle.AutoState == EnumAutoState.Auto && transferSteps.Count == 0 && !theVehicle.IsOptimize)
+                    if (theVehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !theVehicle.IsOptimize)
                     {
                         if (IsLowPower() && !theVehicle.IsCharging)
                         {
@@ -1253,7 +1253,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             LowPowerStartCharge(theVehicle.AseMoveStatus.LastAddress);
                         }
                     }
- 					if (theVehicle.AseBatteryStatus.Percentage < mainFlowConfig.LowPowerPercentage - 11 && !theVehicle.IsCharging)//200701 dabid+
+                    if (theVehicle.AseBatteryStatus.Percentage < mainFlowConfig.LowPowerPercentage - 11 && !theVehicle.IsCharging)//200701 dabid+
                     {
                         alarmHandler.SetAlarmFromAgvm(2);
                     }
@@ -1266,6 +1266,29 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     Thread.Sleep(mainFlowConfig.WatchLowPowerSleepTimeMs);
                 }
+            }
+        }
+
+        private bool IsVehicleIdle()
+        {
+            if (transferSteps.Count == 0)
+            {
+                return true;
+            }
+            else if (transferSteps.Count == 1)
+            {
+                if (GetCurrentTransferStepType() == EnumTransferStepType.Empty)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -1714,7 +1737,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     agvcConnector.NoCommand();
                 }
-                asePackage.SetTransferCommandInfoRequest(agvcTransCmd,EnumCommandInfoStep.End);
+                asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.End);
                 GoNextTransferStep = true;
                 IsVisitTransferStepPause = false;
             }
@@ -2371,7 +2394,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AgvcConnector_OnSendRecvTimeoutEvent(object sender, EventArgs e)
         {
             alarmHandler.SetAlarmFromAgvm(38);
-            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+            //AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 
         private void AgvcConnector_OnAgvcContinueBcrReadEvent(object sender, EventArgs e)
@@ -3080,7 +3103,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 AseMoveStatus moveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
                 var address = moveStatus.LastAddress;
                 var pos = moveStatus.LastMapPosition;
-                if (address.IsCharger() )
+                if (address.IsCharger())
                 {
                     agvcConnector.ChargHandshaking();
 
@@ -3094,7 +3117,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (!theVehicle.CheckStartChargeReplyEnd) Thread.Sleep(mainFlowConfig.StopChargeWaitingTimeoutMs);
 
                     asePackage.aseBatteryControl.StopCharge();
-                    
+
                     SpinWait.SpinUntil(() => !theVehicle.IsCharging, mainFlowConfig.StopChargeWaitingTimeoutMs);
 
                     if (!theVehicle.IsCharging)
@@ -3118,7 +3141,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AgvcConnector_OnStopClearAndResetEvent(object sender, EventArgs e)
         {
             StopClearAndReset();
-        }       
+        }
 
         public void StopClearAndReset()
         {
@@ -3239,7 +3262,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             var msg = $"MainFlow : Stop Vehicle, [MoveState={theVehicle.AseMoveStatus.AseMoveState}][IsCharging={theVehicle.IsCharging}]";
             OnMessageShowEvent?.Invoke(this, msg);
-        }        
+        }
 
         public void ResetAllarms()
         {
@@ -3370,7 +3393,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     agvcConnector.StatusChangeReport();
                     ReportAgvcTransferComplete(targetAbortCmd);
 
-                    asePackage.SetTransferCommandInfoRequest(targetAbortCmd,EnumCommandInfoStep.End);
+                    asePackage.SetTransferCommandInfoRequest(targetAbortCmd, EnumCommandInfoStep.End);
 
                     if (theVehicle.AgvcTransCmdBuffer.Count == 0)
                     {
