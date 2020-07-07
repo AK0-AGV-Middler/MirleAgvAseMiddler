@@ -2492,17 +2492,15 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void AskAllSectionsReserveInOnce()
         {
-            var msg = $"Ask All Sections Reserve In Once [{theVehicle.AseMovingGuide.MovingSections.Count}]";
-            OnMessageShowOnMainFormEvent?.Invoke(this, msg);
-            AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-
             try
             {
-                var movingSections = theVehicle.AseMovingGuide.MovingSections.ToList();
+                var needReserveSections = queNeedReserveSections.ToList();
+                OnMessageShowOnMainFormEvent?.Invoke(this, $@"Ask All Sections Reserve In Once [{needReserveSections.Count}]");
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
 
                 ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
                 report.EventType = EventType.ReserveReq;
-                FitReserveInfos(report.ReserveInfos, movingSections);
+                FitReserveInfos(report.ReserveInfos, needReserveSections);
                 report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
                 report.CurrentSecID = aseMoveStatus.LastSection.Id;
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
@@ -2528,21 +2526,24 @@ namespace Mirle.Agv.AseMiddler.Controller
                         for (int i = 0; i < reserveInfos.Count; i++)
                         {
                             var reserveInfo = reserveInfos[i];
-                            var movingSection = movingSections[i];
-                            if (reserveInfo.ReserveSectionID.Trim() == movingSection.Id)
+                            var needReserveSection = needReserveSections[i];
+                            if (reserveInfo.ReserveSectionID.Trim() == needReserveSection.Id)
                             {
-                                if (reserveInfo.DriveDirction == DriveDirctionParse(movingSection.CmdDirection))
+                                if (reserveInfo.DriveDirction == DriveDirctionParse(needReserveSection.CmdDirection))
                                 {
-                                    reserveOkSections.Add(movingSection);
+                                    queNeedReserveSections.TryDequeue(out MapSection reserveOkSection);
+                                    reserveOkSections.Add(reserveOkSection);
                                 }
                                 else
                                 {
-                                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Ask All Sections Reserve In Once Reply. Section [{movingSection.Id}] in AGVC [{reserveInfo.DriveDirction}] is not equal to AGVM[{movingSection.CmdDirection}]");
+                                    OnMessageShowOnMainFormEvent?.Invoke(this, $"Ask All Sections Reserve In Once NG. Reply Section [ID ={needReserveSection.Id}][Direction={reserveInfo.DriveDirction}] in AGVC is not same as in AGVM [{needReserveSection.CmdDirection}]");
                                     break;
                                 }
                             }
                             else
                             {
+                                OnMessageShowOnMainFormEvent?.Invoke(this, $"Ask All Sections Reserve In Once NG. Reply Section [ID ={reserveInfo.ReserveSectionID.Trim()}] in AGVC is not same as in AGVM [{needReserveSection.Id}]");
+
                                 break;
                             }
                         }
@@ -2574,11 +2575,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void FitReserveInfos(RepeatedField<ReserveInfo> reserveInfos, List<MapSection> movingSections)
+        private void FitReserveInfos(RepeatedField<ReserveInfo> reserveInfos, List<MapSection> needReserveSections)
         {
             reserveInfos.Clear();
             ReserveInfo reserveInfo = new ReserveInfo();
-            foreach (var mapSection in movingSections)
+            foreach (var mapSection in needReserveSections)
             {
                 reserveInfo.ReserveSectionID = mapSection.Id;
                 if (mapSection.CmdDirection == EnumCommandDirection.Backward)
