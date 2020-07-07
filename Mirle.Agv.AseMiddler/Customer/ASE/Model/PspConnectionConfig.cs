@@ -12,5 +12,8 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int Port { get; set; } = 5000;
         public bool IsServer { get; set; } = true;
         public string SpecVersion { get; set; } = "1.0";
+        public int T3Timeout { get; set; } = 10;
+        public int T6Timeout { get; set; } = 10;
+        public int LinkTestIntervalMs { get; set; } = 30 * 1000;
     }
 }

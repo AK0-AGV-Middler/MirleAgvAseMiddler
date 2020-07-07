@@ -31,7 +31,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
         private Thread thdWatchWifiSignalStrength;
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
-        public bool IsWatchWifiSignalStrengthStop { get; set; } = false;
+        public Vehicle Vehicle { get; set; } = Vehicle.Instance;
+        public uint WifiSignalStrength { get; set; } = 0;
 
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> AllPspLog;
@@ -51,7 +52,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             InitialAseRobotControl(gateTypeMap);
             InitialAseBatteryControl();
             InitialAseBuzzerControl();
-            //InitialThread();
+            InitialThread();
         }
 
         private void InitialThread()
@@ -70,11 +71,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (IsWatchWifiSignalStrengthPause)
                     {
-                        SpinWait.SpinUntil(() => (IsWatchWifiSignalStrengthPause || IsWatchWifiSignalStrengthStop), asePackageConfig.WatchWifiSignalIntervalMs);
+                        SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
 
                         continue;
                     }
-                    if (IsWatchWifiSignalStrengthStop) break;
 
                     if (psWrapper.IsConnected())
                     {
@@ -87,7 +87,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 finally
                 {
-                    SpinWait.SpinUntil(() => (IsWatchWifiSignalStrengthPause || IsWatchWifiSignalStrengthStop), asePackageConfig.WatchWifiSignalIntervalMs);
+                    SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
                 }
             }
         }
@@ -98,24 +98,30 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 if (Vehicle.Instance.IsAgvcConnect)
                 {
-                    List<AccessPoint> accessPoints = new Wifi().GetAccessPoints();
+                    List<AccessPoint> accessPoints = new Wifi().GetAccessPoints().ToList();
                     if (accessPoints.Any())
                     {
-                        var connectedAccessPoint = accessPoints.FirstOrDefault(x => x.IsConnected);
-                        if (connectedAccessPoint != null)
+                        foreach (var item in accessPoints)
                         {
-                            SendWifiSignalStrength(connectedAccessPoint.SignalStrength);
-                            return;
-                        }
+                            if (item.IsConnected)
+                            {
+                                WifiSignalStrength = Math.Max(item.SignalStrength, 0);
+                            }
+                        }                        
                     }
                 }
-
-                SendWifiSignalStrength(0);
+                else
+                {
+                    WifiSignalStrength = 0;
+                }
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                SendWifiSignalStrength(0);
+            }
+            finally
+            {
+                SendWifiSignalStrength(WifiSignalStrength);
             }
         }
 
@@ -207,6 +213,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LoadAutoReply();
                 LoadPspConnectionConfig();
                 BindPsWrapperEvent();
+                psWrapper.T3 = pspConnectionConfig.T6Timeout;
+                psWrapper.T6 = pspConnectionConfig.T6Timeout;
+                psWrapper.LinkTestIntervalMs = pspConnectionConfig.LinkTestIntervalMs;
 
                 if (!theVehicle.IsSimulation)
                 {
