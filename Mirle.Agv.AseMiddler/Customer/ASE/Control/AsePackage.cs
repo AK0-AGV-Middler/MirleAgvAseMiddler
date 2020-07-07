@@ -105,7 +105,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             if (item.IsConnected)
                             {
-                                WifiSignalStrength = Math.Max(item.SignalStrength, 0);
+                                WifiSignalStrength = Math.Max(item.SignalStrength, 10);
                             }
                         }                        
                     }
@@ -198,7 +198,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>(asePackageConfig.AseBatteryConfigFilePath);
             aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>(asePackageConfig.AseMoveConfigFilePath);
 
-            if (theVehicle.IsSimulation)
+            if (theVehicle.MainFlowConfig.IsSimulation)
             {
                 aseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
                 aseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
@@ -217,7 +217,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 psWrapper.T6 = pspConnectionConfig.T6Timeout;
                 psWrapper.LinkTestIntervalMs = pspConnectionConfig.LinkTestIntervalMs;
 
-                if (!theVehicle.IsSimulation)
+                if (!theVehicle.MainFlowConfig.IsSimulation)
                 {
                     psWrapper.Open();
                 }

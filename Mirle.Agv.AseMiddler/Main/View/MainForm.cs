@@ -41,7 +41,7 @@ namespace Mirle.Agv.AseMiddler.View
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "Available MBytes");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
         private MirleLogger mirleLogger = MirleLogger.Instance;
-        private Vehicle theVehicle = Vehicle.Instance;
+        private Vehicle Vehicle = Vehicle.Instance;
         public bool IsAgvcConnect { get; set; } = false;
         public bool IsAgvlConnect { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
@@ -82,7 +82,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
-            mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
+            mainFlowConfig = Vehicle.MainFlowConfig;
             theMapInfo = mainFlowHandler.Mapinfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             asePackage = mainFlowHandler.GetAsePackage();
@@ -222,7 +222,7 @@ namespace Mirle.Agv.AseMiddler.View
             UpdateAgvlConnection();
 
 
-            if (theVehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || theVehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
+            if (Vehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
             {
                 mainFlowHandler.ReadCarrierId();
             }
@@ -778,7 +778,7 @@ namespace Mirle.Agv.AseMiddler.View
                 if (e.IsCharge)
                 {
                     asePackage.aseBatteryControl.StartCharge(e.ChargeDirection);
-                    ShowMsgOnMainForm(this, $"IsCharging : {e.ChargeDirection.ToString()} , {theVehicle.IsCharging.ToString()}");
+                    ShowMsgOnMainForm(this, $"IsCharging : {e.ChargeDirection.ToString()} , {Vehicle.IsCharging.ToString()}");
                     //OnMessageShowEvent?.Invoke(this, $"IsCharging : {e.ChargeDirection.ToString()} , {theVehicle.IsCharging.ToString()}");
                 }
                 else
@@ -815,7 +815,7 @@ namespace Mirle.Agv.AseMiddler.View
                 robotCommand = new LoadCmdInfo(agvcTransCmd);
                 robotCommand.PortAddressId = e.FromPort.PadLeft(5, '0');
                 EnumSlotNumber slotNumber = e.ToPort.Trim('0') == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
+                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
                 if (aseCarrierSlotStatus.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
                 {
                     string errorMsg = $"GetRobotCommandFromAseRobotControlForm fail. Can not load, [ToPort = {e.ToPort}][SlotNum = {slotNumber}][SlotState = {aseCarrierSlotStatus.CarrierSlotStatus}]";
@@ -830,7 +830,7 @@ namespace Mirle.Agv.AseMiddler.View
                 robotCommand = new UnloadCmdInfo(agvcTransCmd);
                 robotCommand.PortAddressId = e.ToPort.PadLeft(5, '0');
                 EnumSlotNumber slotNumber = e.FromPort.Trim('0') == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
+                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
                 if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
                 {
                     string errorMsg = $"GetRobotCommandFromAseRobotControlForm fail. Can not unload, [FromPort = {e.FromPort}][SlotNum = {slotNumber}][SlotState = {aseCarrierSlotStatus.CarrierSlotStatus}]";
@@ -942,7 +942,7 @@ namespace Mirle.Agv.AseMiddler.View
                 //    SetMovingSectionAndEndPosition(moveCommandDebugMode.RunSectionList, moveCommandDebugMode.RunEndAddress);
                 //    moveCommandDebugMode.MainShowRunSectionList = false;
                 //}
-                ucSoc.TagValue = theVehicle.AseBatteryStatus.Percentage.ToString("F1") + $"/" + theVehicle.AseBatteryStatus.Voltage.ToString("F2");
+                ucSoc.TagValue = Vehicle.AseBatteryStatus.Percentage.ToString("F1") + $"/" + Vehicle.AseBatteryStatus.Voltage.ToString("F2");
 
                 UpdateListBoxSections(lbxNeedReserveSections, agvcConnector.GetNeedReserveSections());
                 UpdateListBoxSections(lbxReserveOkSections, agvcConnector.GetReserveOkSections());
@@ -999,7 +999,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private bool RobotStateError()
         {
-            var aseRobotStatus = theVehicle.AseRobotStatus;
+            var aseRobotStatus = Vehicle.AseRobotStatus;
             if (aseRobotStatus.RobotState != EnumAseRobotState.Idle)
             {
                 txtCannotAutoReason.Text = $"Robot State = {aseRobotStatus.RobotState}";
@@ -1021,7 +1021,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private bool MoveStateError()
         {
-            var moveState = theVehicle.AseMoveStatus.AseMoveState;
+            var moveState = Vehicle.AseMoveStatus.AseMoveState;
             if (moveState != EnumAseMoveState.Idle && moveState != EnumAseMoveState.Block)
             {
                 txtCannotAutoReason.Text = $"Move State = {moveState}";
@@ -1037,13 +1037,13 @@ namespace Mirle.Agv.AseMiddler.View
 
         private bool VehicleLocationLost()
         {
-            if (theVehicle.AseMoveStatus.LastSection == null || string.IsNullOrEmpty(theVehicle.AseMoveStatus.LastSection.Id))
+            if (Vehicle.AseMoveStatus.LastSection == null || string.IsNullOrEmpty(Vehicle.AseMoveStatus.LastSection.Id))
             {
                 txtCannotAutoReason.Text = "Section Lost";
                 txtCannotAutoReason.BackColor = Color.Pink;
                 return true;
             }
-            else if (theVehicle.AseMoveStatus.LastAddress == null || string.IsNullOrEmpty(theVehicle.AseMoveStatus.LastAddress.Id))
+            else if (Vehicle.AseMoveStatus.LastAddress == null || string.IsNullOrEmpty(Vehicle.AseMoveStatus.LastAddress.Id))
             {
                 txtCannotAutoReason.Text = "Address Lost";
                 txtCannotAutoReason.BackColor = Color.Pink;
@@ -1059,7 +1059,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                var reserveStop = theVehicle.AseMovingGuide.ReserveStop == com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
+                var reserveStop = Vehicle.AseMovingGuide.ReserveStop == com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
 
                 if (reserveStop)
                 {
@@ -1153,7 +1153,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 //tbxTransferCommand01Msg.Text = TransferCommandMsg;
 
-                var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+                var transferCommands = Vehicle.AgvcTransCmdBuffer.Values.ToList();
 
                 if (transferCommands.Count == 0)
                 {
@@ -1178,7 +1178,7 @@ namespace Mirle.Agv.AseMiddler.View
                     if (lstTransferStep[i].GetTransferStepType() == EnumTransferStepType.Empty)
                         step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}";
                     else
-                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({theVehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].LoadPortId})({theVehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].UnloadPortId})";
+                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({Vehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].LoadPortId})({Vehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].UnloadPortId})";
                 }
                 tbxTransferStepMsg.Text = step;
             }
@@ -1293,7 +1293,7 @@ namespace Mirle.Agv.AseMiddler.View
                         break;
                 }
 
-                btnAutoManual.Text = "Now : " + theVehicle.AutoState.ToString();
+                btnAutoManual.Text = "Now : " + Vehicle.AutoState.ToString();
 
             }
             catch (Exception ex)
@@ -1334,8 +1334,8 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
-                AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+                AseMovingGuide aseMovingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
 
                 var lastPos = aseMoveStatus.LastMapPosition;
                 string lastPosX = lastPos.X.ToString("F2");
@@ -1375,17 +1375,17 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                bool isCharging = theVehicle.IsCharging;
+                bool isCharging = Vehicle.IsCharging;
                 ucCharging.TagValue = isCharging ? "Yes" : "No";
                 ucBatteryCharging.TagValue = isCharging ? "Yes" : "No";
                 ucBatteryCharging.TagColor = isCharging ? Color.LightGreen : Color.Pink;
-                string batteryPercentage = theVehicle.AseBatteryStatus.Percentage.ToString("F1");
+                string batteryPercentage = Vehicle.AseBatteryStatus.Percentage.ToString("F1");
                 ucBatteryPercentage.TagValue = batteryPercentage;
                 aseRobotControlForm.BatteryPercentage = batteryPercentage;
-                string batteryVoltage = theVehicle.AseBatteryStatus.Voltage.ToString("F2");
+                string batteryVoltage = Vehicle.AseBatteryStatus.Voltage.ToString("F2");
                 ucBatteryVoltage.TagValue = batteryVoltage;
                 aseRobotControlForm.BatteryVoltage = batteryVoltage;
-                string batteryTemperature = theVehicle.AseBatteryStatus.Temperature.ToString("F1");
+                string batteryTemperature = Vehicle.AseBatteryStatus.Temperature.ToString("F1");
                 ucBatteryTemperature.TagValue = batteryTemperature;
                 aseRobotControlForm.BatteryTemperature = batteryTemperature;
             }
@@ -1398,15 +1398,15 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                AseRobotStatus aseRobotStatus = new AseRobotStatus(theVehicle.AseRobotStatus);
+                AseRobotStatus aseRobotStatus = new AseRobotStatus(Vehicle.AseRobotStatus);
                 ucRobotRobotState.TagValue = aseRobotStatus.RobotState.ToString();
                 ucRobotIsHome.TagValue = aseRobotStatus.IsHome.ToString();
                 ucRobotIsHome.TagColor = aseRobotStatus.IsHome ? Color.Black : Color.OrangeRed;
                 ucRobotHome.TagValue = aseRobotStatus.IsHome.ToString();
                 ucRobotHome.TagColor = aseRobotStatus.IsHome ? Color.Black : Color.OrangeRed;
 
-                AseCarrierSlotStatus slotL = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotL);
-                AseCarrierSlotStatus slotR = new AseCarrierSlotStatus(theVehicle.AseCarrierSlotR);
+                AseCarrierSlotStatus slotL = new AseCarrierSlotStatus(Vehicle.AseCarrierSlotL);
+                AseCarrierSlotStatus slotR = new AseCarrierSlotStatus(Vehicle.AseCarrierSlotR);
                 ucRobotSlotLState.TagValue = slotL.CarrierSlotStatus.ToString();
                 ucRobotSlotLId.TagValue = slotL.CarrierId;
                 ucLCstId.TagValue = slotL.CarrierId;
@@ -1519,7 +1519,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                switch (theVehicle.AutoState)
+                switch (Vehicle.AutoState)
                 {
                     case EnumAutoState.Auto:
                         mainFlowHandler.AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
@@ -1878,12 +1878,12 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void LogException(string classMethodName, string exMsg)
         {
-            mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
+            mirleLogger.Log(new LogFormat("Error", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", exMsg));
         }
 
         private void LogDebug(string classMethodName, string msg)
         {
-            mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
+            mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", msg));
         }
 
 

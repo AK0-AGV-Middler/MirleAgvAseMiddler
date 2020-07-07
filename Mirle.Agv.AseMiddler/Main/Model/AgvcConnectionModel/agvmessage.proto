@@ -515,6 +515,10 @@ message Timestamp {
 	CommandState_LoadEnroute = 1;
 	CommandState_UnloadEnroute = 2;
   }
+  enum ShelfStatus{
+    ShelfStatus_Disable = 0;
+	ShelfStatus_Enable = 1;
+  }
 
 
   message ID_43_STATUS_REQUEST {
@@ -559,6 +563,9 @@ message Timestamp {
 	double Speed = 35;
 	repeated string WillPassGuideSection = 36;
 	string SystemTime = 37;
+	ShelfStatus ShelfStatus_L = 38;
+	ShelfStatus ShelfStatus_R = 39;
+	string CurrentExcuteCmdId = 40;
   }
 
   message ID_144_STATUS_CHANGE_REP {
@@ -599,6 +606,9 @@ message Timestamp {
 	double Speed = 35;
 	repeated string WillPassGuideSection = 36;
 	string SystemTime = 37;
+	ShelfStatus ShelfStatus_L = 38;
+	ShelfStatus ShelfStatus_R = 39;
+	string CurrentExcuteCmdId = 40;
   }
   message ID_44_STATUS_CHANGE_RESPONSE {
 	int32 ReplyCode = 1;

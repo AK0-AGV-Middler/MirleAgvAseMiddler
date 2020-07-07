@@ -19,7 +19,6 @@ namespace Mirle.Agv.AseMiddler.Model
         public static Vehicle Instance { get { return theVehicle; } }
         public ConcurrentDictionary<string, AgvcTransCmd> AgvcTransCmdBuffer { get; set; } = new ConcurrentDictionary<string, AgvcTransCmd>();
         public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
-        public bool IsSimulation { get; set; } = false;
         public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public bool IsAgvcConnect { get; set; } = false;
 
@@ -54,14 +53,21 @@ namespace Mirle.Agv.AseMiddler.Model
         public int CmdDistance { get; set; }
         public string TeachingFromAddress { get; internal set; } = "";
         public string TeachingToAddress { get; internal set; } = "";
-        public VHActionStatus ActionStatus { get;  set; }
+        public VHActionStatus ActionStatus { get; set; }
         public bool IsOptimize { get; internal set; }
         public BCRReadResult LeftReadResult { get; set; } = BCRReadResult.BcrReadFail;
         public BCRReadResult RightReadResult { get; set; } = BCRReadResult.BcrReadFail;
 
         #endregion
 
-        private Vehicle() { }             
+        #region Configs
+
+        public MainFlowConfig MainFlowConfig { get; set; } = new MainFlowConfig();
+        public AgvcConnectorConfig AgvcConnectorConfig { get; set; } = new AgvcConnectorConfig();
+
+        #endregion
+
+        private Vehicle() { }
 
         public AseCarrierSlotStatus GetAseCarrierSlotStatus(EnumSlotNumber slotNumber)
         {
@@ -69,7 +75,7 @@ namespace Mirle.Agv.AseMiddler.Model
             {
                 case EnumSlotNumber.R:
                     return theVehicle.AseCarrierSlotR;
-                case EnumSlotNumber.L:                   
+                case EnumSlotNumber.L:
                 default:
                     return theVehicle.AseCarrierSlotL;
             }

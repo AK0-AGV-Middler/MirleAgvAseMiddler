@@ -23,6 +23,7 @@ namespace Mirle.Agv.AseMiddler.View
         private MainFlowHandler mainFlowHandler;
         private MainFlowConfig mainFlowConfig;
         private AgvcConnectorConfig agvcConnectorConfig;
+        public Vehicle Vehicle { get; set; } = Vehicle.Instance;
 
         public ConfigForm(MainFlowHandler mainFlowHandler)
         {
@@ -49,7 +50,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
+                mainFlowConfig = Vehicle.MainFlowConfig;
                 ShowMainFlowConfigCvOnForm(mainFlowConfig);
             }
             catch (Exception ex)
@@ -137,10 +138,10 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                mainFlowConfig = mainFlowHandler.GetMainFlowConfig();
+                mainFlowConfig = Vehicle.MainFlowConfig;
                 ShowMainFlowConfigCvOnForm(mainFlowConfig);
                 ShowMainFlowConfigSvOnForm(mainFlowConfig);
-                agvcConnectorConfig = mainFlowHandler.GetAgvcConnectorConfig();
+                agvcConnectorConfig = Vehicle.AgvcConnectorConfig;
                 ShowAgvcConnectorConfigCvOnForm(agvcConnectorConfig);
                 ShowAgvcConnectorConfigSvOnForm(agvcConnectorConfig);                    
             }
@@ -173,7 +174,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                agvcConnectorConfig = mainFlowHandler.GetAgvcConnectorConfig();
+                agvcConnectorConfig = Vehicle.AgvcConnectorConfig;
                 ShowAgvcConnectorConfigCvOnForm(agvcConnectorConfig);
             }
             catch (Exception ex)
