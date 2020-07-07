@@ -2791,7 +2791,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     Vehicle.AseMoveStatus = aseMoveStatus;
                     UpdateVehiclePositionManual();
-                    agvcConnector.ReportAddressPass();
+                    //agvcConnector.ReportAddressPass();
                     return false;
                 }
 
