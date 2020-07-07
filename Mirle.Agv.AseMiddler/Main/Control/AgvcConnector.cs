@@ -1374,7 +1374,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 SendRecv_Cmd136_CstIdReadReport(EnumSlotNumber.L);//200625 dabid+
             }
-            Thread.Sleep(500);
+            Thread.Sleep(50);
             if (Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
             {
                 SendRecv_Cmd136_CstRemove(EnumSlotNumber.R);
