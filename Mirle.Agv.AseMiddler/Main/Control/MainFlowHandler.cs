@@ -2789,8 +2789,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (!aseMovingGuide.GuideSectionIds.Any())
                 {
-                    Vehicle.AseMoveStatus = aseMoveStatus;
-                    UpdateVehiclePositionManual();
+                    //Vehicle.AseMoveStatus = aseMoveStatus;
+                    UpdateVehiclePositionManual(aseMoveStatus);
                     //agvcConnector.ReportAddressPass();
                     return false;
                 }
@@ -2848,13 +2848,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Vehicle.AseMoveStatus = aseMoveStatus;
             }
-            else if (Vehicle.AutoState == EnumAutoState.Manual)
+            else if (Vehicle.AutoState == EnumAutoState.Auto)
             {
-                if (mapHandler.IsPositionInThisSection(aseMoveStatus.LastSection, aseMoveStatus.LastMapPosition))
+                if (IsVehicleIdle())
+                {
+                    UpdateVehiclePositionInMovingStep(aseMoveStatus);
+                }
+                else
                 {
                     aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.LastSection.HeadAddress.Position, aseMoveStatus.LastMapPosition);
                     Vehicle.AseMoveStatus = aseMoveStatus;
                 }
+
             }
         }
 
@@ -2882,6 +2887,89 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+
+                #region find nearly address
+
+                double neerlyDistance = 999999;
+                foreach (MapAddress mapAddress in Mapinfo.addressMap.Values)
+                {
+                    double dis = mapHandler.GetDistance(aseMoveStatus.LastMapPosition, mapAddress.Position);
+
+                    if (dis < neerlyDistance)
+                    {
+                        neerlyDistance = dis;
+                        aseMoveStatus.NeerlyAddress = mapAddress;
+                    }
+                }
+
+                #endregion
+
+                #region find nearly section by nearly address
+
+                List<MapSection> sectionsContainNearlyAddress = new List<MapSection>();
+                foreach (MapSection mapSection in Mapinfo.sectionMap.Values)
+                {
+                    if (mapSection.InSection(aseMoveStatus.NeerlyAddress.Id))
+                    {
+                        sectionsContainNearlyAddress.Add(mapSection);
+                    }
+                }
+
+                if (sectionsContainNearlyAddress.Count == 0)
+                {
+                    alarmHandler.SetAlarmFromAgvm(42);
+                    throw new Exception($"Nearly Address({aseMoveStatus.NeerlyAddress.Id}) is isolate with sections.");
+                }
+
+                if (aseMoveStatus.LastSection.InSection(aseMoveStatus.NeerlyAddress.Id))
+                {
+                    aseMoveStatus.NeerlySection = aseMoveStatus.LastSection;
+                }
+                else
+                {
+                    aseMoveStatus.NeerlySection = sectionsContainNearlyAddress[0];
+                }
+
+                aseMoveStatus.NeerlySection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.NeerlyAddress.Position, aseMoveStatus.NeerlySection.HeadAddress.Position);
+
+                #endregion
+
+                #region IsReport
+
+                bool isReport = false;
+                if (aseMoveStatus.NeerlyAddress.Id != aseMoveStatus.LastAddress.Id)
+                {
+                    isReport = true;
+                }
+                if (aseMoveStatus.NeerlySection.Id != aseMoveStatus.LastSection.Id)
+                {
+                    isReport = true;
+                }
+
+                aseMoveStatus.LastSection = aseMoveStatus.NeerlySection;
+                aseMoveStatus.LastAddress = aseMoveStatus.NeerlyAddress;
+
+                Vehicle.AseMoveStatus = aseMoveStatus;
+
+                if (isReport)
+                {
+                    agvcConnector.ReportAddressPass();
+                }
+
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void UpdateVehiclePositionManual(AseMoveStatus aseMoveStatus)
+        {
+            try
+            {
+                //AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
 
                 #region find nearly address
 
