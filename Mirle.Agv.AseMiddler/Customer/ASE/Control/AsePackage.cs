@@ -462,7 +462,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
 
             if (primaryReceiveTransactions.Any())
-            {                
+            {
                 foreach (PSTransactionXClass psTransaction in primaryReceiveTransactions)
                 {
                     AutoReplyFromPsMessageMap(psTransaction);
@@ -656,23 +656,30 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                if (psMessage.Length < 0) return;
+                   
+                if(psMessage.Length == 1)
+                {
+                    aseMoveControl.MoveFinished(EnumMoveComplete.Fail);
+                    return;
+                }
+
                 ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport {psMessage.Substring(0, 1)}");
 
                 EnumAseArrival aseArrival = GetArrivalStatus(psMessage.Substring(0, 1));
 
                 ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport {aseArrival}");
 
-                ArrivalPosition(psMessage);
-
                 switch (aseArrival)
                 {
                     case EnumAseArrival.Fail:
                         aseMoveControl.MoveFinished(EnumMoveComplete.Fail);
-                        //OnAgvlErrorEvent?.Invoke(this, new EventArgs());
                         break;
                     case EnumAseArrival.Arrival:
+                        ArrivalPosition(psMessage);
                         break;
                     case EnumAseArrival.EndArrival:
+                        ArrivalPosition(psMessage);
                         aseMoveControl.MoveFinished(EnumMoveComplete.Success);
                         break;
                     default:

@@ -99,7 +99,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                //PausePositionWatcher();
                 OnMoveFinishedEvent?.Invoke(this, enumMoveComplete);
             }
             catch (Exception ex)
