@@ -1378,7 +1378,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             if (Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
             {
                 Send_Cmd136_CstRemove(EnumSlotNumber.R);
-
             }
             else
             {
