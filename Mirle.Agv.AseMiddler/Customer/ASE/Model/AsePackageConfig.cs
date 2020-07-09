@@ -14,5 +14,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public string AseMoveConfigFilePath { get; set; } = "AseMoveConfig.xml";
         public int WatchWifiSignalIntervalMs { get; set; } = 20000;
         public bool CanManualDeleteCST { get; set; } = false;
+        public int ScheduleIntervalMs { get; set; } = 100;
     }
 }

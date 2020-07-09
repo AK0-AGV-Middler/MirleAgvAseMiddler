@@ -23,13 +23,13 @@ namespace Mirle.Agv.AseMiddler.Model
 
         public AseMoveStatus(AseMoveStatus aseMoveStatus)
         {
+            this.LastMapPosition = aseMoveStatus.LastMapPosition;
             this.AseMoveState = aseMoveStatus.AseMoveState;           
             this.HeadDirection = aseMoveStatus.HeadDirection;
             this.MovingDirection = aseMoveStatus.MovingDirection;
             this.Speed = aseMoveStatus.Speed;
             this.LastSection = aseMoveStatus.LastSection;
             this.LastAddress = aseMoveStatus.LastAddress;
-            this.LastMapPosition = aseMoveStatus.LastMapPosition;
             this.NeerlyAddress = aseMoveStatus.NeerlyAddress;
             this.IsMoveEnd = aseMoveStatus.IsMoveEnd;
         }

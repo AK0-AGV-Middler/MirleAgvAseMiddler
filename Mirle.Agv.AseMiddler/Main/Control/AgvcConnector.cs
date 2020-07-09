@@ -1368,21 +1368,21 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (Vehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
             {
-                SendRecv_Cmd136_CstRemove(EnumSlotNumber.L);
+                Send_Cmd136_CstRemove(EnumSlotNumber.L);
             }
             else
             {
-                SendRecv_Cmd136_CstIdReadReport(EnumSlotNumber.L);//200625 dabid+
+                Send_Cmd136_CstIdReadReport(EnumSlotNumber.L);//200625 dabid+
             }
             Thread.Sleep(50);
             if (Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
             {
-                SendRecv_Cmd136_CstRemove(EnumSlotNumber.R);
+                Send_Cmd136_CstRemove(EnumSlotNumber.R);
 
             }
             else
             {
-                SendRecv_Cmd136_CstIdReadReport(EnumSlotNumber.R);//200625 dabid+
+                Send_Cmd136_CstIdReadReport(EnumSlotNumber.R);//200625 dabid+
             }
         }
         private void ShowTransferCmdToForm(AgvcTransCmd agvcTransCmd)
@@ -2254,7 +2254,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-        public void SendRecv_Cmd136_CstIdReadReport(EnumSlotNumber SlotNumber) //200625 dabid+
+        public void Send_Cmd136_CstIdReadReport(EnumSlotNumber SlotNumber) //200625 dabid+
         {
 
             AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
@@ -2276,33 +2276,35 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrapper.ImpTransEventRep = report;
 
-                LogSendMsg(wrapper);
+                SendCommandWrapper(wrapper);
 
-                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                string rtnMsg = "";
+                //LogSendMsg(wrapper);
 
-                TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
+                //ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
+                //string rtnMsg = "";
 
-                do
-                {
-                    returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
+                //TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
 
-                    if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                    {
-                        if (!string.IsNullOrEmpty(response.RenameCarrierID))
-                        {
-                            slotStatus.CarrierId = response.RenameCarrierID;
-                            OnCstRenameEvent?.Invoke(this, SlotNumber);
-                        }
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
-                    }
-                    else
-                    {
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport send wait timeout");
-                        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                    }
+                //do
+                //{
+                //    returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
 
-                } while (returnCode != TrxTcpIp.ReturnCode.Normal);
+                //    if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                //    {
+                //        if (!string.IsNullOrEmpty(response.RenameCarrierID))
+                //        {
+                //            slotStatus.CarrierId = response.RenameCarrierID;
+                //            OnCstRenameEvent?.Invoke(this, SlotNumber);
+                //        }
+                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
+                //    }
+                //    else
+                //    {
+                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport send wait timeout");
+                //        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                //    }
+
+                //} while (returnCode != TrxTcpIp.ReturnCode.Normal);
 
                 OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport success.");
 
@@ -2312,7 +2314,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-        public void SendRecv_Cmd136_CstRemove(EnumSlotNumber SlotNumber) //200625 dabid+
+        public void Send_Cmd136_CstRemove(EnumSlotNumber SlotNumber) //200625 dabid+
         {
 
             AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
@@ -2332,28 +2334,30 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrapper.ImpTransEventRep = report;
 
-                LogSendMsg(wrapper);
+                SendCommandWrapper(wrapper);
 
-                ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                string rtnMsg = "";
+                //LogSendMsg(wrapper);
 
-                TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
+                //ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
+                //string rtnMsg = "";
 
-                do
-                {
-                    returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
+                //TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
 
-                    if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                    {
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstRemove, AGVC reply OK.");
-                    }
-                    else
-                    {
-                        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstRemove send wait timeout");
-                        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                    }
+                //do
+                //{
+                //    returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
 
-                } while (returnCode != TrxTcpIp.ReturnCode.Normal);
+                //    if (returnCode == TrxTcpIp.ReturnCode.Normal)
+                //    {
+                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstRemove, AGVC reply OK.");
+                //    }
+                //    else
+                //    {
+                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstRemove send wait timeout");
+                //        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                //    }
+
+                //} while (returnCode != TrxTcpIp.ReturnCode.Normal);
 
                 OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport success.");
             }

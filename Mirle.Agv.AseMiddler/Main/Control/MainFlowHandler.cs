@@ -1979,7 +1979,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AseRobotControl_OnRobotCommandErrorEvent(object sender, RobotCommand robotCommand)
         {
             OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotCommandErrorEvent");
-            alarmHandler.SetAlarmFromAgvm(40);
             AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 

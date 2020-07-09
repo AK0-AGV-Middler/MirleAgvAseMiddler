@@ -12,6 +12,7 @@ using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
 using System.Threading;
 using SimpleWifi;
+using System.Collections.Concurrent;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -29,10 +30,22 @@ namespace Mirle.Agv.AseMiddler.Controller
         private AseMoveConfig aseMoveConfig = new AseMoveConfig();
         private Vehicle theVehicle = Vehicle.Instance;
         public Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
+        public Vehicle Vehicle { get; set; } = Vehicle.Instance;
+        public string LocalLogMsg { get; set; } = "";
+
         private Thread thdWatchWifiSignalStrength;
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
-        public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public uint WifiSignalStrength { get; set; } = 0;
+
+        private Thread thdSchedule;
+        public bool IsSchedulePause { get; set; } = false;
+
+        public ConcurrentQueue<PSMessageXClass> PrimarySendQueue { get; set; } = new ConcurrentQueue<PSMessageXClass>();
+        public ConcurrentQueue<PSTransactionXClass> SecondarySendQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
+        public ConcurrentQueue<PSTransactionXClass> PrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
+        public ConcurrentQueue<PSTransactionXClass> DealPrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
+        public ConcurrentQueue<PSTransactionXClass> SecondaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
+        private List<PSTransactionXClass> primaryReceiveTransactions;
 
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> AllPspLog;
@@ -52,89 +65,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             InitialAseRobotControl(gateTypeMap);
             InitialAseBatteryControl();
             InitialAseBuzzerControl();
-            InitialThread();
+            InitialThreads();
         }
 
-        private void InitialThread()
+        private void InitialThreads()
         {
             thdWatchWifiSignalStrength = new Thread(WatchWifiSignalStrength);
             thdWatchWifiSignalStrength.IsBackground = true;
             thdWatchWifiSignalStrength.Start();
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AsePackage : Start WatchWifiSignalStrength");
-        }
 
-        private void WatchWifiSignalStrength()
-        {
-            while (true)
-            {
-                try
-                {
-                    if (IsWatchWifiSignalStrengthPause)
-                    {
-                        SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
-
-                        continue;
-                    }
-
-                    if (psWrapper.IsConnected())
-                    {
-                        SendWifiSignalStrength();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
-                }
-            }
-        }
-
-        private void SendWifiSignalStrength()
-        {
-            try
-            {
-                if (Vehicle.Instance.IsAgvcConnect)
-                {
-                    List<AccessPoint> accessPoints = new Wifi().GetAccessPoints().ToList();
-                    if (accessPoints.Any())
-                    {
-                        foreach (var item in accessPoints)
-                        {
-                            if (item.IsConnected)
-                            {
-                                WifiSignalStrength = Math.Max(item.SignalStrength, 10);
-                            }
-                        }                        
-                    }
-                }
-                else
-                {
-                    WifiSignalStrength = 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-            finally
-            {
-                SendWifiSignalStrength(WifiSignalStrength);
-            }
-        }
-
-        private void SendWifiSignalStrength(uint signalStrength)
-        {
-            try
-            {
-                PrimarySend("19", signalStrength.ToString().PadLeft(3, '0'));
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
+            thdSchedule = new Thread(Schedule);
+            thdSchedule.IsBackground = true;
+            thdSchedule.Start();
         }
 
         private void InitialAseBuzzerControl()
@@ -245,6 +187,140 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        #region Threads
+
+        private void WatchWifiSignalStrength()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (IsWatchWifiSignalStrengthPause)
+                    {
+                        SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
+
+                        continue;
+                    }
+
+                    if (psWrapper.IsConnected())
+                    {
+                        SendWifiSignalStrength();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
+                }
+            }
+        }
+
+        private void SendWifiSignalStrength()
+        {
+            try
+            {
+                if (Vehicle.Instance.IsAgvcConnect)
+                {
+                    List<AccessPoint> accessPoints = new Wifi().GetAccessPoints().ToList();
+                    if (accessPoints.Any())
+                    {
+                        foreach (var item in accessPoints)
+                        {
+                            if (item.IsConnected)
+                            {
+                                WifiSignalStrength = Math.Max(item.SignalStrength, 10);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    WifiSignalStrength = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+            finally
+            {
+                SendWifiSignalStrength(WifiSignalStrength);
+            }
+        }
+
+        private void SendWifiSignalStrength(uint signalStrength)
+        {
+            try
+            {
+                PrimarySendEnqueue("P19", signalStrength.ToString().PadLeft(3, '0'));
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void Schedule()
+        {
+            while (true)
+            {
+                try
+                {
+
+                    if (IsSchedulePause)
+                    {
+                        SpinWait.SpinUntil(() => !IsSchedulePause, asePackageConfig.ScheduleIntervalMs);
+
+                        continue;
+                    }
+
+                    if (psWrapper.IsConnected())
+                    {
+                        if (PrimarySendQueue.Any())
+                        {
+                            PrimarySendQueue.TryDequeue(out PSMessageXClass psMessageObj);
+                            PrimarySend(psMessageObj);
+                        }
+
+                        if (SecondarySendQueue.Any())
+                        {
+                            SecondarySendQueue.TryDequeue(out PSTransactionXClass psTransaction);
+                            SecondarySend(psTransaction);
+                        }
+
+                        CheckPrimaryReceiveQueue();
+
+                        if (DealPrimaryReceiveQueue.Any())
+                        {
+                            DealPrimaryReceiveQueue.TryDequeue(out PSTransactionXClass psTransaction);
+                            DealPrimaryReceived(psTransaction);
+                        }
+
+                        if (SecondaryReceiveQueue.Any())
+                        {
+                            SecondaryReceiveQueue.TryDequeue(out PSTransactionXClass psTransaction);
+                            DealSecondaryReceived(psTransaction);
+                        }
+
+                        Thread.Sleep(10);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, asePackageConfig.ScheduleIntervalMs);
+                }
+            }
+        }
+
+        #endregion
+
         #region PrimarySend
 
         private void PsWrapper_OnPrimarySent(ref PSTransactionXClass transaction)
@@ -261,30 +337,37 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public PSTransactionXClass PrimarySend(string index, string message)
+        public void PrimarySendEnqueue(string index, string message)
         {
             try
             {
                 PSMessageXClass psMessage = new PSMessageXClass();
-                psMessage.Type = "P";
-                psMessage.Number = index.Substring(0, 2);
+                psMessage.Type = index.Substring(0, 1);
+                psMessage.Number = index.Substring(1, 2);
                 psMessage.PSMessage = message;
-                PSTransactionXClass psTransaction = new PSTransactionXClass();
-                psTransaction.PSPrimaryMessage = psMessage;
 
-                psWrapper.PrimarySent(ref psTransaction);
-
-                string msg = $"PSEND : [{psTransaction.PSPrimaryMessage.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(msg);
-                string hexMsg = $"PSEND : [Hex = {psTransaction.PSPrimaryMessage.HexString}]";
-                LogPsWrapper(hexMsg);
-                return psTransaction;
+                PrimarySendQueue.Enqueue(psMessage);
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return null;
+            }
+        }
+
+        public void PrimarySend(PSMessageXClass psMessageObj)
+        {
+            try
+            {
+                PSTransactionXClass psTransaction = new PSTransactionXClass();
+                psTransaction.PSPrimaryMessage = psMessageObj;
+
+                psWrapper.PrimarySent(ref psTransaction);
+
+                LogPsWrapper($"PSEND : [{psTransaction.PSPrimaryMessage.ToString()}]");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -292,11 +375,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                psWrapper.PrimarySent(ref psTransaction);
-
-                string msg = $"PrimarySent : [{psTransaction.PSPrimaryMessage.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(msg);
+                var primaryMessage = psTransaction.PSPrimaryMessage;
+                PrimarySendEnqueue(primaryMessage.Type + primaryMessage.Number, primaryMessage.PSMessage);
             }
             catch (Exception ex)
             {
@@ -310,7 +390,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-                PrimarySend("15", timeStamp);
+                PrimarySendEnqueue("P15", timeStamp);
             }
             catch (Exception ex)
             {
@@ -322,7 +402,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("31", "0");
+                PrimarySendEnqueue("P31", "0");
             }
             catch (Exception ex)
             {
@@ -341,8 +421,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string vehicleSlot = transCmd.SlotNumber.ToString();
                 string lotId = transCmd.LotId.PadLeft(40, '0').Substring(0, 40);
                 string cassetteId = transCmd.CassetteId;
-                string transferCommandInfo = string.Concat(commandStep,commandId, fromPortNum, toPortNum, vehicleSlot, lotId, cassetteId); ;
-                PrimarySend("37", transferCommandInfo);
+                string transferCommandInfo = string.Concat(commandStep, commandId, fromPortNum, toPortNum, vehicleSlot, lotId, cassetteId); ;
+                PrimarySendEnqueue("P37", transferCommandInfo);
             }
             catch (Exception ex)
             {
@@ -373,19 +453,32 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region PrimaryReceived
 
+        private void CheckPrimaryReceiveQueue()
+        {
+            lock (PrimaryReceiveQueue)
+            {
+                primaryReceiveTransactions = PrimaryReceiveQueue.ToList();
+                PrimaryReceiveQueue = new ConcurrentQueue<PSTransactionXClass>();
+            }
+
+            if (primaryReceiveTransactions.Any())
+            {                
+                foreach (PSTransactionXClass psTransaction in primaryReceiveTransactions)
+                {
+                    AutoReplyFromPsMessageMap(psTransaction);
+                }
+            }
+        }
+
         private void PsWrapper_OnPrimaryReceived(ref PSTransactionXClass transaction)
         {
             try
             {
-                var psMessageXClass = transaction.PSPrimaryMessage;
-                string msg = $"PRECV : [{psMessageXClass.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(msg);
-                string hexMsg = $"PRECV : [Hex = {psMessageXClass.HexString}]";
-                LogPsWrapper(hexMsg);
+                LogPsWrapper($"PRECV : [{transaction.PSPrimaryMessage.ToString()}]");
+                PrimaryReceiveQueue.Enqueue(transaction);
 
-                AutoReplyFromPsMessageMap(transaction);
-                DealPrimaryReceived(transaction);
+                //AutoReplyFromPsMessageMap(transaction);
+                //DealPrimaryReceived(transaction);
             }
             catch (Exception ex)
             {
@@ -492,6 +585,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         ReplyFromMsgMap(psTransaction);
                     }
+
+                    DealPrimaryReceiveQueue.Enqueue(psTransaction);
                 }
             }
             catch (Exception ex)
@@ -512,7 +607,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (psMessageMap.ContainsKey(secondaryTypeNumber))
                 {
                     psTransaction.PSSecondaryMessage = psMessageMap[secondaryTypeNumber];
-                    psWrapper.SecondarySent(ref psTransaction);
+                    //psWrapper.SecondarySent(ref psTransaction);
+                    SecondarySendQueue.Enqueue(psTransaction);
                 }
             }
             catch (Exception ex)
@@ -776,7 +872,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 string msg = "Carrier Slot Report, " + ex.Message;
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-                ImportantPspLog?.Invoke(this, msg);               
+                ImportantPspLog?.Invoke(this, msg);
             }
         }
 
@@ -900,7 +996,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
             for (int i = 0; i < transferCommands.Count; i++)
             {
-                SetTransferCommandInfoRequest(transferCommands[i],EnumCommandInfoStep.Begin);
+                SetTransferCommandInfoRequest(transferCommands[i], EnumCommandInfoStep.Begin);
             }
         }
 
@@ -908,7 +1004,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySend("P13","");
+                PrimarySendEnqueue("P13", "");
             }
             catch (Exception ex)
             {
@@ -923,7 +1019,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 string slotNumber = slotStatus.SlotNumber.ToString().Substring(0, 1);
                 string cstRenameString = string.Concat("0", slotNumber, "1", slotStatus.CarrierId);
-                PrimarySend("P25", cstRenameString);
+                PrimarySendEnqueue("P25", cstRenameString);
             }
             catch (Exception ex)
             {
@@ -940,13 +1036,19 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                var psMessageXClass = transaction.PSSecondaryMessage;
-                string msg = $"SSEND : [{psMessageXClass.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(msg);
-                string hexMsg = $"SSEND : [Hex = {psMessageXClass.HexString}]";
-                LogPsWrapper(hexMsg);
+                LogPsWrapper($"SSEND : [{transaction.PSSecondaryMessage.ToString()}]");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
 
+        public void SecondarySend(PSTransactionXClass psTransaction)
+        {
+            try
+            {
+                psWrapper.SecondarySent(ref psTransaction);
             }
             catch (Exception ex)
             {
@@ -958,7 +1060,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region SecondaryReceived
 
-        private void OnSecondaryReceived(PSTransactionXClass transaction)
+        private void DealSecondaryReceived(PSTransactionXClass transaction)
         {
             try
             {
@@ -1061,15 +1163,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                var psMessageXClass = transaction.PSSecondaryMessage;
-                string msg = $"SRECV : [{psMessageXClass.ToString()}]";
-                AllPspLog?.Invoke(this, msg);
-                LogPsWrapper(msg);
-                string hexMsg = $"SRECV : [Hex = {psMessageXClass.HexString}]";
-                LogPsWrapper(hexMsg);
+                LogPsWrapper($"SRECV : [{transaction.PSSecondaryMessage.ToString()}]");
 
-
-                OnSecondaryReceived(transaction);
+                SecondaryReceiveQueue.Enqueue(transaction);
             }
             catch (Exception ex)
             {
@@ -1084,20 +1180,26 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
         {
-            if (psMessage == null)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n PsMessage is null");
-                ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. Null.");
-            }
-            else
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
-                ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{psMessage.Number}. AGVL DisConnect");
-                OnAgvlErrorEvent.Invoke(this, new EventArgs());
-                psWrapper.Close();
-            }
-        }
+            if (psMessage == null) return;
 
+            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
+            ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{psMessage.Number}. AGVL DisConnect");
+            Thread.Sleep(50);
+            PrimarySendEnqueue(psMessage.Type + psMessage.Number, psMessage.PSMessage);
+
+            //if (psMessage == null)
+            //{
+            //    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n PsMessage is null");
+            //    ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. Null.");
+            //}
+            //else
+            //{
+            //    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
+            //    ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{psMessage.Number}. AGVL DisConnect");
+            //    OnAgvlErrorEvent.Invoke(this, new EventArgs());
+            //    //psWrapper.Close();
+            //}
+        }
 
         private void PsWrapper_OnConnectionStateChange(enumConnectState state)
         {
@@ -1216,6 +1318,23 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region Logger
 
+        public void AppendPspLogMsg(string msg)
+        {
+            try
+            {
+                LocalLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", LocalLogMsg);
+
+                if (LocalLogMsg.Length > 65535)
+                {
+                    LocalLogMsg = LocalLogMsg.Substring(65535);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
         private void LogException(string classMethodName, string exMsg)
         {
             mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
@@ -1229,6 +1348,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void LogPsWrapper(string msg)
         {
             mirleLogger.Log(new LogFormat("PsWrapper", "5", "AsePackage", "Device", "CarrierID", msg));
+            AppendPspLogMsg(msg);
         }
 
         #endregion

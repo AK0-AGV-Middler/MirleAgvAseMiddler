@@ -26,15 +26,15 @@ namespace Mirle.Agv.AseMiddler.View
         public AseAgvlConnectorForm(AsePackage asePackage)
         {
             InitializeComponent();
-            this.asePackage = asePackage;           
+            this.asePackage = asePackage;
             FitPspMessageList();
             InitialSingleMsgType();
-            asePackage.AllPspLog += AsePackage_AllPspLog;
+            //asePackage.AllPspLog += AsePackage_AllPspLog;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            textBox1.Text = PspLogMsg;
+            textBox1.Text = asePackage.LocalLogMsg;
         }
 
         private void btnHide_Click(object sender, EventArgs e)
@@ -74,30 +74,8 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (cbPsMessageType.Text.Equals("P"))
                 {
-                    string typeAndNumber = numPsMessageNumber.Value.ToString("00");
-                    asePackage.PrimarySend(typeAndNumber, txtPsMessageText.Text);
-                }              
-            }
-            catch (Exception ex)
-            {
-                OnException?.Invoke(this, ex.Message);
-            }
-        }
-
-        private void AsePackage_AllPspLog(object sender, string e)
-        {
-            AppendPspLogMsg(e);
-        }
-
-        private void AppendPspLogMsg(string msg)
-        {
-            try
-            {
-                PspLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", PspLogMsg);
-
-                if (PspLogMsg.Length > 65535)
-                {
-                    PspLogMsg = PspLogMsg.Substring(65535);
+                    string number = numPsMessageNumber.Value.ToString("00");
+                    asePackage.PrimarySendEnqueue("P" + number, txtPsMessageText.Text);
                 }
             }
             catch (Exception ex)
@@ -120,11 +98,6 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 OnException?.Invoke(this, ex.Message);
             }
-        }
-
-        private void LogPspLog(string classMethodName, string msg)
-        {
-            mirleLogger.Log(new LogFormat("PsWrapper", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
         private void btnSaveAutoReplyMessage_Click(object sender, EventArgs e)
