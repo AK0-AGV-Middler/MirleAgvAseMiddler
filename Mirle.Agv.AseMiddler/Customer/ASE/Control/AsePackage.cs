@@ -1000,11 +1000,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             aseBatteryControl.SendBatteryStatusRequest();
             SpinWait.SpinUntil(() => false, 50);
 
-            var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
-            for (int i = 0; i < transferCommands.Count; i++)
-            {
-                SetTransferCommandInfoRequest(transferCommands[i], EnumCommandInfoStep.Begin);
-            }
+            //var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
+            //for (int i = 0; i < transferCommands.Count; i++)
+            //{
+            //    SetTransferCommandInfoRequest(transferCommands[i], EnumCommandInfoStep.Begin);
+            //}
         }
 
         public void RequestVehicleToManual()

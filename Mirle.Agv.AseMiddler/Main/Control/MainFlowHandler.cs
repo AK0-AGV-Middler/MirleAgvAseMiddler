@@ -3678,16 +3678,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 if (Vehicle.AutoState != autoState)
                 {
-                    asePackage.SetVehicleAutoScenario();
-
                     switch (autoState)
                     {
                         case EnumAutoState.Auto:
+                            asePackage.SetVehicleAutoScenario();
                             alarmHandler.ResetAllAlarmsFromAgvm();
                             StopClearAndReset();
                             Vehicle.IsReAuto = true;
                             asePackage.aseRobotControl.ReadCarrierId();
                             Thread.Sleep(500);
+                            UpdateSlotStatus();
                             break;
                         case EnumAutoState.Manual:
                             StopClearAndReset();
@@ -3701,7 +3701,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
 
                 Vehicle.AutoState = autoState;
-                UpdateSlotStatus();
                 agvcConnector.StatusChangeReport();
 
                 OnMessageShowEvent?.Invoke(this, $"Switch to {autoState}");
