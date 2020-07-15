@@ -1,18 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PSDriver.PSDriver;
-using Mirle.Tools;
-using System.Reflection;
+﻿using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Model.Configs;
-using System.IO;
-using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
-using System.Threading;
+using Mirle.Tools;
+using PSDriver.PSDriver;
 using SimpleWifi;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -20,14 +18,11 @@ namespace Mirle.Agv.AseMiddler.Controller
     {
         public PSWrapperXClass psWrapper;
         public AseRobotControl aseRobotControl;
-        public AseBatteryControl aseBatteryControl;
-        public AseBuzzerControl aseBuzzerControl;
         public MirleLogger mirleLogger = MirleLogger.Instance;
         public AsePackageConfig asePackageConfig = new AsePackageConfig();
         public PspConnectionConfig pspConnectionConfig = new PspConnectionConfig();
         public AseBatteryConfig aseBatteryConfig = new AseBatteryConfig();
         public AseMoveConfig aseMoveConfig = new AseMoveConfig();
-        private Vehicle theVehicle = Vehicle.Instance;
         public Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public string LocalLogMsg { get; set; } = "";
@@ -43,6 +38,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         private Thread thdWatchPosition;
         public bool IsWatchPositionPause { get; private set; } = false;
 
+        private Thread thdWatchBatteryState;
+        public bool IsWatchBatteryStatusPause { get; private set; } = false;
 
         public ConcurrentQueue<PSMessageXClass> PrimarySendQueue { get; set; } = new ConcurrentQueue<PSMessageXClass>();
         public ConcurrentQueue<PSTransactionXClass> SecondarySendQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
@@ -52,23 +49,23 @@ namespace Mirle.Agv.AseMiddler.Controller
         private List<PSTransactionXClass> primaryReceiveTransactions;
 
         public event EventHandler<bool> OnConnectionChangeEvent;
-        public event EventHandler<string> AllPspLog;
         public event EventHandler<string> ImportantPspLog;
         public event EventHandler<string> OnStatusChangeReportEvent;
         public event EventHandler<AseMoveStatus> OnPartMoveArrivalEvent;
         public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
-        public event EventHandler OnAgvlErrorEvent;
         public event EventHandler<EnumAutoState> OnModeChangeEvent;
         public event EventHandler<AseCarrierSlotStatus> OnUpdateSlotStatusEvent;
         public event EventHandler<EnumMoveComplete> OnMoveFinishedEvent;
+        public event EventHandler<int> OnAlarmCodeSetEvent;
+        public event EventHandler<int> OnAlarmCodeResetEvent;
+        public event EventHandler OnAlarmCodeAllResetEvent;
+        public event EventHandler<double> OnBatteryPercentageChangeEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
             LoadConfigs();
             InitialWrapper();
             InitialAseRobotControl(gateTypeMap);
-            InitialAseBatteryControl();
-            InitialAseBuzzerControl();
             InitialThreads();
         }
 
@@ -85,14 +82,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             thdWatchPosition = new Thread(WatchPosition);
             thdWatchPosition.IsBackground = true;
             thdWatchPosition.Start();
+
+            thdWatchBatteryState = new Thread(WatchBatteryState);
+            thdWatchBatteryState.IsBackground = true;
+            thdWatchBatteryState.Start();
         }
 
         private void InitialAseBuzzerControl()
         {
             try
             {
-                aseBuzzerControl = new AseBuzzerControl();
-                aseBuzzerControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
             }
             catch (Exception ex)
             {
@@ -104,8 +103,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                aseBatteryControl = new AseBatteryControl(psWrapper, aseBatteryConfig);
-                aseBatteryControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
             }
             catch (Exception ex)
             {
@@ -131,11 +128,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             XmlHandler xmlHandler = new XmlHandler();
             asePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
             pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>(asePackageConfig.PspConnectionConfigFilePath);
-            theVehicle.PspSpecVersion = pspConnectionConfig.SpecVersion;
+            Vehicle.PspSpecVersion = pspConnectionConfig.SpecVersion;
             aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>(asePackageConfig.AseBatteryConfigFilePath);
             aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>(asePackageConfig.AseMoveConfigFilePath);
 
-            if (theVehicle.MainFlowConfig.IsSimulation)
+            if (Vehicle.MainFlowConfig.IsSimulation)
             {
                 aseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
                 aseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
@@ -154,7 +151,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 psWrapper.T6 = pspConnectionConfig.T6Timeout;
                 psWrapper.LinkTestIntervalMs = pspConnectionConfig.LinkTestIntervalMs;
 
-                if (!theVehicle.MainFlowConfig.IsSimulation)
+                if (!Vehicle.MainFlowConfig.IsSimulation)
                 {
                     psWrapper.Open();
                 }
@@ -217,7 +214,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (Vehicle.Instance.IsAgvcConnect)
+                if (Model.Vehicle.Instance.IsAgvcConnect)
                 {
                     List<AccessPoint> accessPoints = new Wifi().GetAccessPoints().ToList();
                     if (accessPoints.Any())
@@ -329,7 +326,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (psWrapper.IsConnected())
                     {
                         SendPositionReportRequest();
-                    }                    
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -354,7 +351,63 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+
         private void WatchBatteryState()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (IsWatchBatteryStatusPause)
+                    {
+                        SpinWait.SpinUntil(() => !IsWatchPositionPause, aseBatteryConfig.WatchBatteryStateInterval);
+                        continue;
+                    }
+
+                    if (psWrapper.IsConnected())
+                    {
+                        SendBatteryStatusRequest();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                }
+                finally
+                {
+                    if (Vehicle.IsCharging)
+                    {
+                        SpinWait.SpinUntil(() => false, aseBatteryConfig.WatchBatteryStateIntervalInCharging);
+                    }
+                    else
+                    {
+                        SpinWait.SpinUntil(() => false, aseBatteryConfig.WatchBatteryStateInterval);
+                    }
+                }
+            }
+        }
+
+        public void PauseWatchBatteryState()
+        {
+            IsWatchBatteryStatusPause = true;
+        }
+
+        public void ResumeWatchBatteryState()
+        {
+            IsWatchBatteryStatusPause = false;
+        }
+
+        public void SendBatteryStatusRequest()
+        {
+            try
+            {
+                PrimarySendEnqueue("P35", "");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
 
         #endregion
 
@@ -491,6 +544,50 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PrimarySendEnqueue("P45", robotCommandInfo);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void SetAlarmCode(int alarmCode, bool isSet)
+        {
+            try
+            {
+                string isSetString = isSet ? "1" : "0";
+                string alarmCodeString = alarmCode.ToString(new string('0', 6));
+                string psMessage = string.Concat(isSetString, alarmCodeString);
+                PrimarySendEnqueue("P61", psMessage);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void ResetAllAlarmCode(object sneder, EventArgs eventArgs)
+        {
+            try
+            {
+                PrimarySendEnqueue("P63", "");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
+        {
+            SetAlarmCode(alarm.Id, true);
+        }
+
+        public void BuzzerOff()
+        {
+            try
+            {
+                PrimarySendEnqueue("P65", "");
             }
             catch (Exception ex)
             {
@@ -706,8 +803,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 if (psMessage.Length < 0) return;
-                   
-                if(psMessage.Length == 1)
+
+                if (psMessage.Length == 1)
                 {
                     MoveFinished(EnumMoveComplete.Fail);
                     return;
@@ -765,7 +862,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
 
                 double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
                 double y = GetPositionFromPsMessage(psMessage.Substring(10, 9));
@@ -814,10 +911,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                aseBuzzerControl.OnAlarmCodeAllReset();
-
                 OnStatusChangeReportEvent?.Invoke(this, $"AllAlarmReset:");
 
+                OnAlarmCodeAllResetEvent?.Invoke(this, new EventArgs());
             }
             catch (Exception ex)
             {
@@ -833,9 +929,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 bool isAlarmSet = psMessage.Substring(0, 1) == "1";
                 int alarmCode = int.Parse(psMessage.Substring(1, 6));
 
-                aseBuzzerControl.OnAlarmCodeSet(alarmCode, isAlarmSet);
-
-                OnStatusChangeReportEvent?.Invoke(this, $"AlarmReport:[{ alarmCode}]");
+                if (isAlarmSet)
+                {
+                    OnAlarmCodeSetEvent?.Invoke(this, alarmCode);
+                }
+                else
+                {
+                    OnAlarmCodeResetEvent?.Invoke(this, alarmCode);
+                }
             }
             catch (Exception ex)
             {
@@ -851,10 +952,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 bool isCharging = psMessage.Substring(0, 1) == "1";
                 if (isCharging)
                 {
-                    theVehicle.CheckStartChargeReplyEnd = true;
+                    Vehicle.CheckStartChargeReplyEnd = true;
                 }
-                theVehicle.IsCharging = isCharging;
-                OnStatusChangeReportEvent?.Invoke(this, $"Local Update Charge Status :[{ theVehicle.IsCharging }]");
+                Vehicle.IsCharging = isCharging;
+                OnStatusChangeReportEvent?.Invoke(this, $"Local Update Charge Status :[{ Vehicle.IsCharging }]");
             }
             catch (Exception ex)
             {
@@ -902,6 +1003,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     bool manualDeleteCst = psMessage.Substring(0, 1) == "1";
                     aseCarrierSlotStatus.ManualDeleteCST = manualDeleteCst;
+                    if (manualDeleteCst)
+                    {
+                        OnUpdateSlotStatusEvent?.Invoke(this, aseCarrierSlotStatus);
+                        return;
+                    }
 
                     aseCarrierSlotStatus.CarrierSlotStatus = GetCarrierSlotStatus(psMessage.Substring(2, 1));
                     aseCarrierSlotStatus.CarrierId = psMessage.Substring(3);
@@ -955,9 +1061,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseRobotStatus.RobotState = GetRobotStatus(psMessage.Substring(0, 1));
                 aseRobotStatus.IsHome = psMessage.Substring(1, 1) == "1";
 
-                theVehicle.AseRobotStatus = aseRobotStatus;
+                Vehicle.AseRobotStatus = aseRobotStatus;
 
-                OnStatusChangeReportEvent?.Invoke(this, $"UpdateRobotStatus:[{theVehicle.AseRobotStatus.RobotState}][RobotHome={theVehicle.AseRobotStatus.IsHome}]");
+                OnStatusChangeReportEvent?.Invoke(this, $"UpdateRobotStatus:[{Vehicle.AseRobotStatus.RobotState}][RobotHome={Vehicle.AseRobotStatus.IsHome}]");
             }
             catch (Exception ex)
             {
@@ -985,12 +1091,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
                 aseMoveStatus.AseMoveState = GetMoveStatus(psMessage.Substring(0, 1));
                 aseMoveStatus.HeadDirection = GetIntTryParse(psMessage.Substring(1, 3));
-                theVehicle.AseMoveStatus = aseMoveStatus;
+                Vehicle.AseMoveStatus = aseMoveStatus;
 
-                OnStatusChangeReportEvent?.Invoke(this, $"UpdateMoveStatus:[{theVehicle.AseMoveStatus.AseMoveState}]");
+                OnStatusChangeReportEvent?.Invoke(this, $"UpdateMoveStatus:[{Vehicle.AseMoveStatus.AseMoveState}]");
             }
             catch (Exception ex)
             {
@@ -1037,23 +1143,14 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void SetVehicleAutoScenario()
         {
-            //SetLocalDateTime();
-            //SpinWait.SpinUntil(() => false, 1000);
-
             AllAgvlStatusReportRequest();
             SpinWait.SpinUntil(() => false, 50);
 
             SendPositionReportRequest();
             SpinWait.SpinUntil(() => false, 50);
 
-            aseBatteryControl.SendBatteryStatusRequest();
+            SendBatteryStatusRequest();
             SpinWait.SpinUntil(() => false, 50);
-
-            //var transferCommands = theVehicle.AgvcTransCmdBuffer.Values.ToList();
-            //for (int i = 0; i < transferCommands.Count; i++)
-            //{
-            //    SetTransferCommandInfoRequest(transferCommands[i], EnumCommandInfoStep.Begin);
-            //}
         }
 
         public void RequestVehicleToManual()
@@ -1083,6 +1180,26 @@ namespace Mirle.Agv.AseMiddler.Controller
                 ImportantPspLog?.Invoke(this, ex.Message);
             }
         }
+
+        public void OnAlarmCodeSet(int alarmCode, bool isSet)
+        {
+            try
+            {
+                if (isSet)
+                {
+                    OnAlarmCodeSetEvent?.Invoke(this, alarmCode);
+                }
+                else
+                {
+                    OnAlarmCodeResetEvent?.Invoke(this, alarmCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
 
         #endregion
 
@@ -1153,25 +1270,18 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(theVehicle.AseBatteryStatus);
+                AseBatteryStatus aseBatteryStatus = new AseBatteryStatus(Vehicle.AseBatteryStatus);
                 aseBatteryStatus.Percentage = GetIntTryParse(psMessage.Substring(0, 3));
                 aseBatteryStatus.Voltage = GetIntTryParse(psMessage.Substring(3, 4)) * 0.01;
                 aseBatteryStatus.Temperature = GetIntTryParse(psMessage.Substring(7, 3));
                 //200522 dabid+ To Report 144 While Percentage diff
-                if (theVehicle.AseBatteryStatus.Percentage != aseBatteryStatus.Percentage)
+                if (Vehicle.AseBatteryStatus.Percentage != aseBatteryStatus.Percentage)
                 {
-                    aseBatteryControl.SetPercentage(aseBatteryStatus.Percentage);
+                    SetPercentage(aseBatteryStatus.Percentage);
                 }
 
-                theVehicle.AseBatteryStatus = aseBatteryStatus;
+                Vehicle.AseBatteryStatus = aseBatteryStatus;
 
-                //if (theVehicle.IsCharging)
-                //{
-                //    if (aseBatteryStatus.Percentage + 3 >= aseBatteryConfig.FullChargePercentage)
-                //    {
-                //        aseBatteryControl.FullCharge();
-                //    }
-                //}
             }
             catch (Exception ex)
             {
@@ -1184,7 +1294,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(theVehicle.AseMoveStatus);
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
                 aseMoveStatus.AseMoveState = GetMoveStatus(psMessage.Substring(0, 1));
                 double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
                 double y = GetPositionFromPsMessage(psMessage.Substring(10, 9));
@@ -1346,7 +1456,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             versionInfoRequestPsMessage.PSMessage = "";
             psMessageMap.Add("P17", versionInfoRequestPsMessage);
 
-            string versionInfo = string.Concat("Sw", theVehicle.SoftwareVersion.PadRight(13), "Sp", theVehicle.PspSpecVersion.PadRight(5));
+            string versionInfo = string.Concat("Sw", Vehicle.SoftwareVersion.PadRight(13), "Sp", Vehicle.PspSpecVersion.PadRight(5));
             PSMessageXClass versionInfoRequestAckPsMessage = new PSMessageXClass();
             versionInfoRequestAckPsMessage.Type = "S";
             versionInfoRequestAckPsMessage.Number = "18";
@@ -1372,6 +1482,68 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #endregion
 
+        #region Battery Control
+
+        public void SetPercentage(int percentage)
+        {
+            try
+            {
+                if (Math.Abs(percentage - Vehicle.AseBatteryStatus.Percentage) >= 1)
+                {
+                    Vehicle.AseBatteryStatus.Percentage = percentage;
+                    OnBatteryPercentageChangeEvent?.Invoke(this, percentage);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void StopCharge()
+        {
+            try
+            {
+                //if (!theVehicle.IsCharging) return;
+
+                PrimarySendEnqueue("P47", "0");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void StartCharge(EnumAddressDirection chargeDirection)
+        {
+            try
+            {
+                //if (theVehicle.CheckStartChargeReplyEnd) return; //200702 dabid-
+                string chargeDirectionString;
+                switch (chargeDirection)
+                {
+                    case EnumAddressDirection.Left:
+                        chargeDirectionString = "1";
+                        break;
+                    case EnumAddressDirection.Right:
+                        chargeDirectionString = "2";
+                        break;
+                    case EnumAddressDirection.None:
+                    default:
+                        throw new Exception($"Start charge command direction error.[{chargeDirection}]");
+                }
+                PrimarySendEnqueue("P47", chargeDirectionString);
+
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+
+        #endregion
+
         #region Move Control
 
         public void MoveFinished(EnumMoveComplete enumMoveComplete)
@@ -1384,7 +1556,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }   
+        }
 
         public void PartMove(MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumIsExecute keepOrGo, EnumSlotSelect openSlot = EnumSlotSelect.None)
         {
@@ -1411,7 +1583,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.Instance.AseMoveStatus);
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Model.Vehicle.Instance.AseMoveStatus);
                 string beginString = ((int)enumAseMoveCommandIsEnd).ToString();
                 string positionX = GetPositionString(aseMoveStatus.LastAddress.Position.X);
                 string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);

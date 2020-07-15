@@ -227,7 +227,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
                 asePackage.OnUpdateSlotStatusEvent += AsePackage_OnUpdateSlotStatusEvent;
 
-                asePackage.OnAgvlErrorEvent += AsePackage_OnAgvlErrorEvent;
                 asePackage.OnModeChangeEvent += AsePackage_OnModeChangeEvent;
 
 
@@ -240,20 +239,20 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.aseRobotControl.OnReadCarrierIdFinishEvent += AseRobotControl_OnReadCarrierIdFinishEvent;
 
                 //來自IBatterysControl的電量改變訊息, Send to middleAgent
-                asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
-                asePackage.aseBatteryControl.OnBatteryPercentageChangeEvent += AseBatteryControl_OnBatteryPercentageChangeEvent;
+                asePackage.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
+                asePackage.OnBatteryPercentageChangeEvent += AseBatteryControl_OnBatteryPercentageChangeEvent;
 
                 asePackage.OnStatusChangeReportEvent += AsePackage_OnStatusChangeReportEvent;
 
                 //來自AlarmHandler的SetAlarm/ResetOneAlarm/ResetAllAlarm發生警告, Send to MainFlow,middleAgent               
 
-                alarmHandler.SetAlarmToAgvl += asePackage.aseBuzzerControl.AlarmHandler_OnSetAlarmEvent;
+                alarmHandler.SetAlarmToAgvl += asePackage.AlarmHandler_OnSetAlarmEvent;
                 alarmHandler.SetAlarmToAgvc += agvcConnector.SetlAlarmToAgvc;
-                alarmHandler.ResetAllAlarmsToAgvl += asePackage.aseBuzzerControl.ResetAllAlarmCode;
+                alarmHandler.ResetAllAlarmsToAgvl += asePackage.ResetAllAlarmCode;
                 alarmHandler.ResetAllAlarmsToAgvc += agvcConnector.ResetAllAlarmsToAgvc;
 
-                asePackage.aseBuzzerControl.OnAlarmCodeSetEvent += AseBuzzerControl_OnAlarmCodeSetEvent1;
-                asePackage.aseBuzzerControl.OnAlarmCodeResetEvent += AseBuzzerControl_OnAlarmCodeResetEvent;
+                asePackage.OnAlarmCodeSetEvent += AsePackage_OnAlarmCodeSetEvent1;
+                asePackage.OnAlarmCodeResetEvent += AsePackage_OnAlarmCodeResetEvent;
 
                 asePackage.OnConnectionChangeEvent += AsePackage_OnConnectionChangeEvent;
 
@@ -2488,30 +2487,63 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                             if (nextCmd.EnrouteState == CommandState.LoadEnroute)
                             {
-                                var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
-                                if (disCurCmdUnload <= disNextCmdLoad)
+                                if (curCmd.UnloadAddressId == nextCmd.LoadAddressId)
                                 {
-                                    TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                    TransferStepsAddUnloadCmdInfo(curCmd);
+                                    if (int.Parse(curCmd.UnloadPortId) >= int.Parse(nextCmd.LoadPortId))
+                                    {
+                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                        TransferStepsAddUnloadCmdInfo(curCmd);
+                                    }
+                                    else
+                                    {
+
+                                        TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                                        TransferStepsAddLoadCmdInfo(nextCmd);
+                                    }
                                 }
                                 else
                                 {
-                                    TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
-                                    TransferStepsAddLoadCmdInfo(nextCmd);
+                                    var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
+                                    if (disCurCmdUnload <= disNextCmdLoad)
+                                    {
+                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                        TransferStepsAddUnloadCmdInfo(curCmd);
+                                    }
+                                    else
+                                    {
+                                        TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                                        TransferStepsAddLoadCmdInfo(nextCmd);
+                                    }
                                 }
                             }
                             else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
                             {
-                                var disNextCmdUnload = DistanceFromLastPosition(nextCmd.UnloadAddressId);
-                                if (disCurCmdUnload <= disNextCmdUnload)
+                                if (curCmd.UnloadAddressId == nextCmd.UnloadAddressId)
                                 {
-                                    TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                    TransferStepsAddUnloadCmdInfo(curCmd);
+                                    if (int.Parse(curCmd.UnloadPortId) >= int.Parse(nextCmd.UnloadPortId))
+                                    {
+                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                        TransferStepsAddUnloadCmdInfo(curCmd);
+                                    }
+                                    else
+                                    {
+                                        TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
+                                        TransferStepsAddUnloadCmdInfo(nextCmd);
+                                    }
                                 }
                                 else
                                 {
-                                    TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
-                                    TransferStepsAddUnloadCmdInfo(nextCmd);
+                                    var disNextCmdUnload = DistanceFromLastPosition(nextCmd.UnloadAddressId);
+                                    if (disCurCmdUnload <= disNextCmdUnload)
+                                    {
+                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                        TransferStepsAddUnloadCmdInfo(curCmd);
+                                    }
+                                    else
+                                    {
+                                        TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
+                                        TransferStepsAddUnloadCmdInfo(nextCmd);
+                                    }
                                 }
                             }
                         }
@@ -3095,7 +3127,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (Vehicle.MainFlowConfig.IsSimulation) return;
 
                     Vehicle.CheckStartChargeReplyEnd = false;
-                    asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
+                    asePackage.StartCharge(address.ChargeDirection);
 
                     SpinWait.SpinUntil(() => Vehicle.CheckStartChargeReplyEnd, 30 * 1000);
 
@@ -3108,7 +3140,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         Vehicle.IsCharging = false;
                         alarmHandler.SetAlarmFromAgvm(000013);
-                        asePackage.aseBatteryControl.StopCharge();
+                        asePackage.StopCharge();
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;
@@ -3151,7 +3183,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (Vehicle.MainFlowConfig.IsSimulation) return;
 
                     Vehicle.CheckStartChargeReplyEnd = false;
-                    asePackage.aseBatteryControl.StartCharge(address.ChargeDirection);
+                    asePackage.StartCharge(address.ChargeDirection);
 
                     SpinWait.SpinUntil(() => Vehicle.CheckStartChargeReplyEnd, 30 * 1000);
 
@@ -3164,7 +3196,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         Vehicle.IsCharging = false;
                         alarmHandler.SetAlarmFromAgvm(000013);
-                        asePackage.aseBatteryControl.StopCharge();
+                        asePackage.StopCharge();
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;
@@ -3198,7 +3230,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     //in starting charge
                     if (!Vehicle.CheckStartChargeReplyEnd) Thread.Sleep(Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs);
 
-                    asePackage.aseBatteryControl.StopCharge();
+                    asePackage.StopCharge();
 
                     SpinWait.SpinUntil(() => !Vehicle.IsCharging, Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs);
 
@@ -3340,7 +3372,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             asePackage.MoveStop();
             asePackage.aseRobotControl.ClearRobotCommand();
-            asePackage.aseBatteryControl.StopCharge();
+            asePackage.StopCharge();
 
             var msg = $"MainFlow : Stop Vehicle, [MoveState={Vehicle.AseMoveStatus.AseMoveState}][IsCharging={Vehicle.IsCharging}]";
             OnMessageShowEvent?.Invoke(this, msg);
@@ -3353,7 +3385,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void SetupVehicleSoc(int percentage)
         {
-            asePackage.aseBatteryControl.SetPercentage(percentage);
+            asePackage.SetPercentage(percentage);
         }
 
         private void AgvcConnector_OnRenameCassetteIdEvent(object sender, AseCarrierSlotStatus e)
@@ -3609,7 +3641,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                asePackage.aseBuzzerControl.BuzzerOff();
+                asePackage.BuzzerOff();
             }
             catch (Exception ex)
             {
@@ -3646,13 +3678,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         case EnumSlotNumber.L:
                             Vehicle.AseCarrierSlotL = slotStatus;
-                            //TODO : 136 ToAgvc Manual Delete CST
                             break;
                         case EnumSlotNumber.R:
                             Vehicle.AseCarrierSlotR = slotStatus;
-                            //TODO : 136 ToAgvc Manual Delete CST
                             break;
                     }
+
+                    agvcConnector.Send_Cmd136_CstRemove(slotStatus.SlotNumber);
                 }
                 else
                 {
@@ -3818,17 +3850,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             Vehicle.IsAgvcConnect = e;
         }
 
-        private void AsePackage_OnAgvlErrorEvent(object sender, EventArgs e)
-        {
-            alarmHandler.SetAlarmFromAgvl(40);
-        }
-
-        private void AseBuzzerControl_OnAlarmCodeResetEvent(object sender, int e)
+        private void AsePackage_OnAlarmCodeResetEvent(object sender, int e)
         {
             alarmHandler.ResetAllAlarmsFromAgvl();
         }
 
-        private void AseBuzzerControl_OnAlarmCodeSetEvent1(object sender, int id)
+        private void AsePackage_OnAlarmCodeSetEvent1(object sender, int id)
         {
             alarmHandler.SetAlarmFromAgvl(id);
         }

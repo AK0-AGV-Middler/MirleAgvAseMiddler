@@ -501,7 +501,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 EnumAddressDirection chargeDirection = (EnumAddressDirection)boxChargeDirection.SelectedItem;
 
-                asePackage.aseBatteryControl.StartCharge(chargeDirection);
+                asePackage.StartCharge(chargeDirection);
             }
             catch (Exception ex)
             {
@@ -513,7 +513,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                asePackage.aseBatteryControl.StopCharge();
+                asePackage.StopCharge();
             }
             catch (Exception ex)
             {

@@ -89,7 +89,7 @@ namespace Mirle.Agv.AseMiddler.View
             InitialSoc();
             asePackage.AllAgvlStatusReportRequest();
             asePackage.SendPositionReportRequest();
-            asePackage.aseBatteryControl.SendBatteryStatusRequest();
+            asePackage.SendBatteryStatusRequest();
             InitialConnectionAndCarrierStatus();
             btnKeyInPosition.Visible = Vehicle.MainFlowConfig.IsSimulation;
             btnKeyInSoc.Visible = Vehicle.MainFlowConfig.IsSimulation;
@@ -532,7 +532,7 @@ namespace Mirle.Agv.AseMiddler.View
             SpinWait.SpinUntil(() => false, 50);
             asePackage.SendPositionReportRequest();
             SpinWait.SpinUntil(() => false, 50);
-            asePackage.aseBatteryControl.SendBatteryStatusRequest();
+            asePackage.SendBatteryStatusRequest();
             btnRefreshStatus.Enabled = true;
         }
 
