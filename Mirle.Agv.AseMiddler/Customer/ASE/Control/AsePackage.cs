@@ -28,8 +28,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string LocalLogMsg { get; set; } = "";
         public string MoveStopResult { get; set; } = "";
 
-        public string ABCDE { get; set; } = "";
-
         private Thread thdWatchWifiSignalStrength;
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
         public uint WifiSignalStrength { get; set; } = 0;
