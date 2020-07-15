@@ -555,11 +555,11 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 btnRefreshRobotState.Enabled = false;
 
-                asePackage.aseRobotControl.RefreshRobotState();
+                asePackage.RefreshRobotState();
 
                 SpinWait.SpinUntil(() => false, 50);
 
-                asePackage.aseRobotControl.RefreshCarrierSlotState();
+                asePackage.RefreshCarrierSlotState();
 
                 btnRefreshRobotState.Enabled = true;
             }

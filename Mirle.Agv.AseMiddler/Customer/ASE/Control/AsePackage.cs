@@ -17,7 +17,6 @@ namespace Mirle.Agv.AseMiddler.Controller
     public class AsePackage
     {
         public PSWrapperXClass psWrapper;
-        public AseRobotControl aseRobotControl;
         public MirleLogger mirleLogger = MirleLogger.Instance;
         public AsePackageConfig asePackageConfig = new AsePackageConfig();
         public PspConnectionConfig pspConnectionConfig = new PspConnectionConfig();
@@ -27,6 +26,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public string LocalLogMsg { get; set; } = "";
         public string MoveStopResult { get; set; } = "";
+
+        public RobotCommand RobotCommand { get; set; }
+
         private Thread thdWatchWifiSignalStrength;
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
         public uint WifiSignalStrength { get; set; } = 0;
@@ -59,12 +61,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<int> OnAlarmCodeResetEvent;
         public event EventHandler OnAlarmCodeAllResetEvent;
         public event EventHandler<double> OnBatteryPercentageChangeEvent;
+        public event EventHandler<EnumSlotNumber> OnReadCarrierIdFinishEvent;
+        public event EventHandler<RobotCommand> OnRobotInterlockErrorEvent;
+        public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
+        public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
+        public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
 
-        public AsePackage(Dictionary<string, string> gateTypeMap)
+        public AsePackage()
         {
             LoadConfigs();
             InitialWrapper();
-            InitialAseRobotControl(gateTypeMap);
             InitialThreads();
         }
 
@@ -85,41 +91,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             thdWatchBatteryState = new Thread(WatchBatteryState);
             thdWatchBatteryState.IsBackground = true;
             thdWatchBatteryState.Start();
-        }
-
-        private void InitialAseBuzzerControl()
-        {
-            try
-            {
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void InitialAseBatteryControl()
-        {
-            try
-            {
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void InitialAseRobotControl(Dictionary<string, string> gateTypeMap)
-        {
-            try
-            {
-                aseRobotControl = new AseRobotControl(gateTypeMap);
-                aseRobotControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
         }
 
         private void LoadConfigs()
@@ -594,6 +565,105 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void ClearRobotCommand()
+        {
+            try
+            {
+                PrimarySendEnqueue("P49", "");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void ReadCarrierId()
+        {
+            try
+            {
+                PrimarySendEnqueue("P31", "3");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void DoRobotCommand(RobotCommand robotCommand)
+        {
+            try
+            {
+                RobotCommand = robotCommand;
+                string robotCommandString = GetRobotCommandString();
+                PrimarySendEnqueue("P45", robotCommandString);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void RefreshRobotState()
+        {
+            try
+            {
+                PrimarySendEnqueue("P31", "2");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void RefreshCarrierSlotState()
+        {
+            try
+            {
+                PrimarySendEnqueue("P31", "3");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private string GetRobotCommandString()
+        {
+            try
+            {
+                string pioDirection = ((int)RobotCommand.PioDirection).ToString();
+                string fromPort = "";
+                string toPort = "";
+                switch (RobotCommand.GetTransferStepType())
+                {
+                    case EnumTransferStepType.Load:
+                        fromPort = RobotCommand.PortAddressId.PadLeft(5, '0');
+                        toPort = RobotCommand.SlotNumber.ToString().PadLeft(5, '0');
+                        break;
+                    case EnumTransferStepType.Unload:
+                        fromPort = RobotCommand.SlotNumber.ToString().PadLeft(5, '0');
+                        toPort = RobotCommand.PortAddressId.PadLeft(5, '0');
+                        break;
+                    case EnumTransferStepType.Move:
+                    case EnumTransferStepType.MoveToCharger:
+                    case EnumTransferStepType.Empty:
+                    default:
+                        throw new Exception($"Robot command type error.[{RobotCommand.GetTransferStepType()}]");
+                }
+
+                string gateType = RobotCommand.GateType.Substring(0, 1);
+                string portNumber = RobotCommand.PortNumber.Substring(0, 1);
+
+                return string.Concat(pioDirection, fromPort, toPort, gateType, portNumber).PadRight(24, '0');
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                return "";
+            }
+        }
+
+
         #endregion
 
         #region PrimaryReceived
@@ -699,13 +769,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 switch (finishedMsg)
                 {
                     case "Finished":
-                        aseRobotControl.OnRobotCommandFinish();
+                        OnRobotCommandFinishEvent?.Invoke(this, RobotCommand);
                         break;
                     case "InterlockError":
-                        aseRobotControl.OnRobotInterlockError();
+                        OnRobotInterlockErrorEvent?.Invoke(this, RobotCommand);
                         break;
                     case "RobotError":
-                        aseRobotControl.OnRobotCommandError();
+                        OnRobotCommandErrorEvent?.Invoke(this, RobotCommand);
                         break;
                     default:
                         throw new Exception($"Can not parse robot command finished report.[{finishedMsg}]");
@@ -716,7 +786,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 ImportantPspLog?.Invoke(this, ex.Message);
-                aseRobotControl.OnRobotCommandError();
+                OnRobotCommandErrorEvent?.Invoke(this, RobotCommand);
             }
         }
 
@@ -1540,6 +1610,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+
+        #endregion
+
+        #region Robot Control
 
         #endregion
 

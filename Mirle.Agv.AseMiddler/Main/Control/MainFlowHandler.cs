@@ -105,7 +105,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             Vehicle = Vehicle.Instance;
             LoggersInitial();
-            XmlInitial();           
+            XmlInitial();
             VehicleInitial();
             ControllersInitial();
             EventInitial();
@@ -170,7 +170,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mapHandler = new MapHandler(mapConfig);
                 Mapinfo = mapHandler.theMapInfo;
                 agvcConnector = new AgvcConnector(this);
-                asePackage = new AsePackage(Mapinfo.gateTypeMap);
+                asePackage = new AsePackage();
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
             }
             catch (Exception ex)
@@ -184,7 +184,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void VehicleInitial()
         {
             try
-            {                              
+            {
                 IsFirstAhGet = Vehicle.MainFlowConfig.IsSimulation;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "台車"));
@@ -231,12 +231,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
 
                 //來自IRobotControl的取放貨結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
-                asePackage.aseRobotControl.OnRobotInterlockErrorEvent += AseRobotControl_OnRobotInterlockErrorEvent;
-                asePackage.aseRobotControl.OnRobotCommandFinishEvent += AseRobotContorl_OnRobotCommandFinishEvent;
-                asePackage.aseRobotControl.OnRobotCommandErrorEvent += AseRobotControl_OnRobotCommandErrorEvent;
+                asePackage.OnRobotInterlockErrorEvent += AsePackage_OnRobotInterlockErrorEvent;
+                asePackage.OnRobotCommandFinishEvent += AsePackage_OnRobotCommandFinishEvent;
+                asePackage.OnRobotCommandErrorEvent += AsePackage_OnRobotCommandErrorEvent;
 
                 //來自IRobot的CarrierId讀取訊息, Send to middleAgent
-                asePackage.aseRobotControl.OnReadCarrierIdFinishEvent += AseRobotControl_OnReadCarrierIdFinishEvent;
+                asePackage.OnReadCarrierIdFinishEvent += AsePackage_OnReadCarrierIdFinishEvent;
 
                 //來自IBatterysControl的電量改變訊息, Send to middleAgent
                 asePackage.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
@@ -1886,7 +1886,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(loadCmd));
+                    Task.Run(() => asePackage.DoRobotCommand(loadCmd));
                     OnMessageShowEvent?.Invoke(this, $"Loading, [Direction={loadCmd.PioDirection}][SlotNum={loadCmd.SlotNumber}][Load Adr={loadCmd.PortAddressId}][Load Port Num={loadCmd.PortNumber}]");
                 }
             }
@@ -1911,9 +1911,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Vehicle.RightReadResult = BCRReadResult.BcrNormal;
             }
-            AseRobotControl_OnReadCarrierIdFinishEvent(this, aseCarrierSlotStatus.SlotNumber);
+            AsePackage_OnReadCarrierIdFinishEvent(this, aseCarrierSlotStatus.SlotNumber);
             SpinWait.SpinUntil(() => false, 2000);
-            AseRobotContorl_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
+            AsePackage_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
         }
 
         public void Unload(UnloadCmdInfo unloadCmd)
@@ -1948,7 +1948,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    Task.Run(() => asePackage.aseRobotControl.DoRobotCommand(unloadCmd));
+                    Task.Run(() => asePackage.DoRobotCommand(unloadCmd));
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Unloading, [Direction{unloadCmd.PioDirection}][SlotNum={unloadCmd.SlotNumber}][Unload Adr={unloadCmd.PortAddressId}][Unload Port Num={unloadCmd.PortNumber}]");
                 }
                 batteryLog.LoadUnloadCount++;
@@ -1973,16 +1973,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             aseCarrierSlotStatus.CarrierId = "";
             aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
             SpinWait.SpinUntil(() => false, 2000);
-            AseRobotContorl_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
+            AsePackage_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
         }
 
-        private void AseRobotControl_OnRobotCommandErrorEvent(object sender, RobotCommand robotCommand)
+        private void AsePackage_OnRobotCommandErrorEvent(object sender, RobotCommand robotCommand)
         {
             OnMessageShowEvent?.Invoke(this, "AseRobotControl_OnRobotCommandErrorEvent");
             AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 
-        public void AseRobotContorl_OnRobotCommandFinishEvent(object sender, RobotCommand robotCommand)
+        public void AsePackage_OnRobotCommandFinishEvent(object sender, RobotCommand robotCommand)
         {
             try
             {
@@ -2269,7 +2269,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             agvcConnector.SendRecv_Cmd136_CstIdReadReport();
         }
 
-        private void AseRobotControl_OnReadCarrierIdFinishEvent(object sender, EnumSlotNumber slotNumber)
+        private void AsePackage_OnReadCarrierIdFinishEvent(object sender, EnumSlotNumber slotNumber)
         {
             try
             {
@@ -2361,7 +2361,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void AseRobotControl_OnRobotInterlockErrorEvent(object sender, RobotCommand robotCommand)
+        private void AsePackage_OnRobotInterlockErrorEvent(object sender, RobotCommand robotCommand)
         {
             try
             {
@@ -3276,7 +3276,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (Vehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
                 {
-                    asePackage.aseRobotControl.ReadCarrierId();
+                    asePackage.ReadCarrierId();
                 }
 
                 if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
@@ -3371,7 +3371,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void StopVehicle()
         {
             asePackage.MoveStop();
-            asePackage.aseRobotControl.ClearRobotCommand();
+            asePackage.ClearRobotCommand();
             asePackage.StopCharge();
 
             var msg = $"MainFlow : Stop Vehicle, [MoveState={Vehicle.AseMoveStatus.AseMoveState}][IsCharging={Vehicle.IsCharging}]";
@@ -3629,7 +3629,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                asePackage.aseRobotControl.ReadCarrierId();
+                asePackage.ReadCarrierId();
             }
             catch (Exception ex)
             {
@@ -3718,7 +3718,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             alarmHandler.ResetAllAlarmsFromAgvm();
                             StopClearAndReset();
                             Vehicle.IsReAuto = true;
-                            asePackage.aseRobotControl.ReadCarrierId();
+                            asePackage.ReadCarrierId();
                             Thread.Sleep(500);
                             UpdateSlotStatus();
                             break;
