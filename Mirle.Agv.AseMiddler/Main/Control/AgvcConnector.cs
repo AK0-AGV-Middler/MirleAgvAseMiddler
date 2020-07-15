@@ -81,7 +81,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsAgvcReplyBcrRead { get; set; } = false;
         public TrxTcpIp.ReturnCode ReturnCode { get; set; } = TrxTcpIp.ReturnCode.Timeout;
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Fail;
-
+        public bool IsAskingAllReserveInOnce { get; set; } = false;
 
         public AgvcConnector(MainFlowHandler mainFlowHandler)
         {
@@ -504,21 +504,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsAskReservePause || Vehicle.AseMoveStatus.IsMoveEnd)
-                    {
-                        SpinWait.SpinUntil(() => false, 500);
-                    }
-
                     #region Pause And Stop Check
-                    if (IsAskReservePause)
+                    if (IsAskReservePause || IsAskingAllReserveInOnce || Vehicle.AseMoveStatus.IsMoveEnd)
                     {
-                        SpinWait.SpinUntil(() => false, 500);
+                        SpinWait.SpinUntil(() => !(IsAskReservePause || IsAskingAllReserveInOnce || Vehicle.AseMoveStatus.IsMoveEnd), 500);
                         continue;
                     }
 
                     if (!ClientAgent.IsConnection)
                     {
-                        SpinWait.SpinUntil(() => false, 100);
+                        SpinWait.SpinUntil(() => ClientAgent.IsConnection, 100);
                         continue;
                     }
                     #endregion
@@ -2560,6 +2555,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                IsAskingAllReserveInOnce = true;
                 var needReserveSections = queNeedReserveSections.ToList();
                 OnMessageShowOnMainFormEvent?.Invoke(this, $@"Ask All Sections Reserve In Once [{needReserveSections.Count}]");
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
@@ -2620,16 +2616,19 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
 
                         RefreshPartMoveSections();
+                        IsAskingAllReserveInOnce = false;
                     }
                     else
                     {
                         OnMessageShowOnMainFormEvent?.Invoke(this, $"Ask All Sections Reserve In Once Reply. Unsuccess.");
+                        IsAskingAllReserveInOnce = false;
                     }
                 }
                 else
                 {
                     OnMessageShowOnMainFormEvent?.Invoke(this, $"AskAllSectionsReserveInOnce send wait timeout[{mainFlowHandler.GetCurTransferStep().CmdId}]");
                     OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                    IsAskingAllReserveInOnce = false;
                 }
 
                 #endregion
@@ -2638,6 +2637,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                IsAskingAllReserveInOnce = false;
             }
         }
 
