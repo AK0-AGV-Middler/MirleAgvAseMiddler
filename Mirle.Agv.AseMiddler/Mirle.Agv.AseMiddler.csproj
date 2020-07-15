@@ -108,14 +108,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Customer\ASE\Control\AseRobotControl.cs" />
     <Compile Include="Customer\ASE\Control\AsePackage.cs" />
-    <Compile Include="Customer\ASE\Model\AseBatteryConfig.cs" />
+    <Compile Include="Customer\ASE\Model\AsePositionArgs.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\AseBatteryConfig.cs" />
     <Compile Include="Customer\ASE\Model\AseBatteryStatus.cs" />
     <Compile Include="Customer\ASE\Model\AseCarrierSlotStatus.cs" />
-    <Compile Include="Customer\ASE\Model\AseMoveConfig.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\AseMoveConfig.cs" />
     <Compile Include="Customer\ASE\Model\AseMovingGuide.cs" />
-    <Compile Include="Customer\ASE\Model\AsePackageConfig.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\AsePackageConfig.cs" />
     <Compile Include="Customer\ASE\Model\AseRobotStatus.cs" />
     <Compile Include="Customer\ASE\View\AgvlConnectorForm.cs">
       <SubType>Form</SubType>
@@ -126,7 +126,7 @@
     <Compile Include="Main\Control\UserAgent.cs" />
     <Compile Include="Main\Model\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
-    <Compile Include="Customer\ASE\Model\PspConnectionConfig.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\PspConnectionConfig.cs" />
     <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
     <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />

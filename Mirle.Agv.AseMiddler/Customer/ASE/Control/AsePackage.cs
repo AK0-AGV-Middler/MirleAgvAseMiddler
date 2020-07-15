@@ -48,6 +48,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public ConcurrentQueue<PSTransactionXClass> DealPrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         public ConcurrentQueue<PSTransactionXClass> SecondaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         private List<PSTransactionXClass> primaryReceiveTransactions;
+        public ConcurrentQueue<AsePositionArgs> ReceivePositionArgsQueue { get; set; } = new ConcurrentQueue<AsePositionArgs>();
 
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> ImportantPspLog;
@@ -66,6 +67,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
         public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
         public event EventHandler<PSTransactionXClass> OnPrimarySendEvent;
+        public event EventHandler<AsePositionArgs> OnPositionChangeEvent2;
 
         public AsePackage()
         {
@@ -293,9 +295,17 @@ namespace Mirle.Agv.AseMiddler.Controller
                         continue;
                     }
 
-                    if (psWrapper.IsConnected())
+                    if (ReceivePositionArgsQueue.Any())
                     {
-                        SendPositionReportRequest();
+                        ReceivePositionArgsQueue.TryDequeue(out AsePositionArgs positionArgs);
+                        OnPositionChangeEvent2?.Invoke(this, positionArgs);
+                    }
+                    else
+                    {
+                        if (psWrapper.IsConnected())
+                        {
+                            SendPositionReportRequest();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -320,7 +330,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
 
         private void WatchBatteryState()
         {
@@ -663,7 +672,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
         #endregion
 
         #region PrimaryReceived
@@ -871,37 +879,59 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (psMessage.Length < 0) return;
+                EnumAseArrival arrival = GetArrivalStatus(psMessage.Substring(0, 1));
 
-                if (psMessage.Length == 1)
+                double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
+                double y = GetPositionFromPsMessage(psMessage.Substring(10, 9));
+
+                if (int.TryParse(psMessage.Substring(19, 3), out int headAngle))
                 {
-                    MoveFinished(EnumMoveComplete.Fail);
-                    return;
+                    Vehicle.AseMoveStatus.HeadDirection = headAngle;
                 }
 
-                ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport {psMessage.Substring(0, 1)}");
-
-                EnumAseArrival aseArrival = GetArrivalStatus(psMessage.Substring(0, 1));
-
-                ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport {aseArrival}");
-
-                switch (aseArrival)
+                if (int.TryParse(psMessage.Substring(22, 3), out int movingDirection))
                 {
-                    case EnumAseArrival.Fail:
-                        MoveFinished(EnumMoveComplete.Fail);
-                        break;
-                    case EnumAseArrival.Arrival:
-                        ArrivalPosition(psMessage);
-                        break;
-                    case EnumAseArrival.EndArrival:
-                        ArrivalPosition(psMessage);
-                        MoveFinished(EnumMoveComplete.Success);
-                        break;
-                    default:
-                        break;
+                    Vehicle.AseMoveStatus.MovingDirection = movingDirection;
                 }
 
-                OnStatusChangeReportEvent?.Invoke(this, $"ReceiveMoveAppendArrivalReport:[{aseArrival}]");
+                if (int.TryParse(psMessage.Substring(25, 4), out int speed))
+                {
+                    Vehicle.AseMoveStatus.Speed = speed;
+                }
+
+                AsePositionArgs positionArgs = new AsePositionArgs();
+                positionArgs.Arrival = arrival;
+                positionArgs.MapPosition = new MapPosition(x, y);
+
+                ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport. [{psMessage.Substring(0, 1)}][{arrival.ToString()}][({x.ToString("F0")},{y.ToString("F0")})]");
+
+                ReceivePositionArgsQueue.Enqueue(positionArgs);
+
+                //if (psMessage.Length < 0) return;
+
+                //if (psMessage.Length == 1)
+                //{
+                //    MoveFinished(EnumMoveComplete.Fail);
+                //    return;
+                //}              
+
+                //switch (arrival)
+                //{
+                //    case EnumAseArrival.Fail:
+                //        MoveFinished(EnumMoveComplete.Fail);
+                //        break;
+                //    case EnumAseArrival.Arrival:
+                //        ArrivalPosition(psMessage);
+                //        break;
+                //    case EnumAseArrival.EndArrival:
+                //        ArrivalPosition(psMessage);
+                //        MoveFinished(EnumMoveComplete.Success);
+                //        break;
+                //    default:
+                //        break;
+                //}
+
+                //OnStatusChangeReportEvent?.Invoke(this, $"ReceiveMoveAppendArrivalReport:[{arrival}]");
             }
             catch (Exception ex)
             {
@@ -1269,7 +1299,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
         #endregion
 
         #region SecondarySend
@@ -1610,12 +1639,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
-        #endregion
-
-        #region Robot Control
-
-        #endregion
+        #endregion      
 
         #region Move Control
 
