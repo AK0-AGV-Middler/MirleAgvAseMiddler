@@ -33,36 +33,32 @@ namespace Mirle.Agv.AseMiddler.View
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.系統ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.啟動ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.登入ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.登出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.關閉ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.語言ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemSystem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemLogin = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemLogout = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemCloseApp = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemLanguage = new System.Windows.Forms.ToolStripMenuItem();
             this.中文ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.englishToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.模式ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemMode = new System.Windows.Forms.ToolStripMenuItem();
             this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AlarmPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AgvcConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.MovePage = new System.Windows.Forms.ToolStripMenuItem();
-            this.RobotAndChargePage = new System.Windows.Forms.ToolStripMenuItem();
             this.AgvlConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
-            this.工程師ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.模擬測試ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageBasicState = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
             this.btnRefreshStatus = new System.Windows.Forms.Button();
             this.btnPrintScreen = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.txtWatchLowPower = new System.Windows.Forms.Label();
-            this.txtAskingReserve = new System.Windows.Forms.Label();
-            this.txtTrackPosition = new System.Windows.Forms.Label();
-            this.txtTransferStep = new System.Windows.Forms.Label();
+            this.ucCurrentTransferStepType = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucReserveFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucErrorFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucCommanding = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
             this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
@@ -177,60 +173,54 @@ namespace Mirle.Agv.AseMiddler.View
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.系統ToolStripMenuItem,
-            this.語言ToolStripMenuItem,
-            this.模式ToolStripMenuItem,
-            this.工程師ToolStripMenuItem});
+            this.ToolStripMenuItemSystem,
+            this.ToolStripMenuItemLanguage,
+            this.ToolStripMenuItemMode});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1375, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
-            // 系統ToolStripMenuItem
+            // ToolStripMenuItemSystem
             // 
-            this.系統ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.啟動ToolStripMenuItem,
-            this.登入ToolStripMenuItem,
-            this.登出ToolStripMenuItem,
-            this.關閉ToolStripMenuItem});
-            this.系統ToolStripMenuItem.Name = "系統ToolStripMenuItem";
-            this.系統ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
-            this.系統ToolStripMenuItem.Text = "系統";
+            this.ToolStripMenuItemSystem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolStripMenuItemLogin,
+            this.ToolStripMenuItemLogout,
+            this.ToolStripMenuItemCloseApp});
+            this.ToolStripMenuItemSystem.Name = "ToolStripMenuItemSystem";
+            this.ToolStripMenuItemSystem.Size = new System.Drawing.Size(43, 20);
+            this.ToolStripMenuItemSystem.Text = "系統";
             // 
-            // 啟動ToolStripMenuItem
+            // ToolStripMenuItemLogin
             // 
-            this.啟動ToolStripMenuItem.Name = "啟動ToolStripMenuItem";
-            this.啟動ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
-            this.啟動ToolStripMenuItem.Text = "啟動";
+            this.ToolStripMenuItemLogin.Name = "ToolStripMenuItemLogin";
+            this.ToolStripMenuItemLogin.Size = new System.Drawing.Size(98, 22);
+            this.ToolStripMenuItemLogin.Text = "登入";
+            this.ToolStripMenuItemLogin.Click += new System.EventHandler(this.ToolStripMenuItemLogin_Click);
             // 
-            // 登入ToolStripMenuItem
+            // ToolStripMenuItemLogout
             // 
-            this.登入ToolStripMenuItem.Name = "登入ToolStripMenuItem";
-            this.登入ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
-            this.登入ToolStripMenuItem.Text = "登入";
+            this.ToolStripMenuItemLogout.Name = "ToolStripMenuItemLogout";
+            this.ToolStripMenuItemLogout.Size = new System.Drawing.Size(98, 22);
+            this.ToolStripMenuItemLogout.Text = "登出";
+            this.ToolStripMenuItemLogout.Click += new System.EventHandler(this.ToolStripMenuItemLogout_Click);
             // 
-            // 登出ToolStripMenuItem
+            // ToolStripMenuItemCloseApp
             // 
-            this.登出ToolStripMenuItem.Name = "登出ToolStripMenuItem";
-            this.登出ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
-            this.登出ToolStripMenuItem.Text = "登出";
+            this.ToolStripMenuItemCloseApp.Name = "ToolStripMenuItemCloseApp";
+            this.ToolStripMenuItemCloseApp.Size = new System.Drawing.Size(98, 22);
+            this.ToolStripMenuItemCloseApp.Text = "關閉";
+            this.ToolStripMenuItemCloseApp.Click += new System.EventHandler(this.關閉ToolStripMenuItem_Click);
             // 
-            // 關閉ToolStripMenuItem
+            // ToolStripMenuItemLanguage
             // 
-            this.關閉ToolStripMenuItem.Name = "關閉ToolStripMenuItem";
-            this.關閉ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
-            this.關閉ToolStripMenuItem.Text = "關閉";
-            this.關閉ToolStripMenuItem.Click += new System.EventHandler(this.關閉ToolStripMenuItem_Click);
-            // 
-            // 語言ToolStripMenuItem
-            // 
-            this.語言ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolStripMenuItemLanguage.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.中文ToolStripMenuItem,
             this.englishToolStripMenuItem});
-            this.語言ToolStripMenuItem.Name = "語言ToolStripMenuItem";
-            this.語言ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
-            this.語言ToolStripMenuItem.Text = "語言";
+            this.ToolStripMenuItemLanguage.Name = "ToolStripMenuItemLanguage";
+            this.ToolStripMenuItemLanguage.Size = new System.Drawing.Size(43, 20);
+            this.ToolStripMenuItemLanguage.Text = "語言";
             // 
             // 中文ToolStripMenuItem
             // 
@@ -244,75 +234,44 @@ namespace Mirle.Agv.AseMiddler.View
             this.englishToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.englishToolStripMenuItem.Text = "English";
             // 
-            // 模式ToolStripMenuItem
+            // ToolStripMenuItemMode
             // 
-            this.模式ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolStripMenuItemMode.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.VehicleStatusPage,
             this.AlarmPage,
             this.AgvcConnectorPage,
-            this.MovePage,
-            this.RobotAndChargePage,
             this.AgvlConnectorPage});
-            this.模式ToolStripMenuItem.Name = "模式ToolStripMenuItem";
-            this.模式ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
-            this.模式ToolStripMenuItem.Text = "模式";
+            this.ToolStripMenuItemMode.Name = "ToolStripMenuItemMode";
+            this.ToolStripMenuItemMode.Size = new System.Drawing.Size(43, 20);
+            this.ToolStripMenuItemMode.Text = "模式";
             // 
             // VehicleStatusPage
             // 
             this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(179, 22);
+            this.VehicleStatusPage.Size = new System.Drawing.Size(132, 22);
             this.VehicleStatusPage.Text = "Parameter";
             this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(179, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(132, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // AgvcConnectorPage
             // 
             this.AgvcConnectorPage.Name = "AgvcConnectorPage";
-            this.AgvcConnectorPage.Size = new System.Drawing.Size(179, 22);
-            this.AgvcConnectorPage.Text = "AgvcConnector";
+            this.AgvcConnectorPage.Size = new System.Drawing.Size(132, 22);
+            this.AgvcConnectorPage.Text = "AGVC";
             this.AgvcConnectorPage.Click += new System.EventHandler(this.AgvcConnectorPage_Click);
-            // 
-            // MovePage
-            // 
-            this.MovePage.Name = "MovePage";
-            this.MovePage.Size = new System.Drawing.Size(179, 22);
-            this.MovePage.Text = "Move";
-            this.MovePage.Click += new System.EventHandler(this.ManualMoveCmdPage_Click);
-            // 
-            // RobotAndChargePage
-            // 
-            this.RobotAndChargePage.Name = "RobotAndChargePage";
-            this.RobotAndChargePage.Size = new System.Drawing.Size(179, 22);
-            this.RobotAndChargePage.Text = "Robot and Charge";
-            this.RobotAndChargePage.Click += new System.EventHandler(this.RobotControlPage_Click);
             // 
             // AgvlConnectorPage
             // 
             this.AgvlConnectorPage.Name = "AgvlConnectorPage";
-            this.AgvlConnectorPage.Size = new System.Drawing.Size(179, 22);
-            this.AgvlConnectorPage.Text = "AgvlConnector";
+            this.AgvlConnectorPage.Size = new System.Drawing.Size(132, 22);
+            this.AgvlConnectorPage.Text = "AGVL";
             this.AgvlConnectorPage.Click += new System.EventHandler(this.AgvlConnectorPage_Click);
-            // 
-            // 工程師ToolStripMenuItem
-            // 
-            this.工程師ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.模擬測試ToolStripMenuItem});
-            this.工程師ToolStripMenuItem.Name = "工程師ToolStripMenuItem";
-            this.工程師ToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
-            this.工程師ToolStripMenuItem.Text = "工程師";
-            // 
-            // 模擬測試ToolStripMenuItem
-            // 
-            this.模擬測試ToolStripMenuItem.Name = "模擬測試ToolStripMenuItem";
-            this.模擬測試ToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
-            this.模擬測試ToolStripMenuItem.Text = "模擬測試";
-            this.模擬測試ToolStripMenuItem.Click += new System.EventHandler(this.模擬測試ToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -391,6 +350,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // pageBasicState
             // 
+            this.pageBasicState.Controls.Add(this.label1);
             this.pageBasicState.Controls.Add(this.btnRefreshStatus);
             this.pageBasicState.Controls.Add(this.btnPrintScreen);
             this.pageBasicState.Controls.Add(this.groupBox2);
@@ -410,9 +370,18 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBasicState.Text = "Basic";
             this.pageBasicState.UseVisualStyleBackColor = true;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(436, 21);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(54, 20);
+            this.label1.TabIndex = 62;
+            this.label1.Text = "label1";
+            // 
             // btnRefreshStatus
             // 
-            this.btnRefreshStatus.Location = new System.Drawing.Point(6, 416);
+            this.btnRefreshStatus.Location = new System.Drawing.Point(6, 523);
             this.btnRefreshStatus.Name = "btnRefreshStatus";
             this.btnRefreshStatus.Size = new System.Drawing.Size(209, 74);
             this.btnRefreshStatus.TabIndex = 60;
@@ -424,7 +393,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             this.btnPrintScreen.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnPrintScreen.ForeColor = System.Drawing.Color.OrangeRed;
-            this.btnPrintScreen.Location = new System.Drawing.Point(6, 495);
+            this.btnPrintScreen.Location = new System.Drawing.Point(6, 599);
             this.btnPrintScreen.Name = "btnPrintScreen";
             this.btnPrintScreen.Size = new System.Drawing.Size(210, 74);
             this.btnPrintScreen.TabIndex = 59;
@@ -434,60 +403,60 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.txtWatchLowPower);
-            this.groupBox2.Controls.Add(this.txtAskingReserve);
-            this.groupBox2.Controls.Add(this.txtTrackPosition);
-            this.groupBox2.Controls.Add(this.txtTransferStep);
+            this.groupBox2.Controls.Add(this.ucCurrentTransferStepType);
+            this.groupBox2.Controls.Add(this.ucReserveFlag);
+            this.groupBox2.Controls.Add(this.ucErrorFlag);
+            this.groupBox2.Controls.Add(this.ucCommanding);
             this.groupBox2.Location = new System.Drawing.Point(6, 282);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(209, 128);
+            this.groupBox2.Size = new System.Drawing.Size(209, 235);
             this.groupBox2.TabIndex = 61;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "FlowStatus";
+            this.groupBox2.Text = "Flow Status";
             // 
-            // txtWatchLowPower
+            // ucCurrentTransferStepType
             // 
-            this.txtWatchLowPower.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.txtWatchLowPower.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtWatchLowPower.Location = new System.Drawing.Point(31, 93);
-            this.txtWatchLowPower.Name = "txtWatchLowPower";
-            this.txtWatchLowPower.Size = new System.Drawing.Size(150, 23);
-            this.txtWatchLowPower.TabIndex = 58;
-            this.txtWatchLowPower.Text = "Soc/Gap : 100/50";
-            this.txtWatchLowPower.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.ucCurrentTransferStepType.Location = new System.Drawing.Point(3, 21);
+            this.ucCurrentTransferStepType.Margin = new System.Windows.Forms.Padding(8);
+            this.ucCurrentTransferStepType.Name = "ucCurrentTransferStepType";
+            this.ucCurrentTransferStepType.Size = new System.Drawing.Size(200, 30);
+            this.ucCurrentTransferStepType.TabIndex = 1;
+            this.ucCurrentTransferStepType.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucCurrentTransferStepType.TagName = "Step";
+            this.ucCurrentTransferStepType.TagValue = "TagValue";
             // 
-            // txtAskingReserve
+            // ucReserveFlag
             // 
-            this.txtAskingReserve.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.txtAskingReserve.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtAskingReserve.Location = new System.Drawing.Point(28, 70);
-            this.txtAskingReserve.Name = "txtAskingReserve";
-            this.txtAskingReserve.Size = new System.Drawing.Size(150, 23);
-            this.txtAskingReserve.TabIndex = 58;
-            this.txtAskingReserve.Text = "ID:Sec001";
-            this.txtAskingReserve.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.ucReserveFlag.Location = new System.Drawing.Point(4, 127);
+            this.ucReserveFlag.Margin = new System.Windows.Forms.Padding(13);
+            this.ucReserveFlag.Name = "ucReserveFlag";
+            this.ucReserveFlag.Size = new System.Drawing.Size(200, 30);
+            this.ucReserveFlag.TabIndex = 0;
+            this.ucReserveFlag.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucReserveFlag.TagName = "ReserveStop";
+            this.ucReserveFlag.TagValue = "TagValue";
             // 
-            // txtTrackPosition
+            // ucErrorFlag
             // 
-            this.txtTrackPosition.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.txtTrackPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtTrackPosition.Location = new System.Drawing.Point(31, 47);
-            this.txtTrackPosition.Name = "txtTrackPosition";
-            this.txtTrackPosition.Size = new System.Drawing.Size(150, 23);
-            this.txtTrackPosition.TabIndex = 57;
-            this.txtTrackPosition.Text = "(StepI, MoveI)";
-            this.txtTrackPosition.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.ucErrorFlag.Location = new System.Drawing.Point(4, 92);
+            this.ucErrorFlag.Margin = new System.Windows.Forms.Padding(8);
+            this.ucErrorFlag.Name = "ucErrorFlag";
+            this.ucErrorFlag.Size = new System.Drawing.Size(200, 30);
+            this.ucErrorFlag.TabIndex = 0;
+            this.ucErrorFlag.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucErrorFlag.TagName = "ErrorFlag";
+            this.ucErrorFlag.TagValue = "TagValue";
             // 
-            // txtTransferStep
+            // ucCommanding
             // 
-            this.txtTransferStep.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.txtTransferStep.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtTransferStep.Location = new System.Drawing.Point(28, 23);
-            this.txtTransferStep.Name = "txtTransferStep";
-            this.txtTransferStep.Size = new System.Drawing.Size(150, 23);
-            this.txtTransferStep.TabIndex = 56;
-            this.txtTransferStep.Text = "Step : Move";
-            this.txtTransferStep.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.ucCommanding.Location = new System.Drawing.Point(3, 57);
+            this.ucCommanding.Margin = new System.Windows.Forms.Padding(5);
+            this.ucCommanding.Name = "ucCommanding";
+            this.ucCommanding.Size = new System.Drawing.Size(200, 30);
+            this.ucCommanding.TabIndex = 0;
+            this.ucCommanding.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucCommanding.TagName = "Command";
+            this.ucCommanding.TagValue = "TagValue";
             // 
             // gbPerformanceCounter
             // 
@@ -1406,6 +1375,7 @@ namespace Mirle.Agv.AseMiddler.View
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.pageBasicState.ResumeLayout(false);
+            this.pageBasicState.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.gbPerformanceCounter.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numSoc)).EndInit();
@@ -1436,21 +1406,18 @@ namespace Mirle.Agv.AseMiddler.View
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem 系統ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 語言ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 模式ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 工程師ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 啟動ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 登入ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 登出ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 關閉ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemSystem;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemLanguage;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemMode;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemLogin;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemLogout;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemCloseApp;
         private System.Windows.Forms.ToolStripMenuItem 中文ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem englishToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AlarmPage;
         private System.Windows.Forms.ToolStripMenuItem AgvcConnectorPage;
         private System.Windows.Forms.ToolStripMenuItem VehicleStatusPage;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.ToolStripMenuItem MovePage;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.GroupBox gbVehicleLocation;
         private System.Windows.Forms.GroupBox gbConnection;
@@ -1465,16 +1432,11 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.NumericUpDown numPositionY;
         private System.Windows.Forms.NumericUpDown numPositionX;
         private System.Windows.Forms.GroupBox gbPerformanceCounter;
-        private System.Windows.Forms.ToolStripMenuItem RobotAndChargePage;
         private System.Windows.Forms.Label txtLastAlarm;
         private UcLabelTextBox ucSoc;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnAutoManual;
-        private System.Windows.Forms.Label txtTransferStep;
         private System.Windows.Forms.GroupBox gbReserve;
-        private System.Windows.Forms.Label txtTrackPosition;
-        private System.Windows.Forms.Label txtAskingReserve;
-        private System.Windows.Forms.Label txtWatchLowPower;
         private System.Windows.Forms.NumericUpDown numSoc;
         private System.Windows.Forms.Button btnKeyInSoc;
         private UcLabelTextBox ucCharging;
@@ -1488,7 +1450,6 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.ToolStripStatusLabel tstextLastPosY;
         private UcLabelTextBox ucLCstId;
         private System.Windows.Forms.Timer timer_SetupInitialSoc;
-        private System.Windows.Forms.ToolStripMenuItem 模擬測試ToolStripMenuItem;
         private System.Windows.Forms.Label txtCannotAutoReason;
         private System.Windows.Forms.TextBox tbxDebugLogMsg;
         private System.Windows.Forms.TextBox tbxTransferCommand01Msg;
@@ -1545,5 +1506,10 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.TabPage pageTransferCommand;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.TextBox tbxTransferCommand02Msg;
+        private UcLabelTextBox ucCurrentTransferStepType;
+        private UcLabelTextBox ucErrorFlag;
+        private UcLabelTextBox ucCommanding;
+        private UcLabelTextBox ucReserveFlag;
+        private System.Windows.Forms.Label label1;
     }
 }

@@ -55,6 +55,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private MapHandler mapHandler;
         private XmlHandler xmlHandler = new XmlHandler();
         private AsePackage asePackage;
+        public UserAgent UserAgent { get; set; } = new UserAgent();
 
         #endregion
 
@@ -222,7 +223,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //來自MoveControl的移動結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
                 asePackage.OnPositionChangeEvent += AsePackage_OnPositionChangeEvent;
                 asePackage.OnPartMoveArrivalEvent += AsePackage_OnPartMoveArrivalEvent;
-                asePackage.aseMoveControl.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
+                asePackage.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
                 //asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
                 asePackage.OnUpdateSlotStatusEvent += AsePackage_OnUpdateSlotStatusEvent;
 
@@ -549,7 +550,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 Vehicle.IsReAuto = false;
                                 if (IsAvoidMove)
                                 {
-                                    asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End);
+                                    asePackage.PartMove(EnumAseMoveCommandIsEnd.End);
                                 }
                                 else
                                 {
@@ -557,17 +558,17 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     var transferCommand = Vehicle.AgvcTransCmdBuffer[cmdId];
                                     if (Vehicle.AgvcTransCmdBuffer.Count == 0)
                                     {
-                                        asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End);
+                                        asePackage.PartMove(EnumAseMoveCommandIsEnd.End);
                                     }
                                     else if (Vehicle.AgvcTransCmdBuffer.Count == 1)
                                     {
                                         switch (transferCommand.SlotNumber)
                                         {
                                             case EnumSlotNumber.L:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
+                                                asePackage.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
                                                 break;
                                             case EnumSlotNumber.R:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
+                                                asePackage.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
                                                 break;
                                         }
                                     }
@@ -577,10 +578,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                                         switch (transferCommand.SlotNumber)
                                         {
                                             case EnumSlotNumber.L:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
+                                                asePackage.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Left);
                                                 break;
                                             case EnumSlotNumber.R:
-                                                asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
+                                                asePackage.PartMove(EnumAseMoveCommandIsEnd.End, EnumSlotSelect.Right);
                                                 break;
                                         }
                                     }
@@ -599,7 +600,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         if (!Vehicle.IsCharging)
                         {
                             Vehicle.AseMoveStatus.IsMoveEnd = false;
-                            asePackage.aseMoveControl.PartMove(EnumAseMoveCommandIsEnd.Begin);
+                            asePackage.PartMove(EnumAseMoveCommandIsEnd.Begin);
                             agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
                         }
                     }
@@ -1531,7 +1532,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             return Vehicle.AseRobotStatus.IsHome && !Vehicle.IsCharging;
         }
 
-        public void AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(MapSection mapSection, EnumKeepOrGo keepOrGo)
+        public void AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(MapSection mapSection, EnumIsExecute keepOrGo)
         {
             try
             {
@@ -1572,32 +1573,32 @@ namespace Mirle.Agv.AseMiddler.Controller
                             switch (transferCommand.EnrouteState)
                             {
                                 case CommandState.None:
-                                    asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
+                                    asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
                                     break;
                                 case CommandState.LoadEnroute:
                                 case CommandState.UnloadEnroute:
                                     if (transferCommand.SlotNumber == EnumSlotNumber.L)
                                     {
-                                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.Left);
+                                        asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.Left);
                                     }
                                     else
                                     {
-                                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.Right);
+                                        asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.Right);
                                     }
                                     break;
                                 default:
-                                    asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
+                                    asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
                                     break;
                             }
                         }
                         else
                         {
-                            asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
+                            asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
                         }
                     }
                     else
                     {
-                        asePackage.aseMoveControl.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.None, keepOrGo, EnumSlotSelect.None);
+                        asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.None, keepOrGo, EnumSlotSelect.None);
                     }
                 }
 
@@ -2739,8 +2740,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public MapHandler GetMapHandler() => mapHandler;
         public AlarmConfig GetAlarmConfig() => alarmConfig;
         public AsePackage GetAsePackage() => asePackage;
-        public AseMoveControl GetAseMoveControl() => asePackage.aseMoveControl;
-        public string GetMoveControlStopResult() => asePackage.aseMoveControl.StopResult;
         #endregion
 
         public void SetupAseMovingGuideMovingSections()
@@ -3109,6 +3108,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         Vehicle.IsCharging = false;
                         alarmHandler.SetAlarmFromAgvm(000013);
+                        asePackage.aseBatteryControl.StopCharge();
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;
@@ -3164,6 +3164,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         Vehicle.IsCharging = false;
                         alarmHandler.SetAlarmFromAgvm(000013);
+                        asePackage.aseBatteryControl.StopCharge();
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;
@@ -3337,7 +3338,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void StopVehicle()
         {
-            asePackage.aseMoveControl.StopAndClear();
+            asePackage.MoveStop();
             asePackage.aseRobotControl.ClearRobotCommand();
             asePackage.aseBatteryControl.StopCharge();
 
@@ -3387,7 +3388,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 PauseTransfer();
-                asePackage.aseMoveControl.VehclePause();
+                asePackage.MovePause();
                 var msg = $"MainFlow : Get [{type}]Command.";
                 OnMessageShowEvent(this, msg);
                 agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
@@ -3410,7 +3411,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var msg = $"MainFlow : Get [{type}]Command.";
                 OnMessageShowEvent(this, msg);
                 agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
-                asePackage.aseMoveControl.VehcleContinue();
+                asePackage.MoveContinue();
                 ResumeVisitTransferSteps();
                 agvcConnector.ResumeAskReserve();
                 if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
@@ -3452,7 +3453,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (IsAbortCurCommand)
                 {
                     agvcConnector.ClearAllReserve();
-                    asePackage.aseMoveControl.VehcleCancel();
+                    asePackage.MoveStop();
                     targetAbortCmd.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
                     TransferComplete(targetAbortCmd.CommandId);
                 }
@@ -3620,7 +3621,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                asePackage.aseMoveControl.StopResult = "";
+                asePackage.MoveStopResult = "";
             }
             catch (Exception ex)
             {

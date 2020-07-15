@@ -21,6 +21,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
         public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public bool IsAgvcConnect { get; set; } = false;
+        public EnumLoginLevel LoginLevel { get; set; } = EnumLoginLevel.Op;
 
         #region AsePackage
 
@@ -40,20 +41,20 @@ namespace Mirle.Agv.AseMiddler.Model
 
         #region Comm Property
         //public VHActionStatus ActionStatus { get; set; } = VHActionStatus.NoCommand;
-        public VhStopSingle BlockingStatus { get; set; }
-        public VhChargeStatus ChargeStatus { get; set; }
-        public DriveDirction DrivingDirection { get; set; }
+        public VhStopSingle BlockingStatus { get; set; } = VhStopSingle.Off;
+        public VhChargeStatus ChargeStatus { get; set; } = VhChargeStatus.ChargeStatusNone;
+        public DriveDirction DrivingDirection { get; set; } = DriveDirction.DriveDirNone;
         public VhStopSingle ObstacleStatus { get; set; } = VhStopSingle.Off;
         public int ObstDistance { get; set; }
         public string ObstVehicleID { get; set; } = "";
-        public VhPowerStatus PowerStatus { get; set; }
+        public VhPowerStatus PowerStatus { get; set; } = VhPowerStatus.PowerOn;
         public string StoppedBlockID { get; set; } = "";
-        public VhStopSingle ErrorStatus { get; set; }
+        public VhStopSingle ErrorStatus { get; set; } = VhStopSingle.Off;
         public uint CmdPowerConsume { get; set; }
         public int CmdDistance { get; set; }
         public string TeachingFromAddress { get; internal set; } = "";
         public string TeachingToAddress { get; internal set; } = "";
-        public VHActionStatus ActionStatus { get; set; }
+        public VHActionStatus ActionStatus { get; set; } = VHActionStatus.NoCommand;
         public bool IsOptimize { get; internal set; }
         public BCRReadResult LeftReadResult { get; set; } = BCRReadResult.BcrReadFail;
         public BCRReadResult RightReadResult { get; set; } = BCRReadResult.BcrReadFail;

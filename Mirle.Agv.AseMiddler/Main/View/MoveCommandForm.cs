@@ -14,7 +14,6 @@ namespace Mirle.Agv.AseMiddler.View
 {
     public partial class MoveCommandForm : Form
     {
-        protected AseMoveControl aseMoveControl;
         protected MapInfo theMapInfo;
 
         public MoveCommandForm()
@@ -22,9 +21,9 @@ namespace Mirle.Agv.AseMiddler.View
             InitializeComponent();
         }
 
-        public MoveCommandForm(AseMoveControl aseMoveControl, MapInfo mapInfo) : this()
+        public MoveCommandForm( MapInfo mapInfo) : this()
         {
-            this.aseMoveControl = aseMoveControl;
+         
             theMapInfo = mapInfo;
         }        
     }    

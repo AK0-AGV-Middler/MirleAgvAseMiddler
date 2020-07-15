@@ -696,20 +696,20 @@ namespace Mirle.Agv.AseMiddler.Controller
                     List<MapSection> partMoveSections = quePartMoveSections.ToList();
                     for (int i = 0; i < partMoveSections.Count; i++)
                     {
-                        EnumKeepOrGo enumKeepOrGo = EnumKeepOrGo.Keep;
+                        EnumIsExecute enumKeepOrGo = EnumIsExecute.Keep;
                         // End of PartMoveSections => Go
                         if (i + 1 == partMoveSections.Count)
                         {
-                            enumKeepOrGo = EnumKeepOrGo.Go;
+                            enumKeepOrGo = EnumIsExecute.Go;
 
                         }//partMoveSections[i] and partMoveSections[i+1] exist
                         else if (HeadDirectionChange(partMoveSections[i + 1]))
                         {
-                            enumKeepOrGo = EnumKeepOrGo.Go;
+                            enumKeepOrGo = EnumIsExecute.Go;
                         }
                         else if (partMoveSections[i].Type != partMoveSections[i + 1].Type)  //Section Type Change => Go
                         {
-                            enumKeepOrGo = EnumKeepOrGo.Go;
+                            enumKeepOrGo = EnumIsExecute.Go;
                         }
 
                         mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(partMoveSections[i], enumKeepOrGo);
@@ -2597,7 +2597,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             {
                                 if (reserveInfo.DriveDirction == DriveDirctionParse(needReserveSection.CmdDirection))
                                 {
-                                    queNeedReserveSections.TryDequeue(out MapSection reserveOkSection);
+                                    queNeedReserveSections.TryPeek(out MapSection reserveOkSection);
                                     reserveOkSections.Add(reserveOkSection);
                                 }
                                 else

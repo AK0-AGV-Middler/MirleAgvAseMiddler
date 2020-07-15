@@ -134,9 +134,10 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (!theVehicle.IsCharging) return;
+                //if (!theVehicle.IsCharging) return;
 
                 PrimarySend("47", "0");
+
 
             }
             catch (Exception ex)

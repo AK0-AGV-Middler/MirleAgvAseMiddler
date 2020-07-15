@@ -19,19 +19,19 @@ namespace Mirle.Agv.AseMiddler.Controller
     public class AsePackage
     {
         public PSWrapperXClass psWrapper;
-        public AseMoveControl aseMoveControl;
         public AseRobotControl aseRobotControl;
         public AseBatteryControl aseBatteryControl;
         public AseBuzzerControl aseBuzzerControl;
         public MirleLogger mirleLogger = MirleLogger.Instance;
-        private AsePackageConfig asePackageConfig = new AsePackageConfig();
-        private PspConnectionConfig pspConnectionConfig = new PspConnectionConfig();
-        private AseBatteryConfig aseBatteryConfig = new AseBatteryConfig();
-        private AseMoveConfig aseMoveConfig = new AseMoveConfig();
+        public AsePackageConfig asePackageConfig = new AsePackageConfig();
+        public PspConnectionConfig pspConnectionConfig = new PspConnectionConfig();
+        public AseBatteryConfig aseBatteryConfig = new AseBatteryConfig();
+        public AseMoveConfig aseMoveConfig = new AseMoveConfig();
         private Vehicle theVehicle = Vehicle.Instance;
         public Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public string LocalLogMsg { get; set; } = "";
+        public string MoveStopResult { get; set; } = "";
 
         private Thread thdWatchWifiSignalStrength;
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
@@ -39,6 +39,10 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private Thread thdSchedule;
         public bool IsSchedulePause { get; set; } = false;
+
+        private Thread thdWatchPosition;
+        public bool IsWatchPositionPause { get; private set; } = false;
+
 
         public ConcurrentQueue<PSMessageXClass> PrimarySendQueue { get; set; } = new ConcurrentQueue<PSMessageXClass>();
         public ConcurrentQueue<PSTransactionXClass> SecondarySendQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
@@ -56,12 +60,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler OnAgvlErrorEvent;
         public event EventHandler<EnumAutoState> OnModeChangeEvent;
         public event EventHandler<AseCarrierSlotStatus> OnUpdateSlotStatusEvent;
+        public event EventHandler<EnumMoveComplete> OnMoveFinishedEvent;
 
         public AsePackage(Dictionary<string, string> gateTypeMap)
         {
             LoadConfigs();
             InitialWrapper();
-            InitialAseMoveControl();
             InitialAseRobotControl(gateTypeMap);
             InitialAseBatteryControl();
             InitialAseBuzzerControl();
@@ -77,6 +81,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             thdSchedule = new Thread(Schedule);
             thdSchedule.IsBackground = true;
             thdSchedule.Start();
+
+            thdWatchPosition = new Thread(WatchPosition);
+            thdWatchPosition.IsBackground = true;
+            thdWatchPosition.Start();
         }
 
         private void InitialAseBuzzerControl()
@@ -111,19 +119,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 aseRobotControl = new AseRobotControl(gateTypeMap);
                 aseRobotControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void InitialAseMoveControl()
-        {
-            try
-            {
-                aseMoveControl = new AseMoveControl(psWrapper, aseMoveConfig);
-                aseMoveControl.OnPrimarySendEvent += AseControl_OnPrimarySendEvent;
             }
             catch (Exception ex)
             {
@@ -319,6 +314,46 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        private void WatchPosition()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (IsWatchPositionPause)
+                    {
+                        SpinWait.SpinUntil(() => !IsWatchPositionPause, aseMoveConfig.WatchPositionInterval);
+                        continue;
+                    }
+
+                    if (psWrapper.IsConnected())
+                    {
+                        SendPositionReportRequest();
+                    }                    
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, aseMoveConfig.WatchPositionInterval);
+                }
+            }
+        }
+
+        public void SendPositionReportRequest()
+        {
+            try
+            {
+                PrimarySendEnqueue("P33", "");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
         #endregion
 
         #region PrimarySend
@@ -446,6 +481,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 return "";
+            }
+        }
+
+        public void DoRobotCommand(string robotCommandInfo)
+        {
+            try
+            {
+                PrimarySendEnqueue("P45", robotCommandInfo);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 
@@ -660,7 +707,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                    
                 if(psMessage.Length == 1)
                 {
-                    aseMoveControl.MoveFinished(EnumMoveComplete.Fail);
+                    MoveFinished(EnumMoveComplete.Fail);
                     return;
                 }
 
@@ -673,14 +720,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 switch (aseArrival)
                 {
                     case EnumAseArrival.Fail:
-                        aseMoveControl.MoveFinished(EnumMoveComplete.Fail);
+                        MoveFinished(EnumMoveComplete.Fail);
                         break;
                     case EnumAseArrival.Arrival:
                         ArrivalPosition(psMessage);
                         break;
                     case EnumAseArrival.EndArrival:
                         ArrivalPosition(psMessage);
-                        aseMoveControl.MoveFinished(EnumMoveComplete.Success);
+                        MoveFinished(EnumMoveComplete.Success);
                         break;
                     default:
                         break;
@@ -693,7 +740,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string msg = "Move Arrival, " + ex.Message;
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 ImportantPspLog?.Invoke(this, msg);
-                aseMoveControl.MoveFinished(EnumMoveComplete.Fail);
+                MoveFinished(EnumMoveComplete.Fail);
             }
         }
 
@@ -994,7 +1041,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             AllAgvlStatusReportRequest();
             SpinWait.SpinUntil(() => false, 50);
 
-            aseMoveControl.SendPositionReportRequest();
+            SendPositionReportRequest();
             SpinWait.SpinUntil(() => false, 50);
 
             aseBatteryControl.SendBatteryStatusRequest();
@@ -1319,6 +1366,144 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void DisConnect()
         {
             psWrapper.Close();
+        }
+
+        #endregion
+
+        #region Move Control
+
+        public void MoveFinished(EnumMoveComplete enumMoveComplete)
+        {
+            try
+            {
+                OnMoveFinishedEvent?.Invoke(this, enumMoveComplete);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }   
+
+        public void PartMove(MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumIsExecute keepOrGo, EnumSlotSelect openSlot = EnumSlotSelect.None)
+        {
+            try
+            {
+                string isEndString = ((int)isEnd).ToString();
+                string positionX = GetPositionString(mapPosition.X);
+                string positionY = GetPositionString(mapPosition.Y);
+                string thetaString = GetNumberToString(headAngle, 3);
+                string speedString = GetNumberToString(speed, 4);
+                string openSlotString = ((int)openSlot).ToString();
+                string keepOrGoString = keepOrGo.ToString().Substring(0, 1).ToUpper();
+                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
+
+                PrimarySendEnqueue("P41", message);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd, EnumSlotSelect openSlot = EnumSlotSelect.None)
+        {
+            try
+            {
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.Instance.AseMoveStatus);
+                string beginString = ((int)enumAseMoveCommandIsEnd).ToString();
+                string positionX = GetPositionString(aseMoveStatus.LastAddress.Position.X);
+                string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);
+                string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
+                string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
+                string openSlotString = ((int)openSlot).ToString();
+                string keepOrGoString = "G";
+                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
+
+                PrimarySendEnqueue("P41", message);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private string GetPositionString(double x)
+        {
+            try
+            {
+                string result = x >= 0 ? "P" : "N";
+                string number = GetNumberToString((int)(Math.Abs(x)), 8);
+                result = string.Concat(result, number);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                return "";
+            }
+        }
+
+        private string GetNumberToString(int value, ushort digit)
+        {
+            try
+            {
+                string valueFormat = new string('0', digit);
+
+                return value.ToString(valueFormat);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                return "";
+            }
+        }
+
+        public void MoveStop()
+        {
+            try
+            {
+                PrimarySendEnqueue("P51", "2");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void MoveContinue()
+        {
+            try
+            {
+                PrimarySendEnqueue("P51", "1");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void MovePause()
+        {
+            try
+            {
+                PrimarySendEnqueue("P51", "0");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void RefreshMoveState()
+        {
+            try
+            {
+                PrimarySendEnqueue("P31", "1");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
         }
 
         #endregion

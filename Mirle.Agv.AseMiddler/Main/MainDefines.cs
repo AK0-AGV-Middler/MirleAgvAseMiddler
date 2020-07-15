@@ -15,7 +15,7 @@ namespace Mirle.Agv.AseMiddler
         Horizontal,
         Vertical,
         R2000
-    }    
+    }
 
     public enum EnumCommandDirection
     {
@@ -66,7 +66,6 @@ namespace Mirle.Agv.AseMiddler
 
     public enum EnumLoginLevel
     {
-        None,
         Op,
         Engineer,
         Admin,
@@ -90,7 +89,7 @@ namespace Mirle.Agv.AseMiddler
         IdMismatch = 23,
         IdReadFail = 24,
         InterlockError = 64,
-        TransferComplete = 123  
+        TransferComplete = 123
     }
 
     public enum EnumCmdNum
@@ -133,7 +132,7 @@ namespace Mirle.Agv.AseMiddler
         Cmd174_AddressTeachReport = 174,
         Cmd191_AlarmResetResponse = 191,
         Cmd194_AlarmReport = 194,
-    }    
+    }
 
     public enum EnumAlarmLevel
     {
@@ -157,7 +156,7 @@ namespace Mirle.Agv.AseMiddler
         Normal,
         Mismatch,
         Fail
-    }   
+    }
 
     public enum EnumBeamDirection
     {
@@ -227,7 +226,7 @@ namespace Mirle.Agv.AseMiddler
         Empty,
         Loading,
         PositionError,
-        ReadFail      
+        ReadFail
     }
 
     public enum EnumMoveComplete
@@ -258,10 +257,17 @@ namespace Mirle.Agv.AseMiddler
         EndArrival
     }
 
-    public enum EnumKeepOrGo
+    public enum EnumIsExecute
     {
         Keep,
         Go
+    }
+
+    public enum EnumLDUD
+    {
+        LD,
+        UD,
+        None
     }
 
     #endregion

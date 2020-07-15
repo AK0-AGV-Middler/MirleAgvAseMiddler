@@ -24,19 +24,16 @@ namespace Mirle.Agv.AseMiddler.View
         public MainForm mainForm;
         private AsePackage asePackage;
         private AgvcConnector agvcConnector;
-        private AgvcConnectorForm middlerForm;
+        private AgvcConnectorForm agvcConnectorForm;
         private AlarmForm alarmForm;
         private AlarmHandler alarmHandler;
-        private AseMoveControlForm aseMoveControlForm;
-        private AseRobotControlForm aseRobotControlForm;
-        private AseAgvlConnectorForm aseAgvlConnectorForm;
+        private AgvlConnectorForm AgvlConnectorForm;
         private WarningForm warningForm;
         private ConfigForm configForm;
+        private LoginForm loginForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
-        private Panel panelRightUp;
-        private Panel panelRightDown;
-        private MapInfo theMapInfo = new MapInfo();
+        private MapInfo MapInfo = new MapInfo();
         //PerformanceCounter performanceCounterCpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "Available MBytes");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
@@ -45,20 +42,13 @@ namespace Mirle.Agv.AseMiddler.View
         public bool IsAgvcConnect { get; set; } = false;
         public bool IsAgvlConnect { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
-        public string MainFlowAbnormalReasonMsg { get; set; } = "";
-        public string AgvcConnectorAbnormalReasonMsg { get; set; } = "";
-        public string MoveControllerAbnormalReasonMsg { get; set; } = "";
         public string RobotAbnormalReasonMsg { get; set; } = "";
         public string BatterysAbnormalReasonMsg { get; set; } = "";
         public string LastAlarmMsg { get; set; } = "";
 
-
         #region PaintingItems
         private Image image;
         private Graphics gra;
-        private string saveNameWithTail;
-        private SolidBrush blackBrush = new SolidBrush(Color.Black);
-        private SolidBrush redBrush = new SolidBrush(Color.Red);
         private Dictionary<string, Pen> allPens = new Dictionary<string, Pen>();
 
         public bool IsBarcodeLineShow { get; set; } = true;
@@ -66,7 +56,6 @@ namespace Mirle.Agv.AseMiddler.View
         private Dictionary<string, UcAddressImage> allUcAddressImages = new Dictionary<string, UcAddressImage>();
         private double coefficient = 0.05f;
         private double deltaOrigion = 50;
-        private double triangleCoefficient = (double)(1 / Math.Sqrt(3.0));
         private UcVehicleImage ucVehicleImage = new UcVehicleImage();
         private MapPosition minPos = new MapPosition();
         private MapPosition maxPos = new MapPosition();
@@ -83,10 +72,9 @@ namespace Mirle.Agv.AseMiddler.View
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
             mainFlowConfig = Vehicle.MainFlowConfig;
-            theMapInfo = mainFlowHandler.Mapinfo;
+            MapInfo = mainFlowHandler.Mapinfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             asePackage = mainFlowHandler.GetAsePackage();
-
             agvcConnector = mainFlowHandler.GetAgvcConnector();
             mainForm = this;
         }
@@ -100,9 +88,11 @@ namespace Mirle.Agv.AseMiddler.View
             ResetImageAndPb();
             InitialSoc();
             asePackage.AllAgvlStatusReportRequest();
-            asePackage.aseMoveControl.SendPositionReportRequest();
+            asePackage.SendPositionReportRequest();
             asePackage.aseBatteryControl.SendBatteryStatusRequest();
             InitialConnectionAndCarrierStatus();
+            btnKeyInPosition.Visible = Vehicle.MainFlowConfig.IsSimulation;
+            btnKeyInSoc.Visible = Vehicle.MainFlowConfig.IsSimulation;
             txtLastAlarm.Text = "";
             var msg = "MainForm : 讀取主畫面";
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
@@ -110,17 +100,17 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialForms()
         {
-            middlerForm = new AgvcConnectorForm(agvcConnector);
-            middlerForm.WindowState = FormWindowState.Normal;
-            middlerForm.Show();
-            middlerForm.Hide();
+            agvcConnectorForm = new AgvcConnectorForm(agvcConnector);
+            agvcConnectorForm.WindowState = FormWindowState.Normal;
+            agvcConnectorForm.Show();
+            agvcConnectorForm.Hide();
 
             configForm = new ConfigForm(mainFlowHandler);
             configForm.WindowState = FormWindowState.Normal;
             configForm.Show();
             configForm.Hide();
 
-            var middlerConfig = agvcConnector.GetAgvcConnectorConfig();
+            var middlerConfig = Vehicle.AgvcConnectorConfig;
             tstextClientName.Text = $"[{ middlerConfig.ClientName}]";
             tstextRemoteIp.Text = $"[{middlerConfig.RemoteIp}]";
             tstextRemotePort.Text = $"[{middlerConfig.RemotePort}]";
@@ -139,9 +129,8 @@ namespace Mirle.Agv.AseMiddler.View
             numPositionX.Maximum = decimal.MaxValue;
             numPositionY.Maximum = decimal.MaxValue;
 
-            InitialAseMoveControlForm();
-            InitialAseRobotControlForm();
             InitialAseAgvlConnectorForm();
+            InitialLoginForm();
 
         }
 
@@ -195,7 +184,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialEvents()
         {
-            mainFlowHandler.OnMessageShowEvent += middlerForm.SendOrReceiveCmdToTextBox;
+            mainFlowHandler.OnMessageShowEvent += agvcConnectorForm.SendOrReceiveCmdToTextBox;
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
             agvcConnector.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
@@ -209,7 +198,6 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialSoc()
         {
-            txtWatchLowPower.Text = $"High/Low : {mainFlowConfig.HighPowerPercentage}/{mainFlowConfig.LowPowerPercentage}";
             timer_SetupInitialSoc.Enabled = true;
         }
 
@@ -237,7 +225,7 @@ namespace Mirle.Agv.AseMiddler.View
                 // Draw Sections in blueLine
                 allUcSectionImages.Clear();
 
-                var sectionMap = theMapInfo.sectionMap.Values.ToList();
+                var sectionMap = MapInfo.sectionMap.Values.ToList();
                 foreach (var section in sectionMap)
                 {
                     var headPos = section.HeadAddress.Position;
@@ -245,7 +233,7 @@ namespace Mirle.Agv.AseMiddler.View
 
                     MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Max(headPos.Y, tailPos.Y));//200310 dabid#
 
-                    UcSectionImage ucSectionImage = new UcSectionImage(theMapInfo, section);
+                    UcSectionImage ucSectionImage = new UcSectionImage(MapInfo, section);
                     if (!allUcSectionImages.ContainsKey(section.Id))
                     {
                         allUcSectionImages.Add(section.Id, ucSectionImage);
@@ -275,10 +263,10 @@ namespace Mirle.Agv.AseMiddler.View
                 //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
                 allUcAddressImages.Clear();
 
-                var addressMap = theMapInfo.addressMap.Values.ToList();
+                var addressMap = MapInfo.addressMap.Values.ToList();
                 foreach (var address in addressMap)
                 {
-                    UcAddressImage ucAddressImage = new UcAddressImage(theMapInfo, address);
+                    UcAddressImage ucAddressImage = new UcAddressImage(MapInfo, address);
                     if (!allUcAddressImages.ContainsKey(address.Id))
                     {
                         allUcAddressImages.Add(address.Id, ucAddressImage);
@@ -359,41 +347,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void TheVehicle_OnBeamDisableChangeEvent(object sender, BeamDisableArgs e)
-        {
-            try
-            {
-                var msg = $"{EnumBeamDirectionParse(e.Direction)} BeamSensor {DisableParse(!e.IsDisable)}";
-                ShowMsgOnMainForm(this, msg);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private string DisableParse(bool v)
-        {
-            return v ? "打開" : "關閉";
-        }
-
-        private string EnumBeamDirectionParse(EnumBeamDirection direction)
-        {
-            switch (direction)
-            {
-                case EnumBeamDirection.Front:
-                    return "前方";
-                case EnumBeamDirection.Back:
-                    return "後方";
-                case EnumBeamDirection.Left:
-                    return "左方";
-                case EnumBeamDirection.Right:
-                    return "右方";
-                default:
-                    return "未知";
-            }
-        }
-
         private void MainFlowHandler_OnAgvlConnectionChangedEvent(object sender, bool e)
         {
             IsAgvlConnect = e;
@@ -431,20 +384,20 @@ namespace Mirle.Agv.AseMiddler.View
         {
             #region 200318 dabid+ 
             //MapPosition tmpO = new MapPosition();
-            var tmp = theMapInfo.addressMap.Values.FirstOrDefault();
+            var tmp = MapInfo.addressMap.Values.FirstOrDefault();
             tmpO = tmp.Position;
             MapPosition tmpMaxY = new MapPosition();
             MapPosition tmpMinY = new MapPosition();
-            foreach (var addr in theMapInfo.addressMap.Values)
+            foreach (var addr in MapInfo.addressMap.Values)
             {
                 if (addr.Position.X * addr.Position.X + addr.Position.Y * addr.Position.Y < tmpO.X * tmpO.X + tmpO.Y * tmpO.Y)
                 {
                     tmpO = addr.Position;
                 }
             }
-            tmp = theMapInfo.addressMap.Values.FirstOrDefault();
+            tmp = MapInfo.addressMap.Values.FirstOrDefault();
             tmpMaxY.Y = tmpMinY.Y = tmp.Position.Y;
-            foreach (var address in theMapInfo.addressMap.Values)
+            foreach (var address in MapInfo.addressMap.Values)
             {
                 if (Math.Abs(address.Position.Y - tmpO.Y) > Math.Abs(tmpMaxY.Y - tmpO.Y))
                 {
@@ -458,10 +411,10 @@ namespace Mirle.Agv.AseMiddler.View
             mapYOffset = (Int32)Math.Abs(tmpMaxY.Y - tmpMinY.Y);
             #endregion
 
-            double xMax = theMapInfo.addressMap.Values.ToList().Max(addr => addr.Position.X);
-            double xMin = theMapInfo.addressMap.Values.ToList().Min(addr => addr.Position.X);
-            double yMax = theMapInfo.addressMap.Values.ToList().Max(addr => addr.Position.Y);
-            double yMin = theMapInfo.addressMap.Values.ToList().Min(addr => addr.Position.Y);
+            double xMax = MapInfo.addressMap.Values.ToList().Max(addr => addr.Position.X);
+            double xMin = MapInfo.addressMap.Values.ToList().Min(addr => addr.Position.X);
+            double yMax = MapInfo.addressMap.Values.ToList().Max(addr => addr.Position.Y);
+            double yMin = MapInfo.addressMap.Values.ToList().Min(addr => addr.Position.Y);
             maxPos.X = xMax;//200318 dabid+
             maxPos.Y = yMax;//200318 dabid+
             minPos.X = xMin;//200318 dabid+
@@ -488,11 +441,6 @@ namespace Mirle.Agv.AseMiddler.View
             var posY = ((pixel.Y - deltaOrigion) / coefficient - mapYOffset) / (-1) + minPos.Y;// 200318 dabid#
 
             return new MapPosition(posX, posY);
-        }
-
-        public Point MoveToImageCenter(Size size, Point oldPoint)
-        {
-            return new Point(oldPoint.X - (Size.Width / 2), oldPoint.Y - (size.Height / 2));
         }
 
         private void UcAddressImageItem_MouseDown(object sender, MouseEventArgs e)
@@ -550,69 +498,31 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void AgvlConnectorPage_Click(object sender, EventArgs e)
         {
-            if (aseAgvlConnectorForm.IsDisposed)
+            if (AgvlConnectorForm.IsDisposed)
             {
                 InitialAseAgvlConnectorForm();
             }
-            if (aseAgvlConnectorForm != null)
+            if (AgvlConnectorForm != null)
             {
-                aseAgvlConnectorForm.BringToFront();
-                aseAgvlConnectorForm.Show();
+                AgvlConnectorForm.BringToFront();
+                AgvlConnectorForm.Show();
             }
         }
 
         private void InitialAseAgvlConnectorForm()
         {
-            aseAgvlConnectorForm = new AseAgvlConnectorForm(asePackage);
-            aseAgvlConnectorForm.OnException += AseControlForm_OnException;
-        }
-
-        private void AseAgvlConnectorForm_SendCommand(object sender, string e)
-        {
-            throw new NotImplementedException();
+            AgvlConnectorForm = new AgvlConnectorForm(asePackage, MapInfo);
         }
 
         private void AgvcConnectorPage_Click(object sender, EventArgs e)
         {
-            if (middlerForm.IsDisposed)
+            if (agvcConnectorForm.IsDisposed)
             {
-                middlerForm = new AgvcConnectorForm(agvcConnector);
+                agvcConnectorForm = new AgvcConnectorForm(agvcConnector);
             }
-            middlerForm.BringToFront();
-            middlerForm.Show();
+            agvcConnectorForm.BringToFront();
+            agvcConnectorForm.Show();
 
-        }
-
-        private void ManualMoveCmdPage_Click(object sender, EventArgs e)
-        {
-            if (aseMoveControlForm.IsDisposed)
-            {
-                InitialAseMoveControlForm();
-            }
-            if (aseMoveControlForm != null)
-            {
-                aseMoveControlForm.BringToFront();
-                aseMoveControlForm.Show();
-            }
-        }
-
-        private void InitialAseMoveControlForm()
-        {
-            aseMoveControlForm = new AseMoveControlForm(theMapInfo);
-            asePackage.AllPspLog += aseMoveControlForm.AsePackage_AllPspLog;
-            aseMoveControlForm.SendMove += AseMoveControlForm_SendMove;
-            aseMoveControlForm.OnException += AseControlForm_OnException;
-            aseMoveControlForm.PauseOrResumeAskPosition += AseMoveControlForm_PauseOrResumeAskPosition;
-            aseMoveControlForm.RefreshMoveStatusAndPosition += AseMoveControlForm_RefreshMoveStatusAndPosition;
-        }
-
-        private void AseMoveControlForm_RefreshMoveStatusAndPosition(object sender, EventArgs e)
-        {
-            asePackage.aseMoveControl.SendPositionReportRequest();
-
-            SpinWait.SpinUntil(() => false, 50);
-
-            asePackage.aseMoveControl.RefreshMoveState();
         }
 
         private void btnRefreshStatus_Click(object sender, EventArgs e)
@@ -620,7 +530,7 @@ namespace Mirle.Agv.AseMiddler.View
             btnRefreshStatus.Enabled = false;
             asePackage.AllAgvlStatusReportRequest();
             SpinWait.SpinUntil(() => false, 50);
-            asePackage.aseMoveControl.SendPositionReportRequest();
+            asePackage.SendPositionReportRequest();
             SpinWait.SpinUntil(() => false, 50);
             asePackage.aseBatteryControl.SendBatteryStatusRequest();
             btnRefreshStatus.Enabled = true;
@@ -630,49 +540,13 @@ namespace Mirle.Agv.AseMiddler.View
         {
             btnRefreshMoveState.Enabled = false;
 
-            asePackage.aseMoveControl.SendPositionReportRequest();
+            asePackage.SendPositionReportRequest();
 
             SpinWait.SpinUntil(() => false, 50);
 
-            asePackage.aseMoveControl.RefreshMoveState();
+            asePackage.RefreshMoveState();
 
             btnRefreshMoveState.Enabled = true;
-        }
-
-        private void AseMoveControlForm_PauseOrResumeAskPosition(object sender, bool e)
-        {
-            try
-            {
-                if (e)
-                {
-                    asePackage.aseMoveControl.PausePositionWatcher();
-                }
-                else
-                {
-                    asePackage.aseMoveControl.ResumePositionWatcher();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void AseMoveControlForm_SendMove(object sender, AseMoveEventArgs e)
-        {
-            try
-            {
-                asePackage.aseMoveControl.PartMove(e.MapPosition, e.HeadAngle, e.Speed, e.IsEnd, e.KeepOrGo);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void AseControlForm_OnException(object sender, string exMsg)
-        {
-            LogException(sender.ToString(), exMsg);
         }
 
         private void btnRefreshRobotState_Click(object sender, EventArgs e)
@@ -695,156 +569,20 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void RobotControlPage_Click(object sender, EventArgs e)
-        {
-            if (aseRobotControlForm.IsDisposed)
-            {
-                InitialAseRobotControlForm();
-            }
-            if (aseRobotControlForm != null)
-            {
-                aseRobotControlForm.BringToFront();
-                aseRobotControlForm.Show();
-            }
-        }
-
-        private void InitialAseRobotControlForm()
-        {
-            aseRobotControlForm = new AseRobotControlForm(theMapInfo);
-            aseRobotControlForm.SendRobotCommand += AseRobotControlForm_SendRobotCommand;
-            aseRobotControlForm.OnException += AseControlForm_OnException;
-            asePackage.AllPspLog += aseRobotControlForm.AsePackage_AllPspLog;
-            aseRobotControlForm.SendChargeCommand += AseRobotControlForm_SendChargeCommand;
-            aseRobotControlForm.RefreshBatteryState += AseRobotControlForm_RefreshBatteryState;
-            aseRobotControlForm.RefreshRobotState += AseRobotControlForm_RefreshRobotState;
-            aseRobotControlForm.PauseAskBattery += AseRobotControlForm_PauseAskBattery;
-        }
-
-        private void AseRobotControlForm_PauseAskBattery(object sender, bool e)
-        {
-            try
-            {
-                if (e)
-                {
-                    asePackage.aseBatteryControl.PauseWatchBatteryState();
-                }
-                else
-                {
-                    asePackage.aseBatteryControl.ResumeWatchBatteryState();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void AseRobotControlForm_RefreshRobotState(object sender, EventArgs e)
-        {
-            try
-            {
-                asePackage.aseRobotControl.RefreshRobotState();
-
-                SpinWait.SpinUntil(() => false, 50);
-
-                asePackage.aseRobotControl.RefreshCarrierSlotState();
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
         private void AseRobotControlForm_RefreshBatteryState(object sender, EventArgs e)
         {
             try
             {
-                btnRefreshBatteryState.Enabled = false;
-                asePackage.aseBatteryControl.SendBatteryStatusRequest();
-                SpinWait.SpinUntil(() => false, 50);
-                asePackage.aseBatteryControl.SendChargeStatusRequest();
-                btnRefreshBatteryState.Enabled = true;
+                var btn = sender as Button;
+                btn.Enabled = false;
+                asePackage.AllAgvlStatusReportRequest();
+                System.Threading.Thread.Sleep(50);
+                btn.Enabled = true;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-        private void AseRobotControlForm_SendChargeCommand(object sender, AseChargeEventArgs e)
-        {
-            try
-            {
-                if (e.IsCharge)
-                {
-                    asePackage.aseBatteryControl.StartCharge(e.ChargeDirection);
-                    ShowMsgOnMainForm(this, $"IsCharging : {e.ChargeDirection.ToString()} , {Vehicle.IsCharging.ToString()}");
-                    //OnMessageShowEvent?.Invoke(this, $"IsCharging : {e.ChargeDirection.ToString()} , {theVehicle.IsCharging.ToString()}");
-                }
-                else
-                {
-                    asePackage.aseBatteryControl.StopCharge();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void AseRobotControlForm_SendRobotCommand(object sender, AseRobotEventArgs e)
-        {
-            try
-            {
-                RobotCommand robotCommand = GetRobotCommandFromAseRobotControlForm(e);
-                asePackage.aseRobotControl.DoRobotCommand(robotCommand);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private RobotCommand GetRobotCommandFromAseRobotControlForm(AseRobotEventArgs e)
-        {
-            AgvcTransCmd agvcTransCmd = new AgvcTransCmd();
-            agvcTransCmd.CommandId = "Cmd001";
-            RobotCommand robotCommand;
-            if (e.IsLoad)
-            {
-                robotCommand = new LoadCmdInfo(agvcTransCmd);
-                robotCommand.PortAddressId = e.FromPort.PadLeft(5, '0');
-                EnumSlotNumber slotNumber = e.ToPort.Trim('0') == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
-                if (aseCarrierSlotStatus.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
-                {
-                    string errorMsg = $"GetRobotCommandFromAseRobotControlForm fail. Can not load, [ToPort = {e.ToPort}][SlotNum = {slotNumber}][SlotState = {aseCarrierSlotStatus.CarrierSlotStatus}]";
-                    AppendDebugLogMsg(errorMsg);
-                    throw new Exception(errorMsg);
-                }
-
-                robotCommand.SlotNumber = slotNumber;
-            }
-            else
-            {
-                robotCommand = new UnloadCmdInfo(agvcTransCmd);
-                robotCommand.PortAddressId = e.ToPort.PadLeft(5, '0');
-                EnumSlotNumber slotNumber = e.FromPort.Trim('0') == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
-                if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
-                {
-                    string errorMsg = $"GetRobotCommandFromAseRobotControlForm fail. Can not unload, [FromPort = {e.FromPort}][SlotNum = {slotNumber}][SlotState = {aseCarrierSlotStatus.CarrierSlotStatus}]";
-                    AppendDebugLogMsg(errorMsg);
-                    throw new Exception(errorMsg);
-                }
-
-                robotCommand.SlotNumber = slotNumber;
-            }
-            robotCommand.PioDirection = e.PioDirection;
-            robotCommand.GateType = e.GateType;
-            robotCommand.PortNumber = e.PortNumber;
-
-            return robotCommand;
         }
 
         private void AlarmPage_Click(object sender, EventArgs e)
@@ -879,12 +617,6 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 control.Text = msg;
             }
-        }
-
-        private void btnSwitchBarcodeLine_Click(object sender, EventArgs e)
-        {
-            IsBarcodeLineShow = !IsBarcodeLineShow;
-            ResetImageAndPb();
         }
 
         #region Image Functions
@@ -947,12 +679,13 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateListBoxSections(lbxNeedReserveSections, agvcConnector.GetNeedReserveSections());
                 UpdateListBoxSections(lbxReserveOkSections, agvcConnector.GetReserveOkSections());
 
+                UpdateLoginLevel();
                 UpdateAutoManual();
                 UpdateVehLocation();
                 UpdateBatteryState();
                 UpdateRobotAndCarrierSlotState();
                 //DrawReserveSections();
-                UpdateThreadPicture();
+                UpdateGroupBoxFlowStatus();
                 UpdateTbxAgvcTransCmd();
                 UpdateTbxTransferStep();
                 UpdateLastAlarm();
@@ -960,6 +693,47 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateAgvlConnection();
                 //UpdateAgvFailResult();
                 UpdateReserveStopState();
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void UpdateLoginLevel()
+        {
+            try
+            {
+                label1.Text = Vehicle.LoginLevel.ToString();
+                switch (Vehicle.LoginLevel)
+                {
+
+                    case EnumLoginLevel.Engineer:
+                        {
+                            ToolStripMenuItemCloseApp.Visible = true;
+                            ToolStripMenuItemMode.Visible = true;
+                        }
+                        break;
+                    case EnumLoginLevel.Admin:
+                        {
+                            ToolStripMenuItemCloseApp.Visible = true;
+                            ToolStripMenuItemMode.Visible = true;
+                        }
+                        break;
+                    case EnumLoginLevel.OneAboveAll:
+                        {
+                            ToolStripMenuItemCloseApp.Visible = true;
+                            ToolStripMenuItemMode.Visible = true;
+                        }
+                        break;
+                    case EnumLoginLevel.Op:
+                    default:
+                        {
+                            ToolStripMenuItemCloseApp.Visible = false;
+                            ToolStripMenuItemMode.Visible = false;
+                        }
+                        break;
+                }
 
             }
             catch (Exception ex)
@@ -967,6 +741,7 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
 
         private void UpdateCannotAutoReason()
         {
@@ -1214,65 +989,38 @@ namespace Mirle.Agv.AseMiddler.View
 
 
         }
-        private string GuideListToString(List<string> aList)
-        {
-            return string.Join(", ", aList.ToArray());
-        }
-        private string GetListPositionsToString(List<MapPosition> positions)
-        {
-            List<string> result = new List<string>();
-            foreach (var position in positions)
-            {
-                result.Add($"({position.X},{position.Y})");
-            }
-            return GuideListToString(result);
-        }
-        private void UpdateThreadPicture()
+
+        private void UpdateGroupBoxFlowStatus()
         {
             try
             {
-                Vehicle theVehicle = Vehicle.Instance;
-
-                txtTransferStep.Text = mainFlowHandler.GetCurrentTransferStepType().ToString();
-
-                if (mainFlowHandler.GetTransferStepsCount() > 0)
+                switch (mainFlowHandler.GetCurrentTransferStepType())
                 {
-                    var stepIndex = mainFlowHandler.TransferStepsIndex;
-                    var moveIndex = 0;
-                    if (mainFlowHandler.IsMoveStep())
-                    {
-                        AseMovingGuide aseMovingGuide = new AseMovingGuide(theVehicle.AseMovingGuide);
-                        if (aseMovingGuide.MovingSections.Count > 0)
-                        {
-                            moveIndex = aseMovingGuide.MovingSectionsIndex;
-                        }
-
-                    }
-                    txtTrackPosition.Text = $"{stepIndex},{moveIndex}";
+                    case EnumTransferStepType.Move:
+                        ucCurrentTransferStepType.TagValue = "Move";
+                        break;
+                    case EnumTransferStepType.MoveToCharger:
+                        ucCurrentTransferStepType.TagValue = "MV2C";
+                        break;
+                    case EnumTransferStepType.Load:
+                        ucCurrentTransferStepType.TagValue = "LD";
+                        break;
+                    case EnumTransferStepType.Unload:
+                        ucCurrentTransferStepType.TagValue = "UD";
+                        break;
+                    case EnumTransferStepType.Empty:
+                    default:
+                        ucCurrentTransferStepType.TagValue = "Idle";
+                        break;
                 }
 
-                txtAskingReserve.Text = $"ID:{agvcConnector.GetAskingReserveSection().Id}";
+                ucCommanding.TagValue = Vehicle.ActionStatus.ToString();
+                ucErrorFlag.TagValue = Vehicle.ErrorStatus.ToString();
+                ucReserveFlag.TagValue = Vehicle.AseMovingGuide.ReserveStop.ToString();
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-        private Color GetThreadStatusColor(EnumThreadStatus threadStatus)
-        {
-            switch (threadStatus)
-            {
-                case EnumThreadStatus.Start:
-                    return Color.GreenYellow;
-                case EnumThreadStatus.Pause:
-                    return Color.Orange;
-                case EnumThreadStatus.Working:
-                    return Color.Green;
-                case EnumThreadStatus.Stop:
-                    return Color.Red;
-                case EnumThreadStatus.None:
-                default:
-                    return Color.Black;
             }
         }
         private void UpdateAutoManual()
@@ -1300,35 +1048,6 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-        private void DrawReserveSections()
-        {
-            var transferStepCount = mainFlowHandler.GetTransferStepsCount();
-            if (transferStepCount < 1)
-            {
-                return;
-            }
-
-            if (!mainFlowHandler.IsMoveStep())
-            {
-                return;
-            }
-
-            var needReserveSections = agvcConnector.GetNeedReserveSections();
-            UpdateListBoxSections(lbxNeedReserveSections, needReserveSections);
-            foreach (var section in needReserveSections)
-            {
-                allUcSectionImages[section.Id].DrawSectionImage(allPens["YellowGreen2"]);
-            }
-
-            var reserveOkSections = agvcConnector.GetReserveOkSections();
-            UpdateListBoxSections(lbxReserveOkSections, reserveOkSections);
-            foreach (var section in reserveOkSections)
-            {
-                allUcSectionImages[section.Id].DrawSectionImage(allPens["Green2"]);
-            }
-
         }
         private void UpdateVehLocation()
         {
@@ -1381,13 +1100,10 @@ namespace Mirle.Agv.AseMiddler.View
                 ucBatteryCharging.TagColor = isCharging ? Color.LightGreen : Color.Pink;
                 string batteryPercentage = Vehicle.AseBatteryStatus.Percentage.ToString("F1");
                 ucBatteryPercentage.TagValue = batteryPercentage;
-                aseRobotControlForm.BatteryPercentage = batteryPercentage;
                 string batteryVoltage = Vehicle.AseBatteryStatus.Voltage.ToString("F2");
                 ucBatteryVoltage.TagValue = batteryVoltage;
-                aseRobotControlForm.BatteryVoltage = batteryVoltage;
                 string batteryTemperature = Vehicle.AseBatteryStatus.Temperature.ToString("F1");
                 ucBatteryTemperature.TagValue = batteryTemperature;
-                aseRobotControlForm.BatteryTemperature = batteryTemperature;
             }
             catch (Exception ex)
             {
@@ -1410,12 +1126,10 @@ namespace Mirle.Agv.AseMiddler.View
                 ucRobotSlotLState.TagValue = slotL.CarrierSlotStatus.ToString();
                 ucRobotSlotLId.TagValue = slotL.CarrierId;
                 ucLCstId.TagValue = slotL.CarrierId;
-                aseRobotControlForm.LCassetteId = slotL.CarrierId;
 
                 ucRobotSlotRState.TagValue = slotR.CarrierSlotStatus.ToString();
                 ucRobotSlotRId.TagValue = slotR.CarrierId;
                 ucRCstId.TagValue = slotR.CarrierId;
-                aseRobotControlForm.RCassetteId = slotR.CarrierId;
 
                 ucVehicleImage.Loading = slotL.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty || slotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty
                     ? true
@@ -1539,46 +1253,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void TheVehicle_OnAutoStateChangeEvent(object sender, EnumAutoState autoState)
-        {
-            try
-            {
-                switch (autoState)
-                {
-                    case EnumAutoState.Auto:
-                        //if (!mainFlowConfig.IsSimulation)
-                        //{
-                        //    TakeAPicture();
-                        //}
-                        AppendDebugLogMsg($"Manual switch to  Auto  ok ");
-                        ResetAllAbnormalMsg();
-                        break;
-                    case EnumAutoState.Manual:
-                        AppendDebugLogMsg($"Auto switch to  Manual  ok ");
-
-                        break;
-                    case EnumAutoState.None:
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void ResetAllAbnormalMsg()
-        {
-            mainFlowHandler.MainFlowAbnormalMsg = "";
-            agvcConnector.AgvcConnectorAbnormalMsg = "";
-            mainFlowHandler.ResetMoveControlStopResult();
-            RobotAbnormalReasonMsg = "";
-            BatterysAbnormalReasonMsg = "";
-
-        }
-
         private void btnKeyInSoc_Click(object sender, EventArgs e)
         {
             mainFlowHandler.SetupVehicleSoc(decimal.ToInt32(numSoc.Value));
@@ -1660,11 +1334,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void 工程師ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -1726,41 +1395,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        public void ChangeToNormalSection(string sectionId)
-        {
-            try
-            {
-                if (removeSectionIndex < changeColorSectionList.Count &&
-                    changeColorSectionList[removeSectionIndex].Id == sectionId)
-                {
-                    //changeColorSectionList[removeSectionIndex].SetColor(allPens["NormalSection"]);
-                    UcSectionImageSetColor(changeColorSectionList[removeSectionIndex], "NormalSection");
-                    removeSectionIndex++;
-                    RefreshMap(mainForm);
-                }
-            }
-            catch { }
-        }
-
-        private void GetReserveSection(string sectionId)
-        {
-            try
-            {
-                if (changeColorSectionListIndex < changeColorSectionList.Count &&
-                    changeColorSectionList[changeColorSectionListIndex].Id == sectionId)
-                {
-                    //changeColorSectionList[changeColorSectionListIndex].SetColor(allPens["GetReserveSection"]);
-                    UcSectionImageSetColor(changeColorSectionList[changeColorSectionListIndex], "GetReserveSection");
-                    changeColorSectionListIndex++;
-                    RefreshMap(mainForm);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
         public void ResetSectionColor()
         {
             try
@@ -1795,68 +1429,6 @@ namespace Mirle.Agv.AseMiddler.View
             catch { }
         }
 
-        public void SetMovingSectionAndEndPosition(List<MapSection> movingSection, MapAddress movingEndAddress)
-        {
-            try
-            {
-                ResetSectionColor();
-
-                foreach (MapSection section in movingSection)
-                {
-                    if (allUcSectionImages.ContainsKey(section.Id))
-                    {
-                        var ucSectionImage = allUcSectionImages[section.Id];
-                        changeColorSectionList.Add(ucSectionImage);
-                        UcSectionImageSetColor(ucSectionImage, "NotGetReserveSection");
-                    }
-                }
-
-                changeColorSectionListIndex = 0;
-                removeSectionIndex = 0;
-
-                if (movingEndAddress != null)
-                {
-                    if (allUcAddressImages.ContainsKey(movingEndAddress.Id))
-                    {
-                        allUcAddressImages[movingEndAddress.Id].BackColor = Color.Green;
-                        endAddress = movingEndAddress;
-                    }
-                }
-
-                RefreshMap(mainForm);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void btnReloadConfig_Click(object sender, EventArgs e)
-        {
-            ClearColor();
-            //SimulateAGVCMoveCommand();
-            mainFormAddNodes = new List<MapAddress>();
-
-            //if (theVehicle.AutoState == EnumAutoState.Manual)
-            //{
-            //    mainFlowHandler.ReloadConfig();
-            //}
-        }
-
-        private void 模擬測試ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //if (mainFlowConfig.CustomerName == "AUO")
-            //{
-            //    ((MoveCommandDebugModeForm)moveCommandForm).button_SimulationMode_Click(this, e);
-            //    integrateCommandForm.IsSimulation = !integrateCommandForm.IsSimulation;
-            //    if (integrateCommandForm.IsSimulation)
-            //    {
-            //        mainFlowHandler.SetupVehicleSoc(100);
-            //    }
-            //}
-            mainFlowHandler.IsSimulation = !mainFlowHandler.IsSimulation;
-        }
-
         private void btnPrintScreen_Click(object sender, EventArgs e)
         {
             TakeAPicture();
@@ -1876,6 +1448,29 @@ namespace Mirle.Agv.AseMiddler.View
             image.Save(savename);
         }
 
+        private void ToolStripMenuItemLogin_Click(object sender, EventArgs e)
+        {
+            if (loginForm.IsDisposed)
+            {
+                InitialLoginForm();
+            }
+            if (loginForm != null)
+            {
+                loginForm.BringToFront();
+                loginForm.Show();
+            }
+        }
+
+        private void InitialLoginForm()
+        {
+            loginForm = new LoginForm(mainFlowHandler.UserAgent);
+        }
+
+        private void ToolStripMenuItemLogout_Click(object sender, EventArgs e)
+        {
+            Vehicle.LoginLevel = EnumLoginLevel.Op;
+        }
+
         private void LogException(string classMethodName, string exMsg)
         {
             mirleLogger.Log(new LogFormat("Error", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", exMsg));
@@ -1885,7 +1480,6 @@ namespace Mirle.Agv.AseMiddler.View
         {
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", msg));
         }
-
 
     }
 }
