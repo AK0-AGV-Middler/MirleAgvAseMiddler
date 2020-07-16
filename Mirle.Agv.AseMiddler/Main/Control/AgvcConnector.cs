@@ -2011,17 +2011,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ID_36_TRANS_EVENT_RESPONSE receive = (ID_36_TRANS_EVENT_RESPONSE)e.objPacket;
-                if (receive.EventType == EventType.ReserveReq)
-                {
-                }
-                else if (receive.EventType == EventType.Bcrread)
-                {
-                }
-                else
-                {
-
-                }
             }
             catch (Exception ex)
             {

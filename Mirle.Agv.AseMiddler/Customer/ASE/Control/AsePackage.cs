@@ -97,16 +97,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             XmlHandler xmlHandler = new XmlHandler();
             asePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
-            pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>(asePackageConfig.PspConnectionConfigFilePath);
+            pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>("PspConnectionConfig.xml");
             Vehicle.PspSpecVersion = pspConnectionConfig.SpecVersion;
-            aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>(asePackageConfig.AseBatteryConfigFilePath);
-            aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>(asePackageConfig.AseMoveConfigFilePath);
+            aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>("AseBatteryConfig.xml");
+            aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>("AseMoveConfig.xml");
 
             if (Vehicle.MainFlowConfig.IsSimulation)
             {
                 aseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
                 aseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
-                aseMoveConfig.WatchPositionInterval = 200;
+                aseMoveConfig.WatchPositionInterval = 5000;
             }
         }
 
@@ -184,7 +184,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (Model.Vehicle.Instance.IsAgvcConnect)
+                if (Vehicle.IsAgvcConnect)
                 {
                     List<AccessPoint> accessPoints = new Wifi().GetAccessPoints().ToList();
                     if (accessPoints.Any())
@@ -298,6 +298,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                         if (!ReceivePositionArgsQueue.Any())
                         {
                             SendPositionReportRequest();
+                        }
+                        else
+                        {
+                            SpinWait.SpinUntil(() => false, 500);
                         }
                     }
                 }
@@ -665,6 +669,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void ChargeStatusRequest()
+        {
+            try
+            {
+                PrimarySendEnqueue("P31", "4");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
         #endregion
 
         #region PrimaryReceived
@@ -895,7 +911,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                     positionArgs.Speed = speed;
                 }
 
-                ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport. [{psMessage.Substring(0, 1)}][{positionArgs.Arrival.ToString()}][({x.ToString("F0")},{y.ToString("F0")})]");
+                if (positionArgs.Arrival!= EnumAseArrival.Arrival)
+                {
+                    ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport. [{psMessage.Substring(0, 1)}][{positionArgs.Arrival.ToString()}][({x.ToString("F0")},{y.ToString("F0")})]");
+                }
 
                 ReceivePositionArgsQueue.Enqueue(positionArgs);
 
@@ -1245,7 +1264,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                PrimarySendEnqueue("P13", "");
+                //PrimarySendEnqueue("P13", "");
             }
             catch (Exception ex)
             {
@@ -1259,13 +1278,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string slotNumber = slotStatus.SlotNumber.ToString().Substring(0, 1);
-                string cstRenameString = string.Concat("0", slotNumber, "1", slotStatus.CarrierId);
-                PrimarySendEnqueue("P25", cstRenameString);
+                string cstRenameString = string.Concat(slotNumber, slotStatus.CarrierId);
+                PrimarySendEnqueue("P27", cstRenameString);
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                ImportantPspLog?.Invoke(this, ex.Message);
             }
         }
 
@@ -1437,7 +1455,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                     positionArgs.Speed = speed;
                 }
 
-                ImportantPspLog?.Invoke(this, $"ReceivePositionReportRequestAck. [{psMessage.Substring(0, 1)}][{arrival.ToString()}][({x.ToString("F0")},{y.ToString("F0")})]");
+                if (arrival == EnumAseArrival.Fail)
+                {
+                    ImportantPspLog?.Invoke(this, $"ReceivePositionReportRequestAck. [{psMessage.Substring(0, 1)}][{arrival.ToString()}][({x.ToString("F0")},{y.ToString("F0")})]");
+                }
 
                 ReceivePositionArgsQueue.Enqueue(positionArgs);
             }

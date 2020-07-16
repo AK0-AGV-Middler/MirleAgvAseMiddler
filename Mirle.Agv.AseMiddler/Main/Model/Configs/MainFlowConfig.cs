@@ -11,9 +11,9 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
     {
         public string LogConfigPath { get; set; }
         public int VisitTransferStepsSleepTimeMs { get; set; }
-        public int TrackPositionSleepTimeMs { get; set; }
-        public int WatchLowPowerSleepTimeMs { get; set; }
-        public int ReportPositionIntervalMs { get; set; }
+        public int TrackPositionSleepTimeMs { get; set; } = 5000;
+        public int WatchLowPowerSleepTimeMs { get; set; } = 5000;
+        public int ReportPositionIntervalMs { get; set; } = 5000;
         public int StartChargeWaitingTimeoutMs { get; set; } = 3000;
         public int StopChargeWaitingTimeoutMs { get; set; } = 3000;
         public int RealPositionRangeMm { get; set; }

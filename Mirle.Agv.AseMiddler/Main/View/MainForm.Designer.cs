@@ -51,6 +51,8 @@ namespace Mirle.Agv.AseMiddler.View
             this.tbxDebugLogMsg = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.pageBasicState = new System.Windows.Forms.TabPage();
+            this.checkBoxDisableRightSlot = new System.Windows.Forms.CheckBox();
+            this.checkBoxDisableLeftSlot = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnRefreshStatus = new System.Windows.Forms.Button();
             this.btnPrintScreen = new System.Windows.Forms.Button();
@@ -60,9 +62,11 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucErrorFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucCommanding = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.gbPerformanceCounter = new System.Windows.Forms.GroupBox();
+            this.ucHeadAngle = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
+            this.ucMapAddressId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucCharging = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
@@ -138,8 +142,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
-            this.ucMapAddressId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucHeadAngle = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -352,6 +354,8 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // pageBasicState
             // 
+            this.pageBasicState.Controls.Add(this.checkBoxDisableRightSlot);
+            this.pageBasicState.Controls.Add(this.checkBoxDisableLeftSlot);
             this.pageBasicState.Controls.Add(this.label1);
             this.pageBasicState.Controls.Add(this.btnRefreshStatus);
             this.pageBasicState.Controls.Add(this.btnPrintScreen);
@@ -371,6 +375,30 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBasicState.TabIndex = 6;
             this.pageBasicState.Text = "Basic";
             this.pageBasicState.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxDisableRightSlot
+            // 
+            this.checkBoxDisableRightSlot.AutoSize = true;
+            this.checkBoxDisableRightSlot.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.checkBoxDisableRightSlot.Location = new System.Drawing.Point(436, 327);
+            this.checkBoxDisableRightSlot.Name = "checkBoxDisableRightSlot";
+            this.checkBoxDisableRightSlot.Size = new System.Drawing.Size(160, 24);
+            this.checkBoxDisableRightSlot.TabIndex = 63;
+            this.checkBoxDisableRightSlot.Text = "Disable Right Slot";
+            this.checkBoxDisableRightSlot.UseVisualStyleBackColor = true;
+            this.checkBoxDisableRightSlot.CheckedChanged += new System.EventHandler(this.checkBoxDisableSlot_CheckedChanged);
+            // 
+            // checkBoxDisableLeftSlot
+            // 
+            this.checkBoxDisableLeftSlot.AutoSize = true;
+            this.checkBoxDisableLeftSlot.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.checkBoxDisableLeftSlot.Location = new System.Drawing.Point(436, 293);
+            this.checkBoxDisableLeftSlot.Name = "checkBoxDisableLeftSlot";
+            this.checkBoxDisableLeftSlot.Size = new System.Drawing.Size(148, 24);
+            this.checkBoxDisableLeftSlot.TabIndex = 63;
+            this.checkBoxDisableLeftSlot.Text = "Disable Left Slot";
+            this.checkBoxDisableLeftSlot.UseVisualStyleBackColor = true;
+            this.checkBoxDisableLeftSlot.CheckedChanged += new System.EventHandler(this.checkBoxDisableSlot_CheckedChanged);
             // 
             // label1
             // 
@@ -478,6 +506,17 @@ namespace Mirle.Agv.AseMiddler.View
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
             // 
+            // ucHeadAngle
+            // 
+            this.ucHeadAngle.Location = new System.Drawing.Point(11, 241);
+            this.ucHeadAngle.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucHeadAngle.Name = "ucHeadAngle";
+            this.ucHeadAngle.Size = new System.Drawing.Size(187, 30);
+            this.ucHeadAngle.TabIndex = 43;
+            this.ucHeadAngle.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucHeadAngle.TagName = "HeadAngle";
+            this.ucHeadAngle.TagValue = "";
+            // 
             // ucRCstId
             // 
             this.ucRCstId.Location = new System.Drawing.Point(11, 57);
@@ -510,6 +549,17 @@ namespace Mirle.Agv.AseMiddler.View
             this.btnKeyInSoc.Text = "校正電量";
             this.btnKeyInSoc.UseVisualStyleBackColor = true;
             this.btnKeyInSoc.Click += new System.EventHandler(this.btnKeyInSoc_Click);
+            // 
+            // ucMapAddressId
+            // 
+            this.ucMapAddressId.Location = new System.Drawing.Point(10, 201);
+            this.ucMapAddressId.Margin = new System.Windows.Forms.Padding(5, 7, 5, 7);
+            this.ucMapAddressId.Name = "ucMapAddressId";
+            this.ucMapAddressId.Size = new System.Drawing.Size(187, 30);
+            this.ucMapAddressId.TabIndex = 3;
+            this.ucMapAddressId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucMapAddressId.TagName = "Addr";
+            this.ucMapAddressId.TagValue = "";
             // 
             // ucRobotHome
             // 
@@ -1348,28 +1398,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
-            // ucMapAddressId
-            // 
-            this.ucMapAddressId.Location = new System.Drawing.Point(10, 201);
-            this.ucMapAddressId.Margin = new System.Windows.Forms.Padding(5, 7, 5, 7);
-            this.ucMapAddressId.Name = "ucMapAddressId";
-            this.ucMapAddressId.Size = new System.Drawing.Size(187, 30);
-            this.ucMapAddressId.TabIndex = 3;
-            this.ucMapAddressId.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucMapAddressId.TagName = "Addr";
-            this.ucMapAddressId.TagValue = "";
-            // 
-            // ucHeadAngle
-            // 
-            this.ucHeadAngle.Location = new System.Drawing.Point(11, 241);
-            this.ucHeadAngle.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
-            this.ucHeadAngle.Name = "ucHeadAngle";
-            this.ucHeadAngle.Size = new System.Drawing.Size(187, 30);
-            this.ucHeadAngle.TabIndex = 43;
-            this.ucHeadAngle.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucHeadAngle.TagName = "HeadAngle";
-            this.ucHeadAngle.TagValue = "";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1539,5 +1567,7 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.Label label1;
         private UcLabelTextBox ucHeadAngle;
         private UcLabelTextBox ucMapAddressId;
+        private System.Windows.Forms.CheckBox checkBoxDisableRightSlot;
+        private System.Windows.Forms.CheckBox checkBoxDisableLeftSlot;
     }
 }

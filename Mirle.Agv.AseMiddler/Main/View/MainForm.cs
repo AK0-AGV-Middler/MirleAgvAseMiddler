@@ -91,11 +91,50 @@ namespace Mirle.Agv.AseMiddler.View
             asePackage.SendPositionReportRequest();
             asePackage.SendBatteryStatusRequest();
             InitialConnectionAndCarrierStatus();
+            InitialDisableSlotCheckBox();
             btnKeyInPosition.Visible = Vehicle.MainFlowConfig.IsSimulation;
             btnKeyInSoc.Visible = Vehicle.MainFlowConfig.IsSimulation;
             txtLastAlarm.Text = "";
             var msg = "MainForm : 讀取主畫面";
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+        }
+
+        private void InitialDisableSlotCheckBox()
+        {
+            var disable = Vehicle.MainFlowConfig.SlotDisable;
+            switch (disable)
+            {
+                case EnumSlotSelect.None:
+                    {
+                        checkBoxDisableLeftSlot.Checked = false;
+                        checkBoxDisableRightSlot.Checked = false;
+                    }
+                    break;
+                case EnumSlotSelect.Left:
+                    {
+                        checkBoxDisableLeftSlot.Checked = true;
+                        checkBoxDisableRightSlot.Checked = false;
+                    }
+                    break;
+                case EnumSlotSelect.Right:
+                    {
+                        checkBoxDisableLeftSlot.Checked = false;
+                        checkBoxDisableRightSlot.Checked = true;
+                    }
+                    break;
+                case EnumSlotSelect.Both:
+                    {
+                        checkBoxDisableLeftSlot.Checked = true;
+                        checkBoxDisableRightSlot.Checked = true;
+                    }
+                    break;
+                default:
+                    {
+                        checkBoxDisableLeftSlot.Checked = false;
+                        checkBoxDisableRightSlot.Checked = false;
+                    }
+                    break;
+            }
         }
 
         private void InitialForms()
@@ -1182,8 +1221,14 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 int posX = (int)numPositionX.Value;
                 int posY = (int)numPositionY.Value;
-                Vehicle.Instance.AseMoveStatus.LastMapPosition = new MapPosition(posX, posY);
-                mainFlowHandler.UpdateVehiclePositionManual();
+                //Vehicle.Instance.AseMoveStatus.LastMapPosition = new MapPosition(posX, posY);
+                //mainFlowHandler.UpdateVehiclePositionManual();
+
+                AsePositionArgs positionArgs = new AsePositionArgs();
+                positionArgs.MapPosition = new MapPosition(posX, posY);
+                positionArgs.Arrival = EnumAseArrival.EndArrival;
+                asePackage.ReceivePositionArgsQueue.Enqueue(positionArgs);
+
             }
             catch (Exception ex)
             {
@@ -1492,5 +1537,42 @@ namespace Mirle.Agv.AseMiddler.View
             mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", msg));
         }
 
+        private void checkBoxDisableSlot_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxDisableLeftSlot.Checked )
+            {
+                checkBoxDisableLeftSlot.ForeColor = Color.Pink;
+
+                if (checkBoxDisableRightSlot.Checked)
+                {
+                    checkBoxDisableRightSlot.ForeColor = Color.Pink;
+
+                    Vehicle.MainFlowConfig.SlotDisable = EnumSlotSelect.Both;
+                }
+                else
+                {
+                    checkBoxDisableRightSlot.ForeColor = Color.Black;
+
+                    Vehicle.MainFlowConfig.SlotDisable = EnumSlotSelect.Left;
+                }
+            }
+            else
+            {
+                checkBoxDisableLeftSlot.ForeColor = Color.Black;
+
+                if (checkBoxDisableRightSlot.Checked)
+                {
+                    checkBoxDisableRightSlot.ForeColor = Color.Pink;
+
+                    Vehicle.MainFlowConfig.SlotDisable = EnumSlotSelect.Right;
+                }
+                else
+                {
+                    checkBoxDisableRightSlot.ForeColor = Color.Black;
+
+                    Vehicle.MainFlowConfig.SlotDisable = EnumSlotSelect.None;
+                }
+            }
+        }
     }
 }
