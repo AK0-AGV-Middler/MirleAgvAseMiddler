@@ -221,9 +221,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnCstRenameEvent += AgvcConnector_OnCstRenameEvent;
 
                 //來自MoveControl的移動結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
-                asePackage.OnPositionChangeEvent += AsePackage_OnPositionChangeEvent;
-                asePackage.OnPartMoveArrivalEvent += AsePackage_OnPartMoveArrivalEvent;
-                asePackage.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
+                //asePackage.OnPositionChangeEvent += AsePackage_OnPositionChangeEvent;
+                //asePackage.OnPartMoveArrivalEvent += AsePackage_OnPartMoveArrivalEvent;
+                //asePackage.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
                 //asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
                 asePackage.OnUpdateSlotStatusEvent += AsePackage_OnUpdateSlotStatusEvent;
 
@@ -236,7 +236,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.OnRobotCommandErrorEvent += AsePackage_OnRobotCommandErrorEvent;
 
                 //來自IRobot的CarrierId讀取訊息, Send to middleAgent
-                asePackage.OnReadCarrierIdFinishEvent += AsePackage_OnReadCarrierIdFinishEvent;
+                //asePackage.OnReadCarrierIdFinishEvent += AsePackage_OnReadCarrierIdFinishEvent;
 
                 //來自IBatterysControl的電量改變訊息, Send to middleAgent
                 asePackage.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
@@ -1312,67 +1312,79 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void TrackPosition()
         {
-            Stopwatch sw = new Stopwatch();
-            long total = 0;
             while (true)
             {
                 try
                 {
-                    sw.Start();
-
-                    #region Pause And Stop Check
                     if (IsTrackPositionPause)
                     {
-                        SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
+                        SpinWait.SpinUntil(() => !IsTrackPositionPause, Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
                         continue;
                     }
-                    if (IsTrackPositionStop) break;
-                    #endregion
 
-                    TrackPositionStatus = EnumThreadStatus.Working;
+                    //AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+                    //if (Vehicle.AseMoveStatus.LastMapPosition == null) continue;
 
-                    AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
-                    if (Vehicle.AseMoveStatus.LastMapPosition == null) continue;
-
-                    if (Vehicle.AutoState == EnumAutoState.Auto)
+                    if (!Vehicle.MainFlowConfig.IsSimulation)
                     {
-                        if (transferSteps.Count > 0)
+                        if (asePackage.ReceivePositionArgsQueue.Any())
                         {
-                            //有搬送Command時, 比對當前Position與搬送路徑Sections計算LastSection/LastAddress/Distance                           
-                            if (IsMoveStep())
-                            {
-                                if (!Vehicle.AseMoveStatus.IsMoveEnd)
-                                {
-                                    if (!Vehicle.MainFlowConfig.IsSimulation)
-                                    {
-                                        if (IsResetUpdatePositionReportTimer)
-                                        {
-                                            IsResetUpdatePositionReportTimer = false;
-                                            sw.Reset();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (FakeReserveOkAseMoveStatus.Any())
-                                        {
-                                            if (Vehicle.AseMovingGuide.ReserveStop == VhStopSingle.On)
-                                            {
-                                                Vehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
-                                                agvcConnector.StatusChangeReport();
-                                            }
-                                            FakeMoveToReserveOkPositions();
-                                            sw.Reset();
-                                        }
-                                    }
-                                }
-                            }
+                            asePackage.ReceivePositionArgsQueue.TryDequeue(out AsePositionArgs positionArgs);
+                            DealAsePositionArgs(positionArgs);
                         }
                     }
                     else
                     {
-                        //無搬送Command時, 比對當前Position與全地圖Sections確定section-distance
-                        UpdateVehiclePositionManual();
+                        if (FakeReserveOkAseMoveStatus.Any())
+                        {
+                            if (Vehicle.AseMovingGuide.ReserveStop == VhStopSingle.On)
+                            {
+                                Vehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
+                                agvcConnector.StatusChangeReport();
+                            }
+                            FakeMoveToReserveOkPositions();
+                        }
                     }
+
+                    //if (Vehicle.AutoState == EnumAutoState.Auto)
+                    //{
+                    //    if (transferSteps.Count > 0)
+                    //    {
+                    //        //有搬送Command時, 比對當前Position與搬送路徑Sections計算LastSection/LastAddress/Distance                           
+                    //        if (IsMoveStep())
+                    //        {
+                    //            if (!Vehicle.AseMoveStatus.IsMoveEnd)
+                    //            {
+                    //                if (!Vehicle.MainFlowConfig.IsSimulation)
+                    //                {
+                    //                    if (IsResetUpdatePositionReportTimer)
+                    //                    {
+                    //                        IsResetUpdatePositionReportTimer = false;
+                    //                        sw.Reset();
+                    //                    }
+                    //                }
+                    //                else
+                    //                {
+                    //                    if (FakeReserveOkAseMoveStatus.Any())
+                    //                    {
+                    //                        if (Vehicle.AseMovingGuide.ReserveStop == VhStopSingle.On)
+                    //                        {
+                    //                            Vehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
+                    //                            agvcConnector.StatusChangeReport();
+                    //                        }
+                    //                        FakeMoveToReserveOkPositions();
+                    //                        sw.Reset();
+                    //                    }
+                    //                }
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    //無搬送Command時, 比對當前Position與全地圖Sections確定section-distance
+                    //    UpdateVehiclePositionManual();
+                    //}
                 }
                 catch (Exception ex)
                 {
@@ -1383,35 +1395,125 @@ namespace Mirle.Agv.AseMiddler.Controller
                     SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
                 }
 
-                sw.Stop();
-                if (sw.ElapsedMilliseconds > Vehicle.MainFlowConfig.ReportPositionIntervalMs)
-                {
-                    agvcConnector.ReportAddressPass();
-                    total += sw.ElapsedMilliseconds;
-                    sw.Reset();
-                }
+                //sw.Stop();
+                //if (sw.ElapsedMilliseconds > Vehicle.MainFlowConfig.ReportPositionIntervalMs)
+                //{
+                //    agvcConnector.ReportAddressPass();
+                //    total += sw.ElapsedMilliseconds;
+                //    sw.Reset();
+                //}
             }
 
-            AfterTrackPosition(total);
+            //AfterTrackPosition(total);
+        }
+
+        private void DealAsePositionArgs(AsePositionArgs positionArgs)
+        {
+            try
+            {
+                AseMovingGuide movingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
+                AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+                if (movingGuide.GuideSectionIds.Any())
+                {
+                    if (!movingGuide.GuideSectionIds.Contains(moveStatus.LastSection.Id)) throw new Exception($@"DealAsePositionArgs fail. Current Seciton [{moveStatus.LastSection.Id}] is not in MovingGuide.GuideSectionIds.");
+                    if (!moveStatus.LastSection.InSection(moveStatus.LastAddress.Id)) throw new Exception($@"DealAsePositionArgs fail. Current Address [{moveStatus.LastAddress.Id}] is not in  Current Seciton [{moveStatus.LastSection.Id}]");
+                    if (!moveStatus.LastAddress.InAddress(positionArgs.MapPosition))
+                    {
+                        int myDistance = moveStatus.LastAddress.MyDistance(positionArgs.MapPosition);
+                        moveStatus.NeerlyAddress = moveStatus.LastAddress;
+                        foreach (var addressId in movingGuide.GuideAddressIds)
+                        {
+                            MapAddress mapAddress = Mapinfo.addressMap[addressId];
+                            int tempMyDistance = mapAddress.MyDistance(positionArgs.MapPosition);
+                            if (tempMyDistance < myDistance)
+                            {
+                                myDistance = tempMyDistance;
+                                moveStatus.NeerlyAddress = mapAddress;
+                            }
+                        }
+                        var nearlySectionId = moveStatus.LastSection.Id;
+                        foreach (var sectionId in movingGuide.GuideSectionIds)
+                        {
+                            MapSection mapSection = Mapinfo.sectionMap[sectionId];
+                            if (mapSection.InSection(moveStatus.NeerlyAddress))
+                            {
+                                nearlySectionId = mapSection.Id;
+                                break;
+                            }
+                        }
+                        moveStatus.NeerlySection = movingGuide.MovingSections.First(section => section.Id == nearlySectionId);
+                        moveStatus.NeerlySection.VehicleDistanceSinceHead = moveStatus.NeerlySection.HeadAddress.MyDistance(positionArgs.MapPosition);
+
+                        //bool IsReport = moveStatus.LastMapPosition.MyDistance(positionArgs.MapPosition) >= Vehicle.MainFlowConfig.RealPositionRangeMm;
+                        moveStatus.LastMapPosition = positionArgs.MapPosition;
+                        moveStatus.LastAddress = moveStatus.NeerlyAddress;
+                        moveStatus.LastSection = moveStatus.NeerlySection;
+                        moveStatus.HeadDirection = positionArgs.HeadAngle;
+                        moveStatus.MovingDirection = positionArgs.MovingDirection;
+                        moveStatus.Speed = positionArgs.Speed;
+                        Vehicle.AseMoveStatus = moveStatus;
+                        agvcConnector.ReportSectionPass();
+                    }
+                    switch (positionArgs.Arrival)
+                    {
+                        case EnumAseArrival.Fail:
+                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
+                            break;
+                        case EnumAseArrival.Arrival:
+                            break;
+                        case EnumAseArrival.EndArrival:
+                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    moveStatus.NeerlyAddress = Mapinfo.addressMap.Values.ToList().OrderBy(address => address.MyDistance(positionArgs.MapPosition)).First();
+                    moveStatus.NeerlySection = Mapinfo.sectionMap.Values.ToList().First(section => section.InSection(moveStatus.NeerlyAddress));
+                    moveStatus.NeerlySection.VehicleDistanceSinceHead = moveStatus.NeerlySection.HeadAddress.MyDistance(positionArgs.MapPosition);
+                    moveStatus.LastMapPosition = positionArgs.MapPosition;
+                    moveStatus.LastAddress = moveStatus.NeerlyAddress;
+                    moveStatus.LastSection = moveStatus.NeerlySection;
+                    moveStatus.HeadDirection = positionArgs.HeadAngle;
+                    moveStatus.MovingDirection = positionArgs.MovingDirection;
+                    moveStatus.Speed = positionArgs.Speed;
+                    Vehicle.AseMoveStatus = moveStatus;
+                    agvcConnector.ReportSectionPass();
+
+                    switch (positionArgs.Arrival)
+                    {
+                        case EnumAseArrival.Fail:
+                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
+                            break;
+                        case EnumAseArrival.Arrival:
+                            break;
+                        case EnumAseArrival.EndArrival:
+                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
         }
 
         public void StartTrackPosition()
         {
             IsTrackPositionPause = false;
-            IsTrackPositionStop = false;
             thdTrackPosition = new Thread(TrackPosition);
             thdTrackPosition.IsBackground = true;
             thdTrackPosition.Start();
-            TrackPositionStatus = EnumThreadStatus.Start;
-            OnMessageShowEvent?.Invoke(this, $"MainFlow : 開始追蹤座標, [TrackPositionStatus={TrackPositionStatus}][PreTrackPositionStatus={PreTrackPositionStatus}]");
         }
 
         public void PauseTrackPosition()
         {
             IsTrackPositionPause = true;
-            PreTrackPositionStatus = TrackPositionStatus;
-            TrackPositionStatus = EnumThreadStatus.Pause;
-            OnMessageShowEvent?.Invoke(this, $"MainFlow : 暫停追蹤座標, [TrackPositionStatus={TrackPositionStatus}][PreTrackPositionStatus={PreTrackPositionStatus}]");
         }
 
         public void ResumeTrackPosition()
@@ -1419,34 +1521,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             if (thdTrackPosition != null && thdTrackPosition.IsAlive)
             {
                 IsTrackPositionPause = false;
-                var tempStatus = TrackPositionStatus;
-                TrackPositionStatus = PreTrackPositionStatus;
-                PreTrackPositionStatus = tempStatus;
-                OnMessageShowEvent?.Invoke(this, $"MainFlow : 恢復追蹤座標, [TrackPositionStatus={TrackPositionStatus}][PreTrackPositionStatus={PreTrackPositionStatus}]");
             }
             else
             {
                 StartTrackPosition();
             }
-        }
-
-        public void StopTrackPosition()
-        {
-            IsTrackPositionPause = false;
-            IsTrackPositionStop = true;
-            if (TrackPositionStatus != EnumThreadStatus.None)
-            {
-                TrackPositionStatus = EnumThreadStatus.Stop;
-            }
-
-            OnMessageShowEvent?.Invoke(this, $"MainFlow : 停止追蹤座標, [TrackPositionStatus={TrackPositionStatus}][PreTrackPositionStatus={PreTrackPositionStatus}]");
-        }
-
-        private void AfterTrackPosition(long total)
-        {
-            TrackPositionStatus = EnumThreadStatus.None;
-            var msg = $"MainFlow : 追蹤座標 後處理, [ThreadStatus={TrackPositionStatus}][TotalSpendMs={total}]";
-            OnMessageShowEvent?.Invoke(this, msg);
         }
 
         private void FakeMoveToReserveOkPositions()
@@ -1513,11 +1592,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 tempMoveStatus.LastSection.VehicleDistanceSinceHead = 0;
             }
-        }
-
-        public bool IsAddressInThisSection(MapSection mapSection, MapAddress mapAddress)
-        {
-            return mapSection.InsideAddresses.FindIndex(x => x.Id == mapAddress.Id) > -1;
         }
 
         #endregion
@@ -1911,7 +1985,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Vehicle.RightReadResult = BCRReadResult.BcrNormal;
             }
-            AsePackage_OnReadCarrierIdFinishEvent(this, aseCarrierSlotStatus.SlotNumber);
+            //AsePackage_OnReadCarrierIdFinishEvent(this, aseCarrierSlotStatus.SlotNumber);
             SpinWait.SpinUntil(() => false, 2000);
             AsePackage_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
         }
@@ -2269,97 +2343,97 @@ namespace Mirle.Agv.AseMiddler.Controller
             agvcConnector.SendRecv_Cmd136_CstIdReadReport();
         }
 
-        private void AsePackage_OnReadCarrierIdFinishEvent(object sender, EnumSlotNumber slotNumber)
-        {
-            try
-            {
-                //#region 2019.12.16 Report to Agvc when ForkFinished
+        //private void AsePackage_OnReadCarrierIdFinishEvent(object sender, EnumSlotNumber slotNumber)
+        //{
+        //    try
+        //    {
+        //        //#region 2019.12.16 Report to Agvc when ForkFinished
 
-                //if (!IsRobotStep()) return;
-                //var robotCmdInfo = (RobotCommand)GetCurTransferStep();
-                //if (robotCmdInfo.SlotNumber != slotNumber) return;
-                ////if (robotCmdInfo.GetTransferStepType() == EnumTransferStepType.Unload) return;
-                //AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
+        //        //if (!IsRobotStep()) return;
+        //        //var robotCmdInfo = (RobotCommand)GetCurTransferStep();
+        //        //if (robotCmdInfo.SlotNumber != slotNumber) return;
+        //        ////if (robotCmdInfo.GetTransferStepType() == EnumTransferStepType.Unload) return;
+        //        //AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? theVehicle.AseCarrierSlotL : theVehicle.AseCarrierSlotR;
 
-                //if (GetCurrentTransferStepType() == EnumTransferStepType.Load)
-                //{
-                //    if (!mainFlowConfig.BcrByPass)
-                //    {
-                //        switch (aseCarrierSlotStatus.CarrierSlotStatus)
-                //        {
-                //            case EnumAseCarrierSlotStatus.Empty:
-                //                ReadResult = EnumCstIdReadResult.Fail;
-                //                break;
-                //            case EnumAseCarrierSlotStatus.Loading:
-                //                if (robotCmdInfo.CassetteId.Trim() == aseCarrierSlotStatus.CarrierId.Trim())
-                //                {
-                //                    ReadResult = EnumCstIdReadResult.Normal;
-                //                }
-                //                else
-                //                {
-                //                    ReadResult = EnumCstIdReadResult.Mismatch;
-                //                }
-                //                break;
-                //            case EnumAseCarrierSlotStatus.ReadFail:
+        //        //if (GetCurrentTransferStepType() == EnumTransferStepType.Load)
+        //        //{
+        //        //    if (!mainFlowConfig.BcrByPass)
+        //        //    {
+        //        //        switch (aseCarrierSlotStatus.CarrierSlotStatus)
+        //        //        {
+        //        //            case EnumAseCarrierSlotStatus.Empty:
+        //        //                ReadResult = EnumCstIdReadResult.Fail;
+        //        //                break;
+        //        //            case EnumAseCarrierSlotStatus.Loading:
+        //        //                if (robotCmdInfo.CassetteId.Trim() == aseCarrierSlotStatus.CarrierId.Trim())
+        //        //                {
+        //        //                    ReadResult = EnumCstIdReadResult.Normal;
+        //        //                }
+        //        //                else
+        //        //                {
+        //        //                    ReadResult = EnumCstIdReadResult.Mismatch;
+        //        //                }
+        //        //                break;
+        //        //            case EnumAseCarrierSlotStatus.ReadFail:
 
-                //                ReadResult = EnumCstIdReadResult.Fail;
-                //                break;
-                //            case EnumAseCarrierSlotStatus.PositionError:
-                //                ReadResult = EnumCstIdReadResult.PositionError;
-                //                break;
-                //            default:
-                //                break;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
-                //        {
-                //            OnMessageShowEvent?.Invoke(this, $"Load Complete, BcrByPass, loading is false.");
+        //        //                ReadResult = EnumCstIdReadResult.Fail;
+        //        //                break;
+        //        //            case EnumAseCarrierSlotStatus.PositionError:
+        //        //                ReadResult = EnumCstIdReadResult.PositionError;
+        //        //                break;
+        //        //            default:
+        //        //                break;
+        //        //        }
+        //        //    }
+        //        //    else
+        //        //    {
+        //        //        if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
+        //        //        {
+        //        //            OnMessageShowEvent?.Invoke(this, $"Load Complete, BcrByPass, loading is false.");
 
-                //            ReadResult = EnumCstIdReadResult.Fail;
-                //            aseCarrierSlotStatus.CarrierId = "";
-                //        }
-                //        else if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.PositionError)
-                //        {
-                //            OnMessageShowEvent?.Invoke(this, $"CST Position Error.");
-                //            alarmHandler.SetAlarmFromAgvm(000051);
-                //            ReadResult = EnumCstIdReadResult.Fail;
-                //            StopClearAndReset();
-                //        }
-                //        else
-                //        {
-                //            OnMessageShowEvent?.Invoke(this, $"Load Complete, BcrByPass, loading is true.");
-                //            ReadResult = EnumCstIdReadResult.Normal;
-                //            RobotCommand robotCommand = (RobotCommand)GetCurTransferStep();
-                //            aseCarrierSlotStatus.CarrierId = robotCommand.CassetteId;
-                //        }
-                //    }
-                //}
-                //else if (GetCurrentTransferStepType() == EnumTransferStepType.Unload)
-                //{
-                //    switch (aseCarrierSlotStatus.CarrierSlotStatus)
-                //    {
-                //        case EnumAseCarrierSlotStatus.Empty:
-                //            OnMessageShowEvent?.Invoke(this, $"Slot [{slotNumber}] unload success.");
-                //            break;
-                //        case EnumAseCarrierSlotStatus.Loading:
-                //        case EnumAseCarrierSlotStatus.ReadFail:
-                //        case EnumAseCarrierSlotStatus.PositionError:
-                //            alarmHandler.SetAlarmFromAgvm(7);
-                //            OnMessageShowEvent?.Invoke(this, $"Slot [{slotNumber}] unload fail. [CST ID = {aseCarrierSlotStatus.CarrierId}][{aseCarrierSlotStatus.CarrierSlotStatus}]");
-                //            break;
-                //        default:
-                //            break;
-                //    }
-                //}
-                //#endregion
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
+        //        //            ReadResult = EnumCstIdReadResult.Fail;
+        //        //            aseCarrierSlotStatus.CarrierId = "";
+        //        //        }
+        //        //        else if (aseCarrierSlotStatus.CarrierSlotStatus == EnumAseCarrierSlotStatus.PositionError)
+        //        //        {
+        //        //            OnMessageShowEvent?.Invoke(this, $"CST Position Error.");
+        //        //            alarmHandler.SetAlarmFromAgvm(000051);
+        //        //            ReadResult = EnumCstIdReadResult.Fail;
+        //        //            StopClearAndReset();
+        //        //        }
+        //        //        else
+        //        //        {
+        //        //            OnMessageShowEvent?.Invoke(this, $"Load Complete, BcrByPass, loading is true.");
+        //        //            ReadResult = EnumCstIdReadResult.Normal;
+        //        //            RobotCommand robotCommand = (RobotCommand)GetCurTransferStep();
+        //        //            aseCarrierSlotStatus.CarrierId = robotCommand.CassetteId;
+        //        //        }
+        //        //    }
+        //        //}
+        //        //else if (GetCurrentTransferStepType() == EnumTransferStepType.Unload)
+        //        //{
+        //        //    switch (aseCarrierSlotStatus.CarrierSlotStatus)
+        //        //    {
+        //        //        case EnumAseCarrierSlotStatus.Empty:
+        //        //            OnMessageShowEvent?.Invoke(this, $"Slot [{slotNumber}] unload success.");
+        //        //            break;
+        //        //        case EnumAseCarrierSlotStatus.Loading:
+        //        //        case EnumAseCarrierSlotStatus.ReadFail:
+        //        //        case EnumAseCarrierSlotStatus.PositionError:
+        //        //            alarmHandler.SetAlarmFromAgvm(7);
+        //        //            OnMessageShowEvent?.Invoke(this, $"Slot [{slotNumber}] unload fail. [CST ID = {aseCarrierSlotStatus.CarrierId}][{aseCarrierSlotStatus.CarrierSlotStatus}]");
+        //        //            break;
+        //        //        default:
+        //        //            break;
+        //        //    }
+        //        //}
+        //        //#endregion
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+        //    }
+        //}
 
         private void AsePackage_OnRobotInterlockErrorEvent(object sender, RobotCommand robotCommand)
         {
@@ -2811,106 +2885,106 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private bool UpdateVehiclePositionInMovingStep(AseMoveStatus aseMoveStatus)
-        {
-            try
-            {
-                AseMovingGuide aseMovingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
+        //private bool UpdateVehiclePositionInMovingStep(AseMoveStatus aseMoveStatus)
+        //{
+        //    try
+        //    {
+        //        AseMovingGuide aseMovingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
 
-                if (!aseMovingGuide.GuideSectionIds.Any())
-                {
-                    //Vehicle.AseMoveStatus = aseMoveStatus;
-                    UpdateVehiclePositionManual(aseMoveStatus);
-                    //agvcConnector.ReportAddressPass();
-                    return false;
-                }
+        //        if (!aseMovingGuide.GuideSectionIds.Any())
+        //        {
+        //            //Vehicle.AseMoveStatus = aseMoveStatus;
+        //            UpdateVehiclePositionManual(aseMoveStatus);
+        //            //agvcConnector.ReportAddressPass();
+        //            return false;
+        //        }
 
-                double neerlyDistance = 999999;
-                foreach (string addressId in aseMovingGuide.GuideAddressIds)
-                {
-                    MapAddress mapAddress = Mapinfo.addressMap[addressId];
-                    double dis = mapHandler.GetDistance(aseMoveStatus.LastMapPosition, mapAddress.Position);
+        //        double neerlyDistance = 999999;
+        //        foreach (string addressId in aseMovingGuide.GuideAddressIds)
+        //        {
+        //            MapAddress mapAddress = Mapinfo.addressMap[addressId];
+        //            double dis = mapHandler.GetDistance(aseMoveStatus.LastMapPosition, mapAddress.Position);
 
-                    if (dis < neerlyDistance)
-                    {
-                        neerlyDistance = dis;
-                        aseMoveStatus.LastAddress = mapAddress;
-                    }
-                }
+        //            if (dis < neerlyDistance)
+        //            {
+        //                neerlyDistance = dis;
+        //                aseMoveStatus.LastAddress = mapAddress;
+        //            }
+        //        }
 
-                foreach (string sectionId in aseMovingGuide.GuideSectionIds)
-                {
-                    MapSection mapSection = Mapinfo.sectionMap[sectionId];
-                    if (mapSection.InSection(aseMoveStatus.LastAddress.Id))
-                    {
-                        aseMoveStatus.LastSection = mapSection;
-                    }
-                }
+        //        foreach (string sectionId in aseMovingGuide.GuideSectionIds)
+        //        {
+        //            MapSection mapSection = Mapinfo.sectionMap[sectionId];
+        //            if (mapSection.InSection(aseMoveStatus.LastAddress.Id))
+        //            {
+        //                aseMoveStatus.LastSection = mapSection;
+        //            }
+        //        }
 
-                aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.LastAddress.Position, aseMoveStatus.LastSection.HeadAddress.Position);
+        //        aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.LastAddress.Position, aseMoveStatus.LastSection.HeadAddress.Position);
 
-                Vehicle.AseMoveStatus = aseMoveStatus;
+        //        Vehicle.AseMoveStatus = aseMoveStatus;
 
-                agvcConnector.ReportAddressPass();
+        //        agvcConnector.ReportAddressPass();
 
-                UpdateAgvcConnectorGotReserveOkSections(aseMoveStatus.LastSection.Id);
+        //        UpdateAgvcConnectorGotReserveOkSections(aseMoveStatus.LastSection.Id);
 
-                for (int i = 0; i < aseMovingGuide.MovingSections.Count; i++)
-                {
-                    if (aseMovingGuide.MovingSections[i].Id == aseMoveStatus.LastSection.Id)
-                    {
-                        Vehicle.AseMovingGuide.MovingSectionsIndex = i;
-                    }
-                }
+        //        for (int i = 0; i < aseMovingGuide.MovingSections.Count; i++)
+        //        {
+        //            if (aseMovingGuide.MovingSections[i].Id == aseMoveStatus.LastSection.Id)
+        //            {
+        //                Vehicle.AseMovingGuide.MovingSectionsIndex = i;
+        //            }
+        //        }
 
-                return false;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return false;
-            }
-        }
+        //        return false;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+        //        return false;
+        //    }
+        //}
 
-        private void UpdateVehicleDistanceSinceHead(AseMoveStatus aseMoveStatus)
-        {
-            if (Vehicle.AutoState == EnumAutoState.Manual)
-            {
-                Vehicle.AseMoveStatus = aseMoveStatus;
-            }
-            else if (Vehicle.AutoState == EnumAutoState.Auto)
-            {
-                if (IsVehicleIdle())
-                {
-                    UpdateVehiclePositionInMovingStep(aseMoveStatus);
-                }
-                else
-                {
-                    aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.LastSection.HeadAddress.Position, aseMoveStatus.LastMapPosition);
-                    Vehicle.AseMoveStatus = aseMoveStatus;
-                }
+        //private void UpdateVehicleDistanceSinceHead(AseMoveStatus aseMoveStatus)
+        //{
+        //    if (Vehicle.AutoState == EnumAutoState.Manual)
+        //    {
+        //        Vehicle.AseMoveStatus = aseMoveStatus;
+        //    }
+        //    else if (Vehicle.AutoState == EnumAutoState.Auto)
+        //    {
+        //        if (IsVehicleIdle())
+        //        {
+        //            UpdateVehiclePositionInMovingStep(aseMoveStatus);
+        //        }
+        //        else
+        //        {
+        //            aseMoveStatus.LastSection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.LastSection.HeadAddress.Position, aseMoveStatus.LastMapPosition);
+        //            Vehicle.AseMoveStatus = aseMoveStatus;
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
-        private void MakeUpAlreadyPassSectionReport(AseMoveStatus aseMoveStatus)
-        {
-            AseMovingGuide aseMovingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
-            MapSection section = aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex];
-            aseMoveStatus.LastSection = section;
-            if (section.CmdDirection == EnumCommandDirection.Backward)
-            {
-                aseMoveStatus.LastAddress = section.HeadAddress;
-                aseMoveStatus.LastSection.VehicleDistanceSinceHead = 0;
-            }
-            else
-            {
-                aseMoveStatus.LastAddress = section.TailAddress;
-                aseMoveStatus.LastSection.VehicleDistanceSinceHead = section.HeadToTailDistance;
-            }
-            Vehicle.AseMoveStatus = aseMoveStatus;
-            agvcConnector.ReportSectionPass();
-        }
+        // private void MakeUpAlreadyPassSectionReport(AseMoveStatus aseMoveStatus)
+        // {
+        //     AseMovingGuide aseMovingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
+        //     MapSection section = aseMovingGuide.MovingSections[aseMovingGuide.MovingSectionsIndex];
+        //     aseMoveStatus.LastSection = section;
+        //     if (section.CmdDirection == EnumCommandDirection.Backward)
+        //     {
+        //         aseMoveStatus.LastAddress = section.HeadAddress;
+        //         aseMoveStatus.LastSection.VehicleDistanceSinceHead = 0;
+        //     }
+        //     else
+        //     {
+        //         aseMoveStatus.LastAddress = section.TailAddress;
+        //         aseMoveStatus.LastSection.VehicleDistanceSinceHead = section.HeadToTailDistance;
+        //     }
+        //     Vehicle.AseMoveStatus = aseMoveStatus;
+        //     //agvcConnector.ReportSectionPass();
+        // }
 
         public void UpdateVehiclePositionManual()
         {
@@ -3860,15 +3934,15 @@ namespace Mirle.Agv.AseMiddler.Controller
             alarmHandler.SetAlarmFromAgvl(id);
         }
 
-        private void AsePackage_OnPositionChangeEvent(object sender, AseMoveStatus aseMoveStatus)
-        {
-            UpdateVehicleDistanceSinceHead(aseMoveStatus);
-        }
+        //private void AsePackage_OnPositionChangeEvent(object sender, AseMoveStatus aseMoveStatus)
+        //{
+        //    UpdateVehicleDistanceSinceHead(aseMoveStatus);
+        //}
 
-        private void AsePackage_OnPartMoveArrivalEvent(object sender, AseMoveStatus aseMoveStatus)
-        {
-            IsResetUpdatePositionReportTimer = UpdateVehiclePositionInMovingStep(aseMoveStatus);
-        }
+        //private void AsePackage_OnPartMoveArrivalEvent(object sender, AseMoveStatus aseMoveStatus)
+        //{
+        //    IsResetUpdatePositionReportTimer = UpdateVehiclePositionInMovingStep(aseMoveStatus);
+        //}
 
         private void AsePackage_OnStatusChangeReportEvent(object sender, string e)
         {

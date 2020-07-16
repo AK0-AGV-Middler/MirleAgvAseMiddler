@@ -10,5 +10,8 @@ namespace Mirle.Agv.AseMiddler.Model
     {
         public EnumAseArrival Arrival { get; set; } = EnumAseArrival.Fail;
         public MapPosition MapPosition { get; set; } = new MapPosition();
+        public int HeadAngle { get; set; } = 0;
+        public int MovingDirection { get; set; } = 0;
+        public int Speed { get; set; } = 0;
     }
 }

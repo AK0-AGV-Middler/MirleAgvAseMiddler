@@ -138,6 +138,8 @@ namespace Mirle.Agv.AseMiddler.View
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
+            this.ucMapAddressId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucHeadAngle = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -460,16 +462,18 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // gbPerformanceCounter
             // 
+            this.gbPerformanceCounter.Controls.Add(this.ucHeadAngle);
             this.gbPerformanceCounter.Controls.Add(this.ucRCstId);
             this.gbPerformanceCounter.Controls.Add(this.ucLCstId);
             this.gbPerformanceCounter.Controls.Add(this.btnKeyInSoc);
+            this.gbPerformanceCounter.Controls.Add(this.ucMapAddressId);
             this.gbPerformanceCounter.Controls.Add(this.ucRobotHome);
             this.gbPerformanceCounter.Controls.Add(this.ucCharging);
             this.gbPerformanceCounter.Controls.Add(this.numSoc);
             this.gbPerformanceCounter.Controls.Add(this.ucSoc);
             this.gbPerformanceCounter.Location = new System.Drawing.Point(222, 282);
             this.gbPerformanceCounter.Name = "gbPerformanceCounter";
-            this.gbPerformanceCounter.Size = new System.Drawing.Size(208, 315);
+            this.gbPerformanceCounter.Size = new System.Drawing.Size(208, 391);
             this.gbPerformanceCounter.TabIndex = 10;
             this.gbPerformanceCounter.TabStop = false;
             this.gbPerformanceCounter.Text = "Performance Counter";
@@ -499,7 +503,7 @@ namespace Mirle.Agv.AseMiddler.View
             // btnKeyInSoc
             // 
             this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnKeyInSoc.Location = new System.Drawing.Point(6, 273);
+            this.btnKeyInSoc.Location = new System.Drawing.Point(6, 350);
             this.btnKeyInSoc.Name = "btnKeyInSoc";
             this.btnKeyInSoc.Size = new System.Drawing.Size(191, 28);
             this.btnKeyInSoc.TabIndex = 40;
@@ -509,7 +513,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucRobotHome
             // 
-            this.ucRobotHome.Location = new System.Drawing.Point(6, 161);
+            this.ucRobotHome.Location = new System.Drawing.Point(11, 163);
             this.ucRobotHome.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.ucRobotHome.Name = "ucRobotHome";
             this.ucRobotHome.Size = new System.Drawing.Size(187, 30);
@@ -532,7 +536,7 @@ namespace Mirle.Agv.AseMiddler.View
             // numSoc
             // 
             this.numSoc.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.numSoc.Location = new System.Drawing.Point(6, 240);
+            this.numSoc.Location = new System.Drawing.Point(6, 317);
             this.numSoc.Name = "numSoc";
             this.numSoc.Size = new System.Drawing.Size(191, 26);
             this.numSoc.TabIndex = 41;
@@ -1344,6 +1348,28 @@ namespace Mirle.Agv.AseMiddler.View
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
+            // ucMapAddressId
+            // 
+            this.ucMapAddressId.Location = new System.Drawing.Point(10, 201);
+            this.ucMapAddressId.Margin = new System.Windows.Forms.Padding(5, 7, 5, 7);
+            this.ucMapAddressId.Name = "ucMapAddressId";
+            this.ucMapAddressId.Size = new System.Drawing.Size(187, 30);
+            this.ucMapAddressId.TabIndex = 3;
+            this.ucMapAddressId.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucMapAddressId.TagName = "Addr";
+            this.ucMapAddressId.TagValue = "";
+            // 
+            // ucHeadAngle
+            // 
+            this.ucHeadAngle.Location = new System.Drawing.Point(11, 241);
+            this.ucHeadAngle.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucHeadAngle.Name = "ucHeadAngle";
+            this.ucHeadAngle.Size = new System.Drawing.Size(187, 30);
+            this.ucHeadAngle.TabIndex = 43;
+            this.ucHeadAngle.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucHeadAngle.TagName = "HeadAngle";
+            this.ucHeadAngle.TagValue = "";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1511,5 +1537,7 @@ namespace Mirle.Agv.AseMiddler.View
         private UcLabelTextBox ucCommanding;
         private UcLabelTextBox ucReserveFlag;
         private System.Windows.Forms.Label label1;
+        private UcLabelTextBox ucHeadAngle;
+        private UcLabelTextBox ucMapAddressId;
     }
 }

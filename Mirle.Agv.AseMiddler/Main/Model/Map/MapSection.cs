@@ -35,19 +35,27 @@ namespace Mirle.Agv.AseMiddler.Model
 
         public bool InSection(string addressId)
         {
-            if (InsideAddresses.Count == 0) return false;
+            //if (InsideAddresses.Count == 0) return false;
 
-            bool result = false;
-            foreach (MapAddress mapAddress in InsideAddresses)
-            {
-                if (mapAddress.Id == addressId)
-                {
-                    return true;
-                }
-            }
-            return result;
+            //bool result = false;
+            //foreach (MapAddress mapAddress in InsideAddresses)
+            //{
+            //    if (mapAddress.Id == addressId)
+            //    {
+            //        return true;
+            //    }
+            //}
+            //return result;
+
+            var query = InsideAddresses.Where(x => x.Id == addressId);
+            return query.Any();
 
             //return InsideAddresses.FindIndex(x => x.Id == lastAddress.Id) > 0;
+        }
+
+        public bool InSection(MapAddress mapAddress)
+        {
+            return InSection(mapAddress.Id);
         }
     }
 

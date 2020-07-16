@@ -23,7 +23,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public Dictionary<string, string> PortIdMap { get; set; } = new Dictionary<string, string>();
 
         public EnumAddressDirection AddressDirectionParse(string v)
-        {           
+        {
             return (EnumAddressDirection)Enum.Parse(typeof(EnumAddressDirection), v);
         }
 
@@ -45,6 +45,18 @@ namespace Mirle.Agv.AseMiddler.Model
         public bool IsSegmentPoint()
         {
             return !IsTransferPort() && !IsCharger();
+        }
+
+        public bool InAddress(MapPosition targetPosition)
+        {
+            var posRange = Vehicle.Instance.MainFlowConfig.RealPositionRangeMm;
+
+            return MyDistance(targetPosition) <= posRange;
+        }
+
+        public int MyDistance(MapPosition targetPosition)
+        {
+            return Position.MyDistance(targetPosition);
         }
     }
 

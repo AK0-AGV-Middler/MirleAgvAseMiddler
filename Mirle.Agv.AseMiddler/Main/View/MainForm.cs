@@ -712,18 +712,24 @@ namespace Mirle.Agv.AseMiddler.View
                         {
                             ToolStripMenuItemCloseApp.Visible = true;
                             ToolStripMenuItemMode.Visible = true;
+                            btnKeyInPosition.Visible = false;
+                            btnKeyInSoc.Visible = false;
                         }
                         break;
                     case EnumLoginLevel.Admin:
                         {
                             ToolStripMenuItemCloseApp.Visible = true;
                             ToolStripMenuItemMode.Visible = true;
+                            btnKeyInPosition.Visible = false;
+                            btnKeyInSoc.Visible = false;
                         }
                         break;
                     case EnumLoginLevel.OneAboveAll:
                         {
                             ToolStripMenuItemCloseApp.Visible = true;
                             ToolStripMenuItemMode.Visible = true;
+                            btnKeyInPosition.Visible = true;
+                            btnKeyInSoc.Visible = true;
                         }
                         break;
                     case EnumLoginLevel.Op:
@@ -731,6 +737,8 @@ namespace Mirle.Agv.AseMiddler.View
                         {
                             ToolStripMenuItemCloseApp.Visible = false;
                             ToolStripMenuItemMode.Visible = false;
+                            btnKeyInPosition.Visible = false;
+                            btnKeyInSoc.Visible = false;
                         }
                         break;
                 }
@@ -1066,9 +1074,12 @@ namespace Mirle.Agv.AseMiddler.View
 
                 var lastAddress = aseMoveStatus.LastAddress;
                 ucMoveLastAddress.TagValue = lastAddress.Id;
+                ucMapAddressId.TagValue = lastAddress.Id;
 
                 var lastSection = aseMoveStatus.LastSection;
                 ucMoveLastSection.TagValue = lastSection.Id;
+
+                ucHeadAngle.TagValue = aseMoveStatus.HeadDirection.ToString();
 
                 ucMoveIsMoveEnd.TagValue = aseMoveStatus.IsMoveEnd.ToString();
 
@@ -1364,7 +1375,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private MapAddress endAddress = null;
         private List<UcSectionImage> changeColorSectionList = new List<UcSectionImage>();
-        private int changeColorSectionListIndex = 0;
+        //private int changeColorSectionListIndex = 0;
         private int removeSectionIndex = 0;
 
         public delegate void UcSectionImageSetColorCallback(UcSectionImage ucSectionImage, string keyword);
@@ -1413,7 +1424,7 @@ namespace Mirle.Agv.AseMiddler.View
                     changeColorSectionList = new List<UcSectionImage>();
                 }
 
-                changeColorSectionListIndex = 0;
+                //changeColorSectionListIndex = 0;
                 removeSectionIndex = 0;
 
                 if (endAddress != null)
