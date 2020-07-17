@@ -115,6 +115,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             if (isIniOk)
             {
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "全部"));
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Start Process Ok.");
             }
         }
 
@@ -1382,44 +1383,75 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 AseMovingGuide movingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
                 AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+                moveStatus.LastMapPosition = positionArgs.MapPosition;
+
                 if (movingGuide.GuideSectionIds.Any())
                 {
-                    if (!movingGuide.GuideSectionIds.Contains(moveStatus.LastSection.Id)) throw new Exception($@"DealAsePositionArgs fail. Current Seciton [{moveStatus.LastSection.Id}] is not in MovingGuide.GuideSectionIds.");
-                    if (!moveStatus.LastSection.InSection(moveStatus.LastAddress.Id)) throw new Exception($@"DealAsePositionArgs fail. Current Address [{moveStatus.LastAddress.Id}] is not in  Current Seciton [{moveStatus.LastSection.Id}]");
-
-                    var guideAddresses =
-                        from addressId in movingGuide.GuideAddressIds.ToArray()
-                        select Mapinfo.addressMap[addressId];
-
-                    var guideSectiones =
-                       from sectionId in movingGuide.GuideSectionIds.ToArray()
-                       select Mapinfo.sectionMap[sectionId];
-
-                    moveStatus.NeerlyAddress = guideAddresses.OrderBy(address => address.MyDistance(positionArgs.MapPosition)).First();
-                    moveStatus.NeerlySection = guideSectiones.First(section => section.InSection(moveStatus.NeerlyAddress));
-                    moveStatus.NeerlySection.VehicleDistanceSinceHead = moveStatus.NeerlySection.HeadAddress.MyDistance(positionArgs.MapPosition);
-                    moveStatus.LastMapPosition = positionArgs.MapPosition;
-                    if (moveStatus.NeerlyAddress.Id != moveStatus.LastAddress.Id)
+                    if (positionArgs.Arrival == EnumAseArrival.EndArrival)
                     {
-                        OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NeerlySection.Id}][NearlyAddress = {moveStatus.NeerlyAddress.Id}]");
+                        moveStatus.NearlyAddress = Mapinfo.addressMap[movingGuide.ToAddressId];
+                        moveStatus.NearlySection = movingGuide.MovingSections.Last();
+                        moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlySection.HeadAddress.MyDistance(moveStatus.NearlyAddress.Position);
+                        OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
                     }
-                    moveStatus.LastAddress = moveStatus.NeerlyAddress;
-                    moveStatus.LastSection = moveStatus.NeerlySection;
+                    else
+                    {
+                        var nearlyDistance = 999999;
+                        foreach (string addressId in movingGuide.GuideAddressIds)
+                        {
+                            MapAddress mapAddress = Mapinfo.addressMap[addressId];
+                            var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
+
+                            if (dis < nearlyDistance)
+                            {
+                                nearlyDistance = dis;
+                                moveStatus.NearlyAddress = mapAddress;
+                            }
+                        }
+
+                        foreach (string sectionId in movingGuide.GuideSectionIds)
+                        {
+                            MapSection mapSection = Mapinfo.sectionMap[sectionId];
+                            if (mapSection.InSection(moveStatus.LastAddress.Id))
+                            {
+                                moveStatus.NearlySection = mapSection;
+                            }
+                        }
+                        moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlyAddress.MyDistance(moveStatus.NearlySection.HeadAddress.Position);
+
+                        if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
+                        {
+                            OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
+                        }
+                    }
+
+                    moveStatus.LastAddress = moveStatus.NearlyAddress;
+                    moveStatus.LastSection = moveStatus.NearlySection;
                     moveStatus.HeadDirection = positionArgs.HeadAngle;
                     moveStatus.MovingDirection = positionArgs.MovingDirection;
                     moveStatus.Speed = positionArgs.Speed;
                     Vehicle.AseMoveStatus = moveStatus;
                     agvcConnector.ReportSectionPass();
 
+                    UpdateAgvcConnectorGotReserveOkSections(moveStatus.LastSection.Id);
+
+                    for (int i = 0; i < movingGuide.MovingSections.Count; i++)
+                    {
+                        if (movingGuide.MovingSections[i].Id == moveStatus.LastSection.Id)
+                        {
+                            Vehicle.AseMovingGuide.MovingSectionsIndex = i;
+                        }
+                    }
+
                     switch (positionArgs.Arrival)
                     {
                         case EnumAseArrival.Fail:
-                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
+                            AseMoveControl_OnMoveFinished(new object(), EnumMoveComplete.Fail);
                             break;
                         case EnumAseArrival.Arrival:
                             break;
                         case EnumAseArrival.EndArrival:
-                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                            AseMoveControl_OnMoveFinished(new object(), EnumMoveComplete.Success);
                             break;
                         default:
                             break;
@@ -1427,21 +1459,31 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    moveStatus.NeerlyAddress = Mapinfo.addressMap.Values.ToList().OrderBy(address => address.MyDistance(positionArgs.MapPosition)).First();
-                    moveStatus.NeerlySection = Mapinfo.sectionMap.Values.ToList().First(section => section.InSection(moveStatus.NeerlyAddress));
-                    moveStatus.NeerlySection.VehicleDistanceSinceHead = moveStatus.NeerlySection.HeadAddress.MyDistance(positionArgs.MapPosition);
+                    moveStatus.NearlyAddress = Mapinfo.addressMap.Values.ToList().OrderBy(address => address.MyDistance(positionArgs.MapPosition)).First();
+                    moveStatus.NearlySection = Mapinfo.sectionMap.Values.ToList().FirstOrDefault(section => section.InSection(moveStatus.NearlyAddress));
+                    moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlySection.HeadAddress.MyDistance(positionArgs.MapPosition);
                     moveStatus.LastMapPosition = positionArgs.MapPosition;
-                    if (moveStatus.NeerlyAddress.Id != moveStatus.LastAddress.Id)
+                    if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
                     {
-                        OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NeerlySection.Id}][NearlyAddress = {moveStatus.NeerlyAddress.Id}]");
+                        OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
                     }
-                    moveStatus.LastAddress = moveStatus.NeerlyAddress;
-                    moveStatus.LastSection = moveStatus.NeerlySection;
+                    moveStatus.LastAddress = moveStatus.NearlyAddress;
+                    moveStatus.LastSection = moveStatus.NearlySection;
                     moveStatus.HeadDirection = positionArgs.HeadAngle;
                     moveStatus.MovingDirection = positionArgs.MovingDirection;
                     moveStatus.Speed = positionArgs.Speed;
                     Vehicle.AseMoveStatus = moveStatus;
                     agvcConnector.ReportSectionPass();
+
+                    UpdateAgvcConnectorGotReserveOkSections(moveStatus.LastSection.Id);
+
+                    for (int i = 0; i < movingGuide.MovingSections.Count; i++)
+                    {
+                        if (movingGuide.MovingSections[i].Id == moveStatus.LastSection.Id)
+                        {
+                            Vehicle.AseMovingGuide.MovingSectionsIndex = i;
+                        }
+                    }
 
                     switch (positionArgs.Arrival)
                     {
@@ -1707,26 +1749,37 @@ namespace Mirle.Agv.AseMiddler.Controller
                 Vehicle.IsReAuto = false;
 
                 agvcConnector.ClearAllReserve();
-                Vehicle.AseMovingGuide = new AseMovingGuide();
+
 
                 if (IsAvoidMove)
                 {
+                    Vehicle.AseMovingGuide = new AseMovingGuide();
                     Vehicle.AseMovingGuide.IsAvoidComplete = true;
                     agvcConnector.AvoidComplete();
                     OnMessageShowEvent?.Invoke(this, $"MainFlow : Avoid Move End Ok.");
                 }
                 else
                 {
-                    MoveCmdInfo moveCmdInfo = (MoveCmdInfo)GetCurTransferStep();
-                    ArrivalStartCharge(moveCmdInfo.EndAddress);
 
-                    if (IsNextTransferStepIdle())
+                    if (IsMoveStep())
                     {
-                        TransferComplete(moveCmdInfo.CmdId);
-                        OnMessageShowEvent?.Invoke(this, $"MainFlow : Move End Ok.");
+                        MoveCmdInfo moveCmdInfo = (MoveCmdInfo)GetCurTransferStep();
+                        ArrivalStartCharge(moveCmdInfo.EndAddress);
+                        Vehicle.AseMovingGuide = new AseMovingGuide();
+
+                        if (IsNextTransferStepIdle())
+                        {
+                            TransferComplete(moveCmdInfo.CmdId);
+                            OnMessageShowEvent?.Invoke(this, $"MainFlow : Move End Ok.");
+                        }
+                        else
+                        {
+                            VisitNextTransferStep();
+                        }
                     }
                     else
                     {
+                        ArrivalStartCharge(Vehicle.AseMoveStatus.LastAddress);
                         VisitNextTransferStep();
                     }
                 }
@@ -2960,7 +3013,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (dis < neerlyDistance)
                     {
                         neerlyDistance = dis;
-                        aseMoveStatus.NeerlyAddress = mapAddress;
+                        aseMoveStatus.NearlyAddress = mapAddress;
                     }
                 }
 
@@ -2971,7 +3024,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 List<MapSection> sectionsContainNearlyAddress = new List<MapSection>();
                 foreach (MapSection mapSection in Mapinfo.sectionMap.Values)
                 {
-                    if (mapSection.InSection(aseMoveStatus.NeerlyAddress.Id))
+                    if (mapSection.InSection(aseMoveStatus.NearlyAddress.Id))
                     {
                         sectionsContainNearlyAddress.Add(mapSection);
                     }
@@ -2980,36 +3033,36 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (sectionsContainNearlyAddress.Count == 0)
                 {
                     alarmHandler.SetAlarmFromAgvm(42);
-                    throw new Exception($"Nearly Address({aseMoveStatus.NeerlyAddress.Id}) is isolate with sections.");
+                    throw new Exception($"Nearly Address({aseMoveStatus.NearlyAddress.Id}) is isolate with sections.");
                 }
 
-                if (aseMoveStatus.LastSection.InSection(aseMoveStatus.NeerlyAddress.Id))
+                if (aseMoveStatus.LastSection.InSection(aseMoveStatus.NearlyAddress.Id))
                 {
-                    aseMoveStatus.NeerlySection = aseMoveStatus.LastSection;
+                    aseMoveStatus.NearlySection = aseMoveStatus.LastSection;
                 }
                 else
                 {
-                    aseMoveStatus.NeerlySection = sectionsContainNearlyAddress[0];
+                    aseMoveStatus.NearlySection = sectionsContainNearlyAddress[0];
                 }
 
-                aseMoveStatus.NeerlySection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.NeerlyAddress.Position, aseMoveStatus.NeerlySection.HeadAddress.Position);
+                aseMoveStatus.NearlySection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.NearlyAddress.Position, aseMoveStatus.NearlySection.HeadAddress.Position);
 
                 #endregion
 
                 #region IsReport
 
                 bool isReport = false;
-                if (aseMoveStatus.NeerlyAddress.Id != aseMoveStatus.LastAddress.Id)
+                if (aseMoveStatus.NearlyAddress.Id != aseMoveStatus.LastAddress.Id)
                 {
                     isReport = true;
                 }
-                if (aseMoveStatus.NeerlySection.Id != aseMoveStatus.LastSection.Id)
+                if (aseMoveStatus.NearlySection.Id != aseMoveStatus.LastSection.Id)
                 {
                     isReport = true;
                 }
 
-                aseMoveStatus.LastSection = aseMoveStatus.NeerlySection;
-                aseMoveStatus.LastAddress = aseMoveStatus.NeerlyAddress;
+                aseMoveStatus.LastSection = aseMoveStatus.NearlySection;
+                aseMoveStatus.LastAddress = aseMoveStatus.NearlyAddress;
 
                 Vehicle.AseMoveStatus = aseMoveStatus;
 
@@ -3043,7 +3096,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (dis < neerlyDistance)
                     {
                         neerlyDistance = dis;
-                        aseMoveStatus.NeerlyAddress = mapAddress;
+                        aseMoveStatus.NearlyAddress = mapAddress;
                     }
                 }
 
@@ -3054,7 +3107,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 List<MapSection> sectionsContainNearlyAddress = new List<MapSection>();
                 foreach (MapSection mapSection in Mapinfo.sectionMap.Values)
                 {
-                    if (mapSection.InSection(aseMoveStatus.NeerlyAddress.Id))
+                    if (mapSection.InSection(aseMoveStatus.NearlyAddress.Id))
                     {
                         sectionsContainNearlyAddress.Add(mapSection);
                     }
@@ -3063,36 +3116,36 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (sectionsContainNearlyAddress.Count == 0)
                 {
                     alarmHandler.SetAlarmFromAgvm(42);
-                    throw new Exception($"Nearly Address({aseMoveStatus.NeerlyAddress.Id}) is isolate with sections.");
+                    throw new Exception($"Nearly Address({aseMoveStatus.NearlyAddress.Id}) is isolate with sections.");
                 }
 
-                if (aseMoveStatus.LastSection.InSection(aseMoveStatus.NeerlyAddress.Id))
+                if (aseMoveStatus.LastSection.InSection(aseMoveStatus.NearlyAddress.Id))
                 {
-                    aseMoveStatus.NeerlySection = aseMoveStatus.LastSection;
+                    aseMoveStatus.NearlySection = aseMoveStatus.LastSection;
                 }
                 else
                 {
-                    aseMoveStatus.NeerlySection = sectionsContainNearlyAddress[0];
+                    aseMoveStatus.NearlySection = sectionsContainNearlyAddress[0];
                 }
 
-                aseMoveStatus.NeerlySection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.NeerlyAddress.Position, aseMoveStatus.NeerlySection.HeadAddress.Position);
+                aseMoveStatus.NearlySection.VehicleDistanceSinceHead = mapHandler.GetDistance(aseMoveStatus.NearlyAddress.Position, aseMoveStatus.NearlySection.HeadAddress.Position);
 
                 #endregion
 
                 #region IsReport
 
                 bool isReport = false;
-                if (aseMoveStatus.NeerlyAddress.Id != aseMoveStatus.LastAddress.Id)
+                if (aseMoveStatus.NearlyAddress.Id != aseMoveStatus.LastAddress.Id)
                 {
                     isReport = true;
                 }
-                if (aseMoveStatus.NeerlySection.Id != aseMoveStatus.LastSection.Id)
+                if (aseMoveStatus.NearlySection.Id != aseMoveStatus.LastSection.Id)
                 {
                     isReport = true;
                 }
 
-                aseMoveStatus.LastSection = aseMoveStatus.NeerlySection;
-                aseMoveStatus.LastAddress = aseMoveStatus.NeerlyAddress;
+                aseMoveStatus.LastSection = aseMoveStatus.NearlySection;
+                aseMoveStatus.LastAddress = aseMoveStatus.NearlyAddress;
 
                 Vehicle.AseMoveStatus = aseMoveStatus;
 
@@ -3132,6 +3185,10 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         }
 
+        public void StartCharge()
+        {
+            StartCharge(Vehicle.AseMoveStatus.LastAddress);
+        }
         private void StartCharge(MapAddress endAddress)
         {
             try

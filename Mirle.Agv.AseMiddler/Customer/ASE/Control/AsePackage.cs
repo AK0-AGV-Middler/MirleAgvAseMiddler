@@ -53,16 +53,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> ImportantPspLog;
         public event EventHandler<string> OnStatusChangeReportEvent;
-        //public event EventHandler<AseMoveStatus> OnPartMoveArrivalEvent;
-        //public event EventHandler<AseMoveStatus> OnPositionChangeEvent;
         public event EventHandler<EnumAutoState> OnModeChangeEvent;
         public event EventHandler<AseCarrierSlotStatus> OnUpdateSlotStatusEvent;
-        //public event EventHandler<EnumMoveComplete> OnMoveFinishedEvent;
         public event EventHandler<int> OnAlarmCodeSetEvent;
         public event EventHandler<int> OnAlarmCodeResetEvent;
         public event EventHandler OnAlarmCodeAllResetEvent;
         public event EventHandler<double> OnBatteryPercentageChangeEvent;
-        //public event EventHandler<EnumSlotNumber> OnReadCarrierIdFinishEvent;
         public event EventHandler<RobotCommand> OnRobotInterlockErrorEvent;
         public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
         public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
@@ -1507,21 +1503,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
             ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{psMessage.Number}. AGVL DisConnect");
-            Thread.Sleep(50);
+            Thread.Sleep(1000);
             PrimarySendEnqueue(psMessage.Type + psMessage.Number, psMessage.PSMessage);
-
-            //if (psMessage == null)
-            //{
-            //    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n PsMessage is null");
-            //    ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. Null.");
-            //}
-            //else
-            //{
-            //    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
-            //    ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{psMessage.Number}. AGVL DisConnect");
-            //    OnAgvlErrorEvent.Invoke(this, new EventArgs());
-            //    //psWrapper.Close();
-            //}
         }
 
         private void PsWrapper_OnConnectionStateChange(enumConnectState state)

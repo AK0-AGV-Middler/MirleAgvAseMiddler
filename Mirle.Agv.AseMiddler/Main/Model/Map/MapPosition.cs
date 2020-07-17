@@ -25,7 +25,9 @@ namespace Mirle.Agv.AseMiddler.Model
 
         public int MyDistance(MapPosition targetPosition)
         {
-            return (int)(Math.Abs(targetPosition.X - X) + Math.Abs(targetPosition.Y - Y));
+            var diffX = Math.Abs(targetPosition.X - X);
+            var diffY = Math.Abs(targetPosition.Y - Y);
+            return (int)Math.Sqrt(diffX * diffX + diffY * diffY);
         }
     }
 }

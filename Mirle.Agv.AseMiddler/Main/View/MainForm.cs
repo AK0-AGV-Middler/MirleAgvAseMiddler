@@ -1574,5 +1574,39 @@ namespace Mirle.Agv.AseMiddler.View
                 }
             }
         }
+
+        private void btnCharge_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                btnCharge.Enabled = false;
+
+                mainFlowHandler.StartCharge();
+
+                btnCharge.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                btnCharge.Enabled = true;
+            }
+        }
+
+        private void btnStopCharge_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                btnStopCharge.Enabled = false;
+
+                mainFlowHandler.StopCharge();
+
+                btnStopCharge.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                btnStopCharge.Enabled = true;
+            }
+        }
     }
 }

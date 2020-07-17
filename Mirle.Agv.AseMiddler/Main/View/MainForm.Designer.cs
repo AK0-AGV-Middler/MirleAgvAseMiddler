@@ -75,8 +75,9 @@ namespace Mirle.Agv.AseMiddler.View
             this.txtAgvcConnection = new System.Windows.Forms.Label();
             this.radAgvcOnline = new System.Windows.Forms.RadioButton();
             this.radAgvcOffline = new System.Windows.Forms.RadioButton();
-            this.btnBuzzOff = new System.Windows.Forms.Button();
             this.txtLastAlarm = new System.Windows.Forms.Label();
+            this.btnStopCharge = new System.Windows.Forms.Button();
+            this.btnCharge = new System.Windows.Forms.Button();
             this.btnAlarmReset = new System.Windows.Forms.Button();
             this.txtCannotAutoReason = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -362,8 +363,9 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBasicState.Controls.Add(this.groupBox2);
             this.pageBasicState.Controls.Add(this.gbPerformanceCounter);
             this.pageBasicState.Controls.Add(this.gbConnection);
-            this.pageBasicState.Controls.Add(this.btnBuzzOff);
             this.pageBasicState.Controls.Add(this.txtLastAlarm);
+            this.pageBasicState.Controls.Add(this.btnStopCharge);
+            this.pageBasicState.Controls.Add(this.btnCharge);
             this.pageBasicState.Controls.Add(this.btnAlarmReset);
             this.pageBasicState.Controls.Add(this.txtCannotAutoReason);
             this.pageBasicState.Controls.Add(this.groupBox1);
@@ -656,32 +658,44 @@ namespace Mirle.Agv.AseMiddler.View
             this.radAgvcOffline.UseVisualStyleBackColor = true;
             this.radAgvcOffline.CheckedChanged += new System.EventHandler(this.radAgvcOffline_CheckedChanged);
             // 
-            // btnBuzzOff
-            // 
-            this.btnBuzzOff.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnBuzzOff.ForeColor = System.Drawing.Color.Brown;
-            this.btnBuzzOff.Location = new System.Drawing.Point(6, 187);
-            this.btnBuzzOff.Name = "btnBuzzOff";
-            this.btnBuzzOff.Size = new System.Drawing.Size(209, 89);
-            this.btnBuzzOff.TabIndex = 3;
-            this.btnBuzzOff.Text = "Buzz Off";
-            this.btnBuzzOff.UseVisualStyleBackColor = true;
-            this.btnBuzzOff.Click += new System.EventHandler(this.btnBuzzOff_Click);
-            // 
             // txtLastAlarm
             // 
             this.txtLastAlarm.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtLastAlarm.Location = new System.Drawing.Point(435, 184);
+            this.txtLastAlarm.Location = new System.Drawing.Point(221, 181);
             this.txtLastAlarm.Name = "txtLastAlarm";
             this.txtLastAlarm.Size = new System.Drawing.Size(155, 92);
             this.txtLastAlarm.TabIndex = 50;
             this.txtLastAlarm.Text = "Last Alarm";
             // 
+            // btnStopCharge
+            // 
+            this.btnStopCharge.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnStopCharge.ForeColor = System.Drawing.Color.Red;
+            this.btnStopCharge.Location = new System.Drawing.Point(436, 428);
+            this.btnStopCharge.Name = "btnStopCharge";
+            this.btnStopCharge.Size = new System.Drawing.Size(167, 65);
+            this.btnStopCharge.TabIndex = 2;
+            this.btnStopCharge.Text = "中斷充電";
+            this.btnStopCharge.UseVisualStyleBackColor = true;
+            this.btnStopCharge.Click += new System.EventHandler(this.btnStopCharge_Click);
+            // 
+            // btnCharge
+            // 
+            this.btnCharge.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnCharge.ForeColor = System.Drawing.Color.Red;
+            this.btnCharge.Location = new System.Drawing.Point(436, 357);
+            this.btnCharge.Name = "btnCharge";
+            this.btnCharge.Size = new System.Drawing.Size(167, 65);
+            this.btnCharge.TabIndex = 2;
+            this.btnCharge.Text = "充電";
+            this.btnCharge.UseVisualStyleBackColor = true;
+            this.btnCharge.Click += new System.EventHandler(this.btnCharge_Click);
+            // 
             // btnAlarmReset
             // 
             this.btnAlarmReset.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.btnAlarmReset.ForeColor = System.Drawing.Color.Red;
-            this.btnAlarmReset.Location = new System.Drawing.Point(221, 184);
+            this.btnAlarmReset.Location = new System.Drawing.Point(6, 184);
             this.btnAlarmReset.Name = "btnAlarmReset";
             this.btnAlarmReset.Size = new System.Drawing.Size(209, 92);
             this.btnAlarmReset.TabIndex = 2;
@@ -1477,7 +1491,6 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.GroupBox gbConnection;
         private System.Windows.Forms.RadioButton radAgvcOnline;
         private System.Windows.Forms.RadioButton radAgvcOffline;
-        private System.Windows.Forms.Button btnBuzzOff;
         private System.Windows.Forms.Button btnAlarmReset;
         private System.Windows.Forms.Button btnKeyInPosition;
         private System.Windows.Forms.ListBox lbxReserveOkSections;
@@ -1569,5 +1582,7 @@ namespace Mirle.Agv.AseMiddler.View
         private UcLabelTextBox ucMapAddressId;
         private System.Windows.Forms.CheckBox checkBoxDisableRightSlot;
         private System.Windows.Forms.CheckBox checkBoxDisableLeftSlot;
+        private System.Windows.Forms.Button btnStopCharge;
+        private System.Windows.Forms.Button btnCharge;
     }
 }

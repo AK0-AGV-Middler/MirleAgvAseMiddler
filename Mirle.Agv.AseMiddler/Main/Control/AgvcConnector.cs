@@ -1647,7 +1647,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     break;
             }
-            
+
 
             AseMovingGuide aseMovingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
             report.WillPassGuideSection.Clear();
@@ -3250,6 +3250,21 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void LogComm(string classMethodName, string msg)
         {
             mirleLogger.Log(new LogFormat("Comm", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg));
+        }
+
+        public void LogCommandList(string msg)
+        {
+            mirleLogger.LogString("CommandList", msg);
+        }
+
+        public void LogCommandStart(ID_31_TRANS_REQUEST request)
+        {
+            LogCommandList($@"[Start][Type = {request.CommandAction.ToString()}, CmdID = {request.CmdID}, CstID = {request.CSTID}, load = {request.LoadAdr}, loadPort = {request.LoadPortID}, loadGate = {request.IsLoadPortHasGate.ToString()}, unload = {request.DestinationAdr}, unloadPort = {request.UnloadPortID}, unloadGate = {request.IsUnloadPortHasGate}]");
+        }
+
+        public void LogCommandEnd(ID_132_TRANS_COMPLETE_REPORT report)
+        {
+            LogCommandList($@"[Start][Type = {report.CmpStatus.ToString()}, CmdID = {report.CmdID}, CstID = {report.CSTID}, section = {report.CurrentSecID}, address = {report.CurrentAdrID}, X = {report.XAxis.ToString()}, Y = {report.YAxis.ToString()}]");
         }
 
         #endregion

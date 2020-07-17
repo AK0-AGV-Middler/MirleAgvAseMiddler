@@ -412,8 +412,6 @@ namespace Mirle.Agv.AseMiddler.View
                         return;
                 }
 
-
-
                 EnumLDUD loadunload2 = (EnumLDUD)boxLDUD2.SelectedItem;
                 EnumSlotSelect slotSelect2 = (EnumSlotSelect)boxSlotSelect2.SelectedItem;
                 if (slotSelect2 == EnumSlotSelect.Both) return;
@@ -435,7 +433,7 @@ namespace Mirle.Agv.AseMiddler.View
                         break;
                     case EnumLDUD.None:
                         {
-                            robotCommandInfo = robotCommandInfo.PadRight(11, '0');
+                            robotCommandInfo = robotCommandInfo.PadRight(24, '0');
                         }
                         break;
                 }
