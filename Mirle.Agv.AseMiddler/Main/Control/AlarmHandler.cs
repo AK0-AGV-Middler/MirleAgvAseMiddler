@@ -131,19 +131,25 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void SetAlarmFromAgvm(int id)
         {
-            SetAlarm(id);
-            Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
-            SetAlarmToAgvl?.Invoke(this, alarm);
-            SetAlarmToAgvc?.Invoke(this, alarm);
-            SetAlarmToUI?.Invoke(this, alarm);
+            if (!dicHappeningAlarms.ContainsKey(id))
+            {
+                SetAlarm(id);
+                Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
+                SetAlarmToAgvl?.Invoke(this, alarm);
+                SetAlarmToAgvc?.Invoke(this, alarm);
+                SetAlarmToUI?.Invoke(this, alarm);
+            }           
         }
 
         public void SetAlarmFromAgvl(int id)
         {
-            SetAlarm(id);
-            Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
-            SetAlarmToAgvc?.Invoke(this, alarm);
-            SetAlarmToUI?.Invoke(this, alarm);
+            if (!dicHappeningAlarms.ContainsKey(id))
+            {
+                SetAlarm(id);
+                Alarm alarm = allAlarms.ContainsKey(id) ? allAlarms[id] : new Alarm { Id = id };
+                SetAlarmToAgvc?.Invoke(this, alarm);
+                SetAlarmToUI?.Invoke(this, alarm);
+            }            
         }
 
         private void SetAlarm(int id)
@@ -175,7 +181,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID", ex.Message));
             }
-
         }
 
         public void ResetAllAlarmsFromAgvm()

@@ -2572,63 +2572,30 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                             if (nextCmd.EnrouteState == CommandState.LoadEnroute)
                             {
-                                if (curCmd.UnloadAddressId == nextCmd.LoadAddressId)
+                                var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
+                                if (disCurCmdUnload <= disNextCmdLoad)
                                 {
-                                    if (int.Parse(curCmd.UnloadPortId) >= int.Parse(nextCmd.LoadPortId))
-                                    {
-                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                        TransferStepsAddUnloadCmdInfo(curCmd);
-                                    }
-                                    else
-                                    {
-
-                                        TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
-                                        TransferStepsAddLoadCmdInfo(nextCmd);
-                                    }
+                                    TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                    TransferStepsAddUnloadCmdInfo(curCmd);
                                 }
                                 else
                                 {
-                                    var disNextCmdLoad = DistanceFromLastPosition(nextCmd.LoadAddressId);
-                                    if (disCurCmdUnload <= disNextCmdLoad)
-                                    {
-                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                        TransferStepsAddUnloadCmdInfo(curCmd);
-                                    }
-                                    else
-                                    {
-                                        TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
-                                        TransferStepsAddLoadCmdInfo(nextCmd);
-                                    }
+                                    TransferStepsAddMoveCmdInfo(nextCmd.LoadAddressId, nextCmdId);
+                                    TransferStepsAddLoadCmdInfo(nextCmd);
                                 }
                             }
                             else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
                             {
-                                if (curCmd.UnloadAddressId == nextCmd.UnloadAddressId)
+                                var disNextCmdUnload = DistanceFromLastPosition(nextCmd.UnloadAddressId);
+                                if (disCurCmdUnload <= disNextCmdUnload)
                                 {
-                                    if (int.Parse(curCmd.UnloadPortId) >= int.Parse(nextCmd.UnloadPortId))
-                                    {
-                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                        TransferStepsAddUnloadCmdInfo(curCmd);
-                                    }
-                                    else
-                                    {
-                                        TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
-                                        TransferStepsAddUnloadCmdInfo(nextCmd);
-                                    }
+                                    TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
+                                    TransferStepsAddUnloadCmdInfo(curCmd);
                                 }
                                 else
                                 {
-                                    var disNextCmdUnload = DistanceFromLastPosition(nextCmd.UnloadAddressId);
-                                    if (disCurCmdUnload <= disNextCmdUnload)
-                                    {
-                                        TransferStepsAddMoveCmdInfo(curCmd.UnloadAddressId, curCmdId);
-                                        TransferStepsAddUnloadCmdInfo(curCmd);
-                                    }
-                                    else
-                                    {
-                                        TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
-                                        TransferStepsAddUnloadCmdInfo(nextCmd);
-                                    }
+                                    TransferStepsAddMoveCmdInfo(nextCmd.UnloadAddressId, nextCmdId);
+                                    TransferStepsAddUnloadCmdInfo(nextCmd);
                                 }
                             }
                         }

@@ -2773,6 +2773,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string rtnMsg = "";
                 ID_32_TRANS_COMPLETE_RESPONSE response = new ID_32_TRANS_COMPLETE_RESPONSE();
                 OnMessageShowOnMainFormEvent?.Invoke(this, $"Send transfer complete report. [{report.CmpStatus}]");
+                LogCommandEnd(report);
 
                 TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
 
@@ -2807,6 +2808,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;
                 OnMessageShowOnMainFormEvent?.Invoke(this, $" Get Transfer Command: {transRequest.CommandAction}");
+                LogCommandStart(transRequest);
+
                 //200526 dabid+
                 if (transRequest.CommandAction == CommandActionType.Unload)
                 {
