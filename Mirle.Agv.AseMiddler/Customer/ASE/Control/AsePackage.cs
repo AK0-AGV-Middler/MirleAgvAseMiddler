@@ -1057,6 +1057,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     Vehicle.CheckStartChargeReplyEnd = true;
                 }
+                else
+                {
+                    Vehicle.CheckStopChargeReplyEnd = true;
+                }
                 Vehicle.IsCharging = isCharging;
                 OnStatusChangeReportEvent?.Invoke(this, $"Local Update Charge Status :[{ Vehicle.IsCharging }]");
             }

@@ -22,6 +22,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public bool IsAgvcConnect { get; set; } = false;
         public EnumLoginLevel LoginLevel { get; set; } = EnumLoginLevel.Op;
+        public EnumChargingStage ChargingStage { get; set; } = EnumChargingStage.Idle;
 
         #region AsePackage
 
@@ -36,6 +37,7 @@ namespace Mirle.Agv.AseMiddler.Model
 
         public bool IsReAuto { get; set; } = true;
         public bool CheckStartChargeReplyEnd { get; set; } = true;
+        public bool CheckStopChargeReplyEnd { get; set; } = true;
 
         #endregion
 

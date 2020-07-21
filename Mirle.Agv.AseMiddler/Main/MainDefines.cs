@@ -270,6 +270,16 @@ namespace Mirle.Agv.AseMiddler
         None
     }
 
+    public enum EnumChargingStage
+    {
+        Idle,
+        ArrivalCharge,
+        WaitChargingOn,
+        LowPowerCharge,
+        DisCharge,
+        WaitChargingOff
+    }
+
     #endregion
 
     /// <summary>

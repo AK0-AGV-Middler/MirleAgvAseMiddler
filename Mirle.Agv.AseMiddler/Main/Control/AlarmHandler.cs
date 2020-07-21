@@ -24,30 +24,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
         //public ConcurrentQueue<Alarm> queHistoryAlarm = new ConcurrentQueue<Alarm>();
         public Alarm LastAlarm { get; set; } = new Alarm();
-        private bool hasAlarm = false;
-        public bool HasAlarm
-        {
-            get { return hasAlarm; }
-            set
-            {
-                if (value != hasAlarm)
-                {
-                    hasAlarm = value;
-                }
-            }
-        }
-        private bool hasWarn = false;
-        public bool HasWarn
-        {
-            get { return hasWarn; }
-            set
-            {
-                if (value != hasWarn)
-                {
-                    hasWarn = value;
-                }
-            }
-        }
+        public bool HasAlarm { get; set; } = false;
+        public bool HasWarn { get; set; } = false;
         #endregion
 
         public event EventHandler<Alarm> SetAlarmToUI;
