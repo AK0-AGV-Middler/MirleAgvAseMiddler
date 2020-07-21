@@ -794,21 +794,31 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                if (VehicleLocationLost())
+                //if (VehicleLocationLost())
+                //{
+                //    return;
+                //}
+                //else if (MoveStateError())
+                //{
+                //    return;
+                //}
+                //else if (RobotStateError())
+                //{
+                //    return;
+                //}
+                //else
+                //{
+                //    txtCannotAutoReason.Text = "Can Auto";
+                //    txtCannotAutoReason.BackColor = Color.LightGreen;
+                //}
+
+                txtCannotAutoReason.Text = mainFlowHandler.CanAutoMsg;
+                if (txtCannotAutoReason.Text!="OK")
                 {
-                    return;
-                }
-                else if (MoveStateError())
-                {
-                    return;
-                }
-                else if (RobotStateError())
-                {
-                    return;
+                    txtCannotAutoReason.BackColor = Color.Pink;
                 }
                 else
                 {
-                    txtCannotAutoReason.Text = "Can Auto";
                     txtCannotAutoReason.BackColor = Color.LightGreen;
                 }
 
@@ -1280,7 +1290,6 @@ namespace Mirle.Agv.AseMiddler.View
         {
             btnAutoManual.Enabled = false;
             SwitchAutoStatus();
-            //ClearColor();
             Thread.Sleep(500);
             btnAutoManual.Enabled = true;
         }

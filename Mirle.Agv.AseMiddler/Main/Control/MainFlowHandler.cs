@@ -89,7 +89,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Normal;
         public bool NeedRename { get; set; } = false;
         public bool IsSimulation { get; set; }
-        public string MainFlowAbnormalMsg { get; set; }
+        public string CanAutoMsg { get; set; } = "";
 
         private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         #endregion
@@ -1115,7 +1115,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var okmsg = $"MainFlow : Get 避車Command checked , 終點[{aseMovingGuide.ToAddressId}].";
                 OnMessageShowEvent?.Invoke(this, okmsg);
                 IsAvoidMove = true;
-                agvcConnector.AskAllSectionsReserveInOnce();
+                //agvcConnector.AskAllSectionsReserveInOnce();
                 agvcConnector.ResumeAskReserve();
             }
             catch (Exception ex)
@@ -3778,12 +3778,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                     switch (autoState)
                     {
                         case EnumAutoState.Auto:
+                            StopClearAndReset();
                             asePackage.SetVehicleAutoScenario();
                             alarmHandler.ResetAllAlarmsFromAgvm();
-                            StopClearAndReset();
                             Vehicle.IsReAuto = true;
-                            asePackage.ReadCarrierId();
                             Thread.Sleep(500);
+                            CheckCanAuto();
                             UpdateSlotStatus();
                             break;
                         case EnumAutoState.Manual:
@@ -3806,6 +3806,46 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
+        }
+
+        private void CheckCanAuto()
+        {
+
+            if (Vehicle.AseMoveStatus.LastSection == null || string.IsNullOrEmpty(Vehicle.AseMoveStatus.LastSection.Id))
+            {
+                CanAutoMsg = "Section Lost";
+                throw new Exception("CheckCanAuto fail. Section Lost.");
+            }
+            else if (Vehicle.AseMoveStatus.LastAddress == null || string.IsNullOrEmpty(Vehicle.AseMoveStatus.LastAddress.Id))
+            {
+                CanAutoMsg = "Address Lost";
+                throw new Exception("CheckCanAuto fail. Address Lost.");
+            }
+            else if (Vehicle.AseMoveStatus.AseMoveState != EnumAseMoveState.Idle && Vehicle.AseMoveStatus.AseMoveState != EnumAseMoveState.Block)
+            {
+                CanAutoMsg = $"Move State = {Vehicle.AseMoveStatus.AseMoveState}";
+                throw new Exception($"CheckCanAuto fail. {CanAutoMsg}");
+            }
+            else if (Vehicle.AseMoveStatus.LastAddress.MyDistance(Vehicle.AseMoveStatus.LastMapPosition)>=Vehicle.MainFlowConfig.InitialPositionRangeMm)
+            {
+                alarmHandler.SetAlarmFromAgvm(54);
+                CanAutoMsg = $"Initial Positon Too Far.";
+                throw new Exception($"CheckCanAuto fail. {CanAutoMsg}");
+            }
+
+            var aseRobotStatus = Vehicle.AseRobotStatus;
+            if (aseRobotStatus.RobotState != EnumAseRobotState.Idle)
+            {
+                CanAutoMsg = $"Robot State = {aseRobotStatus.RobotState}";
+                throw new Exception($"CheckCanAuto fail. {CanAutoMsg}");
+            }
+            else if (!aseRobotStatus.IsHome)
+            {
+                CanAutoMsg = $"Robot IsHome = {aseRobotStatus.IsHome}";
+                throw new Exception($"CheckCanAuto fail. {CanAutoMsg}");
+            }
+
+            CanAutoMsg = "OK";
         }
 
         private void UpdateSlotStatus()

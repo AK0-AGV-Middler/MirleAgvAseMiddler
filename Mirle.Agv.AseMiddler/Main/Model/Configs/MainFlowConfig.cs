@@ -26,5 +26,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int LowPowerPercentage { get; set; } = 50;
         public int HighPowerPercentage { get; set; } = 90;
         public EnumSlotSelect SlotDisable { get; set; } = EnumSlotSelect.None;
+        public int InitialPositionRangeMm { get; set; } = 500;
     }
 }

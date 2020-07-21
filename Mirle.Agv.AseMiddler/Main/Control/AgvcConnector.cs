@@ -1863,7 +1863,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
                 SetupNeedReserveSections();
                 Vehicle.AseMoveStatus.IsMoveEnd = false;
-                AskAllSectionsReserveInOnce();
+                //AskAllSectionsReserveInOnce();
                 IsAskReservePause = false;
                 StatusChangeReport();
                 ShowAseMovigGuideSectionAndAddressList();
