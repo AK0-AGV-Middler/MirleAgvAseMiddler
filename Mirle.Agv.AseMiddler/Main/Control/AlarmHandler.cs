@@ -164,9 +164,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void LogAlarmHistory(Alarm alarm)
         {
             try
-            {
-                string timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff");
-                string msg = $"{timeStamp},{alarm.Id},{alarm.AlarmText},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
+            {                
+                string msg = $"{alarm.Id},{alarm.AlarmText},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
 
                 mirleLogger.LogString("AlarmHistory", msg);
             }
