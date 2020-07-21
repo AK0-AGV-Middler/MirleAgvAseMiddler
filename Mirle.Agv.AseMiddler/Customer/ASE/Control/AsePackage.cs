@@ -538,7 +538,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void ResetAllAlarmCode(object sneder, EventArgs eventArgs)
+        public void ResetAllAlarmCode()
         {
             try
             {
@@ -548,11 +548,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-        public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
-        {
-            SetAlarmCode(alarm.Id, true);
         }
 
         public void BuzzerOff()

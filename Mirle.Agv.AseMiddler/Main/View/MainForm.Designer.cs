@@ -65,11 +65,9 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucHeadAngle = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucRCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucLCstId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.ucMapAddressId = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucRobotHome = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucCharging = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.numSoc = new System.Windows.Forms.NumericUpDown();
             this.ucSoc = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.gbConnection = new System.Windows.Forms.GroupBox();
             this.txtAgvcConnection = new System.Windows.Forms.Label();
@@ -87,10 +85,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.btnAutoManual = new System.Windows.Forms.Button();
             this.pageMoveState = new System.Windows.Forms.TabPage();
             this.btnRefreshMoveState = new System.Windows.Forms.Button();
-            this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
-            this.numPositionY = new System.Windows.Forms.NumericUpDown();
-            this.numPositionX = new System.Windows.Forms.NumericUpDown();
-            this.btnKeyInPosition = new System.Windows.Forms.Button();
             this.ucMoveMovingIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucMoveMoveState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucMovePauseStop = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -143,6 +137,17 @@ namespace Mirle.Agv.AseMiddler.View
             this.tstextLastPosX = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstextLastPosY = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_SetupInitialSoc = new System.Windows.Forms.Timer(this.components);
+            this.pageSimulator = new System.Windows.Forms.TabPage();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.gbVehicleLocation = new System.Windows.Forms.GroupBox();
+            this.numPositionY = new System.Windows.Forms.NumericUpDown();
+            this.numPositionX = new System.Windows.Forms.NumericUpDown();
+            this.btnKeyInPosition = new System.Windows.Forms.Button();
+            this.btnKeyInSoc = new System.Windows.Forms.Button();
+            this.numSoc = new System.Windows.Forms.NumericUpDown();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.btnKeyInTestAlarm = new System.Windows.Forms.Button();
+            this.numTestErrorCode = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -157,13 +162,9 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBasicState.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.gbPerformanceCounter.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numSoc)).BeginInit();
             this.gbConnection.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.pageMoveState.SuspendLayout();
-            this.gbVehicleLocation.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
             this.pageRobotSate.SuspendLayout();
             this.pageBatteryState.SuspendLayout();
             this.pageVehicleState.SuspendLayout();
@@ -173,6 +174,14 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageTransferCommand.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.pageSimulator.SuspendLayout();
+            this.groupBox5.SuspendLayout();
+            this.gbVehicleLocation.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numSoc)).BeginInit();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numTestErrorCode)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -346,6 +355,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.tabControl1.Controls.Add(this.pageVehicleState);
             this.tabControl1.Controls.Add(this.pageReserveInfo);
             this.tabControl1.Controls.Add(this.pageTransferCommand);
+            this.tabControl1.Controls.Add(this.pageSimulator);
             this.tabControl1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.tabControl1.Location = new System.Drawing.Point(3, 3);
             this.tabControl1.Name = "tabControl1";
@@ -495,11 +505,9 @@ namespace Mirle.Agv.AseMiddler.View
             this.gbPerformanceCounter.Controls.Add(this.ucHeadAngle);
             this.gbPerformanceCounter.Controls.Add(this.ucRCstId);
             this.gbPerformanceCounter.Controls.Add(this.ucLCstId);
-            this.gbPerformanceCounter.Controls.Add(this.btnKeyInSoc);
             this.gbPerformanceCounter.Controls.Add(this.ucMapAddressId);
             this.gbPerformanceCounter.Controls.Add(this.ucRobotHome);
             this.gbPerformanceCounter.Controls.Add(this.ucCharging);
-            this.gbPerformanceCounter.Controls.Add(this.numSoc);
             this.gbPerformanceCounter.Controls.Add(this.ucSoc);
             this.gbPerformanceCounter.Location = new System.Drawing.Point(222, 282);
             this.gbPerformanceCounter.Name = "gbPerformanceCounter";
@@ -541,17 +549,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucLCstId.TagName = "LCstId";
             this.ucLCstId.TagValue = "";
             // 
-            // btnKeyInSoc
-            // 
-            this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnKeyInSoc.Location = new System.Drawing.Point(6, 350);
-            this.btnKeyInSoc.Name = "btnKeyInSoc";
-            this.btnKeyInSoc.Size = new System.Drawing.Size(191, 28);
-            this.btnKeyInSoc.TabIndex = 40;
-            this.btnKeyInSoc.Text = "校正電量";
-            this.btnKeyInSoc.UseVisualStyleBackColor = true;
-            this.btnKeyInSoc.Click += new System.EventHandler(this.btnKeyInSoc_Click);
-            // 
             // ucMapAddressId
             // 
             this.ucMapAddressId.Location = new System.Drawing.Point(10, 201);
@@ -584,20 +581,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucCharging.TagColor = System.Drawing.SystemColors.ControlText;
             this.ucCharging.TagName = "Charge";
             this.ucCharging.TagValue = "";
-            // 
-            // numSoc
-            // 
-            this.numSoc.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.numSoc.Location = new System.Drawing.Point(6, 317);
-            this.numSoc.Name = "numSoc";
-            this.numSoc.Size = new System.Drawing.Size(191, 26);
-            this.numSoc.TabIndex = 41;
-            this.numSoc.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.numSoc.Value = new decimal(new int[] {
-            70,
-            0,
-            0,
-            0});
             // 
             // ucSoc
             // 
@@ -774,7 +757,6 @@ namespace Mirle.Agv.AseMiddler.View
             // pageMoveState
             // 
             this.pageMoveState.Controls.Add(this.btnRefreshMoveState);
-            this.pageMoveState.Controls.Add(this.gbVehicleLocation);
             this.pageMoveState.Controls.Add(this.ucMoveMovingIndex);
             this.pageMoveState.Controls.Add(this.ucMoveMoveState);
             this.pageMoveState.Controls.Add(this.ucMovePauseStop);
@@ -803,63 +785,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.btnRefreshMoveState.Text = "更新走行狀態";
             this.btnRefreshMoveState.UseVisualStyleBackColor = true;
             this.btnRefreshMoveState.Click += new System.EventHandler(this.btnRefreshMoveState_Click);
-            // 
-            // gbVehicleLocation
-            // 
-            this.gbVehicleLocation.Controls.Add(this.numPositionY);
-            this.gbVehicleLocation.Controls.Add(this.numPositionX);
-            this.gbVehicleLocation.Controls.Add(this.btnKeyInPosition);
-            this.gbVehicleLocation.Location = new System.Drawing.Point(6, 335);
-            this.gbVehicleLocation.Name = "gbVehicleLocation";
-            this.gbVehicleLocation.Size = new System.Drawing.Size(209, 93);
-            this.gbVehicleLocation.TabIndex = 1;
-            this.gbVehicleLocation.TabStop = false;
-            this.gbVehicleLocation.Text = "Vehicle Location";
-            // 
-            // numPositionY
-            // 
-            this.numPositionY.Location = new System.Drawing.Point(104, 19);
-            this.numPositionY.Maximum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            0});
-            this.numPositionY.Minimum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            -2147483648});
-            this.numPositionY.Name = "numPositionY";
-            this.numPositionY.Size = new System.Drawing.Size(94, 29);
-            this.numPositionY.TabIndex = 41;
-            // 
-            // numPositionX
-            // 
-            this.numPositionX.Location = new System.Drawing.Point(6, 19);
-            this.numPositionX.Maximum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            0});
-            this.numPositionX.Minimum = new decimal(new int[] {
-            999999,
-            0,
-            0,
-            -2147483648});
-            this.numPositionX.Name = "numPositionX";
-            this.numPositionX.Size = new System.Drawing.Size(92, 29);
-            this.numPositionX.TabIndex = 41;
-            // 
-            // btnKeyInPosition
-            // 
-            this.btnKeyInPosition.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnKeyInPosition.Location = new System.Drawing.Point(6, 47);
-            this.btnKeyInPosition.Name = "btnKeyInPosition";
-            this.btnKeyInPosition.Size = new System.Drawing.Size(192, 27);
-            this.btnKeyInPosition.TabIndex = 40;
-            this.btnKeyInPosition.Text = "鍵入車輛位置";
-            this.btnKeyInPosition.UseVisualStyleBackColor = true;
-            this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click);
             // 
             // ucMoveMovingIndex
             // 
@@ -1412,6 +1337,142 @@ namespace Mirle.Agv.AseMiddler.View
             this.timer_SetupInitialSoc.Interval = 50;
             this.timer_SetupInitialSoc.Tick += new System.EventHandler(this.timer_SetupInitialSoc_Tick);
             // 
+            // pageSimulator
+            // 
+            this.pageSimulator.Controls.Add(this.groupBox6);
+            this.pageSimulator.Controls.Add(this.gbVehicleLocation);
+            this.pageSimulator.Controls.Add(this.groupBox5);
+            this.pageSimulator.Location = new System.Drawing.Point(4, 29);
+            this.pageSimulator.Name = "pageSimulator";
+            this.pageSimulator.Size = new System.Drawing.Size(607, 676);
+            this.pageSimulator.TabIndex = 7;
+            this.pageSimulator.Text = "Simulator";
+            this.pageSimulator.UseVisualStyleBackColor = true;
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.btnKeyInSoc);
+            this.groupBox5.Controls.Add(this.numSoc);
+            this.groupBox5.Location = new System.Drawing.Point(3, 102);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(209, 127);
+            this.groupBox5.TabIndex = 0;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Battery Percentage";
+            // 
+            // gbVehicleLocation
+            // 
+            this.gbVehicleLocation.Controls.Add(this.numPositionY);
+            this.gbVehicleLocation.Controls.Add(this.numPositionX);
+            this.gbVehicleLocation.Controls.Add(this.btnKeyInPosition);
+            this.gbVehicleLocation.Location = new System.Drawing.Point(3, 3);
+            this.gbVehicleLocation.Name = "gbVehicleLocation";
+            this.gbVehicleLocation.Size = new System.Drawing.Size(209, 93);
+            this.gbVehicleLocation.TabIndex = 2;
+            this.gbVehicleLocation.TabStop = false;
+            this.gbVehicleLocation.Text = "Vehicle Location";
+            // 
+            // numPositionY
+            // 
+            this.numPositionY.Location = new System.Drawing.Point(104, 19);
+            this.numPositionY.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.numPositionY.Minimum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            -2147483648});
+            this.numPositionY.Name = "numPositionY";
+            this.numPositionY.Size = new System.Drawing.Size(94, 29);
+            this.numPositionY.TabIndex = 41;
+            // 
+            // numPositionX
+            // 
+            this.numPositionX.Location = new System.Drawing.Point(6, 19);
+            this.numPositionX.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.numPositionX.Minimum = new decimal(new int[] {
+            999999,
+            0,
+            0,
+            -2147483648});
+            this.numPositionX.Name = "numPositionX";
+            this.numPositionX.Size = new System.Drawing.Size(92, 29);
+            this.numPositionX.TabIndex = 41;
+            // 
+            // btnKeyInPosition
+            // 
+            this.btnKeyInPosition.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnKeyInPosition.Location = new System.Drawing.Point(6, 47);
+            this.btnKeyInPosition.Name = "btnKeyInPosition";
+            this.btnKeyInPosition.Size = new System.Drawing.Size(192, 27);
+            this.btnKeyInPosition.TabIndex = 40;
+            this.btnKeyInPosition.Text = "鍵入車輛位置";
+            this.btnKeyInPosition.UseVisualStyleBackColor = true;
+            // 
+            // btnKeyInSoc
+            // 
+            this.btnKeyInSoc.Font = new System.Drawing.Font("微軟正黑體", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnKeyInSoc.Location = new System.Drawing.Point(6, 61);
+            this.btnKeyInSoc.Name = "btnKeyInSoc";
+            this.btnKeyInSoc.Size = new System.Drawing.Size(191, 28);
+            this.btnKeyInSoc.TabIndex = 42;
+            this.btnKeyInSoc.Text = "校正電量";
+            this.btnKeyInSoc.UseVisualStyleBackColor = true;
+            // 
+            // numSoc
+            // 
+            this.numSoc.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.numSoc.Location = new System.Drawing.Point(6, 28);
+            this.numSoc.Name = "numSoc";
+            this.numSoc.Size = new System.Drawing.Size(191, 26);
+            this.numSoc.TabIndex = 43;
+            this.numSoc.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numSoc.Value = new decimal(new int[] {
+            70,
+            0,
+            0,
+            0});
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.btnKeyInTestAlarm);
+            this.groupBox6.Controls.Add(this.numTestErrorCode);
+            this.groupBox6.Location = new System.Drawing.Point(3, 235);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(209, 110);
+            this.groupBox6.TabIndex = 3;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Alarm";
+            // 
+            // btnKeyInTestAlarm
+            // 
+            this.btnKeyInTestAlarm.Location = new System.Drawing.Point(6, 63);
+            this.btnKeyInTestAlarm.Name = "btnKeyInTestAlarm";
+            this.btnKeyInTestAlarm.Size = new System.Drawing.Size(192, 27);
+            this.btnKeyInTestAlarm.TabIndex = 12;
+            this.btnKeyInTestAlarm.Text = "Alarm Test";
+            this.btnKeyInTestAlarm.UseVisualStyleBackColor = true;
+            this.btnKeyInTestAlarm.Click += new System.EventHandler(this.btnKeyInTestAlarm_Click);
+            // 
+            // numTestErrorCode
+            // 
+            this.numTestErrorCode.Location = new System.Drawing.Point(6, 28);
+            this.numTestErrorCode.Maximum = new decimal(new int[] {
+            300000,
+            0,
+            0,
+            0});
+            this.numTestErrorCode.Name = "numTestErrorCode";
+            this.numTestErrorCode.Size = new System.Drawing.Size(191, 29);
+            this.numTestErrorCode.TabIndex = 11;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1446,15 +1507,11 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBasicState.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.gbPerformanceCounter.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numSoc)).EndInit();
             this.gbConnection.ResumeLayout(false);
             this.gbConnection.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.pageMoveState.ResumeLayout(false);
-            this.gbVehicleLocation.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
             this.pageRobotSate.ResumeLayout(false);
             this.pageBatteryState.ResumeLayout(false);
             this.pageVehicleState.ResumeLayout(false);
@@ -1466,6 +1523,14 @@ namespace Mirle.Agv.AseMiddler.View
             this.groupBox4.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.pageSimulator.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
+            this.gbVehicleLocation.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numSoc)).EndInit();
+            this.groupBox6.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numTestErrorCode)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1487,25 +1552,19 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.ToolStripMenuItem VehicleStatusPage;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer3;
-        private System.Windows.Forms.GroupBox gbVehicleLocation;
         private System.Windows.Forms.GroupBox gbConnection;
         private System.Windows.Forms.RadioButton radAgvcOnline;
         private System.Windows.Forms.RadioButton radAgvcOffline;
         private System.Windows.Forms.Button btnAlarmReset;
-        private System.Windows.Forms.Button btnKeyInPosition;
         private System.Windows.Forms.ListBox lbxReserveOkSections;
         private System.Windows.Forms.ListBox lbxNeedReserveSections;
         private System.Windows.Forms.Timer timeUpdateUI;
-        private System.Windows.Forms.NumericUpDown numPositionY;
-        private System.Windows.Forms.NumericUpDown numPositionX;
         private System.Windows.Forms.GroupBox gbPerformanceCounter;
         private System.Windows.Forms.Label txtLastAlarm;
         private UcLabelTextBox ucSoc;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnAutoManual;
         private System.Windows.Forms.GroupBox gbReserve;
-        private System.Windows.Forms.NumericUpDown numSoc;
-        private System.Windows.Forms.Button btnKeyInSoc;
         private UcLabelTextBox ucCharging;
         private System.Windows.Forms.Label txtAgvcConnection;
         private System.Windows.Forms.StatusStrip statusStrip1;
@@ -1584,5 +1643,16 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.CheckBox checkBoxDisableLeftSlot;
         private System.Windows.Forms.Button btnStopCharge;
         private System.Windows.Forms.Button btnCharge;
+        private System.Windows.Forms.TabPage pageSimulator;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.GroupBox gbVehicleLocation;
+        private System.Windows.Forms.NumericUpDown numPositionY;
+        private System.Windows.Forms.NumericUpDown numPositionX;
+        private System.Windows.Forms.Button btnKeyInPosition;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.Button btnKeyInSoc;
+        private System.Windows.Forms.NumericUpDown numSoc;
+        private System.Windows.Forms.Button btnKeyInTestAlarm;
+        private System.Windows.Forms.NumericUpDown numTestErrorCode;
     }
 }

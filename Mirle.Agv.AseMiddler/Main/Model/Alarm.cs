@@ -13,7 +13,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public string AlarmText { get; set; } = "Unknow";
         public ushort PlcWord { get; set; } //int -> string
         public ushort PlcBit { get; set; }//int -> string
-        public EnumAlarmLevel Level { get; set; }
+        public EnumAlarmLevel Level { get; set; } = EnumAlarmLevel.Warn;
         public string Description { get; set; } = "Unknow";
         public DateTime SetTime { get; set; }
         public DateTime ResetTime { get; set; }

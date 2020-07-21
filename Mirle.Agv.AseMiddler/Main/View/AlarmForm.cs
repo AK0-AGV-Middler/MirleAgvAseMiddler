@@ -22,53 +22,51 @@ namespace Mirle.Agv.AseMiddler.View
     {
         private AlarmHandler alarmHandler;
         private MainFlowHandler mainFlowHandler;
-        //private string historyAlarmsFilePath = Path.Combine(Environment.CurrentDirectory, "Log", "AlarmHistory", "AlarmHistory.log");
-        public string HappenedingAlarmsMsg { get; set; } = "";
-        public string HistoryAlarmsMsg { get; set; } = "";
 
         public AlarmForm(MainFlowHandler mainFlowHandler)
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
-            alarmHandler.ResetAllAlarmsToUI += AlarmHandler_OnResetAllAlarmsEvent;
-            alarmHandler.SetAlarmToUI += AlarmHandler_OnSetAlarmEvent;
         }
 
-        private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
-        {
-            var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("HH-mm-ss.fff")}][Description={alarm.Description}]";
-            AppendHappenedingAlarmsMsg(msgForHappeningAlarms);
+        //public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
+        //{
+        //    var msgForHappeningAlarms = $"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("HH-mm-ss.fff")}][Description={alarm.Description}]";
+        //    AppendHappenedingAlarmsMsg(msgForHappeningAlarms);
 
-            var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("yyyy-MM-dd HH-mm")}]";
-            AppendHistoryAlarmsMsg(msgForHistoryAlarms);
-        }
+        //    var msgForHistoryAlarms = $"[Id ={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("yyyy-MM-dd HH-mm")}]";
+        //    AppendHistoryAlarmsMsg(msgForHistoryAlarms);
+        //}
 
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
-        {
-            btnAlarmReset.Enabled = false;
-            AppendHistoryAlarmsMsg(msg);
-            HappenedingAlarmsMsg = "";
-            SpinWait.SpinUntil(() =>false, 500);
-            btnAlarmReset.Enabled = true;
-        }
+        //public void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
+        //{
+        //    btnAlarmReset.Enabled = false;
+        //    AppendHistoryAlarmsMsg(msg);
+        //    HappenedingAlarmsMsg = "";
+        //    SpinWait.SpinUntil(() =>false, 500);
+        //    btnAlarmReset.Enabled = true;
+        //}
 
         private void btnAlarmReset_Click(object sender, EventArgs e)
         {
-            mainFlowHandler.ResetAllarms();
+            btnAlarmReset.Enabled = false;
+            mainFlowHandler.ResetAllAlarmsFromAgvm();
+            Thread.Sleep(500);
+            btnAlarmReset.Enabled = true;
         }
 
-        private void btnBuzzOff_Click(object sender, EventArgs e)
-        {
-            mainFlowHandler.BuzzOff();
-        }
+        //private void btnBuzzOff_Click(object sender, EventArgs e)
+        //{
+        //    mainFlowHandler.BuzzOff();
+        //}
 
         private void btnTestSetAlarm_Click(object sender, EventArgs e)
         {
             try
             {
                 //Test Set a non-empty alarm
-                alarmHandler.SetAlarmFromAgvm(alarmHandler.allAlarms.First(x => x.Key != 0).Key);
+                alarmHandler.SetAlarm(alarmHandler.allAlarms.First(x => x.Key != 0).Key);
             }
             catch (Exception ex)
             {
@@ -82,51 +80,51 @@ namespace Mirle.Agv.AseMiddler.View
             this.Hide();
         }
 
-        private void btnAlarmTest_Click(object sender, EventArgs e)
-        {
-            var id = Convert.ToInt32(num1.Value);
-            alarmHandler.SetAlarmFromAgvm(id);
-        }
+        //private void btnAlarmTest_Click(object sender, EventArgs e)
+        //{
+        //    var id = Convert.ToInt32(num1.Value);
+        //    alarmHandler.SetAlarmFromAgvm(id);
+        //}
 
 
-        private void AppendHappenedingAlarmsMsg(string msg)
-        {
-            try
-            {
-                HappenedingAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg, "\r\n", HappenedingAlarmsMsg);
+        //private void AppendHappenedingAlarmsMsg(string msg)
+        //{
+        //    try
+        //    {
+        //        HappenedingAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg, "\r\n", HappenedingAlarmsMsg);
 
-                if (HappenedingAlarmsMsg.Length > 65535)
-                {
-                    HappenedingAlarmsMsg = HappenedingAlarmsMsg.Substring(65535);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
+        //        if (HappenedingAlarmsMsg.Length > 65535)
+        //        {
+        //            HappenedingAlarmsMsg = HappenedingAlarmsMsg.Substring(65535);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+        //    }
+        //}
 
-        private void AppendHistoryAlarmsMsg(string msg)
-        {
-            try
-            {
-                HistoryAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg, "\r\n", HistoryAlarmsMsg);
+        //private void AppendHistoryAlarmsMsg(string msg)
+        //{
+        //    try
+        //    {
+        //        HistoryAlarmsMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n", msg, "\r\n", HistoryAlarmsMsg);
 
-                if (HistoryAlarmsMsg.Length > 65535)
-                {
-                    HistoryAlarmsMsg = HistoryAlarmsMsg.Substring(65535);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
+        //        if (HistoryAlarmsMsg.Length > 65535)
+        //        {
+        //            HistoryAlarmsMsg = HistoryAlarmsMsg.Substring(65535);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+        //    }
+        //}
 
         private void timeUpdateUI_Tick(object sender, EventArgs e)
         {
-            tbxHappendingAlarms.Text = HappenedingAlarmsMsg;
-            tbxHistoryAlarms.Text = HistoryAlarmsMsg;
+            tbxHappendingAlarms.Text = alarmHandler.AlarmLogMsg;
+            tbxHistoryAlarms.Text = alarmHandler.AlarmHistoryLogMsg;
         }
 
         private void LogException(string source, string exMsg)

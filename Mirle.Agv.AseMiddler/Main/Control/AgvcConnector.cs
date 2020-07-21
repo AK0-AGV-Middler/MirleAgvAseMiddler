@@ -1203,16 +1203,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             Send_Cmd144_StatusChangeReport(sender, batteryPercentage);
         }
 
-        public void SetlAlarmToAgvc(object sender, Alarm alarm)
+        public void SetlAlarmToAgvc(int errorCode, bool isAlarm)
         {
-            if (Vehicle.ErrorStatus == VhStopSingle.Off && alarmHandler.HasAlarm)
+            Send_Cmd194_AlarmReport(errorCode.ToString(), ErrorStatus.ErrSet);
+            if (Vehicle.ErrorStatus == VhStopSingle.Off && isAlarm)
             {
                 Vehicle.ErrorStatus = VhStopSingle.On;
                 StatusChangeReport();
-            }
-            Send_Cmd194_AlarmReport(alarm.Id.ToString(), ErrorStatus.ErrSet);
+            }         
         }
-        public void ResetAllAlarmsToAgvc(object sender, EventArgs eventArgs)
+        public void ResetAllAlarmsToAgvc()
         {
             if (Vehicle.ErrorStatus == VhStopSingle.On)
             {
@@ -1420,7 +1420,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             ID_91_ALARM_RESET_REQUEST receive = (ID_91_ALARM_RESET_REQUEST)e.objPacket;
 
-            mainFlowHandler.ResetAllarms();
+            mainFlowHandler.ResetAllAlarmsFromAgvc();
 
             int replyCode = 0;
             Send_Cmd191_AlarmResetResponse(e.iSeqNum, replyCode);
@@ -1429,13 +1429,13 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ID_191_ALARM_RESET_RESPONSE iD_191_ALARM_RESET_RESPONSE = new ID_191_ALARM_RESET_RESPONSE();
-                iD_191_ALARM_RESET_RESPONSE.ReplyCode = replyCode;
+                ID_191_ALARM_RESET_RESPONSE response = new ID_191_ALARM_RESET_RESPONSE();
+                response.ReplyCode = replyCode;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.AlarmResetRespFieldNumber;
                 wrappers.SeqNum = seqNum;
-                wrappers.AlarmResetResp = iD_191_ALARM_RESET_RESPONSE;
+                wrappers.AlarmResetResp = response;
 
                 SendCommandWrapper(wrappers, true);
             }
@@ -1948,7 +1948,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (receive.CancelAction == CancelActionType.CmdEms)
                 {
                     Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                    alarmHandler.SetAlarmFromAgvm(000037);
+                    mainFlowHandler.SetAlarmFromAgvm(000037);
                     OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
                     return;
                 }
@@ -1970,7 +1970,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case CancelActionType.CmdCancelIdMismatch:
                     case CancelActionType.CmdCancelIdReadFailed:
-                        alarmHandler.ResetAllAlarmsFromAgvm();
+                        mainFlowHandler.ResetAllAlarmsFromAgvm();
                         OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
                         break;
                     case CancelActionType.CmdNone:
@@ -2197,7 +2197,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         if (response.ReplyAction != ReplyActionType.Continue)
                         {
                             OnMessageShowOnMainFormEvent?.Invoke(this, $"Load fail, [ReplyAction = {response.ReplyAction}][RenameCarrierID = {response.RenameCarrierID}]");
-                            alarmHandler.ResetAllAlarmsFromAgvm();
+                            mainFlowHandler.ResetAllAlarmsFromAgvm();
                             var cmdId = robotCommand.CmdId;
                             if (!string.IsNullOrEmpty(response.RenameCarrierID))
                             {

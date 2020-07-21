@@ -227,8 +227,9 @@ namespace Mirle.Agv.AseMiddler.View
             mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
             agvcConnector.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
-            alarmHandler.SetAlarmToUI += AlarmHandler_OnSetAlarmEvent;
-            alarmHandler.ResetAllAlarmsToUI += AlarmHandler_OnResetAllAlarmsEvent;
+            mainFlowHandler.SetAlarmToUI += MainFlowHandler_OnSetAlarmEvent;
+            mainFlowHandler.ResetAllAlarmsToUI += MainFlowHandler_OnResetAllAlarmsEvent;
+
 
             mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
 
@@ -342,35 +343,19 @@ namespace Mirle.Agv.AseMiddler.View
             IsAgvcConnect = isConnect;
         }
 
-        private void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)
+        private void MainFlowHandler_OnSetAlarmEvent(object sender, string alarmMessage)
         {
             try
             {
-                var msg = $"Alarm Set, [Id={alarm.Id}][Text={alarm.AlarmText}]";
+                var msg = string.Concat("Alarm Set, ",alarmMessage);
                 AppendDebugLogMsg(msg);
-
-                LastAlarmMsg = $"[Id={alarm.Id}]\r\n[Text={alarm.AlarmText}]";
-
-                if (alarm.Level == EnumAlarmLevel.Alarm)
-                {
-                    if (alarmForm.IsDisposed)
-                    {
-                        alarmForm = new AlarmForm(mainFlowHandler);
-                    }
-                    alarmForm.BringToFront();
-                    alarmForm.Show();
-                }
-                else
-                {
-                    //mainFlowHandler.BuzzOff();
-                }
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-        private void AlarmHandler_OnResetAllAlarmsEvent(object sender, string msg)
+        private void MainFlowHandler_OnResetAllAlarmsEvent(object sender, string msg)
         {
             try
             {
@@ -753,6 +738,7 @@ namespace Mirle.Agv.AseMiddler.View
                             ToolStripMenuItemMode.Visible = true;
                             btnKeyInPosition.Visible = false;
                             btnKeyInSoc.Visible = false;
+                            btnKeyInTestAlarm.Visible = false;
                         }
                         break;
                     case EnumLoginLevel.Admin:
@@ -761,6 +747,7 @@ namespace Mirle.Agv.AseMiddler.View
                             ToolStripMenuItemMode.Visible = true;
                             btnKeyInPosition.Visible = false;
                             btnKeyInSoc.Visible = false;
+                            btnKeyInTestAlarm.Visible = false;
                         }
                         break;
                     case EnumLoginLevel.OneAboveAll:
@@ -769,6 +756,7 @@ namespace Mirle.Agv.AseMiddler.View
                             ToolStripMenuItemMode.Visible = true;
                             btnKeyInPosition.Visible = true;
                             btnKeyInSoc.Visible = true;
+                            btnKeyInTestAlarm.Visible = true;
                         }
                         break;
                     case EnumLoginLevel.Op:
@@ -778,6 +766,7 @@ namespace Mirle.Agv.AseMiddler.View
                             ToolStripMenuItemMode.Visible = false;
                             btnKeyInPosition.Visible = false;
                             btnKeyInSoc.Visible = false;
+                            btnKeyInTestAlarm.Visible = false;
                         }
                         break;
                 }
@@ -788,7 +777,6 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
 
         private void UpdateCannotAutoReason()
         {
@@ -958,7 +946,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                txtLastAlarm.Text = LastAlarmMsg;
+                txtLastAlarm.Text = alarmHandler.LastAlarmMsg;
             }
             catch (Exception ex)
             {
@@ -1276,7 +1264,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             btnAlarmReset.Enabled = false;
             //TakeAPicture();
-            mainFlowHandler.ResetAllarms();
+            mainFlowHandler.ResetAllAlarmsFromAgvm();
             Thread.Sleep(500);
             btnAlarmReset.Enabled = true;
         }
@@ -1616,6 +1604,12 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 btnStopCharge.Enabled = true;
             }
+        }
+
+        private void btnKeyInTestAlarm_Click(object sender, EventArgs e)
+        {
+            int errorCode = decimal.ToInt32(numTestErrorCode.Value);
+            mainFlowHandler.SetAlarmFromAgvm(errorCode);
         }
     }
 }
