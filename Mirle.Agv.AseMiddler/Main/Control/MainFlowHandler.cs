@@ -1591,7 +1591,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         //        agvcConnector.StatusChangeReport();
                         //    }
                         //    FakeMoveToReserveOkPositions();
-                        //}
+                        //}                      
 
                         if (asePackage.ReceivePositionArgsQueue.Any())
                         {
@@ -1630,32 +1630,47 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        var nearlyDistance = 999999;
-                        foreach (string addressId in movingGuide.GuideAddressIds)
+                        if (LastIdlePosition.Position.MyDistance(positionArgs.MapPosition)<=Vehicle.MainFlowConfig.IdleReportRangeMm)
                         {
-                            MapAddress mapAddress = Mapinfo.addressMap[addressId];
-                            var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
-
-                            if (dis < nearlyDistance)
+                            if ((DateTime.Now - LastIdlePosition.TimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.IdleReportIntervalMs)
                             {
-                                nearlyDistance = dis;
-                                moveStatus.NearlyAddress = mapAddress;
+                                UpdateLastIdlePositionAndTimeStamp(positionArgs);
+                                SetAlarmFromAgvm(55);
                             }
-                        }
 
-                        foreach (string sectionId in movingGuide.GuideSectionIds)
+                            return;
+                        }
+                        else
                         {
-                            MapSection mapSection = Mapinfo.sectionMap[sectionId];
-                            if (mapSection.InSection(moveStatus.LastAddress.Id))
+                            UpdateLastIdlePositionAndTimeStamp(positionArgs);
+
+                            var nearlyDistance = 999999;
+                            foreach (string addressId in movingGuide.GuideAddressIds)
                             {
-                                moveStatus.NearlySection = mapSection;
-                            }
-                        }
-                        moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlyAddress.MyDistance(moveStatus.NearlySection.HeadAddress.Position);
+                                MapAddress mapAddress = Mapinfo.addressMap[addressId];
+                                var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
 
-                        if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
-                        {
-                            OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
+                                if (dis < nearlyDistance)
+                                {
+                                    nearlyDistance = dis;
+                                    moveStatus.NearlyAddress = mapAddress;
+                                }
+                            }
+
+                            foreach (string sectionId in movingGuide.GuideSectionIds)
+                            {
+                                MapSection mapSection = Mapinfo.sectionMap[sectionId];
+                                if (mapSection.InSection(moveStatus.LastAddress.Id))
+                                {
+                                    moveStatus.NearlySection = mapSection;
+                                }
+                            }
+                            moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlyAddress.MyDistance(moveStatus.NearlySection.HeadAddress.Position);
+
+                            if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
+                            {
+                                OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
+                            }
                         }
                     }
 
@@ -1692,7 +1707,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                 }
                 else
-                {
+                {                  
                     moveStatus.NearlyAddress = Mapinfo.addressMap.Values.ToList().OrderBy(address => address.MyDistance(positionArgs.MapPosition)).First();
                     moveStatus.NearlySection = Mapinfo.sectionMap.Values.ToList().FirstOrDefault(section => section.InSection(moveStatus.NearlyAddress));
                     moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlySection.HeadAddress.MyDistance(positionArgs.MapPosition);
@@ -1738,6 +1753,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
+        }
+
+        private void UpdateLastIdlePositionAndTimeStamp(AsePositionArgs positionArgs)
+        {
+            LastIdlePosition lastIdlePosition = new LastIdlePosition();
+            lastIdlePosition.Position = positionArgs.MapPosition;
+            lastIdlePosition.TimeStamp = DateTime.Now;
+            LastIdlePosition = lastIdlePosition;
         }
 
         public void StartTrackPosition()
@@ -3622,7 +3645,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
     public class LastIdlePosition
     {
-        public DateTime DateTime { get; set; }
-        public MapPosition Position { get; set; }
+        public DateTime TimeStamp { get; set; } = DateTime.Now;
+        public MapPosition Position { get; set; } = new MapPosition();
     }
 }

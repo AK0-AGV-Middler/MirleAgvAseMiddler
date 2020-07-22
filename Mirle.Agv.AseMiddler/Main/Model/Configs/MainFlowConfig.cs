@@ -28,5 +28,7 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public EnumSlotSelect SlotDisable { get; set; } = EnumSlotSelect.None;
         public int InitialPositionRangeMm { get; set; } = 500;
         public bool UseChargeSystemV2 { get; set; } = false;
+        public int IdleReportRangeMm { get; set; } = 100;
+        public int IdleReportIntervalMs { get; set; } = 2 * 60 * 1000;
     }
 }
