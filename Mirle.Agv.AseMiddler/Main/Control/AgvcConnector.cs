@@ -3264,7 +3264,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void LogCommandEnd(ID_132_TRANS_COMPLETE_REPORT report)
         {
-            LogCommandList($@"[Start][Type = {report.CmpStatus.ToString()}, CmdID = {report.CmdID}, CstID = {report.CSTID}, section = {report.CurrentSecID}, address = {report.CurrentAdrID}, X = {report.XAxis.ToString()}, Y = {report.YAxis.ToString()}]");
+            LogCommandList($@"[End][Type = {report.CmpStatus.ToString()}, CmdID = {report.CmdID}, CstID = {report.CSTID}, section = {report.CurrentSecID}, address = {report.CurrentAdrID}, X = {report.XAxis.ToString()}, Y = {report.YAxis.ToString()}]");
         }
 
         #endregion
