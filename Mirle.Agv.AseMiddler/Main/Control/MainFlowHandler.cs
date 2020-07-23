@@ -77,7 +77,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         #region Models
         public Vehicle Vehicle;
         private bool isIniOk;
-        public MapInfo Mapinfo { get; private set; } = new MapInfo();
         public int InitialSoc { get; set; } = 70;
         public bool IsFirstAhGet { get; set; }
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Normal;
@@ -164,8 +163,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 alarmHandler = new AlarmHandler(this);
-                mapHandler = new MapHandler(mapConfig);
-                Mapinfo = mapHandler.theMapInfo;
+                mapHandler = new MapHandler(mapConfig);               
                 agvcConnector = new AgvcConnector(this);
                 asePackage = new AsePackage();
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
@@ -263,7 +261,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    Vehicle.AseMoveStatus.LastMapPosition = Mapinfo.addressMap.First(x => x.Key != "").Value.Position;
+                    Vehicle.AseMoveStatus.LastMapPosition = Vehicle.Mapinfo.addressMap.First(x => x.Key != "").Value.Position;
                 }
                 catch (Exception ex)
                 {
@@ -959,7 +957,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void CheckUnloadPortAddress(string unloadAddressId)
         {
             CheckMoveEndAddress(unloadAddressId);
-            MapAddress unloadAddress = Mapinfo.addressMap[unloadAddressId];
+            MapAddress unloadAddress = Vehicle.Mapinfo.addressMap[unloadAddressId];
             if (!unloadAddress.IsTransferPort())
             {
                 throw new Exception($"{unloadAddressId} can not unload.");
@@ -969,7 +967,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void CheckLoadPortAddress(string loadAddressId)
         {
             CheckMoveEndAddress(loadAddressId);
-            MapAddress loadAddress = Mapinfo.addressMap[loadAddressId];
+            MapAddress loadAddress = Vehicle.Mapinfo.addressMap[loadAddressId];
             if (!loadAddress.IsTransferPort())
             {
                 throw new Exception($"{loadAddressId} can not load.");
@@ -978,7 +976,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void CheckMoveEndAddress(string unloadAddressId)
         {
-            if (!Mapinfo.addressMap.ContainsKey(unloadAddressId))
+            if (!Vehicle.Mapinfo.addressMap.ContainsKey(unloadAddressId))
             {
                 throw new Exception($"{unloadAddressId} is not in the map.");
             }
@@ -1116,7 +1114,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void TransferStepsAddUnloadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             UnloadCmdInfo unloadCmdInfo = new UnloadCmdInfo(agvcTransCmd);
-            MapAddress unloadAddress = Mapinfo.addressMap[unloadCmdInfo.PortAddressId];
+            MapAddress unloadAddress = Vehicle.Mapinfo.addressMap[unloadCmdInfo.PortAddressId];
             unloadCmdInfo.GateType = unloadAddress.GateType;
             if (string.IsNullOrEmpty(agvcTransCmd.UnloadPortId) || !unloadAddress.PortIdMap.ContainsKey(agvcTransCmd.UnloadPortId))
             {
@@ -1132,7 +1130,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void TransferStepsAddLoadCmdInfo(AgvcTransCmd agvcTransCmd)
         {
             LoadCmdInfo loadCmdInfo = new LoadCmdInfo(agvcTransCmd);
-            MapAddress loadAddress = Mapinfo.addressMap[loadCmdInfo.PortAddressId];
+            MapAddress loadAddress = Vehicle.Mapinfo.addressMap[loadCmdInfo.PortAddressId];
             loadCmdInfo.GateType = loadAddress.GateType;
             if (string.IsNullOrEmpty(agvcTransCmd.LoadPortId) || !loadAddress.PortIdMap.ContainsKey(agvcTransCmd.LoadPortId))
             {
@@ -1147,14 +1145,14 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void TransferStepsAddMoveCmdInfo(string endAddressId, string cmdId)
         {
-            MapAddress endAddress = Mapinfo.addressMap[endAddressId];
+            MapAddress endAddress = Vehicle.Mapinfo.addressMap[endAddressId];
             MoveCmdInfo moveCmd = new MoveCmdInfo(endAddress, cmdId);
             transferSteps.Add(moveCmd);
         }
 
         private void TransferStepsAddMoveToChargerCmdInfo(string endAddressId, string cmdId)
         {
-            MapAddress endAddress = Mapinfo.addressMap[endAddressId];
+            MapAddress endAddress = Vehicle.Mapinfo.addressMap[endAddressId];
             MoveToChargerCmdInfo moveCmd = new MoveToChargerCmdInfo(endAddress, cmdId);
             transferSteps.Add(moveCmd);
         }
@@ -1623,14 +1621,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (positionArgs.Arrival == EnumAseArrival.EndArrival)
                     {
-                        moveStatus.NearlyAddress = Mapinfo.addressMap[movingGuide.ToAddressId];
+                        moveStatus.NearlyAddress = Vehicle.Mapinfo.addressMap[movingGuide.ToAddressId];
                         moveStatus.NearlySection = movingGuide.MovingSections.Last();
                         moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlySection.HeadAddress.MyDistance(moveStatus.NearlyAddress.Position);
                         OnMessageShowEvent?.Invoke(this, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
                     }
                     else
                     {
-                        if (LastIdlePosition.Position.MyDistance(positionArgs.MapPosition)<=Vehicle.MainFlowConfig.IdleReportRangeMm)
+                        if (LastIdlePosition.Position.MyDistance(positionArgs.MapPosition) <= Vehicle.MainFlowConfig.IdleReportRangeMm)
                         {
                             if ((DateTime.Now - LastIdlePosition.TimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.IdleReportIntervalMs)
                             {
@@ -1647,7 +1645,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             var nearlyDistance = 999999;
                             foreach (string addressId in movingGuide.GuideAddressIds)
                             {
-                                MapAddress mapAddress = Mapinfo.addressMap[addressId];
+                                MapAddress mapAddress = Vehicle.Mapinfo.addressMap[addressId];
                                 var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
 
                                 if (dis < nearlyDistance)
@@ -1659,7 +1657,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                             foreach (string sectionId in movingGuide.GuideSectionIds)
                             {
-                                MapSection mapSection = Mapinfo.sectionMap[sectionId];
+                                MapSection mapSection = Vehicle.Mapinfo.sectionMap[sectionId];
                                 if (mapSection.InSection(moveStatus.LastAddress.Id))
                                 {
                                     moveStatus.NearlySection = mapSection;
@@ -1707,9 +1705,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                 }
                 else
-                {                  
-                    moveStatus.NearlyAddress = Mapinfo.addressMap.Values.ToList().OrderBy(address => address.MyDistance(positionArgs.MapPosition)).First();
-                    moveStatus.NearlySection = Mapinfo.sectionMap.Values.ToList().FirstOrDefault(section => section.InSection(moveStatus.NearlyAddress));
+                {
+                    moveStatus.NearlyAddress = Vehicle.Mapinfo.addressMap.Values.ToList().OrderBy(address => address.MyDistance(positionArgs.MapPosition)).First();
+                    moveStatus.NearlySection = Vehicle.Mapinfo.sectionMap.Values.ToList().FirstOrDefault(section => section.InSection(moveStatus.NearlyAddress));
                     moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlySection.HeadAddress.MyDistance(positionArgs.MapPosition);
                     moveStatus.LastMapPosition = positionArgs.MapPosition;
                     if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
@@ -1852,7 +1850,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 int sectionIndex = Vehicle.AseMovingGuide.GuideSectionIds.FindIndex(x => x == mapSection.Id);
-                MapAddress address = Mapinfo.addressMap[Vehicle.AseMovingGuide.GuideAddressIds[sectionIndex + 1]];
+                MapAddress address = Vehicle.Mapinfo.addressMap[Vehicle.AseMovingGuide.GuideAddressIds[sectionIndex + 1]];
 
                 bool isEnd = false;
                 EnumAddressDirection addressDirection = EnumAddressDirection.None;
@@ -2117,7 +2115,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                MapAddress portAddress = Mapinfo.addressMap[robotCommand.PortAddressId];
+                MapAddress portAddress = Vehicle.Mapinfo.addressMap[robotCommand.PortAddressId];
                 robotCommand.PioDirection = portAddress.PioDirection;
             }
             catch (Exception ex)
@@ -2728,7 +2726,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private int DistanceFromLastPosition(string addressId)
         {
             var lastPosition = Vehicle.AseMoveStatus.LastMapPosition;
-            var addressPosition = Mapinfo.addressMap[addressId].Position;
+            var addressPosition = Vehicle.Mapinfo.addressMap[addressId].Position;
             return (int)mapHandler.GetDistance(lastPosition, addressPosition);
         }
 
@@ -2933,16 +2931,16 @@ namespace Mirle.Agv.AseMiddler.Controller
                     MapSection mapSection = new MapSection();
                     string sectionId = aseMovingGuide.GuideSectionIds[i].Trim();
                     string addressId = aseMovingGuide.GuideAddressIds[i + 1].Trim();
-                    if (!Mapinfo.sectionMap.ContainsKey(sectionId))
+                    if (!Vehicle.Mapinfo.sectionMap.ContainsKey(sectionId))
                     {
                         throw new Exception($"Map info has no this section ID.[{sectionId}]");
                     }
-                    else if (!Mapinfo.addressMap.ContainsKey(addressId))
+                    else if (!Vehicle.Mapinfo.addressMap.ContainsKey(addressId))
                     {
                         throw new Exception($"Map info has no this address ID.[{addressId}]");
                     }
 
-                    mapSection = Mapinfo.sectionMap[sectionId];
+                    mapSection = Vehicle.Mapinfo.sectionMap[sectionId];
                     mapSection.CmdDirection = addressId == mapSection.TailAddress.Id ? EnumCommandDirection.Forward : EnumCommandDirection.Backward;
                     aseMovingGuide.MovingSections.Add(mapSection);
                 }

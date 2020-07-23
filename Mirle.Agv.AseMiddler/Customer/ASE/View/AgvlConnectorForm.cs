@@ -344,7 +344,7 @@ namespace Mirle.Agv.AseMiddler.View
 
                 if (MapInfo.addressMap.ContainsKey(addressId))
                 {
-                    MapAddress mapAddress = MapInfo.addressMap[addressId];
+                    MapAddress mapAddress =Vehicle.Mapinfo.addressMap[addressId];
                     MapAddressFitMoveCommand(mapAddress);
                 }
             }
@@ -484,7 +484,7 @@ namespace Mirle.Agv.AseMiddler.View
                 string addressId = txtChargeAddress.Text;
                 if (MapInfo.addressMap.ContainsKey(addressId))
                 {
-                    boxChargeDirection.SelectedItem = MapInfo.addressMap[addressId].ChargeDirection.ToString();
+                    boxChargeDirection.SelectedItem =Vehicle.Mapinfo.addressMap[addressId].ChargeDirection.ToString();
                 }
             }
             catch (Exception ex)

@@ -1210,7 +1210,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Vehicle.ErrorStatus = VhStopSingle.On;
                 StatusChangeReport();
-            }         
+            }
         }
         public void ResetAllAlarmsToAgvc()
         {
@@ -2906,6 +2906,73 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
 
             return new AgvcTransCmd(transRequest, iSeqNum);
+        }
+
+
+        public void Receive_Cmd11_CouplerInfoReport(object sender, TcpIpEventArgs e)
+        {
+            try
+            {
+                ID_11_COUPLER_INFO_REP report = (ID_11_COUPLER_INFO_REP)e.objPacket;
+
+                ModifyAddressIsCharger(report.CouplerInfos.ToList());
+
+                SendRecv_Cmd111_CouplerInfoResponse(e.iSeqNum, 0);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ModifyAddressIsCharger(List<CouplerInfo> couplerInfos)
+        {
+            try
+            {
+                var enableChargeAddressIds = from couplerInfo in couplerInfos
+                                             where couplerInfo.CouplerStatus == CouplerStatus.Enable
+                                             select couplerInfo.AddressID;
+                if (enableChargeAddressIds.Any())
+                {
+                    foreach (var addressId in Vehicle.Mapinfo.addressMap.Keys.ToArray())
+                    {
+                        if (enableChargeAddressIds.Contains(addressId))
+                        {
+                            Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = EnumAddressDirection.Right;
+                        }
+                        else
+                        {
+                            Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = EnumAddressDirection.None;
+                        }
+                    }
+                }                   
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void SendRecv_Cmd111_CouplerInfoResponse(ushort seqNum, int replyCode)
+        {
+            try
+            {
+                OnMessageShowOnMainFormEvent?.Invoke(this, $"Coupler Info Response, [ReplyCode = {replyCode.ToString()}]");
+
+                ID_111_COUPLER_INFO_RESPONSE response = new ID_111_COUPLER_INFO_RESPONSE();
+                response.ReplyCode = replyCode;
+
+                WrapperMessage wrapper = new WrapperMessage();
+                wrapper.ID = WrapperMessage.CouplerInfoRespFieldNumber;
+                wrapper.CouplerInfoResp = response;
+                wrapper.SeqNum = seqNum;
+
+                SendCommandWrapper(wrapper, true);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
         }
 
         #endregion

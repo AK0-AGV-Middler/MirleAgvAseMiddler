@@ -121,6 +121,16 @@ message Timestamp {
 	Right = 3;
   }
 
+   enum CouplerStatus{
+    CouplerStatus_Disable = 0;
+	CouplerStatus_Enable= 1;
+  }
+  message CouplerInfo {
+	string AddressID = 1;
+	CouplerStatus CouplerStatus = 2;
+   }
+
+
   message ID_1_HOST_BASIC_INFO_VERSION_REP {
 		string DataDateTime_Year = 1;
 		string DataDateTime_Month = 2;
@@ -151,15 +161,11 @@ message Timestamp {
 		int32 ReplyCode = 1;
   }
 
-   message ID_11_BASIC_INFO_REP {
-		int32 TravelBasicDataCount = 1;
-		int32 SectionDataCount = 2;
-		int32 AddressDataCount = 3;
-		int32 ScaleDataCount = 4;
-		int32 ContrlDataCount = 5;
-		int32 GuideDataCount = 6;
+
+   message ID_11_COUPLER_INFO_REP {
+	repeated CouplerInfo CouplerInfos = 1;
   }
-   message ID_111_BASIC_INFO_RESPONSE {
+   message ID_111_COUPLER_INFO_RESPONSE {
 		int32 ReplyCode = 1;
   }
 
@@ -317,6 +323,7 @@ message Timestamp {
 	string UnloadPortID = 7;
 	bool IsLoadPortHasGate = 8;
 	bool IsUnloadPortHasGate = 9;
+	string LOT_ID = 10;
   }
   message ID_131_TRANS_RESPONSE {
   	string Cmd_ID = 1;
@@ -566,6 +573,7 @@ message Timestamp {
 	ShelfStatus ShelfStatus_L = 38;
 	ShelfStatus ShelfStatus_R = 39;
 	string CurrentExcuteCmdId = 40;
+	VhStopSingle OpPauseStatus = 41;
   }
 
   message ID_144_STATUS_CHANGE_REP {
@@ -609,6 +617,7 @@ message Timestamp {
 	ShelfStatus ShelfStatus_L = 38;
 	ShelfStatus ShelfStatus_R = 39;
 	string CurrentExcuteCmdId = 40;
+	VhStopSingle OpPauseStatus = 41;
   }
   message ID_44_STATUS_CHANGE_RESPONSE {
 	int32 ReplyCode = 1;
@@ -697,8 +706,8 @@ message Timestamp {
 		ID_102_BASIC_INFO_VERSION_REP Basic_Info_Version_Rep = 102;
 		ID_2_BASIC_INFO_VERSION_RESPONSE Basic_Info_Version_Resp = 2;
 
-		ID_11_BASIC_INFO_REP Basic_Info_Rep = 11;
-		ID_111_BASIC_INFO_RESPONSE Basic_Info_Resp = 111;
+		ID_11_COUPLER_INFO_REP Coupler_Info_Rep = 11;
+		ID_111_COUPLER_INFO_RESPONSE Coupler_Info_Resp = 111;
 
 		ID_13_TAVELLING_DATA_REP Tavelling_Data_Rep = 13;
 		ID_113_TAVELLING_DATA_RESPONSE Tavelling_Data_Resp = 113;

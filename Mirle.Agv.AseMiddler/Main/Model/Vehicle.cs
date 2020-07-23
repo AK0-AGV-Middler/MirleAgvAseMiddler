@@ -23,6 +23,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public bool IsAgvcConnect { get; set; } = false;
         public EnumLoginLevel LoginLevel { get; set; } = EnumLoginLevel.Op;
         public EnumChargingStage ChargingStage { get; set; } = EnumChargingStage.Idle;
+        public MapInfo Mapinfo { get; private set; } = new MapInfo();
 
         #region AsePackage
 

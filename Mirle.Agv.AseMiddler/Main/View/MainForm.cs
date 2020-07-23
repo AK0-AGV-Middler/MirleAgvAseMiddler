@@ -33,7 +33,6 @@ namespace Mirle.Agv.AseMiddler.View
         private LoginForm loginForm;
         private Panel panelLeftUp;
         private Panel panelLeftDown;
-        private MapInfo MapInfo = new MapInfo();
         //PerformanceCounter performanceCounterCpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "Available MBytes");
         //PerformanceCounter performanceCounterRam = new PerformanceCounter("Memory", "% Committed Bytes in Use");
@@ -72,7 +71,6 @@ namespace Mirle.Agv.AseMiddler.View
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
             mainFlowConfig = Vehicle.MainFlowConfig;
-            MapInfo = mainFlowHandler.Mapinfo;
             alarmHandler = mainFlowHandler.GetAlarmHandler();
             asePackage = mainFlowHandler.GetAsePackage();
             agvcConnector = mainFlowHandler.GetAgvcConnector();
@@ -265,7 +263,7 @@ namespace Mirle.Agv.AseMiddler.View
                 // Draw Sections in blueLine
                 allUcSectionImages.Clear();
 
-                var sectionMap = MapInfo.sectionMap.Values.ToList();
+                var sectionMap = Vehicle.Mapinfo.sectionMap.Values.ToList();
                 foreach (var section in sectionMap)
                 {
                     var headPos = section.HeadAddress.Position;
@@ -273,7 +271,7 @@ namespace Mirle.Agv.AseMiddler.View
 
                     MapPosition sectionLocation = new MapPosition(Math.Min(headPos.X, tailPos.X), Math.Max(headPos.Y, tailPos.Y));//200310 dabid#
 
-                    UcSectionImage ucSectionImage = new UcSectionImage(MapInfo, section);
+                    UcSectionImage ucSectionImage = new UcSectionImage(Vehicle.Mapinfo, section);
                     if (!allUcSectionImages.ContainsKey(section.Id))
                     {
                         allUcSectionImages.Add(section.Id, ucSectionImage);
@@ -303,10 +301,10 @@ namespace Mirle.Agv.AseMiddler.View
                 //Draw Addresses in BlackRectangle(Segment) RedCircle(Port) RedTriangle(Charger)
                 allUcAddressImages.Clear();
 
-                var addressMap = MapInfo.addressMap.Values.ToList();
+                var addressMap = Vehicle.Mapinfo.addressMap.Values.ToList();
                 foreach (var address in addressMap)
                 {
-                    UcAddressImage ucAddressImage = new UcAddressImage(MapInfo, address);
+                    UcAddressImage ucAddressImage = new UcAddressImage(Vehicle.Mapinfo, address);
                     if (!allUcAddressImages.ContainsKey(address.Id))
                     {
                         allUcAddressImages.Add(address.Id, ucAddressImage);
@@ -347,7 +345,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                var msg = string.Concat("Alarm Set, ",alarmMessage);
+                var msg = string.Concat("Alarm Set, ", alarmMessage);
                 AppendDebugLogMsg(msg);
             }
             catch (Exception ex)
@@ -408,20 +406,20 @@ namespace Mirle.Agv.AseMiddler.View
         {
             #region 200318 dabid+ 
             //MapPosition tmpO = new MapPosition();
-            var tmp = MapInfo.addressMap.Values.FirstOrDefault();
+            var tmp = Vehicle.Mapinfo.addressMap.Values.FirstOrDefault();
             tmpO = tmp.Position;
             MapPosition tmpMaxY = new MapPosition();
             MapPosition tmpMinY = new MapPosition();
-            foreach (var addr in MapInfo.addressMap.Values)
+            foreach (var addr in Vehicle.Mapinfo.addressMap.Values)
             {
                 if (addr.Position.X * addr.Position.X + addr.Position.Y * addr.Position.Y < tmpO.X * tmpO.X + tmpO.Y * tmpO.Y)
                 {
                     tmpO = addr.Position;
                 }
             }
-            tmp = MapInfo.addressMap.Values.FirstOrDefault();
+            tmp = Vehicle.Mapinfo.addressMap.Values.FirstOrDefault();
             tmpMaxY.Y = tmpMinY.Y = tmp.Position.Y;
-            foreach (var address in MapInfo.addressMap.Values)
+            foreach (var address in Vehicle.Mapinfo.addressMap.Values)
             {
                 if (Math.Abs(address.Position.Y - tmpO.Y) > Math.Abs(tmpMaxY.Y - tmpO.Y))
                 {
@@ -435,10 +433,10 @@ namespace Mirle.Agv.AseMiddler.View
             mapYOffset = (Int32)Math.Abs(tmpMaxY.Y - tmpMinY.Y);
             #endregion
 
-            double xMax = MapInfo.addressMap.Values.ToList().Max(addr => addr.Position.X);
-            double xMin = MapInfo.addressMap.Values.ToList().Min(addr => addr.Position.X);
-            double yMax = MapInfo.addressMap.Values.ToList().Max(addr => addr.Position.Y);
-            double yMin = MapInfo.addressMap.Values.ToList().Min(addr => addr.Position.Y);
+            double xMax = Vehicle.Mapinfo.addressMap.Values.ToList().Max(addr => addr.Position.X);
+            double xMin = Vehicle.Mapinfo.addressMap.Values.ToList().Min(addr => addr.Position.X);
+            double yMax = Vehicle.Mapinfo.addressMap.Values.ToList().Max(addr => addr.Position.Y);
+            double yMin = Vehicle.Mapinfo.addressMap.Values.ToList().Min(addr => addr.Position.Y);
             maxPos.X = xMax;//200318 dabid+
             maxPos.Y = yMax;//200318 dabid+
             minPos.X = xMin;//200318 dabid+
@@ -535,7 +533,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialAseAgvlConnectorForm()
         {
-            AgvlConnectorForm = new AgvlConnectorForm(asePackage, MapInfo);
+            AgvlConnectorForm = new AgvlConnectorForm(asePackage, Vehicle.Mapinfo);
         }
 
         private void AgvcConnectorPage_Click(object sender, EventArgs e)
@@ -739,6 +737,7 @@ namespace Mirle.Agv.AseMiddler.View
                             btnKeyInPosition.Visible = false;
                             btnKeyInSoc.Visible = false;
                             btnKeyInTestAlarm.Visible = false;
+                            groupHighLevelManualControl.Visible = Vehicle.AutoState != EnumAutoState.Auto;
                         }
                         break;
                     case EnumLoginLevel.Admin:
@@ -748,6 +747,7 @@ namespace Mirle.Agv.AseMiddler.View
                             btnKeyInPosition.Visible = false;
                             btnKeyInSoc.Visible = false;
                             btnKeyInTestAlarm.Visible = false;
+                            groupHighLevelManualControl.Visible = Vehicle.AutoState != EnumAutoState.Auto;
                         }
                         break;
                     case EnumLoginLevel.OneAboveAll:
@@ -757,6 +757,7 @@ namespace Mirle.Agv.AseMiddler.View
                             btnKeyInPosition.Visible = true;
                             btnKeyInSoc.Visible = true;
                             btnKeyInTestAlarm.Visible = true;
+                            groupHighLevelManualControl.Visible = true;
                         }
                         break;
                     case EnumLoginLevel.Op:
@@ -767,6 +768,7 @@ namespace Mirle.Agv.AseMiddler.View
                             btnKeyInPosition.Visible = false;
                             btnKeyInSoc.Visible = false;
                             btnKeyInTestAlarm.Visible = false;
+                            groupHighLevelManualControl.Visible = false;
                         }
                         break;
                 }
@@ -801,7 +803,7 @@ namespace Mirle.Agv.AseMiddler.View
                 //}
 
                 txtCannotAutoReason.Text = mainFlowHandler.CanAutoMsg;
-                if (txtCannotAutoReason.Text!="OK")
+                if (txtCannotAutoReason.Text != "OK")
                 {
                     txtCannotAutoReason.BackColor = Color.Pink;
                 }
@@ -1536,7 +1538,7 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void checkBoxDisableSlot_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBoxDisableLeftSlot.Checked )
+            if (checkBoxDisableLeftSlot.Checked)
             {
                 checkBoxDisableLeftSlot.ForeColor = Color.Pink;
 
@@ -1610,6 +1612,21 @@ namespace Mirle.Agv.AseMiddler.View
         {
             int errorCode = decimal.ToInt32(numTestErrorCode.Value);
             mainFlowHandler.SetAlarmFromAgvm(errorCode);
+        }
+
+        private void txtDisableChargerAddressId_TextChanged(object sender, EventArgs e)
+        {
+            var addressId = txtDisableChargerAddressId.Text.Trim();
+            checkEnableToCharge.Checked = Vehicle.Mapinfo.addressMap.ContainsKey(addressId) && Vehicle.Mapinfo.addressMap[addressId].IsCharger();
+        }
+
+        private void checkEnableToCharge_CheckedChanged(object sender, EventArgs e)
+        {
+            var addressId = txtDisableChargerAddressId.Text.Trim();
+            if (Vehicle.Mapinfo.addressMap.ContainsKey(addressId))
+            {
+                Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = checkEnableToCharge.Checked ? EnumAddressDirection.Right : EnumAddressDirection.None;
+            }
         }
     }
 }
