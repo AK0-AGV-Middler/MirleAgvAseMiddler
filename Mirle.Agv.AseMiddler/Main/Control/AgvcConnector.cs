@@ -2910,7 +2910,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             return new AgvcTransCmd(transRequest, iSeqNum);
         }
 
-
         public void Receive_Cmd11_CouplerInfoReport(object sender, TcpIpEventArgs e)
         {
             try

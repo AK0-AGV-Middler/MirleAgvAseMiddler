@@ -41,6 +41,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             AgvcTransCommandType = SetupCommandType(transRequest.CommandAction);
             SeqNum = aSeqNum;
             CompleteStatus = SetupCompleteStatus(transRequest.CommandAction);
+            LotId = transRequest.LOTID.Trim();
             
             LoadPortId = string.IsNullOrEmpty(transRequest.LoadPortID) ? "" : transRequest.LoadPortID.Trim();
             UnloadPortId = string.IsNullOrEmpty(transRequest.UnloadPortID) ? "" : transRequest.UnloadPortID.Trim();
