@@ -1615,6 +1615,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.XAxis = Vehicle.AseMoveStatus.LastMapPosition.X;
             report.YAxis = Vehicle.AseMoveStatus.LastMapPosition.Y;
             report.Speed = Vehicle.AseMoveStatus.Speed;
+            report.OpPauseStatus = Vehicle.OpPauseStatus;
 
             EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
             switch (slotDisable)
@@ -1717,6 +1718,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.VehicleAngle = Vehicle.AseMoveStatus.HeadDirection;
                 response.Speed = Vehicle.AseMoveStatus.Speed;
                 response.StoppedBlockID = Vehicle.StoppedBlockID;
+                response.OpPauseStatus = Vehicle.OpPauseStatus;
 
                 EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
                 switch (slotDisable)

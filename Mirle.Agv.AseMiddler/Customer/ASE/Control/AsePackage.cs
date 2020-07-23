@@ -1027,6 +1027,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                 bool isAlarmSet = psMessage.Substring(0, 1) == "1";
                 int alarmCode = int.Parse(psMessage.Substring(1, 6));
 
+                if (alarmCode.ToString().Equals(asePackageConfig.RemoteControlPauseErrorCode))
+                {
+                    Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
+                }
+                else if (alarmCode.ToString().Equals(asePackageConfig.RemoteControlResumeErrorCode))
+                {
+                    Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
+                }
+
                 if (isAlarmSet)
                 {
                     OnAlarmCodeSetEvent?.Invoke(this, alarmCode);

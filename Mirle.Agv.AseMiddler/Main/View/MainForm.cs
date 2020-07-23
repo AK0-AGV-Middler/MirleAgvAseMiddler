@@ -1064,6 +1064,8 @@ namespace Mirle.Agv.AseMiddler.View
                 ucCommanding.TagValue = Vehicle.ActionStatus.ToString();
                 ucErrorFlag.TagValue = Vehicle.ErrorStatus.ToString();
                 ucReserveFlag.TagValue = Vehicle.AseMovingGuide.ReserveStop.ToString();
+                ucPauseFlag.TagValue = Vehicle.AseMovingGuide.PauseStatus.ToString();
+                ucOpPauseFlag.TagValue = Vehicle.OpPauseStatus.ToString();
             }
             catch (Exception ex)
             {

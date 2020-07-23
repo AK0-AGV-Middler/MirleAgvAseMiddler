@@ -61,6 +61,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public bool IsOptimize { get; internal set; }
         public BCRReadResult LeftReadResult { get; set; } = BCRReadResult.BcrReadFail;
         public BCRReadResult RightReadResult { get; set; } = BCRReadResult.BcrReadFail;
+        public VhStopSingle OpPauseStatus { get; set; } = VhStopSingle.Off;
 
         #endregion
 

@@ -63,7 +63,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.btnPrintScreen = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.ucCurrentTransferStepType = new Mirle.Agv.AseMiddler.UcLabelTextBox();
-            this.ucSaftyPauseFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
+            this.ucOpPauseFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucPauseFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucReserveFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
             this.ucErrorFlag = new Mirle.Agv.AseMiddler.UcLabelTextBox();
@@ -392,7 +392,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBasicState.Text = "Basic";
             this.pageBasicState.UseVisualStyleBackColor = true;
             // 
-            // groupBox7
+            // groupHighLevelManualControl
             // 
             this.groupHighLevelManualControl.Controls.Add(this.txtDisableChargerAddressId);
             this.groupHighLevelManualControl.Controls.Add(this.checkEnableToCharge);
@@ -401,7 +401,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.groupHighLevelManualControl.Controls.Add(this.btnCharge);
             this.groupHighLevelManualControl.Controls.Add(this.btnStopCharge);
             this.groupHighLevelManualControl.Location = new System.Drawing.Point(440, 282);
-            this.groupHighLevelManualControl.Name = "groupBox7";
+            this.groupHighLevelManualControl.Name = "groupHighLevelManualControl";
             this.groupHighLevelManualControl.Size = new System.Drawing.Size(163, 391);
             this.groupHighLevelManualControl.TabIndex = 64;
             this.groupHighLevelManualControl.TabStop = false;
@@ -512,7 +512,7 @@ namespace Mirle.Agv.AseMiddler.View
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.ucCurrentTransferStepType);
-            this.groupBox2.Controls.Add(this.ucSaftyPauseFlag);
+            this.groupBox2.Controls.Add(this.ucOpPauseFlag);
             this.groupBox2.Controls.Add(this.ucPauseFlag);
             this.groupBox2.Controls.Add(this.ucReserveFlag);
             this.groupBox2.Controls.Add(this.ucErrorFlag);
@@ -535,16 +535,16 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucCurrentTransferStepType.TagName = "階段";
             this.ucCurrentTransferStepType.TagValue = "TagValue";
             // 
-            // ucSaftyPauseFlag
+            // ucOpPauseFlag
             // 
-            this.ucSaftyPauseFlag.Location = new System.Drawing.Point(4, 201);
-            this.ucSaftyPauseFlag.Margin = new System.Windows.Forms.Padding(37);
-            this.ucSaftyPauseFlag.Name = "ucSaftyPauseFlag";
-            this.ucSaftyPauseFlag.Size = new System.Drawing.Size(200, 30);
-            this.ucSaftyPauseFlag.TabIndex = 0;
-            this.ucSaftyPauseFlag.TagColor = System.Drawing.SystemColors.ControlText;
-            this.ucSaftyPauseFlag.TagName = "遙控停車";
-            this.ucSaftyPauseFlag.TagValue = "TagValue";
+            this.ucOpPauseFlag.Location = new System.Drawing.Point(4, 201);
+            this.ucOpPauseFlag.Margin = new System.Windows.Forms.Padding(37);
+            this.ucOpPauseFlag.Name = "ucOpPauseFlag";
+            this.ucOpPauseFlag.Size = new System.Drawing.Size(200, 30);
+            this.ucOpPauseFlag.TabIndex = 0;
+            this.ucOpPauseFlag.TagColor = System.Drawing.SystemColors.ControlText;
+            this.ucOpPauseFlag.TagName = "遙控停車";
+            this.ucOpPauseFlag.TagValue = "TagValue";
             // 
             // ucPauseFlag
             // 
@@ -1737,7 +1737,7 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.GroupBox groupHighLevelManualControl;
         private System.Windows.Forms.TextBox txtDisableChargerAddressId;
         private System.Windows.Forms.CheckBox checkEnableToCharge;
-        private UcLabelTextBox ucSaftyPauseFlag;
+        private UcLabelTextBox ucOpPauseFlag;
         private UcLabelTextBox ucPauseFlag;
         private UcLabelTextBox ucChargerHome;
     }
