@@ -294,6 +294,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 case EnumCmdNum.Cmd000_EmptyCommand:
                     break;
+                case EnumCmdNum.Cmd11_CouplerInfoReport:
+                    Receive_Cmd11_CouplerInfoReport(sender, e);
+                    break;
                 case EnumCmdNum.Cmd31_TransferRequest:
                     Receive_Cmd31_TransferRequest(sender, e);
                     break;
@@ -1421,6 +1424,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             int replyCode = 0;
             Send_Cmd191_AlarmResetResponse(e.iSeqNum, replyCode);
+
+            Vehicle.ErrorStatus = VhStopSingle.Off;
+            StatusChangeReport();
         }
         public void Send_Cmd191_AlarmResetResponse(ushort seqNum, int replyCode)
         {
@@ -2860,16 +2866,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ID_131_TRANS_RESPONSE iD_131_TRANS_RESPONSE = new ID_131_TRANS_RESPONSE();
-                iD_131_TRANS_RESPONSE.CmdID = cmdId;
-                iD_131_TRANS_RESPONSE.CommandAction = commandAction;
-                iD_131_TRANS_RESPONSE.ReplyCode = replyCode;
-                iD_131_TRANS_RESPONSE.NgReason = reason;
+                ID_131_TRANS_RESPONSE response = new ID_131_TRANS_RESPONSE();
+                response.CmdID = cmdId;
+                response.CommandAction = commandAction;
+                response.ReplyCode = replyCode;
+                response.NgReason = reason;
 
                 WrapperMessage wrappers = new WrapperMessage();
                 wrappers.ID = WrapperMessage.TransRespFieldNumber;
                 wrappers.SeqNum = seqNum;
-                wrappers.TransResp = iD_131_TRANS_RESPONSE;
+                wrappers.TransResp = response;
 
                 SendCommandWrapper(wrappers, true);
 
@@ -2929,24 +2935,33 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void ModifyAddressIsCharger(List<CouplerInfo> couplerInfos)
         {
             try
-            {
-                var enableChargeAddressIds = from couplerInfo in couplerInfos
-                                             where couplerInfo.CouplerStatus == CouplerStatus.Enable
-                                             select couplerInfo.AddressID;
-                if (enableChargeAddressIds.Any())
+            {                
+                List<string> enableChargeAddressIds = new List<string>();
+                foreach (var item in couplerInfos)
                 {
-                    foreach (var addressId in Vehicle.Mapinfo.addressMap.Keys.ToArray())
+                    if (item.CouplerStatus == CouplerStatus.Enable)
                     {
-                        if (enableChargeAddressIds.Contains(addressId))
-                        {
-                            Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = EnumAddressDirection.Right;
-                        }
-                        else
-                        {
-                            Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = EnumAddressDirection.None;
-                        }
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"{item.AddressID} is charger.");
+                        enableChargeAddressIds.Add(item.AddressID.Trim());
                     }
-                }                   
+                    else
+                    {
+                        OnMessageShowOnMainFormEvent?.Invoke(this, $"{item.AddressID} is not charger.");
+                    }
+                }
+
+                foreach (var addressId in Vehicle.Mapinfo.addressMap.Keys.ToArray())
+                {
+                    if (enableChargeAddressIds.Contains(addressId))
+                    {
+                        Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = EnumAddressDirection.Right;
+                    }
+                    else
+                    {
+                        Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = EnumAddressDirection.None;
+                    }
+                }
+
             }
             catch (Exception ex)
             {

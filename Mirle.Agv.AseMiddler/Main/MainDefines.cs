@@ -95,6 +95,7 @@ namespace Mirle.Agv.AseMiddler
     public enum EnumCmdNum
     {
         Cmd000_EmptyCommand = 0,
+        Cmd11_CouplerInfoReport = 11,
         Cmd31_TransferRequest = 31,
         Cmd32_TransferCompleteResponse = 32,
         Cmd35_CarrierIdRenameRequest = 35,
@@ -113,6 +114,7 @@ namespace Mirle.Agv.AseMiddler
         Cmd74_AddressTeachResponse = 74,
         Cmd91_AlarmResetRequest = 91,
         Cmd94_AlarmResponse = 94,
+        Cmd111_CouplerInfoResponse = 111,
         Cmd131_TransferResponse = 131,
         Cmd132_TransferCompleteReport = 132,
         Cmd133_ControlZoneCancelResponse = 133,
