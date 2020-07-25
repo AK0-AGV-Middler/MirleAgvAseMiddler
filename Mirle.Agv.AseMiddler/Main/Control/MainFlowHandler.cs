@@ -668,80 +668,85 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region Handle Transfer Command
 
+        private static object installTransferCommandLocker = new object();
+
         private void AgvcConnector_OnInstallTransferCommandEvent(object sender, AgvcTransCmd agvcTransCmd)
         {
             var msg = $"MainFlow : Get [{agvcTransCmd.AgvcTransCommandType}] command [{agvcTransCmd.CommandId}]";
             OnMessageShowEvent?.Invoke(this, msg);
 
-            #region 檢查搬送Command
-            try
+            lock (installTransferCommandLocker)
             {
-                switch (agvcTransCmd.AgvcTransCommandType)
+                #region 檢查搬送Command
+                try
                 {
-                    case EnumAgvcTransCommandType.Move:
-                    case EnumAgvcTransCommandType.MoveToCharger:
-                        CheckVehicleIdle();
-                        CheckMoveEndAddress(agvcTransCmd.UnloadAddressId);
-                        break;
-                    case EnumAgvcTransCommandType.Load:
-                        CheckLoadPortAddress(agvcTransCmd.LoadAddressId);
-                        CheckCstIdDuplicate(agvcTransCmd.CassetteId);
-                        agvcTransCmd.SlotNumber = CheckVehicleSlot();
-                        break;
-                    case EnumAgvcTransCommandType.Unload:
-                        CheckUnloadPortAddress(agvcTransCmd.UnloadAddressId);
-                        agvcTransCmd.SlotNumber = CheckUnloadCstId(agvcTransCmd.CassetteId);
-                        break;
-                    case EnumAgvcTransCommandType.LoadUnload:
-                        CheckLoadPortAddress(agvcTransCmd.LoadAddressId);
-                        CheckUnloadPortAddress(agvcTransCmd.UnloadAddressId);
-                        CheckCstIdDuplicate(agvcTransCmd.CassetteId);
-                        agvcTransCmd.SlotNumber = CheckVehicleSlot();
-                        break;
-                    case EnumAgvcTransCommandType.Override:
-                        CheckOverrideAddress(agvcTransCmd);
-                        break;
-                    case EnumAgvcTransCommandType.Else:
-                        break;
-                    default:
-                        break;
+                    switch (agvcTransCmd.AgvcTransCommandType)
+                    {
+                        case EnumAgvcTransCommandType.Move:
+                        case EnumAgvcTransCommandType.MoveToCharger:
+                            CheckVehicleIdle();
+                            CheckMoveEndAddress(agvcTransCmd.UnloadAddressId);
+                            break;
+                        case EnumAgvcTransCommandType.Load:
+                            CheckLoadPortAddress(agvcTransCmd.LoadAddressId);
+                            CheckCstIdDuplicate(agvcTransCmd.CassetteId);
+                            agvcTransCmd.SlotNumber = CheckVehicleSlot();
+                            break;
+                        case EnumAgvcTransCommandType.Unload:
+                            CheckUnloadPortAddress(agvcTransCmd.UnloadAddressId);
+                            agvcTransCmd.SlotNumber = CheckUnloadCstId(agvcTransCmd.CassetteId);
+                            break;
+                        case EnumAgvcTransCommandType.LoadUnload:
+                            CheckLoadPortAddress(agvcTransCmd.LoadAddressId);
+                            CheckUnloadPortAddress(agvcTransCmd.UnloadAddressId);
+                            CheckCstIdDuplicate(agvcTransCmd.CassetteId);
+                            agvcTransCmd.SlotNumber = CheckVehicleSlot();
+                            break;
+                        case EnumAgvcTransCommandType.Override:
+                            CheckOverrideAddress(agvcTransCmd);
+                            break;
+                        case EnumAgvcTransCommandType.Else:
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, ex.Message);
-                string reason = $"MainFlow : Reject {agvcTransCmd.AgvcTransCommandType} Command. {ex.Message}";
-                OnMessageShowEvent?.Invoke(this, reason);
-                return;
-            }
-            #endregion
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, ex.Message);
+                    string reason = $"MainFlow : Reject {agvcTransCmd.AgvcTransCommandType} Command. {ex.Message}";
+                    OnMessageShowEvent?.Invoke(this, reason);
+                    return;
+                }
+                #endregion
 
-            #region 搬送流程更新
-            try
-            {
-                PauseTransfer();
-                Vehicle.AgvcTransCmdBuffer.TryAdd(agvcTransCmd.CommandId, agvcTransCmd);
-                agvcConnector.Commanding();
-                agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
-                asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.Begin);
-                if (Vehicle.AgvcTransCmdBuffer.Count == 1)
+                #region 搬送流程更新
+                try
                 {
-                    InitialTransferSteps(agvcTransCmd);
-                    GoNextTransferStep = true;
+                    PauseTransfer();
+                    Vehicle.AgvcTransCmdBuffer.TryAdd(agvcTransCmd.CommandId, agvcTransCmd);
+                    agvcConnector.Commanding();
+                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
+                    asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.Begin);
+                    if (Vehicle.AgvcTransCmdBuffer.Count == 1)
+                    {
+                        InitialTransferSteps(agvcTransCmd);
+                        GoNextTransferStep = true;
+                    }
+                    ResumeTransfer();
+                    var okMsg = $"MainFlow : Get  {agvcTransCmd.AgvcTransCommandType}Command{agvcTransCmd.CommandId}  checked .";
+                    OnMessageShowEvent?.Invoke(this, okMsg);
                 }
-                ResumeTransfer();
-                var okMsg = $"MainFlow : Get  {agvcTransCmd.AgvcTransCommandType}Command{agvcTransCmd.CommandId}  checked .";
-                OnMessageShowEvent?.Invoke(this, okMsg);
+                catch (Exception ex)
+                {
+                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, "");
+                    var ngMsg = $"MainFlow :  Get  {agvcTransCmd.AgvcTransCommandType}Command{agvcTransCmd.CommandId}  fail .";
+                    OnMessageShowEvent?.Invoke(this, ngMsg);
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                }
+                #endregion
             }
-            catch (Exception ex)
-            {
-                agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, "");
-                var ngMsg = $"MainFlow :  Get  {agvcTransCmd.AgvcTransCommandType}Command{agvcTransCmd.CommandId}  fail .";
-                OnMessageShowEvent?.Invoke(this, ngMsg);
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-            #endregion
         }
 
         private void CheckVehicleIdle()
