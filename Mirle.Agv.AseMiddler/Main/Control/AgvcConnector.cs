@@ -2931,7 +2931,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private void ModifyAddressIsCharger(List<CouplerInfo> couplerInfos)
         {
             try
@@ -2968,7 +2967,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         public void SendRecv_Cmd111_CouplerInfoResponse(ushort seqNum, int replyCode)
         {
             try

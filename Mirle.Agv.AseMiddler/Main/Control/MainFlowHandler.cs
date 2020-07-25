@@ -83,6 +83,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string CanAutoMsg { get; set; } = "";
         public DateTime StartChargeTimeStamp { get; set; }
         public DateTime StopChargeTimeStamp { get; set; }
+        public bool WaitingTransferCompleteEnd { get; set; } = false;
 
         public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();
 
@@ -295,7 +296,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             while (true)
             {
-                if (IsVisitTransferStepPause)
+                if (IsVisitTransferStepPause || WaitingTransferCompleteEnd)
                 {
                     SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
                     continue;
@@ -679,6 +680,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     case EnumAgvcTransCommandType.Move:
                     case EnumAgvcTransCommandType.MoveToCharger:
+                        CheckVehicleIdle();
                         CheckMoveEndAddress(agvcTransCmd.UnloadAddressId);
                         break;
                     case EnumAgvcTransCommandType.Load:
@@ -740,6 +742,19 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
             #endregion
+        }
+
+        private void CheckVehicleIdle()
+        {
+            if (WaitingTransferCompleteEnd)
+            {
+                throw new Exception("Vehicle is waiting last transfer commmand end.");
+            }
+
+            if (!IsVehicleIdle())
+            {
+                throw new Exception("Vehicle is not idle.");
+            }
         }
 
         private void CheckCstIdDuplicate(string cassetteId)
@@ -2035,7 +2050,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                IsVisitTransferStepPause = true;
+                WaitingTransferCompleteEnd = true;
                 AgvcTransCmd agvcTransCmd = Vehicle.AgvcTransCmdBuffer[cmdId];
                 agvcTransCmd.EnrouteState = CommandState.None;
                 ClearTransferSteps(cmdId);
@@ -2056,7 +2071,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.End);
                 GoNextTransferStep = true;
-                IsVisitTransferStepPause = false;
+                WaitingTransferCompleteEnd = false;
             }
             catch (Exception ex)
             {
