@@ -221,17 +221,17 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void InitialEvents()
         {
-            mainFlowHandler.OnMessageShowEvent += agvcConnectorForm.SendOrReceiveCmdToTextBox;
-            mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
-            agvcConnector.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
+            //mainFlowHandler.OnMessageShowEvent += agvcConnectorForm.SendOrReceiveCmdToTextBox;
+            //mainFlowHandler.OnMessageShowEvent += ShowMsgOnMainForm;
+            //agvcConnector.OnMessageShowOnMainFormEvent += ShowMsgOnMainForm;
             agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
-            mainFlowHandler.SetAlarmToUI += MainFlowHandler_OnSetAlarmEvent;
-            mainFlowHandler.ResetAllAlarmsToUI += MainFlowHandler_OnResetAllAlarmsEvent;
+            //mainFlowHandler.SetAlarmToUI += MainFlowHandler_OnSetAlarmEvent;
+            //mainFlowHandler.ResetAllAlarmsToUI += MainFlowHandler_OnResetAllAlarmsEvent;
 
 
             mainFlowHandler.OnAgvlConnectionChangedEvent += MainFlowHandler_OnAgvlConnectionChangedEvent;
 
-            asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
+            // asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
         }
 
         private void InitialSoc()
@@ -341,66 +341,67 @@ namespace Mirle.Agv.AseMiddler.View
             IsAgvcConnect = isConnect;
         }
 
-        private void MainFlowHandler_OnSetAlarmEvent(object sender, string alarmMessage)
-        {
-            try
-            {
-                var msg = string.Concat("Alarm Set, ", alarmMessage);
-                AppendDebugLogMsg(msg);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-        private void MainFlowHandler_OnResetAllAlarmsEvent(object sender, string msg)
-        {
-            try
-            {
-                btnAlarmReset.Enabled = false;
-                AppendDebugLogMsg(msg);
-                LastAlarmMsg = "";
-                SpinWait.SpinUntil(() => false, 500);
-                btnAlarmReset.Enabled = true;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
+        // private void MainFlowHandler_OnSetAlarmEvent(object sender, string alarmMessage)
+        // {
+        //     try
+        //     {
+        //         var msg = string.Concat("Alarm Set, ", alarmMessage);
+        //         AppendDebugLogMsg(msg);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+        //     }
+        // }
+
+        // private void MainFlowHandler_OnResetAllAlarmsEvent(object sender, string msg)
+        // {
+        // try
+        // {
+        // btnAlarmReset.Enabled = false;
+        // AppendDebugLogMsg(msg);
+        // LastAlarmMsg = "";
+        // SpinWait.SpinUntil(() => false, 500);
+        // btnAlarmReset.Enabled = true;
+        // }
+        // catch (Exception ex)
+        // {
+        // LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+        // }
+        // }
 
         private void MainFlowHandler_OnAgvlConnectionChangedEvent(object sender, bool e)
         {
             IsAgvlConnect = e;
         }
 
-        private void AsePackage_ImportantPspLog(object sender, string e)
-        {
-            ShowMsgOnMainForm(this, e);
-        }
+        // private void AsePackage_ImportantPspLog(object sender, string e)
+        // {
+        //     ShowMsgOnMainForm(this, e);
+        // }
 
-        private void ShowMsgOnMainForm(object sender, string msg)
-        {
-            AppendDebugLogMsg(msg);
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-        }
+        // private void ShowMsgOnMainForm(object sender, string msg)
+        // {
+        //     AppendDebugLogMsg(msg);
+        //     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+        // }
 
-        private void AppendDebugLogMsg(string msg)
-        {
-            try
-            {
-                DebugLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", DebugLogMsg);
+        // private void AppendDebugLogMsg(string msg)
+        // {
+        //     try
+        //     {
+        //         DebugLogMsg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\t", msg, "\r\n", DebugLogMsg);
 
-                if (DebugLogMsg.Length > 65535)
-                {
-                    DebugLogMsg = DebugLogMsg.Substring(65535);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
+        //         if (DebugLogMsg.Length > 65535)
+        //         {
+        //             DebugLogMsg = DebugLogMsg.Substring(65535);
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+        //     }
+        // }
 
         private void SetupImageRegion()
         {
@@ -687,7 +688,7 @@ namespace Mirle.Agv.AseMiddler.View
                 //UpdatePerformanceCounter(performanceCounterCpu, ucPerformanceCounterCpu);
                 //UpdatePerformanceCounter(performanceCounterRam, ucPerformanceCounterRam);
 
-                tbxDebugLogMsg.Text = DebugLogMsg;
+                tbxDebugLogMsg.Text = mainFlowHandler.DebugLogMsg;
 
                 //if (Vehicle.Instance.AutoState == EnumAutoState.Manual && moveCommandDebugMode != null && !moveCommandDebugMode.IsDisposed && moveCommandDebugMode.MainShowRunSectionList)
                 //{

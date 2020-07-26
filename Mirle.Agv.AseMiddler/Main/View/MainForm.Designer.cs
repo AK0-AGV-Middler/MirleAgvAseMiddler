@@ -1493,7 +1493,7 @@ namespace Mirle.Agv.AseMiddler.View
             // timeUpdateUI
             // 
             this.timeUpdateUI.Enabled = true;
-            this.timeUpdateUI.Interval = 250;
+            this.timeUpdateUI.Interval = 500;
             this.timeUpdateUI.Tick += new System.EventHandler(this.timeUpdateUI_Tick);
             // 
             // statusStrip1
