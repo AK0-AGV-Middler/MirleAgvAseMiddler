@@ -508,9 +508,11 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                mainFlowHandler.StopClearAndReset();
+                //mainFlowHandler.StopClearAndReset();
+               // mainFlowHandler.StopVehicle();
 
-                Application.Exit();
+
+                //Application.Exit();
                 Environment.Exit(Environment.ExitCode);
             }
             catch (Exception ex)
