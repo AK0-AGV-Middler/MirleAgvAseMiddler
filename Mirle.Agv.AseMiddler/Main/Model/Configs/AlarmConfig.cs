@@ -10,6 +10,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
     [Serializable]
     public class AlarmConfig
     {
-        public string AlarmFileName { get; set; }
+        public string AlarmFileName { get; set; } = "";
     }
 }

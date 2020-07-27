@@ -7,11 +7,8 @@ using System.Threading.Tasks;
 namespace Mirle.Agv.AseMiddler.Model.Configs
 {
     public class AsePackageConfig
-    {
-        public string PspConnectionConfigFilePath { get; set; } = "PspConnectionConfig.xml";
-        public string AutoReplyFilePath { get; set; } = "AutoReply.csv";
-        public string AseBatteryConfigFilePath { get; set; } = "AseBatteryConfig.xml";
-        public string AseMoveConfigFilePath { get; set; } = "AseMoveConfig.xml";
+    {        
+        public string AutoReplyFilePath { get; set; } = "AutoReply.csv";     
         public int WatchWifiSignalIntervalMs { get; set; } = 20000;
         public bool CanManualDeleteCST { get; set; } = false;
         public int ScheduleIntervalMs { get; set; } = 100;

@@ -40,7 +40,6 @@
             this.ucPort = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIp = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.btnLoadLocalConfig = new System.Windows.Forms.Button();
-            this.btnSaveLocalConfig = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.txtConnection = new System.Windows.Forms.Label();
             this.radioOnline = new System.Windows.Forms.RadioButton();
@@ -58,8 +57,10 @@
             this.ucMoveLastSection = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucMoveMoveState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucMovePositionX = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.btnRefreshPosition = new System.Windows.Forms.Button();
             this.ucMoveLastAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucMovePositionY = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucAskPositionInterval = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucMoveIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.boxKeepOrGo = new System.Windows.Forms.ComboBox();
@@ -73,7 +74,6 @@
             this.numHeadAngle = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionY = new System.Windows.Forms.NumericUpDown();
             this.numMovePositionX = new System.Windows.Forms.NumericUpDown();
-            this.btnRefreshPosition = new System.Windows.Forms.Button();
             this.RobotPage = new System.Windows.Forms.TabPage();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
             this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -84,12 +84,21 @@
             this.ucRobotSlotRId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucRobotSlotRState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.numPortNumber2 = new System.Windows.Forms.NumericUpDown();
+            this.numPortNumber1 = new System.Windows.Forms.NumericUpDown();
+            this.txtAddressId2 = new System.Windows.Forms.TextBox();
+            this.numGateType = new System.Windows.Forms.NumericUpDown();
+            this.btnSendRobot = new System.Windows.Forms.Button();
+            this.boxLDUD2 = new System.Windows.Forms.ComboBox();
+            this.boxSlotSelect2 = new System.Windows.Forms.ComboBox();
+            this.boxSlotSelect1 = new System.Windows.Forms.ComboBox();
+            this.boxLDUD1 = new System.Windows.Forms.ComboBox();
             this.boxPioDirection = new System.Windows.Forms.ComboBox();
             this.txtAddressId1 = new System.Windows.Forms.TextBox();
-            this.btnSendRobot = new System.Windows.Forms.Button();
             this.ChargePage = new System.Windows.Forms.TabPage();
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.ucBatteryCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucWatchSocIntervalMs = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucBatteryTemperature = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.btnRefreshBatterySate = new System.Windows.Forms.Button();
             this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -102,16 +111,6 @@
             this.txtChargeAddress = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.ucAskPositionInterval = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.boxLDUD1 = new System.Windows.Forms.ComboBox();
-            this.numGateType = new System.Windows.Forms.NumericUpDown();
-            this.numPortNumber1 = new System.Windows.Forms.NumericUpDown();
-            this.txtAddressId2 = new System.Windows.Forms.TextBox();
-            this.boxLDUD2 = new System.Windows.Forms.ComboBox();
-            this.numPortNumber2 = new System.Windows.Forms.NumericUpDown();
-            this.boxSlotSelect1 = new System.Windows.Forms.ComboBox();
-            this.boxSlotSelect2 = new System.Windows.Forms.ComboBox();
-            this.ucWatchSocIntervalMs = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.tabControl1.SuspendLayout();
             this.InfoPage.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -130,12 +129,12 @@
             this.RobotPage.SuspendLayout();
             this.groupBox8.SuspendLayout();
             this.groupBox7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numGateType)).BeginInit();
             this.ChargePage.SuspendLayout();
             this.groupBox9.SuspendLayout();
             this.groupBox10.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numGateType)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber2)).BeginInit();
             this.SuspendLayout();
             // 
             // btnHide
@@ -182,7 +181,6 @@
             this.groupBox5.Controls.Add(this.ucPort);
             this.groupBox5.Controls.Add(this.ucIp);
             this.groupBox5.Controls.Add(this.btnLoadLocalConfig);
-            this.groupBox5.Controls.Add(this.btnSaveLocalConfig);
             this.groupBox5.Location = new System.Drawing.Point(174, 6);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(443, 253);
@@ -260,16 +258,6 @@
             this.btnLoadLocalConfig.Text = "Load";
             this.btnLoadLocalConfig.UseVisualStyleBackColor = true;
             this.btnLoadLocalConfig.Click += new System.EventHandler(this.btnLoadLocalConfig_Click);
-            // 
-            // btnSaveLocalConfig
-            // 
-            this.btnSaveLocalConfig.Font = new System.Drawing.Font("新細明體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnSaveLocalConfig.Location = new System.Drawing.Point(292, 168);
-            this.btnSaveLocalConfig.Name = "btnSaveLocalConfig";
-            this.btnSaveLocalConfig.Size = new System.Drawing.Size(140, 70);
-            this.btnSaveLocalConfig.TabIndex = 12;
-            this.btnSaveLocalConfig.Text = "Save";
-            this.btnSaveLocalConfig.UseVisualStyleBackColor = true;
             // 
             // groupBox4
             // 
@@ -472,6 +460,17 @@
             this.ucMovePositionX.TagName = "X";
             this.ucMovePositionX.TagValue = "123456";
             // 
+            // btnRefreshPosition
+            // 
+            this.btnRefreshPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnRefreshPosition.Location = new System.Drawing.Point(297, 20);
+            this.btnRefreshPosition.Name = "btnRefreshPosition";
+            this.btnRefreshPosition.Size = new System.Drawing.Size(135, 65);
+            this.btnRefreshPosition.TabIndex = 12;
+            this.btnRefreshPosition.Text = "Refresh  Status";
+            this.btnRefreshPosition.UseVisualStyleBackColor = true;
+            this.btnRefreshPosition.Click += new System.EventHandler(this.btnRefreshPosition_Click);
+            // 
             // ucMoveLastAddress
             // 
             this.ucMoveLastAddress.Location = new System.Drawing.Point(15, 94);
@@ -493,6 +492,17 @@
             this.ucMovePositionY.TagColor = System.Drawing.Color.Black;
             this.ucMovePositionY.TagName = "Y";
             this.ucMovePositionY.TagValue = "-13579";
+            // 
+            // ucAskPositionInterval
+            // 
+            this.ucAskPositionInterval.Location = new System.Drawing.Point(297, 94);
+            this.ucAskPositionInterval.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucAskPositionInterval.Name = "ucAskPositionInterval";
+            this.ucAskPositionInterval.Size = new System.Drawing.Size(135, 65);
+            this.ucAskPositionInterval.TabIndex = 16;
+            this.ucAskPositionInterval.TagColor = System.Drawing.Color.Black;
+            this.ucAskPositionInterval.TagName = "Pos Interval";
+            this.ucAskPositionInterval.TagValue = "TagValue";
             // 
             // ucMoveIsMoveEnd
             // 
@@ -676,17 +686,6 @@
             0,
             0});
             // 
-            // btnRefreshPosition
-            // 
-            this.btnRefreshPosition.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnRefreshPosition.Location = new System.Drawing.Point(297, 20);
-            this.btnRefreshPosition.Name = "btnRefreshPosition";
-            this.btnRefreshPosition.Size = new System.Drawing.Size(135, 65);
-            this.btnRefreshPosition.TabIndex = 12;
-            this.btnRefreshPosition.Text = "Refresh  Status";
-            this.btnRefreshPosition.UseVisualStyleBackColor = true;
-            this.btnRefreshPosition.Click += new System.EventHandler(this.btnRefreshPosition_Click);
-            // 
             // RobotPage
             // 
             this.RobotPage.Controls.Add(this.groupBox8);
@@ -811,6 +810,125 @@
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Robot(P45)";
             // 
+            // numPortNumber2
+            // 
+            this.numPortNumber2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.numPortNumber2.Location = new System.Drawing.Point(162, 184);
+            this.numPortNumber2.Maximum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.numPortNumber2.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numPortNumber2.Name = "numPortNumber2";
+            this.numPortNumber2.Size = new System.Drawing.Size(150, 29);
+            this.numPortNumber2.TabIndex = 61;
+            this.numPortNumber2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.numPortNumber2.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // numPortNumber1
+            // 
+            this.numPortNumber1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.numPortNumber1.Location = new System.Drawing.Point(8, 184);
+            this.numPortNumber1.Maximum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.numPortNumber1.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numPortNumber1.Name = "numPortNumber1";
+            this.numPortNumber1.Size = new System.Drawing.Size(150, 29);
+            this.numPortNumber1.TabIndex = 61;
+            this.numPortNumber1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.numPortNumber1.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // txtAddressId2
+            // 
+            this.txtAddressId2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.txtAddressId2.ImeMode = System.Windows.Forms.ImeMode.Alpha;
+            this.txtAddressId2.Location = new System.Drawing.Point(161, 149);
+            this.txtAddressId2.Name = "txtAddressId2";
+            this.txtAddressId2.Size = new System.Drawing.Size(151, 29);
+            this.txtAddressId2.TabIndex = 8;
+            this.txtAddressId2.Text = "AddressId2";
+            // 
+            // numGateType
+            // 
+            this.numGateType.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.numGateType.Location = new System.Drawing.Point(8, 45);
+            this.numGateType.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+            this.numGateType.Name = "numGateType";
+            this.numGateType.Size = new System.Drawing.Size(303, 29);
+            this.numGateType.TabIndex = 61;
+            this.numGateType.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // btnSendRobot
+            // 
+            this.btnSendRobot.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.btnSendRobot.Location = new System.Drawing.Point(8, 220);
+            this.btnSendRobot.Name = "btnSendRobot";
+            this.btnSendRobot.Size = new System.Drawing.Size(304, 33);
+            this.btnSendRobot.TabIndex = 52;
+            this.btnSendRobot.Text = "Send";
+            this.btnSendRobot.UseVisualStyleBackColor = true;
+            this.btnSendRobot.Click += new System.EventHandler(this.btnSendRobot_Click);
+            // 
+            // boxLDUD2
+            // 
+            this.boxLDUD2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.boxLDUD2.FormattingEnabled = true;
+            this.boxLDUD2.Location = new System.Drawing.Point(161, 81);
+            this.boxLDUD2.Name = "boxLDUD2";
+            this.boxLDUD2.Size = new System.Drawing.Size(150, 28);
+            this.boxLDUD2.TabIndex = 10;
+            // 
+            // boxSlotSelect2
+            // 
+            this.boxSlotSelect2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.boxSlotSelect2.FormattingEnabled = true;
+            this.boxSlotSelect2.Location = new System.Drawing.Point(161, 115);
+            this.boxSlotSelect2.Name = "boxSlotSelect2";
+            this.boxSlotSelect2.Size = new System.Drawing.Size(151, 28);
+            this.boxSlotSelect2.TabIndex = 10;
+            // 
+            // boxSlotSelect1
+            // 
+            this.boxSlotSelect1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.boxSlotSelect1.FormattingEnabled = true;
+            this.boxSlotSelect1.Location = new System.Drawing.Point(8, 115);
+            this.boxSlotSelect1.Name = "boxSlotSelect1";
+            this.boxSlotSelect1.Size = new System.Drawing.Size(147, 28);
+            this.boxSlotSelect1.TabIndex = 10;
+            // 
+            // boxLDUD1
+            // 
+            this.boxLDUD1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.boxLDUD1.FormattingEnabled = true;
+            this.boxLDUD1.Location = new System.Drawing.Point(8, 80);
+            this.boxLDUD1.Name = "boxLDUD1";
+            this.boxLDUD1.Size = new System.Drawing.Size(147, 28);
+            this.boxLDUD1.TabIndex = 10;
+            // 
             // boxPioDirection
             // 
             this.boxPioDirection.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
@@ -829,17 +947,6 @@
             this.txtAddressId1.Size = new System.Drawing.Size(147, 29);
             this.txtAddressId1.TabIndex = 8;
             this.txtAddressId1.Text = "AddressId1";
-            // 
-            // btnSendRobot
-            // 
-            this.btnSendRobot.Font = new System.Drawing.Font("微軟正黑體", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.btnSendRobot.Location = new System.Drawing.Point(8, 220);
-            this.btnSendRobot.Name = "btnSendRobot";
-            this.btnSendRobot.Size = new System.Drawing.Size(304, 33);
-            this.btnSendRobot.TabIndex = 52;
-            this.btnSendRobot.Text = "Send";
-            this.btnSendRobot.UseVisualStyleBackColor = true;
-            this.btnSendRobot.Click += new System.EventHandler(this.btnSendRobot_Click);
             // 
             // ChargePage
             // 
@@ -877,6 +984,17 @@
             this.ucBatteryCharging.TagColor = System.Drawing.Color.Black;
             this.ucBatteryCharging.TagName = "Charging";
             this.ucBatteryCharging.TagValue = "false";
+            // 
+            // ucWatchSocIntervalMs
+            // 
+            this.ucWatchSocIntervalMs.Location = new System.Drawing.Point(287, 92);
+            this.ucWatchSocIntervalMs.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucWatchSocIntervalMs.Name = "ucWatchSocIntervalMs";
+            this.ucWatchSocIntervalMs.Size = new System.Drawing.Size(135, 65);
+            this.ucWatchSocIntervalMs.TabIndex = 2;
+            this.ucWatchSocIntervalMs.TagColor = System.Drawing.Color.Black;
+            this.ucWatchSocIntervalMs.TagName = "Soc Interval";
+            this.ucWatchSocIntervalMs.TagValue = "40.5";
             // 
             // ucBatteryTemperature
             // 
@@ -1002,137 +1120,7 @@
             this.timer1.Interval = 500;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // ucAskPositionInterval
-            // 
-            this.ucAskPositionInterval.Location = new System.Drawing.Point(297, 94);
-            this.ucAskPositionInterval.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ucAskPositionInterval.Name = "ucAskPositionInterval";
-            this.ucAskPositionInterval.Size = new System.Drawing.Size(135, 65);
-            this.ucAskPositionInterval.TabIndex = 16;
-            this.ucAskPositionInterval.TagColor = System.Drawing.Color.Black;
-            this.ucAskPositionInterval.TagName = "Pos Interval";
-            this.ucAskPositionInterval.TagValue = "TagValue";
-            // 
-            // boxLDUD1
-            // 
-            this.boxLDUD1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.boxLDUD1.FormattingEnabled = true;
-            this.boxLDUD1.Location = new System.Drawing.Point(8, 80);
-            this.boxLDUD1.Name = "boxLDUD1";
-            this.boxLDUD1.Size = new System.Drawing.Size(147, 28);
-            this.boxLDUD1.TabIndex = 10;
-            // 
-            // numGateType
-            // 
-            this.numGateType.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.numGateType.Location = new System.Drawing.Point(8, 45);
-            this.numGateType.Maximum = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
-            this.numGateType.Name = "numGateType";
-            this.numGateType.Size = new System.Drawing.Size(303, 29);
-            this.numGateType.TabIndex = 61;
-            this.numGateType.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // numPortNumber1
-            // 
-            this.numPortNumber1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.numPortNumber1.Location = new System.Drawing.Point(8, 184);
-            this.numPortNumber1.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.numPortNumber1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numPortNumber1.Name = "numPortNumber1";
-            this.numPortNumber1.Size = new System.Drawing.Size(150, 29);
-            this.numPortNumber1.TabIndex = 61;
-            this.numPortNumber1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.numPortNumber1.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // txtAddressId2
-            // 
-            this.txtAddressId2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.txtAddressId2.ImeMode = System.Windows.Forms.ImeMode.Alpha;
-            this.txtAddressId2.Location = new System.Drawing.Point(161, 149);
-            this.txtAddressId2.Name = "txtAddressId2";
-            this.txtAddressId2.Size = new System.Drawing.Size(151, 29);
-            this.txtAddressId2.TabIndex = 8;
-            this.txtAddressId2.Text = "AddressId2";
-            // 
-            // boxLDUD2
-            // 
-            this.boxLDUD2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.boxLDUD2.FormattingEnabled = true;
-            this.boxLDUD2.Location = new System.Drawing.Point(161, 81);
-            this.boxLDUD2.Name = "boxLDUD2";
-            this.boxLDUD2.Size = new System.Drawing.Size(150, 28);
-            this.boxLDUD2.TabIndex = 10;
-            // 
-            // numPortNumber2
-            // 
-            this.numPortNumber2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.numPortNumber2.Location = new System.Drawing.Point(162, 184);
-            this.numPortNumber2.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.numPortNumber2.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numPortNumber2.Name = "numPortNumber2";
-            this.numPortNumber2.Size = new System.Drawing.Size(150, 29);
-            this.numPortNumber2.TabIndex = 61;
-            this.numPortNumber2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.numPortNumber2.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // boxSlotSelect1
-            // 
-            this.boxSlotSelect1.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.boxSlotSelect1.FormattingEnabled = true;
-            this.boxSlotSelect1.Location = new System.Drawing.Point(8, 115);
-            this.boxSlotSelect1.Name = "boxSlotSelect1";
-            this.boxSlotSelect1.Size = new System.Drawing.Size(147, 28);
-            this.boxSlotSelect1.TabIndex = 10;
-            // 
-            // boxSlotSelect2
-            // 
-            this.boxSlotSelect2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.boxSlotSelect2.FormattingEnabled = true;
-            this.boxSlotSelect2.Location = new System.Drawing.Point(161, 115);
-            this.boxSlotSelect2.Name = "boxSlotSelect2";
-            this.boxSlotSelect2.Size = new System.Drawing.Size(151, 28);
-            this.boxSlotSelect2.TabIndex = 10;
-            // 
-            // ucWatchSocIntervalMs
-            // 
-            this.ucWatchSocIntervalMs.Location = new System.Drawing.Point(287, 92);
-            this.ucWatchSocIntervalMs.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ucWatchSocIntervalMs.Name = "ucWatchSocIntervalMs";
-            this.ucWatchSocIntervalMs.Size = new System.Drawing.Size(135, 65);
-            this.ucWatchSocIntervalMs.TabIndex = 2;
-            this.ucWatchSocIntervalMs.TagColor = System.Drawing.Color.Black;
-            this.ucWatchSocIntervalMs.TagName = "Soc Interval";
-            this.ucWatchSocIntervalMs.TagValue = "40.5";
-            // 
-            // AseAgvlConnectorForm
+            // AgvlConnectorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -1141,7 +1129,7 @@
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.btnHide);
-            this.Name = "AseAgvlConnectorForm";
+            this.Name = "AgvlConnectorForm";
             this.Text = "AGVL";
             this.tabControl1.ResumeLayout(false);
             this.InfoPage.ResumeLayout(false);
@@ -1165,13 +1153,13 @@
             this.groupBox8.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numGateType)).EndInit();
             this.ChargePage.ResumeLayout(false);
             this.groupBox9.ResumeLayout(false);
             this.groupBox10.ResumeLayout(false);
             this.groupBox10.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numGateType)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numPortNumber2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1193,7 +1181,6 @@
         private UcVerticalLabelText ucPort;
         private UcVerticalLabelText ucIp;
         private System.Windows.Forms.Button btnLoadLocalConfig;
-        private System.Windows.Forms.Button btnSaveLocalConfig;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Label txtConnection;
         private System.Windows.Forms.RadioButton radioOnline;

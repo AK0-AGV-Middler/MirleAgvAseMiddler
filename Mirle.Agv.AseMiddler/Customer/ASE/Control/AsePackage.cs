@@ -18,10 +18,6 @@ namespace Mirle.Agv.AseMiddler.Controller
     {
         public PSWrapperXClass psWrapper;
         public MirleLogger mirleLogger = MirleLogger.Instance;
-        public AsePackageConfig asePackageConfig = new AsePackageConfig();
-        public PspConnectionConfig pspConnectionConfig = new PspConnectionConfig();
-        public AseBatteryConfig aseBatteryConfig = new AseBatteryConfig();
-        public AseMoveConfig aseMoveConfig = new AseMoveConfig();
         public Dictionary<string, PSMessageXClass> psMessageMap = new Dictionary<string, PSMessageXClass>();
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public string LocalLogMsg { get; set; } = "";
@@ -65,7 +61,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public AsePackage()
         {
-            LoadConfigs();
+            //LoadConfigs();
             InitialWrapper();
             InitialThreads();
         }
@@ -91,19 +87,18 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void LoadConfigs()
         {
-            XmlHandler xmlHandler = new XmlHandler();
-            asePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
-            pspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>("PspConnectionConfig.xml");
-            Vehicle.PspSpecVersion = pspConnectionConfig.SpecVersion;
-            aseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>("AseBatteryConfig.xml");
-            aseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>("AseMoveConfig.xml");
+            //XmlHandler xmlHandler = new XmlHandler();
+            //Vehicle.AsePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
+            //Vehicle.PspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>("PspConnectionConfig.xml");
+            //Vehicle.AseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>("AseBatteryConfig.xml");
+            //Vehicle.AseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>("AseMoveConfig.xml");
 
-            if (Vehicle.MainFlowConfig.IsSimulation)
-            {
-                aseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
-                aseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
-                aseMoveConfig.WatchPositionInterval = 5000;
-            }
+            //if (Vehicle.MainFlowConfig.IsSimulation)
+            //{
+            //  Vehicle.AseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
+            //  Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
+            //  Vehicle.AseMoveConfig.WatchPositionInterval = 5000;
+            //}
         }
 
         private void InitialWrapper()
@@ -113,9 +108,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LoadAutoReply();
                 LoadPspConnectionConfig();
                 BindPsWrapperEvent();
-                psWrapper.T3 = pspConnectionConfig.T6Timeout;
-                psWrapper.T6 = pspConnectionConfig.T6Timeout;
-                psWrapper.LinkTestIntervalMs = pspConnectionConfig.LinkTestIntervalMs;
+                psWrapper.T3 = Vehicle.PspConnectionConfig.T6Timeout;
+                psWrapper.T6 = Vehicle.PspConnectionConfig.T6Timeout;
+                psWrapper.LinkTestIntervalMs = Vehicle.PspConnectionConfig.LinkTestIntervalMs;
 
                 if (!Vehicle.MainFlowConfig.IsSimulation)
                 {
@@ -155,7 +150,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (IsWatchWifiSignalStrengthPause)
                     {
-                        SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
+                        SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs);
 
                         continue;
                     }
@@ -171,7 +166,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 finally
                 {
-                    SpinWait.SpinUntil(() => false, asePackageConfig.WatchWifiSignalIntervalMs);
+                    SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs);
                 }
             }
         }
@@ -230,7 +225,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     if (IsSchedulePause)
                     {
-                        SpinWait.SpinUntil(() => !IsSchedulePause, asePackageConfig.ScheduleIntervalMs);
+                        SpinWait.SpinUntil(() => !IsSchedulePause, Vehicle.AsePackageConfig.ScheduleIntervalMs);
 
                         continue;
                     }
@@ -272,7 +267,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 finally
                 {
-                    SpinWait.SpinUntil(() => false, asePackageConfig.ScheduleIntervalMs);
+                    SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.ScheduleIntervalMs);
                 }
             }
         }
@@ -285,7 +280,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (IsWatchPositionPause)
                     {
-                        SpinWait.SpinUntil(() => !IsWatchPositionPause, aseMoveConfig.WatchPositionInterval);
+                        SpinWait.SpinUntil(() => !IsWatchPositionPause, Vehicle.AseMoveConfig.WatchPositionInterval);
                         continue;
                     }
 
@@ -307,7 +302,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 finally
                 {
-                    SpinWait.SpinUntil(() => false, aseMoveConfig.WatchPositionInterval);
+                    SpinWait.SpinUntil(() => false, Vehicle.AseMoveConfig.WatchPositionInterval);
                 }
             }
         }
@@ -332,7 +327,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (IsWatchBatteryStatusPause)
                     {
-                        SpinWait.SpinUntil(() => !IsWatchPositionPause, aseBatteryConfig.WatchBatteryStateInterval);
+                        SpinWait.SpinUntil(() => !IsWatchPositionPause, Vehicle.AseBatteryConfig.WatchBatteryStateInterval);
                         continue;
                     }
 
@@ -349,11 +344,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (Vehicle.IsCharging)
                     {
-                        SpinWait.SpinUntil(() => false, aseBatteryConfig.WatchBatteryStateIntervalInCharging);
+                        SpinWait.SpinUntil(() => false, Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging);
                     }
                     else
                     {
-                        SpinWait.SpinUntil(() => false, aseBatteryConfig.WatchBatteryStateInterval);
+                        SpinWait.SpinUntil(() => false, Vehicle.AseBatteryConfig.WatchBatteryStateInterval);
                     }
                 }
             }
@@ -1027,11 +1022,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 bool isAlarmSet = psMessage.Substring(0, 1) == "1";
                 int alarmCode = int.Parse(psMessage.Substring(1, 6));
 
-                if (alarmCode.ToString().Equals(asePackageConfig.RemoteControlPauseErrorCode))
+                if (alarmCode.ToString().Equals(Vehicle.AsePackageConfig.RemoteControlPauseErrorCode))
                 {
                     Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
                 }
-                else if (alarmCode.ToString().Equals(asePackageConfig.RemoteControlResumeErrorCode))
+                else if (alarmCode.ToString().Equals(Vehicle.AsePackageConfig.RemoteControlResumeErrorCode))
                 {
                     Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
                 }
@@ -1082,7 +1077,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             try
             {
-                if (!asePackageConfig.CanManualDeleteCST)
+                if (!Vehicle.AsePackageConfig.CanManualDeleteCST)
                 {
                     slotNumber = psMessage.Substring(0, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
                     aseCarrierSlotStatus.SlotNumber = slotNumber;
@@ -1538,9 +1533,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 psWrapper = new PSWrapperXClass();
-                psWrapper.Address = pspConnectionConfig.Ip;
-                psWrapper.Port = pspConnectionConfig.Port;
-                psWrapper.ConnectMode = pspConnectionConfig.IsServer ? enumConnectMode.Passive : enumConnectMode.Active;
+                psWrapper.Address = Vehicle.PspConnectionConfig.Ip;
+                psWrapper.Port = Vehicle.PspConnectionConfig.Port;
+                psWrapper.ConnectMode = Vehicle.PspConnectionConfig.IsServer ? enumConnectMode.Passive : enumConnectMode.Active;
             }
             catch (Exception ex)
             {
@@ -1552,7 +1547,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (File.Exists(asePackageConfig.AutoReplyFilePath))
+                if (File.Exists(Vehicle.AsePackageConfig.AutoReplyFilePath))
                 {
                     LoadAutoReplyFileToMyMessageMap();
                     //FitPspMessageList();
@@ -1569,7 +1564,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                string[] allRows = File.ReadAllLines(asePackageConfig.AutoReplyFilePath);
+                string[] allRows = File.ReadAllLines(Vehicle.AsePackageConfig.AutoReplyFilePath);
 
                 foreach (string oneRow in allRows)
                 {
@@ -1604,7 +1599,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             versionInfoRequestPsMessage.PSMessage = "";
             psMessageMap.Add("P17", versionInfoRequestPsMessage);
 
-            string versionInfo = string.Concat("Sw", Vehicle.SoftwareVersion.PadRight(13), "Sp", Vehicle.PspSpecVersion.PadRight(5));
+            string versionInfo = string.Concat("Sw", Vehicle.SoftwareVersion.PadRight(13), "Sp", Vehicle.PspConnectionConfig.SpecVersion.PadRight(5));
             PSMessageXClass versionInfoRequestAckPsMessage = new PSMessageXClass();
             versionInfoRequestAckPsMessage.Type = "S";
             versionInfoRequestAckPsMessage.Number = "18";
@@ -1689,7 +1684,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        #endregion      
+        #endregion
 
         #region Move Control
 

@@ -20,21 +20,18 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string AddressPath { get; set; }
         public string PortIdMapPath { get; set; }
         public string SectionBeamDisablePath { get; set; }
-        private double AddressAreaMm { get; set; } = 30;
 
         private string lastReadAdrId = "";
         private string lastReadSecId = "";
         private string lastReadPortId = "";
 
-        public MapHandler(MapConfig mapConfig)
+        public MapHandler()
         {
-            this.mapConfig = mapConfig;
             mirleLogger = MirleLogger.Instance;
-            SectionPath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionFileName);
-            AddressPath = Path.Combine(Environment.CurrentDirectory, mapConfig.AddressFileName);
-            PortIdMapPath = Path.Combine(Environment.CurrentDirectory, mapConfig.PortIdMapFileName);
-            SectionBeamDisablePath = Path.Combine(Environment.CurrentDirectory, mapConfig.SectionBeamDisablePathFileName);
-            AddressAreaMm = mapConfig.AddressAreaMm;
+            SectionPath = Path.Combine(Environment.CurrentDirectory, Vehicle.MapConfig.SectionFileName);
+            AddressPath = Path.Combine(Environment.CurrentDirectory, Vehicle.MapConfig.AddressFileName);
+            PortIdMapPath = Path.Combine(Environment.CurrentDirectory, Vehicle.MapConfig.PortIdMapFileName);
+            SectionBeamDisablePath = Path.Combine(Environment.CurrentDirectory, Vehicle.MapConfig.SectionBeamDisablePathFileName);
 
             LoadMapInfo();
         }
@@ -186,7 +183,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         dicHeaderIndexes.Add(keyword, i);
                     }
-                }           
+                }
                 for (int i = 0; i < nRows; i++)
                 {
                     string[] getThisRow = allRows[i].Split(',');
@@ -205,7 +202,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     catch (Exception ex)
                     {
-                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,$"lastReadPortId=[{lastReadPortId}]" + ex.Message);
+                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"lastReadPortId=[{lastReadPortId}]" + ex.Message);
                     }
                 }
             }
@@ -424,24 +421,24 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (aSection.HeadAddress.Position.X >= aSection.TailAddress.Position.X)
                 {
-                    secMaxX = aSection.HeadAddress.Position.X + AddressAreaMm;
-                    secMinX = aSection.TailAddress.Position.X - AddressAreaMm;
+                    secMaxX = aSection.HeadAddress.Position.X + Vehicle.MapConfig.AddressAreaMm;
+                    secMinX = aSection.TailAddress.Position.X - Vehicle.MapConfig.AddressAreaMm;
                 }
                 else
                 {
-                    secMaxX = aSection.TailAddress.Position.X + AddressAreaMm;
-                    secMinX = aSection.HeadAddress.Position.X - AddressAreaMm;
+                    secMaxX = aSection.TailAddress.Position.X + Vehicle.MapConfig.AddressAreaMm;
+                    secMinX = aSection.HeadAddress.Position.X - Vehicle.MapConfig.AddressAreaMm;
                 }
 
                 if (aSection.HeadAddress.Position.Y >= aSection.TailAddress.Position.Y)
                 {
-                    secMaxY = aSection.HeadAddress.Position.Y + AddressAreaMm;
-                    secMinY = aSection.TailAddress.Position.Y - AddressAreaMm;
+                    secMaxY = aSection.HeadAddress.Position.Y + Vehicle.MapConfig.AddressAreaMm;
+                    secMinY = aSection.TailAddress.Position.Y - Vehicle.MapConfig.AddressAreaMm;
                 }
                 else
                 {
-                    secMaxY = aSection.TailAddress.Position.Y + AddressAreaMm;
-                    secMinY = aSection.HeadAddress.Position.Y - AddressAreaMm;
+                    secMaxY = aSection.TailAddress.Position.Y + Vehicle.MapConfig.AddressAreaMm;
+                    secMinY = aSection.HeadAddress.Position.Y - Vehicle.MapConfig.AddressAreaMm;
                 }
 
 
@@ -462,20 +459,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return false;
             }
         }
-
-        private double GetVectorRatio(MapPosition aPosition, MapSection mapSection)
-        {
-            var headPosition = mapSection.HeadAddress.Position;
-            var tailPosition = mapSection.TailAddress.Position;
-            var num1 = (tailPosition.X - headPosition.X) * (aPosition.Y - headPosition.Y);
-            var num2 = (tailPosition.Y - headPosition.Y) * (aPosition.X - headPosition.X);
-            return Math.Abs(num1 - num2);
-        }
-
-        //public bool IsPositionInThisAddress(MapPosition aPosition, MapPosition addressPosition)
-        //{
-        //    return Math.Abs(aPosition.X - addressPosition.X) <= AddressAreaMm && Math.Abs(aPosition.Y - addressPosition.Y) <= AddressAreaMm;
-        //}
 
         public double GetDistance(MapPosition aPosition, MapPosition bPosition)
         {

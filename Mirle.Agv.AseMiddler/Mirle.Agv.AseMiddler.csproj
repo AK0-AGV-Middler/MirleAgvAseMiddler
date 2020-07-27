@@ -73,6 +73,9 @@
     <Reference Include="Mirle.Tools">
       <HintPath>..\..\..\..\DesignPatternsSample\Mirle.Tools\Mirle.Tools\bin\Release\Mirle.Tools.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>OutsideDll\NLog.dll</HintPath>
@@ -124,7 +127,7 @@
       <DependentUpon>AgvlConnectorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Main\Control\UserAgent.cs" />
-    <Compile Include="Main\Model\BatteryLog.cs" />
+    <Compile Include="Main\Model\Configs\BatteryLog.cs" />
     <Compile Include="Main\Model\Configs\InitialConfig.cs" />
     <Compile Include="Customer\ASE\Model\Configs\PspConnectionConfig.cs" />
     <Compile Include="Main\Model\Map\MapAddressOffset.cs" />

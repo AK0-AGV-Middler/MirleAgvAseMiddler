@@ -41,7 +41,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.中文ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.englishToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemMode = new System.Windows.Forms.ToolStripMenuItem();
-            this.VehicleStatusPage = new System.Windows.Forms.ToolStripMenuItem();
+            this.VehicleConfigPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AlarmPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AgvcConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
             this.AgvlConnectorPage = new System.Windows.Forms.ToolStripMenuItem();
@@ -258,7 +258,7 @@ namespace Mirle.Agv.AseMiddler.View
             // ToolStripMenuItemMode
             // 
             this.ToolStripMenuItemMode.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.VehicleStatusPage,
+            this.VehicleConfigPage,
             this.AlarmPage,
             this.AgvcConnectorPage,
             this.AgvlConnectorPage});
@@ -266,31 +266,31 @@ namespace Mirle.Agv.AseMiddler.View
             this.ToolStripMenuItemMode.Size = new System.Drawing.Size(43, 20);
             this.ToolStripMenuItemMode.Text = "模式";
             // 
-            // VehicleStatusPage
+            // VehicleConfigPage
             // 
-            this.VehicleStatusPage.Name = "VehicleStatusPage";
-            this.VehicleStatusPage.Size = new System.Drawing.Size(132, 22);
-            this.VehicleStatusPage.Text = "Parameter";
-            this.VehicleStatusPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
+            this.VehicleConfigPage.Name = "VehicleConfigPage";
+            this.VehicleConfigPage.Size = new System.Drawing.Size(180, 22);
+            this.VehicleConfigPage.Text = "即時參數";
+            this.VehicleConfigPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(132, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(180, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // AgvcConnectorPage
             // 
             this.AgvcConnectorPage.Name = "AgvcConnectorPage";
-            this.AgvcConnectorPage.Size = new System.Drawing.Size(132, 22);
+            this.AgvcConnectorPage.Size = new System.Drawing.Size(180, 22);
             this.AgvcConnectorPage.Text = "AGVC";
             this.AgvcConnectorPage.Click += new System.EventHandler(this.AgvcConnectorPage_Click);
             // 
             // AgvlConnectorPage
             // 
             this.AgvlConnectorPage.Name = "AgvlConnectorPage";
-            this.AgvlConnectorPage.Size = new System.Drawing.Size(132, 22);
+            this.AgvlConnectorPage.Size = new System.Drawing.Size(180, 22);
             this.AgvlConnectorPage.Text = "AGVL";
             this.AgvlConnectorPage.Click += new System.EventHandler(this.AgvlConnectorPage_Click);
             // 
@@ -1629,7 +1629,7 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.ToolStripMenuItem englishToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AlarmPage;
         private System.Windows.Forms.ToolStripMenuItem AgvcConnectorPage;
-        private System.Windows.Forms.ToolStripMenuItem VehicleStatusPage;
+        private System.Windows.Forms.ToolStripMenuItem VehicleConfigPage;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.GroupBox gbConnection;

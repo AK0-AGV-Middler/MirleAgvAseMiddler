@@ -18,6 +18,7 @@ using Mirle.Agv.AseMiddler.Model.Configs;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
 using Mirle.Agv.AseMiddler.View;
 using Mirle.Tools;
+using Newtonsoft.Json;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -71,10 +72,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region Events
         public event EventHandler<InitialEventArgs> OnComponentIntialDoneEvent;
-        public event EventHandler<string> OnMessageShowEvent;
+
         public event EventHandler<bool> OnAgvlConnectionChangedEvent;
-        public event EventHandler<string> SetAlarmToUI;
-        //public event EventHandler<string> ResetAllAlarmsToUI;
+
         #endregion
 
         #region Models
@@ -106,7 +106,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             Vehicle = Vehicle.Instance;
             LoggersInitial();
-            XmlInitial();
+            ConfigInitial();
             VehicleInitial();
             ControllersInitial();
             EventInitial();
@@ -120,17 +120,52 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void XmlInitial()
+        private void ConfigInitial()
         {
             try
             {
-                Vehicle.MainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
-                mapConfig = xmlHandler.ReadXml<MapConfig>(@"Map.xml");
-                Vehicle.AgvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
-                alarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
-                batteryLog = xmlHandler.ReadXml<BatteryLog>(@"BatteryLog.xml");
-                //mirleLogger.CreateXmlLogger(batteryLog, @"BatteryLog.xml");
-                InitialSoc = batteryLog.InitialSoc;
+                //Main Configs 
+                string allText = System.IO.File.ReadAllText("MainFlowConfig.json");
+                Vehicle.MainFlowConfig = JsonConvert.DeserializeObject<MainFlowConfig>(allText);
+                // Vehicle.MainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
+                if (Vehicle.MainFlowConfig.IsSimulation)
+                {
+                    Vehicle.LoginLevel = EnumLoginLevel.Admin;
+                }
+                allText = System.IO.File.ReadAllText("MapConfig.json");
+                Vehicle.MapConfig = JsonConvert.DeserializeObject<MapConfig>(allText);
+                //Vehicle.MapConfig = xmlHandler.ReadXml<MapConfig>(@"Map.xml");
+                allText = System.IO.File.ReadAllText("AgvcConnectorConfig.json");
+                Vehicle.AgvcConnectorConfig = JsonConvert.DeserializeObject<AgvcConnectorConfig>(allText);
+                //Vehicle.AgvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
+                allText = System.IO.File.ReadAllText("AlarmConfig.json");
+                Vehicle.AlarmConfig = JsonConvert.DeserializeObject<AlarmConfig>(allText);
+                //Vehicle.AlarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
+                allText = System.IO.File.ReadAllText("BatteryLog.json");
+                Vehicle.BatteryLog = JsonConvert.DeserializeObject<BatteryLog>(allText);
+                //Vehicle.BatteryLog = xmlHandler.ReadXml<BatteryLog>(@"BatteryLog.xml");              
+                InitialSoc = Vehicle.BatteryLog.InitialSoc;
+
+                //AsePackage Configs
+                allText = System.IO.File.ReadAllText("AsePackageConfig.json");
+                Vehicle.AsePackageConfig = JsonConvert.DeserializeObject<AsePackageConfig>(allText);
+                //Vehicle.AsePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
+                allText = System.IO.File.ReadAllText("PspConnectionConfig.json");
+                Vehicle.PspConnectionConfig = JsonConvert.DeserializeObject<PspConnectionConfig>(allText);
+                //Vehicle.PspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>("PspConnectionConfig.xml");
+                allText = System.IO.File.ReadAllText("AseBatteryConfig.json");
+                Vehicle.AseBatteryConfig = JsonConvert.DeserializeObject<AseBatteryConfig>(allText);
+                //Vehicle.AseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>("AseBatteryConfig.xml");
+                allText = System.IO.File.ReadAllText("AseMoveConfig.json");
+                Vehicle.AseMoveConfig = JsonConvert.DeserializeObject<AseMoveConfig>(allText);
+                //Vehicle.AseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>("AseMoveConfig.xml");
+
+                if (Vehicle.MainFlowConfig.IsSimulation)
+                {
+                    Vehicle.AseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
+                    Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
+                    Vehicle.AseMoveConfig.WatchPositionInterval = 5000;
+                }
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "讀寫設定檔"));
             }
@@ -168,8 +203,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                alarmHandler = new AlarmHandler(this);
-                mapHandler = new MapHandler(mapConfig);
+                alarmHandler = new AlarmHandler();
+                mapHandler = new MapHandler();
                 agvcConnector = new AgvcConnector(this);
                 asePackage = new AsePackage();
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "控制層"));
@@ -285,13 +320,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             StartVisitTransferSteps();
             StartTrackPosition();
             StartWatchChargeStage();
-            var msg = $"讀取到的電量為{batteryLog.InitialSoc}";
+            var msg = $"讀取到的電量為{Vehicle.BatteryLog.InitialSoc}";
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
         }
 
         public void ReloadConfig()
         {
-            XmlInitial();
+            ConfigInitial();
         }
 
         #endregion
@@ -1276,7 +1311,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     BatteryTimeoutCounter = Vehicle.MainFlowConfig.ChargeRetryTimes;
                                     CheckStartChargeCondition();
                                 }
-                                break;                          
+                                break;
                             case EnumChargingStage.DisCharge:
                                 {
                                     BatteryTimeoutCounter = Vehicle.MainFlowConfig.DischargeRetryTimes;
@@ -1366,10 +1401,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                         StartChargeTimeStamp = curTime;
                         BatteryTimeoutCounter--;
                         StageStartCharge();
-                    }                   
+                    }
                 }
             }
-        }       
+        }
 
         private void CheckLowPowerChargeCondition()
         {
@@ -1447,7 +1482,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
 
             Vehicle.CheckStartChargeReplyEnd = false;
-            StopChargeTimeStamp = DateTime.Now;           
+            StopChargeTimeStamp = DateTime.Now;
             Vehicle.ChargingStage = EnumChargingStage.WaitChargingOff;
             asePackage.StopCharge();
         }
@@ -2346,7 +2381,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     Task.Run(() => asePackage.DoRobotCommand(unloadCmd));
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 放貨] : Unloading, [Direction{unloadCmd.PioDirection}][SlotNum={unloadCmd.SlotNumber}][Unload Adr={unloadCmd.PortAddressId}][Unload Port Num={unloadCmd.PortNumber}]");
                 }
-                batteryLog.LoadUnloadCount++;
+
             }
             catch (Exception ex)
             {
@@ -3378,7 +3413,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                batteryLog.InitialSoc = (int)batteryPercentage;
+                Vehicle.BatteryLog.InitialSoc = (int)batteryPercentage;
             }
             catch (Exception ex)
             {

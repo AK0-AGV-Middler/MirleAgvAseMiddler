@@ -142,7 +142,7 @@ namespace Mirle.Agv.AseMiddler.View
             agvcConnectorForm.Show();
             agvcConnectorForm.Hide();
 
-            configForm = new ConfigForm(mainFlowHandler);
+            configForm = new ConfigForm();
             configForm.WindowState = FormWindowState.Normal;
             configForm.Show();
             configForm.Hide();
@@ -622,7 +622,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             if (configForm.IsDisposed)
             {
-                configForm = new ConfigForm(mainFlowHandler);
+                configForm = new ConfigForm();
             }
             configForm.BringToFront();
             configForm.Show();

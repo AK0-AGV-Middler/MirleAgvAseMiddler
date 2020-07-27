@@ -21,22 +21,17 @@ namespace Mirle.Agv.AseMiddler.Controller
         public Dictionary<int, Alarm> allAlarms = new Dictionary<int, Alarm>();
         public ConcurrentDictionary<int, Alarm> dicHappeningAlarms = new ConcurrentDictionary<int, Alarm>();
         public string LastAlarmMsg { get; set; } = "";
-        #endregion
+        #endregion     
 
-        public event EventHandler ResetAllAlarmsToAgvl;
-        public event EventHandler ResetAllAlarmsToAgvc;
-
-        private MainFlowHandler mainFlowHandler;
-        private AlarmConfig alarmConfig;
+        private MainFlowHandler mainFlowHandler;      
         private MirleLogger mirleLogger = MirleLogger.Instance;
+        public Vehicle Vehicle { get; set; } = Vehicle.Instance;
 
         public string AlarmLogMsg { get; set; } = "";
         public string AlarmHistoryLogMsg { get; set; } = "";
 
-        public AlarmHandler(MainFlowHandler mainFlowHandler)
-        {
-            this.mainFlowHandler = mainFlowHandler;
-            this.alarmConfig = mainFlowHandler.GetAlarmConfig();
+        public AlarmHandler()
+        {                     
             LoadAlarmFile();
         }
 
@@ -44,14 +39,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (string.IsNullOrEmpty(alarmConfig.AlarmFileName))
+                if (string.IsNullOrEmpty(Vehicle.AlarmConfig.AlarmFileName))
                 {
                     mirleLogger.Log(new LogFormat("Error", "5", GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Device", "CarrierID"
-                        , $"string.IsNullOrEmpty(alarmConfig.AlarmFileName)={string.IsNullOrEmpty(alarmConfig.AlarmFileName)}"));
+                        , $"string.IsNullOrEmpty(alarmConfig.AlarmFileName)={string.IsNullOrEmpty(Vehicle.AlarmConfig.AlarmFileName)}"));
                     return;
                 }
 
-                string alarmFullPath = Path.Combine(Environment.CurrentDirectory, alarmConfig.AlarmFileName);
+                string alarmFullPath = Path.Combine(Environment.CurrentDirectory, Vehicle.AlarmConfig.AlarmFileName);
                 Dictionary<string, int> dicAlarmIndexes = new Dictionary<string, int>();
                 allAlarms.Clear();
 

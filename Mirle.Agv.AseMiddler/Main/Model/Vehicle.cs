@@ -67,8 +67,20 @@ namespace Mirle.Agv.AseMiddler.Model
 
         #region Configs
 
+        //Main Configs
+
         public MainFlowConfig MainFlowConfig { get; set; } = new MainFlowConfig();
         public AgvcConnectorConfig AgvcConnectorConfig { get; set; } = new AgvcConnectorConfig();
+        public MapConfig MapConfig { get; set; } = new MapConfig();
+        public AlarmConfig AlarmConfig { get; set; } = new AlarmConfig();
+        public BatteryLog BatteryLog { get; set; } = new BatteryLog();
+
+        // AsePackage Configs
+
+        public AsePackageConfig AsePackageConfig { get; set; } = new AsePackageConfig();
+        public AseBatteryConfig AseBatteryConfig { get; set; } = new AseBatteryConfig();
+        public AseMoveConfig AseMoveConfig { get; set; } = new AseMoveConfig();
+        public PspConnectionConfig PspConnectionConfig { get; set; } = new PspConnectionConfig();
 
         #endregion
 

@@ -9,7 +9,7 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
     [Serializable]
     public class MainFlowConfig
     {
-        public string LogConfigPath { get; set; }
+        public string LogConfigPath { get; set; } = "Log.ini";
         public int VisitTransferStepsSleepTimeMs { get; set; }
         public int TrackPositionSleepTimeMs { get; set; } = 5000;
         public int WatchLowPowerSleepTimeMs { get; set; } = 5000;
