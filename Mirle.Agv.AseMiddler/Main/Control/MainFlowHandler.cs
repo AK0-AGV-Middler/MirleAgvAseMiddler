@@ -90,6 +90,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string DebugLogMsg { get; set; } = "";
         public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();
         public bool IsLowPowerStartChargeTimeout { get; set; } = false;
+        public int BatteryTimeoutCounter { get; set; } = 3;
 
         private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         #endregion
@@ -1251,11 +1252,17 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             case EnumChargingStage.Idle:
                                 {
+                                    if (IsLowPowerStartChargeTimeout)
+                                    {
+                                        Thread.Sleep(60 * 1000);
+                                        IsLowPowerStartChargeTimeout = false;
+                                    }
                                     CheckLowPowerChargeCondition();
                                 }
                                 break;
                             case EnumChargingStage.ArrivalCharge:
                                 {
+                                    BatteryTimeoutCounter = 1;
                                     CheckStartChargeCondition();
                                 }
                                 break;
@@ -1266,11 +1273,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 break;
                             case EnumChargingStage.LowPowerCharge:
                                 {
+                                    BatteryTimeoutCounter = Vehicle.MainFlowConfig.ChargeRetryTimes;
                                     CheckStartChargeCondition();
                                 }
-                                break;
+                                break;                          
                             case EnumChargingStage.DisCharge:
                                 {
+                                    BatteryTimeoutCounter = Vehicle.MainFlowConfig.DischargeRetryTimes;
                                     StageStopCharge();
                                 }
                                 break;
@@ -1346,12 +1355,21 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var curTime = DateTime.Now;
                 if ((curTime - StartChargeTimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.StartChargeWaitingTimeoutMs)
                 {
-                    SetAlarmFromAgvm(000013);
-                    Vehicle.IsCharging = true;
-                    Vehicle.ChargingStage = EnumChargingStage.DisCharge;
+                    if (BatteryTimeoutCounter <= 1)
+                    {
+                        SetAlarmFromAgvm(000013);
+                        Vehicle.IsCharging = false;
+                        Vehicle.ChargingStage = EnumChargingStage.DisCharge;
+                    }
+                    else
+                    {
+                        StartChargeTimeStamp = curTime;
+                        BatteryTimeoutCounter--;
+                        StageStartCharge();
+                    }                   
                 }
             }
-        }
+        }       
 
         private void CheckLowPowerChargeCondition()
         {
@@ -1406,6 +1424,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return;
             }
 
+            Vehicle.IsCharging = true;
             Vehicle.CheckStartChargeReplyEnd = false;
             StartChargeTimeStamp = DateTime.Now;
 
@@ -1428,8 +1447,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
 
             Vehicle.CheckStartChargeReplyEnd = false;
-            StopChargeTimeStamp = DateTime.Now;
-
+            StopChargeTimeStamp = DateTime.Now;           
             Vehicle.ChargingStage = EnumChargingStage.WaitChargingOff;
             asePackage.StopCharge();
         }
@@ -1468,7 +1486,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
 
                     agvcConnector.ChargHandshaking();
-                    Vehicle.IsCharging = true;                    
+                    Vehicle.IsCharging = true;
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage}.");
 
@@ -1528,7 +1546,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     agvcConnector.ChargHandshaking();
 
-                    Vehicle.IsCharging = true;                   
+                    Vehicle.IsCharging = true;
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage}.");
 
@@ -1548,7 +1566,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             break;
                         }
-                    }                  
+                    }
 
                     if (Vehicle.CheckStartChargeReplyEnd)
                     {

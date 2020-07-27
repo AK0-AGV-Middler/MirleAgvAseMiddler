@@ -276,7 +276,7 @@ namespace Mirle.Agv.AseMiddler
     {
         Idle,
         ArrivalCharge,
-        WaitChargingOn,
+        WaitChargingOn,        
         LowPowerCharge,
         DisCharge,
         WaitChargingOff
