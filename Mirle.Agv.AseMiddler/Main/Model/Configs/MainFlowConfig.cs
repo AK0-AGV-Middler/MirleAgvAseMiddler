@@ -30,5 +30,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public bool UseChargeSystemV2 { get; set; } = false;
         public int IdleReportRangeMm { get; set; } = 100;
         public int IdleReportIntervalMs { get; set; } = 2 * 60 * 1000;
+        public int DischargeRetryTimes { get; set; } = 3;
     }
 }

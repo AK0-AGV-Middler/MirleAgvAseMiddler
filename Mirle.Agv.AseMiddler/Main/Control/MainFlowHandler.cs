@@ -88,8 +88,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public DateTime StopChargeTimeStamp { get; set; }
         public bool WaitingTransferCompleteEnd { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
-
-        public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();
+        public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();     
 
         private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         #endregion
@@ -1575,12 +1574,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                     //in starting charge
                     if (!Vehicle.CheckStartChargeReplyEnd) Thread.Sleep(Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs);
 
-                    asePackage.StopCharge();
+                    int retryCount = Vehicle.MainFlowConfig.DischargeRetryTimes;                   
+                    Vehicle.IsCharging = true;
 
-                    SpinWait.SpinUntil(() => !Vehicle.IsCharging, Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs);
+                    for (int i = 0; i < retryCount; i++)
+                    {
+                        asePackage.StopCharge();
 
-                    asePackage.ChargeStatusRequest();
-                    SpinWait.SpinUntil(() => false, 500);
+                        SpinWait.SpinUntil(() => !Vehicle.IsCharging, Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs);
+
+                        asePackage.ChargeStatusRequest();
+                        SpinWait.SpinUntil(() => false, 500);
+
+                        if (!Vehicle.IsCharging)
+                        {
+                            break;
+                        }
+                    }                
 
                     if (!Vehicle.IsCharging)
                     {
