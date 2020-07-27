@@ -824,7 +824,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private EnumSlotNumber CheckVehicleSlot()
         {
-
             if (IsVehicleDoingMoveCommand())
             {
                 throw new Exception("Vehicle has move command, can not do loadunload.");
@@ -1009,7 +1008,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private bool IsVehicleDoingMoveCommand()
         {
-            return Vehicle.AgvcTransCmdBuffer.Values.First().AgvcTransCommandType == EnumAgvcTransCommandType.Move || Vehicle.AgvcTransCmdBuffer.Values.First().AgvcTransCommandType == EnumAgvcTransCommandType.MoveToCharger;
+            if (Vehicle.AgvcTransCmdBuffer.Any())
+            {
+                var firstCommandType = Vehicle.AgvcTransCmdBuffer.Values.First().AgvcTransCommandType;
+                return firstCommandType == EnumAgvcTransCommandType.Move || firstCommandType == EnumAgvcTransCommandType.MoveToCharger;
+            }
+            return false;
         }
 
         private EnumSlotNumber CheckUnloadCstId(string cassetteId)
