@@ -88,7 +88,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public DateTime StopChargeTimeStamp { get; set; }
         public bool WaitingTransferCompleteEnd { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
-        public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();     
+        public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();
 
         private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         #endregion
@@ -513,8 +513,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case EnumTransferStepType.Move:
                 case EnumTransferStepType.MoveToCharger:
                     MoveCmdInfo moveCmdInfo = (MoveCmdInfo)transferStep;
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動前 斷充] Move Stop Charge");
-                    StopCharge();
+                    if (moveCmdInfo.EndAddress.Id != Vehicle.AseMoveStatus.LastAddress.Id || Vehicle.IsReAuto)
+                    {
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動前 斷充] Move Stop Charge");
+                        StopCharge();
+                    }
+
                     if (moveCmdInfo.EndAddress.Id == Vehicle.AseMoveStatus.LastAddress.Id)
                     {
                         if (Vehicle.MainFlowConfig.IsSimulation)
@@ -1574,7 +1578,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     //in starting charge
                     if (!Vehicle.CheckStartChargeReplyEnd) Thread.Sleep(Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs);
 
-                    int retryCount = Vehicle.MainFlowConfig.DischargeRetryTimes;                   
+                    int retryCount = Vehicle.MainFlowConfig.DischargeRetryTimes;
                     Vehicle.IsCharging = true;
 
                     for (int i = 0; i < retryCount; i++)
@@ -1590,7 +1594,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             break;
                         }
-                    }                
+                    }
 
                     if (!Vehicle.IsCharging)
                     {
