@@ -89,6 +89,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool WaitingTransferCompleteEnd { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
         public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();
+        public bool IsLowPowerStartChargeTimeout { get; set; } = false;
 
         private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         #endregion
@@ -1226,6 +1227,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                             {
                                 LowPowerStartCharge(Vehicle.AseMoveStatus.LastAddress);
                             }
+
+                            if (IsLowPowerStartChargeTimeout)
+                            {
+                                Thread.Sleep(60 * 1000);
+                                IsLowPowerStartChargeTimeout = false;
+                            }
                         }
                         if (Vehicle.AseBatteryStatus.Percentage < Vehicle.MainFlowConfig.LowPowerPercentage - 11 && !Vehicle.IsCharging) //200701 dabid+
                         {
@@ -1461,8 +1468,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
 
                     agvcConnector.ChargHandshaking();
-                    Vehicle.IsCharging = true;
-                    agvcConnector.Charging();
+                    Vehicle.IsCharging = true;                    
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage}.");
 
@@ -1476,7 +1482,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     if (Vehicle.CheckStartChargeReplyEnd)
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Start Charge success.");
-                        batteryLog.ChargeCount++;
+                        agvcConnector.Charging();
+                        IsLowPowerStartChargeTimeout = false;
                     }
                     else
                     {
@@ -1521,22 +1528,33 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     agvcConnector.ChargHandshaking();
 
-                    Vehicle.IsCharging = true;
-                    agvcConnector.Charging();
+                    Vehicle.IsCharging = true;                   
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage}.");
 
                     if (Vehicle.MainFlowConfig.IsSimulation) return;
 
                     Vehicle.CheckStartChargeReplyEnd = false;
-                    asePackage.StartCharge(address.ChargeDirection);
 
-                    SpinWait.SpinUntil(() => Vehicle.CheckStartChargeReplyEnd, 30 * 1000);
+                    int retryCount = Vehicle.MainFlowConfig.ChargeRetryTimes;
+
+                    for (int i = 0; i < retryCount; i++)
+                    {
+                        asePackage.StartCharge(address.ChargeDirection);
+
+                        SpinWait.SpinUntil(() => Vehicle.CheckStartChargeReplyEnd, Vehicle.MainFlowConfig.StartChargeWaitingTimeoutMs);
+
+                        if (Vehicle.CheckStartChargeReplyEnd)
+                        {
+                            break;
+                        }
+                    }                  
 
                     if (Vehicle.CheckStartChargeReplyEnd)
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Start Charge success.");
-                        batteryLog.ChargeCount++;
+                        agvcConnector.Charging();
+                        IsLowPowerStartChargeTimeout = false;
                     }
                     else
                     {
@@ -1545,6 +1563,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         asePackage.ChargeStatusRequest();
                         SpinWait.SpinUntil(() => false, 500);
                         asePackage.StopCharge();
+                        IsLowPowerStartChargeTimeout = true;
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;

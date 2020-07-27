@@ -14,8 +14,8 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int TrackPositionSleepTimeMs { get; set; } = 5000;
         public int WatchLowPowerSleepTimeMs { get; set; } = 5000;
         public int ReportPositionIntervalMs { get; set; } = 5000;
-        public int StartChargeWaitingTimeoutMs { get; set; } = 3000;
-        public int StopChargeWaitingTimeoutMs { get; set; } = 3000;
+        public int StartChargeWaitingTimeoutMs { get; set; } = 30*1000;
+        public int StopChargeWaitingTimeoutMs { get; set; } = 30*1000;
         public int RealPositionRangeMm { get; set; }
         public int LoadingChargeIntervalMs { get; set; }
         public int RobotNgRetryTimes { get; set; }
@@ -31,5 +31,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int IdleReportRangeMm { get; set; } = 100;
         public int IdleReportIntervalMs { get; set; } = 2 * 60 * 1000;
         public int DischargeRetryTimes { get; set; } = 3;
+        public int ChargeRetryTimes { get; set; } = 3;
     }
 }
