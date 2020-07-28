@@ -509,7 +509,7 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 //mainFlowHandler.StopClearAndReset();
-               // mainFlowHandler.StopVehicle();
+                // mainFlowHandler.StopVehicle();
 
 
                 //Application.Exit();
@@ -1396,6 +1396,14 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void 關閉ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (agvcConnector.IsConnected())
+            {
+                agvcConnector.DisConnect();
+            }
+            if (asePackage.IsConnected())
+            {
+                asePackage.DisConnect();
+            }            
             this.Close();
         }
 
@@ -1631,6 +1639,25 @@ namespace Mirle.Agv.AseMiddler.View
             if (Vehicle.Mapinfo.addressMap.ContainsKey(addressId))
             {
                 Vehicle.Mapinfo.addressMap[addressId].ChargeDirection = checkEnableToCharge.Checked ? EnumAddressDirection.Right : EnumAddressDirection.None;
+            }
+        }
+
+        private void btnKeyInPosition_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                var posX = decimal.ToDouble(numPositionX.Value);
+                var posY = decimal.ToDouble(numPositionY.Value);
+                AsePositionArgs positionArgs = new AsePositionArgs
+                {
+                    Arrival = EnumAseArrival.Arrival,
+                    MapPosition = new MapPosition(posX, posY)
+                };
+                asePackage.ReceivePositionArgsQueue.Enqueue(positionArgs);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
     }

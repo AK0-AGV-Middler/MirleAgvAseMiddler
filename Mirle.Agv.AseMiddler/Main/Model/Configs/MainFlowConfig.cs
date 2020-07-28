@@ -14,8 +14,8 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int TrackPositionSleepTimeMs { get; set; } = 5000;
         public int WatchLowPowerSleepTimeMs { get; set; } = 5000;
         public int ReportPositionIntervalMs { get; set; } = 5000;
-        public int StartChargeWaitingTimeoutMs { get; set; } = 30*1000;
-        public int StopChargeWaitingTimeoutMs { get; set; } = 30*1000;
+        public int StartChargeWaitingTimeoutMs { get; set; } = 30 * 1000;
+        public int StopChargeWaitingTimeoutMs { get; set; } = 30 * 1000;
         public int RealPositionRangeMm { get; set; }
         public int LoadingChargeIntervalMs { get; set; }
         public int RobotNgRetryTimes { get; set; }
@@ -25,6 +25,7 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public bool BcrByPass { get; set; } = false;
         public int LowPowerPercentage { get; set; } = 50;
         public int HighPowerPercentage { get; set; } = 90;
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public EnumSlotSelect SlotDisable { get; set; } = EnumSlotSelect.None;
         public int InitialPositionRangeMm { get; set; } = 500;
         public bool UseChargeSystemV2 { get; set; } = false;

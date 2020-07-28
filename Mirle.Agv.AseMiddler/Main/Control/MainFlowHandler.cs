@@ -293,7 +293,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    Vehicle.AseMoveStatus.LastMapPosition = Vehicle.Mapinfo.addressMap.First(x => x.Key != "").Value.Position;
+                    AsePositionArgs positionArgs = new AsePositionArgs()
+                    {
+                        Arrival = EnumAseArrival.Arrival,
+                        MapPosition = Vehicle.Mapinfo.addressMap.First(/*x => x.Key != ""*/).Value.Position
+                    };
+                    asePackage.ReceivePositionArgsQueue.Enqueue(positionArgs);
                 }
                 catch (Exception ex)
                 {

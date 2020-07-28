@@ -269,28 +269,28 @@ namespace Mirle.Agv.AseMiddler.View
             // VehicleConfigPage
             // 
             this.VehicleConfigPage.Name = "VehicleConfigPage";
-            this.VehicleConfigPage.Size = new System.Drawing.Size(180, 22);
+            this.VehicleConfigPage.Size = new System.Drawing.Size(122, 22);
             this.VehicleConfigPage.Text = "即時參數";
             this.VehicleConfigPage.Click += new System.EventHandler(this.VehicleStatusPage_Click);
             // 
             // AlarmPage
             // 
             this.AlarmPage.Name = "AlarmPage";
-            this.AlarmPage.Size = new System.Drawing.Size(180, 22);
+            this.AlarmPage.Size = new System.Drawing.Size(122, 22);
             this.AlarmPage.Text = "Alarm";
             this.AlarmPage.Click += new System.EventHandler(this.AlarmPage_Click);
             // 
             // AgvcConnectorPage
             // 
             this.AgvcConnectorPage.Name = "AgvcConnectorPage";
-            this.AgvcConnectorPage.Size = new System.Drawing.Size(180, 22);
+            this.AgvcConnectorPage.Size = new System.Drawing.Size(122, 22);
             this.AgvcConnectorPage.Text = "AGVC";
             this.AgvcConnectorPage.Click += new System.EventHandler(this.AgvcConnectorPage_Click);
             // 
             // AgvlConnectorPage
             // 
             this.AgvlConnectorPage.Name = "AgvlConnectorPage";
-            this.AgvlConnectorPage.Size = new System.Drawing.Size(180, 22);
+            this.AgvlConnectorPage.Size = new System.Drawing.Size(122, 22);
             this.AgvlConnectorPage.Text = "AGVL";
             this.AgvlConnectorPage.Click += new System.EventHandler(this.AgvlConnectorPage_Click);
             // 
@@ -1454,6 +1454,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.btnKeyInPosition.TabIndex = 40;
             this.btnKeyInPosition.Text = "鍵入車輛位置";
             this.btnKeyInPosition.UseVisualStyleBackColor = true;
+            this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click_1);
             // 
             // groupBox5
             // 
