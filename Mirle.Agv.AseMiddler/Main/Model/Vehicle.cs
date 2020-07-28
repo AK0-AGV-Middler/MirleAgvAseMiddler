@@ -27,6 +27,7 @@ namespace Mirle.Agv.AseMiddler.Model
 
         #region AsePackage
 
+        public bool IsLocalConnect { get; set; } = false;
         public AseMoveStatus AseMoveStatus { get; set; } = new AseMoveStatus();
         public AseRobotStatus AseRobotStatus { get; set; } = new AseRobotStatus();
         public AseCarrierSlotStatus AseCarrierSlotL { get; set; } = new AseCarrierSlotStatus();

@@ -22,6 +22,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public string LocalLogMsg { get; set; } = "";
         public string MoveStopResult { get; set; } = "";
+        public int DisconnectedCounter { get; set; } = 0;
 
         public RobotCommand RobotCommand { get; set; }
 
@@ -133,12 +134,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                 psWrapper.OnSecondarySent += PsWrapper_OnSecondarySent;
                 psWrapper.OnSecondaryReceived += PsWrapper_OnSecondaryReceived;
                 psWrapper.OnTransactionError += PsWrapper_OnTransactionError;
+                psWrapper.OnDisconnected += PsWrapper_OnDisconnected;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
+      
 
         #region Threads
 
@@ -667,6 +671,80 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        public void PartMove(MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumIsExecute keepOrGo, EnumSlotSelect openSlot = EnumSlotSelect.None)
+        {
+            try
+            {
+                string isEndString = ((int)isEnd).ToString();
+                string positionX = GetPositionString(mapPosition.X);
+                string positionY = GetPositionString(mapPosition.Y);
+                string thetaString = GetNumberToString(headAngle, 3);
+                string speedString = GetNumberToString(speed, 4);
+                string openSlotString = ((int)openSlot).ToString();
+                string keepOrGoString = keepOrGo.ToString().Substring(0, 1).ToUpper();
+                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
+
+                PrimarySendEnqueue("P41", message);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd, EnumSlotSelect openSlot = EnumSlotSelect.None)
+        {
+            try
+            {
+                AseMoveStatus aseMoveStatus = new AseMoveStatus(Model.Vehicle.Instance.AseMoveStatus);
+                string beginString = ((int)enumAseMoveCommandIsEnd).ToString();
+                string positionX = GetPositionString(aseMoveStatus.LastAddress.Position.X);
+                string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);
+                string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
+                string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
+                string openSlotString = ((int)openSlot).ToString();
+                string keepOrGoString = "G";
+                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
+
+                PrimarySendEnqueue("P41", message);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private string GetPositionString(double x)
+        {
+            try
+            {
+                string result = x >= 0 ? "P" : "N";
+                string number = GetNumberToString((int)(Math.Abs(x)), 8);
+                result = string.Concat(result, number);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                return "";
+            }
+        }
+
+        private string GetNumberToString(int value, ushort digit)
+        {
+            try
+            {
+                string valueFormat = new string('0', digit);
+
+                return value.ToString(valueFormat);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                return "";
+            }
+        }
+
         #endregion
 
         #region PrimaryReceived
@@ -1031,8 +1109,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
-                    }                    
-                }               
+                    }
+                }
 
                 if (isAlarmSet)
                 {
@@ -1357,6 +1435,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 switch (transaction.PSSecondaryMessage.Number)
                 {
+                    case "42":
+                        ReceiveMoveAppendRequestAck(transaction.PSSecondaryMessage.PSMessage);
+                        break;
                     case "34":
                         ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
                         break;
@@ -1366,6 +1447,52 @@ namespace Mirle.Agv.AseMiddler.Controller
                     default:
                         break;
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ReceiveMoveAppendRequestAck(string psMessage)
+        {
+            try
+            {
+                if (int.TryParse(psMessage, out int result))
+                {
+                    if (result == 0)
+                    {
+                        ImportantPspLog?.Invoke(this,$"[片段移動 被拒絕] MoveAppend rejected by local. Do Move Fail Flow.");
+                        AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+                        AsePositionArgs positionArgs = new AsePositionArgs()
+                        {
+                            Arrival = EnumAseArrival.Fail,
+                            MapPosition = moveStatus.LastMapPosition,
+                            HeadAngle = moveStatus.HeadDirection,
+                            MovingDirection = moveStatus.MovingDirection,
+                            Speed = 0
+                        };
+                        ReceivePositionArgsQueue.Enqueue(positionArgs);
+                    }
+                    else
+                    {
+                        ImportantPspLog?.Invoke(this, $"[片段移動 回應接受] MoveAppend accept by local. Wait arrival report.");
+                    }
+                }
+                else
+                {
+                    ImportantPspLog?.Invoke(this, $"[片段移動 回應異常] MoveAppend reply unknow by local. Do Move Fail Flow.");
+                    AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+                    AsePositionArgs positionArgs = new AsePositionArgs()
+                    {
+                        Arrival = EnumAseArrival.Fail,
+                        MapPosition = moveStatus.LastMapPosition,
+                        HeadAngle = moveStatus.HeadDirection,
+                        MovingDirection = moveStatus.MovingDirection,
+                        Speed = 0
+                    };
+                    ReceivePositionArgsQueue.Enqueue(positionArgs);
+                }               
             }
             catch (Exception ex)
             {
@@ -1518,12 +1645,27 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string msg = $"PsWrapper connection state changed.[{state}]";
+                Vehicle.IsLocalConnect = state == enumConnectState.Connected;
                 if (state == enumConnectState.Connected || state == enumConnectState.Quit)
                 {
                     LogPsWrapper(msg);
-                    ImportantPspLog?.Invoke(this, msg);
-                }
+                    ImportantPspLog?.Invoke(this, msg);                    
+                }                
                 OnConnectionChangeEvent?.Invoke(this, psWrapper.ConnectionState == enumConnectState.Connected);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void PsWrapper_OnDisconnected()
+        {
+            try
+            {
+                Vehicle.IsLocalConnect = false;
+                SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
+                if (!Vehicle.IsLocalConnect) OnAlarmCodeSetEvent?.Invoke(this, 56);              
             }
             catch (Exception ex)
             {
@@ -1691,91 +1833,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region Move Control
 
-        //public void MoveFinished(EnumMoveComplete enumMoveComplete)
-        //{
-        //    try
-        //    {
-        //        OnMoveFinishedEvent?.Invoke(this, enumMoveComplete);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-        //    }
-        //}
-
-        public void PartMove(MapPosition mapPosition, int headAngle, int speed, EnumAseMoveCommandIsEnd isEnd, EnumIsExecute keepOrGo, EnumSlotSelect openSlot = EnumSlotSelect.None)
-        {
-            try
-            {
-                string isEndString = ((int)isEnd).ToString();
-                string positionX = GetPositionString(mapPosition.X);
-                string positionY = GetPositionString(mapPosition.Y);
-                string thetaString = GetNumberToString(headAngle, 3);
-                string speedString = GetNumberToString(speed, 4);
-                string openSlotString = ((int)openSlot).ToString();
-                string keepOrGoString = keepOrGo.ToString().Substring(0, 1).ToUpper();
-                string message = string.Concat(isEndString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
-
-                PrimarySendEnqueue("P41", message);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        public void PartMove(EnumAseMoveCommandIsEnd enumAseMoveCommandIsEnd, EnumSlotSelect openSlot = EnumSlotSelect.None)
-        {
-            try
-            {
-                AseMoveStatus aseMoveStatus = new AseMoveStatus(Model.Vehicle.Instance.AseMoveStatus);
-                string beginString = ((int)enumAseMoveCommandIsEnd).ToString();
-                string positionX = GetPositionString(aseMoveStatus.LastAddress.Position.X);
-                string positionY = GetPositionString(aseMoveStatus.LastAddress.Position.Y);
-                string thetaString = GetNumberToString((int)aseMoveStatus.LastAddress.VehicleHeadAngle, 3);
-                string speedString = GetNumberToString((int)aseMoveStatus.LastSection.Speed, 4);
-                string openSlotString = ((int)openSlot).ToString();
-                string keepOrGoString = "G";
-                string message = string.Concat(beginString, positionX, positionY, thetaString, speedString, openSlotString, keepOrGoString);
-
-                PrimarySendEnqueue("P41", message);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private string GetPositionString(double x)
-        {
-            try
-            {
-                string result = x >= 0 ? "P" : "N";
-                string number = GetNumberToString((int)(Math.Abs(x)), 8);
-                result = string.Concat(result, number);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return "";
-            }
-        }
-
-        private string GetNumberToString(int value, ushort digit)
-        {
-            try
-            {
-                string valueFormat = new string('0', digit);
-
-                return value.ToString(valueFormat);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return "";
-            }
-        }
 
         public void MoveStop()
         {

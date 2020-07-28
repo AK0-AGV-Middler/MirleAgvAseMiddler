@@ -12,6 +12,7 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int WatchWifiSignalIntervalMs { get; set; } = 20000;
         public bool CanManualDeleteCST { get; set; } = false;
         public int ScheduleIntervalMs { get; set; } = 100;
-        public string RemoteControlPauseErrorCode { get; set; } = "123";       
+        public string RemoteControlPauseErrorCode { get; set; } = "123";
+        public int DisconnectTimeoutSec { get; set; } = 30;
     }
 }

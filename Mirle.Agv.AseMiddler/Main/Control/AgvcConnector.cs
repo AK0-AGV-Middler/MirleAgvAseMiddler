@@ -532,13 +532,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                             Send_Cmd136_AskReserve(askReserveSection);
                             SpinWait.SpinUntil(() => ReserveOkAskNext, agvcConnectorConfig.AskReserveIntervalMs);
-                            ReserveOkAskNext = false;
-                            SpinWait.SpinUntil(() => false, 5);
+                            ReserveOkAskNext = false;                           
                         }
-                        else if (!Vehicle.IsCharging)
-                        {
-
-                        }
+                        SpinWait.SpinUntil(() => false, 50);
                     }
                 }
                 catch (Exception ex)
