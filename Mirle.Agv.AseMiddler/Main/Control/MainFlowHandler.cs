@@ -127,38 +127,29 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //Main Configs 
                 string allText = System.IO.File.ReadAllText("MainFlowConfig.json");
                 Vehicle.MainFlowConfig = JsonConvert.DeserializeObject<MainFlowConfig>(allText);
-                // Vehicle.MainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
                 if (Vehicle.MainFlowConfig.IsSimulation)
                 {
                     Vehicle.LoginLevel = EnumLoginLevel.Admin;
                 }
                 allText = System.IO.File.ReadAllText("MapConfig.json");
                 Vehicle.MapConfig = JsonConvert.DeserializeObject<MapConfig>(allText);
-                //Vehicle.MapConfig = xmlHandler.ReadXml<MapConfig>(@"Map.xml");
                 allText = System.IO.File.ReadAllText("AgvcConnectorConfig.json");
                 Vehicle.AgvcConnectorConfig = JsonConvert.DeserializeObject<AgvcConnectorConfig>(allText);
-                //Vehicle.AgvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnectorConfig.xml");
                 allText = System.IO.File.ReadAllText("AlarmConfig.json");
                 Vehicle.AlarmConfig = JsonConvert.DeserializeObject<AlarmConfig>(allText);
-                //Vehicle.AlarmConfig = xmlHandler.ReadXml<AlarmConfig>(@"Alarm.xml");
                 allText = System.IO.File.ReadAllText("BatteryLog.json");
                 Vehicle.BatteryLog = JsonConvert.DeserializeObject<BatteryLog>(allText);
-                //Vehicle.BatteryLog = xmlHandler.ReadXml<BatteryLog>(@"BatteryLog.xml");              
                 InitialSoc = Vehicle.BatteryLog.InitialSoc;
 
                 //AsePackage Configs
                 allText = System.IO.File.ReadAllText("AsePackageConfig.json");
                 Vehicle.AsePackageConfig = JsonConvert.DeserializeObject<AsePackageConfig>(allText);
-                //Vehicle.AsePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
                 allText = System.IO.File.ReadAllText("PspConnectionConfig.json");
                 Vehicle.PspConnectionConfig = JsonConvert.DeserializeObject<PspConnectionConfig>(allText);
-                //Vehicle.PspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>("PspConnectionConfig.xml");
                 allText = System.IO.File.ReadAllText("AseBatteryConfig.json");
                 Vehicle.AseBatteryConfig = JsonConvert.DeserializeObject<AseBatteryConfig>(allText);
-                //Vehicle.AseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>("AseBatteryConfig.xml");
                 allText = System.IO.File.ReadAllText("AseMoveConfig.json");
                 Vehicle.AseMoveConfig = JsonConvert.DeserializeObject<AseMoveConfig>(allText);
-                //Vehicle.AseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>("AseMoveConfig.xml");
 
                 if (Vehicle.MainFlowConfig.IsSimulation)
                 {
@@ -1376,7 +1367,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if ((curTime - StopChargeTimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs)
                 {
                     SetAlarmFromAgvm(000014);
-                    AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                    //AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                 }
             }
         }
@@ -1681,7 +1672,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[斷充 逾時] Stop Charge Timeout.");
                         SetAlarmFromAgvm(000014);
-                        AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                        //AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                     }
                 }
             }
