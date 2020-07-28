@@ -1996,15 +1996,25 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (Vehicle.MainFlowConfig.IsSimulation)
                 {
-                    AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
-                    aseMoveStatus.AseMoveState = isEnd ? EnumAseMoveState.Idle : EnumAseMoveState.Working;
-                    aseMoveStatus.LastAddress = address;
-                    aseMoveStatus.LastMapPosition = address.Position;
-                    aseMoveStatus.LastSection = mapSection;
-                    aseMoveStatus.HeadDirection = headAngle;
-                    aseMoveStatus.Speed = speed;
-                    aseMoveStatus.IsMoveEnd = isEnd;
-                    FakeReserveOkAseMoveStatus.Enqueue(aseMoveStatus);
+                    Task.Run(() =>
+                    {
+                        SpinWait.SpinUntil(() => false, 1000);
+                        AsePositionArgs positionArgs = new AsePositionArgs()
+                        {
+                            Arrival = isEnd ? EnumAseArrival.EndArrival : EnumAseArrival.Arrival,
+                            MapPosition = address.Position
+                        };
+                        asePackage.ReceivePositionArgsQueue.Enqueue(positionArgs);
+                    });
+                    //AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
+                    //aseMoveStatus.AseMoveState = isEnd ? EnumAseMoveState.Idle : EnumAseMoveState.Working;
+                    //aseMoveStatus.LastAddress = address;
+                    //aseMoveStatus.LastMapPosition = address.Position;
+                    //aseMoveStatus.LastSection = mapSection;
+                    //aseMoveStatus.HeadDirection = headAngle;
+                    //aseMoveStatus.Speed = speed;
+                    //aseMoveStatus.IsMoveEnd = isEnd;
+                    //FakeReserveOkAseMoveStatus.Enqueue(aseMoveStatus);
                 }
                 else
                 {
@@ -2014,7 +2024,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         if (Vehicle.AgvcTransCmdBuffer.ContainsKey(cmdId))
                         {
                             var transferCommand = Vehicle.AgvcTransCmdBuffer[cmdId];
-                            //TODO : check if need open both slot.
                             switch (transferCommand.EnrouteState)
                             {
                                 case CommandState.None:
@@ -2184,9 +2193,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                 }
                 Vehicle.AgvcTransCmdBuffer = tempTransCmdBuffer;
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令 完成] : ReportAgvcTransferComplete [{agvcTransCmd.AgvcTransCommandType}].");
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令 完成 回報] : ReportAgvcTransferComplete [{agvcTransCmd.AgvcTransCommandType}].");
                 ReportAgvcTransferComplete(agvcTransCmd);
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[選擇 下一筆執行命令] : OptimizeTransferStepsAfterTransferComplete.");
                 OptimizeTransferStepsAfterTransferComplete();
                 if (Vehicle.AgvcTransCmdBuffer.Count == 0)
                 {
@@ -2195,6 +2203,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.End);
                 GoNextTransferStep = true;
                 WaitingTransferCompleteEnd = false;
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令 完成] : TransferComplete [{cmdId}].");
             }
             catch (Exception ex)
             {
@@ -2866,7 +2875,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"OptimizeTransferStepsAfterTransferComplete");
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[選擇 下一筆執行命令] OptimizeTransferStepsAfterTransferComplete");
                 Vehicle.IsOptimize = true;
                 transferSteps = new List<TransferStep>();
                 TransferStepsIndex = 0;

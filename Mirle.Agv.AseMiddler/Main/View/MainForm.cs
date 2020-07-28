@@ -1660,5 +1660,10 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
+        private void btnKeyInSoc_Click_1(object sender, EventArgs e)
+        {
+            Vehicle.AseBatteryStatus.Percentage = decimal.ToInt32(numSoc.Value);
+        }
     }
 }
