@@ -25,5 +25,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int AskReserveIntervalMs { get; set; } = 2000;
         public int NeerlyNoMoveRangeMm { get; set; }
         public int ScheduleIntervalMs { get; set; } = 500;
+        public int SendWaitRetryTimes { get; set; } = 3;
     }
 }
