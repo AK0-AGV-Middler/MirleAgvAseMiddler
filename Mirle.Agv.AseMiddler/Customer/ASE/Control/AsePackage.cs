@@ -142,7 +142,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-      
+
 
         #region Threads
 
@@ -1344,7 +1344,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                //PrimarySendEnqueue("P13", "");
+                PrimarySendEnqueue("P13", "");
             }
             catch (Exception ex)
             {
@@ -1462,7 +1462,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (result == 0)
                     {
-                        ImportantPspLog?.Invoke(this,$"[片段移動 被拒絕] MoveAppend rejected by local. Do Move Fail Flow.");
+                        ImportantPspLog?.Invoke(this, $"[片段移動 被拒絕] MoveAppend rejected by local. Do Move Fail Flow.");
                         AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
                         AsePositionArgs positionArgs = new AsePositionArgs()
                         {
@@ -1492,7 +1492,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         Speed = 0
                     };
                     ReceivePositionArgsQueue.Enqueue(positionArgs);
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -1649,8 +1649,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (state == enumConnectState.Connected || state == enumConnectState.Quit)
                 {
                     LogPsWrapper(msg);
-                    ImportantPspLog?.Invoke(this, msg);                    
-                }                
+                    ImportantPspLog?.Invoke(this, msg);
+                }
                 OnConnectionChangeEvent?.Invoke(this, psWrapper.ConnectionState == enumConnectState.Connected);
             }
             catch (Exception ex)
@@ -1665,7 +1665,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Vehicle.IsLocalConnect = false;
                 SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
-                if (!Vehicle.IsLocalConnect) OnAlarmCodeSetEvent?.Invoke(this, 56);              
+                if (!Vehicle.IsLocalConnect) OnAlarmCodeSetEvent?.Invoke(this, 56);
             }
             catch (Exception ex)
             {

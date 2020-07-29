@@ -1372,7 +1372,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if ((curTime - StopChargeTimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs)
                 {
                     SetAlarmFromAgvm(000014);
-                    //AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                    AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                 }
             }
         }
@@ -1677,7 +1677,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[斷充 逾時] Stop Charge Timeout.");
                         SetAlarmFromAgvm(000014);
-                        //AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                        AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                     }
                 }
             }
@@ -2721,7 +2721,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AgvcConnector_OnSendRecvTimeoutEvent(object sender, EventArgs e)
         {
             SetAlarmFromAgvm(38);
-            //AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 
         private void AgvcConnector_OnAgvcContinueBcrReadEvent(object sender, EventArgs e)
