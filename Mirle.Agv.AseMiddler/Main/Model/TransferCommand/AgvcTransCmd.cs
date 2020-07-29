@@ -7,19 +7,19 @@ using Mirle.Agv.AseMiddler.Controller;
 using com.mirle.aka.sc.ProtocolFormat.ase.agvMessage;
 using Google.Protobuf.Collections;
 using System.Reflection;
- 
+
 using Mirle.Tools;
 
 namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 {
-    [Serializable]
+
     public class AgvcTransCmd
     {
         public string CommandId { get; set; } = "";
         public EnumAgvcTransCommandType AgvcTransCommandType { get; set; } = EnumAgvcTransCommandType.Else;
         public string LoadAddressId { get; set; } = "";
         public string UnloadAddressId { get; set; } = "";
-        public string CassetteId { get; set; } = "";      
+        public string CassetteId { get; set; } = "";
         public ushort SeqNum { get; set; }
         public double CommandDistance { get; set; }
         public CompleteStatus CompleteStatus { get; set; }
@@ -42,17 +42,17 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             SeqNum = aSeqNum;
             CompleteStatus = SetupCompleteStatus(transRequest.CommandAction);
             LotId = transRequest.LOTID.Trim();
-            
+
             LoadPortId = string.IsNullOrEmpty(transRequest.LoadPortID) ? "" : transRequest.LoadPortID.Trim();
             UnloadPortId = string.IsNullOrEmpty(transRequest.UnloadPortID) ? "" : transRequest.UnloadPortID.Trim();
         }
 
         protected CompleteStatus SetupCompleteStatus(CommandActionType actType)
-        {           
+        {
             switch (actType)
             {
                 case CommandActionType.Move:
-                    return CompleteStatus.Move;                   
+                    return CompleteStatus.Move;
                 case CommandActionType.Load:
                     return CompleteStatus.Load;
                 case CommandActionType.Unload:
@@ -116,7 +116,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             }
         }
 
-        protected void LogException(string source,string exMsg)
+        protected void LogException(string source, string exMsg)
         {
             MirleLogger.Instance.Log(new LogFormat("Error", "5", source, "Device", "CarrierID", exMsg));
         }
@@ -132,9 +132,9 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
             }
             catch (Exception ex)
             {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name,ex.Message);
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }        
+        }
     }
     public class AgvcMoveToChargerCmd : AgvcMoveCmd
     {

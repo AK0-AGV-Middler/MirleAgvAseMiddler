@@ -7,7 +7,7 @@ using Mirle.Agv.AseMiddler.Controller;
 
 namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 {
-    [Serializable]
+
     public class EmptyTransferStep : TransferStep
     {
         public EmptyTransferStep() : this("")

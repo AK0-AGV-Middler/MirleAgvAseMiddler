@@ -22,19 +22,10 @@ using Mirle.Tools;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
-    [Serializable]
+
     public class AgvcConnector
     {
-        public class SendWaitWrapper
-        {
-            public int RetrySendWaitCounter { get; set; } = 10;
-            public WrapperMessage Wrapper { get; set; } = new WrapperMessage();
 
-            public SendWaitWrapper(WrapperMessage wrapper)
-            {
-                this.Wrapper = wrapper;
-            }
-        }
 
         #region Events
         public event EventHandler<string> OnMessageShowOnMainFormEvent;
@@ -76,7 +67,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         private bool IsWaitReserveReply { get; set; }
         private MapPosition lastReportPosition { get; set; } = new MapPosition();
 
-        public ConcurrentQueue<SendWaitWrapper> queSendWaitWrappers = new ConcurrentQueue<SendWaitWrapper>();
+        private Thread thdSchedule;
+        public bool IsSchedulePause { get; set; } = false;
+
+        public ConcurrentQueue<ScheduleWrapper> PrimarySendQueue { get; set; } = new ConcurrentQueue<ScheduleWrapper>();
+        public ConcurrentQueue<ScheduleWrapper> SecondarySendQueue { get; set; } = new ConcurrentQueue<ScheduleWrapper>();
+        public ConcurrentQueue<ScheduleWrapper> PrimaryReceiveQueue { get; set; } = new ConcurrentQueue<ScheduleWrapper>();
+        public ConcurrentQueue<ScheduleWrapper> DealPrimaryReceiveQueue { get; set; } = new ConcurrentQueue<ScheduleWrapper>();
+        public ConcurrentQueue<ScheduleWrapper> SecondaryReceiveQueue { get; set; } = new ConcurrentQueue<ScheduleWrapper>();
 
         public TcpIpAgent ClientAgent { get; private set; }
         public string AgvcConnectorAbnormalMsg { get; set; } = "";
@@ -97,10 +95,21 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Connect();
             }
-            StartAskReserve();
+            InitialThreads();
         }
 
         #region Initial
+        public void InitialThreads()
+        {
+            IsAskReservePause = false;
+            thdAskReserve = new Thread(new ThreadStart(AskReserve));
+            thdAskReserve.IsBackground = true;
+            thdAskReserve.Start();
+
+            thdSchedule = new Thread(Schedule);
+            thdSchedule.IsBackground = true;
+            thdSchedule.Start();
+        }
 
         public void CreatTcpIpClientAgent()
         {
@@ -532,7 +541,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                             Send_Cmd136_AskReserve(askReserveSection);
                             SpinWait.SpinUntil(() => ReserveOkAskNext, agvcConnectorConfig.AskReserveIntervalMs);
-                            ReserveOkAskNext = false;                           
+                            ReserveOkAskNext = false;
                         }
                         SpinWait.SpinUntil(() => false, 50);
                     }
@@ -543,14 +552,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
             }
         }
-        public void StartAskReserve()
-        {
-            IsAskReservePause = false;
-            thdAskReserve = new Thread(new ThreadStart(AskReserve));
-            thdAskReserve.IsBackground = true;
-            thdAskReserve.Start();
-            mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : StartAskReserve");
-        }
+
+
+
+
         public void PauseAskReserve()
         {
             IsAskReservePause = true;
@@ -734,6 +739,91 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             Send_Cmd138_GuideInfoRequest(Vehicle.AseMoveStatus.LastAddress.Id, moveCmdInfo.EndAddress.Id);
         }
+
+        #endregion
+
+        #region Thd ScheduleI
+
+        private void Schedule()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (IsSchedulePause)
+                    {
+                        SpinWait.SpinUntil(() => !IsSchedulePause, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
+
+                        continue;
+                    }
+
+                    if (Vehicle.IsAgvcConnect)
+                    {
+                        if (PrimarySendQueue.Any())
+                        {
+                            PrimarySendQueue.TryDequeue(out ScheduleWrapper scheduleWrapper);
+                            PrimarySend(ref scheduleWrapper);
+                        }
+
+                        if (SecondarySendQueue.Any())
+                        {
+                            SecondarySendQueue.TryDequeue(out ScheduleWrapper scheduleWrapper);
+                            SecondarySend(ref scheduleWrapper);
+                        }
+
+                        CheckPrimaryReceiveQueue();
+
+                        if (DealPrimaryReceiveQueue.Any())
+                        {
+                            DealPrimaryReceiveQueue.TryDequeue(out ScheduleWrapper scheduleWrapper);
+                            DealPrimaryReceived(ref scheduleWrapper);
+                        }
+
+                        if (SecondaryReceiveQueue.Any())
+                        {
+                            SecondaryReceiveQueue.TryDequeue(out ScheduleWrapper scheduleWrapper);
+                            DealSecondaryReceived(ref scheduleWrapper);
+                        }
+                    }
+
+                    Thread.Sleep(10);
+                }
+                catch (Exception ex)
+                {
+                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                }
+                finally
+                {
+                    SpinWait.SpinUntil(() => false, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
+                }
+            }
+        }
+
+        private void PrimarySend(ref ScheduleWrapper scheduleWrapper)
+        {
+
+        }
+
+        private void SecondarySend(ref ScheduleWrapper scheduleWrapper)
+        {
+
+        }
+
+        private void CheckPrimaryReceiveQueue()
+        {
+
+        }
+
+        private void DealPrimaryReceived(ref ScheduleWrapper scheduleWrapper)
+        {
+
+        }
+
+        private void DealSecondaryReceived(ref ScheduleWrapper scheduleWrapper)
+        {
+
+        }
+
         #endregion
 
         public void SendAgvcConnectorFormCommands(int cmdNum, Dictionary<string, string> pairs)
@@ -3283,5 +3373,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         public short wMinute;
         public short wSecond;
         public short wMilliseconds;
+    }
+
+    public class ScheduleWrapper
+    {
+        public int RetrySendWaitCounter { get; set; } = 10;
+        public WrapperMessage Wrapper { get; set; } = new WrapperMessage();
+        public bool IsSendWait { get; set; } = false;
+        public ScheduleWrapper(WrapperMessage wrapper)
+        {
+            this.Wrapper = wrapper;
+        }
     }
 }

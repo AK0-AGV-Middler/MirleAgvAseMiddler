@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.AseMiddler.Model.Configs
 {
-    [Serializable]
+
     public class AgvcConnectorConfig
     {
         public int ClientNum { get; set; }
@@ -21,12 +21,9 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int ReconnectionIntervalMs { get; set; }
         public int MaxReconnectionCount { get; set; }
         public int RetryCount { get; set; }
-        public int SleepTime { get; set; }
-        public int RichTextBoxMaxLines { get; set; }
         public int ReserveLengthMeter { get; set; }
-        public int AskReserveIntervalMs { get; set; }
+        public int AskReserveIntervalMs { get; set; } = 2000;
         public int NeerlyNoMoveRangeMm { get; set; }
-        public int BcrReadRetryIntervalMs { get; set; }
-        public int BcrReadRetryTimeoutSec { get; set; }
+        public int ScheduleIntervalMs { get; set; } = 500;
     }
 }

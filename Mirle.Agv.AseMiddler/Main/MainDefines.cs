@@ -276,7 +276,7 @@ namespace Mirle.Agv.AseMiddler
     {
         Idle,
         ArrivalCharge,
-        WaitChargingOn,        
+        WaitChargingOn,
         LowPowerCharge,
         DisCharge,
         WaitChargingOff
@@ -285,7 +285,7 @@ namespace Mirle.Agv.AseMiddler
     #endregion
 
     /// <summary>
-    /// AgvcTransCmd/XxxCmdInfo cannot deepClone since stopwatch cannot [Serializable]
+    /// AgvcTransCmd/XxxCmdInfo cannot deepClone since stopwatch cannot 
     /// </summary>
     public static class ExtensionMethods
     {

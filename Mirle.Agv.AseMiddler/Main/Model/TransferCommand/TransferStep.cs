@@ -8,7 +8,7 @@ using Mirle.Agv.AseMiddler.Model.Configs;
 
 namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 {
-    [Serializable]
+
     public abstract class TransferStep
     {
         protected EnumTransferStepType type = EnumTransferStepType.Empty;

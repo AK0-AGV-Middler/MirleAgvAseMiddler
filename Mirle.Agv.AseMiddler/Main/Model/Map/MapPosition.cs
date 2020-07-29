@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mirle.Agv.AseMiddler.Model
 {
-    [Serializable]
+
     public class MapPosition
     {
         public double X { get; set; }

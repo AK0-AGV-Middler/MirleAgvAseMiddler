@@ -7,13 +7,13 @@ using Mirle.Agv.AseMiddler.Controller;
 
 namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 {
-    [Serializable]
+
     public class LoadCmdInfo : RobotCommand
-    {          
+    {
         public LoadCmdInfo(AgvcTransCmd agvcTransCmd) : base(agvcTransCmd)
         {
             this.type = EnumTransferStepType.Load;
-            this.PortAddressId = agvcTransCmd.LoadAddressId;                
+            this.PortAddressId = agvcTransCmd.LoadAddressId;
         }
     }
 }

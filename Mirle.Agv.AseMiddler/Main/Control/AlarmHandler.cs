@@ -14,7 +14,7 @@ using Mirle.Tools;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
-    [Serializable]
+
     public class AlarmHandler
     {
         #region Containers
@@ -23,7 +23,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string LastAlarmMsg { get; set; } = "";
         #endregion     
 
-        private MainFlowHandler mainFlowHandler;      
+        private MainFlowHandler mainFlowHandler;
         private MirleLogger mirleLogger = MirleLogger.Instance;
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
 
@@ -31,7 +31,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string AlarmHistoryLogMsg { get; set; } = "";
 
         public AlarmHandler()
-        {                     
+        {
             LoadAlarmFile();
         }
 
@@ -159,7 +159,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void LogAlarmHistory(Alarm alarm)
         {
             try
-            {                
+            {
                 string msg = $"{alarm.Id},{alarm.AlarmText},{alarm.Level},{alarm.SetTime},{alarm.ResetTime},{alarm.Description}";
 
                 mirleLogger.LogString("AlarmHistory", msg);

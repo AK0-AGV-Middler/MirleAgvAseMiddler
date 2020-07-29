@@ -10,8 +10,5 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
     {
         public int WatchBatteryStateInterval { get; set; } = 1000;
         public int WatchBatteryStateIntervalInCharging { get; set; } = 500;
-        public int LastPercentage { get; set; } = 70;
-        public int BatteryChargingTimeoutM { get; set; } = 10;
-        public int FullChargePercentage { get; set; } = 100;
     }
 }

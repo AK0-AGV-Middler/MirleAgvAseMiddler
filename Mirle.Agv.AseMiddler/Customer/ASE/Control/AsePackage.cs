@@ -226,7 +226,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-
                     if (IsSchedulePause)
                     {
                         SpinWait.SpinUntil(() => !IsSchedulePause, Vehicle.AsePackageConfig.ScheduleIntervalMs);

@@ -12,7 +12,7 @@ using System.Collections.Concurrent;
 
 namespace Mirle.Agv.AseMiddler.Model
 {
-    [Serializable]
+
     public class Vehicle
     {
         private static readonly Vehicle theVehicle = new Vehicle();

@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 
 namespace Mirle.Agv.AseMiddler.Model
 {
-    [Serializable]
+
     public class MapInfo
     {
         public ConcurrentDictionary<string, MapAddress> addressMap = new ConcurrentDictionary<string, MapAddress>();
