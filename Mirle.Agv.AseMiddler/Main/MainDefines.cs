@@ -44,13 +44,6 @@ namespace Mirle.Agv.AseMiddler
         Else
     }
 
-    public enum EnumConnectState
-    {
-        Offline,
-        OnlineRemote,
-        OnlineLoacal
-    }
-
     public enum EnumAutoState
     {
         Auto,
@@ -70,26 +63,6 @@ namespace Mirle.Agv.AseMiddler
         Engineer,
         Admin,
         OneAboveAll
-    }
-
-    public enum EnumCompleteStatus
-    {
-        Move = 0,
-        Load = 1,
-        Unload = 2,
-        LoadUnload = 3,
-        Home = 4,
-        MtlHome = 7,
-        MoveToMtl = 10,
-        SystemOut = 11,
-        SystemIn = 12,
-        Cancel = 20,
-        Abort = 21,
-        VehicleAbort = 22,
-        IdMismatch = 23,
-        IdReadFail = 24,
-        InterlockError = 64,
-        TransferComplete = 123
     }
 
     public enum EnumCmdNum
@@ -142,17 +115,6 @@ namespace Mirle.Agv.AseMiddler
         Alarm
     }
 
-    public enum EnumThreadStatus
-    {
-        None,
-        Start,
-        Pause,
-        PauseComplete,
-        Working,
-        Stop,
-        StopComplete
-    }
-
     public enum EnumCstIdReadResult
     {
         Normal,
@@ -197,14 +159,6 @@ namespace Mirle.Agv.AseMiddler
         S
     }
 
-
-    public enum EnumPspConnectionState
-    {
-        Offline,
-        Online,
-        CheckConnectMode
-    }
-
     public enum EnumAseRobotState
     {
         Idle,
@@ -237,13 +191,6 @@ namespace Mirle.Agv.AseMiddler
         Fail,
         Pause,
         Cancel
-    }
-
-    public enum EnumStageDirection
-    {
-        None,
-        Left,
-        Right
     }
 
     public enum EnumSlotNumber
@@ -282,38 +229,5 @@ namespace Mirle.Agv.AseMiddler
         WaitChargingOff
     }
 
-    #endregion
-
-    /// <summary>
-    /// AgvcTransCmd/XxxCmdInfo cannot deepClone since stopwatch cannot 
-    /// </summary>
-    public static class ExtensionMethods
-    {
-        public static T DeepClone<T>(this T item)
-        {
-            try
-            {
-                if (item != null)
-                {
-                    using (var stream = new MemoryStream())
-                    {
-                        var formatter = new BinaryFormatter();
-                        lock (item)
-                        {
-                            formatter.Serialize(stream, item);
-                        }
-                        stream.Seek(0, SeekOrigin.Begin);
-                        var result = (T)formatter.Deserialize(stream);
-                        return result;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                return default(T);
-            }
-
-            return default(T);
-        }
-    }
+    #endregion    
 }
