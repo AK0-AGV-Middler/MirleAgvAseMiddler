@@ -24,6 +24,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string MoveStopResult { get; set; } = "";
         public int DisconnectedCounter { get; set; } = 0;
 
+        public PSMessageXClass TransactionErrorMessage { get; set; } = new PSMessageXClass();
+
         public RobotCommand RobotCommand { get; set; }
 
         private Thread thdWatchWifiSignalStrength;
@@ -62,7 +64,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public AsePackage()
         {
-            //LoadConfigs();
             InitialWrapper();
             InitialThreads();
         }
@@ -86,32 +87,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             thdWatchBatteryState.Start();
         }
 
-        private void LoadConfigs()
-        {
-            //XmlHandler xmlHandler = new XmlHandler();
-            //Vehicle.AsePackageConfig = xmlHandler.ReadXml<AsePackageConfig>("AsePackageConfig.xml");
-            //Vehicle.PspConnectionConfig = xmlHandler.ReadXml<PspConnectionConfig>("PspConnectionConfig.xml");
-            //Vehicle.AseBatteryConfig = xmlHandler.ReadXml<AseBatteryConfig>("AseBatteryConfig.xml");
-            //Vehicle.AseMoveConfig = xmlHandler.ReadXml<AseMoveConfig>("AseMoveConfig.xml");
-
-            //if (Vehicle.MainFlowConfig.IsSimulation)
-            //{
-            //  Vehicle.AseBatteryConfig.WatchBatteryStateInterval = 30 * 1000;
-            //  Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging = 30 * 1000;
-            //  Vehicle.AseMoveConfig.WatchPositionInterval = 5000;
-            //}
-        }
-
         private void InitialWrapper()
         {
             try
             {
                 LoadAutoReply();
-                LoadPspConnectionConfig();
+                GetConfigWrapper();
                 BindPsWrapperEvent();
-                psWrapper.T3 = Vehicle.PspConnectionConfig.T6Timeout;
-                psWrapper.T6 = Vehicle.PspConnectionConfig.T6Timeout;
-                psWrapper.LinkTestIntervalMs = Vehicle.PspConnectionConfig.LinkTestIntervalMs;
 
                 if (!Vehicle.MainFlowConfig.IsSimulation)
                 {
@@ -141,7 +123,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
 
 
         #region Threads
@@ -1633,10 +1614,14 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (psMessage == null) return;
 
-            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
-            ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{psMessage.Number}. AGVL DisConnect");
-            Thread.Sleep(1000);
-            PrimarySendEnqueue(psMessage.Type + psMessage.Number, psMessage.PSMessage);
+            TransactionErrorMessage = psMessage;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + TransactionErrorMessage.ToString());
+                ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{TransactionErrorMessage.Number}. AGVL DisConnect");
+                Thread.Sleep(1000);
+                PrimarySendEnqueue(TransactionErrorMessage.Type + TransactionErrorMessage.Number, TransactionErrorMessage.PSMessage);
+            });
         }
 
         private void PsWrapper_OnConnectionStateChange(enumConnectState state)
@@ -1662,9 +1647,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                Vehicle.IsLocalConnect = false;
-                SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
-                if (!Vehicle.IsLocalConnect) OnAlarmCodeSetEvent?.Invoke(this, 56);
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    Vehicle.IsLocalConnect = false;
+                    SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
+                    if (!Vehicle.IsLocalConnect) OnAlarmCodeSetEvent?.Invoke(this, 56);
+                });
             }
             catch (Exception ex)
             {
@@ -1672,7 +1660,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void LoadPspConnectionConfig()
+        private void GetConfigWrapper()
         {
             try
             {
@@ -1680,6 +1668,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 psWrapper.Address = Vehicle.PspConnectionConfig.Ip;
                 psWrapper.Port = Vehicle.PspConnectionConfig.Port;
                 psWrapper.ConnectMode = Vehicle.PspConnectionConfig.IsServer ? enumConnectMode.Passive : enumConnectMode.Active;
+                psWrapper.T3 = Vehicle.PspConnectionConfig.T6Timeout;
+                psWrapper.T6 = Vehicle.PspConnectionConfig.T6Timeout;
+                psWrapper.LinkTestIntervalMs = Vehicle.PspConnectionConfig.LinkTestIntervalMs;
             }
             catch (Exception ex)
             {
