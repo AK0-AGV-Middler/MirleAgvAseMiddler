@@ -41,8 +41,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public int TransferStepsIndex { get; private set; } = 0;
         public bool IsOverrideMove { get; set; }
         public bool IsAvoidMove { get; set; }
-        public bool IsAgvcReplySendWaitMessage { get; set; } = false;
-
         public bool IsArrivalCharge { get; set; } = false;
 
         #endregion

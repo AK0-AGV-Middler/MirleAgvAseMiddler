@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf.Collections;
 using Mirle.Agv.AseMiddler.Controller;
- 
+
 using Mirle.Agv.AseMiddler.Model.Configs;
 using System;
 using System.Collections.Generic;
@@ -11,21 +11,21 @@ using System.Windows.Forms;
 using com.mirle.aka.sc.ProtocolFormat.ase.agvMessage;
 using System.Threading.Tasks;
 using Mirle.Tools;
+using Mirle.Agv.AseMiddler.Model;
 
 namespace Mirle.Agv.AseMiddler.View
 {
     public partial class AgvcConnectorForm : Form
     {
         private AgvcConnector agvcConnector;
-        private AgvcConnectorConfig agvcConnectorConfig;
         private string CommLogMsg { get; set; } = "";
         private string ConnectionMsg { get; set; } = "";
+        public Vehicle Vehicle { get; set; } = Vehicle.Instance;
 
         public AgvcConnectorForm(AgvcConnector agvcConnector)
         {
             InitializeComponent();
             this.agvcConnector = agvcConnector;
-            agvcConnectorConfig = agvcConnector.GetAgvcConnectorConfig();
             EventInital();
         }
 
@@ -43,8 +43,8 @@ namespace Mirle.Agv.AseMiddler.View
 
         private void ConfigToUI()
         {
-            txtRemoteIp.Text = agvcConnectorConfig.RemoteIp;
-            txtRemotePort.Text = agvcConnectorConfig.RemotePort.ToString();
+            txtRemoteIp.Text = Vehicle.AgvcConnectorConfig.RemoteIp;
+            txtRemotePort.Text = Vehicle.AgvcConnectorConfig.RemotePort.ToString();
         }
 
         private void EventInital()
@@ -149,7 +149,7 @@ namespace Mirle.Agv.AseMiddler.View
                 case EnumCmdNum.Cmd31_TransferRequest:
                     ID_31_TRANS_REQUEST cmd31 = new ID_31_TRANS_REQUEST();
                     cmd31.CmdID = "Cmd001";
-                    cmd31.CSTID = "Cst001";                    
+                    cmd31.CSTID = "Cst001";
                     cmd31.DestinationAdr = "Adr001";
                     cmd31.LoadAdr = "Adr002";
                     infos = cmd31.GetType().GetProperties();
@@ -160,7 +160,7 @@ namespace Mirle.Agv.AseMiddler.View
                     cmd32.ReplyCode = 0;
                     infos = cmd32.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd32);
-                    break;               
+                    break;
                 case EnumCmdNum.Cmd35_CarrierIdRenameRequest:
                     ID_35_CST_ID_RENAME_REQUEST cmd35 = new ID_35_CST_ID_RENAME_REQUEST();
                     cmd35.OLDCSTID = "Cst001";
@@ -178,7 +178,7 @@ namespace Mirle.Agv.AseMiddler.View
                     break;
                 case EnumCmdNum.Cmd37_TransferCancelRequest:
                     ID_37_TRANS_CANCEL_REQUEST cmd37 = new ID_37_TRANS_CANCEL_REQUEST();
-                    cmd37.CmdID = "Cmd001";                    
+                    cmd37.CmdID = "Cmd001";
                     infos = cmd37.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd37);
                     break;
@@ -255,7 +255,7 @@ namespace Mirle.Agv.AseMiddler.View
                     break;
                 case EnumCmdNum.Cmd131_TransferResponse:
                     ID_131_TRANS_RESPONSE cmd131 = new ID_131_TRANS_RESPONSE();
-                    cmd131.CmdID = "Cmd001";                   
+                    cmd131.CmdID = "Cmd001";
                     cmd131.NgReason = "";
                     cmd131.ReplyCode = 0;
                     infos = cmd131.GetType().GetProperties();
@@ -266,7 +266,7 @@ namespace Mirle.Agv.AseMiddler.View
                     cmd132.CmdID = "Cmd001";
                     infos = cmd132.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd132);
-                    break;               
+                    break;
                 case EnumCmdNum.Cmd134_TransferEventReport:
                     ID_134_TRANS_EVENT_REP cmd134 = new ID_134_TRANS_EVENT_REP();
                     cmd134.CurrentAdrID = "Adr001";
@@ -309,7 +309,7 @@ namespace Mirle.Agv.AseMiddler.View
                     cmd141.ReplyCode = 0;
                     infos = cmd141.GetType().GetProperties();
                     SetDataGridViewFromInfos(infos, cmd141);
-                    break;                
+                    break;
                 case EnumCmdNum.Cmd145_PowerOnoffResponse:
                     ID_145_POWER_OPE_RESPONSE cmd145 = new ID_145_POWER_OPE_RESPONSE();
                     cmd145.ReplyCode = 0;
@@ -438,7 +438,7 @@ namespace Mirle.Agv.AseMiddler.View
         }
 
         private void timerUI_Tick(object sender, EventArgs e)
-        {           
+        {
             try
             {
                 tbxCommLogMsg.Text = CommLogMsg;
@@ -448,9 +448,9 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }        
+        }
 
-        private void LogException(string classMethodName,string exMsg)
+        private void LogException(string classMethodName, string exMsg)
         {
             MirleLogger.Instance.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
         }
