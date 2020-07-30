@@ -23,9 +23,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string LocalLogMsg { get; set; } = "";
         public string MoveStopResult { get; set; } = "";
         public int DisconnectedCounter { get; set; } = 0;
-
         public PSMessageXClass TransactionErrorMessage { get; set; } = new PSMessageXClass();
-
         public RobotCommand RobotCommand { get; set; }
 
         private Thread thdWatchWifiSignalStrength;

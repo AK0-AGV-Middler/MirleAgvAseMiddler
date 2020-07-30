@@ -562,6 +562,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             if (Vehicle.IsReAuto)
                             {
+                                Vehicle.AseMoveStatus.IsMoveEnd = false;
                                 Vehicle.IsReAuto = false;
                                 if (IsAvoidMove)
                                 {
@@ -1749,6 +1750,24 @@ namespace Mirle.Agv.AseMiddler.Controller
                 AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
                 moveStatus.LastMapPosition = positionArgs.MapPosition;
 
+                if (!Vehicle.AseMoveStatus.IsMoveEnd)
+                {
+                    if (LastIdlePosition.Position.MyDistance(positionArgs.MapPosition) <= Vehicle.MainFlowConfig.IdleReportRangeMm)
+                    {
+                        if ((DateTime.Now - LastIdlePosition.TimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.IdleReportIntervalMs)
+                        {
+                            UpdateLastIdlePositionAndTimeStamp(positionArgs);
+                            SetAlarmFromAgvm(55);
+                        }
+
+                        return;
+                    }
+                    else
+                    {
+                        UpdateLastIdlePositionAndTimeStamp(positionArgs);
+                    }
+                }
+
                 if (movingGuide.GuideSectionIds.Any())
                 {
                     if (positionArgs.Arrival == EnumAseArrival.EndArrival)
@@ -1760,48 +1779,48 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        if (LastIdlePosition.Position.MyDistance(positionArgs.MapPosition) <= Vehicle.MainFlowConfig.IdleReportRangeMm)
+                        // if (LastIdlePosition.Position.MyDistance(positionArgs.MapPosition) <= Vehicle.MainFlowConfig.IdleReportRangeMm)
+                        // {
+                        //     if ((DateTime.Now - LastIdlePosition.TimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.IdleReportIntervalMs)
+                        //     {
+                        //         UpdateLastIdlePositionAndTimeStamp(positionArgs);
+                        //         SetAlarmFromAgvm(55);
+                        //     }
+
+                        //     return;
+                        // }
+                        // else
+                        // {
+                        // UpdateLastIdlePositionAndTimeStamp(positionArgs);
+
+                        var nearlyDistance = 999999;
+                        foreach (string addressId in movingGuide.GuideAddressIds)
                         {
-                            if ((DateTime.Now - LastIdlePosition.TimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.IdleReportIntervalMs)
+                            MapAddress mapAddress = Vehicle.Mapinfo.addressMap[addressId];
+                            var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
+
+                            if (dis < nearlyDistance)
                             {
-                                UpdateLastIdlePositionAndTimeStamp(positionArgs);
-                                SetAlarmFromAgvm(55);
-                            }
-
-                            return;
-                        }
-                        else
-                        {
-                            UpdateLastIdlePositionAndTimeStamp(positionArgs);
-
-                            var nearlyDistance = 999999;
-                            foreach (string addressId in movingGuide.GuideAddressIds)
-                            {
-                                MapAddress mapAddress = Vehicle.Mapinfo.addressMap[addressId];
-                                var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
-
-                                if (dis < nearlyDistance)
-                                {
-                                    nearlyDistance = dis;
-                                    moveStatus.NearlyAddress = mapAddress;
-                                }
-                            }
-
-                            foreach (string sectionId in movingGuide.GuideSectionIds)
-                            {
-                                MapSection mapSection = Vehicle.Mapinfo.sectionMap[sectionId];
-                                if (mapSection.InSection(moveStatus.LastAddress.Id))
-                                {
-                                    moveStatus.NearlySection = mapSection;
-                                }
-                            }
-                            moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlyAddress.MyDistance(moveStatus.NearlySection.HeadAddress.Position);
-
-                            if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
+                                nearlyDistance = dis;
+                                moveStatus.NearlyAddress = mapAddress;
                             }
                         }
+
+                        foreach (string sectionId in movingGuide.GuideSectionIds)
+                        {
+                            MapSection mapSection = Vehicle.Mapinfo.sectionMap[sectionId];
+                            if (mapSection.InSection(moveStatus.LastAddress.Id))
+                            {
+                                moveStatus.NearlySection = mapSection;
+                            }
+                        }
+                        moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlyAddress.MyDistance(moveStatus.NearlySection.HeadAddress.Position);
+
+                        if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Update Position. [LastSection = {moveStatus.LastSection.Id}][LastAddress = {moveStatus.LastAddress.Id}] to [NearlySection = {moveStatus.NearlySection.Id}][NearlyAddress = {moveStatus.NearlyAddress.Id}]");
+                        }
+                        // }
                     }
 
                     moveStatus.LastAddress = moveStatus.NearlyAddress;

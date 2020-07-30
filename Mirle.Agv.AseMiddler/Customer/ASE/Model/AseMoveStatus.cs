@@ -10,13 +10,13 @@ namespace Mirle.Agv.AseMiddler.Model
     {
         public EnumAseMoveState AseMoveState { get; set; } = EnumAseMoveState.Idle;
         public int HeadDirection { get; set; } = 0;
-        public int MovingDirection { get; set; } = 0;       
+        public int MovingDirection { get; set; } = 0;
         public MapSection LastSection { get; set; } = new MapSection();
         public MapAddress LastAddress { get; set; } = new MapAddress();
         public MapPosition LastMapPosition { get; set; } = new MapPosition();
         public MapAddress NearlyAddress { get; set; } = new MapAddress();
         public int Speed { get; set; } = 0;
-        public bool IsMoveEnd { get; set; } = false;
+        public bool IsMoveEnd { get; set; } = true;
         public MapSection NearlySection { get; internal set; } = new MapSection();
 
         public AseMoveStatus() { }
@@ -24,7 +24,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public AseMoveStatus(AseMoveStatus aseMoveStatus)
         {
             this.LastMapPosition = aseMoveStatus.LastMapPosition;
-            this.AseMoveState = aseMoveStatus.AseMoveState;           
+            this.AseMoveState = aseMoveStatus.AseMoveState;
             this.HeadDirection = aseMoveStatus.HeadDirection;
             this.MovingDirection = aseMoveStatus.MovingDirection;
             this.Speed = aseMoveStatus.Speed;
