@@ -30,5 +30,8 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int IdleReportIntervalMs { get; set; } = 2 * 60 * 1000;
         public int DischargeRetryTimes { get; set; } = 3;
         public int ChargeRetryTimes { get; set; } = 3;
+        public int LowPowerRepeatChargeIntervalSec { get; set; } = 3 * 60;
+        public int LowPowerRepeatedlyChargeCounterMax { get; set; } = 3;
+        public int SleepLowPowerWatcherSec { get; set; } = 60;
     }
 }

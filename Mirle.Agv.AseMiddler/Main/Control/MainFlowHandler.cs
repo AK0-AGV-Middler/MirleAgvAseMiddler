@@ -84,14 +84,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsFirstAhGet { get; set; }
         public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Normal;
         public string CanAutoMsg { get; set; } = "";
-        public DateTime StartChargeTimeStamp { get; set; }
-        public DateTime StopChargeTimeStamp { get; set; }
+        public DateTime StartChargeTimeStamp { get; set; } = DateTime.Now;
+        public DateTime StopChargeTimeStamp { get; set; } = DateTime.Now;
         public bool WaitingTransferCompleteEnd { get; set; } = false;
         public string DebugLogMsg { get; set; } = "";
         public LastIdlePosition LastIdlePosition { get; set; } = new LastIdlePosition();
         public bool IsLowPowerStartChargeTimeout { get; set; } = false;
         public int BatteryTimeoutCounter { get; set; } = 3;
-
+        public bool IsStopChargTimeoutInRobotStep { get; set; } = false;
+        public DateTime LowPowerStartChargeTimeStamp { get; set; } = DateTime.Now;
+        public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
         private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         #endregion
 
@@ -1260,15 +1262,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         if (Vehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !Vehicle.IsOptimize)
                         {
-                            if (IsLowPower() && !Vehicle.IsCharging)
+                            if (IsLowPower() && !Vehicle.IsCharging && !IsLowPowerStartChargeTimeout)
                             {
                                 LowPowerStartCharge(Vehicle.AseMoveStatus.LastAddress);
-                            }
-
-                            if (IsLowPowerStartChargeTimeout)
-                            {
-                                Thread.Sleep(60 * 1000);
-                                IsLowPowerStartChargeTimeout = false;
                             }
                         }
                         if (Vehicle.AseBatteryStatus.Percentage < Vehicle.MainFlowConfig.LowPowerPercentage - 11 && !Vehicle.IsCharging) //200701 dabid+
@@ -1576,10 +1572,29 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        string msg = $"Addr = {address.Id},and no transfer command,Charge Direction = {address.PioDirection},Precentage = {percentage} < {Vehicle.MainFlowConfig.LowPowerPercentage}(Low Threshold), SEND chsrge command";
-                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[低電量閒置 自動充電] Addr = {address.Id},Precentage = {percentage} < {Vehicle.MainFlowConfig.LowPowerPercentage}(Low Threshold).");
                     }
 
+                    if ((DateTime.Now - LowPowerStartChargeTimeStamp).TotalSeconds >= Vehicle.MainFlowConfig.LowPowerRepeatChargeIntervalSec)
+                    {
+                        LowPowerStartChargeTimeStamp = DateTime.Now;
+                        LowPowerRepeatedlyChargeCounter = 0;
+                    }
+                    else
+                    {
+                        LowPowerRepeatedlyChargeCounter++;
+                        if (LowPowerRepeatedlyChargeCounter > Vehicle.MainFlowConfig.LowPowerRepeatedlyChargeCounterMax)
+                        {
+                            Task.Run(() =>
+                            {
+                                IsLowPowerStartChargeTimeout = true;
+                                SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.SleepLowPowerWatcherSec * 1000);
+                                IsLowPowerStartChargeTimeout = false;
+                            });
+
+                            return;
+                        }
+                    }
                     agvcConnector.ChargHandshaking();
 
                     Vehicle.IsCharging = true;
@@ -1677,8 +1692,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[斷充 逾時] Stop Charge Timeout.");
-                        SetAlarmFromAgvm(000014);
-                        AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                        if (IsRobCommand(GetCurTransferStep()))
+                        {
+                            IsStopChargTimeoutInRobotStep = true;
+                        }
+                        else
+                        {
+                            SetAlarmFromAgvm(000014);
+                            //AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                        }
                     }
                 }
             }
@@ -2436,6 +2458,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void AsePackage_OnRobotCommandErrorEvent(object sender, RobotCommand robotCommand)
         {
+            if (IsStopChargTimeoutInRobotStep)
+            {
+                IsStopChargTimeoutInRobotStep = false;
+                SetAlarmFromAgvm(14);
+            }
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 命令 失敗] AseRobotControl_OnRobotCommandErrorEvent");
             AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
@@ -2444,6 +2471,11 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                if (IsStopChargTimeoutInRobotStep)
+                {
+                    IsStopChargTimeoutInRobotStep = false;
+                    SetAlarmFromAgvm(14);
+                }
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 命令 完成] AseRobotContorl_OnRobotCommandFinishEvent");
                 EnumTransferStepType transferStepType = robotCommand.GetTransferStepType();
                 if (transferStepType == EnumTransferStepType.Load)
@@ -2715,6 +2747,11 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                if (IsStopChargTimeoutInRobotStep)
+                {
+                    IsStopChargTimeoutInRobotStep = false;
+                    SetAlarmFromAgvm(14);
+                }
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 交握 失敗] AseRobotControl_OnRobotInterlockErrorEvent");
                 ResetAllAlarmsFromAgvm();
                 var curCmdId = robotCommand.CmdId;
