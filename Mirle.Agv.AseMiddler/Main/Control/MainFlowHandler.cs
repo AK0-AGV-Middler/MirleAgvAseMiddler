@@ -1780,7 +1780,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             SetAlarmFromAgvm(55);
                         }
 
-                        return;
+                        //return;
                     }
                     else
                     {
