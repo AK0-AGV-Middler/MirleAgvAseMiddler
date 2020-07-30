@@ -848,7 +848,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                             if (returnCode == TrxTcpIp.ReturnCode.Normal)
                             {
                                 scheduleWrapper.Wrapper.TranCmpResp = response;
-                                ReceivePrimarySendWaitQueue.Enqueue(scheduleWrapper);
+                                // ReceivePrimarySendWaitQueue.Enqueue(scheduleWrapper);
+                                ReceiveSent_Cmd32_TransCompleteResponse(response);
                             }
                             else
                             {
@@ -872,10 +873,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-
-
+        }      
+        
         #endregion
 
         public void SendAgvcConnectorFormCommands(int cmdNum, Dictionary<string, string> pairs)
@@ -2157,7 +2156,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                     {
                                         case AGVLocation.Right:
                                             Vehicle.AseCarrierSlotR.CarrierId = response.RenameCarrierID;
-                                            OnCstRenameEvent?.Invoke(this,  EnumSlotNumber.R);
+                                            OnCstRenameEvent?.Invoke(this, EnumSlotNumber.R);
                                             break;
                                         case AGVLocation.Left:
                                             Vehicle.AseCarrierSlotL.CarrierId = response.RenameCarrierID;
@@ -2167,8 +2166,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                                             break;
                                         default:
                                             break;
-                                    }                                   
-                                }                                
+                                    }
+                                }
                             }
                             else
                             {
@@ -2186,7 +2185,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                             switch (cmd.SlotNumber)
                                             {
                                                 case EnumSlotNumber.L:
-                                                    Vehicle.AseCarrierSlotL.CarrierId = response.RenameCarrierID;                                                  
+                                                    Vehicle.AseCarrierSlotL.CarrierId = response.RenameCarrierID;
                                                     break;
                                                 case EnumSlotNumber.R:
                                                     Vehicle.AseCarrierSlotR.CarrierId = response.RenameCarrierID;
@@ -2936,13 +2935,21 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
-        public void Receive_Cmd32_TransferCompleteResponse(object sender, TcpIpEventArgs e)
+      
+        private void ReceiveSent_Cmd32_TransCompleteResponse(ID_32_TRANS_COMPLETE_RESPONSE response)
         {
-            ID_32_TRANS_COMPLETE_RESPONSE receive = (ID_32_TRANS_COMPLETE_RESPONSE)e.objPacket;
-
-            StatusChangeReport();
+            try
+            {
+                int waitTime = response.WaitTime;
+                SpinWait.SpinUntil(() => false, waitTime);
+                StatusChangeReport();
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
         }
+
         public void SendRecv_Cmd132_TransferCompleteReport(AgvcTransCmd agvcTransCmd, int delay = 0)
         {
             try
