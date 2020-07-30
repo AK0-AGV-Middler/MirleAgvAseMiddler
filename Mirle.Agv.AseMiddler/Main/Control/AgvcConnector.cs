@@ -822,9 +822,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
                             returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(scheduleWrapper.Wrapper, out ID_36_TRANS_EVENT_RESPONSE response, out string rtnMsg);
                             if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                            {
-                                scheduleWrapper.Wrapper.ImpTransEventResp = response;
-                                //ReceivePrimarySendWaitQueue.Enqueue(scheduleWrapper);
+                            {                                                        
                                 ReceiveSent_Cmd36_TransferEventResponse(response, scheduleWrapper.Wrapper.ImpTransEventRep);
                             }
                             else
@@ -846,9 +844,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
                             returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(scheduleWrapper.Wrapper, out ID_32_TRANS_COMPLETE_RESPONSE response, out string rtnMsg);
                             if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                            {
-                                scheduleWrapper.Wrapper.TranCmpResp = response;
-                                // ReceivePrimarySendWaitQueue.Enqueue(scheduleWrapper);
+                            {                               
                                 ReceiveSent_Cmd32_TransCompleteResponse(response);
                             }
                             else
