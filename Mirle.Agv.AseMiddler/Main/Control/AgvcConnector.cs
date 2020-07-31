@@ -822,7 +822,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
                             returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(scheduleWrapper.Wrapper, out ID_36_TRANS_EVENT_RESPONSE response, out string rtnMsg);
                             if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                            {                                                        
+                            {
                                 ReceiveSent_Cmd36_TransferEventResponse(response, scheduleWrapper.Wrapper.ImpTransEventRep);
                             }
                             else
@@ -844,7 +844,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
                             returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(scheduleWrapper.Wrapper, out ID_32_TRANS_COMPLETE_RESPONSE response, out string rtnMsg);
                             if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                            {                               
+                            {
                                 ReceiveSent_Cmd32_TransCompleteResponse(response);
                             }
                             else
@@ -869,8 +869,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }      
-        
+        }
+
         #endregion
 
         public void SendAgvcConnectorFormCommands(int cmdNum, Dictionary<string, string> pairs)
@@ -1691,7 +1691,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.PauseStatus = Vehicle.AseMovingGuide.PauseStatus;
             report.ErrorStatus = Vehicle.ErrorStatus;
             report.DrivingDirection = Vehicle.DrivingDirection;
-            report.BatteryCapacity = (uint)Vehicle.AseBatteryStatus.Percentage;
+            report.BatteryCapacity = BatteryCapacityParse(Vehicle.AseBatteryStatus.Percentage);
             report.BatteryTemperature = (int)Vehicle.AseBatteryStatus.Temperature;
             report.ChargeStatus = VhChargeStatusParse(Vehicle.IsCharging);
             report.XAxis = Vehicle.AseMoveStatus.LastMapPosition.X;
@@ -1790,7 +1790,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.HasCstR = Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
                 response.CstIdR = Vehicle.AseCarrierSlotR.CarrierId;
                 response.ChargeStatus = VhChargeStatusParse(Vehicle.IsCharging);
-                response.BatteryCapacity = (uint)Vehicle.AseBatteryStatus.Percentage;
+                response.BatteryCapacity = BatteryCapacityParse(Vehicle.AseBatteryStatus.Percentage);
                 response.BatteryTemperature = (int)Vehicle.AseBatteryStatus.Temperature;
                 response.XAxis = Vehicle.AseMoveStatus.LastMapPosition.X;
                 response.YAxis = Vehicle.AseMoveStatus.LastMapPosition.Y;
@@ -2931,7 +2931,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-      
+
         private void ReceiveSent_Cmd32_TransCompleteResponse(ID_32_TRANS_COMPLETE_RESPONSE response)
         {
             try
@@ -3446,6 +3446,20 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 return DriveDirction.DriveDirNone;
+            }
+        }
+        private uint BatteryCapacityParse(int originCapacity)
+        {
+            var lowPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.LowPowerPercentage, 100), 0);
+            var highPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.HighPowerPercentage, 100), 0);
+            if (lowPowTh>=highPowTh)
+            {
+                return (uint)originCapacity;
+            }
+            else
+            {
+                var diff = highPowTh - lowPowTh;
+                return (uint)(originCapacity * diff + lowPowTh);
             }
         }
         #endregion
