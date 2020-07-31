@@ -685,7 +685,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         Receive_Cmd37_TransferCancelRequest(this, tcpIpEventArgs);
                         break;
                     case EnumCmdNum.Cmd39_PauseRequest:
-                        Receive_Cmd37_TransferCancelRequest(this, tcpIpEventArgs);
+                        Receive_Cmd39_PauseRequest(this, tcpIpEventArgs);
                         break;
                     case EnumCmdNum.Cmd43_StatusRequest:
                         Receive_Cmd43_StatusRequest(this, tcpIpEventArgs);
@@ -1270,7 +1270,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
                 }
 
-                //SendCommandWrapper(wrapper); //似乎是SendFunction底層會咬住等待回應所以開THD去發  
                 SendWrapperToSchedule(wrapper, false, false);
             }
             catch (Exception ex)
@@ -1352,11 +1351,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void Loading(string cmdId, EnumSlotNumber slotNumber)
         {
             Send_Cmd136_TransferEventReport(EventType.Vhloading, cmdId, slotNumber);
-        }
-        public void CstIdReadReport(TransferStep transferStep, EnumCstIdReadResult result)
-        {
-            //SendRecv_Cmd136_CstIdReadReport();
-            //return Send_Cmd136_CstIdReadReport(transferStep, result);
         }
         public void TransferComplete(AgvcTransCmd agvcTransCmd)
         {
@@ -1500,8 +1494,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.AlarmRepFieldNumber;
                 wrapper.AlarmRep = report;
 
-                //SendCommandWrapper(wrapper);
-
                 SendWrapperToSchedule(wrapper, false, false);
             }
             catch (Exception ex)
@@ -1535,8 +1527,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.SeqNum = seqNum;
                 wrapper.AlarmResetResp = response;
 
-                //SendCommandWrapper(wrapper, true);
-
                 SendWrapperToSchedule(wrapper, true, false);
             }
             catch (Exception ex)
@@ -1563,8 +1553,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.AvoidCompleteRepFieldNumber;
                 wrapper.AvoidCompleteRep = report;
-
-                //SendCommandWrapper(wrappers);
 
                 SendWrapperToSchedule(wrapper, false, false);
             }
@@ -1625,8 +1613,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.SeqNum = seqNum;
                 wrapper.AvoidResp = iD_151_AVOID_RESPONSE;
 
-                //SendCommandWrapper(wrappers, true);
-
                 SendWrapperToSchedule(wrapper, true, false);
             }
             catch (Exception ex)
@@ -1649,8 +1635,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.StatueChangeRepFieldNumber;
                 wrapper.StatueChangeRep = report;
 
-                //SendCommandWrapper(wrapper);
-
                 SendWrapperToSchedule(wrapper, false, false);
             }
             catch (Exception ex)
@@ -1669,8 +1653,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.StatueChangeRepFieldNumber;
                 wrapper.StatueChangeRep = report;
-
-                //SendCommandWrapper(wrappers);
 
                 SendWrapperToSchedule(wrapper, false, false);
             }
@@ -1762,8 +1744,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 Send_Cmd143_StatusResponse(e.iSeqNum);
 
                 ID_43_STATUS_REQUEST receive = (ID_43_STATUS_REQUEST)e.objPacket;
-                var receiveTime = receive.SystemTime; //可以記錄AGVC最後發送時間
-                SetSystemTime(receiveTime);
+                SetSystemTime(receive.SystemTime);
             }
             catch (Exception ex)
             {
@@ -1848,8 +1829,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.SeqNum = seqNum;
                 wrapper.StatusReqResp = response;
 
-                //SendCommandWrapper(wrappers, true);
-
                 SendWrapperToSchedule(wrapper, true, false);
             }
             catch (Exception ex)
@@ -1857,35 +1836,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
-        public void Receive_Cmd41_ModeChange(object sender, TcpIpEventArgs e)
-        {
-            ID_41_MODE_CHANGE_REQ receive = (ID_41_MODE_CHANGE_REQ)e.objPacket;
-            int replyCode = 1;
-            Send_Cmd141_ModeChangeResponse(e.iSeqNum, replyCode);
-        }
-        public void Send_Cmd141_ModeChangeResponse(ushort seqNum, int replyCode)
-        {
-            try
-            {
-                ID_141_MODE_CHANGE_RESPONSE iD_141_MODE_CHANGE_RESPONSE = new ID_141_MODE_CHANGE_RESPONSE();
-                iD_141_MODE_CHANGE_RESPONSE.ReplyCode = replyCode;
-
-                WrapperMessage wrapper = new WrapperMessage();
-                wrapper.ID = WrapperMessage.ModeChangeRespFieldNumber;
-                wrapper.SeqNum = seqNum;
-                wrapper.ModeChangeResp = iD_141_MODE_CHANGE_RESPONSE;
-
-                //SendCommandWrapper(wrappers, true);
-
-                SendWrapperToSchedule(wrapper, true, false);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
             try
@@ -1924,8 +1874,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.SeqNum = seqNum;
                 wrapper.PauseResp = response;
 
-                //SendCommandWrapper(wrappers, true);
-
                 SendWrapperToSchedule(wrapper, true, false);
             }
             catch (Exception ex)
@@ -1948,7 +1896,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
                 SetupNeedReserveSections();
                 Vehicle.AseMoveStatus.IsMoveEnd = false;
-                //AskAllSectionsReserveInOnce();
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[恢復 詢問 路權] Resume Ask Reserve.");
 
                 IsAskReservePause = false;
@@ -1993,8 +1940,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.GuideInfoReqFieldNumber;
                 wrapper.GuideInfoReq = request;
-
-                //SendCommandWrapper(wrappers);
 
                 SendWrapperToSchedule(wrapper, false, false);
             }
@@ -2084,8 +2029,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.SeqNum = seqNum;
                 wrapper.TransCancelResp = iD_137_TRANS_CANCEL_RESPONSE;
 
-                //SendCommandWrapper(wrappers, true);
-
                 SendWrapperToSchedule(wrapper, true, false);
             }
             catch (Exception ex)
@@ -2111,7 +2054,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrapper.ImpTransEventRep = report;
 
-                //SendCommandWrapper(wrappers);
                 SendWrapperToSchedule(wrapper, false, false);
             }
             catch (Exception ex)
@@ -2252,40 +2194,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 SendWrapperToSchedule(wrapper, false, true);
 
-                // LogSendMsg(wrapper);
-
-                // ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                // mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Send transfer event report. [{eventType}]");
-                // string rtnMsg = "";
-
-                // TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
-
-                // do
-                // {
-                //     returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
-
-                //     if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                //     {
-                //         switch (eventType)
-                //         {
-                //             case EventType.LoadArrivals:
-                //                 OnAgvcAcceptLoadArrivalEvent?.Invoke(this, default(EventArgs));
-                //                 break;
-                //             case EventType.UnloadArrivals:
-                //                 OnAgvcAcceptUnloadArrivalEvent?.Invoke(this, default(EventArgs));
-                //                 break;
-                //             default:
-                //                 break;
-                //         }
-                //     }
-                //     else
-                //     {
-                //         mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[逾時] Send transfer event report timeout. [{eventType}]");
-                //         OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                //     }
-
-                // } while (returnCode != TrxTcpIp.ReturnCode.Normal);
-
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"SendRecv transfer event report. [{eventType}]");
             }
             catch (Exception ex)
@@ -2311,42 +2219,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 SendWrapperToSchedule(wrapper, false, true);
 
-                //LogSendMsg(wrapper);
-
-                //ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                //mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Send transfer event report. [{eventType}]");
-                //string rtnMsg = "";
-
-                //TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
-
-                //do
-                //{
-                //    returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
-
-                //    if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                //    {
-                //        switch (eventType)
-                //        {
-                //            case EventType.LoadComplete:
-                //                OnAgvcAcceptLoadCompleteEvent?.Invoke(this, default(EventArgs));
-                //                break;
-                //            case EventType.UnloadComplete:
-                //                OnAgvcAcceptUnloadCompleteEvent?.Invoke(this, default(EventArgs));
-                //                break;
-                //            default:
-                //                break;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[逾時] Send transfer event report timeout. [{eventType}]");
-                //        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                //    }
-
-                //} while (returnCode != TrxTcpIp.ReturnCode.Normal);
-
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Send transfer event report success. [{eventType}]");
-
             }
             catch (Exception ex)
             {
@@ -2380,54 +2253,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 SendWrapperToSchedule(wrapper, false, true);
 
-                // LogSendMsg(wrapper);
-
-                // ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                // string rtnMsg = "";
-
-                // TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
-
-                // do
-                // {
-                //     returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
-
-                //     if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                //     {
-                //         if (response.ReplyAction != ReplyActionType.Continue)
-                //         {
-                //             mainFlowHandler.ResetAllAlarmsFromAgvm();
-                //             var cmdId = robotCommand.CmdId;
-                //             if (!string.IsNullOrEmpty(response.RenameCarrierID))
-                //             {
-                //                 Vehicle.AgvcTransCmdBuffer[cmdId].CassetteId = response.RenameCarrierID;
-                //                 aseCarrierSlotStatus.CarrierId = response.RenameCarrierID;
-                //                 OnCstRenameEvent?.Invoke(this, robotCommand.SlotNumber);
-                //             }
-                //             Vehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, Vehicle.AgvcTransCmdBuffer[cmdId].CompleteStatus);
-                //             mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨失敗 放棄命令] Load fail, [ReplyAction = {response.ReplyAction}][RenameCarrierID = {response.RenameCarrierID}]");
-                //             mainFlowHandler.TransferComplete(cmdId);
-                //         }
-                //         else
-                //         {
-                //             var cmdId = robotCommand.CmdId;
-                //             if (!string.IsNullOrEmpty(response.RenameCarrierID))
-                //             {
-                //                 Vehicle.AgvcTransCmdBuffer[cmdId].CassetteId = response.RenameCarrierID;
-                //                 aseCarrierSlotStatus.CarrierId = response.RenameCarrierID;
-                //                 OnCstRenameEvent?.Invoke(this, robotCommand.SlotNumber);
-                //             }
-                //             mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨與BCR 完成]Load Complete and BcrReadReplyOk");
-                //             OnAgvcAcceptBcrReadReply?.Invoke(this, new EventArgs());
-                //         }
-                //     }
-                //     else
-                //     {
-                //         mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[逾時] SendRecv_Cmd136_CstIdReadReport send wait timeout[{robotCommand.CmdId}]");
-                //         OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                //     }
-
-                // } while (returnCode != TrxTcpIp.ReturnCode.Normal);
-
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"SendRecv_Cmd136_CstIdReadReport success.");
             }
             catch (Exception ex)
@@ -2457,40 +2282,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrapper.ImpTransEventRep = report;
 
-                //SendCommandWrapper(wrapper);
-
                 SendWrapperToSchedule(wrapper, false, false);
 
-                //LogSendMsg(wrapper);
-
-                //ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                //string rtnMsg = "";
-
-                //TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
-
-                //do
-                //{
-                //    returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
-
-                //    if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                //    {
-                //        if (!string.IsNullOrEmpty(response.RenameCarrierID))
-                //        {
-                //            slotStatus.CarrierId = response.RenameCarrierID;
-                //            OnCstRenameEvent?.Invoke(this, SlotNumber);
-                //        }
-                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"Load Complete and BcrReadReplyOk");
-                //    }
-                //    else
-                //    {
-                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstIdReadReport send wait timeout");
-                //        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                //    }
-
-                //} while (returnCode != TrxTcpIp.ReturnCode.Normal);
-
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"SendRecv_Cmd136_CstIdReadReport success.");
-
             }
             catch (Exception ex)
             {
@@ -2517,32 +2311,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
                 wrapper.ImpTransEventRep = report;
 
-                //SendCommandWrapper(wrapper);
-
                 SendWrapperToSchedule(wrapper, false, false);
-
-                //LogSendMsg(wrapper);
-
-                //ID_36_TRANS_EVENT_RESPONSE response = new ID_36_TRANS_EVENT_RESPONSE();
-                //string rtnMsg = "";
-
-                //TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
-
-                //do
-                //{
-                //    returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out response, out rtnMsg);
-
-                //    if (returnCode == TrxTcpIp.ReturnCode.Normal)
-                //    {
-                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstRemove, AGVC reply OK.");
-                //    }
-                //    else
-                //    {
-                //        OnMessageShowOnMainFormEvent?.Invoke(this, $"SendRecv_Cmd136_CstRemove send wait timeout");
-                //        OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                //    }
-
-                //} while (returnCode != TrxTcpIp.ReturnCode.Normal);
 
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"SendRecv_Cmd136_CstIdReadReport success.");
             }
@@ -3452,7 +3221,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             var lowPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.LowPowerPercentage, 100), 0);
             var highPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.HighPowerPercentage, 100), 0);
-            if (lowPowTh>=highPowTh)
+            if (lowPowTh >= highPowTh)
             {
                 return (uint)originCapacity;
             }
