@@ -24,7 +24,7 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int ReserveLengthMeter { get; set; }
         public int AskReserveIntervalMs { get; set; } = 2000;
         public int NeerlyNoMoveRangeMm { get; set; }
-        public int ScheduleIntervalMs { get; set; } = 500;
+        public int ScheduleIntervalMs { get; set; } = 50;
         public int SendWaitRetryTimes { get; set; } = 3;
     }
 }
