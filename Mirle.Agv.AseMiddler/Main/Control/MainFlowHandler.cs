@@ -1367,7 +1367,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if ((curTime - StopChargeTimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs)
                 {
                     SetAlarmFromAgvm(000014);
-                    AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                    // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                 }
             }
         }
@@ -2131,7 +2131,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動 失敗] : Move Fail. ");
                     }
-                    AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                    // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                     return;
                 }
 
@@ -2462,7 +2462,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 SetAlarmFromAgvm(14);
             }
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 命令 失敗] AseRobotControl_OnRobotCommandErrorEvent");
-            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+            // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 
         public void AsePackage_OnRobotCommandFinishEvent(object sender, RobotCommand robotCommand)
@@ -2509,7 +2509,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗 凸片] : PositionError.");
 
                             SetAlarmFromAgvm(51);
-                            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                            // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
 
                             break;
                     }
@@ -2629,7 +2629,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 }
 
                                 SetAlarmFromAgvm(000051);
-                                AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                                // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
 
                                 return;
                             }
@@ -2700,7 +2700,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 }
 
                                 SetAlarmFromAgvm(000051);
-                                AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                                // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
 
                                 return;
                             }
@@ -2775,7 +2775,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void AgvcConnector_OnSendRecvTimeoutEvent(object sender, EventArgs e)
         {
             SetAlarmFromAgvm(38);
-            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+            // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
         }
 
         private void AgvcConnector_OnAgvcContinueBcrReadEvent(object sender, EventArgs e)
@@ -3661,7 +3661,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     case EnumAseCarrierSlotStatus.PositionError:
                         {
                             SetAlarmFromAgvm(51);
-                            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                            // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                         }
                         return;
                     case EnumAseCarrierSlotStatus.ReadFail:
@@ -3704,7 +3704,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     case EnumAseCarrierSlotStatus.PositionError:
                         {
                             SetAlarmFromAgvm(51);
-                            AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
+                            // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                         }
                         return;
                     case EnumAseCarrierSlotStatus.ReadFail:
