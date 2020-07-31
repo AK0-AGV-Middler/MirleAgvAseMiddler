@@ -40,10 +40,9 @@ namespace Mirle.Agv.AseMiddler.View
         private Vehicle Vehicle = Vehicle.Instance;
         public bool IsAgvcConnect { get; set; } = false;
         public bool IsAgvlConnect { get; set; } = false;
-        public string DebugLogMsg { get; set; } = "";
-        public string RobotAbnormalReasonMsg { get; set; } = "";
-        public string BatterysAbnormalReasonMsg { get; set; } = "";
-        public string LastAlarmMsg { get; set; } = "";
+        public bool IsEnableStartChargeButton { get; set; } = false;
+        public bool IsEnableStopChargeButton { get; set; } = false;
+
 
         #region PaintingItems
         private Image image;
@@ -1159,6 +1158,17 @@ namespace Mirle.Agv.AseMiddler.View
                 ucBatteryVoltage.TagValue = batteryVoltage;
                 string batteryTemperature = Vehicle.AseBatteryStatus.Temperature.ToString("F1");
                 ucBatteryTemperature.TagValue = batteryTemperature;
+
+                if (IsEnableStartChargeButton)
+                {
+                    IsEnableStartChargeButton = false;
+                    btnCharge.Enabled = true;
+                }
+                if (IsEnableStopChargeButton)
+                {
+                    IsEnableStopChargeButton = false;
+                    btnStopCharge.Enabled = true;
+                }
             }
             catch (Exception ex)
             {
@@ -1403,7 +1413,7 @@ namespace Mirle.Agv.AseMiddler.View
             if (asePackage.IsConnected())
             {
                 asePackage.DisConnect();
-            }            
+            }
             this.Close();
         }
 
@@ -1593,9 +1603,13 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 btnCharge.Enabled = false;
 
-                mainFlowHandler.StartCharge();
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    mainFlowHandler.StartCharge();
+                    IsEnableStartChargeButton = true;
+                });
 
-                btnCharge.Enabled = true;
+                // btnCharge.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -1610,9 +1624,13 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 btnStopCharge.Enabled = false;
 
-                mainFlowHandler.StopCharge();
+                System.Threading.Tasks.Task.Run(() =>
+               {
+                   mainFlowHandler.StopCharge();
+                   IsEnableStopChargeButton = true;
+               });
 
-                btnStopCharge.Enabled = true;
+                // btnStopCharge.Enabled = true;
             }
             catch (Exception ex)
             {
