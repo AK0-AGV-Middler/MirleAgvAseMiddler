@@ -1069,7 +1069,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.btnKeyInSoc.TabIndex = 42;
             this.btnKeyInSoc.Text = "校正電量";
             this.btnKeyInSoc.UseVisualStyleBackColor = true;
-            this.btnKeyInSoc.Click += new System.EventHandler(this.btnKeyInSoc_Click_1);
+            this.btnKeyInSoc.Click += new System.EventHandler(this.btnKeyInSoc_Click);
             // 
             // numSoc
             // 

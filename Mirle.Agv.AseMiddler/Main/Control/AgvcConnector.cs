@@ -217,7 +217,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         protected void ClientAgent_OnConnectionChangeEvent(object sender, TcpIpEventArgs e)
         {
             TcpIpAgent agent = sender as TcpIpAgent;
-            OnConnectionChangeEvent?.Invoke(this, agent.IsConnection);
+            Vehicle.IsAgvcConnect = agent.IsConnection;
+            //OnConnectionChangeEvent?.Invoke(this, agent.IsConnection);
             var isConnect = agent.IsConnection ? " Connect " : " Dis-Connect ";
             mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : {agent.Name},AgvcConnection = {isConnect}");
         }

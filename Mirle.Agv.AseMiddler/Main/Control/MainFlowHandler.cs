@@ -25,9 +25,7 @@ namespace Mirle.Agv.AseMiddler.Controller
     public class MainFlowHandler
     {
         #region Configs
-        private MapConfig mapConfig;
         private AlarmConfig alarmConfig;
-        public BatteryLog batteryLog;
         #endregion
 
         #region TransCmds
@@ -71,8 +69,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         #region Events
         public event EventHandler<InitialEventArgs> OnComponentIntialDoneEvent;
 
-        public event EventHandler<bool> OnAgvlConnectionChangedEvent;
-
         #endregion
 
         #region Models
@@ -92,7 +88,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public bool IsStopChargTimeoutInRobotStep { get; set; } = false;
         public DateTime LowPowerStartChargeTimeStamp { get; set; } = DateTime.Now;
         public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
-        private ConcurrentQueue<AseMoveStatus> FakeReserveOkAseMoveStatus { get; set; } = new ConcurrentQueue<AseMoveStatus>();
         public bool IsStopCharging { get; set; } = false;
         #endregion
 
@@ -235,9 +230,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnAvoideRequestEvent += AgvcConnector_OnAvoideRequestEvent;
                 agvcConnector.OnLogMsgEvent += LogMsgHandler;
                 agvcConnector.OnRenameCassetteIdEvent += AgvcConnector_OnRenameCassetteIdEvent;
-                //agvcConnector.OnCassetteIdReadReplyAbortCommandEvent += AgvcConnector_OnCassetteIdReadReplyAbortCommandEvent;
                 agvcConnector.OnStopClearAndResetEvent += AgvcConnector_OnStopClearAndResetEvent;
-                agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
+
 
                 agvcConnector.OnAgvcAcceptMoveArrivalEvent += AgvcConnector_OnAgvcAcceptMoveArrivalEvent;
                 agvcConnector.OnAgvcAcceptLoadArrivalEvent += AgvcConnector_OnAgvcAcceptLoadArrivalEvent;
@@ -249,12 +243,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnCstRenameEvent += AgvcConnector_OnCstRenameEvent;
 
                 //來自MoveControl的移動結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
-                //asePackage.OnPositionChangeEvent += AsePackage_OnPositionChangeEvent;
-                //asePackage.OnPartMoveArrivalEvent += AsePackage_OnPartMoveArrivalEvent;
-                //asePackage.OnMoveFinishedEvent += AseMoveControl_OnMoveFinished;
-                //asePackage.aseMoveControl.OnRetryMoveFinishEvent += AseMoveControl_OnRetryMoveFinished;
                 asePackage.OnUpdateSlotStatusEvent += AsePackage_OnUpdateSlotStatusEvent;
-
                 asePackage.OnModeChangeEvent += AsePackage_OnModeChangeEvent;
                 asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
 
@@ -262,9 +251,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.OnRobotInterlockErrorEvent += AsePackage_OnRobotInterlockErrorEvent;
                 asePackage.OnRobotCommandFinishEvent += AsePackage_OnRobotCommandFinishEvent;
                 asePackage.OnRobotCommandErrorEvent += AsePackage_OnRobotCommandErrorEvent;
-
-                //來自IRobot的CarrierId讀取訊息, Send to middleAgent
-                //asePackage.OnReadCarrierIdFinishEvent += AsePackage_OnReadCarrierIdFinishEvent;
 
                 //來自IBatterysControl的電量改變訊息, Send to middleAgent
                 asePackage.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
@@ -274,8 +260,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 asePackage.OnAlarmCodeSetEvent += AsePackage_OnAlarmCodeSetEvent1;
                 asePackage.OnAlarmCodeResetEvent += AsePackage_OnAlarmCodeResetEvent;
-
-                asePackage.OnConnectionChangeEvent += AsePackage_OnConnectionChangeEvent;
 
                 OnComponentIntialDoneEvent?.Invoke(this, new InitialEventArgs(true, "事件"));
             }
@@ -1828,16 +1812,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                     moveStatus.Speed = positionArgs.Speed;
                     Vehicle.AseMoveStatus = moveStatus;
                     agvcConnector.ReportSectionPass();
-
-                    // UpdateMovePassSections(moveStatus.LastSection.Id);
-
-                    // for (int i = 0; i < movingGuide.MovingSections.Count; i++)
-                    // {
-                    //     if (movingGuide.MovingSections[i].Id == moveStatus.LastSection.Id)
-                    //     {
-                    //         Vehicle.AseMovingGuide.MovingSectionsIndex = i;
-                    //     }
-                    // }
                 }
 
                 switch (positionArgs.Arrival)
@@ -1934,15 +1908,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         };
                         asePackage.ReceivePositionArgsQueue.Enqueue(positionArgs);
                     });
-                    //AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
-                    //aseMoveStatus.AseMoveState = isEnd ? EnumAseMoveState.Idle : EnumAseMoveState.Working;
-                    //aseMoveStatus.LastAddress = address;
-                    //aseMoveStatus.LastMapPosition = address.Position;
-                    //aseMoveStatus.LastSection = mapSection;
-                    //aseMoveStatus.HeadDirection = headAngle;
-                    //aseMoveStatus.Speed = speed;
-                    //aseMoveStatus.IsMoveEnd = isEnd;
-                    //FakeReserveOkAseMoveStatus.Enqueue(aseMoveStatus);
                 }
                 else
                 {
@@ -2272,7 +2237,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 Vehicle.RightReadResult = BCRReadResult.BcrNormal;
             }
-            //AsePackage_OnReadCarrierIdFinishEvent(this, aseCarrierSlotStatus.SlotNumber);
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 取貨] Loading, [Direction={loadCmd.PioDirection}][SlotNum={loadCmd.SlotNumber}][Load Adr={loadCmd.PortAddressId}][Load Port Num={loadCmd.PortNumber}]");
 
             SpinWait.SpinUntil(() => false, 2000);
@@ -3628,11 +3592,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void AgvcConnector_OnConnectionChangeEvent(object sender, bool e)
-        {
-            Vehicle.IsAgvcConnect = e;
-        }
-
         private void AsePackage_OnAlarmCodeResetEvent(object sender, int e)
         {
             ResetAllAlarmsFromAgvl();
@@ -3647,11 +3606,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, e);
             agvcConnector.StatusChangeReport();
-        }
-
-        private void AsePackage_OnConnectionChangeEvent(object sender, bool e)
-        {
-            OnAgvlConnectionChangedEvent?.Invoke(this, e);
         }
 
         #endregion

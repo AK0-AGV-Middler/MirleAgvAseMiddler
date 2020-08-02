@@ -19,7 +19,6 @@ namespace Mirle.Agv.AseMiddler.View
     {
         private AgvcConnector agvcConnector;
         private string CommLogMsg { get; set; } = "";
-        private string ConnectionMsg { get; set; } = "";
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
 
         public AgvcConnectorForm(AgvcConnector agvcConnector)
@@ -51,26 +50,6 @@ namespace Mirle.Agv.AseMiddler.View
         {
             agvcConnector.OnCmdReceiveEvent += SendOrReceiveCmdToTextBox;
             agvcConnector.OnCmdSendEvent += SendOrReceiveCmdToTextBox;
-            agvcConnector.OnConnectionChangeEvent += AgvcConnector_OnConnectionChangeEvent;
-        }
-
-        private void AgvcConnector_OnConnectionChangeEvent(object sender, bool isConnect)
-        {
-            try
-            {
-                if (isConnect)
-                {
-                    ConnectionMsg = " Connect ";
-                }
-                else
-                {
-                    ConnectionMsg = "已 Dis-Connect ";
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
         }
 
         public void SendOrReceiveCmdToTextBox(object sender, string msg)
@@ -412,13 +391,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                //middlerConfig.RemoteIp = txtRemoteIp.Text;
-                //middlerConfig.RemotePort = int.Parse(txtRemotePort.Text);
-                //SaveAgvcConnectorConfigs();
-
-                //middleAgent.ReConnect();
                 agvcConnector.Connect();
-
             }
             catch (Exception ex)
             {
@@ -442,7 +415,7 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 tbxCommLogMsg.Text = CommLogMsg;
-                toolStripStatusLabel1.Text = ConnectionMsg;
+                toolStripStatusLabel1.Text = Vehicle.IsAgvcConnect ? " Connect " : " Dis-Connect ";
             }
             catch (Exception ex)
             {

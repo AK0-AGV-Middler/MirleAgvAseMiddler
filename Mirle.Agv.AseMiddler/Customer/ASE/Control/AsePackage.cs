@@ -22,9 +22,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public string LocalLogMsg { get; set; } = "";
         public string MoveStopResult { get; set; } = "";
-        public int DisconnectedCounter { get; set; } = 0;
-        public PSMessageXClass TransactionErrorMessage { get; set; } = new PSMessageXClass();
         public RobotCommand RobotCommand { get; set; }
+        public DateTime LastDisconnectedTimeStamp { get; set; } = DateTime.Now;
 
         private Thread thdWatchWifiSignalStrength;
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
@@ -46,8 +45,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public ConcurrentQueue<PSTransactionXClass> SecondaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         private List<PSTransactionXClass> primaryReceiveTransactions;
         public ConcurrentQueue<AsePositionArgs> ReceivePositionArgsQueue { get; set; } = new ConcurrentQueue<AsePositionArgs>();
+        public ConcurrentQueue<PSMessageXClass> PrimaryTimeoutQueue { get; set; } = new ConcurrentQueue<PSMessageXClass>();
 
-        public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> ImportantPspLog;
         public event EventHandler<string> OnStatusChangeReportEvent;
         public event EventHandler<EnumAutoState> OnModeChangeEvent;
@@ -114,14 +113,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 psWrapper.OnSecondarySent += PsWrapper_OnSecondarySent;
                 psWrapper.OnSecondaryReceived += PsWrapper_OnSecondaryReceived;
                 psWrapper.OnTransactionError += PsWrapper_OnTransactionError;
-                psWrapper.OnDisconnected += PsWrapper_OnDisconnected;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
 
         #region Threads
 
@@ -212,8 +209,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                         continue;
                     }
 
-                    if (psWrapper.IsConnected())
+                    if (psWrapper.ConnectionState == enumConnectState.Connected)
                     {
+                        while (PrimaryTimeoutQueue.Any())
+                        {
+                            PrimaryTimeoutQueue.TryDequeue(out PSMessageXClass psMessage);
+                            PrimarySendQueue.Enqueue(psMessage);
+                        }
+
                         if (PrimarySendQueue.Any())
                         {
                             PrimarySendQueue.TryDequeue(out PSMessageXClass psMessageObj);
@@ -1007,29 +1010,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        //private void ArrivalPosition(string psMessage)
-        //{
-        //    try
-        //    {
-        //        AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
-
-        //        double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-        //        double y = GetPositionFromPsMessage(psMessage.Substring(10, 9));
-        //        aseMoveStatus.LastMapPosition = new MapPosition(x, y);
-        //        aseMoveStatus.HeadDirection = GetIntTryParse(psMessage.Substring(19, 3));
-        //        aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
-        //        aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
-
-        //        OnPartMoveArrivalEvent?.Invoke(this, aseMoveStatus);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        string msg = "Arrival Position, " + ex.Message;
-        //        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-        //        ImportantPspLog?.Invoke(this, msg);
-        //    }
-        //}
-
         private int GetIntTryParse(string v)
         {
             try
@@ -1345,25 +1325,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void OnAlarmCodeSet(int alarmCode, bool isSet)
-        {
-            try
-            {
-                if (isSet)
-                {
-                    OnAlarmCodeSetEvent?.Invoke(this, alarmCode);
-                }
-                else
-                {
-                    OnAlarmCodeResetEvent?.Invoke(this, alarmCode);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
         #endregion
 
         #region SecondarySend
@@ -1612,45 +1573,61 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (psMessage == null) return;
 
-            TransactionErrorMessage = psMessage;
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + TransactionErrorMessage.ToString());
-                ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{TransactionErrorMessage.Number}. AGVL DisConnect");
-                Thread.Sleep(1000);
-                PrimarySendEnqueue(TransactionErrorMessage.Type + TransactionErrorMessage.Number, TransactionErrorMessage.PSMessage);
-            });
+            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, errorString + "\r\n" + psMessage.ToString());
+            ImportantPspLog?.Invoke(this, $"PsWrapper_OnTransactionError. P{psMessage.Number}. AGVL DisConnect");
+
+            PrimaryTimeoutQueue.Enqueue(psMessage);
         }
 
         private void PsWrapper_OnConnectionStateChange(enumConnectState state)
         {
             try
             {
-                string msg = $"PsWrapper connection state changed.[{state}]";
-                Vehicle.IsLocalConnect = state == enumConnectState.Connected;
-                if (state == enumConnectState.Connected || state == enumConnectState.Quit)
+                switch (state)
                 {
-                    LogPsWrapper(msg);
-                    ImportantPspLog?.Invoke(this, msg);
+                    case enumConnectState.CheckConnectMode:
+                        {
+                            if (Vehicle.IsLocalConnect)
+                            {
+                                Vehicle.IsLocalConnect = false;
+                                LastDisconnectedTimeStamp = DateTime.Now;
+                                string msg = $"PsWrapper connection state changed. [{state}]";
+                                LogPsWrapper(msg);
+                                ImportantPspLog?.Invoke(this, msg);
+                            }
+                            else
+                            {
+                                if ((DateTime.Now - LastDisconnectedTimeStamp).TotalSeconds > Vehicle.AsePackageConfig.DisconnectTimeoutSec)
+                                {
+                                    OnAlarmCodeSetEvent?.Invoke(this, 56);
+                                    LastDisconnectedTimeStamp = DateTime.Now;
+                                }
+                            }
+                        }
+                        break;
+                    case enumConnectState.ActiveWaitConnected:
+                        break;
+                    case enumConnectState.PassiveWaitConnected:
+                        break;
+                    case enumConnectState.Connected:
+                        {
+                            Vehicle.IsLocalConnect = true;
+                            string msg = $"PsWrapper connection state changed. [{state}]";
+                            LogPsWrapper(msg);
+                            ImportantPspLog?.Invoke(this, msg);
+                        }
+                        break;
+                    case enumConnectState.Quit:
+                        {
+                            Vehicle.IsLocalConnect = false;
+                            string msg = $"PsWrapper connection state changed. [{state}]";
+                            LogPsWrapper(msg);
+                            ImportantPspLog?.Invoke(this, msg);
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                OnConnectionChangeEvent?.Invoke(this, psWrapper.ConnectionState == enumConnectState.Connected);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void PsWrapper_OnDisconnected()
-        {
-            try
-            {
-                System.Threading.Tasks.Task.Run(() =>
-                {
-                    Vehicle.IsLocalConnect = false;
-                    SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
-                    if (!Vehicle.IsLocalConnect) OnAlarmCodeSetEvent?.Invoke(this, 56);
-                });
             }
             catch (Exception ex)
             {
@@ -1683,8 +1660,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (File.Exists(Vehicle.AsePackageConfig.AutoReplyFilePath))
                 {
                     LoadAutoReplyFileToMyMessageMap();
-                    //FitPspMessageList();
-                    //InitialSingleMsgType();
                 }
             }
             catch (Exception ex)
@@ -1780,8 +1755,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                //if (!theVehicle.IsCharging) return;
-
                 PrimarySendEnqueue("P47", "0");
             }
             catch (Exception ex)
@@ -1794,7 +1767,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                //if (theVehicle.CheckStartChargeReplyEnd) return; //200702 dabid-
                 string chargeDirectionString;
                 switch (chargeDirection)
                 {
@@ -1894,11 +1866,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private void LogException(string classMethodName, string exMsg)
         {
             mirleLogger.Log(new LogFormat("Error", "5", classMethodName, "Device", "CarrierID", exMsg));
-        }
-
-        public void LogDebug(string classMethodName, string msg)
-        {
-            mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, "Device", "CarrierID", msg));
         }
 
         public void LogPsWrapper(string msg)
