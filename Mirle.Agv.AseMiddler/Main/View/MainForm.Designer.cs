@@ -1047,7 +1047,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.btnKeyInPosition.TabIndex = 40;
             this.btnKeyInPosition.Text = "鍵入車輛位置";
             this.btnKeyInPosition.UseVisualStyleBackColor = true;
-            this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click_1);
+            this.btnKeyInPosition.Click += new System.EventHandler(this.btnKeyInPosition_Click);
             // 
             // groupBox5
             // 

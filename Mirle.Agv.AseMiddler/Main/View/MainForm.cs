@@ -1099,26 +1099,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void btnKeyInPosition_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                int posX = (int)numPositionX.Value;
-                int posY = (int)numPositionY.Value;
-
-                AsePositionArgs positionArgs = new AsePositionArgs();
-                positionArgs.MapPosition = new MapPosition(posX, posY);
-                positionArgs.Arrival = EnumAseArrival.EndArrival;
-                asePackage.ReceivePositionArgsQueue.Enqueue(positionArgs);
-
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-
-        }
-
         public delegate void RichTextBoxAppendHeadCallback(RichTextBox richTextBox, string msg);
         public void RichTextBoxAppendHead(RichTextBox richTextBox, string msg)
         {
@@ -1281,37 +1261,6 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-
-
-
-        public delegate void UcSectionImageSetColorCallback(UcSectionImage ucSectionImage, string keyword);
-        public void UcSectionImageSetColor(UcSectionImage ucSectionImage, string keyword)
-        {
-            if (ucSectionImage.InvokeRequired)
-            {
-                UcSectionImageSetColorCallback mydel = new UcSectionImageSetColorCallback(UcSectionImageSetColor);
-                this.Invoke(mydel, new object[] { ucSectionImage, keyword });
-            }
-            else
-            {
-                ucSectionImage.SetColor(allPens[keyword]);
-            }
-        }
-
-        public delegate void RefreshMapCallback(MainForm mainForm);
-        public void RefreshMap(MainForm mainForm)
-        {
-            if (mainForm.InvokeRequired)
-            {
-                RefreshMapCallback del = new RefreshMapCallback(RefreshMap);
-                this.Invoke(del, mainForm);
-            }
-            else
-            {
-                mainForm.Refresh();
-            }
-        }
-
         private void btnPrintScreen_Click(object sender, EventArgs e)
         {
             TakeAPicture();
@@ -1465,7 +1414,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private void btnKeyInPosition_Click_1(object sender, EventArgs e)
+        private void btnKeyInPosition_Click(object sender, EventArgs e)
         {
             try
             {

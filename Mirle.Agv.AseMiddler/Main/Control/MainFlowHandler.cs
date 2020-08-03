@@ -45,7 +45,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public MirleLogger mirleLogger = null;
         public AlarmHandler alarmHandler;
         public MapHandler mapHandler;
-        public XmlHandler xmlHandler = new XmlHandler();
         public AsePackage asePackage;
         public UserAgent UserAgent { get; set; } = new UserAgent();
 
@@ -60,6 +59,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private Thread thdWatchChargeStage;
         public bool IsWatchChargeStagePause { get; set; } = false;
+
+
         #endregion
 
         #region Events
@@ -299,11 +300,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             StartWatchChargeStage();
             var msg = $"讀取到的電量為{Vehicle.BatteryLog.InitialSoc}";
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
-        }
-
-        public void ReloadConfig()
-        {
-            ConfigInitial();
         }
 
         #endregion
@@ -3122,12 +3118,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return EnumTransferStepType.Empty;
             }
         }
-
         public int GetTransferStepsCount()
         {
             return transferSteps.Count;
         }
-
         public void StopVehicle()
         {
             asePackage.MoveStop();
@@ -3284,33 +3278,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                     return CompleteStatus.Abort;
             }
         }
-
-        #region Save/Load Configs
-
-        public void LoadMainFlowConfig()
-        {
-
-            Vehicle.MainFlowConfig = xmlHandler.ReadXml<MainFlowConfig>(@"MainFlow.xml");
-        }
-
-        public void SetMainFlowConfig(MainFlowConfig mainFlowConfig)
-        {
-            Vehicle.MainFlowConfig = mainFlowConfig;
-            xmlHandler.WriteXml(Vehicle.MainFlowConfig, @"MainFlow.xml");
-        }
-
-        public void LoadAgvcConnectorConfig()
-        {
-            Vehicle.AgvcConnectorConfig = xmlHandler.ReadXml<AgvcConnectorConfig>(@"AgvcConnector.xml");
-        }
-
-        public void SetAgvcConnectorConfig(AgvcConnectorConfig agvcConnectorConfig)
-        {
-            Vehicle.AgvcConnectorConfig = agvcConnectorConfig;
-            xmlHandler.WriteXml(Vehicle.AgvcConnectorConfig, @"AgvcConnector.xml");
-        }
-
-        #endregion
 
         #region AsePackage
 

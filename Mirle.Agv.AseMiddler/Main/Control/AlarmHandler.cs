@@ -110,7 +110,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LastAlarmMsg = $@"[{alarm.Id}][{alarm.AlarmText}]";
 
                 LogAlarmHistory(alarm);
-                var alarmMessage = $@"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}]\r\n[SetTime={alarm.SetTime.ToString("HH-mm-ss.fff")}][Description={alarm.Description}]";
+                var alarmMessage = $@"[ID={alarm.Id}][Text={alarm.AlarmText}][{alarm.Level}][SetTime={alarm.SetTime.ToString("HH-mm-ss.fff")}][Description={alarm.Description}]";
                 AppendAlarmLogMsg(alarmMessage);
                 AppendAlarmHistoryLogMsg(alarmMessage);
             }
