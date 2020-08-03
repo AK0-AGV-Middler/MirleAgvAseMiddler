@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.IO;
 using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Controller;
- 
+
 using System.Reflection;
 using System.Threading;
 using Mirle.Tools;
@@ -27,7 +27,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
-            alarmHandler = mainFlowHandler.GetAlarmHandler();
+            alarmHandler = mainFlowHandler.alarmHandler;
         }
 
         //public void AlarmHandler_OnSetAlarmEvent(object sender, Alarm alarm)

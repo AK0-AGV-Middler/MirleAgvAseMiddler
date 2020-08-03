@@ -78,7 +78,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             this.mainFlowHandler = mainFlowHandler;
             agvcConnectorConfig = Vehicle.AgvcConnectorConfig;
-            alarmHandler = mainFlowHandler.GetAlarmHandler();
+            alarmHandler = mainFlowHandler.alarmHandler;
             mirleLogger = MirleLogger.Instance;
 
             CreatTcpIpClientAgent();

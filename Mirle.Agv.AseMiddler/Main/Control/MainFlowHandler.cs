@@ -24,10 +24,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 {
     public class MainFlowHandler
     {
-        #region Configs
-        private AlarmConfig alarmConfig;
-        #endregion
-
         #region TransCmds
         private List<TransferStep> transferSteps = new List<TransferStep>();
         public List<TransferStep> PtransferSteps //200523 dabid+
@@ -45,12 +41,12 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region Controller
 
-        private AgvcConnector agvcConnector;
-        private MirleLogger mirleLogger = null;
-        private AlarmHandler alarmHandler;
-        private MapHandler mapHandler;
-        private XmlHandler xmlHandler = new XmlHandler();
-        private AsePackage asePackage;
+        public AgvcConnector agvcConnector;
+        public MirleLogger mirleLogger = null;
+        public AlarmHandler alarmHandler;
+        public MapHandler mapHandler;
+        public XmlHandler xmlHandler = new XmlHandler();
+        public AsePackage asePackage;
         public UserAgent UserAgent { get; set; } = new UserAgent();
 
         #endregion
@@ -2957,14 +2953,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        #endregion
-
-        #region Simple Getters
-        public AlarmHandler GetAlarmHandler() => alarmHandler;
-        public AgvcConnector GetAgvcConnector() => agvcConnector;
-        public AlarmConfig GetAlarmConfig() => alarmConfig;
-        public AsePackage GetAsePackage() => asePackage;
-        #endregion
+        #endregion        
 
         public void SetupAseMovingGuideMovingSections()
         {

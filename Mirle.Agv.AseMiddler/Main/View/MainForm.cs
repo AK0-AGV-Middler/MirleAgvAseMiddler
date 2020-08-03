@@ -20,7 +20,6 @@ namespace Mirle.Agv.AseMiddler.View
     public partial class MainForm : Form
     {
         public MainFlowHandler mainFlowHandler;
-        private MainFlowConfig mainFlowConfig;
         public MainForm mainForm;
         private AsePackage asePackage;
         private AgvcConnector agvcConnector;
@@ -66,10 +65,9 @@ namespace Mirle.Agv.AseMiddler.View
         {
             InitializeComponent();
             this.mainFlowHandler = mainFlowHandler;
-            mainFlowConfig = Vehicle.MainFlowConfig;
-            alarmHandler = mainFlowHandler.GetAlarmHandler();
-            asePackage = mainFlowHandler.GetAsePackage();
-            agvcConnector = mainFlowHandler.GetAgvcConnector();
+            alarmHandler = mainFlowHandler.alarmHandler;
+            asePackage = mainFlowHandler.asePackage;
+            agvcConnector = mainFlowHandler.agvcConnector;
             mainForm = this;
         }
 
@@ -1229,8 +1227,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (radAgvlOnline.Checked)
                 {
-                    AsePackage asePackage = mainFlowHandler.GetAsePackage();
-                    if (!asePackage.IsConnected())
+                    if (!Vehicle.IsLocalConnect)
                     {
                         asePackage.Connect();
                     }
@@ -1249,8 +1246,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 if (radAgvlOffline.Checked)
                 {
-                    AsePackage asePackage = mainFlowHandler.GetAsePackage();
-                    if (asePackage.IsConnected())
+                    if (Vehicle.IsLocalConnect)
                     {
                         asePackage.DisConnect();
                     }
