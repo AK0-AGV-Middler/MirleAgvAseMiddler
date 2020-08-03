@@ -1359,7 +1359,7 @@ namespace Mirle.Agv.AseMiddler.View
 
                 System.Threading.Tasks.Task.Run(() =>
                 {
-                    mainFlowHandler.StartCharge();
+                    mainFlowHandler.MainFormStartCharge();
                     IsEnableStartChargeButton = true;
                 });
 

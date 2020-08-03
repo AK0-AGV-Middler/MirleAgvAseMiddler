@@ -341,8 +341,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #endregion
 
-
-
         #region Thd Schedule
 
         private void Schedule()

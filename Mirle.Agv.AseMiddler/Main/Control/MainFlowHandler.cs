@@ -1466,12 +1466,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             return Vehicle.AseBatteryStatus.Percentage >= Vehicle.MainFlowConfig.HighPowerPercentage;
         }
 
-        public void StartCharge()
+        public void MainFormStartCharge()
         {
             StartCharge(Vehicle.AseMoveStatus.LastAddress);
         }
 
-        private void StartCharge(MapAddress endAddress)
+        private void StartCharge(MapAddress endAddress, int chargeTimeSec = -1)
         {
             try
             {
@@ -1494,26 +1494,45 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"Start Charge, Vehicle arrival {address.Id},Charge Direction = {address.ChargeDirection},Precentage = {percentage}.");
 
-                    if (Vehicle.MainFlowConfig.IsSimulation) return;
-
+                    if (Vehicle.MainFlowConfig.IsSimulation)
+                    {
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[充電 成功] Start Charge success.");
+                        if (chargeTimeSec > 0)
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"[提早斷充 開始({chargeTimeSec})後] Roboting STOP charge in ({chargeTimeSec}) sec.");
+                            SpinWait.SpinUntil(() => false, chargeTimeSec * 1000);
+                            StopCharge();
+                        }
+                        return;
+                    }
                     Vehicle.CheckStartChargeReplyEnd = false;
                     asePackage.StartCharge(address.ChargeDirection);
 
-                    SpinWait.SpinUntil(() => Vehicle.CheckStartChargeReplyEnd, 30 * 1000);
 
-                    if (Vehicle.CheckStartChargeReplyEnd)
+                    if (chargeTimeSec > 0)
                     {
-                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Start Charge success.");
-                        agvcConnector.Charging();
-                        IsLowPowerStartChargeTimeout = false;
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"[提早斷充 開始({chargeTimeSec})後] Roboting STOP charge in ({chargeTimeSec}) sec.");
+                        SpinWait.SpinUntil(() => false, chargeTimeSec * 1000);
+                        StopCharge();
                     }
                     else
                     {
-                        Vehicle.IsCharging = false;
-                        SetAlarmFromAgvm(000013);
-                        asePackage.ChargeStatusRequest();
-                        SpinWait.SpinUntil(() => false, 500);
-                        asePackage.StopCharge();
+                        SpinWait.SpinUntil(() => Vehicle.CheckStartChargeReplyEnd, 30 * 1000);
+
+                        if (Vehicle.CheckStartChargeReplyEnd)
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[充電 成功] Start Charge success.");
+                            agvcConnector.Charging();
+                            IsLowPowerStartChargeTimeout = false;
+                        }
+                        else
+                        {
+                            Vehicle.IsCharging = false;
+                            SetAlarmFromAgvm(000013);
+                            asePackage.ChargeStatusRequest();
+                            SpinWait.SpinUntil(() => false, 500);
+                            asePackage.StopCharge();
+                        }
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;
@@ -1620,7 +1639,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (IsStopCharging) return;
+                //if (IsStopCharging) return;
                 IsStopCharging = true;
 
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"[斷充 開始] ]Try STOP charge.[IsCharging = {Vehicle.IsCharging}]");
@@ -1634,6 +1653,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     if (Vehicle.MainFlowConfig.IsSimulation)
                     {
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[斷充 成功] Stop Charge success.");
                         Vehicle.IsCharging = false;
                         return;
                     }
@@ -2101,10 +2121,35 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[到站 充電] : ArrivalStartCharge.");
+                int chargeTimeSec = -1;
+                if (GetNextTransferStepType() == EnumTransferStepType.Load || GetNextTransferStepType() == EnumTransferStepType.Unload)
+                {
+                    chargeTimeSec = Vehicle.MainFlowConfig.ChargeIntervalInRobotingSec;
+
+                    if (Vehicle.AgvcTransCmdBuffer.Count == 2)
+                    {
+                        var curCmdId = GetCurTransferStep().CmdId.Trim();
+                        var cmds = Vehicle.AgvcTransCmdBuffer.Values.ToArray();
+                        var nextCmd = cmds[0].CommandId == curCmdId ? cmds[1] : cmds[0];
+                        if (nextCmd.EnrouteState == CommandState.LoadEnroute)
+                        {
+                            if (nextCmd.LoadAddressId == endAddress.Id)
+                            {
+                                chargeTimeSec = 2 * Vehicle.MainFlowConfig.ChargeIntervalInRobotingSec;
+                            }
+                        }
+                        else if (nextCmd.EnrouteState == CommandState.UnloadEnroute)
+                        {
+                            if (nextCmd.UnloadAddressId == endAddress.Id)
+                            {
+                                chargeTimeSec = 2 * Vehicle.MainFlowConfig.ChargeIntervalInRobotingSec;
+                            }
+                        }
+                    }
+                }
                 Task.Run(() =>
                {
-                   Thread.Sleep(50);
-                   StartCharge(endAddress);
+                   StartCharge(endAddress, chargeTimeSec);
                });
             }
             catch (Exception ex)

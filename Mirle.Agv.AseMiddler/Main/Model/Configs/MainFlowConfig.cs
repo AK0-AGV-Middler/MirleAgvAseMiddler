@@ -9,14 +9,13 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
 
     public class MainFlowConfig
     {
-        public int VisitTransferStepsSleepTimeMs { get; set; }
+        public int VisitTransferStepsSleepTimeMs { get; set; } = 50;
         public int TrackPositionSleepTimeMs { get; set; } = 5000;
         public int WatchLowPowerSleepTimeMs { get; set; } = 5000;
         public int StartChargeWaitingTimeoutMs { get; set; } = 30 * 1000;
         public int StopChargeWaitingTimeoutMs { get; set; } = 30 * 1000;
         public int RealPositionRangeMm { get; set; }
-        public int LoadingChargeIntervalMs { get; set; }
-        public int RobotNgRetryTimes { get; set; }
+        public int ChargeIntervalInRobotingSec { get; set; } = -1;
         public bool IsSimulation { get; set; }
         public bool DualCommandOptimize { get; set; } = false;
         public bool BcrByPass { get; set; } = false;
