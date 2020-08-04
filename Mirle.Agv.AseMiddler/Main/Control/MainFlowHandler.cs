@@ -1229,73 +1229,16 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-
-                    if (!Vehicle.MainFlowConfig.UseChargeSystemV2)
+                    if (Vehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !Vehicle.IsOptimize)
                     {
-                        if (Vehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !Vehicle.IsOptimize)
+                        if (IsLowPower() && !Vehicle.IsCharging && !IsLowPowerStartChargeTimeout)
                         {
-                            if (IsLowPower() && !Vehicle.IsCharging && !IsLowPowerStartChargeTimeout)
-                            {
-                                LowPowerStartCharge(Vehicle.AseMoveStatus.LastAddress);
-                            }
-                        }
-                        if (Vehicle.AseBatteryStatus.Percentage < Vehicle.MainFlowConfig.LowPowerPercentage - 11 && !Vehicle.IsCharging) //200701 dabid+
-                        {
-                            SetAlarmFromAgvm(2);
+                            LowPowerStartCharge(Vehicle.AseMoveStatus.LastAddress);
                         }
                     }
-                    else
+                    if (Vehicle.AseBatteryStatus.Percentage < Vehicle.MainFlowConfig.LowPowerPercentage - 11 && !Vehicle.IsCharging) //200701 dabid+
                     {
-                        if (IsWatchChargeStagePause)
-                        {
-                            SpinWait.SpinUntil(() => !IsWatchChargeStagePause, Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs);
-                            continue;
-                        }
-
-                        switch (Vehicle.ChargingStage)
-                        {
-                            case EnumChargingStage.Idle:
-                                {
-                                    if (IsLowPowerStartChargeTimeout)
-                                    {
-                                        Thread.Sleep(60 * 1000);
-                                        IsLowPowerStartChargeTimeout = false;
-                                    }
-                                    CheckLowPowerChargeCondition();
-                                }
-                                break;
-                            case EnumChargingStage.ArrivalCharge:
-                                {
-                                    BatteryTimeoutCounter = 1;
-                                    CheckStartChargeCondition();
-                                }
-                                break;
-                            case EnumChargingStage.WaitChargingOn:
-                                {
-                                    CheckStartChargeTimeout();
-                                }
-                                break;
-                            case EnumChargingStage.LowPowerCharge:
-                                {
-                                    BatteryTimeoutCounter = Vehicle.MainFlowConfig.ChargeRetryTimes;
-                                    CheckStartChargeCondition();
-                                }
-                                break;
-                            case EnumChargingStage.DisCharge:
-                                {
-                                    BatteryTimeoutCounter = Vehicle.MainFlowConfig.DischargeRetryTimes;
-                                    StageStopCharge();
-                                }
-                                break;
-                            case EnumChargingStage.WaitChargingOff:
-                                {
-                                    CheckStopChargeTimeout();
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-
+                        SetAlarmFromAgvm(2);
                     }
 
                 }
@@ -1307,79 +1250,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs);
                 }
-            }
-        }
-
-        private void CheckStartChargeCondition()
-        {
-            if (!Vehicle.AseMoveStatus.LastAddress.IsCharger())
-            {
-                Vehicle.ChargingStage = EnumChargingStage.Idle;
-                return;
-            }
-
-            if (IsHighPower())
-            {
-                Vehicle.ChargingStage = EnumChargingStage.Idle;
-                return;
-            }
-
-            StageStartCharge();
-        }
-
-        private void CheckStopChargeTimeout()
-        {
-            if (Vehicle.CheckStopChargeReplyEnd)
-            {
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Stop Charge success.");
-                Vehicle.ChargingStage = EnumChargingStage.Idle;
-                agvcConnector.ChargeOff();
-            }
-            else
-            {
-                var curTime = DateTime.Now;
-                if ((curTime - StopChargeTimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.StopChargeWaitingTimeoutMs)
-                {
-                    SetAlarmFromAgvm(000014);
-                    // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
-                }
-            }
-        }
-
-        private void CheckStartChargeTimeout()
-        {
-            if (Vehicle.CheckStartChargeReplyEnd)
-            {
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Start Charge success.");
-                Vehicle.ChargingStage = EnumChargingStage.Idle;
-                agvcConnector.Charging();
-            }
-            else
-            {
-                var curTime = DateTime.Now;
-                if ((curTime - StartChargeTimeStamp).TotalMilliseconds >= Vehicle.MainFlowConfig.StartChargeWaitingTimeoutMs)
-                {
-                    if (BatteryTimeoutCounter <= 1)
-                    {
-                        SetAlarmFromAgvm(000013);
-                        Vehicle.IsCharging = false;
-                        Vehicle.ChargingStage = EnumChargingStage.DisCharge;
-                    }
-                    else
-                    {
-                        StartChargeTimeStamp = curTime;
-                        BatteryTimeoutCounter--;
-                        StageStartCharge();
-                    }
-                }
-            }
-        }
-
-        private void CheckLowPowerChargeCondition()
-        {
-            if (IsLowPower() && Vehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !Vehicle.IsOptimize && !Vehicle.IsCharging)
-            {
-                Vehicle.ChargingStage = EnumChargingStage.LowPowerCharge;
             }
         }
 
@@ -1412,48 +1282,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             thdWatchChargeStage.IsBackground = true;
             thdWatchChargeStage.Start();
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"StartWatchChargeStage");
-        }
-
-        public void StageStartCharge()
-        {
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"Stage Start Charge.");
-
-            agvcConnector.ChargHandshaking();
-
-            if (Vehicle.MainFlowConfig.IsSimulation)
-            {
-                Vehicle.ChargingStage = EnumChargingStage.Idle;
-                Vehicle.IsCharging = true;
-                agvcConnector.Charging();
-                return;
-            }
-
-            Vehicle.IsCharging = true;
-            Vehicle.CheckStartChargeReplyEnd = false;
-            StartChargeTimeStamp = DateTime.Now;
-
-            Vehicle.ChargingStage = EnumChargingStage.WaitChargingOn;
-            asePackage.StartCharge(EnumAddressDirection.Right);
-        }
-
-        public void StageStopCharge()
-        {
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $@"Stage Stop Charge.");
-
-            agvcConnector.ChargHandshaking();
-
-            if (Vehicle.MainFlowConfig.IsSimulation)
-            {
-                Vehicle.ChargingStage = EnumChargingStage.Idle;
-                Vehicle.IsCharging = false;
-                agvcConnector.ChargeOff();
-                return;
-            }
-
-            Vehicle.CheckStartChargeReplyEnd = false;
-            StopChargeTimeStamp = DateTime.Now;
-            Vehicle.ChargingStage = EnumChargingStage.WaitChargingOff;
-            asePackage.StopCharge();
         }
 
         private bool IsLowPower()
