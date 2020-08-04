@@ -92,7 +92,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 GetConfigWrapper();
                 BindPsWrapperEvent();
 
-                if (!Vehicle.MainFlowConfig.IsSimulation)
+                if (!Vehicle.MainFlowConfig.IsSimulation || Vehicle.PspConnectionConfig.IsServer)
                 {
                     psWrapper.Open();
                 }
@@ -113,12 +113,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 psWrapper.OnSecondarySent += PsWrapper_OnSecondarySent;
                 psWrapper.OnSecondaryReceived += PsWrapper_OnSecondaryReceived;
                 psWrapper.OnTransactionError += PsWrapper_OnTransactionError;
+                psWrapper.OnDebugLog += PsWrapper_OnDebugLog;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
 
         #region Threads
 
@@ -1537,6 +1539,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+
         private bool IsValuePositive(string v)
         {
             switch (v)
@@ -1569,6 +1572,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region PsWrapper
 
+        private void PsWrapper_OnDebugLog(string msg)
+        {
+            //ImportantPspLog?.Invoke(this, msg);
+        }
+
         private void PsWrapper_OnTransactionError(string errorString, ref PSMessageXClass psMessage)
         {
             if (psMessage == null) return;
@@ -1594,12 +1602,24 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 string msg = $"PsWrapper connection state changed. [{state}]";
                                 LogPsWrapper(msg);
                                 ImportantPspLog?.Invoke(this, msg);
+                                if (psWrapper.ConnectMode == enumConnectMode.Passive)
+                                {
+                                    System.Threading.Tasks.Task.Run(() =>
+                                    {
+                                        SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
+                                        if (!Vehicle.IsLocalConnect)
+                                        {
+                                            OnAlarmCodeSetEvent?.Invoke(this, 57);
+                                            LastDisconnectedTimeStamp = DateTime.Now;
+                                        }
+                                    });
+                                }                             
                             }
                             else
                             {
                                 if ((DateTime.Now - LastDisconnectedTimeStamp).TotalSeconds > Vehicle.AsePackageConfig.DisconnectTimeoutSec)
                                 {
-                                    OnAlarmCodeSetEvent?.Invoke(this, 56);
+                                    OnAlarmCodeSetEvent?.Invoke(this, 57);
                                     LastDisconnectedTimeStamp = DateTime.Now;
                                 }
                             }

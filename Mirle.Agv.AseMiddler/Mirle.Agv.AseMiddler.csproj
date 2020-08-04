@@ -83,7 +83,7 @@
     <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="PSDriver, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PSDriver, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\DesignPatternsSample\PSDriverSource\PSDriver\bin\Release\PSDriver.dll</HintPath>
     </Reference>

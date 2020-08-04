@@ -1436,6 +1436,6 @@ namespace Mirle.Agv.AseMiddler.View
         private void btnKeyInSoc_Click(object sender, EventArgs e)
         {
             Vehicle.AseBatteryStatus.Percentage = decimal.ToInt32(numSoc.Value);
-        }
+        }       
     }
 }
