@@ -51,6 +51,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         #endregion
 
         #region Threads
+
         private Thread thdVisitTransferSteps;
         public bool IsVisitTransferStepPause { get; set; } = false;
 
@@ -59,7 +60,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private Thread thdWatchChargeStage;
         public bool IsWatchChargeStagePause { get; set; } = false;
-
 
         #endregion
 
@@ -1691,6 +1691,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                     UpdateLastIdlePositionAndTimeStamp(positionArgs);
                 }
             }
+            else
+            {
+                LastIdlePosition.TimeStamp = DateTime.Now;
+            }
         }
 
         private void UpdateLastIdlePositionAndTimeStamp(AsePositionArgs positionArgs)
@@ -1914,6 +1918,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 WaitingTransferCompleteEnd = true;
+                Vehicle.AseMoveStatus.IsMoveEnd = true;
                 AgvcTransCmd agvcTransCmd = Vehicle.AgvcTransCmdBuffer[cmdId];
                 agvcTransCmd.EnrouteState = CommandState.None;
                 ClearTransferSteps(cmdId);

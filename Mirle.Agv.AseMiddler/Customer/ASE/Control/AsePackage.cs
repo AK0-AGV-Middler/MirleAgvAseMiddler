@@ -1602,18 +1602,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 string msg = $"PsWrapper connection state changed. [{state}]";
                                 LogPsWrapper(msg);
                                 ImportantPspLog?.Invoke(this, msg);
-                                if (psWrapper.ConnectMode == enumConnectMode.Passive)
+                                System.Threading.Tasks.Task.Run(() =>
                                 {
-                                    System.Threading.Tasks.Task.Run(() =>
+                                    SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
+                                    if (!Vehicle.IsLocalConnect)
                                     {
-                                        SpinWait.SpinUntil(() => Vehicle.IsLocalConnect, Vehicle.AsePackageConfig.DisconnectTimeoutSec * 1000);
-                                        if (!Vehicle.IsLocalConnect)
-                                        {
-                                            OnAlarmCodeSetEvent?.Invoke(this, 57);
-                                            LastDisconnectedTimeStamp = DateTime.Now;
-                                        }
-                                    });
-                                }                             
+                                        OnAlarmCodeSetEvent?.Invoke(this, 57);
+                                        LastDisconnectedTimeStamp = DateTime.Now;
+                                    }
+                                });
                             }
                             else
                             {
@@ -1749,6 +1746,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void DisConnect()
         {
             psWrapper.Close();
+
         }
 
         #endregion
