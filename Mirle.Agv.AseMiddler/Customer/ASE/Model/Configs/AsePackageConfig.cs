@@ -14,5 +14,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public int ScheduleIntervalMs { get; set; } = 100;
         public string RemoteControlPauseErrorCode { get; set; } = "123";
         public int DisconnectTimeoutSec { get; set; } = 30;
+        public int ErrorCodeLength { get; set; } = 6;
     }
 }

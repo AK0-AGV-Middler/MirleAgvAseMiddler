@@ -1058,7 +1058,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 bool isAlarmSet = psMessage.Substring(0, 1) == "1";
-                int alarmCode = int.Parse(psMessage.Substring(1, 6));
+                int alarmCode = int.Parse(psMessage.Substring(1, Vehicle.AsePackageConfig.ErrorCodeLength));
 
                 if (alarmCode.ToString().Equals(Vehicle.AsePackageConfig.RemoteControlPauseErrorCode))
                 {
