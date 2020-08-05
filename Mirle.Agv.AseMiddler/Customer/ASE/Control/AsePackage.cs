@@ -1347,7 +1347,15 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                psWrapper.SecondarySent(ref psTransaction);
+                if (psWrapper.ConnectionState == enumConnectState.Connected)
+                {
+                    psWrapper.SecondarySent(ref psTransaction);
+                }
+                else
+                {
+                    SecondarySendQueue.Enqueue(psTransaction);
+                }
+
             }
             catch (Exception ex)
             {
@@ -1810,7 +1818,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         #endregion
 
         #region Move Control
-
 
         public void MoveStop()
         {
