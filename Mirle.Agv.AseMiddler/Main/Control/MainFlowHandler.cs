@@ -1231,18 +1231,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (Vehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !Vehicle.IsOptimize)
+                    if (Vehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !Vehicle.IsOptimize && IsLowPower() && !IsLowPowerStartChargeTimeout)
                     {
-                        if (IsLowPower() && !Vehicle.IsCharging && !IsLowPowerStartChargeTimeout)
-                        {
-                            LowPowerStartCharge(Vehicle.AseMoveStatus.LastAddress);
-                        }
+                        LowPowerStartCharge(Vehicle.AseMoveStatus.LastAddress);
                     }
                     if (Vehicle.AseBatteryStatus.Percentage < Vehicle.MainFlowConfig.LowPowerPercentage - 11 && !Vehicle.IsCharging) //200701 dabid+
                     {
                         SetAlarmFromAgvm(2);
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -1444,7 +1440,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "Start Charge success.");
                         agvcConnector.Charging();
-                        IsLowPowerStartChargeTimeout = false;
+                        //IsLowPowerStartChargeTimeout = false;
                     }
                     else
                     {
@@ -1453,7 +1449,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         asePackage.ChargeStatusRequest();
                         SpinWait.SpinUntil(() => false, 500);
                         asePackage.StopCharge();
-                        IsLowPowerStartChargeTimeout = true;
+                        //IsLowPowerStartChargeTimeout = true;
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;
@@ -2639,6 +2635,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
+                Vehicle.IsOptimize = false;
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
@@ -2812,6 +2809,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
+                Vehicle.IsOptimize = false;
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
