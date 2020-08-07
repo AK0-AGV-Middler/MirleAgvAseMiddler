@@ -2908,7 +2908,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             else
             {
-                var diff = highPowTh - lowPowTh;
+                var diff = (highPowTh - lowPowTh)/100.0;
                 return (uint)(originCapacity * diff + lowPowTh);
             }
         }

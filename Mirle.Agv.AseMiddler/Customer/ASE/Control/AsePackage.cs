@@ -121,7 +121,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
         #region Threads
 
         private void WatchWifiSignalStrength()
@@ -1546,7 +1545,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //ImportantPspLog?.Invoke(this, ex.Message);
             }
         }
-
 
         private bool IsValuePositive(string v)
         {
