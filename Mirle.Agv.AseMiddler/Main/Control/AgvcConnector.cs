@@ -2909,7 +2909,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             else
             {
                 var diff = (highPowTh - lowPowTh)/100.0;
-                return (uint)(originCapacity * diff + lowPowTh);
+                uint result = (uint)Math.Max(Math.Min((originCapacity * diff + lowPowTh), 100), 0);
+                return result;
             }
         }
         #endregion
