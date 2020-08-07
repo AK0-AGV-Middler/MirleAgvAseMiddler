@@ -269,6 +269,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+
+
         private void VehicleLocationInitialAndThreadsInitial()
         {
             if (Vehicle.MainFlowConfig.IsSimulation)
@@ -3154,6 +3156,19 @@ namespace Mirle.Agv.AseMiddler.Controller
                 case CancelActionType.CmdAbort:
                 default:
                     return CompleteStatus.Abort;
+            }
+        }
+
+        public void AgvcDisconnected()
+        {
+            try
+            {
+                SetAlarmFromAgvm(56);
+                asePackage.ReportAgvcDisConnect();
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
 

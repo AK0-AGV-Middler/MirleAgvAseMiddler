@@ -220,7 +220,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             Vehicle.IsAgvcConnect = agent.IsConnection;
             if (!Vehicle.IsAgvcConnect)
             {
-                mainFlowHandler.SetAlarmFromAgvm(56);
+                mainFlowHandler.AgvcDisconnected();
+                //mainFlowHandler.SetAlarmFromAgvm(56);
             }
             var isConnect = agent.IsConnection ? " Connect " : " Dis-Connect ";
             mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : {agent.Name},AgvcConnection = {isConnect}");

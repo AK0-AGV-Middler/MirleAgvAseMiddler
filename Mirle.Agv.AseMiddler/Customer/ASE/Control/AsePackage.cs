@@ -154,8 +154,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void SendWifiSignalStrength()
         {
+            uint result = 0;
             try
-            {
+            {               
                 if (Vehicle.IsAgvcConnect)
                 {
                     List<AccessPoint> accessPoints = new Wifi().GetAccessPoints().ToList();
@@ -165,15 +166,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             if (item.IsConnected)
                             {
-                                WifiSignalStrength = Math.Max(item.SignalStrength, 10);
+                                result = Math.Max(item.SignalStrength, 10);
+                                break;
                             }
                         }
-                    }
-                }
-                else
-                {
-                    WifiSignalStrength = 0;
-                }
+                    }                 
+                }              
             }
             catch (Exception ex)
             {
@@ -181,7 +179,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             finally
             {
-                SendWifiSignalStrength(WifiSignalStrength);
+                if (WifiSignalStrength!= result)
+                {
+                    WifiSignalStrength = result;
+                    SendWifiSignalStrength(WifiSignalStrength);
+                }               
             }
         }
 
@@ -1755,6 +1757,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         }
 
+        public void ReportAgvcDisConnect()
+        {
+            SendWifiSignalStrength(0);
+        }
+
         #endregion
 
         #region Battery Control
@@ -1895,7 +1902,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             mirleLogger.Log(new LogFormat("PsWrapper", "5", "AsePackage", Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", msg));
             AppendPspLogMsg(msg);
-        }
+        }       
 
         #endregion
 
