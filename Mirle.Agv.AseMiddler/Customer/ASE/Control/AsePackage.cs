@@ -24,6 +24,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string MoveStopResult { get; set; } = "";
         public RobotCommand RobotCommand { get; set; }
         public DateTime LastDisconnectedTimeStamp { get; set; } = DateTime.Now;
+        public uint LastUpdateSlotStatusSystemByte { get; set; } = 0;
+        public uint LastUpdatePositionSystemByte { get; set; } = 0;
 
         private Thread thdWatchWifiSignalStrength;
         public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
@@ -156,7 +158,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             uint result = 0;
             try
-            {               
+            {
                 if (Vehicle.IsAgvcConnect)
                 {
                     List<AccessPoint> accessPoints = new Wifi().GetAccessPoints().ToList();
@@ -170,8 +172,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 break;
                             }
                         }
-                    }                 
-                }              
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -792,7 +794,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                         UpdateRobotStatus(transaction.PSPrimaryMessage.PSMessage);
                         break;
                     case "25":
-                        UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage);
+                        {
+                            var primaryMessageSystemByte = transaction.PSPrimaryMessage.SystemBytes;
+                            if (primaryMessageSystemByte > LastUpdateSlotStatusSystemByte || (Math.Abs(LastUpdateSlotStatusSystemByte - primaryMessageSystemByte) > 65535))
+                            {
+                                LastUpdateSlotStatusSystemByte = primaryMessageSystemByte;
+                                UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage);
+                            }
+                        }
                         break;
                     case "29":
                         UpdateChargeStatus(transaction.PSPrimaryMessage.PSMessage);
@@ -1386,7 +1395,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                         ReceiveMoveAppendRequestAck(transaction.PSSecondaryMessage.PSMessage);
                         break;
                     case "34":
-                        ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
+                        {
+                            var primaryMessageSystemByte = transaction.PSPrimaryMessage.SystemBytes;
+                            if (primaryMessageSystemByte > LastUpdatePositionSystemByte || (Math.Abs(LastUpdatePositionSystemByte - primaryMessageSystemByte) > 65535))
+                            {
+                                LastUpdatePositionSystemByte = primaryMessageSystemByte;
+                                ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
+                            }
+                        }
                         break;
                     case "36":
                         ReceiveBatteryStatusRequestAck(transaction.PSSecondaryMessage.PSMessage);
@@ -1899,7 +1915,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             mirleLogger.Log(new LogFormat("PsWrapper", "5", "AsePackage", Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", msg));
             AppendPspLogMsg(msg);
-        }       
+        }
 
         #endregion
 
