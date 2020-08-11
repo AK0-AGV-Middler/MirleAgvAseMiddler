@@ -28,8 +28,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public uint LastUpdatePositionSystemByte { get; set; } = 0;
 
         private Thread thdWatchWifiSignalStrength;
-        public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
-        public uint WifiSignalStrength { get; set; } = 0;
+        public bool IsWatchWifiSignalStrengthPause { get; set; } = false;        
 
         private Thread thdSchedule;
         public bool IsSchedulePause { get; set; } = false;
@@ -138,10 +137,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         continue;
                     }
 
-                    if (Vehicle.IsLocalConnect)
-                    {
-                        SendWifiSignalStrength();
-                    }
+                    CalculateWifiSignalStrength();
                 }
                 catch (Exception ex)
                 {
@@ -154,7 +150,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void SendWifiSignalStrength()
+        private void CalculateWifiSignalStrength()
         {
             uint result = 0;
             try
@@ -181,8 +177,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             finally
             {
-                WifiSignalStrength = result;
-                SendWifiSignalStrength(WifiSignalStrength);
+                Vehicle.WifiSignalStrength = result;
+                if (Vehicle.IsLocalConnect)
+                {
+                    SendWifiSignalStrength(Vehicle.WifiSignalStrength);
+                }              
             }
         }
 

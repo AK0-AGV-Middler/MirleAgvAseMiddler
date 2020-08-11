@@ -791,7 +791,7 @@ namespace Mirle.Agv.AseMiddler.View
                     radAgvcOffline.Checked = true;
                 }
 
-                ucWifiSignalStrength.TagValue = asePackage.WifiSignalStrength.ToString();
+                ucWifiSignalStrength.TagValue = Vehicle.WifiSignalStrength.ToString();
             }
             catch (Exception ex)
             {

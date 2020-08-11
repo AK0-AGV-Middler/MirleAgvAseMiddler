@@ -64,7 +64,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public BCRReadResult RightReadResult { get; set; } = BCRReadResult.BcrReadFail;
         public VhStopSingle OpPauseStatus { get; set; } = VhStopSingle.Off;
         public ConcurrentDictionary<PauseType, bool> PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
-
+        public uint WifiSignalStrength { get; set; } = 0;
         #endregion
 
         #region Configs
