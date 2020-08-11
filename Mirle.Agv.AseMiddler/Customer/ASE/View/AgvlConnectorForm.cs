@@ -210,7 +210,7 @@ namespace Mirle.Agv.AseMiddler.View
     {
       try
       {
-        if (asePackage.psWrapper.IsConnected())
+        if (Vehicle.IsLocalConnect)
         {
           txtConnection.Text = "Online";
           txtConnection.BackColor = Color.YellowGreen;

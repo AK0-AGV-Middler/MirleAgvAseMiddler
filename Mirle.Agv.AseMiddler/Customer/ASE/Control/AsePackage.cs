@@ -136,7 +136,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         continue;
                     }
 
-                    if (psWrapper.IsConnected())
+                    if (Vehicle.IsLocalConnect)
                     {
                         SendWifiSignalStrength();
                     }
@@ -166,7 +166,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             if (item.IsConnected)
                             {
-                                result = Math.Max(item.SignalStrength, 10);
+                                result = Math.Max(item.SignalStrength, 0);
                                 break;
                             }
                         }
@@ -179,11 +179,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             finally
             {
-                if (WifiSignalStrength!= result)
-                {
-                    WifiSignalStrength = result;
-                    SendWifiSignalStrength(WifiSignalStrength);
-                }               
+                WifiSignalStrength = result;
+                SendWifiSignalStrength(WifiSignalStrength);
             }
         }
 
@@ -212,7 +209,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         continue;
                     }
 
-                    if (psWrapper.ConnectionState == enumConnectState.Connected)
+                    if (Vehicle.IsLocalConnect)
                     {
                         while (PrimaryTimeoutQueue.Any())
                         {
@@ -272,7 +269,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         continue;
                     }
 
-                    if (psWrapper.IsConnected())
+                    if (Vehicle.IsLocalConnect)
                     {
                         if (!ReceivePositionArgsQueue.Any())
                         {
@@ -319,7 +316,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         continue;
                     }
 
-                    if (psWrapper.IsConnected())
+                    if (Vehicle.IsLocalConnect)
                     {
                         SendBatteryStatusRequest();
                     }
@@ -1348,7 +1345,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (psWrapper.ConnectionState == enumConnectState.Connected)
+                if (Vehicle.IsLocalConnect)
                 {
                     psWrapper.SecondarySent(ref psTransaction);
                 }
@@ -1741,10 +1738,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             psMessageMap.Add("S18", versionInfoRequestAckPsMessage);
         }
 
-        public bool IsConnected()
-        {
-            return psWrapper.ConnectionState == enumConnectState.Connected;
-        }
+        //public bool IsConnected()
+        //{
+        //    return psWrapper.ConnectionState == enumConnectState.Connected;
+        //}
 
         public void Connect()
         {

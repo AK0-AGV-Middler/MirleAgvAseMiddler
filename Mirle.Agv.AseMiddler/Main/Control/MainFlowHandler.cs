@@ -292,7 +292,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             else
             {
-                if (asePackage.IsConnected())
+                if (Vehicle.IsLocalConnect)
                 {
                     asePackage.AllAgvlStatusReportRequest();
                 }

@@ -789,6 +789,8 @@ namespace Mirle.Agv.AseMiddler.View
                     txtAgvcConnection.BackColor = Color.Pink;
                     radAgvcOffline.Checked = true;
                 }
+
+                ucWifiSignalStrength.TagValue = asePackage.WifiSignalStrength.ToString();
             }
             catch (Exception ex)
             {
@@ -1244,7 +1246,7 @@ namespace Mirle.Agv.AseMiddler.View
             {
                 agvcConnector.DisConnect();
             }
-            if (asePackage.IsConnected())
+            if (Vehicle.IsLocalConnect)
             {
                 asePackage.DisConnect();
             }
