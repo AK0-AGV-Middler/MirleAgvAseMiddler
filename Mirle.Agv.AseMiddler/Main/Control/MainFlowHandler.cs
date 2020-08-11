@@ -3041,19 +3041,33 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private bool IsRobCommand(TransferStep transferStep) => transferStep.GetTransferStepType() == EnumTransferStepType.Load || transferStep.GetTransferStepType() == EnumTransferStepType.Unload;
 
-        public void AgvcConnector_OnCmdPauseEvent(ushort iSeqNum, PauseEvent type)
+        public void AgvcConnector_OnCmdPauseEvent(ushort iSeqNum, PauseEvent pauseEvent, PauseType pauseType)
         {
             try
             {
-                PauseTransfer();
-                asePackage.MovePause();
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"MainFlow : Get [{type}]Command.");
-                agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
-                if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
+                if (Vehicle.IsPause())
                 {
-                    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.On;
-                    agvcConnector.StatusChangeReport();
+                    Vehicle.PauseFlags[pauseType] = true;
+                    agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[其他旗標 已暫停] [{pauseEvent}][{pauseType}]");
                 }
+                else
+                {
+                    Vehicle.PauseFlags[pauseType] = true;
+                    PauseTransfer();
+                    asePackage.MovePause();
+                   
+                    agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
+                    if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
+                    {
+                        Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.On;
+                        agvcConnector.StatusChangeReport();
+                    }
+
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 暫停] [{pauseEvent}][{pauseType}]");
+                }
+               
+                
             }
             catch (Exception ex)
             {
@@ -3061,19 +3075,29 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void AgvcConnector_OnCmdResumeEvent(ushort iSeqNum, PauseEvent type)
+        public void AgvcConnector_OnCmdResumeEvent(ushort iSeqNum, PauseEvent pauseEvent, PauseType pauseType)
         {
             try
             {
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"MainFlow : Get [{type}]Command.");
+                Vehicle.PauseFlags[pauseType] = false;
                 agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
-                asePackage.MoveContinue();
-                ResumeVisitTransferSteps();
-                agvcConnector.ResumeAskReserve();
-                if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
+
+                if (!Vehicle.IsPause())
                 {
-                    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
-                    agvcConnector.StatusChangeReport();
+                    asePackage.MoveContinue();
+                    ResumeVisitTransferSteps();
+                    agvcConnector.ResumeAskReserve();
+                    if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
+                    {
+                        Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
+                        agvcConnector.StatusChangeReport();
+                    }
+
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 續行] [{pauseEvent}][{pauseType}]");
+                }
+                else
+                {
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[尚有 其他 暫停旗標] [{pauseEvent}][{pauseType}]");
                 }
             }
             catch (Exception ex)

@@ -1843,15 +1843,15 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
 
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector :  Get [{receive.EventType}]Command.");
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[收到 暫停] [{receive.EventType}][{receive.PauseType}].");
 
                 switch (receive.EventType)
                 {
                     case PauseEvent.Continue:
-                        mainFlowHandler.AgvcConnector_OnCmdResumeEvent(e.iSeqNum, receive.EventType);
+                        mainFlowHandler.AgvcConnector_OnCmdResumeEvent(e.iSeqNum, receive.EventType,receive.PauseType);
                         break;
                     case PauseEvent.Pause:
-                        mainFlowHandler.AgvcConnector_OnCmdPauseEvent(e.iSeqNum, receive.EventType);
+                        mainFlowHandler.AgvcConnector_OnCmdPauseEvent(e.iSeqNum, receive.EventType, receive.PauseType);
                         break;
                     default:
                         break;

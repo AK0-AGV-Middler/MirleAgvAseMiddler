@@ -3,6 +3,7 @@ using Mirle.Agv.AseMiddler.Model;
 using Mirle.Agv.AseMiddler.Model.Configs;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
 using Mirle.Tools;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1009,6 +1010,7 @@ namespace Mirle.Agv.AseMiddler.View
                 ucVehicleImage.Show();
                 ucVehicleImage.BringToFront();
 
+                txtVehiclePauseFlags.Text = JsonConvert.SerializeObject(Vehicle.PauseFlags, Formatting.Indented);
             }
             catch (Exception ex)
             {

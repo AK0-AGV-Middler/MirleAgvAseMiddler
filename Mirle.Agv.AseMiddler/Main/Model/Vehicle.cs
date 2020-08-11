@@ -63,6 +63,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public BCRReadResult LeftReadResult { get; set; } = BCRReadResult.BcrReadFail;
         public BCRReadResult RightReadResult { get; set; } = BCRReadResult.BcrReadFail;
         public VhStopSingle OpPauseStatus { get; set; } = VhStopSingle.Off;
+        public ConcurrentDictionary<PauseType, bool> PauseFlags = new ConcurrentDictionary<PauseType, bool>();
 
         #endregion
 
@@ -85,7 +86,21 @@ namespace Mirle.Agv.AseMiddler.Model
 
         #endregion
 
-        private Vehicle() { }
+        private Vehicle()
+        {
+            if (PauseFlags == null)
+            {
+                PauseFlags = new ConcurrentDictionary<PauseType, bool>();
+            }
+
+            if (PauseFlags.IsEmpty)
+            {
+                foreach (var item in Enum.GetValues(typeof(PauseType)))
+                {
+                    PauseFlags.TryAdd((PauseType)item, false);
+                }
+            }
+        }
 
         public AseCarrierSlotStatus GetAseCarrierSlotStatus(EnumSlotNumber slotNumber)
         {
@@ -97,6 +112,11 @@ namespace Mirle.Agv.AseMiddler.Model
                 default:
                     return theVehicle.AseCarrierSlotL;
             }
+        }
+
+        public bool IsPause()
+        {
+            return PauseFlags.Values.Any(x => x);
         }
     }
 }
