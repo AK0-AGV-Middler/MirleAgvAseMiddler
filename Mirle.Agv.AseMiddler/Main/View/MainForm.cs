@@ -1031,7 +1031,43 @@ namespace Mirle.Agv.AseMiddler.View
                 ucBatteryVoltage.TagValue = batteryVoltage;
                 string batteryTemperature = Vehicle.AseBatteryStatus.Temperature.ToString("F1");
                 ucBatteryTemperature.TagValue = batteryTemperature;
+                #region 200824 dabid for Watch Not AUTO Charge
+                string AutoState = Vehicle.AutoState.ToString();
+                ucAutoState.TagValue = AutoState;
 
+                string IsVehicleIdle = Vehicle.VehicleIdle.ToString();
+                ucIsVehicleIdle.TagValue = IsVehicleIdle;
+
+                string IsOptimize = Vehicle.IsOptimize.ToString();
+                ucIsOptimize.TagValue = IsOptimize;
+
+                string IsLowPower = Vehicle.LowPower.ToString();
+                ucIsLowPower.TagValue = IsLowPower;
+
+                string IsLowPowerStartChargeTimeout = Vehicle.LowPowerStartChargeTimeout.ToString();
+                ucIsLowPowerStartChargeTimeout.TagValue = IsLowPowerStartChargeTimeout;
+
+                string IsArrivalCharge = Vehicle.ArrivalCharge.ToString();
+                ucIsArrivalCharge.TagValue = IsArrivalCharge;
+
+                string IsCharger = Vehicle.IsCharger.ToString();
+                ucIsCharger.TagValue = IsCharger;
+
+                //string IsCharging = isCharging ? "Yes" : "No";
+                //ucIsCharging.TagValue = isCharging ? "Yes" : "No"; 
+
+                string IsSimulation = Vehicle.MainFlowConfig.IsSimulation.ToString();
+                ucIsSimulation.TagValue = IsSimulation;
+
+                string StepsCount = Vehicle.TransferStepsCount.ToString();
+                ucStepsCount.TagValue = StepsCount;
+
+                string CurransferStepType = Vehicle.TransferStepType.ToString();
+                ucCurransferStepType.TagValue = CurransferStepType;
+
+                string ChargeCount = Vehicle.LowPowerRepeatedlyChargeCounter.ToString();
+                ucChargeCount.TagValue = ChargeCount;
+                #endregion
                 if (IsEnableStartChargeButton)
                 {
                     IsEnableStartChargeButton = false;

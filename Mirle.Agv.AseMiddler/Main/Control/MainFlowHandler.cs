@@ -269,8 +269,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
-
         private void VehicleLocationInitialAndThreadsInitial()
         {
             if (Vehicle.MainFlowConfig.IsSimulation)
@@ -1231,6 +1229,9 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
+                    Vehicle.VehicleIdle = IsVehicleIdle();//200824 dabid+
+                    Vehicle.LowPower = IsLowPower();//200824 dabid+stop
+                    Vehicle.LowPowerStartChargeTimeout = IsLowPowerStartChargeTimeout;//200824 dabid+
                     if (Vehicle.AutoState == EnumAutoState.Auto && IsVehicleIdle() && !Vehicle.IsOptimize && IsLowPower() && !IsLowPowerStartChargeTimeout)
                     {
                         LowPowerStartCharge(Vehicle.AseMoveStatus.LastAddress);
@@ -1376,11 +1377,13 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                Vehicle.ArrivalCharge = IsArrivalCharge;//200824 dabid for Watch Not AUTO Charge
                 if (IsArrivalCharge) return;
 
                 var address = lastAddress;
                 var percentage = Vehicle.AseBatteryStatus.Percentage;
                 var pos = Vehicle.AseMoveStatus.LastMapPosition;
+                Vehicle.IsCharger = address.IsCharger();//200824 dabid for Watch Not AUTO Charge
                 if (address.IsCharger())
                 {
                     if (Vehicle.IsCharging)
@@ -1408,7 +1411,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.SleepLowPowerWatcherSec * 1000);
                                 IsLowPowerStartChargeTimeout = false;
                             });
-
+                            Vehicle.LowPowerRepeatedlyChargeCounter = LowPowerRepeatedlyChargeCounter;
                             return;
                         }
                     }

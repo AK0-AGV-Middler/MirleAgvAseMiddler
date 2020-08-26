@@ -57,6 +57,9 @@
   <PropertyGroup>
     <ApplicationIcon>Resource\VehHasCarrier.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -289,6 +292,7 @@
     <EmbeddedResource Include="Main\View\WarningForm.resx">
       <DependentUpon>WarningForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="app.manifest" />
     <None Include="Config\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

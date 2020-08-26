@@ -24,7 +24,16 @@ namespace Mirle.Agv.AseMiddler.Model
         public EnumLoginLevel LoginLevel { get; set; } = EnumLoginLevel.Op;
         public EnumChargingStage ChargingStage { get; set; } = EnumChargingStage.Idle;
         public MapInfo Mapinfo { get; private set; } = new MapInfo();
-
+        #region 200824 dabid for Watch Not AUTO Charge
+        public bool VehicleIdle { get; set; } = false;
+        public bool LowPower { get; set; } = false;
+        public bool LowPowerStartChargeTimeout { get; set; } = false;
+        public bool ArrivalCharge { get; set; } = false;
+        public bool IsCharger { get; set; } = false;
+        public int TransferStepsCount { get; set; } = 0;
+        public string TransferStepType { get; set; } = "NONE";
+        public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
+        #endregion
         #region AsePackage
 
         public bool IsLocalConnect { get; set; } = false;

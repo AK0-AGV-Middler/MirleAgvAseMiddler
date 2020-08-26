@@ -79,7 +79,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             this.mainFlowHandler = mainFlowHandler;
             agvcConnectorConfig = Vehicle.AgvcConnectorConfig;
             alarmHandler = mainFlowHandler.alarmHandler;
-            mirleLogger = MirleLogger.Instance;
 
             CreatTcpIpClientAgent();
             if (!Vehicle.MainFlowConfig.IsSimulation)
@@ -166,7 +165,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     string msg = $"AgvcConnector : Disconnect Stop, [IsNull={IsClientAgentNull()}][IsConnect={IsConnected()}]";
                     LogComm(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
 
-                    ClientAgent.stop();
+                    //ClientAgent.stop();//dabid- 200822
                     //ClientAgent = null;
                 }
                 else
@@ -210,7 +209,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 if (ClientAgent.IsConnection)
                 {
-                    Task.Run(() => ClientAgent.stop());
+                    //Task.Run(() => ClientAgent.stop());//dabid- 200822
                 }
             }
         }
