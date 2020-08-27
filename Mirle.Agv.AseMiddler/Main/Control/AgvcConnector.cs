@@ -751,6 +751,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public void AskGuideAddressesAndSections(MoveCmdInfo moveCmdInfo)
         {
+            ClearAllReserve();
             Send_Cmd138_GuideInfoRequest(Vehicle.AseMoveStatus.LastAddress.Id, moveCmdInfo.EndAddress.Id);
         }
         public void AskAllSectionsReserveInOnce()

@@ -24,7 +24,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string MoveStopResult { get; set; } = "";
         public RobotCommand RobotCommand { get; set; }
         public DateTime LastDisconnectedTimeStamp { get; set; } = DateTime.Now;
-        public uint LastUpdateSlotStatusSystemByte { get; set; } = 0;
+        public uint LastUpdateLeftSlotStatusSystemByte { get; set; } = 0;
+        public uint LastUpdateRightSlotStatusSystemByte { get; set; } = 0;
         public uint LastUpdatePositionSystemByte { get; set; } = 0;
 
         private Thread thdWatchWifiSignalStrength;
@@ -794,12 +795,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case "25":
                         {
-                            var primaryMessageSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                            if (primaryMessageSystemByte > LastUpdateSlotStatusSystemByte || (Math.Abs(LastUpdateSlotStatusSystemByte - primaryMessageSystemByte) > 65535))
-                            {
-                                LastUpdateSlotStatusSystemByte = primaryMessageSystemByte;
-                                UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage);
-                            }
+                            UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage,transaction.PSPrimaryMessage.SystemBytes);
                         }
                         break;
                     case "29":
@@ -1117,7 +1113,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void UpdateCarrierSlotStatus(string psMessage)
+        private void UpdateCarrierSlotStatus(string psMessage,uint systemByte)
         {
             EnumSlotNumber slotNumber = EnumSlotNumber.L;
             AseCarrierSlotStatus aseCarrierSlotStatus = new AseCarrierSlotStatus();
@@ -1127,6 +1123,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (!Vehicle.AsePackageConfig.CanManualDeleteCST)
                 {
                     slotNumber = psMessage.Substring(0, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
+
+                    if (!CheckSystemByte(slotNumber, systemByte)) return;
+                   
                     aseCarrierSlotStatus.SlotNumber = slotNumber;
 
                     aseCarrierSlotStatus.CarrierSlotStatus = GetCarrierSlotStatus(psMessage.Substring(1, 1));
@@ -1152,6 +1151,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 else
                 {
                     slotNumber = psMessage.Substring(1, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
+
+                    if (!CheckSystemByte(slotNumber, systemByte)) return;
+
                     aseCarrierSlotStatus.SlotNumber = slotNumber;
 
                     bool manualDeleteCst = psMessage.Substring(0, 1) == "1";
@@ -1188,6 +1190,34 @@ namespace Mirle.Agv.AseMiddler.Controller
                 string msg = "Carrier Slot Report, " + ex.Message;
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
                 ImportantPspLog?.Invoke(this, msg);
+            }
+        }
+
+        private bool CheckSystemByte(EnumSlotNumber slotNumber, uint systemByte)
+        {
+            if (slotNumber== EnumSlotNumber.L)
+            {
+                if (systemByte > LastUpdateLeftSlotStatusSystemByte || (Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte) > 65535))
+                {
+                    LastUpdateLeftSlotStatusSystemByte = systemByte;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }                
+            }
+            else
+            {
+                if (systemByte > LastUpdateRightSlotStatusSystemByte || (Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte) > 65535))
+                {
+                    LastUpdateRightSlotStatusSystemByte = systemByte;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
