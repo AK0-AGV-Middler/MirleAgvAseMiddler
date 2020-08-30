@@ -15,5 +15,6 @@ namespace Mirle.Agv.AseMiddler.Model.Configs
         public string RemoteControlPauseErrorCode { get; set; } = "123";
         public int DisconnectTimeoutSec { get; set; } = 30;
         public int ErrorCodeLength { get; set; } = 6;
+        public long MaxLocalSystemByte { get; set; } = 9999;
     }
 }

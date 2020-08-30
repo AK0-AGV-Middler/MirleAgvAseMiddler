@@ -118,7 +118,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 //Main Configs 
-                int minThreadSleep = 50;
+                int minThreadSleep = 100;
                 string allText = System.IO.File.ReadAllText("MainFlowConfig.json");
                 Vehicle.MainFlowConfig = JsonConvert.DeserializeObject<MainFlowConfig>(allText);
                 if (Vehicle.MainFlowConfig.IsSimulation)
@@ -148,7 +148,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 allText = System.IO.File.ReadAllText("AsePackageConfig.json");
                 Vehicle.AsePackageConfig = JsonConvert.DeserializeObject<AsePackageConfig>(allText);
                 Vehicle.AsePackageConfig.ScheduleIntervalMs = Math.Max(Vehicle.AsePackageConfig.ScheduleIntervalMs, minThreadSleep);
-                
+                Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs = Math.Max(Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs, minThreadSleep);
+                Vehicle.AseMoveConfig.WatchPositionInterval = Math.Max(Vehicle.AseMoveConfig.WatchPositionInterval, minThreadSleep);
+                Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging = Math.Max(Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging, minThreadSleep);
+                Vehicle.AseBatteryConfig.WatchBatteryStateInterval = Math.Max(Vehicle.AseBatteryConfig.WatchBatteryStateInterval, minThreadSleep);
+
                 allText = System.IO.File.ReadAllText("PspConnectionConfig.json");
                 Vehicle.PspConnectionConfig = JsonConvert.DeserializeObject<PspConnectionConfig>(allText);
 

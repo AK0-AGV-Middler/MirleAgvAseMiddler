@@ -24,12 +24,13 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string MoveStopResult { get; set; } = "";
         public RobotCommand RobotCommand { get; set; }
         public DateTime LastDisconnectedTimeStamp { get; set; } = DateTime.Now;
-        public uint LastUpdateLeftSlotStatusSystemByte { get; set; } = 0;
-        public uint LastUpdateRightSlotStatusSystemByte { get; set; } = 0;
-        public uint LastUpdatePositionSystemByte { get; set; } = 0;
+        public long LastUpdateLeftSlotStatusSystemByte { get; set; } = 0;
+        public long LastUpdateRightSlotStatusSystemByte { get; set; } = 0;
+        public long LastUpdatePositionSystemByte { get; set; } = 0;
+        public bool ResetSystemByte { get; set; } = true;
 
         private Thread thdWatchWifiSignalStrength;
-        public bool IsWatchWifiSignalStrengthPause { get; set; } = false;        
+        public bool IsWatchWifiSignalStrengthPause { get; set; } = false;
 
         private Thread thdSchedule;
         public bool IsSchedulePause { get; set; } = false;
@@ -181,7 +182,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (Vehicle.IsLocalConnect)
                 {
                     SendWifiSignalStrength(Vehicle.WifiSignalStrength);
-                }              
+                }
             }
         }
 
@@ -251,7 +252,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                     Thread.Sleep(1);
-                }              
+                }
 
                 Thread.Sleep(Vehicle.AsePackageConfig.ScheduleIntervalMs);
                 //SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.ScheduleIntervalMs);
@@ -288,7 +289,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                     Thread.Sleep(1);
-                }               
+                }
 
                 Thread.Sleep(Vehicle.AseMoveConfig.WatchPositionInterval);
                 //SpinWait.SpinUntil(() => false, Vehicle.AseMoveConfig.WatchPositionInterval);
@@ -312,7 +313,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             while (true)
             {
                 try
-                {                  
+                {
                     if (Vehicle.IsLocalConnect)
                     {
                         SendBatteryStatusRequest();
@@ -322,7 +323,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                     Thread.Sleep(1);
-                }             
+                }
 
                 if (Vehicle.IsCharging)
                 {
@@ -336,7 +337,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
             }
         }
-      
 
         public void SendBatteryStatusRequest()
         {
@@ -751,7 +751,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-        private int firstTimeRece = 0;
+
+        //private int firstTimeRece = 0;
         private void DealPrimaryReceived(PSTransactionXClass transaction)
         {
             try
@@ -766,20 +767,29 @@ namespace Mirle.Agv.AseMiddler.Controller
                     throw new Exception("Primary message type is not P.");
                 }
 
-                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
-                if (firstTimeRece == 0)
+                if (ResetSystemByte)
                 {
+                    ResetSystemByte = false;
                     LastUpdateLeftSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
                     LastUpdateRightSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
-                    firstTimeRece++;
+                    LastUpdatePositionSystemByte = transaction.PSPrimaryMessage.SystemBytes;
                 }
-                if (transaction.PSPrimaryMessage.SystemBytes == 0)
-                {
-                    LastUpdateLeftSlotStatusSystemByte = 0;
-                    LastUpdateRightSlotStatusSystemByte = 0;
-                }
+
+
+                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                //if (firstTimeRece == 0)
+                //{
+                //    LastUpdateLeftSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
+                //    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    LastUpdateRightSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
+                //    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    firstTimeRece++;
+                //}
+                //if (transaction.PSPrimaryMessage.SystemBytes == 0)
+                //{
+                //    LastUpdateLeftSlotStatusSystemByte = 0;
+                //    LastUpdateRightSlotStatusSystemByte = 0;
+                //}
                 switch (transaction.PSPrimaryMessage.Number)
                 {
                     case "11":
@@ -796,7 +806,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case "25":
                         {
-                            UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage,transaction.PSPrimaryMessage.SystemBytes);
+                            UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage, transaction.PSPrimaryMessage.SystemBytes);
                         }
                         break;
                     case "29":
@@ -1114,7 +1124,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void UpdateCarrierSlotStatus(string psMessage,uint systemByte)
+        private void UpdateCarrierSlotStatus(string psMessage, uint systemByte)
         {
             EnumSlotNumber slotNumber = EnumSlotNumber.L;
             AseCarrierSlotStatus aseCarrierSlotStatus = new AseCarrierSlotStatus();
@@ -1125,7 +1135,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     slotNumber = psMessage.Substring(0, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
 
-                    if (!CheckSystemByte(slotNumber, systemByte))//200827 dabid+ Log
+                    if (!CheckSlotSystemByte(slotNumber, systemByte))//200827 dabid+ Log
                     {
                         LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old.");
                         return;
@@ -1156,7 +1166,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     slotNumber = psMessage.Substring(1, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
                     //systemByte = 50;
-                    if (!CheckSystemByte(slotNumber, systemByte))//200827 dabid+ Log
+                    if (!CheckSlotSystemByte(slotNumber, systemByte))//200827 dabid+ Log
                     {
                         LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old. psMessage : {psMessage}");
                         return;
@@ -1201,51 +1211,100 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private bool CheckSystemByte(EnumSlotNumber slotNumber, uint systemByte)
+        private bool CheckSlotSystemByte(EnumSlotNumber slotNumber, uint systemByte)
         {
-            if (slotNumber== EnumSlotNumber.L)
+            if (slotNumber == EnumSlotNumber.L)
             {
-                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
-                if (LastUpdateLeftSlotStatusSystemByte < systemByte && (Math.Abs(Convert.ToInt32(LastUpdateLeftSlotStatusSystemByte) - Convert.ToInt32(systemByte)) > 5000))
+                long longSystemByte = (long)systemByte;
+                if (longSystemByte > LastUpdateLeftSlotStatusSystemByte)
                 {
-                    LogPsWrapper(Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte).ToString());
-                    LogPsWrapper($"{systemByte} > {LastUpdateLeftSlotStatusSystemByte}  LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
-                    return false;
-                }
-                //200829 dabid# > 改 >= // PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
-                if (systemByte >= LastUpdateLeftSlotStatusSystemByte || (Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte) > 65535))
-                {
-                    LastUpdateLeftSlotStatusSystemByte = systemByte;
-                    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                    LastUpdateLeftSlotStatusSystemByte = longSystemByte;
                     return true;
+                }
+                else if (longSystemByte < LastUpdateLeftSlotStatusSystemByte)
+                {
+                    long thd = Vehicle.AsePackageConfig.MaxLocalSystemByte / 4;
+                    if (LastUpdateLeftSlotStatusSystemByte - longSystemByte > thd)
+                    {
+                        LastUpdateLeftSlotStatusSystemByte = longSystemByte;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
-                    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
                     return false;
-                }                
+                }
+
+                ////200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                //if (LastUpdateLeftSlotStatusSystemByte < systemByte && (Math.Abs(Convert.ToInt32(LastUpdateLeftSlotStatusSystemByte) - Convert.ToInt32(systemByte)) > 5000))
+                //{
+                //    LogPsWrapper(Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte).ToString());
+                //    LogPsWrapper($"{systemByte} > {LastUpdateLeftSlotStatusSystemByte}  LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    return false;
+                //}
+                ////200829 dabid# > 改 >= // PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                //if (systemByte >= LastUpdateLeftSlotStatusSystemByte || (Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte) > 65535))
+                //{
+                //    LastUpdateLeftSlotStatusSystemByte = systemByte;
+                //    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    return true;
+                //}
+                //else
+                //{
+                //    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    return false;
+                //}
             }
             else
             {
-                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
-                if (LastUpdateRightSlotStatusSystemByte < systemByte && (Math.Abs(Convert.ToInt32(LastUpdateRightSlotStatusSystemByte) - Convert.ToInt32(systemByte)) > 5000))
+                long longSystemByte = (long)systemByte;
+                if (longSystemByte > LastUpdateRightSlotStatusSystemByte)
                 {
-                    LogPsWrapper(Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte).ToString());
-                    LogPsWrapper($"{systemByte} > {LastUpdateRightSlotStatusSystemByte} LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
-                    return false;
-                }
-                //200829 dabid# > 改 >= // PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
-                if (systemByte >= LastUpdateRightSlotStatusSystemByte || (Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte) > 65535))
-                {
-                    LastUpdateRightSlotStatusSystemByte = systemByte;
-                    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                    LastUpdateRightSlotStatusSystemByte = longSystemByte;
                     return true;
+                }
+                else if (longSystemByte < LastUpdateRightSlotStatusSystemByte)
+                {
+                    long thd = Vehicle.AsePackageConfig.MaxLocalSystemByte / 4;
+                    if (LastUpdateRightSlotStatusSystemByte - longSystemByte > thd)
+                    {
+                        LastUpdateRightSlotStatusSystemByte = longSystemByte;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
-                    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
                     return false;
                 }
+
+
+                ////200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                //if (LastUpdateRightSlotStatusSystemByte < systemByte && (Math.Abs(Convert.ToInt32(LastUpdateRightSlotStatusSystemByte) - Convert.ToInt32(systemByte)) > 5000))
+                //{
+                //    LogPsWrapper(Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte).ToString());
+                //    LogPsWrapper($"{systemByte} > {LastUpdateRightSlotStatusSystemByte} LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    return false;
+                //}
+                ////200829 dabid# > 改 >= // PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                //if (systemByte >= LastUpdateRightSlotStatusSystemByte || (Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte) > 65535))
+                //{
+                //    LastUpdateRightSlotStatusSystemByte = systemByte;
+                //    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    return true;
+                //}
+                //else
+                //{
+                //    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                //    return false;
+                //}
             }
         }
 
@@ -1453,12 +1512,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                         break;
                     case "34":
                         {
-                            var primaryMessageSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                            if (primaryMessageSystemByte > LastUpdatePositionSystemByte || (Math.Abs(LastUpdatePositionSystemByte - primaryMessageSystemByte) > 65535))
+                            if (!CheckPositionSystemByte(transaction.PSPrimaryMessage.SystemBytes))
                             {
-                                LastUpdatePositionSystemByte = primaryMessageSystemByte;
-                                ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
+                                LogPsWrapper($"dabid Log systemByte :{transaction.PSPrimaryMessage.SystemBytes.ToString()} is old. Last = {LastUpdatePositionSystemByte}.");
+                                break;
                             }
+                            ReceivePositionReportRequestAck(transaction.PSSecondaryMessage.PSMessage);
                         }
                         break;
                     case "36":
@@ -1474,6 +1533,33 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
+        private bool CheckPositionSystemByte(uint ReceiveSystemByte)
+        {
+            long longSystemByte = (long)ReceiveSystemByte;
+            if (longSystemByte > LastUpdatePositionSystemByte)
+            {
+                LastUpdatePositionSystemByte = longSystemByte;
+                return true;
+            }
+            else if (longSystemByte < LastUpdatePositionSystemByte)
+            {
+                long thd = Vehicle.AsePackageConfig.MaxLocalSystemByte / 4;
+                if (LastUpdatePositionSystemByte - longSystemByte > thd)
+                {
+                    LastUpdatePositionSystemByte = longSystemByte;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        
         private void ReceiveMoveAppendRequestAck(string psMessage)
         {
             try
