@@ -45,8 +45,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         #endregion
 
         private Vehicle Vehicle { get; set; } = Vehicle.Instance;
-        private AgvcConnectorConfig agvcConnectorConfig;
-        private AlarmHandler alarmHandler;
         private MirleLogger mirleLogger = MirleLogger.Instance;
         private MainFlowHandler mainFlowHandler;
 
@@ -77,8 +75,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public AgvcConnector(MainFlowHandler mainFlowHandler)
         {
             this.mainFlowHandler = mainFlowHandler;
-            agvcConnectorConfig = Vehicle.AgvcConnectorConfig;
-            alarmHandler = mainFlowHandler.alarmHandler;
+            Vehicle.AgvcConnectorConfig = Vehicle.AgvcConnectorConfig;
 
             CreatTcpIpClientAgent();
             if (!Vehicle.MainFlowConfig.IsSimulation)
@@ -103,19 +100,19 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             IDecodReceiveRawData RawDataDecoder = new DecodeRawData_Google(unPackWrapperMsg);
 
-            int clientNum = agvcConnectorConfig.ClientNum;
-            string clientName = agvcConnectorConfig.ClientName;
-            string sRemoteIP = agvcConnectorConfig.RemoteIp;
-            int iRemotePort = agvcConnectorConfig.RemotePort;
-            string sLocalIP = agvcConnectorConfig.LocalIp;
-            int iLocalPort = agvcConnectorConfig.LocalPort;
+            int clientNum = Vehicle.AgvcConnectorConfig.ClientNum;
+            string clientName = Vehicle.AgvcConnectorConfig.ClientName;
+            string sRemoteIP = Vehicle.AgvcConnectorConfig.RemoteIp;
+            int iRemotePort = Vehicle.AgvcConnectorConfig.RemotePort;
+            string sLocalIP = Vehicle.AgvcConnectorConfig.LocalIp;
+            int iLocalPort = Vehicle.AgvcConnectorConfig.LocalPort;
 
-            int recv_timeout_ms = agvcConnectorConfig.RecvTimeoutMs; //等待sendRecv Reply的Time out時間(milliseconds)
-            int send_timeout_ms = agvcConnectorConfig.SendTimeoutMs; //暫時無用
-            int max_readSize = agvcConnectorConfig.MaxReadSize; //暫時無用
-            int reconnection_interval_ms = agvcConnectorConfig.ReconnectionIntervalMs; // Dis-Connect 多久之後再進行一次嘗試恢復連線的動作
-            int max_reconnection_count = agvcConnectorConfig.MaxReconnectionCount; // Dis-Connect 後最多嘗試幾次重新恢復連線 (若設定為0則不進行自動重新連線)
-            int retry_count = agvcConnectorConfig.RetryCount; //SendRecv Time out後要再重複發送的次數
+            int recv_timeout_ms = Vehicle.AgvcConnectorConfig.RecvTimeoutMs; //等待sendRecv Reply的Time out時間(milliseconds)
+            int send_timeout_ms = Vehicle.AgvcConnectorConfig.SendTimeoutMs; //暫時無用
+            int max_readSize = Vehicle.AgvcConnectorConfig.MaxReadSize; //暫時無用
+            int reconnection_interval_ms = Vehicle.AgvcConnectorConfig.ReconnectionIntervalMs; // Dis-Connect 多久之後再進行一次嘗試恢復連線的動作
+            int max_reconnection_count = Vehicle.AgvcConnectorConfig.MaxReconnectionCount; // Dis-Connect 後最多嘗試幾次重新恢復連線 (若設定為0則不進行自動重新連線)
+            int retry_count = Vehicle.AgvcConnectorConfig.RetryCount; //SendRecv Time out後要再重複發送的次數
 
             try
             {
@@ -352,12 +349,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsSchedulePause)
-                    {
-                        SpinWait.SpinUntil(() => !IsSchedulePause, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
+                    //if (IsSchedulePause)
+                    //{
+                    //    SpinWait.SpinUntil(() => !IsSchedulePause, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
 
-                        continue;
-                    }
+                    //    continue;
+                    //}
 
                     if (Vehicle.IsAgvcConnect)
                     {
@@ -389,11 +386,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                    Thread.Sleep(1);
                 }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
-                }
+
+                Thread.Sleep(Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
+                //SpinWait.SpinUntil(() => false, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
             }
         }
         private void PrimarySend(ref ScheduleWrapper scheduleWrapper)
@@ -520,71 +517,46 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             while (true)
             {
-                try
+                if (Vehicle.IsAgvcConnect)
                 {
-                    Vehicle.TMP_IsSendWaitSchedulePause = IsSendWaitSchedulePause;
-                    if (IsSendWaitSchedulePause)
+                    try
                     {
-                        SpinWait.SpinUntil(() => !IsSendWaitSchedulePause, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
-
-                        continue;
-                    }
-
-                    if (Vehicle.IsAgvcConnect)
-                    {
-                        try
-                        {
                         if (PrimarySendWaitQueue.Any())
                         {
                             PrimarySendWaitQueue.TryDequeue(out ScheduleWrapper scheduleWrapper);
                             PrimarySendWait(ref scheduleWrapper);
                         }
-                        }
-                        catch(Exception e)//200828 dabid for Watch Not AskAllSectionsReserveInOnce
-                        {
-                            mainFlowHandler.LogDebug(GetType().Name, $"PrimarySendWaitQueue ex {e.Message}");
-                            Vehicle.TMP_e = "PrimarySendWaitQueue " + e.Message;
-                        }
-                        try
-                        {
+                    }
+                    catch (Exception ex)//200828 dabid for Watch Not AskAllSectionsReserveInOnce
+                    {
+                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                        Thread.Sleep(1);
+                    }
+
+                    try
+                    {
                         if (queNeedReserveSections.Any())
                         {
-                                //200828 dabid for Watch Not AskAllSectionsReserveInOnce
-                                Vehicle.TMP_IsAskReservePause = IsAskReservePause;//!
-                                Vehicle.TMP_IsMoveStep = mainFlowHandler.IsMoveStep();
-                                Vehicle.TMP_CanVehMove = mainFlowHandler.CanVehMove();
-                                Vehicle.TMP_IsMoveEnd = Vehicle.AseMoveStatus.IsMoveEnd;//!
-                                Vehicle.TMP_IsSleepByAskReserveFail = IsSleepByAskReserveFail;//!
                             if (!IsAskReservePause && mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !Vehicle.AseMoveStatus.IsMoveEnd && !IsSleepByAskReserveFail)
                             {
                                 AskAllSectionsReserveInOnce();
                             }
-                                else
-                                {
-                                    mainFlowHandler.LogDebug(GetType().Name, $"IsAskReservePause = {Vehicle.TMP_IsAskReservePause} ,IsMoveStep = {Vehicle.TMP_IsMoveStep}," +
-                                    $"CanVehMove = {Vehicle.TMP_CanVehMove},IsMoveEnd = {Vehicle.TMP_IsMoveEnd},IsSleepByAskReserveFail = {Vehicle.TMP_IsSleepByAskReserveFail}");
-                                }
-                            }
                             else
                             {
-                                
+                                mainFlowHandler.LogDebug(GetType().Name, $"IsAskReservePause = {IsAskReservePause} ,IsMoveStep = {mainFlowHandler.IsMoveStep()}, CanVehMove = {mainFlowHandler.CanVehMove()},IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd},IsSleepByAskReserveFail = {IsSleepByAskReserveFail}");
                             }
                         }
-                        catch (Exception e)//200828 dabid for Watch Not AskAllSectionsReserveInOnce
-                        {
-                            mainFlowHandler.LogDebug(GetType().Name, $"queNeedReserveSections ex {e.Message}");
-                            Vehicle.TMP_e = "queNeedReserveSections " + e.Message;
-                        }
+                    }
+                    catch (Exception ex)//200828 dabid for Watch Not AskAllSectionsReserveInOnce
+                    {
+                        LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                        Vehicle.TMP_e = ex.Message;
+                        Thread.Sleep(1);
                     }
                 }
-                catch (Exception ex)
-                {
-                    LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
-                }
+
+                Thread.Sleep(Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
+                //SpinWait.SpinUntil(() => false, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
             }
         }
 
@@ -663,9 +635,9 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public bool IsGotReserveOkSectionsFull()
         {
-            if (agvcConnectorConfig.ReserveLengthMeter < 0) return false;
+            if (Vehicle.AgvcConnectorConfig.ReserveLengthMeter < 0) return false;
             int reserveOkSectionsTotalLength = GetReserveOkSectionsTotalLength();
-            return reserveOkSectionsTotalLength >= agvcConnectorConfig.ReserveLengthMeter * 1000;
+            return reserveOkSectionsTotalLength >= Vehicle.AgvcConnectorConfig.ReserveLengthMeter * 1000;
         }
         private string QueMapSectionsToString(ConcurrentQueue<MapSection> aQue)
         {
@@ -1361,7 +1333,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
             var lastPosition = aseMoveStatus.LastMapPosition;
-            if (Math.Abs(lastPosition.X - lastReportPosition.X) <= agvcConnectorConfig.NeerlyNoMoveRangeMm && Math.Abs(lastPosition.Y - lastReportPosition.Y) <= agvcConnectorConfig.NeerlyNoMoveRangeMm)
+            if (Math.Abs(lastPosition.X - lastReportPosition.X) <= Vehicle.AgvcConnectorConfig.NeerlyNoMoveRangeMm && Math.Abs(lastPosition.Y - lastReportPosition.Y) <= Vehicle.AgvcConnectorConfig.NeerlyNoMoveRangeMm)
             {
                 return true;
             }
@@ -1878,7 +1850,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 switch (receive.EventType)
                 {
                     case PauseEvent.Continue:
-                        mainFlowHandler.AgvcConnector_OnCmdResumeEvent(e.iSeqNum, receive.EventType,receive.PauseType);
+                        mainFlowHandler.AgvcConnector_OnCmdResumeEvent(e.iSeqNum, receive.EventType, receive.PauseType);
                         break;
                     case PauseEvent.Pause:
                         mainFlowHandler.AgvcConnector_OnCmdPauseEvent(e.iSeqNum, receive.EventType, receive.PauseType);
@@ -2940,7 +2912,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             else
             {
-                var diff = (highPowTh - lowPowTh)/100.0;
+                var diff = (highPowTh - lowPowTh) / 100.0;
                 uint result = (uint)Math.Max(Math.Min((originCapacity * diff + lowPowTh), 100), 0);
                 return result;
             }
@@ -2997,19 +2969,25 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private void LogException(string classMethodName, string exMsg)
         {
-            LogFormat logFormat = new LogFormat("Error", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", exMsg);
-            OnLogMsgEvent?.Invoke(this, logFormat);
+            try
+            {
+                mirleLogger.Log(new LogFormat("Error", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", exMsg));
+            }
+            catch (Exception) { }
         }
 
         private void LogDebug(string classMethodName, string msg)
         {
-            LogFormat logFormat = new LogFormat("Debug", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg);
-            OnLogMsgEvent?.Invoke(this, logFormat);
+            try
+            {
+                mirleLogger.Log(new LogFormat("Debug", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", msg));
+            }
+            catch (Exception) { }
         }
 
         private void LogComm(string classMethodName, string msg)
         {
-            mirleLogger.Log(new LogFormat("Comm", "5", classMethodName, agvcConnectorConfig.ClientName, "CarrierID", msg));
+            mirleLogger.Log(new LogFormat("Comm", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", msg));
         }
 
         public void LogCommandList(string msg)

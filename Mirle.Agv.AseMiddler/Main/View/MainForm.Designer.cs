@@ -141,7 +141,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.labException = new System.Windows.Forms.Label();
             this.lab1 = new System.Windows.Forms.Label();
             this.ucVerticalLabelText7 = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucIsSendWaitSchedulePause = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsSleepByAskReserveFail = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -1386,7 +1385,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageVehicleState.Controls.Add(this.labException);
             this.pageVehicleState.Controls.Add(this.lab1);
             this.pageVehicleState.Controls.Add(this.ucVerticalLabelText7);
-            this.pageVehicleState.Controls.Add(this.ucIsSendWaitSchedulePause);
             this.pageVehicleState.Controls.Add(this.ucIsCharging);
             this.pageVehicleState.Controls.Add(this.ucIsHome);
             this.pageVehicleState.Controls.Add(this.ucIsSleepByAskReserveFail);
@@ -1436,17 +1434,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucVerticalLabelText7.TagName = "StepsCount";
             this.ucVerticalLabelText7.TagValue = " 70.0";
             this.ucVerticalLabelText7.Visible = false;
-            // 
-            // ucIsSendWaitSchedulePause
-            // 
-            this.ucIsSendWaitSchedulePause.Location = new System.Drawing.Point(303, 581);
-            this.ucIsSendWaitSchedulePause.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
-            this.ucIsSendWaitSchedulePause.Name = "ucIsSendWaitSchedulePause";
-            this.ucIsSendWaitSchedulePause.Size = new System.Drawing.Size(135, 65);
-            this.ucIsSendWaitSchedulePause.TabIndex = 70;
-            this.ucIsSendWaitSchedulePause.TagColor = System.Drawing.Color.Black;
-            this.ucIsSendWaitSchedulePause.TagName = "IsSendWaitSchedulePause";
-            this.ucIsSendWaitSchedulePause.TagValue = " 70.0";
             // 
             // ucIsCharging
             // 
@@ -2077,7 +2064,6 @@ namespace Mirle.Agv.AseMiddler.View
         private UcVerticalLabelText ucAutoState;
         private UcVerticalLabelText ucChargeCount;
         private UcVerticalLabelText ucVerticalLabelText7;
-        private UcVerticalLabelText ucIsSendWaitSchedulePause;
         private UcVerticalLabelText ucIsCharging;
         private UcVerticalLabelText ucIsHome;
         private UcVerticalLabelText ucIsSleepByAskReserveFail;

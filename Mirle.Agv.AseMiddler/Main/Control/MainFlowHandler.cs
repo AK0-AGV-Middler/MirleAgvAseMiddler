@@ -118,18 +118,28 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 //Main Configs 
+                int minThreadSleep = 50;
                 string allText = System.IO.File.ReadAllText("MainFlowConfig.json");
                 Vehicle.MainFlowConfig = JsonConvert.DeserializeObject<MainFlowConfig>(allText);
                 if (Vehicle.MainFlowConfig.IsSimulation)
                 {
                     Vehicle.LoginLevel = EnumLoginLevel.Admin;
                 }
+                Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs = Math.Max(Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs, minThreadSleep);
+                Vehicle.MainFlowConfig.TrackPositionSleepTimeMs = Math.Max(Vehicle.MainFlowConfig.TrackPositionSleepTimeMs, minThreadSleep);
+                Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs = Math.Max(Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs, minThreadSleep);
+
                 allText = System.IO.File.ReadAllText("MapConfig.json");
                 Vehicle.MapConfig = JsonConvert.DeserializeObject<MapConfig>(allText);
+
                 allText = System.IO.File.ReadAllText("AgvcConnectorConfig.json");
                 Vehicle.AgvcConnectorConfig = JsonConvert.DeserializeObject<AgvcConnectorConfig>(allText);
+                Vehicle.AgvcConnectorConfig.ScheduleIntervalMs = Math.Max(Vehicle.AgvcConnectorConfig.ScheduleIntervalMs, minThreadSleep);
+                Vehicle.AgvcConnectorConfig.AskReserveIntervalMs = Math.Max(Vehicle.AgvcConnectorConfig.AskReserveIntervalMs, minThreadSleep);
+
                 allText = System.IO.File.ReadAllText("AlarmConfig.json");
                 Vehicle.AlarmConfig = JsonConvert.DeserializeObject<AlarmConfig>(allText);
+
                 allText = System.IO.File.ReadAllText("BatteryLog.json");
                 Vehicle.BatteryLog = JsonConvert.DeserializeObject<BatteryLog>(allText);
                 InitialSoc = Vehicle.BatteryLog.InitialSoc;
@@ -137,10 +147,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //AsePackage Configs
                 allText = System.IO.File.ReadAllText("AsePackageConfig.json");
                 Vehicle.AsePackageConfig = JsonConvert.DeserializeObject<AsePackageConfig>(allText);
+                Vehicle.AsePackageConfig.ScheduleIntervalMs = Math.Max(Vehicle.AsePackageConfig.ScheduleIntervalMs, minThreadSleep);
+                
                 allText = System.IO.File.ReadAllText("PspConnectionConfig.json");
                 Vehicle.PspConnectionConfig = JsonConvert.DeserializeObject<PspConnectionConfig>(allText);
+
                 allText = System.IO.File.ReadAllText("AseBatteryConfig.json");
                 Vehicle.AseBatteryConfig = JsonConvert.DeserializeObject<AseBatteryConfig>(allText);
+
                 allText = System.IO.File.ReadAllText("AseMoveConfig.json");
                 Vehicle.AseMoveConfig = JsonConvert.DeserializeObject<AseMoveConfig>(allText);
 
@@ -311,7 +325,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 if (IsVisitTransferStepPause || WaitingTransferCompleteEnd)
                 {
-                    SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
+                    //SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
+                    Thread.Sleep(Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
                     continue;
                 }
                 try
@@ -322,10 +337,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         if (TransferStepsIndex < 0)
                         {
                             TransferStepsIndex = 0;
-                            GoNextTransferStep = true;
-                            SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
-
-                            continue;
                         }
                         if (transferSteps.Count == 0)
                         {
@@ -336,12 +347,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                             }
                             else
                             {
-                                transferSteps.Add(new EmptyTransferStep());
+                                transferSteps = new List<TransferStep> { new EmptyTransferStep() };
+                                //transferSteps.Add(new EmptyTransferStep());
                             }
-                            GoNextTransferStep = true;
-                            SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
-
-                            continue;
                         }
 
                         if (TransferStepsIndex < transferSteps.Count)
@@ -353,11 +361,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
-                }
+                    Thread.Sleep(1);
+                }                
+
+                Thread.Sleep(Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
+                //SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
             }
         }
 
@@ -1244,11 +1252,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs);
-                }
+                    Thread.Sleep(1);
+                }             
+
+                Thread.Sleep(Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs);
+                //SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs);
             }
         }
 
@@ -1546,11 +1554,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsTrackPositionPause)
-                    {
-                        SpinWait.SpinUntil(() => !IsTrackPositionPause, Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
-                        continue;
-                    }
+                    //if (IsTrackPositionPause)
+                    //{
+                    //    SpinWait.SpinUntil(() => !IsTrackPositionPause, Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
+                    //    continue;
+                    //}
 
                     if (asePackage.ReceivePositionArgsQueue.Any())
                     {
@@ -1561,11 +1569,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                    Thread.Sleep(1);
                 }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
-                }
+
+                Thread.Sleep(Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
+                //SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.TrackPositionSleepTimeMs);
             }
         }
 
@@ -1719,19 +1727,19 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-            if (Vehicle.IsCharging) //dabid
-            {
-                StopCharge();
-            }
+                if (Vehicle.IsCharging) //dabid
+                {
+                    StopCharge();
+                }
             }
             catch
             {
 
             }
-            Vehicle.TMP_IsHome = Vehicle.AseRobotStatus.IsHome; //200828 dabid for Watch Not AskAllSectionsReserveInOnce
-            Vehicle.TMP_IsCharging = Vehicle.IsCharging;//!//200828 dabid for Watch Not AskAllSectionsReserveInOnce
+            //Vehicle.TMP_IsHome = Vehicle.AseRobotStatus.IsHome; //200828 dabid for Watch Not AskAllSectionsReserveInOnce
+            //Vehicle.TMP_IsCharging = Vehicle.IsCharging;//!//200828 dabid for Watch Not AskAllSectionsReserveInOnce
             return Vehicle.AseRobotStatus.IsHome && !Vehicle.IsCharging;
-            
+
         }
 
         public void AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(MapSection mapSection, EnumIsExecute keepOrGo)
@@ -3070,7 +3078,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     Vehicle.PauseFlags[pauseType] = true;
                     PauseTransfer();
                     asePackage.MovePause();
-                   
+
                     agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
                     if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
                     {
@@ -3080,8 +3088,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 暫停] [{pauseEvent}][{pauseType}]");
                 }
-               
-                
+
+
             }
             catch (Exception ex)
             {

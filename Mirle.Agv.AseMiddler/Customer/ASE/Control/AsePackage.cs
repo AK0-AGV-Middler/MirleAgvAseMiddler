@@ -131,23 +131,22 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsWatchWifiSignalStrengthPause)
-                    {
-                        SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs);
+                    //if (IsWatchWifiSignalStrengthPause)
+                    //{
+                    //    SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs);
 
-                        continue;
-                    }
+                    //    continue;
+                    //}
 
                     CalculateWifiSignalStrength();
                 }
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                    Thread.Sleep(1);
                 }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs);
-                }
+
+                Thread.Sleep(Vehicle.AsePackageConfig.WatchWifiSignalIntervalMs);
             }
         }
 
@@ -204,12 +203,12 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsSchedulePause)
-                    {
-                        SpinWait.SpinUntil(() => !IsSchedulePause, Vehicle.AsePackageConfig.ScheduleIntervalMs);
+                    //if (IsSchedulePause)
+                    //{
+                    //    SpinWait.SpinUntil(() => !IsSchedulePause, Vehicle.AsePackageConfig.ScheduleIntervalMs);
 
-                        continue;
-                    }
+                    //    continue;
+                    //}
 
                     if (Vehicle.IsLocalConnect)
                     {
@@ -251,11 +250,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.ScheduleIntervalMs);
-                }
+                    Thread.Sleep(1);
+                }              
+
+                Thread.Sleep(Vehicle.AsePackageConfig.ScheduleIntervalMs);
+                //SpinWait.SpinUntil(() => false, Vehicle.AsePackageConfig.ScheduleIntervalMs);
+
             }
         }
 
@@ -265,11 +265,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
-                    if (IsWatchPositionPause)
-                    {
-                        SpinWait.SpinUntil(() => !IsWatchPositionPause, Vehicle.AseMoveConfig.WatchPositionInterval);
-                        continue;
-                    }
+                    //if (IsWatchPositionPause)
+                    //{
+                    //    SpinWait.SpinUntil(() => !IsWatchPositionPause, Vehicle.AseMoveConfig.WatchPositionInterval);
+                    //    continue;
+                    //}
 
                     if (Vehicle.IsLocalConnect)
                     {
@@ -279,18 +279,19 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
                         else
                         {
-                            SpinWait.SpinUntil(() => false, 500);
+                            Thread.Sleep(500);
+                            //SpinWait.SpinUntil(() => false, 500);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                }
-                finally
-                {
-                    SpinWait.SpinUntil(() => false, Vehicle.AseMoveConfig.WatchPositionInterval);
-                }
+                    Thread.Sleep(1);
+                }               
+
+                Thread.Sleep(Vehicle.AseMoveConfig.WatchPositionInterval);
+                //SpinWait.SpinUntil(() => false, Vehicle.AseMoveConfig.WatchPositionInterval);
             }
         }
 
@@ -311,13 +312,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             while (true)
             {
                 try
-                {
-                    if (IsWatchBatteryStatusPause)
-                    {
-                        SpinWait.SpinUntil(() => !IsWatchPositionPause, Vehicle.AseBatteryConfig.WatchBatteryStateInterval);
-                        continue;
-                    }
-
+                {                  
                     if (Vehicle.IsLocalConnect)
                     {
                         SendBatteryStatusRequest();
@@ -326,30 +321,22 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                }
-                finally
+                    Thread.Sleep(1);
+                }             
+
+                if (Vehicle.IsCharging)
                 {
-                    if (Vehicle.IsCharging)
-                    {
-                        SpinWait.SpinUntil(() => false, Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging);
-                    }
-                    else
-                    {
-                        SpinWait.SpinUntil(() => false, Vehicle.AseBatteryConfig.WatchBatteryStateInterval);
-                    }
+                    Thread.Sleep(Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging);
+                    //SpinUntil(() => false, Vehicle.AseBatteryConfig.WatchBatteryStateIntervalInCharging);
+                }
+                else
+                {
+                    Thread.Sleep(Vehicle.AseBatteryConfig.WatchBatteryStateInterval);
+                    //SpinWait.SpinUntil(() => false, Vehicle.AseBatteryConfig.WatchBatteryStateInterval);
                 }
             }
         }
-
-        public void PauseWatchBatteryState()
-        {
-            IsWatchBatteryStatusPause = true;
-        }
-
-        public void ResumeWatchBatteryState()
-        {
-            IsWatchBatteryStatusPause = false;
-        }
+      
 
         public void SendBatteryStatusRequest()
         {

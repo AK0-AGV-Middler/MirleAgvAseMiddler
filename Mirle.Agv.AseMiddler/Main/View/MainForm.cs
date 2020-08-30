@@ -1068,34 +1068,21 @@ namespace Mirle.Agv.AseMiddler.View
                 string ChargeCount = Vehicle.LowPowerRepeatedlyChargeCounter.ToString();
                 ucChargeCount.TagValue = ChargeCount;
                 #endregion
+
                 #region 200828 dabid for Watch Not AskAllSectionsReserveInOnce
-                string TMP_IsAskReservePause = Vehicle.TMP_IsAskReservePause.ToString();
-                ucIsAskReservePause.TagValue = TMP_IsAskReservePause;
-
-                string TMP_IsMoveStep = Vehicle.TMP_IsMoveStep.ToString();
-                ucIsMoveStep.TagValue = TMP_IsMoveStep;
-
-                string TMP_CanVehMove = Vehicle.TMP_CanVehMove.ToString();
-                ucCanVehMove.TagValue = TMP_CanVehMove;
-
-                string TMP_IsMoveEnd = Vehicle.TMP_IsMoveEnd.ToString();
-                ucIsMoveEnd.TagValue = TMP_IsMoveEnd;
-
-                string TMP_IsSleepByAskReserveFail = Vehicle.TMP_IsSleepByAskReserveFail.ToString();
-                ucIsSleepByAskReserveFail.TagValue = TMP_IsSleepByAskReserveFail;
-
-                string TMP_IsHome = Vehicle.TMP_IsHome.ToString();
-                ucIsHome.TagValue = TMP_IsHome;
-
-                string TMP_IsCharging = Vehicle.TMP_IsCharging.ToString();
-                ucIsCharging.TagValue = TMP_IsCharging;
-
-                string TMP_IsSendWaitSchedulePause = Vehicle.TMP_IsSendWaitSchedulePause.ToString();
-                ucIsSendWaitSchedulePause.TagValue = TMP_IsSendWaitSchedulePause;
+                
+                ucIsAskReservePause.TagValue = agvcConnector.IsAskReservePause.ToString();              
+                ucIsMoveStep.TagValue = mainFlowHandler.IsMoveStep().ToString();
+                ucCanVehMove.TagValue = mainFlowHandler.CanVehMove().ToString();
+                ucIsMoveEnd.TagValue = Vehicle.AseMoveStatus.IsMoveEnd.ToString();
+                ucIsSleepByAskReserveFail.TagValue = agvcConnector. IsSleepByAskReserveFail.ToString();
+                ucIsHome.TagValue = Vehicle.AseRobotStatus.IsHome.ToString();
+                ucIsCharging.TagValue = Vehicle.IsCharging.ToString();               
 
                 string TMP_e = Vehicle.TMP_e;
                 labException.Text = TMP_e;
                 #endregion
+
                 if (IsEnableStartChargeButton)
                 {
                     IsEnableStartChargeButton = false;
