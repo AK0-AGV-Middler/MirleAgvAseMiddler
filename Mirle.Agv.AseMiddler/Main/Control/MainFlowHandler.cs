@@ -1717,11 +1717,21 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public bool CanVehMove()
         {
+            try
+            {
             if (Vehicle.IsCharging) //dabid
             {
                 StopCharge();
             }
+            }
+            catch
+            {
+
+            }
+            Vehicle.TMP_IsHome = Vehicle.AseRobotStatus.IsHome; //200828 dabid for Watch Not AskAllSectionsReserveInOnce
+            Vehicle.TMP_IsCharging = Vehicle.IsCharging;//!//200828 dabid for Watch Not AskAllSectionsReserveInOnce
             return Vehicle.AseRobotStatus.IsHome && !Vehicle.IsCharging;
+            
         }
 
         public void AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(MapSection mapSection, EnumIsExecute keepOrGo)
@@ -1785,7 +1795,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
                         else
                         {
-                            asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);
+                            SetAlarmFromAgvm(58);//200827 dabid+
+                            //asePackage.PartMove(address.Position, headAngle, speed, EnumAseMoveCommandIsEnd.End, keepOrGo, EnumSlotSelect.None);//200827 dabid -
                         }
                     }
                     else

@@ -764,7 +764,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
+        private int firstTimeRece = 0;
         private void DealPrimaryReceived(PSTransactionXClass transaction)
         {
             try
@@ -779,6 +779,20 @@ namespace Mirle.Agv.AseMiddler.Controller
                     throw new Exception("Primary message type is not P.");
                 }
 
+                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                if (firstTimeRece == 0)
+                {
+                    LastUpdateLeftSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
+                    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                    LastUpdateRightSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
+                    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                    firstTimeRece++;
+                }
+                if (transaction.PSPrimaryMessage.SystemBytes == 0)
+                {
+                    LastUpdateLeftSlotStatusSystemByte = 0;
+                    LastUpdateRightSlotStatusSystemByte = 0;
+                }
                 switch (transaction.PSPrimaryMessage.Number)
                 {
                     case "11":
@@ -1124,8 +1138,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     slotNumber = psMessage.Substring(0, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
 
-                    if (!CheckSystemByte(slotNumber, systemByte)) return;
-                   
+                    if (!CheckSystemByte(slotNumber, systemByte))//200827 dabid+ Log
+                    {
+                        LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old.");
+                        return;
+                    }
                     aseCarrierSlotStatus.SlotNumber = slotNumber;
 
                     aseCarrierSlotStatus.CarrierSlotStatus = GetCarrierSlotStatus(psMessage.Substring(1, 1));
@@ -1151,8 +1168,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 else
                 {
                     slotNumber = psMessage.Substring(1, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-
-                    if (!CheckSystemByte(slotNumber, systemByte)) return;
+                    //systemByte = 50;
+                    if (!CheckSystemByte(slotNumber, systemByte))//200827 dabid+ Log
+                    {
+                        LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old. psMessage : {psMessage}");
+                        return;
+                    }
 
                     aseCarrierSlotStatus.SlotNumber = slotNumber;
 
@@ -1197,25 +1218,45 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             if (slotNumber== EnumSlotNumber.L)
             {
-                if (systemByte > LastUpdateLeftSlotStatusSystemByte || (Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte) > 65535))
+                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                if (LastUpdateLeftSlotStatusSystemByte < systemByte && (Math.Abs(Convert.ToInt32(LastUpdateLeftSlotStatusSystemByte) - Convert.ToInt32(systemByte)) > 5000))
+                {
+                    LogPsWrapper(Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte).ToString());
+                    LogPsWrapper($"{systemByte} > {LastUpdateLeftSlotStatusSystemByte}  LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                    return false;
+                }
+                //200829 dabid# > 改 >= // PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                if (systemByte >= LastUpdateLeftSlotStatusSystemByte || (Math.Abs(LastUpdateLeftSlotStatusSystemByte - systemByte) > 65535))
                 {
                     LastUpdateLeftSlotStatusSystemByte = systemByte;
+                    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
                     return true;
                 }
                 else
                 {
+                    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
                     return false;
                 }                
             }
             else
             {
-                if (systemByte > LastUpdateRightSlotStatusSystemByte || (Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte) > 65535))
+                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                if (LastUpdateRightSlotStatusSystemByte < systemByte && (Math.Abs(Convert.ToInt32(LastUpdateRightSlotStatusSystemByte) - Convert.ToInt32(systemByte)) > 5000))
+                {
+                    LogPsWrapper(Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte).ToString());
+                    LogPsWrapper($"{systemByte} > {LastUpdateRightSlotStatusSystemByte} LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
+                    return false;
+                }
+                //200829 dabid# > 改 >= // PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
+                if (systemByte >= LastUpdateRightSlotStatusSystemByte || (Math.Abs(LastUpdateRightSlotStatusSystemByte - systemByte) > 65535))
                 {
                     LastUpdateRightSlotStatusSystemByte = systemByte;
+                    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
                     return true;
                 }
                 else
                 {
+                    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
                     return false;
                 }
             }

@@ -121,6 +121,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucRobotSlotLId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageBatteryState = new System.Windows.Forms.TabPage();
+            this.ucChargeCount = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucCurransferStepType = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucStepsCount = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsSimulation = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -137,6 +138,17 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucBatteryVoltage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageVehicleState = new System.Windows.Forms.TabPage();
+            this.labException = new System.Windows.Forms.Label();
+            this.lab1 = new System.Windows.Forms.Label();
+            this.ucVerticalLabelText7 = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucIsSendWaitSchedulePause = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucIsCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucIsSleepByAskReserveFail = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucCanVehMove = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucIsMoveStep = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucIsAskReservePause = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtBatterysAbnormal = new System.Windows.Forms.Label();
             this.txtMainFlowAbnormal = new System.Windows.Forms.Label();
@@ -167,7 +179,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.ucChargeCount = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -1194,6 +1205,17 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBatteryState.Text = "Battery";
             this.pageBatteryState.UseVisualStyleBackColor = true;
             // 
+            // ucChargeCount
+            // 
+            this.ucChargeCount.Location = new System.Drawing.Point(347, 353);
+            this.ucChargeCount.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucChargeCount.Name = "ucChargeCount";
+            this.ucChargeCount.Size = new System.Drawing.Size(135, 65);
+            this.ucChargeCount.TabIndex = 52;
+            this.ucChargeCount.TagColor = System.Drawing.Color.Black;
+            this.ucChargeCount.TagName = "ChargeCount";
+            this.ucChargeCount.TagValue = " 70.0";
+            // 
             // ucCurransferStepType
             // 
             this.ucCurransferStepType.Location = new System.Drawing.Point(347, 258);
@@ -1361,6 +1383,17 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // pageVehicleState
             // 
+            this.pageVehicleState.Controls.Add(this.labException);
+            this.pageVehicleState.Controls.Add(this.lab1);
+            this.pageVehicleState.Controls.Add(this.ucVerticalLabelText7);
+            this.pageVehicleState.Controls.Add(this.ucIsSendWaitSchedulePause);
+            this.pageVehicleState.Controls.Add(this.ucIsCharging);
+            this.pageVehicleState.Controls.Add(this.ucIsHome);
+            this.pageVehicleState.Controls.Add(this.ucIsSleepByAskReserveFail);
+            this.pageVehicleState.Controls.Add(this.ucIsMoveEnd);
+            this.pageVehicleState.Controls.Add(this.ucCanVehMove);
+            this.pageVehicleState.Controls.Add(this.ucIsMoveStep);
+            this.pageVehicleState.Controls.Add(this.ucIsAskReservePause);
             this.pageVehicleState.Controls.Add(this.groupBox3);
             this.pageVehicleState.Controls.Add(this.ucGoNextStep);
             this.pageVehicleState.Controls.Add(this.ucTransferStepType);
@@ -1373,6 +1406,124 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageVehicleState.TabIndex = 3;
             this.pageVehicleState.Text = "Vehicle";
             this.pageVehicleState.UseVisualStyleBackColor = true;
+            // 
+            // labException
+            // 
+            this.labException.AutoSize = true;
+            this.labException.Location = new System.Drawing.Point(98, 587);
+            this.labException.Name = "labException";
+            this.labException.Size = new System.Drawing.Size(83, 20);
+            this.labException.TabIndex = 73;
+            this.labException.Text = "Exception";
+            // 
+            // lab1
+            // 
+            this.lab1.AutoSize = true;
+            this.lab1.Location = new System.Drawing.Point(9, 587);
+            this.lab1.Name = "lab1";
+            this.lab1.Size = new System.Drawing.Size(83, 20);
+            this.lab1.TabIndex = 72;
+            this.lab1.Text = "Exception";
+            // 
+            // ucVerticalLabelText7
+            // 
+            this.ucVerticalLabelText7.Location = new System.Drawing.Point(454, 153);
+            this.ucVerticalLabelText7.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucVerticalLabelText7.Name = "ucVerticalLabelText7";
+            this.ucVerticalLabelText7.Size = new System.Drawing.Size(135, 65);
+            this.ucVerticalLabelText7.TabIndex = 71;
+            this.ucVerticalLabelText7.TagColor = System.Drawing.Color.Black;
+            this.ucVerticalLabelText7.TagName = "StepsCount";
+            this.ucVerticalLabelText7.TagValue = " 70.0";
+            this.ucVerticalLabelText7.Visible = false;
+            // 
+            // ucIsSendWaitSchedulePause
+            // 
+            this.ucIsSendWaitSchedulePause.Location = new System.Drawing.Point(303, 581);
+            this.ucIsSendWaitSchedulePause.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucIsSendWaitSchedulePause.Name = "ucIsSendWaitSchedulePause";
+            this.ucIsSendWaitSchedulePause.Size = new System.Drawing.Size(135, 65);
+            this.ucIsSendWaitSchedulePause.TabIndex = 70;
+            this.ucIsSendWaitSchedulePause.TagColor = System.Drawing.Color.Black;
+            this.ucIsSendWaitSchedulePause.TagName = "IsSendWaitSchedulePause";
+            this.ucIsSendWaitSchedulePause.TagValue = " 70.0";
+            // 
+            // ucIsCharging
+            // 
+            this.ucIsCharging.Location = new System.Drawing.Point(303, 492);
+            this.ucIsCharging.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucIsCharging.Name = "ucIsCharging";
+            this.ucIsCharging.Size = new System.Drawing.Size(135, 65);
+            this.ucIsCharging.TabIndex = 69;
+            this.ucIsCharging.TagColor = System.Drawing.Color.Black;
+            this.ucIsCharging.TagName = "IsCharging";
+            this.ucIsCharging.TagValue = " 70.0";
+            // 
+            // ucIsHome
+            // 
+            this.ucIsHome.Location = new System.Drawing.Point(303, 403);
+            this.ucIsHome.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucIsHome.Name = "ucIsHome";
+            this.ucIsHome.Size = new System.Drawing.Size(135, 65);
+            this.ucIsHome.TabIndex = 68;
+            this.ucIsHome.TagColor = System.Drawing.Color.Black;
+            this.ucIsHome.TagName = "IsHome";
+            this.ucIsHome.TagValue = " 70.0";
+            // 
+            // ucIsSleepByAskReserveFail
+            // 
+            this.ucIsSleepByAskReserveFail.Location = new System.Drawing.Point(303, 314);
+            this.ucIsSleepByAskReserveFail.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucIsSleepByAskReserveFail.Name = "ucIsSleepByAskReserveFail";
+            this.ucIsSleepByAskReserveFail.Size = new System.Drawing.Size(135, 65);
+            this.ucIsSleepByAskReserveFail.TabIndex = 67;
+            this.ucIsSleepByAskReserveFail.TagColor = System.Drawing.Color.Black;
+            this.ucIsSleepByAskReserveFail.TagName = "IsSleepByAskReserveFail";
+            this.ucIsSleepByAskReserveFail.TagValue = " 70.0";
+            // 
+            // ucIsMoveEnd
+            // 
+            this.ucIsMoveEnd.Location = new System.Drawing.Point(303, 225);
+            this.ucIsMoveEnd.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucIsMoveEnd.Name = "ucIsMoveEnd";
+            this.ucIsMoveEnd.Size = new System.Drawing.Size(135, 65);
+            this.ucIsMoveEnd.TabIndex = 66;
+            this.ucIsMoveEnd.TagColor = System.Drawing.Color.Black;
+            this.ucIsMoveEnd.TagName = "IsMoveEnd";
+            this.ucIsMoveEnd.TagValue = " 70.0";
+            // 
+            // ucCanVehMove
+            // 
+            this.ucCanVehMove.Location = new System.Drawing.Point(303, 153);
+            this.ucCanVehMove.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucCanVehMove.Name = "ucCanVehMove";
+            this.ucCanVehMove.Size = new System.Drawing.Size(135, 65);
+            this.ucCanVehMove.TabIndex = 65;
+            this.ucCanVehMove.TagColor = System.Drawing.Color.Black;
+            this.ucCanVehMove.TagName = "CanVehMove";
+            this.ucCanVehMove.TagValue = " 70.0";
+            // 
+            // ucIsMoveStep
+            // 
+            this.ucIsMoveStep.Location = new System.Drawing.Point(303, 83);
+            this.ucIsMoveStep.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucIsMoveStep.Name = "ucIsMoveStep";
+            this.ucIsMoveStep.Size = new System.Drawing.Size(135, 65);
+            this.ucIsMoveStep.TabIndex = 64;
+            this.ucIsMoveStep.TagColor = System.Drawing.Color.Black;
+            this.ucIsMoveStep.TagName = "IsMoveStep";
+            this.ucIsMoveStep.TagValue = " 70.0";
+            // 
+            // ucIsAskReservePause
+            // 
+            this.ucIsAskReservePause.Location = new System.Drawing.Point(303, 10);
+            this.ucIsAskReservePause.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucIsAskReservePause.Name = "ucIsAskReservePause";
+            this.ucIsAskReservePause.Size = new System.Drawing.Size(135, 65);
+            this.ucIsAskReservePause.TabIndex = 63;
+            this.ucIsAskReservePause.TagColor = System.Drawing.Color.Black;
+            this.ucIsAskReservePause.TagName = "IsAskReservePause";
+            this.ucIsAskReservePause.TagValue = " 70.0";
             // 
             // groupBox3
             // 
@@ -1445,8 +1596,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucGoNextStep
             // 
-            this.ucGoNextStep.Location = new System.Drawing.Point(149, 154);
-            this.ucGoNextStep.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucGoNextStep.Location = new System.Drawing.Point(148, 153);
             this.ucGoNextStep.Name = "ucGoNextStep";
             this.ucGoNextStep.Size = new System.Drawing.Size(135, 65);
             this.ucGoNextStep.TabIndex = 1;
@@ -1456,8 +1606,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucTransferStepType
             // 
-            this.ucTransferStepType.Location = new System.Drawing.Point(149, 10);
-            this.ucTransferStepType.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucTransferStepType.Location = new System.Drawing.Point(148, 10);
             this.ucTransferStepType.Name = "ucTransferStepType";
             this.ucTransferStepType.Size = new System.Drawing.Size(135, 65);
             this.ucTransferStepType.TabIndex = 1;
@@ -1467,8 +1616,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucTransferSteps
             // 
-            this.ucTransferSteps.Location = new System.Drawing.Point(149, 83);
-            this.ucTransferSteps.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucTransferSteps.Location = new System.Drawing.Point(148, 83);
             this.ucTransferSteps.Name = "ucTransferSteps";
             this.ucTransferSteps.Size = new System.Drawing.Size(135, 65);
             this.ucTransferSteps.TabIndex = 1;
@@ -1478,8 +1626,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucTransferIndex
             // 
-            this.ucTransferIndex.Location = new System.Drawing.Point(149, 225);
-            this.ucTransferIndex.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.ucTransferIndex.Location = new System.Drawing.Point(148, 225);
             this.ucTransferIndex.Name = "ucTransferIndex";
             this.ucTransferIndex.Size = new System.Drawing.Size(135, 65);
             this.ucTransferIndex.TabIndex = 1;
@@ -1723,17 +1870,6 @@ namespace Mirle.Agv.AseMiddler.View
             0,
             0});
             // 
-            // ucChargeCount
-            // 
-            this.ucChargeCount.Location = new System.Drawing.Point(347, 353);
-            this.ucChargeCount.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
-            this.ucChargeCount.Name = "ucChargeCount";
-            this.ucChargeCount.Size = new System.Drawing.Size(135, 65);
-            this.ucChargeCount.TabIndex = 52;
-            this.ucChargeCount.TagColor = System.Drawing.Color.Black;
-            this.ucChargeCount.TagName = "ChargeCount";
-            this.ucChargeCount.TagValue = " 70.0";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1782,6 +1918,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageRobotSate.ResumeLayout(false);
             this.pageBatteryState.ResumeLayout(false);
             this.pageVehicleState.ResumeLayout(false);
+            this.pageVehicleState.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.pageReserveInfo.ResumeLayout(false);
             this.gbReserve.ResumeLayout(false);
@@ -1939,5 +2076,16 @@ namespace Mirle.Agv.AseMiddler.View
         private UcVerticalLabelText ucIsVehicleIdle;
         private UcVerticalLabelText ucAutoState;
         private UcVerticalLabelText ucChargeCount;
+        private UcVerticalLabelText ucVerticalLabelText7;
+        private UcVerticalLabelText ucIsSendWaitSchedulePause;
+        private UcVerticalLabelText ucIsCharging;
+        private UcVerticalLabelText ucIsHome;
+        private UcVerticalLabelText ucIsSleepByAskReserveFail;
+        private UcVerticalLabelText ucIsMoveEnd;
+        private UcVerticalLabelText ucCanVehMove;
+        private UcVerticalLabelText ucIsMoveStep;
+        private UcVerticalLabelText ucIsAskReservePause;
+        private System.Windows.Forms.Label lab1;
+        private System.Windows.Forms.Label labException;
     }
 }

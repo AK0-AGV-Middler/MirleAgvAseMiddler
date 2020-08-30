@@ -522,6 +522,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 try
                 {
+                    Vehicle.TMP_IsSendWaitSchedulePause = IsSendWaitSchedulePause;
                     if (IsSendWaitSchedulePause)
                     {
                         SpinWait.SpinUntil(() => !IsSendWaitSchedulePause, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
@@ -531,18 +532,48 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     if (Vehicle.IsAgvcConnect)
                     {
+                        try
+                        {
                         if (PrimarySendWaitQueue.Any())
                         {
                             PrimarySendWaitQueue.TryDequeue(out ScheduleWrapper scheduleWrapper);
                             PrimarySendWait(ref scheduleWrapper);
                         }
-
+                        }
+                        catch(Exception e)//200828 dabid for Watch Not AskAllSectionsReserveInOnce
+                        {
+                            mainFlowHandler.LogDebug(GetType().Name, $"PrimarySendWaitQueue ex {e.Message}");
+                            Vehicle.TMP_e = "PrimarySendWaitQueue " + e.Message;
+                        }
+                        try
+                        {
                         if (queNeedReserveSections.Any())
                         {
+                                //200828 dabid for Watch Not AskAllSectionsReserveInOnce
+                                Vehicle.TMP_IsAskReservePause = IsAskReservePause;//!
+                                Vehicle.TMP_IsMoveStep = mainFlowHandler.IsMoveStep();
+                                Vehicle.TMP_CanVehMove = mainFlowHandler.CanVehMove();
+                                Vehicle.TMP_IsMoveEnd = Vehicle.AseMoveStatus.IsMoveEnd;//!
+                                Vehicle.TMP_IsSleepByAskReserveFail = IsSleepByAskReserveFail;//!
                             if (!IsAskReservePause && mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !Vehicle.AseMoveStatus.IsMoveEnd && !IsSleepByAskReserveFail)
                             {
                                 AskAllSectionsReserveInOnce();
                             }
+                                else
+                                {
+                                    mainFlowHandler.LogDebug(GetType().Name, $"IsAskReservePause = {Vehicle.TMP_IsAskReservePause} ,IsMoveStep = {Vehicle.TMP_IsMoveStep}," +
+                                    $"CanVehMove = {Vehicle.TMP_CanVehMove},IsMoveEnd = {Vehicle.TMP_IsMoveEnd},IsSleepByAskReserveFail = {Vehicle.TMP_IsSleepByAskReserveFail}");
+                                }
+                            }
+                            else
+                            {
+                                
+                            }
+                        }
+                        catch (Exception e)//200828 dabid for Watch Not AskAllSectionsReserveInOnce
+                        {
+                            mainFlowHandler.LogDebug(GetType().Name, $"queNeedReserveSections ex {e.Message}");
+                            Vehicle.TMP_e = "queNeedReserveSections " + e.Message;
                         }
                     }
                 }
@@ -751,7 +782,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public void AskGuideAddressesAndSections(MoveCmdInfo moveCmdInfo)
         {
-            ClearAllReserve();
             Send_Cmd138_GuideInfoRequest(Vehicle.AseMoveStatus.LastAddress.Id, moveCmdInfo.EndAddress.Id);
         }
         public void AskAllSectionsReserveInOnce()
@@ -1919,6 +1949,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
+                ClearAllReserve();//200827 dabid+
                 ID_138_GUIDE_INFO_REQUEST request = new ID_138_GUIDE_INFO_REQUEST();
                 FitGuideInfos(request.FromToAdrList, fromAddress, toAddress);
 

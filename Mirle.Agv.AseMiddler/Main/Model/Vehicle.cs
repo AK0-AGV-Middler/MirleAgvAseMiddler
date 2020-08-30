@@ -34,6 +34,17 @@ namespace Mirle.Agv.AseMiddler.Model
         public string TransferStepType { get; set; } = "NONE";
         public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
         #endregion
+        #region 200828 dabid for Watch Not AskAllSectionsReserveInOnce
+        public bool TMP_IsAskReservePause { get; set; } = false;
+        public bool TMP_IsMoveStep { get; set; } = false;
+        public bool TMP_CanVehMove { get; set; } = false;
+        public bool TMP_IsMoveEnd { get; set; } = false;
+        public bool TMP_IsSleepByAskReserveFail { get; set; } = false;
+        public bool TMP_IsHome { get; set; } = false;
+        public bool TMP_IsCharging { get; set; } = false;
+        public bool TMP_IsSendWaitSchedulePause { get; set; } = false;
+        public string TMP_e { get; set; } = "NONE";
+        #endregion
         #region AsePackage
 
         public bool IsLocalConnect { get; set; } = false;
