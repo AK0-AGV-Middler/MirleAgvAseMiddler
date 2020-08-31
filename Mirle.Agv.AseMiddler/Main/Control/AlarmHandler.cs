@@ -23,7 +23,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string LastAlarmMsg { get; set; } = "";
         #endregion     
 
-        private MainFlowHandler mainFlowHandler;
         private MirleLogger mirleLogger = MirleLogger.Instance;
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
 

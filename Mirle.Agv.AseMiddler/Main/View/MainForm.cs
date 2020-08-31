@@ -607,6 +607,7 @@ namespace Mirle.Agv.AseMiddler.View
                 UpdateAgvcConnection();
                 UpdateAgvlConnection();
                 UpdateReserveStopState();
+
             }
             catch (Exception ex)
             {
@@ -838,7 +839,7 @@ namespace Mirle.Agv.AseMiddler.View
                 ucTransferIndex.TagValue = mainFlowHandler.TransferStepsIndex.ToString();
                 ucTransferSteps.TagValue = mainFlowHandler.GetTransferStepsCount().ToString();
                 ucTransferStepType.TagValue = mainFlowHandler.GetCurrentTransferStepType().ToString();
-                ucGoNextStep.TagValue = mainFlowHandler.GoNextTransferStep.ToString();
+                ucGoNextStep.TagValue = mainFlowHandler.GoNextTransferStep.ToString(); 
             }
             catch (Exception ex)
             {
@@ -1072,12 +1073,12 @@ namespace Mirle.Agv.AseMiddler.View
                 #region 200828 dabid for Watch Not AskAllSectionsReserveInOnce
                 
                 ucIsAskReservePause.TagValue = agvcConnector.IsAskReservePause.ToString();              
-                ucIsMoveStep.TagValue = mainFlowHandler.IsMoveStep().ToString();
-                ucCanVehMove.TagValue = mainFlowHandler.CanVehMove().ToString();
+                ucIsMoveStep.TagValue = mainFlowHandler.IsMoveStep().ToString();               
                 ucIsMoveEnd.TagValue = Vehicle.AseMoveStatus.IsMoveEnd.ToString();
                 ucIsSleepByAskReserveFail.TagValue = agvcConnector. IsSleepByAskReserveFail.ToString();
                 ucIsHome.TagValue = Vehicle.AseRobotStatus.IsHome.ToString();
-                ucIsCharging.TagValue = Vehicle.IsCharging.ToString();               
+                ucIsCharging.TagValue = Vehicle.IsCharging.ToString();
+                txtVisitTransferCount.Text = mainFlowHandler.VisitTransferStepCounter.ToString();
 
                 string TMP_e = Vehicle.TMP_e;
                 labException.Text = TMP_e;

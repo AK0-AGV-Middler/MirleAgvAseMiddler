@@ -145,7 +145,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsSleepByAskReserveFail = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsMoveEnd = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucCanVehMove = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsMoveStep = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsAskReservePause = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -178,6 +177,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
+            this.txtVisitTransferCount = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -1383,13 +1383,13 @@ namespace Mirle.Agv.AseMiddler.View
             // pageVehicleState
             // 
             this.pageVehicleState.Controls.Add(this.labException);
+            this.pageVehicleState.Controls.Add(this.txtVisitTransferCount);
             this.pageVehicleState.Controls.Add(this.lab1);
             this.pageVehicleState.Controls.Add(this.ucVerticalLabelText7);
             this.pageVehicleState.Controls.Add(this.ucIsCharging);
             this.pageVehicleState.Controls.Add(this.ucIsHome);
             this.pageVehicleState.Controls.Add(this.ucIsSleepByAskReserveFail);
             this.pageVehicleState.Controls.Add(this.ucIsMoveEnd);
-            this.pageVehicleState.Controls.Add(this.ucCanVehMove);
             this.pageVehicleState.Controls.Add(this.ucIsMoveStep);
             this.pageVehicleState.Controls.Add(this.ucIsAskReservePause);
             this.pageVehicleState.Controls.Add(this.groupBox3);
@@ -1437,7 +1437,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucIsCharging
             // 
-            this.ucIsCharging.Location = new System.Drawing.Point(303, 492);
+            this.ucIsCharging.Location = new System.Drawing.Point(303, 413);
             this.ucIsCharging.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
             this.ucIsCharging.Name = "ucIsCharging";
             this.ucIsCharging.Size = new System.Drawing.Size(135, 65);
@@ -1448,7 +1448,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucIsHome
             // 
-            this.ucIsHome.Location = new System.Drawing.Point(303, 403);
+            this.ucIsHome.Location = new System.Drawing.Point(303, 324);
             this.ucIsHome.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
             this.ucIsHome.Name = "ucIsHome";
             this.ucIsHome.Size = new System.Drawing.Size(135, 65);
@@ -1459,7 +1459,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucIsSleepByAskReserveFail
             // 
-            this.ucIsSleepByAskReserveFail.Location = new System.Drawing.Point(303, 314);
+            this.ucIsSleepByAskReserveFail.Location = new System.Drawing.Point(303, 162);
             this.ucIsSleepByAskReserveFail.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
             this.ucIsSleepByAskReserveFail.Name = "ucIsSleepByAskReserveFail";
             this.ucIsSleepByAskReserveFail.Size = new System.Drawing.Size(135, 65);
@@ -1470,7 +1470,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // ucIsMoveEnd
             // 
-            this.ucIsMoveEnd.Location = new System.Drawing.Point(303, 225);
+            this.ucIsMoveEnd.Location = new System.Drawing.Point(303, 235);
             this.ucIsMoveEnd.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
             this.ucIsMoveEnd.Name = "ucIsMoveEnd";
             this.ucIsMoveEnd.Size = new System.Drawing.Size(135, 65);
@@ -1478,17 +1478,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucIsMoveEnd.TagColor = System.Drawing.Color.Black;
             this.ucIsMoveEnd.TagName = "IsMoveEnd";
             this.ucIsMoveEnd.TagValue = " 70.0";
-            // 
-            // ucCanVehMove
-            // 
-            this.ucCanVehMove.Location = new System.Drawing.Point(303, 153);
-            this.ucCanVehMove.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
-            this.ucCanVehMove.Name = "ucCanVehMove";
-            this.ucCanVehMove.Size = new System.Drawing.Size(135, 65);
-            this.ucCanVehMove.TabIndex = 65;
-            this.ucCanVehMove.TagColor = System.Drawing.Color.Black;
-            this.ucCanVehMove.TagName = "CanVehMove";
-            this.ucCanVehMove.TagValue = " 70.0";
             // 
             // ucIsMoveStep
             // 
@@ -1857,6 +1846,15 @@ namespace Mirle.Agv.AseMiddler.View
             0,
             0});
             // 
+            // txtVisitTransferCount
+            // 
+            this.txtVisitTransferCount.AutoSize = true;
+            this.txtVisitTransferCount.Location = new System.Drawing.Point(506, 645);
+            this.txtVisitTransferCount.Name = "txtVisitTransferCount";
+            this.txtVisitTransferCount.Size = new System.Drawing.Size(88, 20);
+            this.txtVisitTransferCount.TabIndex = 72;
+            this.txtVisitTransferCount.Text = "VisitCount";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -2068,10 +2066,10 @@ namespace Mirle.Agv.AseMiddler.View
         private UcVerticalLabelText ucIsHome;
         private UcVerticalLabelText ucIsSleepByAskReserveFail;
         private UcVerticalLabelText ucIsMoveEnd;
-        private UcVerticalLabelText ucCanVehMove;
         private UcVerticalLabelText ucIsMoveStep;
         private UcVerticalLabelText ucIsAskReservePause;
         private System.Windows.Forms.Label lab1;
         private System.Windows.Forms.Label labException;
+        private System.Windows.Forms.Label txtVisitTransferCount;
     }
 }

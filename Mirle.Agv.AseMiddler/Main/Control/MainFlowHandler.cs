@@ -86,6 +86,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public DateTime LowPowerStartChargeTimeStamp { get; set; } = DateTime.Now;
         public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
         public bool IsStopCharging { get; set; } = false;
+        public int VisitTransferStepCounter { get; set; } = 0;
+
         #endregion
 
         public MainFlowHandler()
@@ -335,6 +337,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 try
                 {
+                    VisitTransferStepCounter++;
                     if (GoNextTransferStep)
                     {
                         GoNextTransferStep = false;
@@ -366,7 +369,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                     Thread.Sleep(1);
-                }                
+                }
 
                 Thread.Sleep(Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
                 //SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.VisitTransferStepsSleepTimeMs);
@@ -1257,7 +1260,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                     Thread.Sleep(1);
-                }             
+                }
 
                 Thread.Sleep(Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs);
                 //SpinWait.SpinUntil(() => false, Vehicle.MainFlowConfig.WatchLowPowerSleepTimeMs);
@@ -2004,6 +2007,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
                     }
                 }
+
+
                 Task.Run(() =>
                {
                    StartCharge(endAddress, chargeTimeSec);
@@ -3092,8 +3097,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 暫停] [{pauseEvent}][{pauseType}]");
                 }
-
-
             }
             catch (Exception ex)
             {

@@ -2455,8 +2455,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 wrapper.TranCmpRep = report;
 
                 SendWrapperToSchedule(wrapper, false, true);
-
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Send transfer complete report success. [{report.CmpStatus}]");
+                LogCommandEnd(report);
             }
             catch (Exception ex)
             {
