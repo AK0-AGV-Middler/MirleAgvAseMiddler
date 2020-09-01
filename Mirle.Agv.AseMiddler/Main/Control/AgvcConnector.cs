@@ -291,24 +291,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                     break;
             }
         }
-        // object sendRecv_LockObj = new object();
-        // public TrxTcpIp.ReturnCode SendRecv<TSource2>(WrapperMessage wrapper, out TSource2 stRecv, out string rtnMsg)
-        // {
-        //     bool lockTaken = false;
-        //     try
-        //     {
-        //         Monitor.TryEnter(sendRecv_LockObj, 30000, ref lockTaken);
-        //         if (!lockTaken)
-        //             throw new TimeoutException("snedRecv time out lock happen");
-        //         LogSendMsg(wrapper);
-        //         return ClientAgent.TrxTcpIp.sendRecv_Google(wrapper, out stRecv, out rtnMsg);
-        //     }
-        //     finally
-        //     {
-        //         if (lockTaken) Monitor.Exit(sendRecv_LockObj);
-        //     }
-        // }
-
         private bool IsApplyOnly(EnumCmdNum cmdNum)
         {
             switch (cmdNum)
@@ -684,7 +666,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public List<MapSection> GetNeedReserveSections()
         {
-            return new List<MapSection>(queNeedReserveSections);
+            return queNeedReserveSections.ToList();
         }
         public List<MapSection> GetReserveOkSections()
         {
@@ -1671,9 +1653,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.ModeStatus = VHModeStatusParse(Vehicle.AutoState);
             report.PowerStatus = Vehicle.PowerStatus;
             report.ObstacleStatus = Vehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
-            report.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;
-            report.BlockingStatus = Vehicle.BlockingStatus;
-            report.PauseStatus = Vehicle.AseMovingGuide.PauseStatus;
+            report.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;           
             report.ErrorStatus = Vehicle.ErrorStatus;
             report.DrivingDirection = Vehicle.DrivingDirection;
             report.BatteryCapacity = BatteryCapacityParse(Vehicle.AseBatteryStatus.Percentage);
@@ -1682,7 +1662,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.XAxis = Vehicle.AseMoveStatus.LastMapPosition.X;
             report.YAxis = Vehicle.AseMoveStatus.LastMapPosition.Y;
             report.Speed = Vehicle.AseMoveStatus.Speed;
+
             report.OpPauseStatus = Vehicle.OpPauseStatus;
+            report.PauseStatus = Vehicle.PauseFlags[PauseType.Normal] ? VhStopSingle.On : VhStopSingle.Off; // Vehicle.AseMovingGuide.PauseStatus;
+            report.SafetyPauseStatus = Vehicle.PauseFlags[PauseType.Safety] ? VhStopSingle.On : VhStopSingle.Off;
+            report.EarthquakePauseTatus = Vehicle.PauseFlags[PauseType.EarthQuake] ? VhStopSingle.On : VhStopSingle.Off;
+            report.BlockingStatus = Vehicle.BlockingStatus;
+
 
             EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
             switch (slotDisable)
@@ -1763,9 +1749,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 response.PowerStatus = Vehicle.PowerStatus;
                 response.ObstacleStatus = Vehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
-                response.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;
-                response.BlockingStatus = Vehicle.BlockingStatus;
-                response.PauseStatus = Vehicle.AseMovingGuide.PauseStatus;
+                response.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;               
                 response.ErrorStatus = Vehicle.ErrorStatus;
                 response.ObstDistance = Vehicle.ObstDistance;
                 response.ObstVehicleID = Vehicle.ObstVehicleID;
@@ -1782,7 +1766,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.VehicleAngle = Vehicle.AseMoveStatus.HeadDirection;
                 response.Speed = Vehicle.AseMoveStatus.Speed;
                 response.StoppedBlockID = Vehicle.StoppedBlockID;
+
                 response.OpPauseStatus = Vehicle.OpPauseStatus;
+                response.PauseStatus = Vehicle.PauseFlags[PauseType.Normal] ? VhStopSingle.On : VhStopSingle.Off; // Vehicle.AseMovingGuide.PauseStatus;
+                response.SafetyPauseStatus = Vehicle.PauseFlags[PauseType.Safety] ? VhStopSingle.On : VhStopSingle.Off;
+                response.EarthquakePauseTatus = Vehicle.PauseFlags[PauseType.EarthQuake] ? VhStopSingle.On : VhStopSingle.Off;
+                response.BlockingStatus = Vehicle.BlockingStatus;
 
                 EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
                 switch (slotDisable)
@@ -1839,6 +1828,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
         public void Receive_Cmd39_PauseRequest(object sender, TcpIpEventArgs e)
         {
             try
@@ -1894,9 +1884,10 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 ShowGuideInfoResponse(response);
                 Vehicle.AseMovingGuide = new AseMovingGuide(response);
-                ClearAllReserve();
+                //ClearAllReserve();
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
                 SetupNeedReserveSections();
+                Vehicle.AseMoveStatus.IsMoveEnd = false;
 
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, Vehicle.AseMovingGuide.GetInfo());
             }
@@ -1921,7 +1912,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                ClearAllReserve();//200827 dabid+
+                //ClearAllReserve();//200827 dabid+
                 ID_138_GUIDE_INFO_REQUEST request = new ID_138_GUIDE_INFO_REQUEST();
                 FitGuideInfos(request.FromToAdrList, fromAddress, toAddress);
 

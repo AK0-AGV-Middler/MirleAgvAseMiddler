@@ -772,7 +772,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     ResetSystemByte = false;
                     LastUpdateLeftSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
                     LastUpdateRightSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                    LastUpdatePositionSystemByte = transaction.PSPrimaryMessage.SystemBytes;
+                    //LastUpdatePositionSystemByte = transaction.PSPrimaryMessage.SystemBytes;
                 }
 
 
@@ -977,32 +977,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
 
                 ReceivePositionArgsQueue.Enqueue(positionArgs);
-
-                //if (psMessage.Length < 0) return;
-
-                //if (psMessage.Length == 1)
-                //{
-                //    MoveFinished(EnumMoveComplete.Fail);
-                //    return;
-                //}              
-
-                //switch (arrival)
-                //{
-                //    case EnumAseArrival.Fail:
-                //        MoveFinished(EnumMoveComplete.Fail);
-                //        break;
-                //    case EnumAseArrival.Arrival:
-                //        ArrivalPosition(psMessage);
-                //        break;
-                //    case EnumAseArrival.EndArrival:
-                //        ArrivalPosition(psMessage);
-                //        MoveFinished(EnumMoveComplete.Success);
-                //        break;
-                //    default:
-                //        break;
-                //}
-
-                //OnStatusChangeReportEvent?.Invoke(this, $"ReceiveMoveAppendArrivalReport:[{arrival}]");
             }
             catch (Exception ex)
             {
@@ -1634,17 +1608,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                //AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
-                //aseMoveStatus.AseMoveState = GetMoveState(psMessage.Substring(0, 1));
-                //double x = GetPositionFromPsMessage(psMessage.Substring(1, 9));
-                //double y = GetPositionFromPsMessage(psMessage.Substring(10, 9));
-                //aseMoveStatus.LastMapPosition = new MapPosition(x, y);
-                //aseMoveStatus.HeadDirection = int.Parse(psMessage.Substring(19, 3));
-                //aseMoveStatus.MovingDirection = int.Parse(psMessage.Substring(22, 3));
-                //aseMoveStatus.Speed = int.Parse(psMessage.Substring(25, 4));
-                ////theVehicle.AseMoveStatus = aseMoveStatus;
-                //OnPositionChangeEvent?.Invoke(this, aseMoveStatus);
-
                 EnumAseMoveState moveState = GetMoveState(psMessage.Substring(0, 1));
                 Vehicle.AseMoveStatus.AseMoveState = moveState;
 

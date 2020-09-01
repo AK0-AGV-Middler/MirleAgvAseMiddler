@@ -604,6 +604,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             Vehicle.AseMoveStatus.IsMoveEnd = false;
                             asePackage.PartMove(EnumAseMoveCommandIsEnd.Begin);
 
+                            agvcConnector.ClearAllReserve();
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[詢問 路線] AskGuideAddressesAndSections.");
                             agvcConnector.AskGuideAddressesAndSections(moveCmdInfo);
                         }
@@ -652,25 +653,13 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void PauseVisitTransferSteps()
         {
             IsVisitTransferStepPause = true;
-            if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
-            {
-                Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.On;
-                agvcConnector.StatusChangeReport();
-            }
-            var msg = $"MainFlow : PauseVisitTransferSteps";
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"MainFlow : PauseVisitTransferSteps");
         }
 
         public void ResumeVisitTransferSteps()
         {
             IsVisitTransferStepPause = false;
-            if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
-            {
-                Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
-                agvcConnector.StatusChangeReport();
-            }
-            var msg = $"MainFlow : ResumeVisitTransferSteps";
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, msg);
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"MainFlow : ResumeVisitTransferSteps");
         }
 
         public void ClearTransferSteps(string cmdId)
@@ -772,7 +761,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                         InitialTransferSteps(agvcTransCmd);
                         GoNextTransferStep = true;
                     }
-                    ResumeTransfer();
+                    if (!Vehicle.IsPause())
+                    {
+                        ResumeTransfer();
+                    }
 
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[初始化搬送命令 成功] Initial Transfer Command Ok. [{agvcTransCmd.CommandId}]");
                 }
@@ -2930,7 +2922,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-
+                var isPause = Vehicle.PauseFlags[PauseType.Normal];
                 PauseTransfer();
                 agvcConnector.ClearAllReserve();
                 Vehicle.AseMovingGuide = new AseMovingGuide();
@@ -2950,11 +2942,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                     asePackage.ReadCarrierId();
                 }
 
-                if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
-                {
-                    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
-                    agvcConnector.StatusChangeReport();
-                }
+                //if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
+                //{
+                //    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
+                //    agvcConnector.StatusChangeReport();
+                //}
 
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[停止 與 重置] StopClearAndReset.");
             }
@@ -3076,27 +3068,18 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                if (Vehicle.IsPause())
-                {
-                    Vehicle.PauseFlags[pauseType] = true;
-                    agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[其他旗標 已暫停] [{pauseEvent}][{pauseType}]");
-                }
-                else
-                {
-                    Vehicle.PauseFlags[pauseType] = true;
-                    PauseTransfer();
-                    asePackage.MovePause();
+                Vehicle.PauseFlags[pauseType] = true;
+                PauseTransfer();
+                asePackage.MovePause();
+                agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
+                agvcConnector.StatusChangeReport();
+                //if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
+                //{
+                //    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.On;
+                   
+                //}
 
-                    agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Pause);
-                    if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
-                    {
-                        Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.On;
-                        agvcConnector.StatusChangeReport();
-                    }
-
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 暫停] [{pauseEvent}][{pauseType}]");
-                }
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 暫停] [{pauseEvent}][{pauseType}]");
             }
             catch (Exception ex)
             {
@@ -3108,25 +3091,24 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                Vehicle.PauseFlags[pauseType] = false;
-                agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
-
-                if (!Vehicle.IsPause())
+                if (pauseType == PauseType.All)
                 {
-                    asePackage.MoveContinue();
-                    ResumeVisitTransferSteps();
-                    agvcConnector.ResumeAskReserve();
-                    if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
-                    {
-                        Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
-                        agvcConnector.StatusChangeReport();
-                    }
-
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 續行] [{pauseEvent}][{pauseType}]");
+                    Vehicle.PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
+                    ResumeMiddler(iSeqNum, pauseEvent, pauseType);
                 }
                 else
                 {
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[尚有 其他 暫停旗標] [{pauseEvent}][{pauseType}]");
+                    Vehicle.PauseFlags[pauseType] = false;
+                    agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
+
+                    if (!Vehicle.IsPause())
+                    {
+                        ResumeMiddler(iSeqNum, pauseEvent, pauseType);
+                    }
+                    else
+                    {
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[尚有 其他 暫停旗標] [{pauseEvent}][{pauseType}]");
+                    }
                 }
             }
             catch (Exception ex)
@@ -3134,6 +3116,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
+        private void ResumeMiddler(ushort iSeqNum, PauseEvent pauseEvent, PauseType pauseType)
+        {
+            agvcConnector.PauseReply(iSeqNum, 0, PauseEvent.Continue);
+            asePackage.MoveContinue();
+            ResumeTransfer();
+            agvcConnector.StatusChangeReport();
+
+            //if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
+            //{
+            //    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
+            //    agvcConnector.StatusChangeReport();
+            //}
+
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 續行] [{pauseEvent}][{pauseType}]");
+        }
+
         public void AgvcConnector_OnCmdCancelAbortEvent(ushort iSeqNum, ID_37_TRANS_CANCEL_REQUEST receive)
         {
             try

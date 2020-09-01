@@ -839,7 +839,7 @@ namespace Mirle.Agv.AseMiddler.View
                 ucTransferIndex.TagValue = mainFlowHandler.TransferStepsIndex.ToString();
                 ucTransferSteps.TagValue = mainFlowHandler.GetTransferStepsCount().ToString();
                 ucTransferStepType.TagValue = mainFlowHandler.GetCurrentTransferStepType().ToString();
-                ucGoNextStep.TagValue = mainFlowHandler.GoNextTransferStep.ToString(); 
+                ucGoNextStep.TagValue = mainFlowHandler.GoNextTransferStep.ToString();
             }
             catch (Exception ex)
             {
@@ -939,7 +939,7 @@ namespace Mirle.Agv.AseMiddler.View
                 ucCommanding.TagValue = Vehicle.ActionStatus.ToString();
                 ucErrorFlag.TagValue = Vehicle.ErrorStatus.ToString();
                 ucReserveFlag.TagValue = Vehicle.AseMovingGuide.ReserveStop.ToString();
-                ucPauseFlag.TagValue = Vehicle.AseMovingGuide.PauseStatus.ToString();
+                ucPauseFlag.TagValue = Vehicle.IsPause() ? "Pause" : "Resume";
                 ucOpPauseFlag.TagValue = Vehicle.OpPauseStatus.ToString();
             }
             catch (Exception ex)
@@ -1002,7 +1002,7 @@ namespace Mirle.Agv.AseMiddler.View
                 ucMoveMoveState.TagValue = aseMoveStatus.AseMoveState.ToString();
 
                 ucMoveReserveStop.TagValue = aseMovingGuide.ReserveStop.ToString();
-                ucMovePauseStop.TagValue = aseMovingGuide.PauseStatus.ToString();
+                ucMovePauseStop.TagValue = Vehicle.IsPause() ? "Pause" : "Resume";
                 ucMoveMovingIndex.TagValue = aseMovingGuide.MovingSectionsIndex.ToString();
 
                 ucVehicleImage.Hide();
@@ -1071,11 +1071,11 @@ namespace Mirle.Agv.AseMiddler.View
                 #endregion
 
                 #region 200828 dabid for Watch Not AskAllSectionsReserveInOnce
-                
-                ucIsAskReservePause.TagValue = agvcConnector.IsAskReservePause.ToString();              
-                ucIsMoveStep.TagValue = mainFlowHandler.IsMoveStep().ToString();               
+
+                ucIsAskReservePause.TagValue = agvcConnector.IsAskReservePause.ToString();
+                ucIsMoveStep.TagValue = mainFlowHandler.IsMoveStep().ToString();
                 ucIsMoveEnd.TagValue = Vehicle.AseMoveStatus.IsMoveEnd.ToString();
-                ucIsSleepByAskReserveFail.TagValue = agvcConnector. IsSleepByAskReserveFail.ToString();
+                ucIsSleepByAskReserveFail.TagValue = agvcConnector.IsSleepByAskReserveFail.ToString();
                 ucIsHome.TagValue = Vehicle.AseRobotStatus.IsHome.ToString();
                 ucIsCharging.TagValue = Vehicle.IsCharging.ToString();
                 txtVisitTransferCount.Text = mainFlowHandler.VisitTransferStepCounter.ToString();
@@ -1492,6 +1492,6 @@ namespace Mirle.Agv.AseMiddler.View
         private void btnKeyInSoc_Click(object sender, EventArgs e)
         {
             Vehicle.AseBatteryStatus.Percentage = decimal.ToInt32(numSoc.Value);
-        }       
+        }
     }
 }

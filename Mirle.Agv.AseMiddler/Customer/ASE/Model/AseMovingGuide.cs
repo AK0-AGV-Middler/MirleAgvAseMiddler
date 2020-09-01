@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,12 +16,12 @@ namespace Mirle.Agv.AseMiddler.Model
         public string ToAddressId { get; set; } = "";
         public uint GuideDistance { get; set; } = 0;
         public VhStopSingle ReserveStop { get; set; } = VhStopSingle.Off;
-        public VhStopSingle PauseStatus { get; set; } = VhStopSingle.Off;
         public bool IsAvoidComplete { get; set; } = false;
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
         public ushort SeqNum { get; set; }
         public string CommandId { get; set; } = "";
+        public ConcurrentDictionary<PauseType, bool> PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
 
         public AseMovingGuide() { }
 
@@ -43,7 +44,6 @@ namespace Mirle.Agv.AseMiddler.Model
             this.ToAddressId = aseMovingGuide.ToAddressId;
             this.GuideDistance = aseMovingGuide.GuideDistance;
             this.ReserveStop = aseMovingGuide.ReserveStop;
-            this.PauseStatus = aseMovingGuide.PauseStatus;
             this.IsAvoidComplete = aseMovingGuide.IsAvoidComplete;
             this.MovingSections = aseMovingGuide.MovingSections;
             this.MovingSectionsIndex = aseMovingGuide.MovingSectionsIndex;
