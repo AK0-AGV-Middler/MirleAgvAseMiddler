@@ -70,7 +70,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public string AgvcConnectorAbnormalMsg { get; set; } = "";
         public bool IsAgvcReplyBcrRead { get; set; } = false;
         public TrxTcpIp.ReturnCode ReturnCode { get; set; } = TrxTcpIp.ReturnCode.Timeout;
-        public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Fail;
 
         public AgvcConnector(MainFlowHandler mainFlowHandler)
         {
@@ -1653,7 +1652,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.ModeStatus = VHModeStatusParse(Vehicle.AutoState);
             report.PowerStatus = Vehicle.PowerStatus;
             report.ObstacleStatus = Vehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
-            report.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;           
+            report.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;
             report.ErrorStatus = Vehicle.ErrorStatus;
             report.DrivingDirection = Vehicle.DrivingDirection;
             report.BatteryCapacity = BatteryCapacityParse(Vehicle.AseBatteryStatus.Percentage);
@@ -1749,7 +1748,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 response.PowerStatus = Vehicle.PowerStatus;
                 response.ObstacleStatus = Vehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
-                response.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;               
+                response.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;
                 response.ErrorStatus = Vehicle.ErrorStatus;
                 response.ObstDistance = Vehicle.ObstDistance;
                 response.ObstVehicleID = Vehicle.ObstVehicleID;
@@ -2211,7 +2210,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
             RobotCommand robotCommand = (RobotCommand)mainFlowHandler.GetCurTransferStep();
-            AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.GetAseCarrierSlotStatus(robotCommand.SlotNumber);
+            AseCarrierSlotStatus aseCarrierSlotStatus = robotCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
 
             try
             {

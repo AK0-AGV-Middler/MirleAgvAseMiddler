@@ -73,7 +73,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private bool isIniOk;
         public int InitialSoc { get; set; } = 70;
         public bool IsFirstAhGet { get; set; }
-        public EnumCstIdReadResult ReadResult { get; set; } = EnumCstIdReadResult.Normal;
         public string CanAutoMsg { get; set; } = "";
         public DateTime StartChargeTimeStamp { get; set; } = DateTime.Now;
         public DateTime StopChargeTimeStamp { get; set; } = DateTime.Now;
@@ -2222,41 +2221,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 EnumTransferStepType transferStepType = robotCommand.GetTransferStepType();
                 if (transferStepType == EnumTransferStepType.Load)
                 {
-                    agvcConnector.ReadResult = ReadResult;
+                    ConfirmBcrReadResultInLoad(robotCommand);
                     ReportAgvcLoadComplete(robotCommand.CmdId);
                 }
                 else if (transferStepType == EnumTransferStepType.Unload)
                 {
-                    var slotNumber = robotCommand.SlotNumber;
-                    AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.GetAseCarrierSlotStatus(slotNumber);
-                    switch (aseCarrierSlotStatus.CarrierSlotStatus)
-                    {
-                        case EnumAseCarrierSlotStatus.Empty:
-                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 完成] : Unload Complete");
-                            ReportAgvcUnloadComplete(robotCommand.CmdId);
-                            break;
-                        case EnumAseCarrierSlotStatus.Loading:
-                        case EnumAseCarrierSlotStatus.ReadFail:
-                            if (Vehicle.AgvcTransCmdBuffer.ContainsKey(robotCommand.CmdId))
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗] : CarrierSlotStatus = [{aseCarrierSlotStatus.CarrierSlotStatus}].");
-                                Vehicle.AgvcTransCmdBuffer[robotCommand.CmdId].CompleteStatus = CompleteStatus.VehicleAbort;
-                                TransferComplete(robotCommand.CmdId);
-                            }
-                            else
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗] AseRobotContorl_OnRobotCommandFinishEvent, can not find command [ID = {robotCommand.CmdId}]. Reset all.");
-                                StopClearAndReset();
-                            }
-                            break;
-                        case EnumAseCarrierSlotStatus.PositionError:
-                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗 凸片] : PositionError.");
-
-                            SetAlarmFromAgvm(51);
-                            // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
-
-                            break;
-                    }
+                    ConfirmBcrReadResultInUnload(robotCommand);
                 }
                 else
                 {
@@ -2275,7 +2245,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[取貨完成回報 成功] AgvcConnector_OnAgvcAcceptLoadCompleteEvent.");
 
-                RobotCommand robotCommand = (RobotCommand)GetCurTransferStep();
+                ReportAgvcBcrRead();
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ConfirmBcrReadResultInLoad(RobotCommand robotCommand)
+        {
+            try
+            {
                 EnumSlotNumber slotNumber = robotCommand.SlotNumber;
                 AseCarrierSlotStatus slotStatus = slotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
 
@@ -2298,7 +2279,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 {
                                     Vehicle.AseCarrierSlotR = slotStatus;
                                     Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
-
                                 }
 
                                 SetAlarmFromAgvm(000051);
@@ -2373,8 +2353,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 }
 
                                 SetAlarmFromAgvm(000051);
-                                // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
-
                                 return;
                             }
                         default:
@@ -2444,8 +2422,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 }
 
                                 SetAlarmFromAgvm(000051);
-                                // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
-
                                 return;
                             }
                         default:
@@ -2453,12 +2429,42 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                 }
 
-                ReportAgvcBcrRead();
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
+        }
+        private void ConfirmBcrReadResultInUnload(RobotCommand robotCommand)
+        {
+            var slotNumber = robotCommand.SlotNumber;
+            AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.GetAseCarrierSlotStatus(slotNumber);
+            switch (aseCarrierSlotStatus.CarrierSlotStatus)
+            {
+                case EnumAseCarrierSlotStatus.Empty:
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 完成] : Unload Complete");
+                    ReportAgvcUnloadComplete(robotCommand.CmdId);
+                    break;
+                case EnumAseCarrierSlotStatus.Loading:
+                case EnumAseCarrierSlotStatus.ReadFail:
+                    if (Vehicle.AgvcTransCmdBuffer.ContainsKey(robotCommand.CmdId))
+                    {
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗] : CarrierSlotStatus = [{aseCarrierSlotStatus.CarrierSlotStatus}].");
+                        Vehicle.AgvcTransCmdBuffer[robotCommand.CmdId].CompleteStatus = CompleteStatus.VehicleAbort;
+                        TransferComplete(robotCommand.CmdId);
+                    }
+                    else
+                    {
+                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗] AseRobotContorl_OnRobotCommandFinishEvent, can not find command [ID = {robotCommand.CmdId}]. Reset all.");
+                        StopClearAndReset();
+                    }
+                    break;
+                case EnumAseCarrierSlotStatus.PositionError:
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗 凸片] : PositionError.");
+                    SetAlarmFromAgvm(51);
+                    break;
+            }
+
         }
 
         private void ReportAgvcUnloadComplete(string cmdId)
@@ -2927,7 +2933,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.ClearAllReserve();
                 Vehicle.AseMovingGuide = new AseMovingGuide();
                 StopVehicle();
-                ReadResult = EnumCstIdReadResult.Fail; //dabid
 
                 var transferCommands = Vehicle.AgvcTransCmdBuffer.Values.ToList();
                 foreach (var transCmd in transferCommands)
@@ -3076,7 +3081,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.Off)
                 //{
                 //    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.On;
-                   
+
                 //}
 
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 暫停] [{pauseEvent}][{pauseType}]");

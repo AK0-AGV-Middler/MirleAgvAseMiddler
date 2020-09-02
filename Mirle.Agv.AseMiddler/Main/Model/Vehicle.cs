@@ -109,10 +109,10 @@ namespace Mirle.Agv.AseMiddler.Model
             switch (slotNumber)
             {
                 case EnumSlotNumber.R:
-                    return theVehicle.AseCarrierSlotR;
+                    return this.AseCarrierSlotR;
                 case EnumSlotNumber.L:
                 default:
-                    return theVehicle.AseCarrierSlotL;
+                    return this.AseCarrierSlotL;
             }
         }
 
