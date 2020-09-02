@@ -752,7 +752,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        //private int firstTimeRece = 0;
         private void DealPrimaryReceived(PSTransactionXClass transaction)
         {
             try
@@ -772,24 +771,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     ResetSystemByte = false;
                     LastUpdateLeftSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
                     LastUpdateRightSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                    //LastUpdatePositionSystemByte = transaction.PSPrimaryMessage.SystemBytes;
                 }
 
-
-                //200829 dabid# PrimaryReceived SystemByte = 0時，判斷SystemByte順序會出問題
-                //if (firstTimeRece == 0)
-                //{
-                //    LastUpdateLeftSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                //    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte : {LastUpdateLeftSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
-                //    LastUpdateRightSlotStatusSystemByte = transaction.PSPrimaryMessage.SystemBytes;
-                //    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte : {LastUpdateRightSlotStatusSystemByte.ToString()}");//200827 dabid+ Log
-                //    firstTimeRece++;
-                //}
-                //if (transaction.PSPrimaryMessage.SystemBytes == 0)
-                //{
-                //    LastUpdateLeftSlotStatusSystemByte = 0;
-                //    LastUpdateRightSlotStatusSystemByte = 0;
-                //}
                 switch (transaction.PSPrimaryMessage.Number)
                 {
                     case "11":
