@@ -1089,11 +1089,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 slotNumber = psMessage.Substring(1, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-                if (!CheckSlotSystemByte(slotNumber, systemByte))//200827 dabid+ Log
-                {
-                    LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old. psMessage : {psMessage}");
-                    return;
-                }
+                //if (!CheckSlotSystemByte(slotNumber, systemByte))//200827 dabid+ Log
+                //{
+                //    LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old. psMessage : {psMessage}");
+                //    return;
+                //}
 
                 aseCarrierSlotStatus.SlotNumber = slotNumber;
 
