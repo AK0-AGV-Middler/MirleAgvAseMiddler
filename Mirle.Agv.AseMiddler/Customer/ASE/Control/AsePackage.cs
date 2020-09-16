@@ -1,5 +1,4 @@
 ﻿using Mirle.Agv.AseMiddler.Model;
-using Mirle.Agv.AseMiddler.Model.Configs;
 using Mirle.Agv.AseMiddler.Model.TransferSteps;
 using Mirle.Tools;
 using PSDriver.PSDriver;
@@ -61,6 +60,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<RobotCommand> OnRobotInterlockErrorEvent;
         public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
         public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
+        public event EventHandler<bool> OnOpPauseOrResumeEvent;
 
         public AsePackage()
         {
@@ -1032,14 +1032,16 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (alarmCode.ToString().Equals(Vehicle.AsePackageConfig.RemoteControlPauseErrorCode))
                 {
-                    if (isAlarmSet)
-                    {
-                        Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
-                    }
-                    else
-                    {
-                        Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
-                    }
+                    OnOpPauseOrResumeEvent?.Invoke(this, isAlarmSet);
+                    //if (isAlarmSet)
+                    //{
+                    //    Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
+                    //}
+                    //else
+                    //{
+                    //    Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
+                        
+                    //}
                 }
 
                 if (isAlarmSet)

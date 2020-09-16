@@ -273,6 +273,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.OnBatteryPercentageChangeEvent += AseBatteryControl_OnBatteryPercentageChangeEvent;
 
                 asePackage.OnStatusChangeReportEvent += AsePackage_OnStatusChangeReportEvent;
+                asePackage.OnOpPauseOrResumeEvent += AsePackage_OnOpPauseOrResumeEvent;
 
                 asePackage.OnAlarmCodeSetEvent += AsePackage_OnAlarmCodeSetEvent1;
                 asePackage.OnAlarmCodeResetEvent += AsePackage_OnAlarmCodeResetEvent;
@@ -287,6 +288,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
 
         private void VehicleLocationInitialAndThreadsInitial()
         {
@@ -3144,6 +3146,15 @@ namespace Mirle.Agv.AseMiddler.Controller
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 續行] [{pauseEvent}][{pauseType}]");
         }
 
+        private void ResumeMiddler()
+        {
+            asePackage.MoveContinue();
+            ResumeTransfer();
+            agvcConnector.StatusChangeReport();
+
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 續行] By Op Resume.");
+        }
+
         public void AgvcConnector_OnCmdCancelAbortEvent(ushort iSeqNum, ID_37_TRANS_CANCEL_REQUEST receive)
         {
             try
@@ -3345,7 +3356,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
-                if(autoState== EnumAutoState.Auto)
+                if (autoState == EnumAutoState.Auto)
                 {
                     SetAlarmFromAgvm(31);
                     asePackage.RequestVehicleToManual();
@@ -3521,6 +3532,22 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, e);
             agvcConnector.StatusChangeReport();
+        }
+
+        private void AsePackage_OnOpPauseOrResumeEvent(object sender, bool e)
+        {
+            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AsePackage_OnOpPauseOrResumeEvent [{e}].");
+
+            if (e)
+            {
+                Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
+            }
+            else
+            {
+                Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
+                Vehicle.PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
+                ResumeMiddler();
+            }
         }
 
         #endregion
