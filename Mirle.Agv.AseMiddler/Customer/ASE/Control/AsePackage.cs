@@ -1089,11 +1089,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 slotNumber = psMessage.Substring(1, 1) == "L" ? EnumSlotNumber.L : EnumSlotNumber.R;
-                //if (!CheckSlotSystemByte(slotNumber, systemByte))//200827 dabid+ Log
-                //{
-                //    LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old. psMessage : {psMessage}");
-                //    return;
-                //}
+                if (!CheckSlotSystemByte(slotNumber, systemByte))//200827 dabid+ Log
+                {
+                    LogPsWrapper($"dabid Log {slotNumber.ToString()} systemByte :{systemByte.ToString()} is old. psMessage : {psMessage}");
+                    return;
+                }
 
                 aseCarrierSlotStatus.SlotNumber = slotNumber;
 
@@ -1135,17 +1135,30 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private bool CheckSlotSystemByte(EnumSlotNumber slotNumber, uint systemByte)
         {
+            long thd = 100;//Vehicle.AsePackageConfig.MaxLocalSystemByte / 4;
             if (slotNumber == EnumSlotNumber.L)
             {
                 long longSystemByte = (long)systemByte;
                 if (longSystemByte > LastUpdateLeftSlotStatusSystemByte)
                 {
+                    //200904 dabid+ SlotStatusSystemByte最新已經是輪一圈歸0後的值，如果longSystemByte的值落在SystemByte回推thd以內就當是舊資料
+                    //---L------------------------------S
+                    if (LastUpdateLeftSlotStatusSystemByte < thd)
+                    {
+                        if (longSystemByte > (Vehicle.AsePackageConfig.MaxLocalSystemByte - (thd - LastUpdateLeftSlotStatusSystemByte)))
+                        {
+                            LogPsWrapper($"dabid Log {slotNumber.ToString()} - CurSlotSystemByte {LastUpdateLeftSlotStatusSystemByte.ToString()}");
+                            return false;
+                        }
+                    }
+                    //---L---S--------------------------
                     LastUpdateLeftSlotStatusSystemByte = longSystemByte;
+                    LogPsWrapper($"dabid Log LastUpdateLeftSlotStatusSystemByte {LastUpdateLeftSlotStatusSystemByte.ToString()}");
                     return true;
                 }
                 else if (longSystemByte < LastUpdateLeftSlotStatusSystemByte)
                 {
-                    long thd = Vehicle.AsePackageConfig.MaxLocalSystemByte / 4;
+                    
                     if (LastUpdateLeftSlotStatusSystemByte - longSystemByte > thd)
                     {
                         LastUpdateLeftSlotStatusSystemByte = longSystemByte;
@@ -1164,14 +1177,27 @@ namespace Mirle.Agv.AseMiddler.Controller
             else
             {
                 long longSystemByte = (long)systemByte;
+                
                 if (longSystemByte > LastUpdateRightSlotStatusSystemByte)
                 {
+                    //200904 dabid+ SlotStatusSystemByte最新已經是輪一圈歸0後的值，如果longSystemByte的值落在SystemByte回推thd以內就當是舊資料
+                    //---L------------------------------S
+                    if (LastUpdateRightSlotStatusSystemByte < thd)
+                    {
+                        if (longSystemByte > (Vehicle.AsePackageConfig.MaxLocalSystemByte - (thd - LastUpdateRightSlotStatusSystemByte)))
+                        {
+                            LogPsWrapper($"dabid Log {slotNumber.ToString()} - CurSlotSystemByte {LastUpdateRightSlotStatusSystemByte.ToString()}");
+                            return false;
+                        }
+                    }
+                    //---L---S--------------------------
                     LastUpdateRightSlotStatusSystemByte = longSystemByte;
+                    LogPsWrapper($"dabid Log LastUpdateRightSlotStatusSystemByte {LastUpdateRightSlotStatusSystemByte.ToString()}");
                     return true;
                 }
                 else if (longSystemByte < LastUpdateRightSlotStatusSystemByte)
                 {
-                    long thd = Vehicle.AsePackageConfig.MaxLocalSystemByte / 4;
+                    
                     if (LastUpdateRightSlotStatusSystemByte - longSystemByte > thd)
                     {
                         LastUpdateRightSlotStatusSystemByte = longSystemByte;

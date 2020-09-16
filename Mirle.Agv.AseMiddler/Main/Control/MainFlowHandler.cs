@@ -554,6 +554,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             if (Vehicle.IsReAuto)
                             {
                                 Vehicle.AseMoveStatus.IsMoveEnd = false;
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need False And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
                                 Vehicle.IsReAuto = false;
                                 if (IsAvoidMove)
                                 {
@@ -601,6 +602,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[退出 站點] Move Begin.");
                             Vehicle.AseMoveStatus.IsMoveEnd = false;
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need False And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
                             asePackage.PartMove(EnumAseMoveCommandIsEnd.Begin);
 
                             agvcConnector.ClearAllReserve();
@@ -1389,6 +1391,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 var address = lastAddress;
                 var percentage = Vehicle.AseBatteryStatus.Percentage;
                 var pos = Vehicle.AseMoveStatus.LastMapPosition;
+                Vehicle.LastAddress = address.Id;
                 Vehicle.IsCharger = address.IsCharger();//200824 dabid for Watch Not AUTO Charge
                 if (address.IsCharger())
                 {
@@ -1826,6 +1829,8 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 Vehicle.AseMoveStatus.IsMoveEnd = true;
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need True And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
                 #region Not EnumMoveComplete.Success
                 if (status == EnumMoveComplete.Fail)
                 {
@@ -1937,6 +1942,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 WaitingTransferCompleteEnd = true;
                 Vehicle.AseMoveStatus.IsMoveEnd = true;
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need True And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
                 AgvcTransCmd agvcTransCmd = Vehicle.AgvcTransCmdBuffer[cmdId];
                 agvcTransCmd.EnrouteState = CommandState.None;
                 ClearTransferSteps(cmdId);
@@ -2952,7 +2958,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 //    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
                 //    agvcConnector.StatusChangeReport();
                 //}
-
+                ResumeTransfer();
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[停止 與 重置] StopClearAndReset.");
             }
             catch (Exception ex)
@@ -3317,7 +3323,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             asePackage.SetVehicleAutoScenario();
                             ResetAllAlarmsFromAgvm();
                             Vehicle.IsReAuto = true;
-                            Thread.Sleep(500);
+                            Thread.Sleep(3000);  //500-->3000
                             CheckCanAuto();
                             UpdateSlotStatus();
                             break;
@@ -3339,6 +3345,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception ex)
             {
+                if(autoState== EnumAutoState.Auto)
+                {
+                    SetAlarmFromAgvm(31);
+                    asePackage.RequestVehicleToManual();
+                }
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }

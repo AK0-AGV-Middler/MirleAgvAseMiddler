@@ -32,6 +32,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public bool IsCharger { get; set; } = false;
         public int TransferStepsCount { get; set; } = 0;
         public string TransferStepType { get; set; } = "NONE";
+        public string LastAddress { get; set; } = "";
         public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
         #endregion
         #region 200828 dabid for Watch Not AskAllSectionsReserveInOnce

@@ -139,6 +139,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucBatteryPercentage = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageVehicleState = new System.Windows.Forms.TabPage();
             this.labException = new System.Windows.Forms.Label();
+            this.txtVisitTransferCount = new System.Windows.Forms.Label();
             this.lab1 = new System.Windows.Forms.Label();
             this.ucVerticalLabelText7 = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -177,7 +178,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.txtVisitTransferCount = new System.Windows.Forms.Label();
+            this.ucAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -1180,6 +1181,7 @@ namespace Mirle.Agv.AseMiddler.View
             // 
             // pageBatteryState
             // 
+            this.pageBatteryState.Controls.Add(this.ucAddress);
             this.pageBatteryState.Controls.Add(this.ucChargeCount);
             this.pageBatteryState.Controls.Add(this.ucCurransferStepType);
             this.pageBatteryState.Controls.Add(this.ucStepsCount);
@@ -1413,6 +1415,15 @@ namespace Mirle.Agv.AseMiddler.View
             this.labException.Size = new System.Drawing.Size(83, 20);
             this.labException.TabIndex = 73;
             this.labException.Text = "Exception";
+            // 
+            // txtVisitTransferCount
+            // 
+            this.txtVisitTransferCount.AutoSize = true;
+            this.txtVisitTransferCount.Location = new System.Drawing.Point(506, 645);
+            this.txtVisitTransferCount.Name = "txtVisitTransferCount";
+            this.txtVisitTransferCount.Size = new System.Drawing.Size(88, 20);
+            this.txtVisitTransferCount.TabIndex = 72;
+            this.txtVisitTransferCount.Text = "VisitCount";
             // 
             // lab1
             // 
@@ -1846,14 +1857,16 @@ namespace Mirle.Agv.AseMiddler.View
             0,
             0});
             // 
-            // txtVisitTransferCount
+            // ucAddress
             // 
-            this.txtVisitTransferCount.AutoSize = true;
-            this.txtVisitTransferCount.Location = new System.Drawing.Point(506, 645);
-            this.txtVisitTransferCount.Name = "txtVisitTransferCount";
-            this.txtVisitTransferCount.Size = new System.Drawing.Size(88, 20);
-            this.txtVisitTransferCount.TabIndex = 72;
-            this.txtVisitTransferCount.Text = "VisitCount";
+            this.ucAddress.Location = new System.Drawing.Point(347, 447);
+            this.ucAddress.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucAddress.Name = "ucAddress";
+            this.ucAddress.Size = new System.Drawing.Size(135, 65);
+            this.ucAddress.TabIndex = 53;
+            this.ucAddress.TagColor = System.Drawing.Color.Black;
+            this.ucAddress.TagName = "Address";
+            this.ucAddress.TagValue = " 70.0";
             // 
             // MainForm
             // 
@@ -2071,5 +2084,6 @@ namespace Mirle.Agv.AseMiddler.View
         private System.Windows.Forms.Label lab1;
         private System.Windows.Forms.Label labException;
         private System.Windows.Forms.Label txtVisitTransferCount;
+        private UcVerticalLabelText ucAddress;
     }
 }

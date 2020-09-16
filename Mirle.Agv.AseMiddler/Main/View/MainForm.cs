@@ -1054,6 +1054,8 @@ namespace Mirle.Agv.AseMiddler.View
                 string IsCharger = Vehicle.IsCharger.ToString();
                 ucIsCharger.TagValue = IsCharger;
 
+                string LastAddress = Vehicle.LastAddress;
+                ucAddress.TagValue = LastAddress;
                 //string IsCharging = isCharging ? "Yes" : "No";
                 //ucIsCharging.TagValue = isCharging ? "Yes" : "No"; 
 
