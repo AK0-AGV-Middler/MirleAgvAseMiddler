@@ -553,6 +553,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
                             returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(scheduleWrapper.Wrapper, out ID_36_TRANS_EVENT_RESPONSE response, out string rtnMsg);
+                            if (!Vehicle.AgvcTransCmdBuffer.ContainsKey(response.CmdID.Trim())) break;
                             if (returnCode == TrxTcpIp.ReturnCode.Normal)
                             {
                                 ReceiveSent_Cmd36_TransferEventResponse(response, scheduleWrapper.Wrapper.ImpTransEventRep);
