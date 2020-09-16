@@ -2463,6 +2463,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[收到搬送命令] Get Transfer Command: {transRequest.CommandAction}");
                 LogCommandStart(transRequest);
 
+                if (Vehicle.AgvcTransCmdBuffer.ContainsKey(transRequest.CmdID.Trim()))
+                {
+                    mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[拒絕搬送命令] Reject Transfer Command: {transRequest.CommandAction}. Same command id is working.");
+                    Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, 2, "Unknow command.");
+                    return;
+                }
+
                 switch (transRequest.CommandAction)
                 {
                     case CommandActionType.Move:
