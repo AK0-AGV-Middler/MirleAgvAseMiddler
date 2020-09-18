@@ -19,6 +19,7 @@ using Mirle.Agv.AseMiddler.Model.TransferSteps;
 using Mirle.Agv.AseMiddler.View;
 using Mirle.Tools;
 using Newtonsoft.Json;
+using NUnit.Framework.Constraints;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -1601,26 +1602,59 @@ namespace Mirle.Agv.AseMiddler.Controller
                     else
                     {
                         var nearlyDistance = 999999;
-                        foreach (string addressId in movingGuide.GuideAddressIds)
+                        var reserveOkSections = agvcConnector.queReserveOkSections.ToList();
+                        if (!reserveOkSections.Any())
                         {
-                            MapAddress mapAddress = Vehicle.Mapinfo.addressMap[addressId];
-                            var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
-
-                            if (dis < nearlyDistance)
+                            foreach (string addressId in movingGuide.GuideAddressIds)
                             {
-                                nearlyDistance = dis;
-                                moveStatus.NearlyAddress = mapAddress;
+                                MapAddress mapAddress = Vehicle.Mapinfo.addressMap[addressId];
+                                var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
+
+                                if (dis < nearlyDistance)
+                                {
+                                    nearlyDistance = dis;
+                                    moveStatus.NearlyAddress = mapAddress;
+                                }
+                            }
+
+                            foreach (string sectionId in movingGuide.GuideSectionIds)
+                            {
+                                MapSection mapSection = Vehicle.Mapinfo.sectionMap[sectionId];
+                                if (mapSection.InSection(moveStatus.NearlyAddress.Id))
+                                {
+                                    moveStatus.NearlySection = mapSection;
+                                }
                             }
                         }
-
-                        foreach (string sectionId in movingGuide.GuideSectionIds)
+                        else
                         {
-                            MapSection mapSection = Vehicle.Mapinfo.sectionMap[sectionId];
-                            if (mapSection.InSection(moveStatus.LastAddress.Id))
+                            List<MapAddress> reserveOkAddrs = new List<MapAddress>();
+                            foreach (var mapSection in reserveOkSections)
                             {
-                                moveStatus.NearlySection = mapSection;
+                                reserveOkAddrs.AddRange(mapSection.InsideAddresses);
                             }
+
+                            foreach (var mapAddress in reserveOkAddrs)
+                            {                                
+                                var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
+
+                                if (dis < nearlyDistance)
+                                {
+                                    nearlyDistance = dis;
+                                    moveStatus.NearlyAddress = mapAddress;
+                                }
+                            }
+
+                            foreach (var mapSection in reserveOkSections)
+                            {                                
+                                if (mapSection.InSection(moveStatus.NearlyAddress.Id))
+                                {
+                                    moveStatus.NearlySection = mapSection;
+                                }
+                            }
+
                         }
+
                         moveStatus.NearlySection.VehicleDistanceSinceHead = moveStatus.NearlyAddress.MyDistance(moveStatus.NearlySection.HeadAddress.Position);
 
                         if (moveStatus.NearlyAddress.Id != moveStatus.LastAddress.Id)
@@ -3517,7 +3551,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private void AsePackage_OnAlarmCodeResetEvent(object sender, int e)
         {
             ResetAllAlarmsFromAgvl();

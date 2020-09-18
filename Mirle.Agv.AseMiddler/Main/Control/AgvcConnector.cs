@@ -50,7 +50,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private ConcurrentQueue<MapSection> quePartMoveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
-        private ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
+        public ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
         private bool ReserveOkAskNext { get; set; } = false;
         public bool IsAskReservePause { get; private set; } = false;
         private MapPosition lastReportPosition { get; set; } = new MapPosition();
