@@ -1033,15 +1033,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (alarmCode.ToString().Equals(Vehicle.AsePackageConfig.RemoteControlPauseErrorCode))
                 {
                     OnOpPauseOrResumeEvent?.Invoke(this, isAlarmSet);
-                    //if (isAlarmSet)
-                    //{
-                    //    Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
-                    //}
-                    //else
-                    //{
-                    //    Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
-                        
-                    //}
                 }
 
                 if (isAlarmSet)

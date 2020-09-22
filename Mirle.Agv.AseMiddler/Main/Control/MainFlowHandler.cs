@@ -1890,34 +1890,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動 失敗] : Move Fail. ");
                     }
-                    // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
                     return;
                 }
 
-                // if (status == EnumMoveComplete.Pause)
-                // {
-                //     //VisitTransferStepsStatus = EnumThreadStatus.PauseComplete;
-                //     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動 暫停] : Move Pause.  checked ");
-                //     agvcConnector.PauseAskReserve();
-                //     PauseVisitTransferSteps();
-                //     return;
-                // }
-
-                // if (status == EnumMoveComplete.Cancel)
-                // {
-                //     StopClearAndReset();
-                //     if (IsAvoidMove)
-                //     {
-                //         agvcConnector.AvoidFail();
-                //         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[避車 移動 取消] : Avoid Move Cancel checked ");
-                //         return;
-                //     }
-                //     else
-                //     {
-                //         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動 取消] : Move Cancel checked ");
-                //         return;
-                //     }
-                // }
                 #endregion
 
                 #region EnumMoveComplete.Success
@@ -3176,12 +3151,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             ResumeTransfer();
             agvcConnector.StatusChangeReport();
 
-            //if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
-            //{
-            //    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
-            //    agvcConnector.StatusChangeReport();
-            //}
-
             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[執行 續行] [{pauseEvent}][{pauseType}]");
         }
 
@@ -3578,14 +3547,16 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             if (e)
             {
-                Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.On;
+                Vehicle.OpPauseStatus = VhStopSingle.On;
+                agvcConnector.StatusChangeReport();
             }
             else
             {
-                Vehicle.OpPauseStatus = com.mirle.aka.sc.ProtocolFormat.ase.agvMessage.VhStopSingle.Off;
+                Vehicle.OpPauseStatus = VhStopSingle.Off;
                 Vehicle.PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
                 ResumeMiddler();
             }
+           
         }
 
         #endregion
