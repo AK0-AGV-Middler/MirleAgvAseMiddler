@@ -800,10 +800,22 @@ namespace Mirle.Agv.AseMiddler.Controller
                         }
 
                         RefreshPartMoveSections();
+
+                        if (Vehicle.AseMovingGuide.ReserveStop == VhStopSingle.On)
+                        {
+                            Vehicle.AseMovingGuide.ReserveStop = VhStopSingle.Off;
+                            StatusChangeReport();
+                        }
+
                         IsCheckingReserveOkSections = false;
                     }
                     else
                     {
+                        if(Vehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)
+                        {
+                            Vehicle.AseMovingGuide.ReserveStop = VhStopSingle.On;
+                            StatusChangeReport();
+                        }
                         mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Ask All Sections Reserve In Once Reply. Unsuccess.");
                     }
                 }
@@ -1606,10 +1618,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void Receive_Cmd44_StatusRequest(object sender, TcpIpEventArgs e)
-        {
-            ID_44_STATUS_CHANGE_RESPONSE receive = (ID_44_STATUS_CHANGE_RESPONSE)e.objPacket; // Cmd43's object is empty
-        }
         public void Send_Cmd144_StatusChangeReport()
         {
             try
@@ -1653,7 +1661,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.ModeStatus = VHModeStatusParse(Vehicle.AutoState);
             report.PowerStatus = Vehicle.PowerStatus;
             report.ObstacleStatus = Vehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
-            report.ReserveStatus = Vehicle.AseMovingGuide.ReserveStop;
             report.ErrorStatus = Vehicle.ErrorStatus;
             report.DrivingDirection = Vehicle.DrivingDirection;
             report.BatteryCapacity = BatteryCapacityParse(Vehicle.AseBatteryStatus.Percentage);
@@ -1668,7 +1675,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.SafetyPauseStatus = Vehicle.PauseFlags[PauseType.Safety] ? VhStopSingle.On : VhStopSingle.Off;
             report.EarthquakePauseTatus = Vehicle.PauseFlags[PauseType.EarthQuake] ? VhStopSingle.On : VhStopSingle.Off;
             report.BlockingStatus = Vehicle.BlockingStatus;
-
+            
 
             EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
             switch (slotDisable)
@@ -1702,6 +1709,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             AseMovingGuide aseMovingGuide = new AseMovingGuide(Vehicle.AseMovingGuide);
             report.WillPassGuideSection.Clear();
             report.WillPassGuideSection.AddRange(aseMovingGuide.GuideSectionIds);
+            report.ReserveStatus = aseMovingGuide.ReserveStop;
 
             AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
             report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
@@ -1888,6 +1896,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
                 SetupNeedReserveSections();
                 Vehicle.AseMoveStatus.IsMoveEnd = false;
+                StatusChangeReport();
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need False And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
 
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, Vehicle.AseMovingGuide.GetInfo());
@@ -2903,16 +2912,20 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private uint BatteryCapacityParse(int originCapacity)
         {
-            var lowPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.LowPowerPercentage, 100), 0);
+            //var lowPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.LowPowerPercentage, 100), 0);
             var highPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.HighPowerPercentage, 100), 0);
+            var lowPowTh = 40;//200921 dabid# hardcode
             if (lowPowTh >= highPowTh)
             {
                 return (uint)originCapacity;
             }
             else
             {
+                if (originCapacity > highPowTh) return 100;
+                if (originCapacity < lowPowTh) return 0;
+
                 var diff = (highPowTh - lowPowTh) / 100.0;
-                uint result = (uint)Math.Max(Math.Min((originCapacity * diff + lowPowTh), 100), 0);
+                uint result = (uint)Math.Max(Math.Min((originCapacity * diff), 100), 0);//originCapacity * diff + lowPowTh => originCapacity * diff
                 return result;
             }
         }

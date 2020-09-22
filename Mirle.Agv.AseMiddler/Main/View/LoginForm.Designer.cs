@@ -34,6 +34,7 @@
             this.boxUserName = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.btnHide = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnLogout
@@ -89,18 +90,29 @@
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("微軟正黑體", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.label1.Location = new System.Drawing.Point(26, 28);
+            this.label1.Location = new System.Drawing.Point(29, 24);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(100, 23);
             this.label1.TabIndex = 5;
             this.label1.Text = "帳號";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // btnHide
+            // 
+            this.btnHide.BackColor = System.Drawing.SystemColors.Control;
+            this.btnHide.Location = new System.Drawing.Point(12, 12);
+            this.btnHide.Name = "btnHide";
+            this.btnHide.Size = new System.Drawing.Size(10, 10);
+            this.btnHide.TabIndex = 10;
+            this.btnHide.UseVisualStyleBackColor = false;
+            this.btnHide.Click += new System.EventHandler(this.btnHide_Click);
+            // 
             // LoginForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(433, 172);
+            this.Controls.Add(this.btnHide);
             this.Controls.Add(this.btnLogout);
             this.Controls.Add(this.btnLogin);
             this.Controls.Add(this.txtPassword);
@@ -122,5 +134,6 @@
         private System.Windows.Forms.ComboBox boxUserName;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnHide;
     }
 }

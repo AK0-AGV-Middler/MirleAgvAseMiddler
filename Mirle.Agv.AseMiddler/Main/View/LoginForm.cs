@@ -44,7 +44,7 @@ namespace Mirle.Agv.AseMiddler.View
             try
             {
                 Vehicle.LoginLevel = userAgent.GetLoginLevel(boxUserName.SelectedItem.ToString(), txtPassword.Text);
-                if (Vehicle.LoginLevel!= EnumLoginLevel.Op)
+                if (Vehicle.LoginLevel != EnumLoginLevel.Op)
                 {
                     this.Hide();
                 }
@@ -66,6 +66,9 @@ namespace Mirle.Agv.AseMiddler.View
             mirleLogger.Log(new LogFormat("Error", "5", classMethodName, Vehicle.AgvcConnectorConfig.ClientName, "CarrierID", exMsg));
         }
 
-       
+        private void btnHide_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+        }
     }
 }

@@ -1110,6 +1110,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 Vehicle.AseMovingGuide = aseMovingGuide;
                 SetupAseMovingGuideMovingSections();
                 agvcConnector.SetupNeedReserveSections();
+                agvcConnector.StatusChangeReport();
                 agvcConnector.ReplyAvoidCommand(aseMovingGuide.SeqNum, 0, "");
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"MainFlow : Get 避車Command checked , 終點[{aseMovingGuide.ToAddressId}].");
                 agvcConnector.ResumeAskReserve();
@@ -1635,7 +1636,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             }
 
                             foreach (var mapAddress in reserveOkAddrs)
-                            {                                
+                            {
                                 var dis = moveStatus.LastMapPosition.MyDistance(mapAddress.Position);
 
                                 if (dis < nearlyDistance)
@@ -1646,7 +1647,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             }
 
                             foreach (var mapSection in reserveOkSections)
-                            {                                
+                            {
                                 if (mapSection.InSection(moveStatus.NearlyAddress.Id))
                                 {
                                     moveStatus.NearlySection = mapSection;
@@ -1873,6 +1874,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     SetAlarmFromAgvm(6);
                     agvcConnector.ClearAllReserve();
                     Vehicle.AseMovingGuide = new AseMovingGuide();
+                    agvcConnector.StatusChangeReport();
                     if (IsAvoidMove)
                     {
                         agvcConnector.AvoidFail();
@@ -1927,6 +1929,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[避車 二次定位 到站] : Avoid Move End Ok.");
                     Vehicle.AseMovingGuide = new AseMovingGuide();
+                    agvcConnector.StatusChangeReport();
                     Vehicle.AseMovingGuide.IsAvoidComplete = true;
                     agvcConnector.AvoidComplete();
 
@@ -1940,6 +1943,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         MoveCmdInfo moveCmdInfo = (MoveCmdInfo)GetCurTransferStep();
                         ArrivalStartCharge(moveCmdInfo.EndAddress);
                         Vehicle.AseMovingGuide = new AseMovingGuide();
+                        agvcConnector.StatusChangeReport();
 
                         if (IsNextTransferStepIdle())
                         {
@@ -2974,6 +2978,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 PauseTransfer();
                 agvcConnector.ClearAllReserve();
                 Vehicle.AseMovingGuide = new AseMovingGuide();
+                agvcConnector.StatusChangeReport();
                 StopVehicle();
 
                 var transferCommands = Vehicle.AgvcTransCmdBuffer.Values.ToList();

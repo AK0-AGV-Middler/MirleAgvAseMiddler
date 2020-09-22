@@ -249,6 +249,9 @@
     <EmbeddedResource Include="Main\View\ConfigForm.resx">
       <DependentUpon>ConfigForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Main\View\SingleExecuteWarnForm.resx">
       <DependentUpon>SingleExecuteWarnForm.cs</DependentUpon>
     </EmbeddedResource>
