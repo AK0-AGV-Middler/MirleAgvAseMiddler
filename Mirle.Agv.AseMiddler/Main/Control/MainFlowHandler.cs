@@ -243,14 +243,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 //來自middleAgent的NewTransCmds訊息, Send to MainFlow(this)'mapHandler
                 agvcConnector.OnInstallTransferCommandEvent += AgvcConnector_OnInstallTransferCommandEvent;
-                agvcConnector.OnOverrideCommandEvent += AgvcConnector_OnOverrideCommandEvent;
+                //agvcConnector.OnOverrideCommandEvent += AgvcConnector_OnOverrideCommandEvent;
                 agvcConnector.OnAvoideRequestEvent += AgvcConnector_OnAvoideRequestEvent;
-                agvcConnector.OnLogMsgEvent += LogMsgHandler;
+                //agvcConnector.OnLogMsgEvent += LogMsgHandler;
                 agvcConnector.OnRenameCassetteIdEvent += AgvcConnector_OnRenameCassetteIdEvent;
                 agvcConnector.OnStopClearAndResetEvent += AgvcConnector_OnStopClearAndResetEvent;
 
 
-                agvcConnector.OnAgvcAcceptMoveArrivalEvent += AgvcConnector_OnAgvcAcceptMoveArrivalEvent;
+                //agvcConnector.OnAgvcAcceptMoveArrivalEvent += AgvcConnector_OnAgvcAcceptMoveArrivalEvent;
                 agvcConnector.OnAgvcAcceptLoadArrivalEvent += AgvcConnector_OnAgvcAcceptLoadArrivalEvent;
                 agvcConnector.OnAgvcAcceptLoadCompleteEvent += AgvcConnector_OnAgvcAcceptLoadCompleteEvent;
                 agvcConnector.OnAgvcAcceptBcrReadReply += AgvcConnector_OnAgvcContinueBcrReadEvent;
@@ -2553,14 +2553,14 @@ namespace Mirle.Agv.AseMiddler.Controller
             OptimizeTransferStepsAfterLoadEnd();
         }
 
-        private void AgvcConnector_OnAgvcAcceptMoveArrivalEvent(object sender, EventArgs e)
-        {
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "MoveArrival");
-            if (transferSteps.Count > 0)
-            {
-                VisitNextTransferStep();
-            }
-        }
+        //private void AgvcConnector_OnAgvcAcceptMoveArrivalEvent(object sender, EventArgs e)
+        //{
+        //    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "MoveArrival");
+        //    if (transferSteps.Count > 0)
+        //    {
+        //        VisitNextTransferStep();
+        //    }
+        //}
 
         private void AgvcConnector_OnAgvcAcceptUnloadCompleteEvent(object sender, EventArgs e)
         {
@@ -3648,10 +3648,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception) { }
         }
 
-        private void LogMsgHandler(object sender, LogFormat e)
-        {
-            mirleLogger.Log(e);
-        }
+        //private void LogMsgHandler(object sender, LogFormat e)
+        //{
+        //    mirleLogger.Log(e);
+        //}
 
         #endregion
     }

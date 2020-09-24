@@ -25,16 +25,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         #region Events
         public event EventHandler<string> OnMessageShowOnMainFormEvent;
         public event EventHandler<AgvcTransCmd> OnInstallTransferCommandEvent;
-        public event EventHandler<AgvcOverrideCmd> OnOverrideCommandEvent;
         public event EventHandler<AseMovingGuide> OnAvoideRequestEvent;
         public event EventHandler<string> OnCmdReceiveEvent;
         public event EventHandler<string> OnCmdSendEvent;
-        public event EventHandler<bool> OnConnectionChangeEvent;
         public event EventHandler<string> OnPassReserveSectionEvent;
-        public event EventHandler<LogFormat> OnLogMsgEvent;
         public event EventHandler<AseCarrierSlotStatus> OnRenameCassetteIdEvent;
         public event EventHandler OnStopClearAndResetEvent;
-        public event EventHandler OnAgvcAcceptMoveArrivalEvent;
         public event EventHandler OnAgvcAcceptLoadArrivalEvent;
         public event EventHandler OnAgvcAcceptUnloadArrivalEvent;
         public event EventHandler OnAgvcAcceptLoadCompleteEvent;
@@ -70,7 +66,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         public TcpIpAgent ClientAgent { get; private set; }
         public string AgvcConnectorAbnormalMsg { get; set; } = "";
         public bool IsAgvcReplyBcrRead { get; set; } = false;
-        public TrxTcpIp.ReturnCode ReturnCode { get; set; } = TrxTcpIp.ReturnCode.Timeout;
+
+        private bool IsCmd132Reply = false;
 
         public AgvcConnector(MainFlowHandler mainFlowHandler)
         {
@@ -592,6 +589,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 if (scheduleWrapper.RetrySendWaitCounter <= 0)
                                 {
                                     OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
+                                    IsCmd132Reply = true;
                                 }
                                 else
                                 {
@@ -1354,7 +1352,12 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public void TransferComplete(AgvcTransCmd agvcTransCmd)
         {
+            IsCmd132Reply = false;
             SendRecv_Cmd132_TransferCompleteReport(agvcTransCmd, 0);
+            while (!IsCmd132Reply)
+            {
+                Thread.Sleep(500);
+            }
         }
         public void LoadComplete(string cmdId)
         {
@@ -2429,6 +2432,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 int waitTime = response.WaitTime;
                 SpinWait.SpinUntil(() => false, waitTime);
                 StatusChangeReport();
+                IsCmd132Reply = true;
             }
             catch (Exception ex)
             {
