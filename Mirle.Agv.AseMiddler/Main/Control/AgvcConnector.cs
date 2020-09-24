@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
 
 namespace Mirle.Agv.AseMiddler.Controller
 {
@@ -2912,9 +2913,8 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         private uint BatteryCapacityParse(int originCapacity)
         {
-            //var lowPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.LowPowerPercentage, 100), 0);
-            var highPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.HighPowerPercentage, 100), 0);
-            var lowPowTh = 40;//200921 dabid# hardcode
+            var lowPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.LowPowerPercentage, 100), 0);
+            var highPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.HighPowerPercentage, 100), 0);           
             if (lowPowTh >= highPowTh)
             {
                 return (uint)originCapacity;
@@ -2924,8 +2924,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (originCapacity > highPowTh) return 100;
                 if (originCapacity < lowPowTh) return 0;
 
-                var diff = (highPowTh - lowPowTh) / 100.0;
-                uint result = (uint)Math.Max(Math.Min((originCapacity * diff), 100), 0);//originCapacity * diff + lowPowTh => originCapacity * diff
+                var diff = (highPowTh - lowPowTh);
+                double temp = (originCapacity - lowPowTh) * 100.0 / diff;
+                uint result = (uint)Math.Max(Math.Min((int)temp, 100), 0);
                 return result;
             }
         }
