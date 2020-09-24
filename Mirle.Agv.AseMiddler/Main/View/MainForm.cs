@@ -850,7 +850,7 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                var transferCommands = Vehicle.AgvcTransCmdBuffer.Values.ToList();
+                var transferCommands = Vehicle.mapTransferCommands.Values.ToList();
 
                 if (transferCommands.Count == 0)
                 {
@@ -875,7 +875,7 @@ namespace Mirle.Agv.AseMiddler.View
                     if (lstTransferStep[i].GetTransferStepType() == EnumTransferStepType.Empty)
                         step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}";
                     else
-                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({Vehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].LoadPortId})({Vehicle.AgvcTransCmdBuffer[lstTransferStep[i].CmdId].UnloadPortId})";
+                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].LoadPortId})({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].UnloadPortId})";
                 }
                 tbxTransferStepMsg.Text = step;
             }

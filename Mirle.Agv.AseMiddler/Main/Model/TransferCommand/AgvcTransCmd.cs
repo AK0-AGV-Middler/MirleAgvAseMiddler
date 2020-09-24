@@ -21,9 +21,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public string UnloadAddressId { get; set; } = "";
         public string CassetteId { get; set; } = "";
         public ushort SeqNum { get; set; }
-        public double CommandDistance { get; set; }
-        public CompleteStatus CompleteStatus { get; set; }
-        public bool IsAvoidComplete { get; set; }
+        public CompleteStatus CompleteStatus { get; set; }       
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
         public CommandState EnrouteState { get; set; } = CommandState.None;
         public string LotId { get; set; } = "";
