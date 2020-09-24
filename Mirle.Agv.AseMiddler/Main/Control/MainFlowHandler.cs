@@ -290,7 +290,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-
         private void VehicleLocationInitialAndThreadsInitial()
         {
             if (Vehicle.MainFlowConfig.IsSimulation)
@@ -606,7 +605,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[退出 站點] Move Begin.");
                             Vehicle.AseMoveStatus.IsMoveEnd = false;
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need False And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
-                            asePackage.PartMove(EnumAseMoveCommandIsEnd.Begin);
+                            if (Vehicle.AseMoveStatus.LastAddress.TransferPortDirection != EnumAddressDirection.None) asePackage.PartMove(EnumAseMoveCommandIsEnd.Begin);
 
                             agvcConnector.ClearAllReserve();
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[詢問 路線] AskGuideAddressesAndSections.");
@@ -3556,7 +3555,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 Vehicle.PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
                 ResumeMiddler();
             }
-           
+
         }
 
         #endregion

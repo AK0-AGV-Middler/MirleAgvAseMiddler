@@ -506,7 +506,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         if (PrimarySendWaitQueue.Any())
                         {
                             PrimarySendWaitQueue.TryDequeue(out ScheduleWrapper scheduleWrapper);
-                            PrimarySendWait(ref scheduleWrapper);
+                            PrimarySendWait(scheduleWrapper);
                         }
                     }
                     catch (Exception ex)//200828 dabid for Watch Not AskAllSectionsReserveInOnce
@@ -542,16 +542,18 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        private void PrimarySendWait(ref ScheduleWrapper scheduleWrapper)
+        private void PrimarySendWait(ScheduleWrapper scheduleWrapper)
         {
             try
             {
                 LogSendMsg(scheduleWrapper.Wrapper);
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"PrimarySendWait : [{scheduleWrapper.Wrapper.ID}][RetrySendWaitCounter={scheduleWrapper.RetrySendWaitCounter}]");
 
                 switch (scheduleWrapper.Wrapper.ID)
                 {
                     case 136:
                         {
+
                             TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
                             returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(scheduleWrapper.Wrapper, out ID_36_TRANS_EVENT_RESPONSE response, out string rtnMsg);
                             if (!Vehicle.AgvcTransCmdBuffer.ContainsKey(response.CmdID.Trim())) break;
@@ -561,6 +563,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                             }
                             else
                             {
+                                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"PrimarySendWait : [{scheduleWrapper.Wrapper.ID}][RetrySendWaitCounter={scheduleWrapper.RetrySendWaitCounter}]");
+
                                 if (scheduleWrapper.RetrySendWaitCounter <= 0)
                                 {
                                     OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
@@ -569,6 +573,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 {
                                     scheduleWrapper.RetrySendWaitCounter--;
                                     PrimarySendWaitQueue.Enqueue(scheduleWrapper);
+                                    mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"PrimarySendWait : [{scheduleWrapper.Wrapper.ID}][RetrySendWaitCounter={scheduleWrapper.RetrySendWaitCounter}][Back To SendWaitQueue]");
+
                                 }
                             }
                         }
@@ -599,7 +605,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         return;
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }

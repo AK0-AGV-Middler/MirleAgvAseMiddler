@@ -43,7 +43,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public ConcurrentQueue<PSMessageXClass> PrimarySendQueue { get; set; } = new ConcurrentQueue<PSMessageXClass>();
         public ConcurrentQueue<PSTransactionXClass> SecondarySendQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         public ConcurrentQueue<PSTransactionXClass> PrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
-        public ConcurrentQueue<PSTransactionXClass> DealPrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
+        //public ConcurrentQueue<PSTransactionXClass> DealPrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         public ConcurrentQueue<PSTransactionXClass> SecondaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         private List<PSTransactionXClass> primaryReceiveTransactions;
         public ConcurrentQueue<AsePositionArgs> ReceivePositionArgsQueue { get; set; } = new ConcurrentQueue<AsePositionArgs>();
@@ -231,13 +231,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                             SecondarySend(psTransaction);
                         }
 
-                        CheckPrimaryReceiveQueue();
-
-                        if (DealPrimaryReceiveQueue.Any())
+                        if (PrimaryReceiveQueue.Any())
                         {
-                            DealPrimaryReceiveQueue.TryDequeue(out PSTransactionXClass psTransaction);
+                            PrimaryReceiveQueue.TryDequeue(out PSTransactionXClass psTransaction);
+                            AutoReplyFromPsMessageMap(psTransaction);
                             DealPrimaryReceived(psTransaction);
-                        }
+
+                        }                       
 
                         if (SecondaryReceiveQueue.Any())
                         {
@@ -719,22 +719,22 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         #region PrimaryReceived
 
-        private void CheckPrimaryReceiveQueue()
-        {
-            lock (PrimaryReceiveQueue)
-            {
-                primaryReceiveTransactions = PrimaryReceiveQueue.ToList();
-                PrimaryReceiveQueue = new ConcurrentQueue<PSTransactionXClass>();
-            }
+        //private void CheckPrimaryReceiveQueue()
+        //{
+        //    lock (PrimaryReceiveQueue)
+        //    {
+        //        primaryReceiveTransactions = PrimaryReceiveQueue.ToList();
+        //        PrimaryReceiveQueue = new ConcurrentQueue<PSTransactionXClass>();
+        //    }
 
-            if (primaryReceiveTransactions.Any())
-            {
-                foreach (PSTransactionXClass psTransaction in primaryReceiveTransactions)
-                {
-                    AutoReplyFromPsMessageMap(psTransaction);
-                }
-            }
-        }
+        //    if (primaryReceiveTransactions.Any())
+        //    {
+        //        foreach (PSTransactionXClass psTransaction in primaryReceiveTransactions)
+        //        {
+        //            AutoReplyFromPsMessageMap(psTransaction);
+        //        }
+        //    }
+        //}
 
         private void PsWrapper_OnPrimaryReceived(ref PSTransactionXClass transaction)
         {
@@ -788,9 +788,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         UpdateRobotStatus(transaction.PSPrimaryMessage.PSMessage);
                         break;
                     case "25":
-                        {
-                            UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage, transaction.PSPrimaryMessage.SystemBytes);
-                        }
+                        UpdateCarrierSlotStatus(transaction.PSPrimaryMessage.PSMessage, transaction.PSPrimaryMessage.SystemBytes);
                         break;
                     case "29":
                         UpdateChargeStatus(transaction.PSPrimaryMessage.PSMessage);
@@ -861,7 +859,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                         ReplyFromMsgMap(psTransaction);
                     }
 
-                    DealPrimaryReceiveQueue.Enqueue(psTransaction);
                 }
             }
             catch (Exception ex)
