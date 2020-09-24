@@ -834,13 +834,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
             }
 
+            if (Vehicle.mapTransferCommands.Count == 2)
+            {
+                //TODO: check fit or not fit swap three command
 
-        }
-
-        private bool IsVehicleDoingMoveCommand()
-        {
-            return Vehicle.mapTransferCommands.Any(x => IsMoveTransferCommand(x.Value.AgvcTransCommandType));
-        }
+            }
+        }        
 
         private bool IsMoveTransferCommand(EnumAgvcTransCommandType agvcTransCommandType)
         {
