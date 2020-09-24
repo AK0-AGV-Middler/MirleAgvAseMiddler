@@ -1374,8 +1374,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
 
                     Vehicle.CheckStartChargeReplyEnd = true;
-                    IsArrivalCharge = false;
                 }
+
+                IsArrivalCharge = false;
             }
             catch (Exception ex)
             {
