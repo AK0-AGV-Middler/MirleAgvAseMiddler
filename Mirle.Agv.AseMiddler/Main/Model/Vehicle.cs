@@ -9,6 +9,7 @@ using Mirle.Agv.AseMiddler.Model.Configs;
 using Mirle.Agv.AseMiddler.Controller;
 using System.Reflection;
 using System.Collections.Concurrent;
+using NUnit.Framework.Constraints;
 
 namespace Mirle.Agv.AseMiddler.Model
 {
@@ -18,7 +19,9 @@ namespace Mirle.Agv.AseMiddler.Model
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
         public ConcurrentDictionary<string, AgvcTransCmd> mapTransferCommands { get; set; } = new ConcurrentDictionary<string, AgvcTransCmd>();
+        public AgvcTransCmd TransferCommand { get; set; } = new AgvcTransCmd();
         public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
+       
         public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public bool IsAgvcConnect { get; set; } = false;
         public EnumLoginLevel LoginLevel { get; set; } = EnumLoginLevel.Op;
@@ -36,7 +39,7 @@ namespace Mirle.Agv.AseMiddler.Model
         public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
         #endregion
         #region 200828 dabid for Watch Not AskAllSectionsReserveInOnce
-       
+
         //public bool TMP_IsHome { get; set; } = false;
         //public bool TMP_IsCharging { get; set; } = false;
         //public bool TMP_IsSendWaitSchedulePause { get; set; } = false;

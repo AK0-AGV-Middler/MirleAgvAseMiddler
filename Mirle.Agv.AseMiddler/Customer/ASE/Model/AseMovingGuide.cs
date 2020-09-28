@@ -15,13 +15,16 @@ namespace Mirle.Agv.AseMiddler.Model
         public string FromAddressId { get; set; } = "";
         public string ToAddressId { get; set; } = "";
         public uint GuideDistance { get; set; } = 0;
-        public VhStopSingle ReserveStop { get; set; } = VhStopSingle.Off;
-        public bool IsAvoidComplete { get; set; } = false;
+        public VhStopSingle ReserveStop { get; set; } = VhStopSingle.Off;       
         public List<MapSection> MovingSections { get; set; } = new List<MapSection>();
         public int MovingSectionsIndex { get; set; } = 0;
         public ushort SeqNum { get; set; }
         public string CommandId { get; set; } = "";
-        public ConcurrentDictionary<PauseType, bool> PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
+        public EnumMoveComplete MoveComplete { get; set; } = EnumMoveComplete.Fail;
+        public bool IsAvoidMove { get; set; } = false;
+        public bool IsAvoidComplete { get; set; } = false;
+
+        public bool IsOverrideMove { get; set; } = false;
 
         public AseMovingGuide() { }
 

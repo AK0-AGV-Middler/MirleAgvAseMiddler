@@ -16,6 +16,12 @@ namespace Mirle.Agv.AseMiddler
         Vertical,
         R2000
     }
+    public enum EnumMoveToEndReference
+    {
+        Load,
+        Unload,
+        Avoid
+    }
 
     public enum EnumCommandDirection
     {
@@ -227,6 +233,34 @@ namespace Mirle.Agv.AseMiddler
         LowPowerCharge,
         DisCharge,
         WaitChargingOff
+    }
+
+    public enum EnumTransferStep
+    {
+        MoveToAddress,
+        MoveToLoad,
+        MoveToUnload,
+        MoveToAvoid,
+        LoadArrival,
+        WaitLoadArrivalReply,
+        Load,
+        WaitLoadCompleteReply,
+        WaitCstIdReadReply,
+        UnloadArrival,
+        WaitUnloadArrivalReply,
+        Unload,
+        UnloadRetryMoveWaitEnd,
+        WaitUnloadCompleteReply,
+        TransferComplete,
+        Idle,
+        MoveToAddressWaitEnd,
+        MoveFail,
+        AvoidMoveComplete,
+        WaitOverrideToContinue,
+        LoadWaitEnd,
+        UnloadWaitEnd,
+        RobotFail,
+
     }
 
     #endregion    

@@ -553,7 +553,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                             TrxTcpIp.ReturnCode returnCode = TrxTcpIp.ReturnCode.Timeout;
                             returnCode = ClientAgent.TrxTcpIp.sendRecv_Google(scheduleWrapper.Wrapper, out ID_36_TRANS_EVENT_RESPONSE response, out string rtnMsg);
-                          
+
                             if (returnCode == TrxTcpIp.ReturnCode.Normal)
                             {
                                 if (!Vehicle.mapTransferCommands.ContainsKey(response.CmdID.Trim())) break;
@@ -744,6 +744,10 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             Send_Cmd138_GuideInfoRequest(Vehicle.AseMoveStatus.LastAddress.Id, moveCmdInfo.EndAddress.Id);
         }
+        public void AskGuideAddressesAndSections(string endAddressId)
+        {
+            Send_Cmd138_GuideInfoRequest(Vehicle.AseMoveStatus.LastAddress.Id, endAddressId);
+        }
         public void AskAllSectionsReserveInOnce()
         {
             try
@@ -817,7 +821,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                     }
                     else
                     {
-                        if(Vehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)
+                        if (Vehicle.AseMovingGuide.ReserveStop == VhStopSingle.Off)
                         {
                             Vehicle.AseMovingGuide.ReserveStop = VhStopSingle.On;
                             StatusChangeReport();
@@ -1389,7 +1393,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void AvoidComplete()
         {
             Send_Cmd152_AvoidCompleteReport(0);
-            mainFlowHandler.GoNextTransferStep = true;
         }
         public void AvoidFail()
         {
@@ -1686,7 +1689,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.SafetyPauseStatus = Vehicle.PauseFlags[PauseType.Safety] ? VhStopSingle.On : VhStopSingle.Off;
             report.EarthquakePauseTatus = Vehicle.PauseFlags[PauseType.EarthQuake] ? VhStopSingle.On : VhStopSingle.Off;
             report.BlockingStatus = Vehicle.BlockingStatus;
-            
+
 
             EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
             switch (slotDisable)
@@ -2069,16 +2072,16 @@ namespace Mirle.Agv.AseMiddler.Controller
                 switch (response.EventType)
                 {
                     case EventType.LoadArrivals:
-                        OnAgvcAcceptLoadArrivalEvent?.Invoke(this, default(EventArgs));
+                        Vehicle.TransferCommand.IsLoadArrivalReply = true;
                         break;
                     case EventType.LoadComplete:
-                        OnAgvcAcceptLoadCompleteEvent?.Invoke(this, default(EventArgs));
+                        Vehicle.TransferCommand.IsLoadCompleteReply = true;
                         break;
                     case EventType.UnloadArrivals:
-                        OnAgvcAcceptUnloadArrivalEvent?.Invoke(this, default(EventArgs));
+                        Vehicle.TransferCommand.IsUnloadArrivalReply = true;
                         break;
                     case EventType.UnloadComplete:
-                        OnAgvcAcceptUnloadCompleteEvent?.Invoke(this, default(EventArgs));
+                        Vehicle.TransferCommand.IsUnloadCompleteReply = true;
                         break;
                     case EventType.ReserveReq:
                         break;
@@ -2133,8 +2136,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                                             }
                                             OnCstRenameEvent?.Invoke(this, cmd.SlotNumber);
                                         }
-                                        Vehicle.mapTransferCommands[report.CmdID].CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, Vehicle.mapTransferCommands[report.CmdID].CompleteStatus);
-                                        mainFlowHandler.TransferComplete(report.CmdID);
+                                        //Vehicle.mapTransferCommands[report.CmdID].CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, Vehicle.mapTransferCommands[report.CmdID].CompleteStatus);
+                                        //mainFlowHandler.TransferComplete(report.CmdID);
+                                        Vehicle.TransferCommand.CompleteStatus = GetCancelCompleteStatus(response.ReplyAction, Vehicle.TransferCommand.CompleteStatus);
+                                        Vehicle.TransferCommand.IsStopAndClear = true;
                                     }
                                 }
                                 else
@@ -2160,7 +2165,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                                             OnCstRenameEvent?.Invoke(this, cmd.SlotNumber);
                                         }
                                     }
-                                    OnAgvcAcceptBcrReadReply?.Invoke(this, new EventArgs());
+                                    Vehicle.TransferCommand.IsCstIdReadReply = true;
                                 }
                             }
                         }
@@ -2226,6 +2231,37 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+
+        public void SendRecv_Cmd136_CstIdReadReport2()
+        {
+            AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);          
+            AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.TransferCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
+
+            try
+            {
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+                report.EventType = EventType.Bcrread;
+                report.CSTID = aseCarrierSlotStatus.CarrierId;
+                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = aseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.BCRReadResult = Vehicle.TransferCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.LeftReadResult : Vehicle.RightReadResult;
+                report.CmdID = Vehicle.TransferCommand.CommandId; //200525 dabid#
+
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨階段 CST ID 上報] BCRReadResult : {report.BCRReadResult}"); //200525 dabid+
+
+                WrapperMessage wrapper = new WrapperMessage();
+                wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrapper.ImpTransEventRep = report;
+
+                SendWrapperToSchedule(wrapper, false, true);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
 
         public void SendRecv_Cmd136_CstIdReadReport()
         {
@@ -2925,7 +2961,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         private uint BatteryCapacityParse(int originCapacity)
         {
             var lowPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.LowPowerPercentage, 100), 0);
-            var highPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.HighPowerPercentage, 100), 0);           
+            var highPowTh = Math.Max(Math.Min(Vehicle.MainFlowConfig.HighPowerPercentage, 100), 0);
             if (lowPowTh >= highPowTh)
             {
                 return (uint)originCapacity;

@@ -9,24 +9,35 @@ using Google.Protobuf.Collections;
 using System.Reflection;
 
 using Mirle.Tools;
+using System.Drawing;
 
 namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 {
 
     public class AgvcTransCmd
     {
+        public EnumTransferStep TransferStep { get; set; } = EnumTransferStep.Idle;
         public string CommandId { get; set; } = "";
         public EnumAgvcTransCommandType AgvcTransCommandType { get; set; } = EnumAgvcTransCommandType.Else;
         public string LoadAddressId { get; set; } = "";
         public string UnloadAddressId { get; set; } = "";
         public string CassetteId { get; set; } = "";
         public ushort SeqNum { get; set; }
-        public CompleteStatus CompleteStatus { get; set; }       
+        public CompleteStatus CompleteStatus { get; set; }
         public EnumSlotNumber SlotNumber { get; set; } = EnumSlotNumber.L;
         public CommandState EnrouteState { get; set; } = CommandState.None;
         public string LotId { get; set; } = "";
         public string LoadPortId { get; set; } = "";
         public string UnloadPortId { get; set; } = "";
+
+        public bool IsRobotEnd { get; set; } = false;
+
+        public bool IsStopAndClear { get; set; } = false;
+        public bool IsLoadArrivalReply { get; set; } = false;
+        public bool IsLoadCompleteReply { get; set; } = false;
+        public bool IsCstIdReadReply { get; set; } = false;
+        public bool IsUnloadArrivalReply { get; set; } = false;
+        public bool IsUnloadCompleteReply { get; set; } = false;
 
         public AgvcTransCmd()
         {
@@ -36,59 +47,55 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         {
             CommandId = transRequest.CmdID.Trim();
             CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID.Trim();
-            AgvcTransCommandType = SetupCommandType(transRequest.CommandAction);
             SeqNum = aSeqNum;
-            CompleteStatus = SetupCompleteStatus(transRequest.CommandAction);
             LotId = transRequest.LOTID.Trim();
+
+            InitialCommand(transRequest.CommandAction);
 
             LoadPortId = string.IsNullOrEmpty(transRequest.LoadPortID) ? "" : transRequest.LoadPortID.Trim();
             UnloadPortId = string.IsNullOrEmpty(transRequest.UnloadPortID) ? "" : transRequest.UnloadPortID.Trim();
         }
 
-        protected CompleteStatus SetupCompleteStatus(CommandActionType actType)
+        private void InitialCommand(CommandActionType commandAction)
         {
-            switch (actType)
+            switch (commandAction)
             {
                 case CommandActionType.Move:
-                    return CompleteStatus.Move;
+                    AgvcTransCommandType = EnumAgvcTransCommandType.Move;
+                    CompleteStatus = CompleteStatus.Move;
+                    TransferStep = EnumTransferStep.MoveToAddress;
+                    EnrouteState = CommandState.None;
+                    break;
                 case CommandActionType.Load:
-                    return CompleteStatus.Load;
+                    AgvcTransCommandType = EnumAgvcTransCommandType.Load;
+                    CompleteStatus = CompleteStatus.Load;
+                    TransferStep = EnumTransferStep.MoveToLoad;
+                    EnrouteState = CommandState.LoadEnroute;
+                    break;
                 case CommandActionType.Unload:
-                    return CompleteStatus.Unload;
+                    AgvcTransCommandType = EnumAgvcTransCommandType.Unload;
+                    CompleteStatus = CompleteStatus.Unload;
+                    TransferStep = EnumTransferStep.MoveToUnload;
+                    EnrouteState = CommandState.UnloadEnroute;
+                    break;
                 case CommandActionType.Loadunload:
-                    return CompleteStatus.Loadunload;
+                    AgvcTransCommandType = EnumAgvcTransCommandType.LoadUnload;
+                    CompleteStatus = CompleteStatus.Loadunload;
+                    TransferStep = EnumTransferStep.MoveToLoad;
+                    EnrouteState = CommandState.LoadEnroute;
+                    break;
+                case CommandActionType.Movetocharger:
+                    AgvcTransCommandType = EnumAgvcTransCommandType.MoveToCharger;
+                    CompleteStatus = CompleteStatus.MoveToCharger;
+                    TransferStep = EnumTransferStep.MoveToAddress;
+                    EnrouteState = CommandState.None;
+                    break;
                 case CommandActionType.Home:
                     break;
                 case CommandActionType.Override:
-                    return CompleteStatus.Loadunload;
-                case CommandActionType.Movetocharger:
-                    return CompleteStatus.MoveToCharger;
+                    break;
                 default:
                     break;
-            }
-            return CompleteStatus.VehicleAbort;
-        }
-
-        protected EnumAgvcTransCommandType SetupCommandType(CommandActionType activeType)
-        {
-            switch (activeType)
-            {
-                case CommandActionType.Move:
-                    return EnumAgvcTransCommandType.Move;
-                case CommandActionType.Load:
-                    return EnumAgvcTransCommandType.Load;
-                case CommandActionType.Unload:
-                    return EnumAgvcTransCommandType.Unload;
-                case CommandActionType.Loadunload:
-                    return EnumAgvcTransCommandType.LoadUnload;
-                case CommandActionType.Home:
-                    return EnumAgvcTransCommandType.Else;
-                case CommandActionType.Override:
-                    return EnumAgvcTransCommandType.Override;
-                case CommandActionType.Movetocharger:
-                    return EnumAgvcTransCommandType.MoveToCharger;
-                default:
-                    return EnumAgvcTransCommandType.Else;
             }
         }
 
