@@ -125,6 +125,29 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         {
             MirleLogger.Instance.Log(new LogFormat("Error", "5", source, "Device", "CarrierID", exMsg));
         }
+
+        public bool IsAbortByAgvc()
+        {
+            switch (CompleteStatus)
+            {
+                case CompleteStatus.InterlockError:
+                case CompleteStatus.IdreadFailed:
+                case CompleteStatus.IdmisMatch:
+                case CompleteStatus.VehicleAbort:
+                case CompleteStatus.Abort:
+                case CompleteStatus.Cancel:
+                    return true;
+                case CompleteStatus.Move:
+                case CompleteStatus.Load:
+                case CompleteStatus.Unload:
+                case CompleteStatus.Loadunload:
+                case CompleteStatus.MoveToCharger:
+                case CompleteStatus.LongTimeInaction:
+                case CompleteStatus.ForceFinishByOp:
+                default:
+                    return false;
+            }
+        }
     }
 
     public class AgvcMoveCmd : AgvcTransCmd

@@ -516,13 +516,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         if (queNeedReserveSections.Any())
                         {
-                            if (!IsAskReservePause && mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !Vehicle.AseMoveStatus.IsMoveEnd && !IsSleepByAskReserveFail)
+                            if (!IsAskReservePause && IsMoveStep() && mainFlowHandler.CanVehMove() && !Vehicle.AseMoveStatus.IsMoveEnd && !IsSleepByAskReserveFail)
                             {
                                 AskAllSectionsReserveInOnce();
                             }
                             else
                             {
-                                mainFlowHandler.LogDebug(GetType().Name, $"IsAskReservePause = {IsAskReservePause} ,IsMoveStep = {mainFlowHandler.IsMoveStep()}, CanVehMove = {mainFlowHandler.CanVehMove()},IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd},IsSleepByAskReserveFail = {IsSleepByAskReserveFail}");
+                                mainFlowHandler.LogDebug(GetType().Name, $"IsAskReservePause = {IsAskReservePause} ,IsMoveStep = {IsMoveStep()}, CanVehMove = {mainFlowHandler.CanVehMove()},IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd},IsSleepByAskReserveFail = {IsSleepByAskReserveFail}");
                             }
                         }
                     }
@@ -537,6 +537,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 Thread.Sleep(Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
                 //SpinWait.SpinUntil(() => false, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
             }
+        }
+
+        private bool IsMoveStep()
+        {
+            return Vehicle.TransferCommand.TransferStep == EnumTransferStep.MoveToAddressWaitEnd;
         }
 
         private void PrimarySendWait(ScheduleWrapper scheduleWrapper)
@@ -608,130 +613,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
-
-        // Thd Ask Reserve     
-        public void PauseAskReserve()
-        {
-            IsAskReservePause = true;
-            mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : PauseAskReserve");
-        }
-        public void ResumeAskReserve()
-        {
-            IsAskReservePause = false;
-            mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AgvcConnector : ResumeAskReserve");
-        }
-        public bool IsGotReserveOkSectionsFull()
-        {
-            if (Vehicle.AgvcConnectorConfig.ReserveLengthMeter < 0) return false;
-            int reserveOkSectionsTotalLength = GetReserveOkSectionsTotalLength();
-            return reserveOkSectionsTotalLength >= Vehicle.AgvcConnectorConfig.ReserveLengthMeter * 1000;
-        }
-        private string QueMapSectionsToString(ConcurrentQueue<MapSection> aQue)
-        {
-            try
-            {
-                var sectionIds = aQue.ToList().Select(x => string.IsNullOrEmpty(x.Id) ? "" : x.Id).ToList();
-                return string.Concat("[", string.Join(", ", sectionIds), "]");
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return "";
-            }
-        }
-        private int GetReserveOkSectionsTotalLength()
-        {
-            double result = 0;
-            List<MapSection> reserveOkSections = new List<MapSection>(queReserveOkSections);
-            foreach (var item in reserveOkSections)
-            {
-                result += item.HeadToTailDistance;
-            }
-            return (int)result;
-        }
-        public void ClearNeedReserveSections()
-        {
-            queNeedReserveSections = new ConcurrentQueue<MapSection>();
-        }
-        public void ClearGotReserveOkSections()
-        {
-            queReserveOkSections = new ConcurrentQueue<MapSection>();
-        }
-        public void SetupNeedReserveSections()
-        {
-            try
-            {
-                queNeedReserveSections = new ConcurrentQueue<MapSection>(Vehicle.AseMovingGuide.MovingSections);
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[設定 所需路權] SetupNeedReserveSections[{QueMapSectionsToString(queNeedReserveSections)}][Count={queNeedReserveSections.Count}]");
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-        public List<MapSection> GetNeedReserveSections()
-        {
-            return queNeedReserveSections.ToList();
-        }
-        public List<MapSection> GetReserveOkSections()
-        {
-            return new List<MapSection>(queReserveOkSections);
-        }
-        public void DequeueGotReserveOkSections()
-        {
-            if (queReserveOkSections.IsEmpty)
-            {
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector :queReserveOkSections.Count=[{queReserveOkSections.Count}], Dequeue Got Reserve Ok Sections Fail.");
-                return;
-            }
-            else
-            {
-                queReserveOkSections.TryDequeue(out MapSection passSection);
-                string passSectionId = passSection.Id;
-                OnPassReserveSectionEvent?.Invoke(this, passSectionId);
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : passSectionId = [{passSectionId}].");
-            }
-        }
-        private void RefreshPartMoveSections()
-        {
-            try
-            {
-                if (quePartMoveSections.Any())
-                {
-                    List<MapSection> partMoveSections = quePartMoveSections.ToList();
-                    for (int i = 0; i < partMoveSections.Count; i++)
-                    {
-                        EnumIsExecute enumKeepOrGo = EnumIsExecute.Keep;
-                        // End of PartMoveSections => Go
-                        if (i + 1 == partMoveSections.Count)
-                        {
-                            enumKeepOrGo = EnumIsExecute.Go;
-
-                        } //partMoveSections[i] and partMoveSections[i+1] exist
-                        else if (HeadDirectionChange(partMoveSections[i + 1]))
-                        {
-                            enumKeepOrGo = EnumIsExecute.Go;
-                        }
-                        else if (partMoveSections[i].Type != partMoveSections[i + 1].Type) //Section Type Change => Go
-                        {
-                            enumKeepOrGo = EnumIsExecute.Go;
-                        }
-
-                        mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(partMoveSections[i], enumKeepOrGo);
-                        SpinWait.SpinUntil(() => false, 50);
-                    }
-                    quePartMoveSections = new ConcurrentQueue<MapSection>();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-        private bool HeadDirectionChange(MapSection mapSection)
-        {
-            return mapSection.HeadAddress.VehicleHeadAngle != mapSection.TailAddress.VehicleHeadAngle;
         }
 
         public void ClearAllReserve()
@@ -873,6 +754,132 @@ namespace Mirle.Agv.AseMiddler.Controller
                 reserveInfos.Add(reserveInfo);
             }
         }
+
+
+        // Thd Ask Reserve     
+        public void PauseAskReserve()
+        {
+            IsAskReservePause = true;
+            mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : PauseAskReserve");
+        }
+        public void ResumeAskReserve()
+        {
+            IsAskReservePause = false;
+            mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "AgvcConnector : ResumeAskReserve");
+        }
+        public bool IsGotReserveOkSectionsFull()
+        {
+            if (Vehicle.AgvcConnectorConfig.ReserveLengthMeter < 0) return false;
+            int reserveOkSectionsTotalLength = GetReserveOkSectionsTotalLength();
+            return reserveOkSectionsTotalLength >= Vehicle.AgvcConnectorConfig.ReserveLengthMeter * 1000;
+        }
+        private string QueMapSectionsToString(ConcurrentQueue<MapSection> aQue)
+        {
+            try
+            {
+                var sectionIds = aQue.ToList().Select(x => string.IsNullOrEmpty(x.Id) ? "" : x.Id).ToList();
+                return string.Concat("[", string.Join(", ", sectionIds), "]");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                return "";
+            }
+        }
+        private int GetReserveOkSectionsTotalLength()
+        {
+            double result = 0;
+            List<MapSection> reserveOkSections = new List<MapSection>(queReserveOkSections);
+            foreach (var item in reserveOkSections)
+            {
+                result += item.HeadToTailDistance;
+            }
+            return (int)result;
+        }
+        public void ClearNeedReserveSections()
+        {
+            queNeedReserveSections = new ConcurrentQueue<MapSection>();
+        }
+        public void ClearGotReserveOkSections()
+        {
+            queReserveOkSections = new ConcurrentQueue<MapSection>();
+        }
+        public void SetupNeedReserveSections()
+        {
+            try
+            {
+                queNeedReserveSections = new ConcurrentQueue<MapSection>(Vehicle.AseMovingGuide.MovingSections);
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[設定 所需路權] SetupNeedReserveSections[{QueMapSectionsToString(queNeedReserveSections)}][Count={queNeedReserveSections.Count}]");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+        public List<MapSection> GetNeedReserveSections()
+        {
+            return queNeedReserveSections.ToList();
+        }
+        public List<MapSection> GetReserveOkSections()
+        {
+            return new List<MapSection>(queReserveOkSections);
+        }
+        public void DequeueGotReserveOkSections()
+        {
+            if (queReserveOkSections.IsEmpty)
+            {
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector :queReserveOkSections.Count=[{queReserveOkSections.Count}], Dequeue Got Reserve Ok Sections Fail.");
+                return;
+            }
+            else
+            {
+                queReserveOkSections.TryDequeue(out MapSection passSection);
+                string passSectionId = passSection.Id;
+                OnPassReserveSectionEvent?.Invoke(this, passSectionId);
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : passSectionId = [{passSectionId}].");
+            }
+        }
+        private void RefreshPartMoveSections()
+        {
+            try
+            {
+                if (quePartMoveSections.Any())
+                {
+                    List<MapSection> partMoveSections = quePartMoveSections.ToList();
+                    for (int i = 0; i < partMoveSections.Count; i++)
+                    {
+                        EnumIsExecute enumKeepOrGo = EnumIsExecute.Keep;
+                        // End of PartMoveSections => Go
+                        if (i + 1 == partMoveSections.Count)
+                        {
+                            enumKeepOrGo = EnumIsExecute.Go;
+
+                        } //partMoveSections[i] and partMoveSections[i+1] exist
+                        else if (HeadDirectionChange(partMoveSections[i + 1]))
+                        {
+                            enumKeepOrGo = EnumIsExecute.Go;
+                        }
+                        else if (partMoveSections[i].Type != partMoveSections[i + 1].Type) //Section Type Change => Go
+                        {
+                            enumKeepOrGo = EnumIsExecute.Go;
+                        }
+
+                        mainFlowHandler.AgvcConnector_GetReserveOkUpdateMoveControlNextPartMovePosition(partMoveSections[i], enumKeepOrGo);
+                        SpinWait.SpinUntil(() => false, 50);
+                    }
+                    quePartMoveSections = new ConcurrentQueue<MapSection>();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+        private bool HeadDirectionChange(MapSection mapSection)
+        {
+            return mapSection.HeadAddress.VehicleHeadAngle != mapSection.TailAddress.VehicleHeadAngle;
+        }
+
 
         #endregion
 
@@ -1905,6 +1912,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取得 路線] ID_38_GUIDE_INFO_RESPONSE.");
 
                 ShowGuideInfoResponse(response);
+
                 Vehicle.AseMovingGuide = new AseMovingGuide(response);
                 //ClearAllReserve();
                 mainFlowHandler.SetupAseMovingGuideMovingSections();
@@ -2234,7 +2242,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void SendRecv_Cmd136_CstIdReadReport2()
         {
-            AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);          
+            AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
             AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.TransferCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
 
             try

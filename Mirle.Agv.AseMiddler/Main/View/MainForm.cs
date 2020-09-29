@@ -916,25 +916,27 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                switch (mainFlowHandler.GetCurrentTransferStepType())
-                {
-                    case EnumTransferStepType.Move:
-                        ucCurrentTransferStepType.TagValue = "Move";
-                        break;
-                    case EnumTransferStepType.MoveToCharger:
-                        ucCurrentTransferStepType.TagValue = "MV2C";
-                        break;
-                    case EnumTransferStepType.Load:
-                        ucCurrentTransferStepType.TagValue = "LD";
-                        break;
-                    case EnumTransferStepType.Unload:
-                        ucCurrentTransferStepType.TagValue = "UD";
-                        break;
-                    case EnumTransferStepType.Empty:
-                    default:
-                        ucCurrentTransferStepType.TagValue = "Idle";
-                        break;
-                }
+                //switch (mainFlowHandler.GetCurrentTransferStepType())
+                //{
+                //    case EnumTransferStepType.Move:
+                //        ucCurrentTransferStepType.TagValue = "Move";
+                //        break;
+                //    case EnumTransferStepType.MoveToCharger:
+                //        ucCurrentTransferStepType.TagValue = "MV2C";
+                //        break;
+                //    case EnumTransferStepType.Load:
+                //        ucCurrentTransferStepType.TagValue = "LD";
+                //        break;
+                //    case EnumTransferStepType.Unload:
+                //        ucCurrentTransferStepType.TagValue = "UD";
+                //        break;
+                //    case EnumTransferStepType.Empty:
+                //    default:
+                //        ucCurrentTransferStepType.TagValue = "Idle";
+                //        break;
+                //}
+
+                ucCurrentTransferStepType.TagValue = Vehicle.TransferCommand.TransferStep.ToString();
 
                 ucCommanding.TagValue = Vehicle.ActionStatus.ToString();
                 ucErrorFlag.TagValue = Vehicle.ErrorStatus.ToString();
