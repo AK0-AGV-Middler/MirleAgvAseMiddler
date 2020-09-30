@@ -29,9 +29,7 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public string LotId { get; set; } = "";
         public string LoadPortId { get; set; } = "";
         public string UnloadPortId { get; set; } = "";
-
         public bool IsRobotEnd { get; set; } = false;
-
         public bool IsStopAndClear { get; set; } = false;
         public bool IsLoadArrivalReply { get; set; } = false;
         public bool IsLoadCompleteReply { get; set; } = false;

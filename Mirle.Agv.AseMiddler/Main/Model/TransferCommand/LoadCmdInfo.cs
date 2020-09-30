@@ -14,6 +14,6 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         {
             this.type = EnumTransferStepType.Load;
             this.PortAddressId = agvcTransCmd.LoadAddressId;
-        }
+        }    
     }
 }

@@ -20,7 +20,6 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         {
             this.CassetteId = agvcTransCmd.CassetteId;
             this.SlotNumber = agvcTransCmd.SlotNumber;
-        }
-
+        }    
     }
 }

@@ -2240,7 +2240,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void SendRecv_Cmd136_CstIdReadReport2()
+        public void SendRecv_Cmd136_CstIdReadReport()
         {
             AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
             AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.TransferCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
@@ -2255,39 +2255,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
                 report.BCRReadResult = Vehicle.TransferCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.LeftReadResult : Vehicle.RightReadResult;
                 report.CmdID = Vehicle.TransferCommand.CommandId; //200525 dabid#
-
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨階段 CST ID 上報] BCRReadResult : {report.BCRReadResult}"); //200525 dabid+
-
-                WrapperMessage wrapper = new WrapperMessage();
-                wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
-                wrapper.ImpTransEventRep = report;
-
-                SendWrapperToSchedule(wrapper, false, true);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-
-        public void SendRecv_Cmd136_CstIdReadReport()
-        {
-
-            AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
-            RobotCommand robotCommand = (RobotCommand)mainFlowHandler.GetCurTransferStep();
-            AseCarrierSlotStatus aseCarrierSlotStatus = robotCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
-
-            try
-            {
-                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
-                report.EventType = EventType.Bcrread;
-                report.CSTID = aseCarrierSlotStatus.CarrierId;
-                report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
-                report.CurrentSecID = aseMoveStatus.LastSection.Id;
-                report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
-                report.BCRReadResult = robotCommand.SlotNumber == EnumSlotNumber.L ? Vehicle.LeftReadResult : Vehicle.RightReadResult;
-                report.CmdID = robotCommand.CmdId; //200525 dabid#
 
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨階段 CST ID 上報] BCRReadResult : {report.BCRReadResult}"); //200525 dabid+
 
