@@ -11,7 +11,6 @@ using Mirle.Tools;
 
 namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 {
-
     public class MoveCmdInfo : TransferStep
     {
         public MapAddress EndAddress { get; set; } = new MapAddress();
@@ -23,14 +22,11 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         }
     }
 
-
     public class MoveToChargerCmdInfo : MoveCmdInfo
     {
         public MoveToChargerCmdInfo(MapAddress endAddress, string cmdId) : base(endAddress, cmdId)
         {
             type = EnumTransferStepType.MoveToCharger;
         }
-
-
     }
 }

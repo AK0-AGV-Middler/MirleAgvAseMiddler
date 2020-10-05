@@ -836,10 +836,8 @@ namespace Mirle.Agv.AseMiddler.View
         {
             try
             {
-                ucTransferIndex.TagValue = mainFlowHandler.TransferStepsIndex.ToString();
-                ucTransferSteps.TagValue = mainFlowHandler.GetTransferStepsCount().ToString();
-                ucTransferStepType.TagValue = mainFlowHandler.GetCurrentTransferStepType().ToString();
-                ucGoNextStep.TagValue = mainFlowHandler.GoNextTransferStep.ToString();
+                ucTransferCommandEnrouteState.TagValue = Vehicle.TransferCommand.EnrouteState.ToString();
+                ucTransferCommandTransferStep.TagValue = Vehicle.TransferCommand.TransferStep.ToString();
             }
             catch (Exception ex)
             {

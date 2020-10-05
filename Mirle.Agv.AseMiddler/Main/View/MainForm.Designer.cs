@@ -121,6 +121,7 @@ namespace Mirle.Agv.AseMiddler.View
             this.ucRobotSlotLId = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucRobotRobotState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageBatteryState = new System.Windows.Forms.TabPage();
+            this.ucAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucChargeCount = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucCurransferStepType = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucStepsCount = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -141,7 +142,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.labException = new System.Windows.Forms.Label();
             this.txtVisitTransferCount = new System.Windows.Forms.Label();
             this.lab1 = new System.Windows.Forms.Label();
-            this.ucVerticalLabelText7 = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsCharging = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsHome = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.ucIsSleepByAskReserveFail = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
@@ -154,10 +154,8 @@ namespace Mirle.Agv.AseMiddler.View
             this.txtAgvcConnectorAbnormal = new System.Windows.Forms.Label();
             this.txtRobotAbnormal = new System.Windows.Forms.Label();
             this.txtMoveControlAbnormal = new System.Windows.Forms.Label();
-            this.ucGoNextStep = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucTransferStepType = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucTransferSteps = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
-            this.ucTransferIndex = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferCommandTransferStep = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
+            this.ucTransferCommandEnrouteState = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.pageReserveInfo = new System.Windows.Forms.TabPage();
             this.gbReserve = new System.Windows.Forms.GroupBox();
             this.lbxReserveOkSections = new System.Windows.Forms.ListBox();
@@ -178,7 +176,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.btnKeyInSoc = new System.Windows.Forms.Button();
             this.numSoc = new System.Windows.Forms.NumericUpDown();
-            this.ucAddress = new Mirle.Agv.AseMiddler.UcVerticalLabelText();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -1206,6 +1203,17 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageBatteryState.Text = "Battery";
             this.pageBatteryState.UseVisualStyleBackColor = true;
             // 
+            // ucAddress
+            // 
+            this.ucAddress.Location = new System.Drawing.Point(347, 447);
+            this.ucAddress.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
+            this.ucAddress.Name = "ucAddress";
+            this.ucAddress.Size = new System.Drawing.Size(135, 65);
+            this.ucAddress.TabIndex = 53;
+            this.ucAddress.TagColor = System.Drawing.Color.Black;
+            this.ucAddress.TagName = "Address";
+            this.ucAddress.TagValue = " 70.0";
+            // 
             // ucChargeCount
             // 
             this.ucChargeCount.Location = new System.Drawing.Point(347, 353);
@@ -1387,7 +1395,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageVehicleState.Controls.Add(this.labException);
             this.pageVehicleState.Controls.Add(this.txtVisitTransferCount);
             this.pageVehicleState.Controls.Add(this.lab1);
-            this.pageVehicleState.Controls.Add(this.ucVerticalLabelText7);
             this.pageVehicleState.Controls.Add(this.ucIsCharging);
             this.pageVehicleState.Controls.Add(this.ucIsHome);
             this.pageVehicleState.Controls.Add(this.ucIsSleepByAskReserveFail);
@@ -1395,10 +1402,8 @@ namespace Mirle.Agv.AseMiddler.View
             this.pageVehicleState.Controls.Add(this.ucIsMoveStep);
             this.pageVehicleState.Controls.Add(this.ucIsAskReservePause);
             this.pageVehicleState.Controls.Add(this.groupBox3);
-            this.pageVehicleState.Controls.Add(this.ucGoNextStep);
-            this.pageVehicleState.Controls.Add(this.ucTransferStepType);
-            this.pageVehicleState.Controls.Add(this.ucTransferSteps);
-            this.pageVehicleState.Controls.Add(this.ucTransferIndex);
+            this.pageVehicleState.Controls.Add(this.ucTransferCommandTransferStep);
+            this.pageVehicleState.Controls.Add(this.ucTransferCommandEnrouteState);
             this.pageVehicleState.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.pageVehicleState.Location = new System.Drawing.Point(4, 29);
             this.pageVehicleState.Name = "pageVehicleState";
@@ -1433,18 +1438,6 @@ namespace Mirle.Agv.AseMiddler.View
             this.lab1.Size = new System.Drawing.Size(83, 20);
             this.lab1.TabIndex = 72;
             this.lab1.Text = "Exception";
-            // 
-            // ucVerticalLabelText7
-            // 
-            this.ucVerticalLabelText7.Location = new System.Drawing.Point(454, 153);
-            this.ucVerticalLabelText7.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
-            this.ucVerticalLabelText7.Name = "ucVerticalLabelText7";
-            this.ucVerticalLabelText7.Size = new System.Drawing.Size(135, 65);
-            this.ucVerticalLabelText7.TabIndex = 71;
-            this.ucVerticalLabelText7.TagColor = System.Drawing.Color.Black;
-            this.ucVerticalLabelText7.TagName = "StepsCount";
-            this.ucVerticalLabelText7.TagValue = " 70.0";
-            this.ucVerticalLabelText7.Visible = false;
             // 
             // ucIsCharging
             // 
@@ -1581,45 +1574,25 @@ namespace Mirle.Agv.AseMiddler.View
             this.txtMoveControlAbnormal.Text = "走行";
             this.txtMoveControlAbnormal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // ucGoNextStep
+            // ucTransferCommandTransferStep
             // 
-            this.ucGoNextStep.Location = new System.Drawing.Point(148, 153);
-            this.ucGoNextStep.Name = "ucGoNextStep";
-            this.ucGoNextStep.Size = new System.Drawing.Size(135, 65);
-            this.ucGoNextStep.TabIndex = 1;
-            this.ucGoNextStep.TagColor = System.Drawing.Color.Black;
-            this.ucGoNextStep.TagName = "GoNext";
-            this.ucGoNextStep.TagValue = "-1";
+            this.ucTransferCommandTransferStep.Location = new System.Drawing.Point(148, 10);
+            this.ucTransferCommandTransferStep.Name = "ucTransferCommandTransferStep";
+            this.ucTransferCommandTransferStep.Size = new System.Drawing.Size(135, 65);
+            this.ucTransferCommandTransferStep.TabIndex = 1;
+            this.ucTransferCommandTransferStep.TagColor = System.Drawing.Color.Black;
+            this.ucTransferCommandTransferStep.TagName = "TransferStep";
+            this.ucTransferCommandTransferStep.TagValue = "None";
             // 
-            // ucTransferStepType
+            // ucTransferCommandEnrouteState
             // 
-            this.ucTransferStepType.Location = new System.Drawing.Point(148, 10);
-            this.ucTransferStepType.Name = "ucTransferStepType";
-            this.ucTransferStepType.Size = new System.Drawing.Size(135, 65);
-            this.ucTransferStepType.TabIndex = 1;
-            this.ucTransferStepType.TagColor = System.Drawing.Color.Black;
-            this.ucTransferStepType.TagName = "TransType";
-            this.ucTransferStepType.TagValue = "None";
-            // 
-            // ucTransferSteps
-            // 
-            this.ucTransferSteps.Location = new System.Drawing.Point(148, 83);
-            this.ucTransferSteps.Name = "ucTransferSteps";
-            this.ucTransferSteps.Size = new System.Drawing.Size(135, 65);
-            this.ucTransferSteps.TabIndex = 1;
-            this.ucTransferSteps.TagColor = System.Drawing.Color.Black;
-            this.ucTransferSteps.TagName = "TransferSteps";
-            this.ucTransferSteps.TagValue = "-1";
-            // 
-            // ucTransferIndex
-            // 
-            this.ucTransferIndex.Location = new System.Drawing.Point(148, 225);
-            this.ucTransferIndex.Name = "ucTransferIndex";
-            this.ucTransferIndex.Size = new System.Drawing.Size(135, 65);
-            this.ucTransferIndex.TabIndex = 1;
-            this.ucTransferIndex.TagColor = System.Drawing.Color.Black;
-            this.ucTransferIndex.TagName = "TransIndex";
-            this.ucTransferIndex.TagValue = "-1";
+            this.ucTransferCommandEnrouteState.Location = new System.Drawing.Point(148, 83);
+            this.ucTransferCommandEnrouteState.Name = "ucTransferCommandEnrouteState";
+            this.ucTransferCommandEnrouteState.Size = new System.Drawing.Size(135, 65);
+            this.ucTransferCommandEnrouteState.TabIndex = 1;
+            this.ucTransferCommandEnrouteState.TagColor = System.Drawing.Color.Black;
+            this.ucTransferCommandEnrouteState.TagName = "EnrouteState";
+            this.ucTransferCommandEnrouteState.TagValue = "-1";
             // 
             // pageReserveInfo
             // 
@@ -1857,17 +1830,6 @@ namespace Mirle.Agv.AseMiddler.View
             0,
             0});
             // 
-            // ucAddress
-            // 
-            this.ucAddress.Location = new System.Drawing.Point(347, 447);
-            this.ucAddress.Margin = new System.Windows.Forms.Padding(8, 12, 8, 12);
-            this.ucAddress.Name = "ucAddress";
-            this.ucAddress.Size = new System.Drawing.Size(135, 65);
-            this.ucAddress.TabIndex = 53;
-            this.ucAddress.TagColor = System.Drawing.Color.Black;
-            this.ucAddress.TagName = "Address";
-            this.ucAddress.TagValue = " 70.0";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -2022,10 +1984,8 @@ namespace Mirle.Agv.AseMiddler.View
         private UcVerticalLabelText ucRobotSlotRState;
         private UcVerticalLabelText ucRobotSlotLState;
         private System.Windows.Forms.Button btnRefreshRobotState;
-        private UcVerticalLabelText ucGoNextStep;
-        private UcVerticalLabelText ucTransferStepType;
-        private UcVerticalLabelText ucTransferSteps;
-        private UcVerticalLabelText ucTransferIndex;
+        private UcVerticalLabelText ucTransferCommandTransferStep;
+        private UcVerticalLabelText ucTransferCommandEnrouteState;
         private UcVerticalLabelText ucMoveMoveState;
         private System.Windows.Forms.TabPage pageBasicState;
         private System.Windows.Forms.TabPage pageReserveInfo;
@@ -2074,7 +2034,6 @@ namespace Mirle.Agv.AseMiddler.View
         private UcVerticalLabelText ucIsVehicleIdle;
         private UcVerticalLabelText ucAutoState;
         private UcVerticalLabelText ucChargeCount;
-        private UcVerticalLabelText ucVerticalLabelText7;
         private UcVerticalLabelText ucIsCharging;
         private UcVerticalLabelText ucIsHome;
         private UcVerticalLabelText ucIsSleepByAskReserveFail;

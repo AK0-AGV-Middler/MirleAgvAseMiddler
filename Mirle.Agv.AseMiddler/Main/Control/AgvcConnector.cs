@@ -611,10 +611,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             ClearGotReserveOkSections();
             mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[清除 所有路權]  ClearAllReserve.");
         }
-        public void AskGuideAddressesAndSections(MoveCmdInfo moveCmdInfo)
-        {
-            Send_Cmd138_GuideInfoRequest(Vehicle.AseMoveStatus.LastAddress.Id, moveCmdInfo.EndAddress.Id);
-        }
         public void AskGuideAddressesAndSections(string endAddressId)
         {
             Send_Cmd138_GuideInfoRequest(Vehicle.AseMoveStatus.LastAddress.Id, endAddressId);
@@ -702,7 +698,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[逾時] AskAllSectionsReserveInOnce send wait timeout[{mainFlowHandler.GetCurTransferStep().CmdId}]");
+                    mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[逾時] AskAllSectionsReserveInOnce send wait timeout[{Vehicle.TransferCommand.CommandId}]");
                     OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
                 }
 
@@ -744,7 +740,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 reserveInfos.Add(reserveInfo);
             }
         }
-
 
         // Thd Ask Reserve     
         public void PauseAskReserve()
@@ -1729,7 +1724,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].EnrouteState : CommandState.None;
             report.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
             report.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
-            report.CurrentExcuteCmdId = mainFlowHandler.GetCurTransferStep().CmdId;
+            report.CurrentExcuteCmdId = Vehicle.TransferCommand.CommandId;
             report.ActionStatus = Vehicle.ActionStatus;
 
             report.HasCstL = Vehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
@@ -1828,7 +1823,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
                 response.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
                 response.ActionStatus = Vehicle.ActionStatus;
-                response.CurrentExcuteCmdId = mainFlowHandler.GetCurTransferStep().CmdId;
+                response.CurrentExcuteCmdId = Vehicle.TransferCommand.CommandId;
 
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.StatusReqRespFieldNumber;
@@ -1849,15 +1844,15 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
 
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[收到 暫停] [{receive.EventType}][{receive.PauseType}].");
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[收到.暫停] [{receive.EventType}][{receive.PauseType}].");
 
                 switch (receive.EventType)
                 {
-                    case PauseEvent.Continue:
-                        mainFlowHandler.AgvcConnector_OnCmdResumeEvent(e.iSeqNum, receive.EventType, receive.PauseType);
-                        break;
                     case PauseEvent.Pause:
-                        mainFlowHandler.AgvcConnector_OnCmdPauseEvent(e.iSeqNum, receive.EventType, receive.PauseType);
+                        mainFlowHandler.AgvcConnector_OnCmdPauseEvent(e.iSeqNum, receive.PauseType);
+                        break;
+                    case PauseEvent.Continue:
+                        mainFlowHandler.AgvcConnector_OnCmdResumeEvent(e.iSeqNum, receive.PauseType);
                         break;
                     default:
                         break;
@@ -1894,7 +1889,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 ID_38_GUIDE_INFO_RESPONSE response = (ID_38_GUIDE_INFO_RESPONSE)e.objPacket;
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取得 路線] ID_38_GUIDE_INFO_RESPONSE.");
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取得.路線] ID_38_GUIDE_INFO_RESPONSE.");
 
                 ShowGuideInfoResponse(response);
 
@@ -2049,7 +2044,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private void ReceiveSent_Cmd36_TransferEventResponse(ID_36_TRANS_EVENT_RESPONSE response, ID_136_TRANS_EVENT_REP report)
         {
             try
@@ -2216,7 +2210,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         public void SendRecv_Cmd136_CstIdReadReport()
         {
             AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
@@ -2306,7 +2299,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private CompleteStatus GetCancelCompleteStatus(ReplyActionType replyAction, CompleteStatus completeStatus)
         {
             switch (replyAction)
@@ -2345,7 +2337,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
                 aseCarrierSlotStatus.CarrierId = receive.NEWCSTID;
                 OnRenameCassetteIdEvent?.Invoke(this, aseCarrierSlotStatus);
-                //mainFlowHandler.RenameCstId(EnumSlotNumber.L, receive.NEWCSTID);
                 result = true;
             }
             else if (Vehicle.AseCarrierSlotR.CarrierId == receive.OLDCSTID.Trim())
@@ -2354,8 +2345,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 aseCarrierSlotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
                 aseCarrierSlotStatus.CarrierId = receive.NEWCSTID;
                 OnRenameCassetteIdEvent?.Invoke(this, aseCarrierSlotStatus);
-
-                //mainFlowHandler.RenameCstId(EnumSlotNumber.R, receive.NEWCSTID);
                 result = true;
             }
 
@@ -2381,7 +2370,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private void Send_Cmd134_TransferEventReport(EventType type)
         {
             AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);

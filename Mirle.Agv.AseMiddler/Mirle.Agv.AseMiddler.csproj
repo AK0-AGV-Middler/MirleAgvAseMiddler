@@ -138,6 +138,7 @@
     <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
     <Compile Include="Main\Model\Map\MapVector.cs" />
     <Compile Include="Customer\ASE\Model\AseMoveStatus.cs" />
+    <Compile Include="Main\Model\TransferCommand\MoveCmdInfo.cs" />
     <Compile Include="Main\Model\TransferCommand\RobotCommand.cs" />
     <Compile Include="Main\Model\VehicleIntegrateStatus.cs" />
     <Compile Include="Main\View\ConfigForm.cs">
@@ -159,7 +160,6 @@
     <Compile Include="Main\Model\Map\MapPosition.cs" />
     <Compile Include="Main\Model\TransferCommand\EmptyTransCmd.cs" />
     <Compile Include="Main\Model\TransferCommand\LoadCmdInfo.cs" />
-    <Compile Include="Main\Model\TransferCommand\MoveCmdInfo.cs" />
     <Compile Include="Main\Model\TransferCommand\TransferStep.cs" />
     <Compile Include="Main\Model\TransferCommand\UnloadCmdInfo.cs" />
     <Compile Include="Main\View\SingleExecuteWarnForm.cs">
