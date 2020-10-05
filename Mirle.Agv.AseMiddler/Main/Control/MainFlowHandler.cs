@@ -1324,6 +1324,23 @@ namespace Mirle.Agv.AseMiddler.Controller
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[詢問 路線] AskGuideAddressesAndSections.");
                         agvcConnector.AskGuideAddressesAndSections(endAddressId);
                     }
+                    else
+                    {
+                        SetAlarmFromAgvm(58);
+                        Thread.Sleep(3000);
+                        switch (Vehicle.TransferCommand.EnrouteState)
+                        {
+                            case CommandState.LoadEnroute:
+                                Vehicle.TransferCommand.TransferStep = EnumTransferStep.MoveToLoad;
+                                break;
+                            case CommandState.None:
+                            case CommandState.UnloadEnroute:
+                                Vehicle.TransferCommand.TransferStep = EnumTransferStep.MoveToUnload;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
 
             }
@@ -2124,7 +2141,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 AseMoveStatus moveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
                 var address = moveStatus.LastAddress;
                 var pos = moveStatus.LastMapPosition;
-                if (address.IsCharger())
+                if (address.IsCharger() || Vehicle.IsCharging)
                 {
                     agvcConnector.ChargHandshaking();
 
