@@ -30,12 +30,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<string> OnCmdSendEvent;
         public event EventHandler<string> OnPassReserveSectionEvent;
         public event EventHandler<AseCarrierSlotStatus> OnRenameCassetteIdEvent;
-        public event EventHandler OnStopClearAndResetEvent;
-        public event EventHandler OnAgvcAcceptLoadArrivalEvent;
-        public event EventHandler OnAgvcAcceptUnloadArrivalEvent;
-        public event EventHandler OnAgvcAcceptLoadCompleteEvent;
-        public event EventHandler OnAgvcAcceptBcrReadReply;
-        public event EventHandler OnAgvcAcceptUnloadCompleteEvent;
         public event EventHandler OnSendRecvTimeoutEvent;
         public event EventHandler<EnumSlotNumber> OnCstRenameEvent;
 
@@ -48,7 +42,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         private ConcurrentQueue<MapSection> quePartMoveSections = new ConcurrentQueue<MapSection>();
         private ConcurrentQueue<MapSection> queNeedReserveSections = new ConcurrentQueue<MapSection>();
         public ConcurrentQueue<MapSection> queReserveOkSections = new ConcurrentQueue<MapSection>();
-        private bool ReserveOkAskNext { get; set; } = false;
         public bool IsAskReservePause { get; private set; } = false;
         private MapPosition lastReportPosition { get; set; } = new MapPosition();
 
@@ -66,8 +59,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public TcpIpAgent ClientAgent { get; private set; }
         public string AgvcConnectorAbnormalMsg { get; set; } = "";
         public bool IsAgvcReplyBcrRead { get; set; } = false;
-
-        private bool IsCmd132Reply = false;
 
         public AgvcConnector(MainFlowHandler mainFlowHandler)
         {
@@ -595,7 +586,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                                 if (scheduleWrapper.RetrySendWaitCounter <= 0)
                                 {
                                     OnSendRecvTimeoutEvent?.Invoke(this, default(EventArgs));
-                                    IsCmd132Reply = true;
                                 }
                                 else
                                 {
@@ -1364,12 +1354,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public void TransferComplete(AgvcTransCmd agvcTransCmd)
         {
-            IsCmd132Reply = false;
             SendRecv_Cmd132_TransferCompleteReport(agvcTransCmd, 0);
-            //while (!IsCmd132Reply)
-            //{
-            //    Thread.Sleep(500);
-            //}
         }
         public void LoadComplete(string cmdId)
         {
@@ -1972,73 +1957,65 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             try
             {
-                int replyCode = 0;
                 ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
 
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : Get [{receive.CancelAction}] command");
 
-                var cmdId = receive.CmdID.Trim();
+                if (receive.CancelAction == CancelActionType.CmdEms)
+                {
+                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, (int)EnumAgvcReplyCode.Accept, receive);
+                    mainFlowHandler.SetAlarmFromAgvm(000037);
+                    mainFlowHandler.StopClearAndReset();
+                    return;
+                }
 
                 if (Vehicle.mapTransferCommands.Count == 0)
                 {
-                    replyCode = 1;
-                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                    mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : Vehicle Idle, reject [{receive.CancelAction}].");
-                    return;
+                    throw new Exception($"AgvcConnector : Vehicle Idle, reject [{receive.CancelAction}].");
                 }
 
-                if (receive.CancelAction == CancelActionType.CmdEms)
-                {
-                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                    mainFlowHandler.SetAlarmFromAgvm(000037);
-                    OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
-                    return;
-                }
+                var cmdId = receive.CmdID.Trim();
 
                 if (!Vehicle.mapTransferCommands.ContainsKey(cmdId))
                 {
-                    replyCode = 1;
-                    Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                    mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : No [{cmdId}] to cancel, reject [{receive.CancelAction}].");
-                    return;
+                    throw new Exception($"AgvcConnector : No [{cmdId}] to cancel, reject [{receive.CancelAction}].");
                 }
 
                 switch (receive.CancelAction)
                 {
                     case CancelActionType.CmdCancel:
                     case CancelActionType.CmdAbort:
+                        Send_Cmd137_TransferCancelResponse(e.iSeqNum, (int)EnumAgvcReplyCode.Accept, receive);
                         mainFlowHandler.AgvcConnector_OnCmdCancelAbortEvent(e.iSeqNum, receive);
                         break;
                     case CancelActionType.CmdCancelIdMismatch:
                     case CancelActionType.CmdCancelIdReadFailed:
-                        mainFlowHandler.ResetAllAlarmsFromAgvm();
-                        OnStopClearAndResetEvent?.Invoke(this, default(EventArgs));
-                        break;
                     case CancelActionType.CmdNone:
                     default:
-                        replyCode = 1;
-                        Send_Cmd137_TransferCancelResponse(e.iSeqNum, replyCode, receive);
-                        break;
+                        throw new Exception($"AgvcConnector : Reject Unkonw CancelAction [{receive.CancelAction}].");
                 }
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+                ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
+                Send_Cmd137_TransferCancelResponse(e.iSeqNum, (int)EnumAgvcReplyCode.Reject, receive);
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
         public void Send_Cmd137_TransferCancelResponse(ushort seqNum, int replyCode, ID_37_TRANS_CANCEL_REQUEST receive)
         {
             try
             {
-                ID_137_TRANS_CANCEL_RESPONSE iD_137_TRANS_CANCEL_RESPONSE = new ID_137_TRANS_CANCEL_RESPONSE();
-                iD_137_TRANS_CANCEL_RESPONSE.CmdID = receive.CmdID;
-                iD_137_TRANS_CANCEL_RESPONSE.CancelAction = receive.CancelAction;
-                iD_137_TRANS_CANCEL_RESPONSE.ReplyCode = replyCode;
+                ID_137_TRANS_CANCEL_RESPONSE response = new ID_137_TRANS_CANCEL_RESPONSE();
+                response.CmdID = receive.CmdID;
+                response.CancelAction = receive.CancelAction;
+                response.ReplyCode = replyCode;
 
                 WrapperMessage wrapper = new WrapperMessage();
                 wrapper.ID = WrapperMessage.TransCancelRespFieldNumber;
                 wrapper.SeqNum = seqNum;
-                wrapper.TransCancelResp = iD_137_TRANS_CANCEL_RESPONSE;
+                wrapper.TransCancelResp = response;
 
                 SendWrapperToSchedule(wrapper, true, false);
             }
@@ -2444,14 +2421,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                 int waitTime = response.WaitTime;
                 SpinWait.SpinUntil(() => false, waitTime);
                 StatusChangeReport();
-                IsCmd132Reply = true;
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         public void SendRecv_Cmd132_TransferCompleteReport(AgvcTransCmd agvcTransCmd, int delay = 0)
         {
             try
@@ -2499,7 +2474,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 if (Vehicle.mapTransferCommands.ContainsKey(transRequest.CmdID.Trim()))
                 {
                     mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[拒絕搬送命令] Reject Transfer Command: {transRequest.CommandAction}. Same command id is working.");
-                    Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, 2, "Unknow command.");
+                    Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, (int)EnumAgvcReplyCode.Unknow, "Unknow command.");
                     return;
                 }
 
@@ -2518,7 +2493,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                         return;
                     default:
                         mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[拒絕搬送命令] Reject Transfer Command: {transRequest.CommandAction}");
-                        Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, 1, "Unknow command.");
+                        Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, (int)EnumAgvcReplyCode.Reject, "Unknow command.");
                         return;
                 }
             }

@@ -237,8 +237,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 agvcConnector.OnInstallTransferCommandEvent += AgvcConnector_OnInstallTransferCommandEvent;
                 agvcConnector.OnAvoideRequestEvent += AgvcConnector_OnAvoideRequestEvent;
                 agvcConnector.OnRenameCassetteIdEvent += AgvcConnector_OnRenameCassetteIdEvent;
-                agvcConnector.OnStopClearAndResetEvent += AgvcConnector_OnStopClearAndResetEvent;
-
 
                 agvcConnector.OnSendRecvTimeoutEvent += AgvcConnector_OnSendRecvTimeoutEvent;
                 agvcConnector.OnCstRenameEvent += AgvcConnector_OnCstRenameEvent;
@@ -249,9 +247,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 asePackage.ImportantPspLog += AsePackage_ImportantPspLog;
 
                 //來自IRobotControl的取放貨結束訊息, Send to MainFlow(this)'middleAgent'mapHandler
-                asePackage.OnRobotInterlockErrorEvent += AsePackage_OnRobotInterlockErrorEvent;
-                asePackage.OnRobotCommandFinishEvent += AsePackage_OnRobotCommandFinishEvent;
-                asePackage.OnRobotCommandErrorEvent += AsePackage_OnRobotCommandErrorEvent;
+                //asePackage.OnRobotInterlockErrorEvent += AsePackage_OnRobotInterlockErrorEvent;
+                //asePackage.OnRobotCommandFinishEvent += AsePackage_OnRobotCommandFinishEvent;
+                //asePackage.OnRobotCommandErrorEvent += AsePackage_OnRobotCommandErrorEvent;
+                asePackage.OnRobotEndEvent += AsePackage_OnRobotEndEvent;
 
                 //來自IBatterysControl的電量改變訊息, Send to middleAgent
                 asePackage.OnBatteryPercentageChangeEvent += agvcConnector.AseBatteryControl_OnBatteryPercentageChangeEvent;
@@ -351,6 +350,9 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                     switch (Vehicle.TransferCommand.TransferStep)
                     {
+                        case EnumTransferStep.Idle:
+                            Idle();
+                            break;
                         case EnumTransferStep.MoveToLoad:
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令.移動.準備.至取貨站] MoveToLoad.");
                             MoveToAddress(Vehicle.TransferCommand.LoadAddressId, EnumMoveToEndReference.Load);
@@ -363,6 +365,16 @@ namespace Mirle.Agv.AseMiddler.Controller
                         case EnumTransferStep.MoveToAvoid:
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令.移動.準備.至避車站] MoveToAvoid.");
                             MoveToAddress(Vehicle.AseMovingGuide.ToAddressId, EnumMoveToEndReference.Avoid);
+                            break;
+                        case EnumTransferStep.AvoidMoveComplete:
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[避車.到站.回報.完成] AvoidMoveComplete.");
+                            AvoidMoveComplete();
+                            break;
+                        case EnumTransferStep.MoveToAddressWaitEnd:
+                            if (Vehicle.AseMoveStatus.IsMoveEnd)
+                            {
+                                MoveToAddressEnd();
+                            }
                             break;
                         case EnumTransferStep.LoadArrival:
                             LoadArrival();
@@ -377,11 +389,17 @@ namespace Mirle.Agv.AseMiddler.Controller
                         case EnumTransferStep.Load:
                             Load();
                             break;
+                        case EnumTransferStep.LoadWaitEnd:
+                            if (Vehicle.TransferCommand.IsRobotEnd)
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.動作.結束] LoadComplete.");
+                                LoadComplete();
+                            }
+                            break;
                         case EnumTransferStep.WaitLoadCompleteReply:
                             if (Vehicle.TransferCommand.IsLoadCompleteReply)
                             {
                                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[取貨.完成.回報.成功] AgvcConnector_LoadCompleteReply.");
-
                                 Vehicle.TransferCommand.TransferStep = EnumTransferStep.WaitCstIdReadReply;
                                 Vehicle.TransferCommand.IsCstIdReadReply = false;
                                 agvcConnector.SendRecv_Cmd136_CstIdReadReport();
@@ -409,6 +427,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                         case EnumTransferStep.Unload:
                             Unload();
                             break;
+                        case EnumTransferStep.UnloadWaitEnd:
+                            if (Vehicle.TransferCommand.IsRobotEnd)
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨.動作.結束] UnloadComplete.");
+                                UnloadComplete();
+                            }
+                            break;
                         case EnumTransferStep.WaitUnloadCompleteReply:
                             if (Vehicle.TransferCommand.IsUnloadCompleteReply)
                             {
@@ -420,41 +445,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                         case EnumTransferStep.TransferComplete:
                             TransferCommandComplete();
                             break;
-                        case EnumTransferStep.MoveToAddressWaitEnd:
-                            if (Vehicle.AseMoveStatus.IsMoveEnd)
-                            {
-                                MoveToAddressEnd();
-                            }
-                            break;
-                        case EnumTransferStep.LoadWaitEnd:
-                            if (Vehicle.TransferCommand.IsRobotEnd)
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.動作.結束] LoadComplete.");
-                                LoadComplete();
-                            }
-                            break;
-                        case EnumTransferStep.UnloadWaitEnd:
-                            if (Vehicle.TransferCommand.IsRobotEnd)
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨.動作.結束] UnloadComplete.");
-                                UnloadComplete();
-                            }
-                            break;
-                        case EnumTransferStep.AvoidMoveComplete:
-                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[避車.到站.回報.完成] AvoidMoveComplete.");
-                            AvoidMoveComplete();
-                            break;
                         case EnumTransferStep.WaitOverrideToContinue:
-                            break;
-                        case EnumTransferStep.Idle:
-                            Idle();
                             break;
                         case EnumTransferStep.MoveFail:
                         case EnumTransferStep.RobotFail:
                         default:
                             break;
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -473,7 +470,6 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             Vehicle.TransferCommand.TransferStep = EnumTransferStep.TransferComplete;
             Vehicle.AseMovingGuide = new AseMovingGuide();
-
 
             if (!Vehicle.TransferCommand.IsAbortByAgvc())
             {
@@ -523,7 +519,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (Vehicle.mapTransferCommands.IsEmpty)
                 {
-                    Vehicle.PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
+                    Vehicle.ResetPauseFlags();
 
                     agvcConnector.NoCommand();
                 }
@@ -546,11 +542,11 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             try
             {
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令完成 命令選擇] TransferCompleteOptimize");
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令完成.命令選擇] TransferCompleteOptimize");
 
                 if (!Vehicle.mapTransferCommands.IsEmpty)
                 {
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令選擇 命令選取] Transfer Complete Select Another Transfer Command.");
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令選擇.命令選取] Transfer Complete Select Another Transfer Command.");
 
                     if (Vehicle.mapTransferCommands.Count == 1)
                     {
@@ -576,7 +572,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else
                 {
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令結束 無命令] Transfer Complete into Idle.");
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令結束.無命令] Transfer Complete into Idle.");
                     Vehicle.TransferCommand = new AgvcTransCmd();
                 }
             }
@@ -705,10 +701,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             Thread.Sleep(2000);
 
-            Vehicle.TransferCommand.IsRobotEnd = true;
-
-            //            AsePackage_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
-
+            AsePackage_OnRobotEndEvent(this, EnumRobotEndType.Finished);
         }
 
         private void LoadComplete()
@@ -716,9 +709,191 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 Vehicle.TransferCommand.TransferStep = EnumTransferStep.WaitLoadCompleteReply;
-                ConfirmBcrReadResultInLoad(GetLoadCommand());
+                ConfirmBcrReadResultInLoad(Vehicle.TransferCommand.SlotNumber);
                 Vehicle.TransferCommand.IsLoadCompleteReply = false;
                 agvcConnector.LoadComplete(Vehicle.TransferCommand.CommandId);
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        private void ConfirmBcrReadResultInLoad(EnumSlotNumber slotNumber)
+        {
+            try
+            {
+                AseCarrierSlotStatus slotStatus = Vehicle.GetAseCarrierSlotStatus(slotNumber);
+
+                if (Vehicle.MainFlowConfig.BcrByPass)
+                {
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.關閉] BcrByPass.");
+
+                    switch (slotStatus.CarrierSlotStatus)
+                    {
+                        case EnumAseCarrierSlotStatus.Empty:
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.失敗] BcrByPass, slot is empty.");
+
+                                slotStatus.CarrierId = "";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.AseCarrierSlotL = slotStatus;
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    Vehicle.AseCarrierSlotR = slotStatus;
+                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
+
+                                }
+                            }
+                            break;
+                        case EnumAseCarrierSlotStatus.ReadFail:
+                        case EnumAseCarrierSlotStatus.Loading:
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.成功] BcrByPass, loading is true.");
+                                slotStatus.CarrierId = Vehicle.TransferCommand.CassetteId;
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.AseCarrierSlotL = slotStatus;
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                                }
+                                else
+                                {
+                                    Vehicle.AseCarrierSlotR = slotStatus;
+                                    Vehicle.RightReadResult = BCRReadResult.BcrNormal;
+                                }
+                            }
+                            break;
+                        case EnumAseCarrierSlotStatus.PositionError:
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.凸片] CST Position Error.");
+
+                                slotStatus.CarrierId = "PositionError";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.AseCarrierSlotL = slotStatus;
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    Vehicle.AseCarrierSlotR = slotStatus;
+                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                                }
+
+                                SetAlarmFromAgvm(000051);
+                                return;
+                            }
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (slotStatus.CarrierSlotStatus)
+                    {
+                        case EnumAseCarrierSlotStatus.Empty:
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.失敗] CST ID is empty.");
+
+                                slotStatus.CarrierId = "";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.AseCarrierSlotL = slotStatus;
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    Vehicle.AseCarrierSlotR = slotStatus;
+                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                                }
+
+                                SetAlarmFromAgvm(000051);
+                            }
+                            break;
+                        case EnumAseCarrierSlotStatus.Loading:
+                            if (Vehicle.TransferCommand.CassetteId == slotStatus.CarrierId.Trim())
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.成功] CST ID = [{slotStatus.CarrierId.Trim()}] read ok.");
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrNormal;
+                                }
+                                else
+                                {
+                                    Vehicle.RightReadResult = BCRReadResult.BcrNormal;
+                                }
+                            }
+                            else
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.失敗] Read CST ID = [{slotStatus.CarrierId}], unmatched command CST ID = [{Vehicle.TransferCommand.CassetteId }]");
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrMisMatch;
+                                }
+                                else
+                                {
+                                    Vehicle.RightReadResult = BCRReadResult.BcrMisMatch;
+                                }
+
+                                SetAlarmFromAgvm(000028);
+                            }
+                            break;
+                        case EnumAseCarrierSlotStatus.ReadFail:
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[取貨.讀取.失敗] ReadFail.");
+
+                                slotStatus.CarrierId = "ReadFail";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.AseCarrierSlotL = slotStatus;
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    Vehicle.AseCarrierSlotR = slotStatus;
+                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                SetAlarmFromAgvm(000004);
+                            }
+                            break;
+                        case EnumAseCarrierSlotStatus.PositionError:
+                            {
+                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨.讀取.凸片] CST Position Error.");
+
+                                slotStatus.CarrierId = "PositionError";
+                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
+
+                                if (slotNumber == EnumSlotNumber.L)
+                                {
+                                    Vehicle.AseCarrierSlotL = slotStatus;
+                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
+                                }
+                                else
+                                {
+                                    Vehicle.AseCarrierSlotR = slotStatus;
+                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
+                                }
+
+                                SetAlarmFromAgvm(000051);
+                                return;
+                            }
+                        default:
+                            break;
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -907,19 +1082,44 @@ namespace Mirle.Agv.AseMiddler.Controller
 
             Thread.Sleep(2000);
 
-            Vehicle.TransferCommand.IsRobotEnd = true;
-            //            AsePackage_OnRobotCommandFinishEvent(this, (RobotCommand)GetCurTransferStep());
-
+            AsePackage_OnRobotEndEvent(this, EnumRobotEndType.Finished);
         }
 
         private void UnloadComplete()
         {
             try
             {
-                Vehicle.TransferCommand.EnrouteState = CommandState.None;
-                Vehicle.TransferCommand.TransferStep = EnumTransferStep.WaitUnloadCompleteReply;
-                Vehicle.TransferCommand.IsUnloadCompleteReply = false;
-                agvcConnector.UnloadComplete(Vehicle.TransferCommand.CommandId);
+                var slotNumber = Vehicle.TransferCommand.SlotNumber;
+                AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.GetAseCarrierSlotStatus(slotNumber);
+
+                switch (aseCarrierSlotStatus.CarrierSlotStatus)
+                {
+                    case EnumAseCarrierSlotStatus.Empty:
+                        {
+                            Vehicle.TransferCommand.EnrouteState = CommandState.None;
+                            Vehicle.TransferCommand.TransferStep = EnumTransferStep.WaitUnloadCompleteReply;
+                            Vehicle.TransferCommand.IsUnloadCompleteReply = false;
+                            agvcConnector.UnloadComplete(Vehicle.TransferCommand.CommandId);
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.Loading:
+                    case EnumAseCarrierSlotStatus.ReadFail:
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨.失敗] :[{slotNumber}][{aseCarrierSlotStatus.CarrierSlotStatus}].");
+                            Vehicle.TransferCommand.IsStopAndClear = true;
+                        }
+                        break;
+                    case EnumAseCarrierSlotStatus.PositionError:
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨.失敗.凸片] : PositionError.");
+                            SetAlarmFromAgvm(51);
+                            Vehicle.TransferCommand.EnrouteState = CommandState.None;
+                            Vehicle.TransferCommand.TransferStep = EnumTransferStep.RobotFail;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -941,8 +1141,49 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        #endregion
+        private void AsePackage_OnRobotEndEvent(object sender, EnumRobotEndType robotEndType)
+        {
+            try
+            {
+                if (IsStopChargTimeoutInRobotStep)
+                {
+                    IsStopChargTimeoutInRobotStep = false;
+                    SetAlarmFromAgvm(14);
+                }
 
+                switch (robotEndType)
+                {
+                    case EnumRobotEndType.Finished:
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂.命令.完成] AseRobotContorl_OnRobotCommandFinishEvent");
+
+                            Vehicle.TransferCommand.IsRobotEnd = true;
+                        }
+                        break;
+                    case EnumRobotEndType.InterlockError:
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂.交握.失敗] AseRobotControl_OnRobotInterlockErrorEvent");
+                            ResetAllAlarmsFromAgvm();
+
+                            Vehicle.TransferCommand.CompleteStatus = CompleteStatus.InterlockError;
+                            Vehicle.TransferCommand.IsStopAndClear = true;
+                        }
+                        break;
+                    case EnumRobotEndType.RobotError:
+                        {
+                            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂.命令.失敗] AseRobotControl_OnRobotCommandErrorEvent");
+                            Vehicle.TransferCommand.TransferStep = EnumTransferStep.RobotFail;
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        #endregion
 
         #region Move Step
 
@@ -966,7 +1207,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     if (Vehicle.MainFlowConfig.IsSimulation)
                     {
-                        AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                        Vehicle.AseMovingGuide.MoveComplete = EnumMoveComplete.Success;
+                        Vehicle.AseMoveStatus.IsMoveEnd = true;
                     }
                     else
                     {
@@ -1008,7 +1250,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                         {
                             LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[原地移動 到站] Same address arrival.");
 
-                            AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                            Vehicle.AseMovingGuide.MoveComplete = EnumMoveComplete.Success;
+                            Vehicle.AseMoveStatus.IsMoveEnd = true;
                         }
                     }
                 }
@@ -1346,7 +1589,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 catch (Exception ex)
                 {
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, ex.Message);
+                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, (int)EnumAgvcReplyCode.Reject, ex.Message);
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[檢查搬送命令 失敗] Check Transfer Command Fail. [{agvcTransCmd.CommandId}] {ex.Message}");
                     return;
                 }
@@ -1357,14 +1600,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     var isMapTransferCommandsEmpty = Vehicle.mapTransferCommands.IsEmpty;
                     Vehicle.mapTransferCommands.TryAdd(agvcTransCmd.CommandId, agvcTransCmd);
-                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 0, "");
+                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, (int)EnumAgvcReplyCode.Accept, "");
                     asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.Begin);
                     if (isMapTransferCommandsEmpty) agvcConnector.Commanding();
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[初始化搬送命令 成功] Initial Transfer Command Ok. [{agvcTransCmd.CommandId}]");
                 }
                 catch (Exception ex)
                 {
-                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, 1, "");
+                    agvcConnector.ReplyTransferCommand(agvcTransCmd.CommandId, agvcTransCmd.GetCommandActionType(), agvcTransCmd.SeqNum, (int)EnumAgvcReplyCode.Reject, "");
                     LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[初始化搬送命令 失敗] Initial Transfer Command Fail. [{agvcTransCmd.CommandId}]");
                     LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 }
@@ -1547,25 +1790,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         private bool IsVehicleIdle()
         {
-            if (transferSteps.Count == 0)
-            {
-                return true;
-            }
-            else if (transferSteps.Count == 1)
-            {
-                if (GetCurrentTransferStepType() == EnumTransferStepType.Empty)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
+            return Vehicle.TransferCommand.TransferStep == EnumTransferStep.Idle;
         }
 
         public void StartWatchChargeStage()
@@ -1986,12 +2211,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                 switch (positionArgs.Arrival)
                 {
                     case EnumAseArrival.Fail:
-                        AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Fail);
+                        Vehicle.AseMovingGuide.MoveComplete = EnumMoveComplete.Fail;
+                        Vehicle.AseMoveStatus.IsMoveEnd = true;
                         break;
                     case EnumAseArrival.Arrival:
                         break;
                     case EnumAseArrival.EndArrival:
-                        AseMoveControl_OnMoveFinished(this, EnumMoveComplete.Success);
+                        Vehicle.AseMovingGuide.MoveComplete = EnumMoveComplete.Success;
+                        Vehicle.AseMoveStatus.IsMoveEnd = true;
                         break;
                     default:
                         break;
@@ -2056,8 +2283,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
 
             }
-            //Vehicle.TMP_IsHome = Vehicle.AseRobotStatus.IsHome; //200828 dabid for Watch Not AskAllSectionsReserveInOnce
-            //Vehicle.TMP_IsCharging = Vehicle.IsCharging;//!//200828 dabid for Watch Not AskAllSectionsReserveInOnce
             return Vehicle.AseRobotStatus.IsHome && !Vehicle.IsCharging;
 
         }
@@ -2141,133 +2366,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void AseMoveControl_OnMoveFinished(object sender, EnumMoveComplete status)
-        {
-            try
-            {
-                Vehicle.AseMovingGuide.MoveComplete = status;
-                Vehicle.AseMoveStatus.IsMoveEnd = true;
-                //LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need True And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
-                //LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
-                //#region Not EnumMoveComplete.Success
-                //if (status == EnumMoveComplete.Fail)
-                //{
-                //    SetAlarmFromAgvm(6);
-                //    agvcConnector.ClearAllReserve();
-                //    Vehicle.AseMovingGuide = new AseMovingGuide();
-                //    agvcConnector.StatusChangeReport();
-                //    if (IsAvoidMove)
-                //    {
-                //        agvcConnector.AvoidFail();
-                //        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[避車 移動 失敗] : Avoid Fail. ");
-                //        IsAvoidMove = false;
-                //    }
-                //    else if (IsOverrideMove)
-                //    {
-                //        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[變更路徑 移動失敗] :  Override Move Fail. ");
-                //        IsOverrideMove = false;
-                //    }
-                //    else
-                //    {
-                //        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動 失敗] : Move Fail. ");
-                //    }
-                //    return;
-                //}
-
-                //#endregion
-
-                //#region EnumMoveComplete.Success
-                //Vehicle.IsReAuto = false;
-
-                //agvcConnector.ClearAllReserve();
-
-                //if (IsAvoidMove)
-                //{
-                //    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[避車 二次定位 到站] : Avoid Move End Ok.");
-                //    Vehicle.AseMovingGuide = new AseMovingGuide();
-                //    agvcConnector.StatusChangeReport();
-                //    Vehicle.AseMovingGuide.IsAvoidComplete = true;
-                //    agvcConnector.AvoidComplete();
-
-                //}
-                //else
-                //{
-                //    if (IsMoveStep())
-                //    {
-                //        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動 二次定位 到站] : Move End Ok.");
-
-                //        MoveCmdInfo moveCmdInfo = (MoveCmdInfo)GetCurTransferStep();
-                //        ArrivalStartCharge(moveCmdInfo.EndAddress);
-                //        Vehicle.AseMovingGuide = new AseMovingGuide();
-                //        agvcConnector.StatusChangeReport();
-
-                //        if (IsNextTransferStepIdle())
-                //        {
-                //            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動 命令 完成] : Move Command End.");
-                //            TransferComplete(moveCmdInfo.CmdId);
-
-                //        }
-                //        else
-                //        {
-                //            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動完成 下一步] : VisitNextTransferStep.");
-
-                //            VisitNextTransferStep();
-                //        }
-                //    }
-                //    else
-                //    {
-                //        ArrivalStartCharge(Vehicle.AseMoveStatus.LastAddress);
-                //        VisitNextTransferStep();
-                //    }
-                //}
-
-                //IsAvoidMove = false;
-                //IsOverrideMove = false;
-
-                //#endregion
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        public void TransferComplete(string cmdId)
-        {
-            try
-            {
-                WaitingTransferCompleteEnd = true;
-                Vehicle.AseMoveStatus.IsMoveEnd = true;
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"IsMoveEnd Need True And Cur IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd.ToString()}");
-                AgvcTransCmd agvcTransCmd = Vehicle.mapTransferCommands[cmdId];
-                agvcTransCmd.EnrouteState = CommandState.None;
-                ClearTransferSteps(cmdId);
-                ConcurrentDictionary<string, AgvcTransCmd> tempTransCmdBuffer = new ConcurrentDictionary<string, AgvcTransCmd>();
-                foreach (var transCmd in Vehicle.mapTransferCommands.Values.ToList())
-                {
-                    if (transCmd.CommandId != cmdId)
-                    {
-                        tempTransCmdBuffer.TryAdd(transCmd.CommandId, transCmd);
-                    }
-                }
-                Vehicle.mapTransferCommands = tempTransCmdBuffer;
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令 完成 回報] : ReportAgvcTransferComplete [{agvcTransCmd.AgvcTransCommandType}].");
-                ReportAgvcTransferComplete(agvcTransCmd);
-                if (Vehicle.mapTransferCommands.Count == 0)
-                {
-                    agvcConnector.NoCommand();
-                }
-                asePackage.SetTransferCommandInfoRequest(agvcTransCmd, EnumCommandInfoStep.End);
-                GoNextTransferStep = true;
-                WaitingTransferCompleteEnd = false;
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令 完成] : TransferComplete [{cmdId}].");
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
         private void ArrivalStartCharge(MapAddress endAddress)
         {
             try
@@ -2328,313 +2426,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
 
         #region Load Unload
-
-        private void AsePackage_OnRobotCommandErrorEvent(object sender, RobotCommand robotCommand)
-        {
-            if (IsStopChargTimeoutInRobotStep)
-            {
-                IsStopChargTimeoutInRobotStep = false;
-                SetAlarmFromAgvm(14);
-            }
-            LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 命令 失敗] AseRobotControl_OnRobotCommandErrorEvent");
-            // AsePackage_OnModeChangeEvent(this, EnumAutoState.Manual);
-        }
-
-        public void AsePackage_OnRobotCommandFinishEvent(object sender, RobotCommand robotCommand)
-        {
-            try
-            {
-                if (IsStopChargTimeoutInRobotStep)
-                {
-                    IsStopChargTimeoutInRobotStep = false;
-                    SetAlarmFromAgvm(14);
-                }
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 命令 完成] AseRobotContorl_OnRobotCommandFinishEvent");
-                EnumTransferStepType transferStepType = robotCommand.GetTransferStepType();
-                if (transferStepType == EnumTransferStepType.Load)
-                {
-                    ConfirmBcrReadResultInLoad(robotCommand);
-                    ReportAgvcLoadComplete(robotCommand.CmdId);
-                }
-                else if (transferStepType == EnumTransferStepType.Unload)
-                {
-                    ConfirmBcrReadResultInUnload(robotCommand);
-                }
-                else
-                {
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[{transferStepType}] AsePackage_OnRobotCommandFinishEvent?");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private void ConfirmBcrReadResultInLoad(RobotCommand robotCommand)
-        {
-            try
-            {
-                EnumSlotNumber slotNumber = robotCommand.SlotNumber;
-                AseCarrierSlotStatus slotStatus = slotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
-
-                if (!Vehicle.MainFlowConfig.BcrByPass)
-                {
-                    switch (slotStatus.CarrierSlotStatus)
-                    {
-                        case EnumAseCarrierSlotStatus.Empty:
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 失敗] CST ID is empty.");
-
-                                slotStatus.CarrierId = "";
-                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.AseCarrierSlotL = slotStatus;
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
-                                }
-                                else
-                                {
-                                    Vehicle.AseCarrierSlotR = slotStatus;
-                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
-                                }
-
-                                SetAlarmFromAgvm(000051);
-                            }
-                            break;
-                        case EnumAseCarrierSlotStatus.Loading:
-                            if (robotCommand.CassetteId.Trim() == slotStatus.CarrierId.Trim())
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 成功] CST ID = [{slotStatus.CarrierId.Trim()}] read ok.");
-
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrNormal;
-                                }
-                                else
-                                {
-                                    Vehicle.RightReadResult = BCRReadResult.BcrNormal;
-                                }
-                            }
-                            else
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 失敗]Read CST ID = [{slotStatus.CarrierId}], unmatched command CST ID = [{robotCommand.CassetteId}]");
-
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrMisMatch;
-                                }
-                                else
-                                {
-                                    Vehicle.RightReadResult = BCRReadResult.BcrMisMatch;
-                                }
-
-                                SetAlarmFromAgvm(000028);
-                            }
-                            break;
-                        case EnumAseCarrierSlotStatus.ReadFail:
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[取貨 讀取 失敗] ReadFail.");
-
-                                slotStatus.CarrierId = "ReadFail";
-                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.ReadFail;
-
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.AseCarrierSlotL = slotStatus;
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
-                                }
-                                else
-                                {
-                                    Vehicle.AseCarrierSlotR = slotStatus;
-                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
-                                }
-                                SetAlarmFromAgvm(000004);
-                            }
-                            break;
-                        case EnumAseCarrierSlotStatus.PositionError:
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 凸片] CST Position Error.");
-
-                                slotStatus.CarrierId = "PositionError";
-                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
-
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.AseCarrierSlotL = slotStatus;
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
-                                }
-                                else
-                                {
-                                    Vehicle.AseCarrierSlotR = slotStatus;
-                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
-                                }
-
-                                SetAlarmFromAgvm(000051);
-                                return;
-                            }
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 關閉] BcrByPass.");
-
-                    switch (slotStatus.CarrierSlotStatus)
-                    {
-                        case EnumAseCarrierSlotStatus.Empty:
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 失敗] BcrByPass, slot is empty.");
-
-                                slotStatus.CarrierId = "";
-                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Empty;
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.AseCarrierSlotL = slotStatus;
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
-                                }
-                                else
-                                {
-                                    Vehicle.AseCarrierSlotR = slotStatus;
-                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
-
-                                }
-                            }
-                            break;
-                        case EnumAseCarrierSlotStatus.ReadFail:
-                        case EnumAseCarrierSlotStatus.Loading:
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 成功] BcrByPass, loading is true.");
-                                slotStatus.CarrierId = robotCommand.CassetteId.Trim();
-                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.Loading;
-
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.AseCarrierSlotL = slotStatus;
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrNormal;
-                                }
-                                else
-                                {
-                                    Vehicle.AseCarrierSlotR = slotStatus;
-                                    Vehicle.RightReadResult = BCRReadResult.BcrNormal;
-                                }
-                            }
-                            break;
-                        case EnumAseCarrierSlotStatus.PositionError:
-                            {
-                                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[取貨 讀取 凸片] CST Position Error.");
-
-                                slotStatus.CarrierId = "PositionError";
-                                slotStatus.CarrierSlotStatus = EnumAseCarrierSlotStatus.PositionError;
-
-                                if (slotNumber == EnumSlotNumber.L)
-                                {
-                                    Vehicle.AseCarrierSlotL = slotStatus;
-                                    Vehicle.LeftReadResult = BCRReadResult.BcrReadFail;
-                                }
-                                else
-                                {
-                                    Vehicle.AseCarrierSlotR = slotStatus;
-                                    Vehicle.RightReadResult = BCRReadResult.BcrReadFail;
-                                }
-
-                                SetAlarmFromAgvm(000051);
-                                return;
-                            }
-                        default:
-                            break;
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-        private void ConfirmBcrReadResultInUnload(RobotCommand robotCommand)
-        {
-            var slotNumber = robotCommand.SlotNumber;
-            AseCarrierSlotStatus aseCarrierSlotStatus = Vehicle.GetAseCarrierSlotStatus(slotNumber);
-            switch (aseCarrierSlotStatus.CarrierSlotStatus)
-            {
-                case EnumAseCarrierSlotStatus.Empty:
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 完成] : Unload Complete");
-                    ReportAgvcUnloadComplete(robotCommand.CmdId);
-                    break;
-                case EnumAseCarrierSlotStatus.Loading:
-                case EnumAseCarrierSlotStatus.ReadFail:
-                    if (Vehicle.mapTransferCommands.ContainsKey(robotCommand.CmdId))
-                    {
-                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗] : CarrierSlotStatus = [{aseCarrierSlotStatus.CarrierSlotStatus}].");
-                        Vehicle.mapTransferCommands[robotCommand.CmdId].CompleteStatus = CompleteStatus.VehicleAbort;
-                        TransferComplete(robotCommand.CmdId);
-                    }
-                    else
-                    {
-                        LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗] AseRobotContorl_OnRobotCommandFinishEvent, can not find command [ID = {robotCommand.CmdId}]. Reset all.");
-                        StopClearAndReset();
-                    }
-                    break;
-                case EnumAseCarrierSlotStatus.PositionError:
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放貨 失敗 凸片] : PositionError.");
-                    SetAlarmFromAgvm(51);
-                    break;
-            }
-
-        }
-
-        private void ReportAgvcUnloadComplete(string cmdId)
-        {
-            try
-            {
-                var robotCmdInfo = (RobotCommand)GetCurTransferStep();
-                var slotNumber = robotCmdInfo.SlotNumber;
-                AseCarrierSlotStatus aseCarrierSlotStatus = slotNumber == EnumSlotNumber.L ? Vehicle.AseCarrierSlotL : Vehicle.AseCarrierSlotR;
-
-                agvcConnector.UnloadComplete(cmdId);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-        private void ReportAgvcLoadComplete(string cmdId)
-        {
-            agvcConnector.LoadComplete(cmdId);
-        }       
-
-        private void AsePackage_OnRobotInterlockErrorEvent(object sender, RobotCommand robotCommand)
-        {
-            try
-            {
-                if (IsStopChargTimeoutInRobotStep)
-                {
-                    IsStopChargTimeoutInRobotStep = false;
-                    SetAlarmFromAgvm(14);
-                }
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 交握 失敗] AseRobotControl_OnRobotInterlockErrorEvent");
-                ResetAllAlarmsFromAgvm();
-                var curCmdId = robotCommand.CmdId;
-                if (Vehicle.mapTransferCommands.ContainsKey(curCmdId))
-                {
-                    Vehicle.mapTransferCommands[curCmdId].CompleteStatus = CompleteStatus.InterlockError;
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, "[手臂 交握 失敗] TransferComplete");
-                    TransferComplete(curCmdId);
-                }
-                else
-                {
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[手臂 交握 失敗] AseRobotControl_OnRobotInterlockErrorEvent, can not find command [ID = {curCmdId}]. Reset all.");
-                    StopClearAndReset();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[手臂 交握 失敗] InterlockError Exception.");
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
 
         private void AgvcConnector_OnSendRecvTimeoutEvent(object sender, EventArgs e)
         {
@@ -2724,51 +2515,37 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
 
         }
-
-        private void AgvcConnector_OnStopClearAndResetEvent(object sender, EventArgs e)
-        {
-            StopClearAndReset();
-        }
-
         public void StopClearAndReset()
         {
+            PauseTransfer();
+
             try
             {
-                var isPause = Vehicle.PauseFlags[PauseType.Normal];
-                PauseTransfer();
+                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[停止.重置] Stop.Clear.Reset.");
+
                 agvcConnector.ClearAllReserve();
                 Vehicle.AseMovingGuide = new AseMovingGuide();
-                agvcConnector.StatusChangeReport();
                 StopVehicle();
-
-                var transferCommands = Vehicle.mapTransferCommands.Values.ToList();
-                foreach (var transCmd in transferCommands)
-                {
-                    //Vehicle.mapTransferCommands[transCmd.CommandId].CompleteStatus = GetStopAndClearCompleteStatus(transCmd.CompleteStatus);
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[結束 命令] TransferComplete [{Vehicle.mapTransferCommands[transCmd.CommandId].CompleteStatus}].");
-                    //TransferComplete(transCmd.CommandId);
-                    transCmd.IsStopAndClear = true;
-                }
 
                 if (Vehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading || Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Loading)
                 {
                     asePackage.ReadCarrierId();
                 }
 
-                //if (Vehicle.AseMovingGuide.PauseStatus == VhStopSingle.On)
-                //{
-                //    Vehicle.AseMovingGuide.PauseStatus = VhStopSingle.Off;
-                //    agvcConnector.StatusChangeReport();
-                //}
-                ResumeTransfer();
-                LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[停止 與 重置] StopClearAndReset.");
+                foreach (var transCmd in Vehicle.mapTransferCommands.Values.ToList())
+                {
+                    transCmd.IsStopAndClear = true;
+                }
+
+                agvcConnector.StatusChangeReport();
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-        }
 
+            ResumeTransfer();
+        }
         public EnumTransferStepType GetCurrentTransferStepType()
         {
             try
@@ -2883,7 +2660,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             {
                 if (pauseType == PauseType.All)
                 {
-                    Vehicle.PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
+                    Vehicle.ResetPauseFlags();
                     ResumeMiddler(iSeqNum, pauseEvent, pauseType);
                 }
                 else
@@ -2928,60 +2705,61 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void AgvcConnector_OnCmdCancelAbortEvent(ushort iSeqNum, ID_37_TRANS_CANCEL_REQUEST receive)
         {
+            PauseTransfer();
+
             try
             {
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"MainFlow : Get [{receive.CancelAction}] Command.");
-                PauseTransfer();
-                agvcConnector.CancelAbortReply(iSeqNum, 0, receive);
 
                 string abortCmdId = receive.CmdID.Trim();
-                var step = GetCurTransferStep();
-                bool IsAbortCurCommand = GetCurTransferStep().CmdId == abortCmdId;
+                bool IsAbortCurCommand = Vehicle.TransferCommand.CommandId == abortCmdId;
                 var targetAbortCmd = Vehicle.mapTransferCommands[abortCmdId];
 
                 if (IsAbortCurCommand)
                 {
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放棄.當前.命令] TransferComplete [{targetAbortCmd.CompleteStatus}].");
+
                     agvcConnector.ClearAllReserve();
                     asePackage.MoveStop();
-                    targetAbortCmd.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放棄 當前 命令] TransferComplete [{targetAbortCmd.CompleteStatus}].");
-                    TransferComplete(targetAbortCmd.CommandId);
+                    Vehicle.AseMovingGuide = new AseMovingGuide();
+                    Vehicle.TransferCommand.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
+                    Vehicle.TransferCommand.TransferStep = EnumTransferStep.TransferComplete;
                 }
                 else
                 {
+                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放棄.背景.命令] TransferComplete [{targetAbortCmd.CompleteStatus}].");
 
-                    targetAbortCmd.EnrouteState = CommandState.None;
+                    WaitingTransferCompleteEnd = true;
+
+                    targetAbortCmd.TransferStep = EnumTransferStep.Abort;
                     targetAbortCmd.CompleteStatus = GetCompleteStatusFromCancelRequest(receive.CancelAction);
 
-                    ConcurrentDictionary<string, AgvcTransCmd> tempTransCmdBuffer = new ConcurrentDictionary<string, AgvcTransCmd>();
-                    foreach (var transCmd in Vehicle.mapTransferCommands.Values.ToList())
-                    {
-                        if (transCmd.CommandId != abortCmdId)
-                        {
-                            tempTransCmdBuffer.TryAdd(transCmd.CommandId, transCmd);
-                        }
-                    }
-                    Vehicle.mapTransferCommands = tempTransCmdBuffer;
-                    agvcConnector.StatusChangeReport();
-                    LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[放棄 背景 命令] TransferComplete [{targetAbortCmd.CompleteStatus}].");
-                    ReportAgvcTransferComplete(targetAbortCmd);
+                    Vehicle.mapTransferCommands.TryRemove(Vehicle.TransferCommand.CommandId, out AgvcTransCmd transCmd);
+                    agvcConnector.TransferComplete(transCmd);
+                    asePackage.SetTransferCommandInfoRequest(transCmd, EnumCommandInfoStep.End);
 
-                    asePackage.SetTransferCommandInfoRequest(targetAbortCmd, EnumCommandInfoStep.End);
-
-                    if (Vehicle.mapTransferCommands.Count == 0)
+                    if (Vehicle.mapTransferCommands.IsEmpty)
                     {
+                        Vehicle.ResetPauseFlags();
+
                         agvcConnector.NoCommand();
-                        GoNextTransferStep = true;
-                        IsVisitTransferStepPause = false;
-                    }
-                }
 
-                ResumeTransfer();
+                        Vehicle.TransferCommand = new AgvcTransCmd();
+                    }
+                    else
+                    {
+                        agvcConnector.StatusChangeReport();
+                    }
+
+                    WaitingTransferCompleteEnd = false;
+                }
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
+
+            ResumeTransfer();
         }
 
         private CompleteStatus GetCompleteStatusFromCancelRequest(CancelActionType cancelAction)
@@ -3304,7 +3082,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             else
             {
                 Vehicle.OpPauseStatus = VhStopSingle.Off;
-                Vehicle.PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
+                Vehicle.ResetPauseFlags();
                 ResumeMiddler();
             }
 

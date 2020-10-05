@@ -14,7 +14,6 @@ namespace Mirle.Agv.AseMiddler.Controller
     public class MapHandler
     {
         private MirleLogger mirleLogger;
-        private MapConfig mapConfig;
         public Vehicle Vehicle { get; set; } = Vehicle.Instance;
         public string SectionPath { get; set; }
         public string AddressPath { get; set; }

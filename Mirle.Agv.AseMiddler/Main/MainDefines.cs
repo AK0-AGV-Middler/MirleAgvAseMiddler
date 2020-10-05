@@ -260,7 +260,21 @@ namespace Mirle.Agv.AseMiddler
         LoadWaitEnd,
         UnloadWaitEnd,
         RobotFail,
+        Abort
+    }
 
+    public enum EnumRobotEndType
+    {
+        Finished,
+        InterlockError,
+        RobotError
+    }
+
+    public enum EnumAgvcReplyCode
+    {
+        Accept,
+        Reject,
+        Unknow
     }
 
     #endregion    

@@ -124,5 +124,10 @@ namespace Mirle.Agv.AseMiddler.Model
         {
             return PauseFlags.Values.Any(x => x);
         }
+
+        public void ResetPauseFlags()
+        {
+            PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
+        }
     }
 }

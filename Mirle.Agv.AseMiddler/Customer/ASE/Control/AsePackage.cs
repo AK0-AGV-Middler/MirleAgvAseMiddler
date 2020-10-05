@@ -57,10 +57,11 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<int> OnAlarmCodeResetEvent;
         public event EventHandler OnAlarmCodeAllResetEvent;
         public event EventHandler<double> OnBatteryPercentageChangeEvent;
-        public event EventHandler<RobotCommand> OnRobotInterlockErrorEvent;
-        public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
-        public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
+        //public event EventHandler<RobotCommand> OnRobotInterlockErrorEvent;
+        //public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
+        //public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
         public event EventHandler<bool> OnOpPauseOrResumeEvent;
+        public event EventHandler<EnumRobotEndType> OnRobotEndEvent;
 
         public AsePackage()
         {
@@ -237,7 +238,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                             AutoReplyFromPsMessageMap(psTransaction);
                             DealPrimaryReceived(psTransaction);
 
-                        }                       
+                        }
 
                         if (SecondaryReceiveQueue.Any())
                         {
@@ -824,27 +825,34 @@ namespace Mirle.Agv.AseMiddler.Controller
             try
             {
                 string finishedMsg = psMessage.Trim();
-                switch (finishedMsg)
+                if (Enum.TryParse(finishedMsg, out EnumRobotEndType robotEndType))
                 {
-                    case "Finished":
-                        OnRobotCommandFinishEvent?.Invoke(this, RobotCommand);
-                        break;
-                    case "InterlockError":
-                        OnRobotInterlockErrorEvent?.Invoke(this, RobotCommand);
-                        break;
-                    case "RobotError":
-                        OnRobotCommandErrorEvent?.Invoke(this, RobotCommand);
-                        break;
-                    default:
-                        throw new Exception($"Can not parse robot command finished report.[{finishedMsg}]");
+                    OnRobotEndEvent?.Invoke(this, robotEndType);
                 }
-
+                else
+                {
+                    throw new Exception($"Can not parse robot command finished report.[{finishedMsg}]");
+                }
+                //switch (finishedMsg)
+                //{
+                //    case "Finished":
+                //        OnRobotCommandFinishEvent?.Invoke(this, RobotCommand);
+                //        break;
+                //    case "InterlockError":
+                //        OnRobotInterlockErrorEvent?.Invoke(this, RobotCommand);
+                //        break;
+                //    case "RobotError":
+                //        OnRobotCommandErrorEvent?.Invoke(this, RobotCommand);
+                //        break;
+                //    default:
+                //        throw new Exception($"Can not parse robot command finished report.[{finishedMsg}]");
+                //}
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 ImportantPspLog?.Invoke(this, ex.Message);
-                OnRobotCommandErrorEvent?.Invoke(this, RobotCommand);
+                OnRobotEndEvent?.Invoke(this,  EnumRobotEndType.RobotError);
             }
         }
 
@@ -1148,7 +1156,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else if (longSystemByte < LastUpdateLeftSlotStatusSystemByte)
                 {
-                    
+
                     if (LastUpdateLeftSlotStatusSystemByte - longSystemByte > thd)
                     {
                         LastUpdateLeftSlotStatusSystemByte = longSystemByte;
@@ -1167,7 +1175,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             else
             {
                 long longSystemByte = (long)systemByte;
-                
+
                 if (longSystemByte > LastUpdateRightSlotStatusSystemByte)
                 {
                     //200904 dabid+ SlotStatusSystemByte最新已經是輪一圈歸0後的值，如果longSystemByte的值落在SystemByte回推thd以內就當是舊資料
@@ -1187,7 +1195,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 }
                 else if (longSystemByte < LastUpdateRightSlotStatusSystemByte)
                 {
-                    
+
                     if (LastUpdateRightSlotStatusSystemByte - longSystemByte > thd)
                     {
                         LastUpdateRightSlotStatusSystemByte = longSystemByte;
@@ -1456,7 +1464,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 return false;
             }
         }
-        
+
         private void ReceiveMoveAppendRequestAck(string psMessage)
         {
             try
