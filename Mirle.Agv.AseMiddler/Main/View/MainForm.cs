@@ -866,16 +866,16 @@ namespace Mirle.Agv.AseMiddler.View
                     tbxTransferCommand02Msg.Text = GetTransferCmdInfo(transferCommands[1]);
                 }
                 //200523 dabid+
-                var lstTransferStep = mainFlowHandler.PtransferSteps;
-                string step = "";
-                for (int i = 0; i < lstTransferStep.Count(); i++)
-                {
-                    if (lstTransferStep[i].GetTransferStepType() == EnumTransferStepType.Empty)
-                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}";
-                    else
-                        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].LoadPortId})({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].UnloadPortId})";
-                }
-                tbxTransferStepMsg.Text = step;
+                //var lstTransferStep = mainFlowHandler.PtransferSteps;
+                //string step = "";
+                //for (int i = 0; i < lstTransferStep.Count(); i++)
+                //{
+                //    if (lstTransferStep[i].GetTransferStepType() == EnumTransferStepType.Empty)
+                //        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}";
+                //    else
+                //        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].LoadPortId})({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].UnloadPortId})";
+                //}
+                //tbxTransferStepMsg.Text = step;
             }
             catch (Exception ex)
             {
@@ -883,7 +883,7 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private string GetTransferCmdInfo(AgvcTransCmd agvcTransCmd)
+        private string GetTransferCmdInfo(AgvcTransferCommand agvcTransCmd)
         {
             try
             {

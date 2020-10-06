@@ -43,9 +43,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public ConcurrentQueue<PSMessageXClass> PrimarySendQueue { get; set; } = new ConcurrentQueue<PSMessageXClass>();
         public ConcurrentQueue<PSTransactionXClass> SecondarySendQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         public ConcurrentQueue<PSTransactionXClass> PrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
-        //public ConcurrentQueue<PSTransactionXClass> DealPrimaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
         public ConcurrentQueue<PSTransactionXClass> SecondaryReceiveQueue { get; set; } = new ConcurrentQueue<PSTransactionXClass>();
-        private List<PSTransactionXClass> primaryReceiveTransactions;
         public ConcurrentQueue<AsePositionArgs> ReceivePositionArgsQueue { get; set; } = new ConcurrentQueue<AsePositionArgs>();
         public ConcurrentQueue<PSMessageXClass> PrimaryTimeoutQueue { get; set; } = new ConcurrentQueue<PSMessageXClass>();
 
@@ -57,9 +55,6 @@ namespace Mirle.Agv.AseMiddler.Controller
         public event EventHandler<int> OnAlarmCodeResetEvent;
         public event EventHandler OnAlarmCodeAllResetEvent;
         public event EventHandler<double> OnBatteryPercentageChangeEvent;
-        //public event EventHandler<RobotCommand> OnRobotInterlockErrorEvent;
-        //public event EventHandler<RobotCommand> OnRobotCommandFinishEvent;
-        //public event EventHandler<RobotCommand> OnRobotCommandErrorEvent;
         public event EventHandler<bool> OnOpPauseOrResumeEvent;
         public event EventHandler<EnumRobotEndType> OnRobotEndEvent;
 
@@ -442,42 +437,23 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
         }
 
-        public void SetTransferCommandInfoRequest(AgvcTransCmd transCmd, EnumCommandInfoStep commandInfoStep)
+        public void SetTransferCommandInfoRequest(AgvcTransferCommand transferCommand, EnumCommandInfoStep commandInfoStep)
         {
             try
             {
                 string commandStep = ((int)commandInfoStep).ToString();
-                string commandId = transCmd.CommandId.PadLeft(20, '0');
-                string fromPortNum = transCmd.LoadAddressId.PadLeft(5, '0').Substring(0, 5);
-                string toPortNum = transCmd.UnloadAddressId.PadLeft(5, '0').Substring(0, 5);
-                string vehicleSlot = transCmd.SlotNumber.ToString();
-                string lotId = transCmd.LotId.PadLeft(40, '0').Substring(0, 40);
-                string cassetteId = transCmd.CassetteId;
+                string commandId = transferCommand.CommandId.PadLeft(20, '0');
+                string fromPortNum = transferCommand.LoadAddressId.PadLeft(5, '0').Substring(0, 5);
+                string toPortNum = transferCommand.UnloadAddressId.PadLeft(5, '0').Substring(0, 5);
+                string vehicleSlot = transferCommand.SlotNumber.ToString();
+                string lotId = transferCommand.LotId.PadLeft(40, '0').Substring(0, 40);
+                string cassetteId = transferCommand.CassetteId;
                 string transferCommandInfo = string.Concat(commandStep, commandId, fromPortNum, toPortNum, vehicleSlot, lotId, cassetteId); ;
                 PrimarySendEnqueue("P37", transferCommandInfo);
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-
-        private string GetTransferCommandInfo(AgvcTransCmd agvcTransCmd)
-        {
-            try
-            {
-                string commandId = agvcTransCmd.CommandId.PadLeft(20, '0');
-                string fromPortNum = agvcTransCmd.LoadAddressId.PadLeft(5, '0').Substring(0, 5);
-                string toPortNum = agvcTransCmd.UnloadAddressId.PadLeft(5, '0').Substring(0, 5);
-                string vehicleSlot = agvcTransCmd.SlotNumber.ToString();
-                string lotId = agvcTransCmd.LotId.PadLeft(40, '0').Substring(0, 40);
-                string cassetteId = agvcTransCmd.CassetteId;
-                return string.Concat(commandId, fromPortNum, toPortNum, vehicleSlot, lotId, cassetteId);
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                return "";
             }
         }
 

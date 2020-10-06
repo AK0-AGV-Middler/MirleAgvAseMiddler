@@ -207,7 +207,7 @@
     <Compile Include="Main\Control\MainFlowHandler.cs" />
     <Compile Include="Main\Model\Vehicle.cs" />
     <Compile Include="Main\Control\AgvcConnector.cs" />
-    <Compile Include="Main\Model\TransferCommand\AgvcTransCmd.cs" />
+    <Compile Include="Main\Model\TransferCommand\AgvcTransferCommand.cs" />
     <Compile Include="Main\View\UserControls\UcVerticalLabelText.cs">
       <SubType>UserControl</SubType>
     </Compile>

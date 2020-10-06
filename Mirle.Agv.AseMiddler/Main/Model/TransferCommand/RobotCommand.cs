@@ -16,10 +16,10 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public string GateType { get; set; } = "0";
         public string PortNumber { get; set; } = "1";
 
-        public RobotCommand(AgvcTransCmd agvcTransCmd) : base(agvcTransCmd.CommandId)
+        public RobotCommand(AgvcTransferCommand transferCommand) : base(transferCommand.CommandId)
         {
-            this.CassetteId = agvcTransCmd.CassetteId;
-            this.SlotNumber = agvcTransCmd.SlotNumber;
+            this.CassetteId = transferCommand.CassetteId;
+            this.SlotNumber = transferCommand.SlotNumber;
         }    
     }
 }

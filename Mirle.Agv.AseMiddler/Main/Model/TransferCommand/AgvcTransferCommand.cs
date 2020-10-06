@@ -11,10 +11,10 @@ using System.Reflection;
 using Mirle.Tools;
 using System.Drawing;
 
-namespace Mirle.Agv.AseMiddler.Model.TransferSteps
+namespace Mirle.Agv.AseMiddler.Model
 {
 
-    public class AgvcTransCmd
+    public class AgvcTransferCommand
     {
         public EnumTransferStep TransferStep { get; set; } = EnumTransferStep.Idle;
         public string CommandId { get; set; } = "";
@@ -37,11 +37,11 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         public bool IsUnloadArrivalReply { get; set; } = false;
         public bool IsUnloadCompleteReply { get; set; } = false;
 
-        public AgvcTransCmd()
+        public AgvcTransferCommand()
         {
         }
 
-        public AgvcTransCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum)
+        public AgvcTransferCommand(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum)
         {
             CommandId = transRequest.CmdID.Trim();
             CassetteId = string.IsNullOrEmpty(transRequest.CSTID) ? "" : transRequest.CSTID.Trim();
@@ -50,6 +50,8 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 
             InitialCommand(transRequest.CommandAction);
 
+            LoadAddressId = string.IsNullOrEmpty(transRequest.LoadAdr) ? "" : transRequest.LoadAdr.Trim();
+            UnloadAddressId = string.IsNullOrEmpty(transRequest.DestinationAdr) ? "" : transRequest.DestinationAdr.Trim();
             LoadPortId = string.IsNullOrEmpty(transRequest.LoadPortID) ? "" : transRequest.LoadPortID.Trim();
             UnloadPortId = string.IsNullOrEmpty(transRequest.UnloadPortID) ? "" : transRequest.UnloadPortID.Trim();
         }
@@ -91,6 +93,8 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
                 case CommandActionType.Home:
                     break;
                 case CommandActionType.Override:
+                    AgvcTransCommandType = EnumAgvcTransCommandType.Override;
+                    //CompleteStatus = CompleteStatus.Loadunload;
                     break;
                 default:
                     break;
@@ -148,103 +152,103 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
         }
     }
 
-    public class AgvcMoveCmd : AgvcTransCmd
-    {
-        public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
-        {
-            try
-            {
-                UnloadAddressId = transRequest.DestinationAdr;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-    }
-    public class AgvcMoveToChargerCmd : AgvcMoveCmd
-    {
-        public AgvcMoveToChargerCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
-        {
+    //public class AgvcMoveCmd : AgvcTransCmd
+    //{
+    //    public AgvcMoveCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+    //    {
+    //        try
+    //        {
+    //            UnloadAddressId = transRequest.DestinationAdr;
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+    //        }
+    //    }
+    //}
+    //public class AgvcMoveToChargerCmd : AgvcMoveCmd
+    //{
+    //    public AgvcMoveToChargerCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+    //    {
 
-        }
-    }
+    //    }
+    //}
 
-    public class AgvcLoadCmd : AgvcTransCmd
-    {
-        public AgvcLoadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
-        {
-            try
-            {
-                LoadAddressId = transRequest.LoadAdr;
-                EnrouteState = CommandState.LoadEnroute;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-    }
+    //public class AgvcLoadCmd : AgvcTransCmd
+    //{
+    //    public AgvcLoadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+    //    {
+    //        try
+    //        {
+    //            LoadAddressId = transRequest.LoadAdr;
+    //            EnrouteState = CommandState.LoadEnroute;
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+    //        }
+    //    }
+    //}
 
-    public class AgvcUnloadCmd : AgvcTransCmd
-    {
-        public AgvcUnloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
-        {
-            try
-            {
-                UnloadAddressId = transRequest.DestinationAdr;
-                EnrouteState = CommandState.UnloadEnroute;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-    }
+    //public class AgvcUnloadCmd : AgvcTransCmd
+    //{
+    //    public AgvcUnloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+    //    {
+    //        try
+    //        {
+    //            UnloadAddressId = transRequest.DestinationAdr;
+    //            EnrouteState = CommandState.UnloadEnroute;
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+    //        }
+    //    }
+    //}
 
-    public class AgvcLoadunloadCmd : AgvcTransCmd
-    {
-        public AgvcLoadunloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
-        {
-            try
-            {
-                LoadAddressId = transRequest.LoadAdr;
-                UnloadAddressId = transRequest.DestinationAdr;
-                EnrouteState = CommandState.LoadEnroute;
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-    }
+    //public class AgvcLoadunloadCmd : AgvcTransCmd
+    //{
+    //    public AgvcLoadunloadCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+    //    {
+    //        try
+    //        {
+    //            LoadAddressId = transRequest.LoadAdr;
+    //            UnloadAddressId = transRequest.DestinationAdr;
+    //            EnrouteState = CommandState.LoadEnroute;
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+    //        }
+    //    }
+    //}
 
-    public class AgvcHomeCmd : AgvcTransCmd
-    {
-        public AgvcHomeCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
-        {
-        }
-    }
+    //public class AgvcHomeCmd : AgvcTransCmd
+    //{
+    //    public AgvcHomeCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+    //    {
+    //    }
+    //}
 
-    public class AgvcOverrideCmd : AgvcTransCmd
-    {
-        public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(transRequest.LoadAdr))
-                {
-                    LoadAddressId = transRequest.LoadAdr;
-                }
-                if (!string.IsNullOrEmpty(transRequest.DestinationAdr))
-                {
-                    UnloadAddressId = transRequest.DestinationAdr;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-            }
-        }
-    }
+    //public class AgvcOverrideCmd : AgvcTransCmd
+    //{
+    //    public AgvcOverrideCmd(ID_31_TRANS_REQUEST transRequest, ushort aSeqNum) : base(transRequest, aSeqNum)
+    //    {
+    //        try
+    //        {
+    //            if (!string.IsNullOrEmpty(transRequest.LoadAdr))
+    //            {
+    //                LoadAddressId = transRequest.LoadAdr;
+    //            }
+    //            if (!string.IsNullOrEmpty(transRequest.DestinationAdr))
+    //            {
+    //                UnloadAddressId = transRequest.DestinationAdr;
+    //            }
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+    //        }
+    //    }
+    //}
 }

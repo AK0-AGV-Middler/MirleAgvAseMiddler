@@ -24,7 +24,7 @@ namespace Mirle.Agv.AseMiddler.Controller
     {
         #region Events
         public event EventHandler<string> OnMessageShowOnMainFormEvent;
-        public event EventHandler<AgvcTransCmd> OnInstallTransferCommandEvent;
+        public event EventHandler<AgvcTransferCommand> OnInstallTransferCommandEvent;
         public event EventHandler<AseMovingGuide> OnAvoideRequestEvent;
         public event EventHandler<string> OnCmdReceiveEvent;
         public event EventHandler<string> OnCmdSendEvent;
@@ -1347,16 +1347,16 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             Send_Cmd136_TransferEventReport(EventType.Vhloading, cmdId, slotNumber);
         }
-        public void TransferComplete(AgvcTransCmd agvcTransCmd)
+        public void TransferComplete(AgvcTransferCommand transferCommand)
         {
-            SendRecv_Cmd132_TransferCompleteReport(agvcTransCmd, 0);
+            SendRecv_Cmd132_TransferCompleteReport(transferCommand, (int)EnumAgvcReplyCode.Accept);
         }
         public void LoadComplete(string cmdId)
         {
-            AgvcTransCmd agvcTransCmd = Vehicle.mapTransferCommands[cmdId];
-            agvcTransCmd.EnrouteState = CommandState.UnloadEnroute;
+            AgvcTransferCommand transferCommand = Vehicle.mapTransferCommands[cmdId];
+            transferCommand.EnrouteState = CommandState.UnloadEnroute;
             StatusChangeReport();
-            SendRecv_Cmd136_TransferEventReport(EventType.LoadComplete, cmdId, agvcTransCmd.SlotNumber);
+            SendRecv_Cmd136_TransferEventReport(EventType.LoadComplete, cmdId, transferCommand.SlotNumber);
         }
         public void ReportUnloadArrival(string cmdId)
         {
@@ -1368,10 +1368,10 @@ namespace Mirle.Agv.AseMiddler.Controller
         }
         public void UnloadComplete(string cmdId)
         {
-            AgvcTransCmd agvcTransCmd = Vehicle.mapTransferCommands[cmdId];
-            agvcTransCmd.EnrouteState = CommandState.None;
+            AgvcTransferCommand transferCommand = Vehicle.mapTransferCommands[cmdId];
+            transferCommand.EnrouteState = CommandState.None;
             StatusChangeReport();
-            SendRecv_Cmd136_TransferEventReport(EventType.UnloadComplete, cmdId, agvcTransCmd.SlotNumber);
+            SendRecv_Cmd136_TransferEventReport(EventType.UnloadComplete, cmdId, transferCommand.SlotNumber);
         }
         public void MoveArrival()
         {
@@ -1421,23 +1421,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void PauseReply(ushort seqNum, int replyCode, PauseEvent type)
         {
             Send_Cmd139_PauseResponse(seqNum, replyCode, type);
-        }
-        public void CancelAbortReply(ushort iSeqNum, int replyCode, ID_37_TRANS_CANCEL_REQUEST receive)
-        {
-            Send_Cmd137_TransferCancelResponse(iSeqNum, replyCode, receive);
-        }
-        public void DoOverride(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
-        {
-            //AgvcOverrideCmd agvcOverrideCmd = (AgvcOverrideCmd)ConvertAgvcTransCmdIntoPackage(transRequest, iSeqNum);
-            //ShowTransferCmdToForm(agvcOverrideCmd);
-            //OnOverrideCommandEvent?.Invoke(this, agvcOverrideCmd);
-        }
-        public void DoBasicTransferCmd(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
-        {
-            AgvcTransCmd agvcTransCmd = ConvertAgvcTransCmdIntoPackage(transRequest, iSeqNum);
-            ShowTransferCmdToForm(agvcTransCmd);
-            OnInstallTransferCommandEvent?.Invoke(this, agvcTransCmd);
-        }
+        }                
         public void StatusChangeReport()
         {
             Send_Cmd144_StatusChangeReport();
@@ -1462,9 +1446,9 @@ namespace Mirle.Agv.AseMiddler.Controller
                 Send_Cmd136_CstIdReadReport(EnumSlotNumber.R); //200625 dabid+
             }
         }
-        private void ShowTransferCmdToForm(AgvcTransCmd agvcTransCmd)
+        private void ShowTransferCmdToForm(AgvcTransferCommand transferCommand)
         {
-            mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"\r\n Get {agvcTransCmd.AgvcTransCommandType},\r\n Load Adr={agvcTransCmd.LoadAddressId}, Load Port Id={agvcTransCmd.LoadPortId},\r\n Unload Adr={agvcTransCmd.UnloadAddressId}, Unload Port Id={agvcTransCmd.UnloadPortId}.");
+            mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"\r\n Get {transferCommand.AgvcTransCommandType},\r\n Load Adr={transferCommand.LoadAddressId}, Load Port Id={transferCommand.LoadPortId},\r\n Unload Adr={transferCommand.UnloadAddressId}, Unload Port Id={transferCommand.UnloadPortId}.");
         }
         public bool IsConnected() => ClientAgent == null ? false : ClientAgent.IsConnection;
 
@@ -1719,11 +1703,11 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.DirectionAngle = aseMoveStatus.MovingDirection;
             report.VehicleAngle = aseMoveStatus.HeadDirection;
 
-            List<AgvcTransCmd> agvcTransCmds = Vehicle.mapTransferCommands.Values.ToList();
-            report.CmdId1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].CommandId : "";
-            report.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].EnrouteState : CommandState.None;
-            report.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
-            report.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
+            List<AgvcTransferCommand> transferCommands = Vehicle.mapTransferCommands.Values.ToList();
+            report.CmdId1 = transferCommands.Count > 0 ? transferCommands[0].CommandId : "";
+            report.CmsState1 = transferCommands.Count > 0 ? transferCommands[0].EnrouteState : CommandState.None;
+            report.CmdId2 = transferCommands.Count > 1 ? transferCommands[1].CommandId : "";
+            report.CmsState2 = transferCommands.Count > 1 ? transferCommands[1].EnrouteState : CommandState.None;
             report.CurrentExcuteCmdId = Vehicle.TransferCommand.CommandId;
             report.ActionStatus = Vehicle.ActionStatus;
 
@@ -1817,11 +1801,11 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
                 response.DrivingDirection = DriveDirctionParse(aseMoveStatus.LastSection.CmdDirection);
 
-                List<AgvcTransCmd> agvcTransCmds = Vehicle.mapTransferCommands.Values.ToList();
-                response.CmdId1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].CommandId : "";
-                response.CmsState1 = agvcTransCmds.Count > 0 ? agvcTransCmds[0].EnrouteState : CommandState.None;
-                response.CmdId2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].CommandId : "";
-                response.CmsState2 = agvcTransCmds.Count > 1 ? agvcTransCmds[1].EnrouteState : CommandState.None;
+                List<AgvcTransferCommand> transferCommands = Vehicle.mapTransferCommands.Values.ToList();
+                response.CmdId1 = transferCommands.Count > 0 ? transferCommands[0].CommandId : "";
+                response.CmsState1 = transferCommands.Count > 0 ? transferCommands[0].EnrouteState : CommandState.None;
+                response.CmdId2 = transferCommands.Count > 1 ? transferCommands[1].CommandId : "";
+                response.CmsState2 = transferCommands.Count > 1 ? transferCommands[1].EnrouteState : CommandState.None;
                 response.ActionStatus = Vehicle.ActionStatus;
                 response.CurrentExcuteCmdId = Vehicle.TransferCommand.CommandId;
 
@@ -2415,18 +2399,18 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-        public void SendRecv_Cmd132_TransferCompleteReport(AgvcTransCmd agvcTransCmd, int delay = 0)
+        public void SendRecv_Cmd132_TransferCompleteReport(AgvcTransferCommand transferCommand, int delay = 0)
         {
             try
             {
                 AseMoveStatus aseMoveStatus = new AseMoveStatus(Vehicle.AseMoveStatus);
 
-                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Transfer Complete, Complete Status={agvcTransCmd.CompleteStatus}, Command ID={agvcTransCmd.CommandId}");
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"Transfer Complete, Complete Status={transferCommand.CompleteStatus}, Command ID={transferCommand.CommandId}");
 
                 ID_132_TRANS_COMPLETE_REPORT report = new ID_132_TRANS_COMPLETE_REPORT();
-                report.CmdID = agvcTransCmd.CommandId;
-                report.CSTID = agvcTransCmd.CassetteId;
-                report.CmpStatus = agvcTransCmd.CompleteStatus;
+                report.CmdID = transferCommand.CommandId;
+                report.CSTID = transferCommand.CassetteId;
+                report.CmpStatus = transferCommand.CompleteStatus;
                 report.CurrentAdrID = aseMoveStatus.LastAddress.Id;
                 report.CurrentSecID = aseMoveStatus.LastSection.Id;
                 report.SecDistance = (uint)aseMoveStatus.LastSection.VehicleDistanceSinceHead;
@@ -2466,30 +2450,14 @@ namespace Mirle.Agv.AseMiddler.Controller
                     return;
                 }
 
-                switch (transRequest.CommandAction)
-                {
-                    case CommandActionType.Move:
-                    case CommandActionType.Load:
-                    case CommandActionType.Unload:
-                    case CommandActionType.Loadunload:
-                    case CommandActionType.Home:
-                    case CommandActionType.Movetocharger:
-                        DoBasicTransferCmd(transRequest, e.iSeqNum);
-                        break;
-                    case CommandActionType.Override:
-                        DoOverride(transRequest, e.iSeqNum);
-                        return;
-                    default:
-                        mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[拒絕搬送命令] Reject Transfer Command: {transRequest.CommandAction}");
-                        Send_Cmd131_TransferResponse(transRequest.CmdID, transRequest.CommandAction, e.iSeqNum, (int)EnumAgvcReplyCode.Reject, "Unknow command.");
-                        return;
-                }
+                AgvcTransferCommand transferCommand = new AgvcTransferCommand(transRequest, e.iSeqNum);
+                ShowTransferCmdToForm(transferCommand);
+                OnInstallTransferCommandEvent?.Invoke(this, transferCommand);
             }
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
-
         }
         public void Send_Cmd131_TransferResponse(string cmdId, CommandActionType commandAction, ushort seqNum, int replyCode, string reason)
         {
@@ -2518,33 +2486,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-        private AgvcTransCmd ConvertAgvcTransCmdIntoPackage(ID_31_TRANS_REQUEST transRequest, ushort iSeqNum)
-        {
-            //解析 Get 的ID_31_TRANS_REQUEST並且填入AgvcTransCmd     
-
-            switch (transRequest.CommandAction)
-            {
-                case CommandActionType.Move:
-                    return new AgvcMoveCmd(transRequest, iSeqNum);
-                case CommandActionType.Load:
-                    return new AgvcLoadCmd(transRequest, iSeqNum);
-                case CommandActionType.Unload:
-                    return new AgvcUnloadCmd(transRequest, iSeqNum);
-                case CommandActionType.Loadunload:
-                    return new AgvcLoadunloadCmd(transRequest, iSeqNum);
-                case CommandActionType.Home:
-                    break;
-                case CommandActionType.Override:
-                    return new AgvcOverrideCmd(transRequest, iSeqNum);
-                case CommandActionType.Movetocharger:
-                    return new AgvcMoveToChargerCmd(transRequest, iSeqNum);
-                default:
-                    break;
-            }
-
-            return new AgvcTransCmd(transRequest, iSeqNum);
-        }
-
+       
         public void Receive_Cmd11_CouplerInfoReport(object sender, TcpIpEventArgs e)
         {
             try

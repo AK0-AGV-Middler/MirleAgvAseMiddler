@@ -10,10 +10,10 @@ namespace Mirle.Agv.AseMiddler.Model.TransferSteps
 
     public class UnloadCmdInfo : RobotCommand
     {
-        public UnloadCmdInfo(AgvcTransCmd agvcTransCmd) : base(agvcTransCmd)
+        public UnloadCmdInfo(AgvcTransferCommand transferCommand) : base(transferCommand)
         {
             this.type = EnumTransferStepType.Unload;
-            this.PortAddressId = agvcTransCmd.UnloadAddressId;
+            this.PortAddressId = transferCommand.UnloadAddressId;
         }
     }
 }

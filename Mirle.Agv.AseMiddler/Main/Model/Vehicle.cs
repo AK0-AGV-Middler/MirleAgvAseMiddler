@@ -18,8 +18,8 @@ namespace Mirle.Agv.AseMiddler.Model
     {
         private static readonly Vehicle theVehicle = new Vehicle();
         public static Vehicle Instance { get { return theVehicle; } }
-        public ConcurrentDictionary<string, AgvcTransCmd> mapTransferCommands { get; set; } = new ConcurrentDictionary<string, AgvcTransCmd>();
-        public AgvcTransCmd TransferCommand { get; set; } = new AgvcTransCmd();
+        public ConcurrentDictionary<string, AgvcTransferCommand> mapTransferCommands { get; set; } = new ConcurrentDictionary<string, AgvcTransferCommand>();
+        public AgvcTransferCommand TransferCommand { get; set; } = new AgvcTransferCommand();
         public EnumAutoState AutoState { get; set; } = EnumAutoState.Manual;
        
         public string SoftwareVersion { get; set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
