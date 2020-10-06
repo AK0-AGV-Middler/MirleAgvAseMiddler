@@ -876,6 +876,7 @@ namespace Mirle.Agv.AseMiddler.View
                 //        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].LoadPortId})({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].UnloadPortId})";
                 //}
                 //tbxTransferStepMsg.Text = step;
+                tbxTransferStepMsg.Text = GetTransferCmdInfo(Vehicle.TransferCommand);
             }
             catch (Exception ex)
             {
@@ -883,20 +884,21 @@ namespace Mirle.Agv.AseMiddler.View
             }
         }
 
-        private string GetTransferCmdInfo(AgvcTransferCommand agvcTransCmd)
+        private string GetTransferCmdInfo(AgvcTransferCommand transferCommand)
         {
             try
             {
                 string msg = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss.fff"), "\r\n",
-                                      $"{agvcTransCmd.AgvcTransCommandType}", "\r\n",
-                                      $"[Command ID={agvcTransCmd.CommandId}]\r\n",
-                                      $"[CST ID={agvcTransCmd.CassetteId}]\r\n",
-                                      $"[SlotNum={agvcTransCmd.SlotNumber}]\r\n",
-                                      $"[EnrouteState={agvcTransCmd.EnrouteState}]\r\n",
-                                      $"[Load Adr={agvcTransCmd.LoadAddressId}]\r\n",
-                                      $"[Load Port ID={agvcTransCmd.LoadPortId}]\r\n",
-                                      $"[Unload Adr={agvcTransCmd.UnloadAddressId}]\r\n",
-                                      $"[Unload Port Id={agvcTransCmd.UnloadPortId}]\r\n"
+                                      $"[{transferCommand.AgvcTransCommandType}]\r\n",
+                                      $"[{transferCommand.TransferStep}]\r\n",
+                                      $"[Command ID={transferCommand.CommandId}]\r\n",
+                                      $"[CST ID={transferCommand.CassetteId}]\r\n",
+                                      $"[SlotNum={transferCommand.SlotNumber}]\r\n",
+                                      $"[EnrouteState={transferCommand.EnrouteState}]\r\n",
+                                      $"[Load Adr={transferCommand.LoadAddressId}]\r\n",
+                                      $"[Load Port ID={transferCommand.LoadPortId}]\r\n",
+                                      $"[Unload Adr={transferCommand.UnloadAddressId}]\r\n",
+                                      $"[Unload Port Id={transferCommand.UnloadPortId}]\r\n"
                                       );
 
                 return msg;
@@ -906,34 +908,12 @@ namespace Mirle.Agv.AseMiddler.View
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
                 return $"GetTransferCmdInfo exception";
             }
-
-
         }
 
         private void UpdateGroupBoxFlowStatus()
         {
             try
             {
-                //switch (mainFlowHandler.GetCurrentTransferStepType())
-                //{
-                //    case EnumTransferStepType.Move:
-                //        ucCurrentTransferStepType.TagValue = "Move";
-                //        break;
-                //    case EnumTransferStepType.MoveToCharger:
-                //        ucCurrentTransferStepType.TagValue = "MV2C";
-                //        break;
-                //    case EnumTransferStepType.Load:
-                //        ucCurrentTransferStepType.TagValue = "LD";
-                //        break;
-                //    case EnumTransferStepType.Unload:
-                //        ucCurrentTransferStepType.TagValue = "UD";
-                //        break;
-                //    case EnumTransferStepType.Empty:
-                //    default:
-                //        ucCurrentTransferStepType.TagValue = "Idle";
-                //        break;
-                //}
-
                 ucCurrentTransferStepType.TagValue = Vehicle.TransferCommand.TransferStep.ToString();
 
                 ucCommanding.TagValue = Vehicle.ActionStatus.ToString();
