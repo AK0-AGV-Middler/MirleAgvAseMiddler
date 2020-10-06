@@ -1421,7 +1421,7 @@ namespace Mirle.Agv.AseMiddler.Controller
         public void PauseReply(ushort seqNum, int replyCode, PauseEvent type)
         {
             Send_Cmd139_PauseResponse(seqNum, replyCode, type);
-        }                
+        }
         public void StatusChangeReport()
         {
             Send_Cmd144_StatusChangeReport();
@@ -1648,7 +1648,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.ObstacleStatus = Vehicle.AseMoveStatus.AseMoveState == EnumAseMoveState.Block ? VhStopSingle.On : VhStopSingle.Off;
             report.ErrorStatus = Vehicle.ErrorStatus;
             report.DrivingDirection = Vehicle.DrivingDirection;
-            report.BatteryCapacity = BatteryCapacityParse(Vehicle.AseBatteryStatus.Percentage);
+            report.BatteryCapacity = (uint)Vehicle.AseBatteryStatus.Percentage;
             report.BatteryTemperature = (int)Vehicle.AseBatteryStatus.Temperature;
             report.ChargeStatus = VhChargeStatusParse(Vehicle.IsCharging);
             report.XAxis = Vehicle.AseMoveStatus.LastMapPosition.X;
@@ -1751,7 +1751,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.HasCstR = Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty ? VhLoadCSTStatus.NotExist : VhLoadCSTStatus.Exist;
                 response.CstIdR = Vehicle.AseCarrierSlotR.CarrierId;
                 response.ChargeStatus = VhChargeStatusParse(Vehicle.IsCharging);
-                response.BatteryCapacity = BatteryCapacityParse(Vehicle.AseBatteryStatus.Percentage);
+                response.BatteryCapacity = (uint)Vehicle.AseBatteryStatus.Percentage;
                 response.BatteryTemperature = (int)Vehicle.AseBatteryStatus.Temperature;
                 response.XAxis = Vehicle.AseMoveStatus.LastMapPosition.X;
                 response.YAxis = Vehicle.AseMoveStatus.LastMapPosition.Y;
@@ -1934,10 +1934,10 @@ namespace Mirle.Agv.AseMiddler.Controller
 
         public void Receive_Cmd37_TransferCancelRequest(object sender, TcpIpEventArgs e)
         {
+            ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
+
             try
             {
-                ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
-
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"AgvcConnector : Get [{receive.CancelAction}] command");
 
                 if (receive.CancelAction == CancelActionType.CmdEms)
@@ -1947,6 +1947,8 @@ namespace Mirle.Agv.AseMiddler.Controller
                     mainFlowHandler.StopClearAndReset();
                     return;
                 }
+
+                throw new Exception($"AgvcConnector : AGVL can not Cancel or Abort now.");
 
                 if (Vehicle.mapTransferCommands.Count == 0)
                 {
@@ -1977,7 +1979,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             catch (Exception ex)
             {
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
-                ID_37_TRANS_CANCEL_REQUEST receive = (ID_37_TRANS_CANCEL_REQUEST)e.objPacket;
                 Send_Cmd137_TransferCancelResponse(e.iSeqNum, (int)EnumAgvcReplyCode.Reject, receive);
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
@@ -2486,7 +2487,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-       
         public void Receive_Cmd11_CouplerInfoReport(object sender, TcpIpEventArgs e)
         {
             try

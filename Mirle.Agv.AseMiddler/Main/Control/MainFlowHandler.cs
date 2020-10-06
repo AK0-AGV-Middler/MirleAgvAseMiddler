@@ -1696,7 +1696,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 #region 檢查搬送Command
                 try
                 {
-                    if (transferCommand.AgvcTransCommandType ==  EnumAgvcTransCommandType.Override)
+                    if (transferCommand.AgvcTransCommandType == EnumAgvcTransCommandType.Override)
                     {
                         AgvcConnector_OnOverrideCommandEvent(sender, transferCommand);
                         return;
@@ -1797,28 +1797,115 @@ namespace Mirle.Agv.AseMiddler.Controller
                 throw new Exception("Vehicle has move command, can not do loadunload.");
             }
 
+            if (transferCommand.AgvcTransCommandType == EnumAgvcTransCommandType.Unload)
+            {
+                if (Vehicle.AseCarrierSlotL.CarrierId == transferCommand.CassetteId)
+                {
+                    transferCommand.SlotNumber = EnumSlotNumber.L;
+                    return;
+                }
+
+                if (Vehicle.AseCarrierSlotR.CarrierId == transferCommand.CassetteId)
+                {
+                    transferCommand.SlotNumber = EnumSlotNumber.R;
+                    return;
+                }
+
+                throw new Exception($"Vehicle has no {transferCommand.CassetteId} cst to unload.");
+            }
+
+
             if (Vehicle.mapTransferCommands.Count >= 3)
             {
                 throw new Exception("Vehicle has 3 or more command, can not do loadunload.");
             }
 
-            if (Vehicle.MainFlowConfig.SlotDisable == EnumSlotSelect.Left || Vehicle.MainFlowConfig.SlotDisable == EnumSlotSelect.Right)
+            if (Vehicle.MainFlowConfig.SlotDisable == EnumSlotSelect.Both)
+            {
+                throw new Exception($"Vehicle has no empty slot to transfer cst. Left = Disable, Right = Disable.");
+            }
+
+            if (Vehicle.MainFlowConfig.SlotDisable == EnumSlotSelect.Left)
             {
                 if (!Vehicle.mapTransferCommands.IsEmpty)
                 {
                     throw new Exception($"Vehicle has one command with slot disable {Vehicle.MainFlowConfig.SlotDisable}, can not do loadunload.");
                 }
-            }
 
-            if (transferCommand.AgvcTransCommandType == EnumAgvcTransCommandType.Unload)
-            {
-                if (Vehicle.AseCarrierSlotL.CarrierId != transferCommand.CassetteId && Vehicle.AseCarrierSlotR.CarrierId != transferCommand.CassetteId)
+                if (Vehicle.AseCarrierSlotR.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
                 {
-                    throw new Exception($"Vehicle has no {transferCommand.CassetteId} cst to unload.");
+                    throw new Exception($"Vehicle has no empty slot to transfer cst. Left = Disable, Right != Empty.");
+                }
+                else
+                {
+                    transferCommand.SlotNumber = EnumSlotNumber.R;
+                    return;
                 }
             }
 
-            if (Vehicle.mapTransferCommands.Count == 2)
+            if (Vehicle.MainFlowConfig.SlotDisable == EnumSlotSelect.Right)
+            {
+                if (!Vehicle.mapTransferCommands.IsEmpty)
+                {
+                    throw new Exception($"Vehicle has one command with slot disable {Vehicle.MainFlowConfig.SlotDisable}, can not do loadunload.");
+                }
+
+                if (Vehicle.AseCarrierSlotL.CarrierSlotStatus != EnumAseCarrierSlotStatus.Empty)
+                {
+                    throw new Exception($"Vehicle has no empty slot to transfer cst. Left != Empty, Right = Disable.");
+                }
+                else
+                {
+                    transferCommand.SlotNumber = EnumSlotNumber.L;
+                    return;
+                }
+            }
+
+            if (Vehicle.mapTransferCommands.Count == 0)
+            {
+                if (Vehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
+                {
+                    transferCommand.SlotNumber = EnumSlotNumber.L;
+                    return;
+                }
+                else if (Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
+                {
+                    transferCommand.SlotNumber = EnumSlotNumber.R;
+                    return;
+                }
+                else
+                {
+                    throw new Exception($"Vehicle has no empty slot to transfer cst. Left != Empty, Right != Empty.");
+                }
+            }
+            else if (Vehicle.mapTransferCommands.Count == 1)
+            {
+                if (Vehicle.TransferCommand.SlotNumber == EnumSlotNumber.L)
+                {
+                    if (Vehicle.AseCarrierSlotR.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
+                    {
+                        transferCommand.SlotNumber = EnumSlotNumber.R;
+                        return;
+                    }
+                    else
+                    {
+                        throw new Exception($"Vehicle has no empty slot to transfer cst. Left = Commanded, Right != Empty.");
+                    }
+                }
+                else
+                {
+                    if (Vehicle.AseCarrierSlotL.CarrierSlotStatus == EnumAseCarrierSlotStatus.Empty)
+                    {
+                        transferCommand.SlotNumber = EnumSlotNumber.L;
+                        return;
+                    }
+                    else
+                    {
+                        throw new Exception($"Vehicle has no empty slot to transfer cst. Left != Empty, Right = Commanded.");
+                    }
+                }
+            }
+            else if (Vehicle.mapTransferCommands.Count == 2)
             {
                 if (Vehicle.MainFlowConfig.TripleCommandSwap)
                 {
@@ -1828,12 +1915,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 {
                     throw new Exception($"Vehicle has two transfer command and  TripleCommandSwap is off.");
                 }
-            }
-
-            if (!Vehicle.mapTransferCommands.IsEmpty)
-            {
-                if (Vehicle.TransferCommand.SlotNumber == EnumSlotNumber.L)
-                    transferCommand.SlotNumber = EnumSlotNumber.R;
             }
         }
 
