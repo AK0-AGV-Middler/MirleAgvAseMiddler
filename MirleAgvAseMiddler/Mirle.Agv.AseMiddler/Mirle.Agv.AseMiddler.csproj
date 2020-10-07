@@ -299,6 +299,7 @@
     <None Include="Config\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="DLL\TCPIPTrxControl.dll.config" />
     <None Include="Main\Model\AgvcConnectionModel\agvmessage.proto" />
     <None Include="OutsideDll\TCPIPTrxControl.dll.config" />
     <None Include="packages.config" />
@@ -320,6 +321,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DLL\Mirle.Logger.dll" />
+    <Content Include="DLL\Mirle.Logger.pdb" />
+    <Content Include="DLL\Mirle.Tools.dll" />
+    <Content Include="DLL\Mirle.Tools.pdb" />
+    <Content Include="DLL\PSDriver.dll" />
+    <Content Include="DLL\PSDriver.pdb" />
+    <Content Include="DLL\PSDriver.xml" />
+    <Content Include="DLL\TCPIPTrxControl.dll" />
+    <Content Include="DLL\TCPIPTrxControl.pdb" />
     <Content Include="OutsideDll\Google.Protobuf.dll" />
     <Content Include="OutsideDll\Google.Protobuf.xml" />
     <Content Include="OutsideDll\Logrila.Logging.dll" />
