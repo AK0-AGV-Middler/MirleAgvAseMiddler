@@ -502,6 +502,10 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[命令.結束] TransferComplete. [CommandId = {Vehicle.TransferCommand.CommandId}][CompleteStatus = {Vehicle.TransferCommand.CompleteStatus}]");
 
+                if (!alarmHandler.dicHappeningAlarms.IsEmpty)
+                {
+                    ResetAllAlarmsFromAgvm();
+                }
                 Vehicle.mapTransferCommands.TryRemove(Vehicle.TransferCommand.CommandId, out AgvcTransferCommand transferCommand);
                 agvcConnector.TransferComplete(transferCommand);
                 asePackage.SetTransferCommandInfoRequest(transferCommand, EnumCommandInfoStep.End);
@@ -3219,11 +3223,6 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
             catch (Exception) { }
         }
-
-        //private void LogMsgHandler(object sender, LogFormat e)
-        //{
-        //    mirleLogger.Log(e);
-        //}
 
         #endregion
     }
