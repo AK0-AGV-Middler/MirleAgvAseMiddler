@@ -1,0 +1,367 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props')" />
+  <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F88F96FD-CDDF-467E-9B1F-ABD97BD7F7C5}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Mirle.Agv.AseMiddler</RootNamespace>
+    <AssemblyName>Mirle.Agv.AseMiddler</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resource\VehHasCarrier.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>OutsideDll\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <Reference Include="Logrila.Logging, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>OutsideDll\Logrila.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Mirle.Logger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\DesignPatternsSample\Mirle.Logger\Mirle.Logger\bin\Release\Mirle.Logger.dll</HintPath>
+    </Reference>
+    <Reference Include="Mirle.Tools">
+      <HintPath>..\..\..\..\DesignPatternsSample\Mirle.Tools\Mirle.Tools\bin\Release\Mirle.Tools.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>OutsideDll\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="PSDriver, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\DesignPatternsSample\PSDriverSource\PSDriver\bin\Release\PSDriver.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleWifi, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleWifi.1.0.0.0\lib\net40\SimpleWifi.dll</HintPath>
+    </Reference>
+    <Reference Include="Stateless, Version=4.0.0.0, Culture=neutral, PublicKeyToken=93038f0927583c9a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>OutsideDll\Stateless.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="TCPIPTrxControl, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>OutsideDll\TCPIPTrxControl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Customer\ASE\Control\AsePackage.cs" />
+    <Compile Include="Customer\ASE\Model\AsePositionArgs.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\AseBatteryConfig.cs" />
+    <Compile Include="Customer\ASE\Model\AseBatteryStatus.cs" />
+    <Compile Include="Customer\ASE\Model\AseCarrierSlotStatus.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\AseMoveConfig.cs" />
+    <Compile Include="Customer\ASE\Model\AseMovingGuide.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\AsePackageConfig.cs" />
+    <Compile Include="Customer\ASE\Model\AseRobotStatus.cs" />
+    <Compile Include="Customer\ASE\View\AgvlConnectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Customer\ASE\View\AgvlConnectorForm.Designer.cs">
+      <DependentUpon>AgvlConnectorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\Control\UserAgent.cs" />
+    <Compile Include="Main\Model\Configs\BatteryLog.cs" />
+    <Compile Include="Main\Model\Configs\InitialConfig.cs" />
+    <Compile Include="Customer\ASE\Model\Configs\PspConnectionConfig.cs" />
+    <Compile Include="Main\Model\Map\MapAddressOffset.cs" />
+    <Compile Include="Main\Model\Map\BeamDisableArgs.cs" />
+    <Compile Include="Main\Model\Map\MapSectionBeamDisable.cs" />
+    <Compile Include="Main\Model\Map\MapVector.cs" />
+    <Compile Include="Customer\ASE\Model\AseMoveStatus.cs" />
+    <Compile Include="Main\Model\TransferCommand\MoveCmdInfo.cs" />
+    <Compile Include="Main\Model\TransferCommand\RobotCommand.cs" />
+    <Compile Include="Main\Model\VehicleIntegrateStatus.cs" />
+    <Compile Include="Main\View\ConfigForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\ConfigForm.Designer.cs">
+      <DependentUpon>ConfigForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\Control\AlarmHandler.cs" />
+    <Compile Include="Main\Model\InitialEventArgs.cs" />
+    <Compile Include="Main\Model\AgvcConnectionModel\Agvmessage.cs" />
+    <Compile Include="Main\Model\Alarm.cs" />
+    <Compile Include="Main\MainDefines.cs" />
+    <Compile Include="Main\Model\Configs\AlarmConfig.cs" />
+    <Compile Include="Main\Model\Configs\MainFlowConfig.cs" />
+    <Compile Include="Main\Model\Configs\MapConfig.cs" />
+    <Compile Include="Main\Model\Configs\AgvcConnectorConfig.cs" />
+    <Compile Include="Main\Model\Map\MapInfo.cs" />
+    <Compile Include="Main\Model\Map\MapPosition.cs" />
+    <Compile Include="Main\Model\TransferCommand\EmptyTransCmd.cs" />
+    <Compile Include="Main\Model\TransferCommand\LoadCmdInfo.cs" />
+    <Compile Include="Main\Model\TransferCommand\TransferStep.cs" />
+    <Compile Include="Main\Model\TransferCommand\UnloadCmdInfo.cs" />
+    <Compile Include="Main\View\SingleExecuteWarnForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\SingleExecuteWarnForm.Designer.cs">
+      <DependentUpon>SingleExecuteWarnForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcVehicleImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcVehicleImage.Designer.cs">
+      <DependentUpon>UcVehicleImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcAddressImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcAddressImage.Designer.cs">
+      <DependentUpon>UcAddressImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\AlarmForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\AlarmForm.Designer.cs">
+      <DependentUpon>AlarmForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcSectionImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcSectionImage.Designer.cs">
+      <DependentUpon>UcSectionImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcLabelTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcLabelTextBox.Designer.cs">
+      <DependentUpon>UcLabelTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\AgvcConnectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\AgvcConnectorForm.Designer.cs">
+      <DependentUpon>AgvcConnectorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\Control\MainFlowHandler.cs" />
+    <Compile Include="Main\Model\Vehicle.cs" />
+    <Compile Include="Main\Control\AgvcConnector.cs" />
+    <Compile Include="Main\Model\TransferCommand\AgvcTransferCommand.cs" />
+    <Compile Include="Main\View\UserControls\UcVerticalLabelText.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Main\View\UserControls\UcVerticalLabelText.Designer.cs">
+      <DependentUpon>UcVerticalLabelText.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Main\Model\Map\MapAddress.cs" />
+    <Compile Include="Main\Model\Map\MapSection.cs" />
+    <Compile Include="Main\Control\MapHandler.cs" />
+    <Compile Include="Main\View\InitialForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\InitialForm.Designer.cs">
+      <DependentUpon>InitialForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main\View\WarningForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\View\WarningForm.Designer.cs">
+      <DependentUpon>WarningForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Customer\ASE\View\AgvlConnectorForm.resx">
+      <DependentUpon>AgvlConnectorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\ConfigForm.resx">
+      <DependentUpon>ConfigForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\SingleExecuteWarnForm.resx">
+      <DependentUpon>SingleExecuteWarnForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\UcVerticalLabelText.resx">
+      <DependentUpon>UcVerticalLabelText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="Main\View\UserControls\UcVehicleImage.resx">
+      <DependentUpon>UcVehicleImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\AlarmForm.resx">
+      <DependentUpon>AlarmForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\ucAddressImage.resx">
+      <DependentUpon>UcAddressImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\UcLabelTextBox.resx">
+      <DependentUpon>UcLabelTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\AgvcConnectorForm.resx">
+      <DependentUpon>AgvcConnectorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\InitialForm.resx">
+      <DependentUpon>InitialForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\UserControls\UcSectionImage.resx">
+      <DependentUpon>UcSectionImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\View\WarningForm.resx">
+      <DependentUpon>WarningForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="app.manifest" />
+    <None Include="Config\NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Main\Model\AgvcConnectionModel\agvmessage.proto" />
+    <None Include="OutsideDll\TCPIPTrxControl.dll.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="Resource\Close_32x32.png" />
+    <None Include="Resource\Mirle_Home.JPG" />
+    <None Include="Resource\Mirle_LOGO.jpg" />
+    <None Include="Resource\Mirle_Slogan.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="OutsideDll\Google.Protobuf.dll" />
+    <Content Include="OutsideDll\Google.Protobuf.xml" />
+    <Content Include="OutsideDll\Logrila.Logging.dll" />
+    <Content Include="OutsideDll\NLog.dll" />
+    <Content Include="OutsideDll\NLog.xml" />
+    <Content Include="OutsideDll\Stateless.dll" />
+    <Content Include="OutsideDll\Stateless.xml" />
+    <Content Include="OutsideDll\TCPIPTrxControl.dll" />
+    <Content Include="OutsideDll\TCPIPTrxControl.pdb" />
+    <Content Include="Resource\AlarmForm.ico" />
+    <Content Include="Resource\CommuForm.ico" />
+    <Content Include="Resource\MainForm.ico" />
+    <Content Include="Resource\VehHasCarrier.ico" />
+    <Content Include="VehHasCarrier.ico" />
+    <None Include="Resource\VehHasNoCarrier.jpg" />
+    <None Include="Resource\VehHasCarrier.jpg" />
+    <None Include="Resource\Idle_16x16.png" />
+    <None Include="Resource\CrossHair_16x16.png" />
+    <None Include="Resource\Bulb_Red_32x32.png" />
+    <None Include="Resource\Bulb_Green_32x32.png" />
+    <None Include="Resource\Bulb_Blue_32x32.png" />
+    <None Include="Resource\Auto_16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 和 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>此專案參考這部電腦上所缺少的 NuGet 套件。請啟用 NuGet 套件還原，以下載該套件。如需詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的檔案是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props'))" />
+  </Target>
+</Project>

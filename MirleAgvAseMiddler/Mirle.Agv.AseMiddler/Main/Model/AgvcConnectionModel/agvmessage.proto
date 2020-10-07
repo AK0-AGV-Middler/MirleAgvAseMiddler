@@ -1,0 +1,805 @@
+﻿// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/golang/protobuf/ptypes/timestamp";
+option java_multiple_files = true;
+option objc_class_prefix = "GPB";
+package tutorial;
+// [END declaration]
+
+// [START java_declaration]
+option java_package = "com.example.tutorial";
+option java_outer_classname = "AddressBookProtos";
+// [END java_declaration]
+
+// [START csharp_declaration]
+option csharp_namespace = "com.mirle.aka.sc.ProtocolFormat.ase.agvMessage";
+// [END csharp_declaration]
+
+// [START messages]
+message Timestamp {
+
+  // Represents seconds of UTC time since Unix epoch
+  // 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+  // 9999-12-31T23:59:59Z inclusive.
+  int64 seconds = 1;
+
+  // Non-negative fractions of a second at nanosecond resolution. Negative
+  // second values with fractions must still have non-negative nanos values
+  // that count forward in time. Must be from 0 to 999,999,999
+  // inclusive.
+  int32 nanos = 2;
+}
+
+  enum CommandActionType {
+    MOVE = 0;
+    LOAD = 1;
+    UNLOAD = 2;
+    LOADUNLOAD = 3;
+    HOME = 4;
+    OVERRIDE = 5;
+	MOVETOCHARGER = 10;
+  }
+   enum EventType {
+    LoadArrivals = 0;
+    LoadComplete = 1;
+    UnloadArrivals = 2;
+    UnloadComplete = 3;
+	AdrOrMoveArrivals =4;
+	AdrPass = 5;
+    ReserveReq = 7;
+	BlockReq = 8;
+	VHLoading = 11;
+	VHUnloading = 12;
+	BCRRead = 13;
+	CSTRemove = 14;
+	BlockRelease = 21;
+	PIOError = 91;
+  }
+	enum CompleteStatus {
+	CompleteStatus_Move = 0;
+    CompleteStatus_Load = 1;
+    CompleteStatus_Unload = 2;
+    CompleteStatus_Loadunload = 3;
+	CompleteStatus_MoveToCharger = 10;
+	CompleteStatus_Cancel = 20;
+	CompleteStatus_Abort = 21;
+	CompleteStatus_VehicleAbort = 22;
+	CompleteStatus_IDMisMatch = 23;
+	CompleteStatus_IDReadFailed = 24;
+	CompleteStatus_InterlockError = 64;
+
+	CompleteStatus_LongTimeInaction = 98;
+	CompleteStatus_ForceFinishByOp = 99;
+  }
+  	enum CancelActionType {
+	CMD_None = 0;
+	CMD_Cancel = 20;
+	CMD_Abort = 21;
+	CMD_Cancel_ID_Mismatch = 23;
+	CMD_Cancel_ID_Read_Failed = 24;
+	CMD_EMS = 99;
+  }
+  	enum PauseEvent {
+	Continue = 0;
+	Pause = 1;	
+  }
+   enum PauseType {
+	PauseType_None= 0;
+	PauseType_Normal = 1;
+	PauseType_Block = 2;
+	PauseType_EarthQuake = 4;
+	PauseType_Safety = 5;
+	PauseType_All = 9;
+  }
+   enum VhGuideStatus{
+    Unlock = 0;
+	Lock = 1;
+  }
+   enum PassType{
+    Pass = 0;
+	Block = 1;
+  }
+   enum ReserveResult{
+    Success = 0;
+	Unsuccess = 1;
+  }
+
+   enum E_AreaSensorDir{
+    AreaSensorDir_None = 0;
+    Straight = 1;
+	Left = 2;
+	Right = 3;
+  }
+
+   enum CouplerStatus{
+    CouplerStatus_Disable = 0;
+	CouplerStatus_Enable= 1;
+  }
+  message CouplerInfo {
+	string AddressID = 1;
+	CouplerStatus CouplerStatus = 2;
+   }
+
+
+  message ID_1_HOST_BASIC_INFO_VERSION_REP {
+		string DataDateTime_Year = 1;
+		string DataDateTime_Month = 2;
+		string DataDateTime_Day = 3;
+		string DataDateTime_Hour = 4;
+		string DataDateTime_Minute = 5;
+		string DataDateTime_Second = 6;
+		string CurrentTime_Year = 7;
+		string CurrentTime_Month = 8;
+		string CurrentTime_Day = 9;
+		string CurrentTime_Hour = 10;
+		string CurrentTime_Minute = 11;
+		string CurrentTime_Second = 12;
+  }
+   message ID_101_HOST_BASIC_INFO_VERSION_RESPONSE {
+		int32 ReplyCode = 1;
+  }
+
+     message ID_102_BASIC_INFO_VERSION_REP {
+		string BasicInfoVersion_Year = 1;
+		string BasicInfoVersion_Month = 2;
+		string BasicInfoVersion_Day = 3;
+		string BasicInfoVersion_Hour = 4;
+		string BasicInfoVersion_Minute = 5;
+		string BasicInfoVersion_Second = 6;
+  }
+   message ID_2_BASIC_INFO_VERSION_RESPONSE {
+		int32 ReplyCode = 1;
+  }
+
+
+   message ID_11_COUPLER_INFO_REP {
+	repeated CouplerInfo CouplerInfos = 1;
+  }
+   message ID_111_COUPLER_INFO_RESPONSE {
+		int32 ReplyCode = 1;
+  }
+
+
+  message ID_13_TAVELLING_DATA_REP{
+		uint32 Resolution = 1;
+		uint32 StartStopSpd = 2;
+		uint32 MaxSpeed = 3;
+		uint32 AccelTime = 4;
+		int32 SCurveRate = 5;
+		int32 OriginDir = 6;
+		uint32 OriginSpd = 7;
+		uint32 BeaemSpd = 8;
+		uint32 ManualHSpd = 9;
+		uint32 ManualLSpd = 10;
+		uint32 TeachingSpd = 11;
+		int32 RotateDir = 12;
+		int32 EncoderPole = 13;
+		uint32 PositionCompensation = 14;
+		uint32 KeepDistFar = 15;
+		uint32 KeepDistNear = 16;
+  }
+   message ID_113_TAVELLING_DATA_RESPONSE {
+		int32 ReplyCode = 1;
+  }
+
+   message ID_15_SECTION_DATA_REP{
+	 message Section {
+				int32 DriveDir = 1;
+				int32 AeraSecsor = 2;
+				int32 GuideDir = 3;
+				string SectionID = 4;
+				string FromAddr = 5;
+				string ToAddr = 6;
+				int32 ControlTable = 7;
+				uint32 Speed = 9;
+				uint32 Distance = 10;
+				int32 ChangeAreaSensor1 = 11;
+				int32 ChangeGuideDir1 = 12;
+				string ChangeSegNum1 = 13;
+				int32 ChangeAreaSensor2 = 14;
+				int32 ChangeGuideDir2 = 15;
+				string ChangeSegNum2 = 16;
+				string AtSegment = 17;
+			}
+	repeated Section Sections = 1;
+  }
+   message ID_115_SECTION_DATA_RESPONSE {
+		int32 ReplyCode = 1;
+  }
+
+   message ID_17_ADDRESS_DATA_REP{
+	 message Address {
+		string Addr = 1;
+		int32 Resolution = 2;
+		int32 Loaction = 3;
+		int32 BlockRelease = 4;
+		int32 HIDRelease = 5;				
+	 }
+	repeated Address Addresss = 1;
+  }
+   message ID_117_ADDRESS_DATA_RESPONSE {
+	 int32 ReplyCode = 1;
+  }
+
+   message ID_19_SCALE_DATA_REP{
+	 uint32 Resolution = 1;
+	 uint32 InposArea = 2;
+	 uint32 InposStability = 3;
+	 uint32 ScalePulse = 4;
+	 uint32 ScaleOffset = 5;				
+	 uint32 ScaleReset = 6;				
+	 int32 ReadDir = 7;				
+  }
+   message ID_119_SCALE_DATA_RESPONSE {
+	 int32 ReplyCode = 1;
+  }
+
+   message ID_21_CONTROL_DATA_REP{
+	 uint32 TimeoutT1 = 1;
+	 uint32 TimeoutT2 = 2;
+	 uint32 TimeoutT3 = 3;
+	 uint32 TimeoutT4 = 4;
+	 uint32 TimeoutT5 = 5;				
+	 uint32 TimeoutT6 = 6;				
+	 uint32 TimeoutT7 = 7;				
+	 uint32 TimeoutT8 = 8;				
+	 uint32 TimeoutBlock = 9;				
+  }
+   message ID_121_CONTROL_DATA_RESPONSE {
+	 int32 ReplyCode = 1;
+  }
+
+    message ID_23_GUIDE_DATA_REP{
+	 uint32 StartStopSpd = 1;
+	 uint32 MaxSpeed = 2;
+	 uint32 AccelTime = 3;
+	 int32 SCurveRate = 4;
+	 uint32 NormalSpd = 5;				
+	 uint32 ManualHSpd = 6;				
+	 uint32 ManualLSpd = 7;				
+	 uint32 LFLockPos = 8;				
+	 uint32 LBLockPos = 9;				
+	 uint32 RFLockPos = 10;				
+	 uint32 RBLockPos = 11;				
+	 uint32 ChangeStabilityTime = 12;				
+  }
+   message ID_123_GUIDE_DATA_RESPONSE {
+	 int32 ReplyCode = 1;
+  }
+
+  
+   message ID_61_INDIVIDUAL_UPLOAD_REQ{
+  }
+   message ID_161_INDIVIDUAL_UPLOAD_RESPONSE {
+	 uint32 OffsetGuideFL = 1;
+	 uint32 OffsetGuideRL = 2;
+	 uint32 OffsetGuideFR = 3;
+	 uint32 OffsetGuideRR = 4;
+  }
+
+   message ID_162_INDIVIDUAL_DOWNLOAD_REQ{
+  }
+   message ID_62_INDIVIDUAL_DOWNLOAD_RESPONSE {
+	 uint32 OffsetGuideFL = 1;
+	 uint32 OffsetGuideRL = 2;
+	 uint32 OffsetGuideFR = 3;
+	 uint32 OffsetGuideRR = 4;
+  }
+
+  message ID_63_INDIVIDUAL_CHANGE_REQ {
+	 uint32 OffsetGuideFL = 1;
+	 uint32 OffsetGuideRL = 2;
+	 uint32 OffsetGuideFR = 3;
+	 uint32 OffsetGuideRR = 4;
+  }
+   message ID_163_INDIVIDUAL_CHANGE_RESPONSE {
+   	 int32 ReplyCode = 1;
+  }
+
+  enum OperatingVHMode {
+    Operating_Auto = 0;	
+    Operating_Manual = 1;
+  }
+ 
+   
+
+  message ID_31_TRANS_REQUEST {
+  	string Cmd_ID = 1;
+    CommandActionType CommandAction = 2;
+	string LoadAdr =3;
+	string DestinationAdr = 4;
+	string CST_ID = 5;
+	string LoadPortID = 6;
+	string UnloadPortID = 7;
+	bool IsLoadPortHasGate = 8;
+	bool IsUnloadPortHasGate = 9;
+	string LOT_ID = 10;
+  }
+  message ID_131_TRANS_RESPONSE {
+  	string Cmd_ID = 1;
+	CommandActionType CommandAction = 2;
+	int32 ReplyCode = 3;
+	string NgReason = 4;
+  }
+
+
+  message ID_132_TRANS_COMPLETE_REPORT {
+	string Cmd_ID = 1;
+	string CST_ID = 2;
+	CompleteStatus CmpStatus = 3;
+	string CurrentAdrID =4;
+	string CurrentSecID = 5;
+	uint32 Sec_Distance = 6;
+	uint32 Cmd_Power_Consume= 7;
+	int32 Cmd_Distance = 8;
+	double XAxis = 9;
+	double YAxis = 10;
+	double DirectionAngle = 11;
+	double VehicleAngle = 12;
+  }
+
+  message ID_32_TRANS_COMPLETE_RESPONSE {
+	int32 ReplyCode = 1;
+	int32 WaitTime = 2;
+  }
+
+  enum DriveDirction
+  {
+    DriveDir_None =0;
+	DriveDir_Forward=1;
+	DriveDir_Reverse=2;
+  }
+
+  message ID_134_TRANS_EVENT_REP {
+    EventType EventType = 1;
+	string CurrentAdrID = 2;
+	string CurrentSecID = 3;
+	uint32 Sec_Distance = 4;
+	DriveDirction DrivingDirection=5;
+	double XAxis = 6;
+	double YAxis = 7;
+	double DirectionAngle = 8;
+	double VehicleAngle = 9;
+	double Speed = 10;
+  }
+
+  message ID_35_CST_ID_RENAME_REQUEST {
+  	string OLD_CST_ID = 1;
+  	string NEW_CST_ID = 2;
+  }
+  message ID_135_CST_ID_RENAME_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+
+  message ReserveInfo
+  {
+	string Reserve_Section_ID=1;
+	DriveDirction DriveDirction =2;
+  }
+
+  enum BCRReadResult
+  {
+    BCR_Normal = 0;
+	BCR_ReadFail = 1;
+	BCR_MisMatch = 2;
+  }
+
+  enum ReplyActionType
+  {
+	ReplyActionType_Continue = 0;
+	ReplyActionType_Wait = 1;
+	ReplyActionType_Retry = 2;
+	ReplyActionType_Cancel = 20;
+	ReplyActionType_Abort = 21;
+	ReplyActionType_Cancel_ID_Misnatch = 23;
+	ReplyActionType_Cancel_ID_Read_Failed = 24;
+	ReplyActionType_Cancel_PID_Failed = 25;
+  }
+
+  enum AGVLocation
+  {
+	AGVLocation_Right=0;
+	AGVLocation_Left=1;
+	AGVLocation_None=2;
+  }
+   message ID_136_TRANS_EVENT_REP {
+    EventType EventType = 1;
+	repeated ReserveInfo ReserveInfos = 2;
+	string Request_Block_ID = 3;
+	string CST_ID = 4;
+	string Release_Block_AdrID = 5;
+	string CurrentAdrID =6;
+	string CurrentSecID = 7;
+	uint32 Sec_Distance = 8;
+	BCRReadResult BCRReadResult =9;
+	string Cmd_ID =10;
+	AGVLocation Location = 11;
+  }
+
+  message ID_36_TRANS_EVENT_RESPONSE {
+    EventType EventType = 1;
+	ReserveResult Is_Reserve_Success = 2;
+	PassType Is_Block_Pass = 3;
+	string RenameCarrierID = 4;
+	ReplyActionType ReplyAction = 5;
+	int32 ReplyCode = 6;	
+	repeated ReserveInfo ReserveInfos = 7;
+	string Cmd_ID = 8;
+  }
+
+
+  message ID_37_TRANS_CANCEL_REQUEST {
+  	string Cmd_ID = 1;
+    CancelActionType CancelAction = 2;
+  }
+  message ID_137_TRANS_CANCEL_RESPONSE {
+  	string Cmd_ID = 1;
+    CancelActionType CancelAction = 2;
+	int32 ReplyCode = 3;
+  }
+
+   message FromToAdr
+   {
+	string From = 1;
+	string To = 2;
+   }
+   message GuideInfo
+   {
+	FromToAdr FromTo = 1;
+	repeated string GuideSections = 2;
+	repeated string GuideAddresses = 3;
+	uint32 Distance = 4;
+   }
+
+   message ID_138_GUIDE_INFO_REQUEST {
+    repeated FromToAdr FromToAdrList = 1;
+  }
+
+  message ID_38_GUIDE_INFO_RESPONSE {
+    repeated GuideInfo GuideInfoList = 1;
+  }
+
+  message ID_39_PAUSE_REQUEST {
+  	PauseEvent EventType = 1;
+  	PauseType PauseType = 2;
+  }
+  message ID_139_PAUSE_RESPONSE {
+	PauseEvent EventType = 1;
+	int32 ReplyCode = 2;
+  }
+
+  enum VHModeStatus {
+    None = 0;
+    Manual = 3;
+    Auto_Remote = 4;
+    Auto_Local = 5;
+    Auto_Charging = 6;
+  }
+   enum VHActionStatus {
+    NoCommand = 0;
+    Commanding = 1;
+    Teaching = 5;
+    GripperTeaching = 6;
+    CycleRun = 7;
+  }
+  enum VhPowerStatus{
+    Power_Off = 0;
+    Power_On = 1;
+  }
+  enum VhLoadCSTStatus{
+    NotExist  = 0;
+    Exist = 1;
+  }
+  enum VhStopSingle{
+    VhStopSingle_Off = 0;
+	VhStopSingle_On = 1;
+  }
+  enum VhChargeStatus{
+    ChargeStatus_None = 0;
+	ChargeStatus_Handshaking = 1;
+	ChargeStatus_Charging = 2;
+  }
+ 
+   message ID_41_MODE_CHANGE_REQ {
+	 OperatingVHMode OperatingVHMode = 1;
+  }
+   message ID_141_MODE_CHANGE_RESPONSE {
+   	 int32 ReplyCode = 1;
+  }
+  
+  enum CommandState{
+    CommandState_None = 0;
+	CommandState_LoadEnroute = 1;
+	CommandState_UnloadEnroute = 2;
+  }
+  enum ShelfStatus{
+    ShelfStatus_Disable = 0;
+	ShelfStatus_Enable = 1;
+  }
+
+
+  message ID_43_STATUS_REQUEST {
+	string SystemTime = 1;
+  }
+
+  message ID_143_STATUS_RESPONSE {
+	string CurrentAdrID = 1;
+	string CurrentSecID = 2;
+	VHModeStatus ModeStatus = 3;
+	VHActionStatus ActionStatus = 4;
+	VhPowerStatus PowerStatus = 5;
+	VhStopSingle ObstacleStatus = 6;
+	VhStopSingle ReserveStatus = 7;
+	VhStopSingle BlockingStatus = 8;
+	VhStopSingle PauseStatus = 9;
+	VhStopSingle ErrorStatus = 10;
+	uint32 Sec_Distance = 11;
+	int32 Obst_Distance = 12;
+	string Obst_Vehicle_ID = 13;
+	repeated ReserveInfo ReserveInfos = 14;
+	string Stopped_Block_ID_= 15;
+	VhStopSingle Earthquake_Pause_tatus = 16;
+	VhStopSingle Safety_Pause_Status = 17;
+	string CmdId1 = 18;
+	CommandState CmsState_1 = 19;
+	string CmdId2 = 20;
+	CommandState CmsState_2 = 21;
+	VhLoadCSTStatus HasCst_L = 22;
+	string CstIdL = 23;
+	VhLoadCSTStatus HasCst_R = 24;
+	string CstIdR = 25;
+	DriveDirction DrivingDirection= 26;
+	int32 Steering_Wheel = 27;
+	uint32 BatteryCapacity = 28;
+	VhChargeStatus ChargeStatus = 29;
+	int32 BatteryTemperature = 30;
+	double XAxis = 31;
+	double YAxis = 32;
+	double DirectionAngle = 33;
+	double VehicleAngle = 34;
+	double Speed = 35;
+	repeated string WillPassGuideSection = 36;
+	string SystemTime = 37;
+	ShelfStatus ShelfStatus_L = 38;
+	ShelfStatus ShelfStatus_R = 39;
+	string CurrentExcuteCmdId = 40;
+	VhStopSingle OpPauseStatus = 41;
+  }
+
+  message ID_144_STATUS_CHANGE_REP {
+	string CurrentAdrID = 1;
+	string CurrentSecID = 2;
+	VHModeStatus ModeStatus = 3;
+	VHActionStatus ActionStatus = 4;
+	VhPowerStatus PowerStatus = 5;
+	VhStopSingle ObstacleStatus = 6;
+	VhStopSingle ReserveStatus = 7;
+	VhStopSingle BlockingStatus = 8;
+	VhStopSingle PauseStatus = 9;
+	VhStopSingle ErrorStatus = 10;
+	uint32 Sec_Distance = 11;
+	int32 Obst_Distance = 12;
+	string Obst_Vehicle_ID = 13;
+	repeated ReserveInfo ReserveInfos = 14;
+	string Stopped_Block_ID_= 15;
+	VhStopSingle Earthquake_Pause_tatus = 16;
+	VhStopSingle Safety_Pause_Status = 17;
+	string CmdId1 = 18;
+	CommandState CmsState_1 = 19;
+	string CmdId2 = 20;
+	CommandState CmsState_2 = 21;
+	VhLoadCSTStatus HasCst_L = 22;
+	string CstIdL = 23;
+	VhLoadCSTStatus HasCst_R = 24;
+	string CstIdR = 25;
+	DriveDirction DrivingDirection= 26;
+	int32 Steering_Wheel = 27;
+	uint32 BatteryCapacity = 28;
+	VhChargeStatus ChargeStatus = 29;
+	int32 BatteryTemperature = 30;
+	double XAxis = 31;
+	double YAxis = 32;
+	double DirectionAngle = 33;
+	double VehicleAngle = 34;
+	double Speed = 35;
+	repeated string WillPassGuideSection = 36;
+	string SystemTime = 37;
+	ShelfStatus ShelfStatus_L = 38;
+	ShelfStatus ShelfStatus_R = 39;
+	string CurrentExcuteCmdId = 40;
+	VhStopSingle OpPauseStatus = 41;
+  }
+  message ID_44_STATUS_CHANGE_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+
+  enum OperatingPowerMode {
+    Operating_Power_Off = 0;
+    Operating_Power_On = 1;
+  }
+  message ID_45_POWER_OPE_REQ {
+	 OperatingPowerMode OperatingPowerMode = 1;
+  }
+  message ID_145_POWER_OPE_RESPONSE {
+   	 int32 ReplyCode = 1;
+  }
+
+  message ID_51_AVOID_REQUEST {
+	string DestinationAdr = 1;
+	repeated string Guide_Sections = 2;
+	repeated string Guide_Addresses = 3;
+  }
+  message ID_151_AVOID_RESPONSE {
+	int32 ReplyCode = 1;
+	string NgReason = 2;
+  }
+  
+  message ID_152_AVOID_COMPLETE_REPORT {
+	int32 CmpStatus = 1;
+  }
+  message ID_52_AVOID_COMPLETE_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+
+    message ID_71_RANGE_TEACHING_REQUEST {
+	string FromAdr = 1;
+	string ToAdr = 2;
+  }
+    message ID_171_RANGE_TEACHING_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+
+    message ID_172_RANGE_TEACHING_COMPLETE_REPORT {
+	string FromAdr = 1;
+	string ToAdr = 2;
+	uint32 Sec_Distance = 3;
+	int32 Complete_Code = 4;
+  }
+    message ID_72_RANGE_TEACHING_COMPLETE_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+
+    message ID_174_ADDRESS_TEACH_REPORT {
+	string Addr = 1;
+	int32 Position = 2;
+  }
+    message ID_74_ADDRESS_TEACH_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+
+    message ID_91_ALARM_RESET_REQUEST {
+  }
+    message ID_191_ALARM_RESET_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+    enum ErrorStatus {
+    Err_Reset = 0;
+	Err_Set = 1;
+  }
+  message ID_194_ALARM_REPORT {
+	string ErrCode = 1;
+	ErrorStatus ErrStatus = 2;
+	string ErrDescription = 3;
+  }
+    message ID_94_ALARM_RESPONSE {
+	int32 ReplyCode = 1;
+  }
+  message WrapperMessage {
+    int32 ID = 1000;
+	int32 SeqNum = 1001;    
+	string LocalSystemTime = 1002;
+    oneof msg {
+
+		ID_1_HOST_BASIC_INFO_VERSION_REP Host_Basic_Info_Rep = 1;
+		ID_101_HOST_BASIC_INFO_VERSION_RESPONSE Host_Basic_Info_Resp = 101;
+
+		ID_102_BASIC_INFO_VERSION_REP Basic_Info_Version_Rep = 102;
+		ID_2_BASIC_INFO_VERSION_RESPONSE Basic_Info_Version_Resp = 2;
+
+		ID_11_COUPLER_INFO_REP Coupler_Info_Rep = 11;
+		ID_111_COUPLER_INFO_RESPONSE Coupler_Info_Resp = 111;
+
+		ID_13_TAVELLING_DATA_REP Tavelling_Data_Rep = 13;
+		ID_113_TAVELLING_DATA_RESPONSE Tavelling_Data_Resp = 113;
+
+		ID_15_SECTION_DATA_REP Section_Data_Rep = 15;
+		ID_115_SECTION_DATA_RESPONSE Section_Data_Resp = 115;
+
+		ID_17_ADDRESS_DATA_REP Address_Data_Rep = 17;
+		ID_117_ADDRESS_DATA_RESPONSE Address_Data_Resp = 117;
+
+		ID_19_SCALE_DATA_REP Scale_Data_Rep = 19;
+		ID_119_SCALE_DATA_RESPONSE Scale_Data_Resp = 119;
+		
+		ID_21_CONTROL_DATA_REP Control_Data_Rep = 21;
+		ID_121_CONTROL_DATA_RESPONSE Control_Data_Resp = 121;
+
+		ID_23_GUIDE_DATA_REP Guide_Data_Rep = 23;
+		ID_123_GUIDE_DATA_RESPONSE Guide_Data_Resp = 123;
+
+		ID_61_INDIVIDUAL_UPLOAD_REQ Individual_Upload_Req = 61;
+		ID_161_INDIVIDUAL_UPLOAD_RESPONSE Individual_Upload_Resp = 161;
+
+		ID_162_INDIVIDUAL_DOWNLOAD_REQ Individual_Download_Req = 162;
+		ID_62_INDIVIDUAL_DOWNLOAD_RESPONSE Individual_Download_Resp = 62;
+
+		ID_63_INDIVIDUAL_CHANGE_REQ Individual_Change_Req = 63;
+		ID_163_INDIVIDUAL_CHANGE_RESPONSE Individual_Change_Resp = 163;
+
+		ID_41_MODE_CHANGE_REQ Mode_Change_Req = 41;
+		ID_141_MODE_CHANGE_RESPONSE Mode_Change_Resp = 141;
+
+        ID_31_TRANS_REQUEST Trans_Req = 31;
+        ID_131_TRANS_RESPONSE Trans_Resp = 131;
+
+		ID_132_TRANS_COMPLETE_REPORT Tran_Cmp_Rep = 132;
+		ID_32_TRANS_COMPLETE_RESPONSE Tran_Cmp_Resp = 32;
+
+        ID_35_CST_ID_RENAME_REQUEST CST_ID_Rename_Req = 35;
+        ID_135_CST_ID_RENAME_RESPONSE CST_ID_Rename_Resp = 135;
+
+        ID_37_TRANS_CANCEL_REQUEST Trans_Cancel_Req = 37;
+        ID_137_TRANS_CANCEL_RESPONSE Trans_Cancel_Resp = 137;
+
+		ID_138_GUIDE_INFO_REQUEST Guide_Info_Req = 138;
+        ID_38_GUIDE_INFO_RESPONSE Guide_Info_Resp = 38;
+
+        ID_39_PAUSE_REQUEST Pause_Req = 39;
+        ID_139_PAUSE_RESPONSE Pause_Resp = 139;
+
+		ID_134_TRANS_EVENT_REP Trans_Event_Rep = 134;
+
+		ID_136_TRANS_EVENT_REP Imp_Trans_Event_Rep = 136;
+        ID_36_TRANS_EVENT_RESPONSE Imp_Trans_Event_Resp = 36;
+
+		ID_43_STATUS_REQUEST Status_Req = 43;
+		ID_143_STATUS_RESPONSE Status_Req_Resp = 143;
+
+		ID_144_STATUS_CHANGE_REP Statue_Change_Rep = 144;
+		ID_44_STATUS_CHANGE_RESPONSE Status_Change_Resp = 44;
+
+		ID_45_POWER_OPE_REQ Power_Ope_Req = 45;
+		ID_145_POWER_OPE_RESPONSE Power_Ope_Resp = 145;
+
+		ID_51_AVOID_REQUEST Avoid_Req = 51;
+		ID_151_AVOID_RESPONSE Avoid_Resp = 151;
+
+		ID_152_AVOID_COMPLETE_REPORT Avoid_Complete_Rep = 152;
+		ID_52_AVOID_COMPLETE_RESPONSE Avoid_Complete_Resp = 52;
+
+
+		ID_71_RANGE_TEACHING_REQUEST Range_Teaching_Req = 71;
+		ID_171_RANGE_TEACHING_RESPONSE Range_Teaching_Resp = 171;
+
+		ID_172_RANGE_TEACHING_COMPLETE_REPORT Range_Teaching_Cmp_Rep = 172;
+		ID_72_RANGE_TEACHING_COMPLETE_RESPONSE Range_Teaching_Cmp_Resp = 72;
+
+		ID_174_ADDRESS_TEACH_REPORT Address_Teach_Rep = 174;
+		ID_74_ADDRESS_TEACH_RESPONSE Address_Teach_Resp = 74;
+
+		ID_91_ALARM_RESET_REQUEST Alarm_Reset_Req = 91;
+		ID_191_ALARM_RESET_RESPONSE Alarm_Reset_Resp = 191;
+
+		ID_194_ALARM_REPORT Alarm_Rep = 194;
+		ID_94_ALARM_RESPONSE Alarm_Resp = 94;
+
+    }   
+ }
+	enum CurrentMessageVersion
+    {
+		v1_0_0=0;
+		v1_0_2=1;
+    }
+
+
+// [END messages]
