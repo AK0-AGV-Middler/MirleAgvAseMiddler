@@ -33,8 +33,6 @@ namespace Mirle.Agv.AseMiddler.Model
         public bool LowPowerStartChargeTimeout { get; set; } = false;
         public bool ArrivalCharge { get; set; } = false;
         public bool IsCharger { get; set; } = false;
-        public int TransferStepsCount { get; set; } = 0;
-        public string TransferStepType { get; set; } = "NONE";
         public string LastAddress { get; set; } = "";
         public int LowPowerRepeatedlyChargeCounter { get; set; } = 0;
         #endregion
@@ -85,6 +83,8 @@ namespace Mirle.Agv.AseMiddler.Model
         public VhStopSingle OpPauseStatus { get; set; } = VhStopSingle.Off;
         public ConcurrentDictionary<PauseType, bool> PauseFlags = new ConcurrentDictionary<PauseType, bool>(Enum.GetValues(typeof(PauseType)).Cast<PauseType>().ToDictionary(x => x, x => false));
         public uint WifiSignalStrength { get; set; } = 0;
+        public List<PortInfo> PortInfos { get; set; } = new List<PortInfo>();
+
         #endregion
 
         #region Configs

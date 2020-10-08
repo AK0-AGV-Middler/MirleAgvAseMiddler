@@ -937,7 +937,7 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (positionArgs.Arrival != EnumAseArrival.Arrival)
                 {
-                    ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport. [{psMessage.Substring(0, 1)}][{positionArgs.Arrival.ToString()}][({x.ToString("F0")},{y.ToString("F0")})]");
+                    ImportantPspLog?.Invoke(this, $"ReceiveMoveAppendArrivalReport. [{psMessage.Substring(0, 1)}][{positionArgs.Arrival}][({(int)x},{(int)y})]");
                 }
 
                 ReceivePositionArgsQueue.Enqueue(positionArgs);

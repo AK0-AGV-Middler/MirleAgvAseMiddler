@@ -192,10 +192,22 @@ namespace Mirle.Agv.AseMiddler.Controller
                         lastReadPortId = portId;
                         string addressId = getThisRow[dicHeaderIndexes["AddressId"]];
                         string portNumber = getThisRow[dicHeaderIndexes["PortNumber"]];
+                        bool isVitualPort = false;
+                        if (dicHeaderIndexes.ContainsKey("IsVitualPort"))
+                        {
+                            isVitualPort = bool.Parse(getThisRow[dicHeaderIndexes["IsVitualPort"]]);
+                        }
+                        MapPort port = new MapPort()
+                        {
+                            ID = portId,
+                            ReferenceAddressId = addressId,
+                            Number = portNumber,
+                            IsVitualPort = isVitualPort
+                        };
 
                         if (Vehicle.Mapinfo.addressMap.ContainsKey(addressId))
                         {
-                            Vehicle.Mapinfo.addressMap[addressId].PortIdMap.Add(portId, portNumber);
+                            Vehicle.Mapinfo.addressMap[addressId].PortIdMap.Add(port.ID, port);
                         }
 
                     }

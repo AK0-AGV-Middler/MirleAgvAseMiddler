@@ -507,13 +507,13 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         if (queNeedReserveSections.Any())
                         {
-                            if (!IsAskReservePause && IsMoveStep() && mainFlowHandler.CanVehMove() && !Vehicle.AseMoveStatus.IsMoveEnd && !IsSleepByAskReserveFail)
+                            if (!IsAskReservePause && mainFlowHandler.IsMoveStep() && mainFlowHandler.CanVehMove() && !Vehicle.AseMoveStatus.IsMoveEnd && !IsSleepByAskReserveFail)
                             {
                                 AskAllSectionsReserveInOnce();
                             }
                             else
                             {
-                                mainFlowHandler.LogDebug(GetType().Name, $"IsAskReservePause = {IsAskReservePause} ,IsMoveStep = {IsMoveStep()}, CanVehMove = {mainFlowHandler.CanVehMove()},IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd},IsSleepByAskReserveFail = {IsSleepByAskReserveFail}");
+                                mainFlowHandler.LogDebug(GetType().Name, $"IsAskReservePause = {IsAskReservePause} ,IsMoveStep = {mainFlowHandler.IsMoveStep()}, CanVehMove = {mainFlowHandler.CanVehMove()},IsMoveEnd = {Vehicle.AseMoveStatus.IsMoveEnd},IsSleepByAskReserveFail = {IsSleepByAskReserveFail}");
                             }
                         }
                     }
@@ -528,11 +528,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 Thread.Sleep(Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
                 //SpinWait.SpinUntil(() => false, Vehicle.AgvcConnectorConfig.ScheduleIntervalMs);
             }
-        }
-
-        private bool IsMoveStep()
-        {
-            return Vehicle.TransferCommand.TransferStep == EnumTransferStep.MoveToAddressWaitEnd;
         }
 
         private void PrimarySendWait(ScheduleWrapper scheduleWrapper)
@@ -1362,6 +1357,11 @@ namespace Mirle.Agv.AseMiddler.Controller
         {
             SendRecv_Cmd136_TransferEventReport(EventType.UnloadArrivals, cmdId);
         }
+        public void ReportVitualPortUnloadArrival()
+        {
+            SendRecv_Cmd136_VitualPortArrivalReport();
+        }
+
         public void Unloading(string cmdId, EnumSlotNumber slotNumber)
         {
             Send_Cmd136_TransferEventReport(EventType.Vhunloading, cmdId, slotNumber);
@@ -2042,7 +2042,15 @@ namespace Mirle.Agv.AseMiddler.Controller
                         Vehicle.TransferCommand.IsLoadCompleteReply = true;
                         break;
                     case EventType.UnloadArrivals:
-                        Vehicle.TransferCommand.IsUnloadArrivalReply = true;
+                        if (response.PortInfos.Count == 0)
+                        {
+                            Vehicle.TransferCommand.IsUnloadArrivalReply = true;
+                        }
+                        else
+                        {
+                            Vehicle.PortInfos = response.PortInfos.ToList();
+                            Vehicle.TransferCommand.IsVitualPortUnloadArrivalReply = true;
+                        }
                         break;
                     case EventType.UnloadComplete:
                         Vehicle.TransferCommand.IsUnloadCompleteReply = true;
@@ -2170,6 +2178,32 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
+        private void SendRecv_Cmd136_VitualPortArrivalReport()
+        {
+            try
+            {
+                ID_136_TRANS_EVENT_REP report = new ID_136_TRANS_EVENT_REP();
+                report.EventType = EventType.UnloadArrivals;
+                report.CurrentAdrID = Vehicle.AseMoveStatus.LastAddress.Id;
+                report.CurrentSecID = Vehicle.AseMoveStatus.LastSection.Id;
+                report.SecDistance = (uint)Vehicle.AseMoveStatus.LastSection.VehicleDistanceSinceHead;
+                report.CmdID = Vehicle.TransferCommand.CommandId;
+                report.CurrentPortID = Vehicle.TransferCommand.UnloadPortId;
+
+                WrapperMessage wrapper = new WrapperMessage();
+                wrapper.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrapper.ImpTransEventRep = report;
+
+                SendWrapperToSchedule(wrapper, false, true);
+
+                mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"SendRecv Vitual Port Arrival report. [{Vehicle.TransferCommand.UnloadPortId}]");
+            }
+            catch (Exception ex)
+            {
+                LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
         private void SendRecv_Cmd136_TransferEventReport(EventType eventType, string cmdId, EnumSlotNumber slotNumber)
         {
             try

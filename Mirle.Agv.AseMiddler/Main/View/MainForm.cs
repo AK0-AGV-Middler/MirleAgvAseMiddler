@@ -865,17 +865,6 @@ namespace Mirle.Agv.AseMiddler.View
                     tbxTransferCommand01Msg.Text = GetTransferCmdInfo(transferCommands[0]);
                     tbxTransferCommand02Msg.Text = GetTransferCmdInfo(transferCommands[1]);
                 }
-                //200523 dabid+
-                //var lstTransferStep = mainFlowHandler.PtransferSteps;
-                //string step = "";
-                //for (int i = 0; i < lstTransferStep.Count(); i++)
-                //{
-                //    if (lstTransferStep[i].GetTransferStepType() == EnumTransferStepType.Empty)
-                //        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}";
-                //    else
-                //        step = step + $" => {lstTransferStep[i].GetTransferStepType().ToString()}({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].LoadPortId})({Vehicle.mapTransferCommands[lstTransferStep[i].CmdId].UnloadPortId})";
-                //}
-                //tbxTransferStepMsg.Text = step;
                 tbxTransferStepMsg.Text = GetTransferCmdInfo(Vehicle.TransferCommand);
             }
             catch (Exception ex)
@@ -1042,11 +1031,7 @@ namespace Mirle.Agv.AseMiddler.View
                 string IsSimulation = Vehicle.MainFlowConfig.IsSimulation.ToString();
                 ucIsSimulation.TagValue = IsSimulation;
 
-                string StepsCount = Vehicle.TransferStepsCount.ToString();
-                ucStepsCount.TagValue = StepsCount;
-
-                string CurransferStepType = Vehicle.TransferStepType.ToString();
-                ucCurransferStepType.TagValue = CurransferStepType;
+                ucCurransferStepType.TagValue = Vehicle.TransferCommand.TransferStep.ToString();
 
                 string ChargeCount = Vehicle.LowPowerRepeatedlyChargeCounter.ToString();
                 ucChargeCount.TagValue = ChargeCount;
