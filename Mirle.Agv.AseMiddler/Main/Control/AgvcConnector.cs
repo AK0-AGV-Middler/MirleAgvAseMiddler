@@ -1662,8 +1662,7 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.BlockingStatus = Vehicle.BlockingStatus;
 
 
-            EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
-            switch (slotDisable)
+            switch (Vehicle.MainFlowConfig.SlotDisable)
             {
                 case EnumSlotSelect.None:
                     {
@@ -1708,6 +1707,10 @@ namespace Mirle.Agv.AseMiddler.Controller
             report.CmsState1 = transferCommands.Count > 0 ? transferCommands[0].EnrouteState : CommandState.None;
             report.CmdId2 = transferCommands.Count > 1 ? transferCommands[1].CommandId : "";
             report.CmsState2 = transferCommands.Count > 1 ? transferCommands[1].EnrouteState : CommandState.None;
+            report.CmdId3 = transferCommands.Count > 2 ? transferCommands[2].CommandId : "";
+            report.CmsState3 = transferCommands.Count > 2 ? transferCommands[2].EnrouteState : CommandState.None;
+            report.CmdId4 = transferCommands.Count > 3 ? transferCommands[3].CommandId : "";
+            report.CmsState4 = transferCommands.Count > 3 ? transferCommands[3].EnrouteState : CommandState.None;
             report.CurrentExcuteCmdId = Vehicle.TransferCommand.CommandId;
             report.ActionStatus = Vehicle.ActionStatus;
 
@@ -1766,8 +1769,7 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.EarthquakePauseTatus = Vehicle.PauseFlags[PauseType.EarthQuake] ? VhStopSingle.On : VhStopSingle.Off;
                 response.BlockingStatus = Vehicle.BlockingStatus;
 
-                EnumSlotSelect slotDisable = Vehicle.MainFlowConfig.SlotDisable;
-                switch (slotDisable)
+                switch (Vehicle.MainFlowConfig.SlotDisable)
                 {
                     case EnumSlotSelect.None:
                         {
@@ -1806,6 +1808,10 @@ namespace Mirle.Agv.AseMiddler.Controller
                 response.CmsState1 = transferCommands.Count > 0 ? transferCommands[0].EnrouteState : CommandState.None;
                 response.CmdId2 = transferCommands.Count > 1 ? transferCommands[1].CommandId : "";
                 response.CmsState2 = transferCommands.Count > 1 ? transferCommands[1].EnrouteState : CommandState.None;
+                response.CmdId3 = transferCommands.Count > 2 ? transferCommands[2].CommandId : "";
+                response.CmsState3 = transferCommands.Count > 2 ? transferCommands[2].EnrouteState : CommandState.None;
+                response.CmdId4 = transferCommands.Count > 3 ? transferCommands[3].CommandId : "";
+                response.CmsState4 = transferCommands.Count > 3 ? transferCommands[3].EnrouteState : CommandState.None;
                 response.ActionStatus = Vehicle.ActionStatus;
                 response.CurrentExcuteCmdId = Vehicle.TransferCommand.CommandId;
 
@@ -2203,7 +2209,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 LogException(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, ex.Message);
             }
         }
-
         private void SendRecv_Cmd136_TransferEventReport(EventType eventType, string cmdId, EnumSlotNumber slotNumber)
         {
             try
@@ -2477,7 +2482,6 @@ namespace Mirle.Agv.AseMiddler.Controller
                 ID_31_TRANS_REQUEST transRequest = (ID_31_TRANS_REQUEST)e.objPacket;
                 mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[收到搬送命令] Get Transfer Command: {transRequest.CommandAction}");
                 LogCommandStart(transRequest);
-
                 if (Vehicle.mapTransferCommands.ContainsKey(transRequest.CmdID.Trim()))
                 {
                     mainFlowHandler.LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[拒絕搬送命令] Reject Transfer Command: {transRequest.CommandAction}. Same command id is working.");
