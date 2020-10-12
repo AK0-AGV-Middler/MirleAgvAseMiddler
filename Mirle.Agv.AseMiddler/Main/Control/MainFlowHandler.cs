@@ -2138,13 +2138,13 @@ namespace Mirle.Agv.AseMiddler.Controller
             }
 
 
-            if (!string.IsNullOrEmpty(portId))
-            {
-                if (!portAddress.PortIdMap.ContainsKey(portId))
-                {
-                    throw new Exception($"Port Address [{portAddressId}] and Port ID [{portId}] are not fit.");
-                }
-            }
+            //if (!string.IsNullOrEmpty(portId))
+            //{
+            //    if (!portAddress.PortIdMap.ContainsKey(portId))
+            //    {
+            //        throw new Exception($"Port Address [{portAddressId}] and Port ID [{portId}] are not fit.");
+            //    }
+            //}
         }
 
         private void CheckMoveEndAddress(string unloadAddressId)
