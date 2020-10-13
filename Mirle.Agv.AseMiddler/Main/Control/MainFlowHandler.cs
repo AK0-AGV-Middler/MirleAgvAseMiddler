@@ -793,12 +793,8 @@ namespace Mirle.Agv.AseMiddler.Controller
 
                 if (Vehicle.AseMovingGuide.MoveComplete == EnumMoveComplete.Fail)
                 {
-                    Vehicle.TransferCommand.CompleteStatus = CompleteStatus.VehicleAbort;
-                    Vehicle.TransferCommand.TransferStep = EnumTransferStep.MoveFail;
-
-                    SetAlarmFromAgvm(6);
-                    Vehicle.AseMovingGuide = new AseMovingGuide();
-                    agvcConnector.StatusChangeReport();
+                    //Vehicle.TransferCommand.CompleteStatus = CompleteStatus.VehicleAbort;
+                    //Vehicle.TransferCommand.TransferStep = EnumTransferStep.MoveFail;
                     if (Vehicle.AseMovingGuide.IsAvoidMove)
                     {
                         agvcConnector.AvoidFail();
@@ -814,6 +810,12 @@ namespace Mirle.Agv.AseMiddler.Controller
                     {
                         LogDebug(GetType().Name + ":" + MethodBase.GetCurrentMethod().Name, $"[移動.失敗] : Move Fail. ");
                     }
+
+                    SetAlarmFromAgvm(6);
+                    agvcConnector.StatusChangeReport();
+
+                    StopClearAndReset();
+
                     return;
                 }
 
